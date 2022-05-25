@@ -1,13 +1,13 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
 [TestFixture]
-public class EngineRuntimeTests
+public class SmtTransferEngineRuntimeTests
 {
     [Test]
     public async Task StartBuildAsync()
     {
         using var env = new TestEnvironment();
-        Engine engine = env.Engines.Get("engine1");
+        TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.ModelRevision, Is.EqualTo(0));
         await env.Runtime.InitNewAsync();
         // ensure that the SMT model was loaded before training
@@ -143,25 +143,25 @@ public class EngineRuntimeTests
         private readonly ISmtModelFactory _smtModelFactory;
         private readonly ITransferEngineFactory _transferEngineFactory;
         private readonly ITruecaserFactory _truecaserFactory;
-        private readonly IDataFileService _dataFileService;
+        private readonly ICorpusService _dataFileService;
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
 
         public TestEnvironment()
         {
-            Engines = new MemoryRepository<Engine>();
+            Engines = new MemoryRepository<TranslationEngine>();
             Engines.Add(
-                new Engine
+                new TranslationEngine
                 {
                     Id = "engine1",
                     Owner = "client",
                     SourceLanguageTag = "es",
                     TargetLanguageTag = "en",
-                    Type = EngineType.SmtTransfer
+                    Type = TranslationEngineType.SmtTransfer
                 }
             );
             Builds = new MemoryRepository<Build>();
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
-            EngineOptions = new EngineOptions();
+            EngineOptions = new TranslationEngineOptions();
             _memoryStorage = new MemoryStorage();
             _jobClient = new BackgroundJobClient(_memoryStorage);
             WebhookService = Substitute.For<IWebhookService>();
@@ -184,12 +184,12 @@ public class EngineRuntimeTests
         }
 
         public SmtTransferEngineRuntime Runtime { get; private set; }
-        public MemoryRepository<Engine> Engines { get; }
+        public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<Build> Builds { get; }
         public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
         public ITrainer SmtBatchTrainer { get; }
         public IInteractiveTranslationModel SmtModel { get; }
-        public EngineOptions EngineOptions { get; }
+        public TranslationEngineOptions EngineOptions { get; }
         public ITruecaser Truecaser { get; }
         public ITrainer TruecaserTrainer { get; }
         public IWebhookService WebhookService { get; }
@@ -208,14 +208,18 @@ public class EngineRuntimeTests
 
         private BackgroundJobServer CreateJobServer()
         {
-            var jobServerOptions = new BackgroundJobServerOptions { Activator = new EnvActivator(this) };
+            var jobServerOptions = new BackgroundJobServerOptions
+            {
+                Activator = new EnvActivator(this),
+                Queues = new[] { "smt_transfer" }
+            };
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
         }
 
         private SmtTransferEngineRuntime CreateRuntime()
         {
             return new SmtTransferEngineRuntime(
-                new OptionsWrapper<EngineOptions>(EngineOptions),
+                new OptionsWrapper<TranslationEngineOptions>(EngineOptions),
                 Engines,
                 Builds,
                 TrainSegmentPairs,
@@ -354,14 +358,12 @@ public class EngineRuntimeTests
             return factory;
         }
 
-        private static IDataFileService CreateDataFileService()
+        private static ICorpusService CreateDataFileService()
         {
-            var dataFileService = Substitute.For<IDataFileService>();
+            var dataFileService = Substitute.For<ICorpusService>();
             dataFileService
-                .CreateTextCorporaAsync(Arg.Any<string>(), Arg.Any<CorpusType>())
-                .Returns(
-                    Task.FromResult<IReadOnlyDictionary<string, ITextCorpus>>(new Dictionary<string, ITextCorpus>())
-                );
+                .CreateTextCorpusAsync(Arg.Any<string>(), Arg.Any<string>())
+                .Returns(Task.FromResult<ITextCorpus?>(null));
             return dataFileService;
         }
 
