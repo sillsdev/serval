@@ -5,13 +5,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Version>0.1.0</Version>
+		<Description>The Serval gRPC APIs.</Description>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />
-
-	<ItemGroup>
-		<None Remove="Protos\serval\engine\translation\v1\translation.proto" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Google.Protobuf" Version="3.21.12" />
