@@ -1,0 +1,27 @@
+name: Release Serval.Grpc package
+
+on:
+  push:
+    tags:
+      - 'api_*'
+
+jobs:
+  publish:
+    name: Publish NuGet package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Pack
+        run: dotnet pack src\Serval.Grpc\Serval.Grpc.csproj -c Release -o artifacts
+      - name: Upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: nuget-package
+          path: artifacts/*.nupkg
+      - name: Push
+        run: dotnet nuget push artifacts\*.nupkg -n -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

@@ -1,0 +1,93 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}"
+	ProjectSection(SolutionItems) = preProject
+		src\AssemblyInfo.props = src\AssemblyInfo.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{66246A1C-8D45-40FB-A660-C58577122CA7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C2CEC737-240C-4FE7-9BD4-B7548E8F5829}"
+	ProjectSection(SolutionItems) = preProject
+		.csharpierrc.yaml = .csharpierrc.yaml
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Grpc", "src\Serval.Grpc\Serval.Grpc.csproj", "{443D8A33-62F5-4FE0-A972-E32E280E15C8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.ApiServer", "src\Serval.ApiServer\Serval.ApiServer.csproj", "{7FAE5F93-C1BA-4280-8086-7E6207FE335E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Core", "src\Serval.Core\Serval.Core.csproj", "{568180FD-BCC3-4793-83A8-268D75CDED6C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.AspNetCore", "src\Serval.AspNetCore\Serval.AspNetCore.csproj", "{2687F4DB-2D37-421D-A1CA-3B973B5B27D1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Client", "src\Serval.Client\Serval.Client.csproj", "{EF43AA91-4FA2-4F96-8EEB-C1D03943FD2B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.AspNetCore.Tests", "tests\Serval.AspNetCore.Tests\Serval.AspNetCore.Tests.csproj", "{695AAF36-6633-40AF-9616-F6DB1E8EA14F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.SpecFlowTests", "tests\Serval.SpecFlowTests\Serval.SpecFlowTests.csproj", "{47F42489-3706-495B-B91D-7EC408F7D1B3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.DataAccess", "src\SIL.DataAccess\SIL.DataAccess.csproj", "{C5F942A3-8534-43FD-A75C-0160624FD456}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FAE5F93-C1BA-4280-8086-7E6207FE335E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FAE5F93-C1BA-4280-8086-7E6207FE335E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FAE5F93-C1BA-4280-8086-7E6207FE335E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FAE5F93-C1BA-4280-8086-7E6207FE335E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{568180FD-BCC3-4793-83A8-268D75CDED6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{568180FD-BCC3-4793-83A8-268D75CDED6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{568180FD-BCC3-4793-83A8-268D75CDED6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{568180FD-BCC3-4793-83A8-268D75CDED6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2687F4DB-2D37-421D-A1CA-3B973B5B27D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2687F4DB-2D37-421D-A1CA-3B973B5B27D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2687F4DB-2D37-421D-A1CA-3B973B5B27D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2687F4DB-2D37-421D-A1CA-3B973B5B27D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF43AA91-4FA2-4F96-8EEB-C1D03943FD2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF43AA91-4FA2-4F96-8EEB-C1D03943FD2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF43AA91-4FA2-4F96-8EEB-C1D03943FD2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF43AA91-4FA2-4F96-8EEB-C1D03943FD2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{695AAF36-6633-40AF-9616-F6DB1E8EA14F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{695AAF36-6633-40AF-9616-F6DB1E8EA14F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{695AAF36-6633-40AF-9616-F6DB1E8EA14F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{695AAF36-6633-40AF-9616-F6DB1E8EA14F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47F42489-3706-495B-B91D-7EC408F7D1B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47F42489-3706-495B-B91D-7EC408F7D1B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47F42489-3706-495B-B91D-7EC408F7D1B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47F42489-3706-495B-B91D-7EC408F7D1B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5F942A3-8534-43FD-A75C-0160624FD456}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5F942A3-8534-43FD-A75C-0160624FD456}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5F942A3-8534-43FD-A75C-0160624FD456}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5F942A3-8534-43FD-A75C-0160624FD456}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{443D8A33-62F5-4FE0-A972-E32E280E15C8} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{7FAE5F93-C1BA-4280-8086-7E6207FE335E} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{568180FD-BCC3-4793-83A8-268D75CDED6C} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{2687F4DB-2D37-421D-A1CA-3B973B5B27D1} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{EF43AA91-4FA2-4F96-8EEB-C1D03943FD2B} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{695AAF36-6633-40AF-9616-F6DB1E8EA14F} = {66246A1C-8D45-40FB-A660-C58577122CA7}
+		{47F42489-3706-495B-B91D-7EC408F7D1B3} = {66246A1C-8D45-40FB-A660-C58577122CA7}
+		{C5F942A3-8534-43FD-A75C-0160624FD456} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}
+	EndGlobalSection
+EndGlobal

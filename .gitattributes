@@ -1,0 +1,7 @@
+*.sh eol=lf
+*.ts eol=lf
+*.js eol=lf
+*.json eol=lf
+*.yml eol=lf
+*.cfg eol=lf
+*.ipynb eol=lf

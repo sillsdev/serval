@@ -1,0 +1,12 @@
+<Project>
+	<PropertyGroup>
+		<Version Condition=" '$(VersionSuffix)' != '' ">$(Version)-$(VersionSuffix)</Version>
+		<Company>SIL International</Company>
+		<Authors>SIL International</Authors>
+		<Product>Serval</Product>
+		<Copyright>Copyright © SIL International 2023</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/sillsdev/serval</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/sillsdev/serval</RepositoryUrl>
+	</PropertyGroup>
+</Project>
