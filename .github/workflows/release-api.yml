@@ -17,11 +17,11 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Pack
-        run: dotnet pack src\Serval.Grpc\Serval.Grpc.csproj -c Release -o artifacts
+        run: dotnet pack src/Serval.Grpc/Serval.Grpc.csproj -c Release -o artifacts
       - name: Upload package
         uses: actions/upload-artifact@v3
         with:
           name: nuget-package
           path: artifacts/*.nupkg
       - name: Push
-        run: dotnet nuget push artifacts\*.nupkg -n -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push artifacts/*.nupkg -n -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
