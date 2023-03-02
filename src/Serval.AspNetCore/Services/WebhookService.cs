@@ -35,7 +35,7 @@ public class WebhookService : EntityServiceBase<Webhook>, IWebhookService
             return;
 
         string typeName = typeof(T).Name;
-        var servalCoreAssembly = Assembly.GetAssembly(typeof(ResourceDto));
+        var servalCoreAssembly = Assembly.GetAssembly(typeof(ResourceLinkDto));
         var dtoType = Type.GetType($"Serval.Core.{typeName}Dto, {servalCoreAssembly!.FullName}");
         if (dtoType == null)
             throw new ArgumentException("A DTO type is not defined for the specified model.", nameof(resource));

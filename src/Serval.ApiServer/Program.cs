@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using System.Text.Json.Serialization;
+using MassTransit;
+using MassTransit.ExtensionsDependencyInjectionIntegration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -47,6 +49,26 @@ builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
 
 builder.Services.AddGrpc();
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq(
+        (context, cfg) =>
+        {
+            cfg.Host(
+                "localhost",
+                "/",
+                h =>
+                {
+                    h.Username("guest");
+                    h.Password("guest");
+                }
+            );
+
+            cfg.ConfigureEndpoints(context);
+        }
+    );
+});
 
 builder.Services
     .AddServal(builder.Configuration)

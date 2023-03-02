@@ -8,7 +8,7 @@ namespace Serval.Core
         public string Href { get; set; }
 
         [JsonProperty(Required = Required.DisallowNull)]
-        public ResourceDto Corpus { get; set; }
+        public ResourceLinkDto Corpus { get; set; }
         public bool Pretranslate { get; set; }
     }
 }
