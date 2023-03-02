@@ -3,12 +3,18 @@ using Newtonsoft.Json;
 
 namespace Serval.Core
 {
-    public class BuildDto : ResourceDto
+    public class BuildDto
     {
+        [JsonProperty(Required = Required.DisallowNull)]
+        public string Id { get; set; }
+
+        [JsonProperty(Required = Required.DisallowNull)]
+        public string Url { get; set; }
+
         public int Revision { get; set; }
 
         [JsonProperty(Required = Required.DisallowNull)]
-        public ResourceDto Parent { get; set; }
+        public ResourceLinkDto Engine { get; set; }
         public int Step { get; set; }
         public double? PercentCompleted { get; set; }
         public string Message { get; set; }

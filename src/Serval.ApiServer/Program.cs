@@ -7,7 +7,8 @@ using NSwag;
 using NSwag.AspNetCore;
 using NSwag.Generation.Processors.Security;
 using Serval.ApiServer;
-using Serval.AspNetCore.Controllers;
+using Serval.Shared.Controllers;
+using Serval.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,10 +49,25 @@ builder.Services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
 
 builder.Services.AddGrpc();
 
-builder.Services
-    .AddServal(builder.Configuration)
-    .AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
-    .AddEngineServices();
+builder.Services.AddServal(
+    serval =>
+    {
+        serval.AddMongoDataAccess(
+            builder.Configuration.GetConnectionString("Mongo"),
+            mongo =>
+            {
+                mongo.AddTranslationRepositories();
+                mongo.AddDataFilesRepositories();
+                mongo.AddWebhooksRepositories();
+            }
+        );
+        serval.AddTranslation();
+        serval.AddDataFiles();
+        serval.AddWebhooks();
+    },
+    builder.Configuration
+);
+builder.Services.AddScoped<IEventBroker, EventBroker>();
 
 builder.Services.AddSwaggerDocument(doc =>
 {
@@ -107,6 +123,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapServalPlatformServices();
+app.MapServalTranslationServices();
 
 app.Run();

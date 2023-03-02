@@ -5,10 +5,10 @@ namespace Serval.Core
     public class TranslationEngineCorpusDto
     {
         [JsonProperty(Required = Required.DisallowNull)]
-        public string Href { get; set; }
+        public string Url { get; set; }
 
         [JsonProperty(Required = Required.DisallowNull)]
-        public ResourceDto Corpus { get; set; }
+        public ResourceLinkDto Corpus { get; set; }
         public bool Pretranslate { get; set; }
     }
 }

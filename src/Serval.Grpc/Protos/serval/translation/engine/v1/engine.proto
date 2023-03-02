@@ -1,0 +1,139 @@
+﻿syntax = "proto3";
+
+package serval.translation.engine.v1;
+
+import "google/protobuf/empty.proto";
+
+service TranslationEngineApi {
+    rpc Create(CreateRequest) returns (google.protobuf.Empty);
+    rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+    rpc Translate(TranslateRequest) returns (TranslateResponse);
+    rpc GetWordGraph(GetWordGraphRequest) returns (GetWordGraphResponse);
+    rpc TrainSegmentPair(TrainSegmentPairRequest) returns (google.protobuf.Empty);
+    rpc StartBuild(StartBuildRequest) returns (StartBuildResponse);
+    rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
+}
+
+message CreateRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string source_language_tag = 3;
+    string target_language_tag = 4;
+}
+
+message DeleteRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+}
+
+message TranslateRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string segment = 3;
+    int32 n = 4;
+}
+
+message TranslateResponse {
+    repeated TranslationResult results = 1;
+}
+
+message GetWordGraphRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string segment = 3;
+}
+
+message GetWordGraphResponse {
+    WordGraph word_graph = 1;
+}
+
+message TrainSegmentPairRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string source_segment = 3;
+    string target_segment = 4;
+    bool sentence_start = 5;
+}
+
+message StartBuildRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    repeated ParallelCorpus corpora = 3;
+}
+
+message StartBuildResponse {
+    string build_id = 1;
+}
+
+message CancelBuildRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+}
+
+message AlignedWordPair {
+    int32 source_index = 1;
+    int32 target_index = 2;
+}
+
+message Phrase {
+    int32 source_segment_start = 1;
+    int32 source_segment_end = 2;
+    int32 target_segment_cut = 3;
+    double confidence = 4;
+}
+
+message TranslationResult {
+    string translation = 1;
+    repeated string tokens = 2;
+    repeated double confidences = 3;
+    repeated uint32 sources = 4;
+    repeated AlignedWordPair aligned_word_pairs = 5;
+    repeated Phrase phrases = 6;
+}
+
+message WordGraphArc {
+    int32 prev_state = 1;
+    int32 next_state = 2;
+    double score = 3;
+    repeated string tokens = 4;
+    repeated double confidences = 5;
+    int32 source_segment_start = 6;
+    int32 source_segment_end = 7;
+    repeated AlignedWordPair aligned_word_pairs = 8;
+    repeated uint32 sources = 9;
+}
+
+message WordGraph {
+    double initial_state_score = 1;
+    repeated int32 final_states = 2;
+    repeated WordGraphArc arcs = 3;
+}
+
+message ParallelCorpus {
+    bool pretranslate = 1;
+    optional Corpus source_corpus = 2;
+    optional Corpus target_corpus = 3;
+}
+
+enum CorpusType {
+    CORPUS_TYPE_TEXT = 0;
+}
+
+enum FileFormat {
+    FILE_FORMAT_TEXT = 0;
+    FILE_FORMAT_PARATEXT = 1;
+}
+
+message Corpus {
+    CorpusType type = 1;
+    FileFormat format = 2;
+    repeated CorpusFile files = 3;
+}
+
+message CorpusFile {
+    string language_tag = 1;
+    string name = 2;
+    string text_id = 3;
+    string filename = 4;
+}
+

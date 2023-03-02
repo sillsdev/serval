@@ -2,8 +2,14 @@
 
 namespace Serval.Core
 {
-    public class TranslationEngineDto : ResourceDto
+    public class TranslationEngineDto
     {
+        [JsonProperty(Required = Required.DisallowNull)]
+        public string Id { get; set; }
+
+        [JsonProperty(Required = Required.DisallowNull)]
+        public string Url { get; set; }
+
         public string Name { get; set; }
 
         [JsonProperty(Required = Required.DisallowNull)]

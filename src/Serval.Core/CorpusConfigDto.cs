@@ -7,6 +7,7 @@ namespace Serval.Core
         /// <summary>
         /// The corpus name.
         /// </summary>
+        [JsonProperty(Required = Required.Always)]
         public string Name { get; set; }
 
         /// <summary>

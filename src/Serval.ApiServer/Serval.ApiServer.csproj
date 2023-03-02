@@ -20,7 +20,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Serval.AspNetCore\Serval.AspNetCore.csproj" />
+		<ProjectReference Include="..\Serval.DataFiles\Serval.DataFiles.csproj" />
+		<ProjectReference Include="..\Serval.Translation\Serval.Translation.csproj" />
+		<ProjectReference Include="..\Serval.Webhooks\Serval.Webhooks.csproj" />
 	</ItemGroup>
 
 	<Target BeforeTargets="Build" Name="EnforceAppSettingsName">

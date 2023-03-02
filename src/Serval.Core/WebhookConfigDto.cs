@@ -5,10 +5,10 @@ namespace Serval.Core
     public class WebhookConfigDto
     {
         /// <summary>
-        /// The callback URL.
+        /// The payload URL.
         /// </summary>
         [JsonProperty(Required = Required.Always)]
-        public string Url { get; set; }
+        public string PayloadUrl { get; set; }
 
         /// <summary>
         /// The shared secret.

@@ -1,0 +1,16 @@
+﻿global using System.Diagnostics.CodeAnalysis;
+global using System.Reflection;
+global using AutoMapper;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc.ModelBinding;
+global using Microsoft.Extensions.Options;
+global using Serval.Core;
+global using Serval.Corpora.Entities;
+global using Serval.Corpora.Services;
+global using Serval.Shared.Configuration;
+global using Serval.Shared.Controllers;
+global using Serval.Shared.Entities;
+global using Serval.Shared.Services;
+global using SIL.DataAccess;

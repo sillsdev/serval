@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Serval.AspNetCore.Models;
+using Serval.Shared.Entities;
 
 namespace Serval.ApiServer;
 

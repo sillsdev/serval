@@ -7,6 +7,7 @@ public static class IServiceCollectionExtensions
         Action<IMemoryDataAccessConfigurator> configure
     )
     {
+        services.AddSingleton<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
         services.AddScoped<IDataAccessContext, MemoryDataAccessContext>();
         configure(new MemoryDataAccessConfigurator(services));
         return services;
@@ -31,6 +32,7 @@ public static class IServiceCollectionExtensions
         var mongoUrl = new MongoUrl(connectionString);
         var mongoClient = new MongoClient(mongoUrl);
         var database = mongoClient.GetDatabase(mongoUrl.DatabaseName);
+        services.AddSingleton<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
         services.AddSingleton<IMongoClient>(mongoClient);
         services.AddSingleton(database);
         services.TryAddScoped<IMongoDataAccessContext, MongoDataAccessContext>();

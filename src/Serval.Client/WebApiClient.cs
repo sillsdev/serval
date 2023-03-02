@@ -397,15 +397,15 @@ namespace Serval.Client
             await RestClient.DeleteAsync(request).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<DataFileDto>> GetAllDataFilesAsync(string corpusId)
+        public async Task<IEnumerable<CorpusFileDto>> GetAllDataFilesAsync(string corpusId)
         {
             var request = new RestRequest($"corpora/{corpusId}/files");
             var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting corpus {corpusId} file list.");
-            return JsonConvert.DeserializeObject<IEnumerable<DataFileDto>>(response.Content, SerializerSettings);
+            return JsonConvert.DeserializeObject<IEnumerable<CorpusFileDto>>(response.Content, SerializerSettings);
         }
 
-        public async Task<DataFileDto> UploadDataFileAsync(
+        public async Task<CorpusFileDto> UploadDataFileAsync(
             string corpusId,
             string languageTag,
             string textId,
@@ -418,15 +418,15 @@ namespace Serval.Client
             request.AddFile(name: "file", path: filePath, contentType: "text/plain");
             var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error posting {filePath} to {corpusId}.");
-            return JsonConvert.DeserializeObject<DataFileDto>(response.Content, SerializerSettings);
+            return JsonConvert.DeserializeObject<CorpusFileDto>(response.Content, SerializerSettings);
         }
 
-        public async Task<DataFileDto> GetDataFileAsync(string corpusId, string fileId)
+        public async Task<CorpusFileDto> GetDataFileAsync(string corpusId, string fileId)
         {
             var request = new RestRequest($"corpora/{corpusId}/files/{fileId}");
             var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting file {fileId} from {corpusId}.");
-            return JsonConvert.DeserializeObject<DataFileDto>(response.Content, SerializerSettings);
+            return JsonConvert.DeserializeObject<CorpusFileDto>(response.Content, SerializerSettings);
         }
 
         public async Task DeleteDataFileAsync(string corpusId, string fileId)
