@@ -4,43 +4,10 @@ public class MongoRepository<T> : IRepository<T>
     where T : IEntity
 {
     private readonly IMongoCollection<T> _collection;
-    private readonly Action<IMongoCollection<T>>? _init;
-    private readonly IMongoCollection<ChangeEvent>? _changeEvents;
 
-    public MongoRepository(
-        IMongoCollection<T> collection,
-        Action<IMongoCollection<T>>? init = null,
-        bool isSubscribable = false
-    )
+    public MongoRepository(IMongoCollection<T> collection)
     {
         _collection = collection;
-        _init = init;
-        if (isSubscribable)
-        {
-            string collectionName = _collection.CollectionNamespace.CollectionName;
-            _changeEvents = _collection.Database.GetCollection<ChangeEvent>(collectionName + "_log");
-        }
-    }
-
-    public void Init()
-    {
-        if (_changeEvents is not null)
-        {
-            string changeEventsName = _changeEvents.CollectionNamespace.CollectionName;
-            var filter = new BsonDocument("name", changeEventsName);
-            if (!_changeEvents.Database.ListCollectionNames(new ListCollectionNamesOptions { Filter = filter }).Any())
-            {
-                _changeEvents.Database.CreateCollection(
-                    changeEventsName,
-                    new CreateCollectionOptions { Capped = true, MaxSize = 100 * 1024 }
-                );
-            }
-            _changeEvents.Indexes.CreateOrUpdate(
-                new CreateIndexModel<ChangeEvent>(Builders<ChangeEvent>.IndexKeys.Ascending(ce => ce.EntityRef))
-            );
-        }
-        if (_init is not null)
-            _init(_collection);
     }
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
@@ -67,16 +34,6 @@ public class MongoRepository<T> : IRepository<T>
         try
         {
             await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
-            if (_changeEvents is not null)
-            {
-                var changeEvent = new ChangeEvent
-                {
-                    EntityRef = entity.Id,
-                    ChangeType = EntityChangeType.Insert,
-                    Revision = entity.Revision
-                };
-                await _changeEvents.InsertOneAsync(changeEvent, cancellationToken: CancellationToken.None);
-            }
         }
         catch (MongoWriteException e)
         {
@@ -94,21 +51,6 @@ public class MongoRepository<T> : IRepository<T>
         try
         {
             await _collection.InsertManyAsync(entities, cancellationToken: cancellationToken);
-            if (_changeEvents is not null)
-            {
-                await _changeEvents.InsertManyAsync(
-                    entities.Select(
-                        e =>
-                            new ChangeEvent
-                            {
-                                EntityRef = e.Id,
-                                ChangeType = EntityChangeType.Insert,
-                                Revision = e.Revision
-                            }
-                    ),
-                    cancellationToken: CancellationToken.None
-                );
-            }
         }
         catch (MongoWriteException e)
         {
@@ -137,16 +79,6 @@ public class MongoRepository<T> : IRepository<T>
                 new FindOneAndUpdateOptions<T> { IsUpsert = upsert, ReturnDocument = ReturnDocument.After },
                 cancellationToken
             );
-            if (entity is not null && _changeEvents is not null)
-            {
-                var changeEvent = new ChangeEvent
-                {
-                    EntityRef = entity.Id,
-                    ChangeType = EntityChangeType.Update,
-                    Revision = entity.Revision
-                };
-                await _changeEvents.InsertOneAsync(changeEvent, cancellationToken: CancellationToken.None);
-            }
             return entity;
         }
         catch (MongoWriteException e)
@@ -160,16 +92,6 @@ public class MongoRepository<T> : IRepository<T>
     public async Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
         T? entity = await _collection.FindOneAndDeleteAsync(filter, cancellationToken: cancellationToken);
-        if (entity is not null && _changeEvents is not null)
-        {
-            var changeEvent = new ChangeEvent
-            {
-                EntityRef = entity.Id,
-                ChangeType = EntityChangeType.Delete,
-                Revision = entity.Revision + 1
-            };
-            await _changeEvents.InsertOneAsync(changeEvent, cancellationToken: CancellationToken.None);
-        }
         return entity;
     }
 
@@ -187,10 +109,9 @@ public class MongoRepository<T> : IRepository<T>
         CancellationToken cancellationToken = default
     )
     {
-        if (_changeEvents is null)
-            throw new NotSupportedException();
+        var currentTime = DateTime.UtcNow;
         T initialEntity = await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken);
-        var subscription = new MongoSubscription<T>(_collection, _changeEvents, filter.Compile(), initialEntity);
+        var subscription = new MongoSubscription<T>(_collection, filter.Compile(), currentTime, initialEntity);
         return subscription;
     }
 }

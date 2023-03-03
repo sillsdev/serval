@@ -9,32 +9,22 @@ public static class IServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddMongoRepository<T>(
-        this IServiceCollection services,
-        string collection,
-        Action<BsonClassMap<T>>? mapSetup = null,
-        Action<IMongoCollection<T>>? init = null,
-        bool isSubscribable = false
-    )
-        where T : IEntity
+    public static IMongoDataAccessBuilder AddMongoDataAccess(this IServiceCollection services, string connectionString)
     {
-        DataAccessClassMap.RegisterClass<T>(cm => mapSetup?.Invoke(cm));
-        services.AddSingleton<IRepository<T>>(sp => CreateMongoRepository(sp, collection, init, isSubscribable));
-        return services;
-    }
-
-    private static MongoRepository<T> CreateMongoRepository<T>(
-        IServiceProvider sp,
-        string collection,
-        Action<IMongoCollection<T>>? init,
-        bool isSubscribable
-    )
-        where T : IEntity
-    {
-        return new MongoRepository<T>(
-            sp.GetService<IMongoDatabase>()!.GetCollection<T>(collection),
-            init,
-            isSubscribable
+        DataAccessClassMap.RegisterConventions(
+            "SIL.DataAccess",
+            new StringIdStoredAsObjectIdConvention(),
+            new CamelCaseElementNameConvention(),
+            new EnumRepresentationConvention(BsonType.String),
+            new IgnoreIfNullConvention(true),
+            new ObjectRefConvention()
         );
+
+        var mongoUrl = new MongoUrl(connectionString);
+        var mongoClient = new MongoClient(mongoUrl);
+        var database = mongoClient.GetDatabase(mongoUrl.DatabaseName);
+        services.AddSingleton<IMongoClient>(mongoClient);
+        services.AddSingleton(database);
+        return new MongoDataAccessBuilder(services, database);
     }
 }

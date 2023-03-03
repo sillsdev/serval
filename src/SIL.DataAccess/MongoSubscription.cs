@@ -3,21 +3,18 @@
 public class MongoSubscription<T> : ISubscription<T>
     where T : IEntity
 {
+    private static readonly DateTime Epoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
     private readonly IMongoCollection<T> _entities;
-    private readonly IMongoCollection<ChangeEvent> _changeEvents;
+    private BsonTimestamp _timestamp;
     private readonly Func<T, bool> _filter;
     private bool disposedValue;
 
-    public MongoSubscription(
-        IMongoCollection<T> entities,
-        IMongoCollection<ChangeEvent> changeEvents,
-        Func<T, bool> filter,
-        T? initialEntity
-    )
+    public MongoSubscription(IMongoCollection<T> entities, Func<T, bool> filter, DateTime currentTime, T? initialEntity)
     {
         _entities = entities;
-        _changeEvents = changeEvents;
         _filter = filter;
+        _timestamp = new BsonTimestamp(Convert.ToInt32((currentTime - Epoch).TotalSeconds), 1);
         Change = new EntityChange<T>(
             initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update,
             initialEntity
@@ -26,42 +23,69 @@ public class MongoSubscription<T> : ISubscription<T>
 
     public EntityChange<T> Change { get; private set; }
 
-    EntityChange<T> ISubscription<T>.Change => throw new NotImplementedException();
-
     public async Task WaitForChangeAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
     {
-        Expression<Func<ChangeEvent, bool>> changeEventFilter;
+        Expression<Func<ChangeStreamDocument<T>, bool>> changeEventFilter;
         if (Change.Entity is null)
-            changeEventFilter = ce => ce.ChangeType == EntityChangeType.Insert;
+            changeEventFilter = ce => ce.OperationType == ChangeStreamOperationType.Insert;
         else
-            changeEventFilter = ce => ce.EntityRef == Change.Entity.Id && ce.Revision > Change.Entity.Revision;
-        using IAsyncCursor<ChangeEvent> cursor = await _changeEvents
-            .Find(changeEventFilter, new FindOptions { MaxAwaitTime = timeout, CursorType = CursorType.TailableAwait })
-            .ToCursorAsync(cancellationToken);
+            changeEventFilter = ce =>
+                ce.DocumentKey["_id"] == new ObjectId(Change.Entity.Id)
+                && (
+                    ce.OperationType == ChangeStreamOperationType.Delete
+                    || ce.FullDocument.Revision > Change.Entity.Revision
+                );
+        var options = new ChangeStreamOptions
+        {
+            FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
+            MaxAwaitTime = timeout,
+            StartAtOperationTime = _timestamp
+        };
+        using IChangeStreamCursor<ChangeStreamDocument<T>> cursor = await _entities.WatchAsync(
+            PipelineDefinitionBuilder.For<ChangeStreamDocument<T>>().Match(changeEventFilter),
+            options,
+            cancellationToken
+        );
         DateTime started = DateTime.UtcNow;
 
         while (await cursor.MoveNextAsync(cancellationToken))
         {
             bool entityNotFound = Change.Entity is null;
             bool changed = false;
-            foreach (ChangeEvent ce in cursor.Current)
+            foreach (ChangeStreamDocument<T> ce in cursor.Current)
             {
-                T? entity = await _entities
-                    .AsQueryable()
-                    .FirstOrDefaultAsync(e => e.Id == ce.EntityRef && e.Revision == ce.Revision, cancellationToken);
+                EntityChangeType changeType = EntityChangeType.None;
+                switch (ce.OperationType)
+                {
+                    case ChangeStreamOperationType.Insert:
+                        changeType = EntityChangeType.Insert;
+                        break;
+
+                    case ChangeStreamOperationType.Replace:
+                    case ChangeStreamOperationType.Update:
+                        changeType = EntityChangeType.Update;
+                        break;
+
+                    case ChangeStreamOperationType.Delete:
+                        changeType = EntityChangeType.Delete;
+                        break;
+                }
+
                 if (entityNotFound)
                 {
-                    if (entity is not null && _filter(entity))
+                    if (ce.FullDocument is not null && _filter(ce.FullDocument))
                     {
-                        Change = new EntityChange<T>(ce.ChangeType, entity);
+                        Change = new EntityChange<T>(changeType, ce.FullDocument);
                         changed = true;
                     }
                 }
                 else
                 {
-                    Change = new EntityChange<T>(ce.ChangeType, entity);
+                    Change = new EntityChange<T>(changeType, ce.FullDocument);
                     changed = true;
                 }
+
+                _timestamp = ce.ClusterTime;
             }
 
             if (changed)
