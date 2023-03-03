@@ -3,18 +3,21 @@
 public class MongoSubscription<T> : ISubscription<T>
     where T : IEntity
 {
-    private static readonly DateTime Epoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
     private readonly IMongoCollection<T> _entities;
     private BsonTimestamp _timestamp;
     private readonly Func<T, bool> _filter;
     private bool disposedValue;
 
-    public MongoSubscription(IMongoCollection<T> entities, Func<T, bool> filter, DateTime currentTime, T? initialEntity)
+    public MongoSubscription(
+        IMongoCollection<T> entities,
+        Func<T, bool> filter,
+        BsonTimestamp timestamp,
+        T? initialEntity
+    )
     {
         _entities = entities;
         _filter = filter;
-        _timestamp = new BsonTimestamp(Convert.ToInt32((currentTime - Epoch).TotalSeconds), 1);
+        _timestamp = timestamp;
         Change = new EntityChange<T>(
             initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update,
             initialEntity

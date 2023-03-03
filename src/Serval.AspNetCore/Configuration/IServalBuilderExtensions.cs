@@ -68,72 +68,66 @@ public static class IServalBuilderExtensions
 
     public static IServalBuilder AddMongoDataAccess(this IServalBuilder builder, string connectionString)
     {
-        DataAccessClassMap.RegisterConventions(
-            "Serval.AspNetCore.Models",
-            new StringIdStoredAsObjectIdConvention(),
-            new CamelCaseElementNameConvention(),
-            new EnumRepresentationConvention(BsonType.String),
-            new IgnoreIfNullConvention(true),
-            new ObjectRefConvention()
-        );
-
-        var mongoUrl = new MongoUrl(connectionString);
-        builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient(mongoUrl));
-        builder.Services.AddSingleton(sp => sp.GetService<IMongoClient>()!.GetDatabase(mongoUrl.DatabaseName));
-
-        builder.Services.AddMongoRepository<TranslationEngine>(
-            "translation_engines",
-            init: c =>
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<TranslationEngine>(
-                        Builders<TranslationEngine>.IndexKeys.Ascending(p => p.Owner)
-                    )
-                )
-        );
-        builder.Services.AddMongoRepository<Build>(
-            "builds",
-            init: c =>
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.ParentRef))
-                ),
-            isSubscribable: true
-        );
-        builder.Services.AddMongoRepository<Corpus>(
-            "corpora",
-            init: c =>
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
-                )
-        );
-        builder.Services.AddMongoRepository<Webhook>(
-            "hooks",
-            init: c =>
+        builder.Services.AddMongoDataAccess(
+            connectionString,
+            cfg =>
             {
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Owner))
-                );
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Events))
-                );
-            }
-        );
-        builder.Services.AddMongoRepository<Pretranslation>(
-            "pretranslations",
-            init: c =>
-            {
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TranslationEngineRef)
+                cfg.AddMongoRepository<TranslationEngine>(
+                        "translation_engines",
+                        init: c =>
+                            c.Indexes.CreateOrUpdate(
+                                new CreateIndexModel<TranslationEngine>(
+                                    Builders<TranslationEngine>.IndexKeys.Ascending(p => p.Owner)
+                                )
+                            )
                     )
-                );
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.CorpusRef)
+                    .AddMongoRepository<Build>(
+                        "builds",
+                        init: c =>
+                            c.Indexes.CreateOrUpdate(
+                                new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.ParentRef))
+                            )
                     )
-                );
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<Pretranslation>(Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId))
-                );
+                    .AddMongoRepository<Corpus>(
+                        "corpora",
+                        init: c =>
+                            c.Indexes.CreateOrUpdate(
+                                new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
+                            )
+                    )
+                    .AddMongoRepository<Webhook>(
+                        "hooks",
+                        init: c =>
+                        {
+                            c.Indexes.CreateOrUpdate(
+                                new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Owner))
+                            );
+                            c.Indexes.CreateOrUpdate(
+                                new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Events))
+                            );
+                        }
+                    )
+                    .AddMongoRepository<Pretranslation>(
+                        "pretranslations",
+                        init: c =>
+                        {
+                            c.Indexes.CreateOrUpdate(
+                                new CreateIndexModel<Pretranslation>(
+                                    Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TranslationEngineRef)
+                                )
+                            );
+                            c.Indexes.CreateOrUpdate(
+                                new CreateIndexModel<Pretranslation>(
+                                    Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.CorpusRef)
+                                )
+                            );
+                            c.Indexes.CreateOrUpdate(
+                                new CreateIndexModel<Pretranslation>(
+                                    Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId)
+                                )
+                            );
+                        }
+                    );
             }
         );
 

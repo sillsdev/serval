@@ -109,9 +109,16 @@ public class MongoRepository<T> : IRepository<T>
         CancellationToken cancellationToken = default
     )
     {
-        var currentTime = DateTime.UtcNow;
+        IMongoClient client = _collection.Database.Client;
+        IMongoCollection<BsonDocument> oplog = client.GetDatabase("local").GetCollection<BsonDocument>("oplog.rs");
+        var timestamp = (BsonTimestamp)
+            await oplog
+                .Find(FilterDefinition<BsonDocument>.Empty)
+                .Sort(Builders<BsonDocument>.Sort.Descending("$natural"))
+                .Project(d => d["ts"])
+                .FirstAsync(cancellationToken);
         T initialEntity = await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken);
-        var subscription = new MongoSubscription<T>(_collection, filter.Compile(), currentTime, initialEntity);
+        var subscription = new MongoSubscription<T>(_collection, filter.Compile(), timestamp, initialEntity);
         return subscription;
     }
 }

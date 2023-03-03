@@ -105,8 +105,6 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseServal();
-
 app.MapControllers();
 
 app.MapServalPlatformServices();

@@ -9,7 +9,11 @@ public static class IServiceCollectionExtensions
         return services;
     }
 
-    public static IMongoDataAccessBuilder AddMongoDataAccess(this IServiceCollection services, string connectionString)
+    public static IServiceCollection AddMongoDataAccess(
+        this IServiceCollection services,
+        string connectionString,
+        Action<IMongoDataAccessBuilder> configure
+    )
     {
         DataAccessClassMap.RegisterConventions(
             "SIL.DataAccess",
@@ -25,6 +29,7 @@ public static class IServiceCollectionExtensions
         var database = mongoClient.GetDatabase(mongoUrl.DatabaseName);
         services.AddSingleton<IMongoClient>(mongoClient);
         services.AddSingleton(database);
-        return new MongoDataAccessBuilder(services, database);
+        configure(new MongoDataAccessBuilder(services, database));
+        return services;
     }
 }
