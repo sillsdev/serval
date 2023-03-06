@@ -7,6 +7,7 @@ global using System.Text.Encodings.Web;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;
 global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.DependencyInjection.Extensions;
 global using MongoDB.Bson;
 global using MongoDB.Bson.Serialization;
 global using MongoDB.Bson.Serialization.Conventions;

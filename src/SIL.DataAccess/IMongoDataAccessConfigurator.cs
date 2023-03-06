@@ -1,6 +1,6 @@
 ﻿namespace SIL.DataAccess;
 
-public interface IMongoDataAccessBuilder
+public interface IMongoDataAccessConfigurator
 {
     IServiceCollection Services { get; }
     IMongoDatabase Database { get; }

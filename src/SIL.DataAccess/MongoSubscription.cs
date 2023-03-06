@@ -1,20 +1,22 @@
 ﻿namespace SIL.DataAccess;
 
-public class MongoSubscription<T> : ISubscription<T>
+public class MongoSubscription<T> : DisposableBase, ISubscription<T>
     where T : IEntity
 {
+    private readonly IMongoDataAccessContext _context;
     private readonly IMongoCollection<T> _entities;
     private BsonTimestamp _timestamp;
     private readonly Func<T, bool> _filter;
-    private bool disposedValue;
 
     public MongoSubscription(
+        IMongoDataAccessContext context,
         IMongoCollection<T> entities,
         Func<T, bool> filter,
         BsonTimestamp timestamp,
         T? initialEntity
     )
     {
+        _context = context;
         _entities = entities;
         _filter = filter;
         _timestamp = timestamp;
@@ -44,80 +46,74 @@ public class MongoSubscription<T> : ISubscription<T>
             MaxAwaitTime = timeout,
             StartAtOperationTime = _timestamp
         };
-        using IChangeStreamCursor<ChangeStreamDocument<T>> cursor = await _entities.WatchAsync(
-            PipelineDefinitionBuilder.For<ChangeStreamDocument<T>>().Match(changeEventFilter),
-            options,
-            cancellationToken
-        );
-        DateTime started = DateTime.UtcNow;
-
-        while (await cursor.MoveNextAsync(cancellationToken))
+        PipelineDefinition<ChangeStreamDocument<T>, ChangeStreamDocument<T>> pipelineDef = PipelineDefinitionBuilder
+            .For<ChangeStreamDocument<T>>()
+            .Match(changeEventFilter);
+        IChangeStreamCursor<ChangeStreamDocument<T>> cursor;
+        if (_context.Session is not null)
         {
-            bool entityNotFound = Change.Entity is null;
-            bool changed = false;
-            foreach (ChangeStreamDocument<T> ce in cursor.Current)
+            cursor = await _entities
+                .WatchAsync(_context.Session, pipelineDef, options, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            cursor = await _entities.WatchAsync(pipelineDef, options, cancellationToken).ConfigureAwait(false);
+        }
+        try
+        {
+            DateTime started = DateTime.UtcNow;
+
+            while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
             {
-                EntityChangeType changeType = EntityChangeType.None;
-                switch (ce.OperationType)
+                bool entityNotFound = Change.Entity is null;
+                bool changed = false;
+                foreach (ChangeStreamDocument<T> ce in cursor.Current)
                 {
-                    case ChangeStreamOperationType.Insert:
-                        changeType = EntityChangeType.Insert;
-                        break;
+                    EntityChangeType changeType = EntityChangeType.None;
+                    switch (ce.OperationType)
+                    {
+                        case ChangeStreamOperationType.Insert:
+                            changeType = EntityChangeType.Insert;
+                            break;
 
-                    case ChangeStreamOperationType.Replace:
-                    case ChangeStreamOperationType.Update:
-                        changeType = EntityChangeType.Update;
-                        break;
+                        case ChangeStreamOperationType.Replace:
+                        case ChangeStreamOperationType.Update:
+                            changeType = EntityChangeType.Update;
+                            break;
 
-                    case ChangeStreamOperationType.Delete:
-                        changeType = EntityChangeType.Delete;
-                        break;
-                }
+                        case ChangeStreamOperationType.Delete:
+                            changeType = EntityChangeType.Delete;
+                            break;
+                    }
 
-                if (entityNotFound)
-                {
-                    if (ce.FullDocument is not null && _filter(ce.FullDocument))
+                    if (entityNotFound)
+                    {
+                        if (ce.FullDocument is not null && _filter(ce.FullDocument))
+                        {
+                            Change = new EntityChange<T>(changeType, ce.FullDocument);
+                            changed = true;
+                        }
+                    }
+                    else
                     {
                         Change = new EntityChange<T>(changeType, ce.FullDocument);
                         changed = true;
                     }
-                }
-                else
-                {
-                    Change = new EntityChange<T>(changeType, ce.FullDocument);
-                    changed = true;
+
+                    _timestamp = ce.ClusterTime;
                 }
 
-                _timestamp = ce.ClusterTime;
+                if (changed)
+                    return;
+
+                if (timeout.HasValue && DateTime.UtcNow - started >= timeout)
+                    return;
             }
-
-            if (changed)
-                return;
-
-            if (timeout.HasValue && DateTime.UtcNow - started >= timeout)
-                return;
         }
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
+        finally
         {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            disposedValue = true;
+            cursor.Dispose();
         }
-    }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

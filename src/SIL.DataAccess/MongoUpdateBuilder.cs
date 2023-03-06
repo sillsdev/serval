@@ -66,6 +66,6 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
 
     private static FieldDefinition<T, TField> ToFieldDefinition<TField>(Expression<Func<T, TField>> field)
     {
-        return new XFFieldDefinition<T, TField>(field);
+        return new DataAccessFieldDefinition<T, TField>(field);
     }
 }

@@ -57,12 +57,14 @@ public static class IServalBuilderExtensions
 
     public static IServalBuilder AddMemoryDataAccess(this IServalBuilder builder)
     {
-        builder.Services.AddMemoryRepository<TranslationEngine>();
-        builder.Services.AddMemoryRepository<Build>();
-        builder.Services.AddMemoryRepository<Corpus>();
-        builder.Services.AddMemoryRepository<Webhook>();
-        builder.Services.AddMemoryRepository<Pretranslation>();
-
+        builder.Services.AddMemoryDataAccess(cfg =>
+        {
+            cfg.AddRepository<TranslationEngine>();
+            cfg.AddRepository<Build>();
+            cfg.AddRepository<Corpus>();
+            cfg.AddRepository<Webhook>();
+            cfg.AddRepository<Pretranslation>();
+        });
         return builder;
     }
 
@@ -70,9 +72,10 @@ public static class IServalBuilderExtensions
     {
         builder.Services.AddMongoDataAccess(
             connectionString,
+            "Serval.AspNetCore.Models",
             cfg =>
             {
-                cfg.AddMongoRepository<TranslationEngine>(
+                cfg.AddRepository<TranslationEngine>(
                         "translation_engines",
                         init: c =>
                             c.Indexes.CreateOrUpdate(
@@ -81,21 +84,21 @@ public static class IServalBuilderExtensions
                                 )
                             )
                     )
-                    .AddMongoRepository<Build>(
+                    .AddRepository<Build>(
                         "builds",
                         init: c =>
                             c.Indexes.CreateOrUpdate(
                                 new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.ParentRef))
                             )
                     )
-                    .AddMongoRepository<Corpus>(
+                    .AddRepository<Corpus>(
                         "corpora",
                         init: c =>
                             c.Indexes.CreateOrUpdate(
                                 new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
                             )
                     )
-                    .AddMongoRepository<Webhook>(
+                    .AddRepository<Webhook>(
                         "hooks",
                         init: c =>
                         {
@@ -107,7 +110,7 @@ public static class IServalBuilderExtensions
                             );
                         }
                     )
-                    .AddMongoRepository<Pretranslation>(
+                    .AddRepository<Pretranslation>(
                         "pretranslations",
                         init: c =>
                         {
@@ -149,7 +152,7 @@ public static class IServalBuilderExtensions
 
     public static IServalBuilder AddTranslationEngineService(this IServalBuilder builder, List<Engine> engines)
     {
-        builder.Services.AddSingleton<ITranslationEngineService, TranslationEngineService>();
+        builder.Services.AddScoped<ITranslationEngineService, TranslationEngineService>();
         foreach (Engine engine in engines)
             builder.Services.AddGrpcClient<TranslationService.TranslationServiceClient>(
                 engine.Type,

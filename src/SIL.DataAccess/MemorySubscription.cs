@@ -1,11 +1,10 @@
 namespace SIL.DataAccess;
 
-public class MemorySubscription<T> : ISubscription<T>
+public class MemorySubscription<T> : DisposableBase, ISubscription<T>
     where T : IEntity
 {
     private readonly Action<MemorySubscription<T>> _remove;
     private readonly AsyncAutoResetEvent _changeEvent;
-    private bool disposedValue;
 
     public MemorySubscription(T? initialEntity, Action<MemorySubscription<T>> remove)
     {
@@ -32,26 +31,9 @@ public class MemorySubscription<T> : ISubscription<T>
         _changeEvent.Set();
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected override void DisposeManagedResources()
     {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                _remove(this);
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            disposedValue = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
+        _remove(this);
     }
 
     private static async Task TaskTimeout(

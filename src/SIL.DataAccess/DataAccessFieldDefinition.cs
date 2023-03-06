@@ -1,10 +1,10 @@
 namespace SIL.DataAccess;
 
-public class XFFieldDefinition<TDocument, TField> : FieldDefinition<TDocument, TField>
+public class DataAccessFieldDefinition<TDocument, TField> : FieldDefinition<TDocument, TField>
 {
     private readonly ExpressionFieldDefinition<TDocument, TField> _internalDef;
 
-    public XFFieldDefinition(Expression<Func<TDocument, TField>> expression)
+    public DataAccessFieldDefinition(Expression<Func<TDocument, TField>> expression)
     {
         _internalDef = new ExpressionFieldDefinition<TDocument, TField>(expression);
     }

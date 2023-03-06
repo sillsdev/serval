@@ -1,8 +1,8 @@
 ﻿namespace SIL.DataAccess;
 
-public class MongoDataAccessBuilder : IMongoDataAccessBuilder
+public class MongoDataAccessConfigurator : IMongoDataAccessConfigurator
 {
-    public MongoDataAccessBuilder(IServiceCollection services, IMongoDatabase database)
+    public MongoDataAccessConfigurator(IServiceCollection services, IMongoDatabase database)
     {
         Services = services;
         Database = database;

@@ -2,21 +2,25 @@
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddMemoryRepository<T>(this IServiceCollection services)
-        where T : IEntity
+    public static IServiceCollection AddMemoryDataAccess(
+        this IServiceCollection services,
+        Action<IMemoryDataAccessConfigurator> configure
+    )
     {
-        services.AddSingleton<IRepository<T>, MemoryRepository<T>>();
+        services.AddScoped<IDataAccessContext, MemoryDataAccessContext>();
+        configure(new MemoryDataAccessConfigurator(services));
         return services;
     }
 
     public static IServiceCollection AddMongoDataAccess(
         this IServiceCollection services,
         string connectionString,
-        Action<IMongoDataAccessBuilder> configure
+        string entityNamespace,
+        Action<IMongoDataAccessConfigurator> configure
     )
     {
         DataAccessClassMap.RegisterConventions(
-            "SIL.DataAccess",
+            entityNamespace,
             new StringIdStoredAsObjectIdConvention(),
             new CamelCaseElementNameConvention(),
             new EnumRepresentationConvention(BsonType.String),
@@ -29,7 +33,9 @@ public static class IServiceCollectionExtensions
         var database = mongoClient.GetDatabase(mongoUrl.DatabaseName);
         services.AddSingleton<IMongoClient>(mongoClient);
         services.AddSingleton(database);
-        configure(new MongoDataAccessBuilder(services, database));
+        services.TryAddScoped<IMongoDataAccessContext, MongoDataAccessContext>();
+        services.AddScoped<IDataAccessContext>(sp => sp.GetRequiredService<IMongoDataAccessContext>());
+        configure(new MongoDataAccessConfigurator(services, database));
         return services;
     }
 }

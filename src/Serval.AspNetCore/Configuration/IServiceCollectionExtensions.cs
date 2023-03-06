@@ -4,14 +4,14 @@ public static class IServiceCollectionExtensions
 {
     public static IServalBuilder AddServal(this IServiceCollection services, IConfiguration? config = null)
     {
-        services.AddSingleton<ICorpusService, CorpusService>();
+        services.AddScoped<ICorpusService, CorpusService>();
         services
             .AddHttpClient<IWebhookService, WebhookService>()
             .AddTransientHttpErrorPolicy(
                 b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             );
-        services.AddSingleton<IPretranslationService, PretranslationService>();
-        services.AddSingleton<IBuildService, BuildService>();
+        services.AddScoped<IPretranslationService, PretranslationService>();
+        services.AddScoped<IBuildService, BuildService>();
 
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 

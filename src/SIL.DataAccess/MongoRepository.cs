@@ -3,16 +3,25 @@ namespace SIL.DataAccess;
 public class MongoRepository<T> : IRepository<T>
     where T : IEntity
 {
+    private readonly IMongoDataAccessContext _context;
     private readonly IMongoCollection<T> _collection;
 
-    public MongoRepository(IMongoCollection<T> collection)
+    public MongoRepository(IMongoDataAccessContext context, IMongoCollection<T> collection)
     {
+        _context = context;
         _collection = collection;
     }
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
-        return await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken);
+        if (_context.Session is not null)
+        {
+            return await _collection
+                .AsQueryable(_context.Session)
+                .FirstOrDefaultAsync(filter, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        return await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<T>> GetAllAsync(
@@ -20,12 +29,27 @@ public class MongoRepository<T> : IRepository<T>
         CancellationToken cancellationToken = default
     )
     {
-        return await _collection.AsQueryable().Where(filter).ToListAsync(cancellationToken);
+        if (_context.Session is not null)
+        {
+            return await _collection
+                .AsQueryable(_context.Session)
+                .Where(filter)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+        return await _collection.AsQueryable().Where(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task<bool> ExistsAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
-        return _collection.AsQueryable().AnyAsync(filter, cancellationToken);
+        if (_context.Session is not null)
+        {
+            return await _collection
+                .AsQueryable(_context.Session)
+                .AnyAsync(filter, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        return await _collection.AsQueryable().AnyAsync(filter, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
@@ -33,7 +57,16 @@ public class MongoRepository<T> : IRepository<T>
         entity.Revision = 1;
         try
         {
-            await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
+            if (_context.Session is not null)
+            {
+                await _collection
+                    .InsertOneAsync(_context.Session, entity, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (MongoWriteException e)
         {
@@ -50,7 +83,16 @@ public class MongoRepository<T> : IRepository<T>
 
         try
         {
-            await _collection.InsertManyAsync(entities, cancellationToken: cancellationToken);
+            if (_context.Session is not null)
+            {
+                await _collection
+                    .InsertManyAsync(_context.Session, entities, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await _collection.InsertManyAsync(entities, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (MongoWriteException e)
         {
@@ -73,12 +115,20 @@ public class MongoRepository<T> : IRepository<T>
             update(updateBuilder);
             updateBuilder.Inc(e => e.Revision, 1);
             UpdateDefinition<T> updateDef = updateBuilder.Build();
-            T? entity = await _collection.FindOneAndUpdateAsync(
-                filter,
-                updateDef,
-                new FindOneAndUpdateOptions<T> { IsUpsert = upsert, ReturnDocument = ReturnDocument.After },
-                cancellationToken
-            );
+            var options = new FindOneAndUpdateOptions<T> { IsUpsert = upsert, ReturnDocument = ReturnDocument.After };
+            T? entity;
+            if (_context.Session is not null)
+            {
+                entity = await _collection
+                    .FindOneAndUpdateAsync(_context.Session, filter, updateDef, options, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                entity = await _collection
+                    .FindOneAndUpdateAsync(filter, updateDef, options, cancellationToken)
+                    .ConfigureAwait(false);
+            }
             return entity;
         }
         catch (MongoWriteException e)
@@ -91,8 +141,15 @@ public class MongoRepository<T> : IRepository<T>
 
     public async Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
-        T? entity = await _collection.FindOneAndDeleteAsync(filter, cancellationToken: cancellationToken);
-        return entity;
+        if (_context.Session is not null)
+        {
+            return await _collection
+                .FindOneAndDeleteAsync(_context.Session, filter, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+        return await _collection
+            .FindOneAndDeleteAsync(filter, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async Task<int> DeleteAllAsync(
@@ -100,7 +157,19 @@ public class MongoRepository<T> : IRepository<T>
         CancellationToken cancellationToken = default
     )
     {
-        DeleteResult result = await _collection.DeleteManyAsync(filter, cancellationToken);
+        DeleteResult result;
+        if (_context.Session is not null)
+        {
+            result = await _collection
+                .DeleteManyAsync(_context.Session, filter, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            result = await _collection
+                .DeleteManyAsync(filter, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
         return (int)result.DeletedCount;
     }
 
@@ -111,14 +180,32 @@ public class MongoRepository<T> : IRepository<T>
     {
         IMongoClient client = _collection.Database.Client;
         IMongoCollection<BsonDocument> oplog = client.GetDatabase("local").GetCollection<BsonDocument>("oplog.rs");
-        var timestamp = (BsonTimestamp)
-            await oplog
-                .Find(FilterDefinition<BsonDocument>.Empty)
-                .Sort(Builders<BsonDocument>.Sort.Descending("$natural"))
-                .Project(d => d["ts"])
-                .FirstAsync(cancellationToken);
-        T initialEntity = await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken);
-        var subscription = new MongoSubscription<T>(_collection, filter.Compile(), timestamp, initialEntity);
+        var filterDef = FilterDefinition<BsonDocument>.Empty;
+        SortDefinition<BsonDocument> sortDef = Builders<BsonDocument>.Sort.Descending("$natural");
+        Expression<Func<BsonDocument, BsonValue>> projectDef = d => d["ts"];
+        BsonTimestamp timestamp;
+        if (_context.Session is not null)
+        {
+            timestamp = (BsonTimestamp)
+                await oplog
+                    .Find(_context.Session, filterDef)
+                    .Sort(sortDef)
+                    .Project(projectDef)
+                    .FirstAsync(cancellationToken)
+                    .ConfigureAwait(false);
+        }
+        else
+        {
+            timestamp = (BsonTimestamp)
+                await oplog
+                    .Find(filterDef)
+                    .Sort(sortDef)
+                    .Project(projectDef)
+                    .FirstAsync(cancellationToken)
+                    .ConfigureAwait(false);
+        }
+        T? initialEntity = await GetAsync(filter, cancellationToken).ConfigureAwait(false);
+        var subscription = new MongoSubscription<T>(_context, _collection, filter.Compile(), timestamp, initialEntity);
         return subscription;
     }
 }
