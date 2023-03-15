@@ -1,34 +1,39 @@
 ﻿using Serval.Translation.Engine.V1;
 using Corpus = Serval.Translation.Entities.Corpus;
-using CorpusFile = Serval.Translation.Entities.CorpusFile;
+using GrpcCorpus = Serval.Translation.Engine.V1.Corpus;
+using GrpcCorpusFile = Serval.Translation.Engine.V1.CorpusFile;
 
 namespace Serval.Translation.Services;
 
 public class TranslationEngineService : EntityServiceBase<TranslationEngine>, ITranslationEngineService
 {
     private readonly IRepository<Build> _builds;
-    private readonly IRepository<Corpus> _corpora;
     private readonly GrpcClientFactory _grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions;
+    private readonly IDataAccessContext _dataAccessContext;
 
     public TranslationEngineService(
         IRepository<TranslationEngine> translationEngines,
         IRepository<Build> builds,
-        IRepository<Corpus> corpora,
         GrpcClientFactory grpcClientFactory,
-        IOptionsMonitor<DataFileOptions> dataFileOptions
+        IOptionsMonitor<DataFileOptions> dataFileOptions,
+        IDataAccessContext dataAccessContext
     )
         : base(translationEngines)
     {
         _builds = builds;
-        _corpora = corpora;
         _grpcClientFactory = grpcClientFactory;
         _dataFileOptions = dataFileOptions;
+        _dataAccessContext = dataAccessContext;
     }
 
-    public async Task<TranslationResult?> TranslateAsync(string engineId, string segment)
+    public async Task<TranslationResult?> TranslateAsync(
+        string engineId,
+        string segment,
+        CancellationToken cancellationToken = default
+    )
     {
-        TranslationEngine? engine = await GetAsync(engineId);
+        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return null;
 
@@ -40,14 +45,20 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
                 EngineId = engine.Id,
                 N = 1,
                 Segment = segment
-            }
+            },
+            cancellationToken: cancellationToken
         );
         return response.Results[0];
     }
 
-    public async Task<IEnumerable<TranslationResult>?> TranslateAsync(string engineId, int n, string segment)
+    public async Task<IEnumerable<TranslationResult>?> TranslateAsync(
+        string engineId,
+        int n,
+        string segment,
+        CancellationToken cancellationToken = default
+    )
     {
-        TranslationEngine? engine = await GetAsync(engineId);
+        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return null;
 
@@ -59,14 +70,19 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
                 EngineId = engine.Id,
                 N = n,
                 Segment = segment
-            }
+            },
+            cancellationToken: cancellationToken
         );
         return response.Results;
     }
 
-    public async Task<WordGraph?> GetWordGraphAsync(string engineId, string segment)
+    public async Task<WordGraph?> GetWordGraphAsync(
+        string engineId,
+        string segment,
+        CancellationToken cancellationToken = default
+    )
     {
-        TranslationEngine? engine = await GetAsync(engineId);
+        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return null;
 
@@ -77,7 +93,8 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
                 EngineType = engine.Type,
                 EngineId = engine.Id,
                 Segment = segment
-            }
+            },
+            cancellationToken: cancellationToken
         );
         return response.WordGraph;
     }
@@ -86,10 +103,11 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         string engineId,
         string sourceSegment,
         string targetSegment,
-        bool sentenceStart
+        bool sentenceStart,
+        CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await GetAsync(engineId);
+        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return false;
 
@@ -102,136 +120,160 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
                 SourceSegment = sourceSegment,
                 TargetSegment = targetSegment,
                 SentenceStart = sentenceStart
-            }
+            },
+            cancellationToken: cancellationToken
         );
         return true;
     }
 
-    public async Task<IEnumerable<TranslationEngine>> GetAllAsync(string owner)
+    public async Task<IEnumerable<TranslationEngine>> GetAllAsync(
+        string owner,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await Entities.GetAllAsync(e => e.Owner == owner);
+        return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public override async Task CreateAsync(TranslationEngine engine)
+    public override async Task CreateAsync(TranslationEngine engine, CancellationToken cancellationToken = default)
     {
+        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
+        await Entities.InsertAsync(engine, cancellationToken);
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         await client.CreateAsync(
             new CreateRequest
             {
                 EngineType = engine.Type,
                 EngineId = engine.Id,
-                SourceLanguageTag = engine.SourceLanguageTag,
-                TargetLanguageTag = engine.TargetLanguageTag
-            }
+                SourceLanguage = engine.SourceLanguage,
+                TargetLanguage = engine.TargetLanguage
+            },
+            cancellationToken: cancellationToken
         );
-
-        await Entities.InsertAsync(engine);
+        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
     }
 
-    public override async Task<bool> DeleteAsync(string engineId)
+    public override async Task<bool> DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        TranslationEngine? engine = await Entities.GetAsync(engineId);
+        TranslationEngine? engine = await Entities.GetAsync(engineId, cancellationToken);
         if (engine == null)
             return false;
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.DeleteAsync(new DeleteRequest { EngineType = engine.Type, EngineId = engine.Id });
+        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
+        await Entities.DeleteAsync(engineId, cancellationToken);
+        await _builds.DeleteAllAsync(b => b.EngineRef == engineId, cancellationToken);
 
-        await Entities.DeleteAsync(engineId);
-        await _builds.DeleteAllAsync(b => b.EngineRef == engineId);
+        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        await client.DeleteAsync(
+            new DeleteRequest { EngineType = engine.Type, EngineId = engine.Id },
+            cancellationToken: cancellationToken
+        );
+        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return true;
     }
 
     public async Task<Build?> StartBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        TranslationEngine? engine = await GetAsync(engineId);
+        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return null;
 
+        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
+        var build = new Build { EngineRef = engine.Id };
+        await _builds.InsertAsync(build, cancellationToken);
+
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        var request = new StartBuildRequest { EngineType = engine.Type, EngineId = engine.Id };
-        foreach (TranslationEngineCorpus corpus in engine.Corpora)
+        var request = new StartBuildRequest
+        {
+            EngineType = engine.Type,
+            EngineId = engine.Id,
+            BuildId = build.Id
+        };
+        foreach (Corpus corpus in engine.Corpora)
         {
             request.Corpora.Add(
-                new ParallelCorpus
+                new GrpcCorpus
                 {
+                    SourceLanguage = corpus.SourceLanguage,
+                    TargetLanguage = corpus.TargetLanguage,
                     Pretranslate = corpus.Pretranslate,
-                    SourceCorpus = await CreateTextCorpusAsync(
-                        corpus.CorpusRef,
-                        engine.SourceLanguageTag,
-                        cancellationToken
-                    ),
-                    TargetCorpus = await CreateTextCorpusAsync(
-                        corpus.CorpusRef,
-                        engine.TargetLanguageTag,
-                        cancellationToken
-                    )
+                    SourceFiles =
+                    {
+                        corpus.SourceFiles.Select(
+                            f =>
+                                new GrpcCorpusFile
+                                {
+                                    Filename = GetDataFilePath(f.Filename),
+                                    Format = f.Format,
+                                    TextId = f.TextId
+                                }
+                        )
+                    },
+                    TargetFiles =
+                    {
+                        corpus.TargetFiles.Select(
+                            f =>
+                                new GrpcCorpusFile
+                                {
+                                    Filename = GetDataFilePath(f.Filename),
+                                    Format = f.Format,
+                                    TextId = f.TextId
+                                }
+                        )
+                    }
                 }
             );
         }
-        StartBuildResponse response = await client.StartBuildAsync(request);
-
-        var build = new Build { EngineRef = engine.Id, BuildId = response.BuildId };
-        await _builds.InsertAsync(build);
+        await client.StartBuildAsync(request, cancellationToken: cancellationToken);
+        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return build;
     }
 
-    public async Task CancelBuildAsync(string engineId)
+    public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        TranslationEngine? engine = await GetAsync(engineId);
+        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return;
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.CancelBuildAsync(new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id });
+        await client.CancelBuildAsync(
+            new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id },
+            cancellationToken: cancellationToken
+        );
     }
 
-    public Task AddCorpusAsync(string engineId, TranslationEngineCorpus corpus)
+    public Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default)
     {
-        return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus));
+        return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
     }
 
-    public async Task<bool> DeleteCorpusAsync(string engineId, string corpusId)
+    public async Task<bool> DeleteCorpusAsync(
+        string engineId,
+        string corpusId,
+        CancellationToken cancellationToken = default
+    )
     {
         TranslationEngine? engine = await Entities.UpdateAsync(
             engineId,
-            u => u.RemoveAll(e => e.Corpora, c => c.CorpusRef == corpusId)
+            u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
+            cancellationToken: cancellationToken
         );
         return engine is not null;
     }
 
-    private async Task<Engine.V1.Corpus?> CreateTextCorpusAsync(
-        string corpusId,
-        string languageTag,
-        CancellationToken cancellationToken
-    )
+    public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)
     {
-        Corpus? corpus = await _corpora.GetAsync(corpusId, cancellationToken);
-        if (corpus is null || corpus.Type != Core.CorpusType.Text)
-            return null;
-        CorpusFile[] files = corpus.Files.Where(f => f.LanguageTag == languageTag).ToArray();
-        if (files.Length == 0)
-            return null;
-
-        return new Engine.V1.Corpus
-        {
-            Format = (Engine.V1.FileFormat)corpus.Format,
-            Type = (Engine.V1.CorpusType)corpus.Type,
-            Files =
-            {
-                files.Select(
-                    f =>
-                        new Engine.V1.CorpusFile
-                        {
-                            TextId = f.TextId,
-                            Filename = GetDataFilePath(f.DataFileRef),
-                            LanguageTag = f.LanguageTag
-                        }
-                )
-            }
-        };
+        return Entities.UpdateAllAsync(
+            e =>
+                e.Corpora.Any(
+                    c => c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
+                ),
+            u =>
+                u.RemoveAll(e => e.Corpora[ArrayPosition.All].SourceFiles, f => f.Id == dataFileId)
+                    .RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId),
+            cancellationToken
+        );
     }
 
     private string GetDataFilePath(string id)

@@ -13,6 +13,8 @@ public class ServalControllerBase : Controller
         _authService = authService;
     }
 
+    protected string Owner => User.Identity!.Name!;
+
     protected async Task<bool> AuthorizeIsOwnerAsync(IOwnedEntity ownedEntity)
     {
         AuthorizationResult result = await _authService.AuthorizeAsync(User, ownedEntity, "IsOwner");

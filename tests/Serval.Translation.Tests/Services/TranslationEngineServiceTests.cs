@@ -73,15 +73,15 @@ public class TranslationEngineServiceTests
         var engine = new TranslationEngine
         {
             Id = "engine1",
-            SourceLanguageTag = "es",
-            TargetLanguageTag = "en",
+            SourceLanguage = "es",
+            TargetLanguage = "en",
             Type = "smt"
         };
         await env.Service.CreateAsync(engine);
 
         engine = (await env.Engines.GetAsync("engine1"))!;
-        Assert.That(engine.SourceLanguageTag, Is.EqualTo("es"));
-        Assert.That(engine.TargetLanguageTag, Is.EqualTo("en"));
+        Assert.That(engine.SourceLanguage, Is.EqualTo("es"));
+        Assert.That(engine.TargetLanguage, Is.EqualTo("en"));
     }
 
     [Test]
@@ -228,7 +228,7 @@ public class TranslationEngineServiceTests
             translationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
             translationServiceClient
                 .StartBuildAsync(Arg.Any<StartBuildRequest>())
-                .Returns(CreateAsyncUnaryCall(new StartBuildResponse { BuildId = "build1" }));
+                .Returns(CreateAsyncUnaryCall(new Empty()));
             translationServiceClient
                 .TrainSegmentPairAsync(Arg.Any<TrainSegmentPairRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
@@ -241,9 +241,9 @@ public class TranslationEngineServiceTests
             Service = new TranslationEngineService(
                 Engines,
                 new MemoryRepository<Build>(),
-                new MemoryRepository<Corpus>(),
                 grpcClientFactory,
-                dataFileOptions
+                dataFileOptions,
+                new MemoryDataAccessContext()
             );
         }
 
@@ -255,8 +255,8 @@ public class TranslationEngineServiceTests
             var engine = new TranslationEngine
             {
                 Id = "engine1",
-                SourceLanguageTag = "es",
-                TargetLanguageTag = "en",
+                SourceLanguage = "es",
+                TargetLanguage = "en",
                 Type = "smt"
             };
             await Engines.InsertAsync(engine);

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Serval.Core
 {
@@ -10,9 +11,15 @@ namespace Serval.Core
         [JsonProperty(Required = Required.DisallowNull)]
         public string Url { get; set; }
 
-        [JsonProperty(Required = Required.DisallowNull)]
         public string Name { get; set; }
-        public CorpusType Type { get; set; }
-        public FileFormat Format { get; set; }
+
+        [JsonProperty(Required = Required.DisallowNull)]
+        public string SourceLanguage { get; set; }
+
+        [JsonProperty(Required = Required.DisallowNull)]
+        public string TargetLanguage { get; set; }
+        public bool Pretranslate { get; set; }
+        public List<CorpusFileDto> SourceFiles { get; set; } = new List<CorpusFileDto>();
+        public List<CorpusFileDto> TargetFiles { get; set; } = new List<CorpusFileDto>();
     }
 }

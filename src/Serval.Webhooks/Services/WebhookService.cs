@@ -12,14 +12,19 @@ public class WebhookService : EntityServiceBase<Webhook>, IWebhookService
         _httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<Webhook>> GetAllAsync(string owner)
+    public async Task<IEnumerable<Webhook>> GetAllAsync(string owner, CancellationToken cancellationToken = default)
     {
-        return await Entities.GetAllAsync(c => c.Owner == owner);
+        return await Entities.GetAllAsync(c => c.Owner == owner, cancellationToken);
     }
 
-    public async Task SendEventAsync<T>(WebhookEvent webhookEvent, string owner, T payload)
+    public async Task SendEventAsync<T>(
+        WebhookEvent webhookEvent,
+        string owner,
+        T payload,
+        CancellationToken cancellationToken = default
+    )
     {
-        IReadOnlyList<Webhook> matchingHooks = await GetWebhooks(webhookEvent, owner);
+        IReadOnlyList<Webhook> matchingHooks = await GetWebhooks(webhookEvent, owner, cancellationToken);
         if (matchingHooks.Count == 0)
             return;
 
@@ -40,15 +45,19 @@ public class WebhookService : EntityServiceBase<Webhook>, IWebhookService
             }
             try
             {
-                await _httpClient.SendAsync(request);
+                await _httpClient.SendAsync(request, cancellationToken);
             }
             catch (HttpRequestException) { }
         }
     }
 
-    private Task<IReadOnlyList<Webhook>> GetWebhooks(WebhookEvent webhookEvent, string owner)
+    private Task<IReadOnlyList<Webhook>> GetWebhooks(
+        WebhookEvent webhookEvent,
+        string owner,
+        CancellationToken cancellationToken
+    )
     {
-        return Entities.GetAllAsync(h => h.Owner == owner && h.Events.Contains(webhookEvent));
+        return Entities.GetAllAsync(h => h.Owner == owner && h.Events.Contains(webhookEvent), cancellationToken);
     }
 
     private string SerializePayload<T>(WebhookEvent webhookEvent, T payload)

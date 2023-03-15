@@ -7,5 +7,6 @@ global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.Logging;
 global using Serval.Core;
 global using Serval.Shared.Configuration;
+global using Serval.Shared.Contracts;
 global using Serval.Shared.Entities;
 global using SIL.DataAccess;

@@ -2,7 +2,7 @@
 
 public interface IBuildService
 {
-    Task<IEnumerable<Build>> GetAllAsync(string parentId);
+    Task<IEnumerable<Build>> GetAllAsync(string parentId, CancellationToken cancellationToken = default);
     Task<Build?> GetAsync(string id, CancellationToken cancellationToken = default);
     Task<Build?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default);
     Task<EntityChange<Build>> GetNewerRevisionAsync(

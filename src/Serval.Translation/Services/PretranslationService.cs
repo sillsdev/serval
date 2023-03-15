@@ -5,15 +5,28 @@ public class PretranslationService : EntityServiceBase<Pretranslation>, IPretran
     public PretranslationService(IRepository<Pretranslation> pretranslations)
         : base(pretranslations) { }
 
-    public async Task<IEnumerable<Pretranslation>> GetAllAsync(string engineId, string corpusId)
-    {
-        return await Entities.GetAllAsync(pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == corpusId);
-    }
-
-    public async Task<IEnumerable<Pretranslation>> GetAllAsync(string engineId, string corpusId, string textId)
+    public async Task<IEnumerable<Pretranslation>> GetAllAsync(
+        string engineId,
+        string corpusId,
+        CancellationToken cancellationToken = default
+    )
     {
         return await Entities.GetAllAsync(
-            pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == corpusId && pt.TextId == textId
+            pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == corpusId,
+            cancellationToken
+        );
+    }
+
+    public async Task<IEnumerable<Pretranslation>> GetAllAsync(
+        string engineId,
+        string corpusId,
+        string textId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await Entities.GetAllAsync(
+            pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == corpusId && pt.TextId == textId,
+            cancellationToken
         );
     }
 }

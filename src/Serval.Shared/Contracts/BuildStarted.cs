@@ -1,4 +1,4 @@
-﻿namespace Serval.Shared.Events;
+﻿namespace Serval.Shared.Contracts;
 
 public record BuildStarted
 {

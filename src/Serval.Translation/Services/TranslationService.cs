@@ -12,22 +12,26 @@ public class TranslationService : TranslationApi.TranslationApiBase
     private readonly IRepository<TranslationEngine> _engines;
     private readonly IRepository<Pretranslation> _pretranslations;
     private readonly IEventBroker _eventBroker;
+    private readonly IDataAccessContext _dataAccessContext;
 
     public TranslationService(
         IRepository<Build> builds,
         IRepository<TranslationEngine> engines,
         IRepository<Pretranslation> pretranslations,
-        IEventBroker eventBroker
+        IEventBroker eventBroker,
+        IDataAccessContext dataAccessContext
     )
     {
         _builds = builds;
         _engines = engines;
         _pretranslations = pretranslations;
         _eventBroker = eventBroker;
+        _dataAccessContext = dataAccessContext;
     }
 
     public override async Task<Empty> BuildStarted(BuildStartedRequest request, ServerCallContext context)
     {
+        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
             b => b.BuildId == request.BuildId,
             u => u.Set(b => b.State, BuildState.Active),
@@ -50,14 +54,17 @@ public class TranslationService : TranslationApi.TranslationApiBase
                 BuildId = build.Id,
                 EngineId = engine.Id,
                 Owner = engine.Owner
-            }
+            },
+            context.CancellationToken
         );
+        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return Empty;
     }
 
     public override async Task<Empty> BuildCompleted(BuildCompletedRequest request, ServerCallContext context)
     {
+        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
             b => b.BuildId == request.BuildId,
             u =>
@@ -90,14 +97,17 @@ public class TranslationService : TranslationApi.TranslationApiBase
                 BuildState = build.State,
                 Message = build.Message!,
                 DateFinished = build.DateFinished!.Value
-            }
+            },
+            context.CancellationToken
         );
+        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return Empty;
     }
 
     public override async Task<Empty> BuildCanceled(BuildCanceledRequest request, ServerCallContext context)
     {
+        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
             b => b.BuildId == request.BuildId,
             u => u.Set(b => b.Message, "Canceled").Set(b => b.DateFinished, DateTime.UtcNow),
@@ -123,14 +133,17 @@ public class TranslationService : TranslationApi.TranslationApiBase
                 BuildState = build.State,
                 Message = build.Message!,
                 DateFinished = build.DateFinished!.Value
-            }
+            },
+            context.CancellationToken
         );
+        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return Empty;
     }
 
     public override async Task<Empty> BuildFaulted(BuildFaultedRequest request, ServerCallContext context)
     {
+        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
             b => b.BuildId == request.BuildId,
             u =>
@@ -159,8 +172,10 @@ public class TranslationService : TranslationApi.TranslationApiBase
                 BuildState = build.State,
                 Message = build.Message!,
                 DateFinished = build.DateFinished!.Value
-            }
+            },
+            context.CancellationToken
         );
+        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return Empty;
     }

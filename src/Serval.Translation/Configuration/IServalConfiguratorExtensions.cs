@@ -23,7 +23,6 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         configurator.Services.AddScoped<IBuildService, BuildService>();
-        configurator.Services.AddScoped<ICorpusService, CorpusService>();
         configurator.Services.AddScoped<IPretranslationService, PretranslationService>();
         configurator.Services.AddScoped<ITranslationEngineService, TranslationEngineService>();
 

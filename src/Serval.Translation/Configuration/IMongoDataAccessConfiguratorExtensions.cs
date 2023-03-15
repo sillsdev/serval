@@ -24,13 +24,6 @@ public static class IMongoDataAccessConfiguratorExtensions
                     new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
                 )
         );
-        configurator.AddRepository<Corpus>(
-            "translation.corpora",
-            init: c =>
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
-                )
-        );
         configurator.AddRepository<Pretranslation>(
             "translation.pretranslations",
             init: c =>

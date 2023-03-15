@@ -216,6 +216,33 @@ public class MemoryRepository<T> : IRepository<T>
         return entity;
     }
 
+    public async Task<int> UpdateAllAsync(
+        Expression<Func<T, bool>> filter,
+        Action<IUpdateBuilder<T>> update,
+        CancellationToken cancellationToken = default
+    )
+    {
+        using (await _lock.LockAsync(cancellationToken))
+        {
+            T[] entities = Entities.AsQueryable().Where(filter).ToArray();
+            foreach (T entity in entities)
+            {
+                T original = Get(entity.Id);
+
+                var builder = new MemoryUpdateBuilder<T>(filter, entity, isInsert: false);
+                update(builder);
+                entity.Revision++;
+
+                if (CheckDuplicateKeys(entity, original))
+                    throw new DuplicateKeyException();
+
+                Replace(entity);
+            }
+
+            return entities.Length;
+        }
+    }
+
     public async Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
         var allSubscriptions = new List<MemorySubscription<T>>();

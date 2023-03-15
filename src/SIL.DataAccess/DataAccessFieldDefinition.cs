@@ -21,6 +21,7 @@ public class DataAccessFieldDefinition<TDocument, TField> : FieldDefinition<TDoc
             linqProvider
         );
         string fieldName = rendered.FieldName.Replace(ArrayPosition.All.ToString(), "$[]");
+        fieldName = fieldName.Replace(ArrayPosition.FirstMatching.ToString(), "$");
         if (fieldName != rendered.FieldName)
         {
             return new RenderedFieldDefinition<TField>(

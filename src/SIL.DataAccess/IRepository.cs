@@ -15,6 +15,11 @@ public interface IRepository<T>
         bool upsert = false,
         CancellationToken cancellationToken = default
     );
+    Task<int> UpdateAllAsync(
+        Expression<Func<T, bool>> filter,
+        Action<IUpdateBuilder<T>> update,
+        CancellationToken cancellationToken = default
+    );
     Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
     Task<int> DeleteAllAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
     Task<ISubscription<T>> SubscribeAsync(

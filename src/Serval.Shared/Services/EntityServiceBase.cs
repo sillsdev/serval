@@ -15,13 +15,13 @@ public class EntityServiceBase<T>
         return Entities.GetAsync(id, cancellationToken);
     }
 
-    public virtual Task CreateAsync(T entity)
+    public virtual Task CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
-        return Entities.InsertAsync(entity);
+        return Entities.InsertAsync(entity, cancellationToken);
     }
 
-    public virtual async Task<bool> DeleteAsync(string id)
+    public virtual async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        return await Entities.DeleteAsync(id) is not null;
+        return await Entities.DeleteAsync(id, cancellationToken) is not null;
     }
 }

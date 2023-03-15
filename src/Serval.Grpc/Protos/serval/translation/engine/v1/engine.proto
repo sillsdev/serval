@@ -10,15 +10,15 @@ service TranslationEngineApi {
     rpc Translate(TranslateRequest) returns (TranslateResponse);
     rpc GetWordGraph(GetWordGraphRequest) returns (GetWordGraphResponse);
     rpc TrainSegmentPair(TrainSegmentPairRequest) returns (google.protobuf.Empty);
-    rpc StartBuild(StartBuildRequest) returns (StartBuildResponse);
+    rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
     rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
 }
 
 message CreateRequest {
     string engine_type = 1;
     string engine_id = 2;
-    string source_language_tag = 3;
-    string target_language_tag = 4;
+    string source_language = 3;
+    string target_language = 4;
 }
 
 message DeleteRequest {
@@ -58,11 +58,8 @@ message TrainSegmentPairRequest {
 message StartBuildRequest {
     string engine_type = 1;
     string engine_id = 2;
-    repeated ParallelCorpus corpora = 3;
-}
-
-message StartBuildResponse {
-    string build_id = 1;
+    string build_id = 3;
+    repeated Corpus corpora = 4;
 }
 
 message CancelBuildRequest {
@@ -109,31 +106,17 @@ message WordGraph {
     repeated WordGraphArc arcs = 3;
 }
 
-message ParallelCorpus {
-    bool pretranslate = 1;
-    optional Corpus source_corpus = 2;
-    optional Corpus target_corpus = 3;
-}
-
-enum CorpusType {
-    CORPUS_TYPE_TEXT = 0;
-}
-
-enum FileFormat {
-    FILE_FORMAT_TEXT = 0;
-    FILE_FORMAT_PARATEXT = 1;
-}
-
 message Corpus {
-    CorpusType type = 1;
-    FileFormat format = 2;
-    repeated CorpusFile files = 3;
+    string source_language = 1;
+    string target_language = 2;
+    bool pretranslate = 3;
+    repeated CorpusFile source_files = 4;
+    repeated CorpusFile target_files = 5;
 }
 
 message CorpusFile {
-    string language_tag = 1;
-    string name = 2;
+    string filename = 1;
+    string format = 2;
     string text_id = 3;
-    string filename = 4;
 }
 

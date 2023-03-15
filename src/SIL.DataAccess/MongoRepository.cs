@@ -139,6 +139,41 @@ public class MongoRepository<T> : IRepository<T>
         }
     }
 
+    public async Task<int> UpdateAllAsync(
+        Expression<Func<T, bool>> filter,
+        Action<IUpdateBuilder<T>> update,
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            var updateBuilder = new MongoUpdateBuilder<T>();
+            update(updateBuilder);
+            updateBuilder.Inc(e => e.Revision, 1);
+            UpdateDefinition<T> updateDef = updateBuilder.Build();
+            UpdateResult result;
+            if (_context.Session is not null)
+            {
+                result = await _collection
+                    .UpdateManyAsync(_context.Session, filter, updateDef, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                result = await _collection
+                    .UpdateManyAsync(filter, updateDef, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            return (int)result.ModifiedCount;
+        }
+        catch (MongoWriteException e)
+        {
+            if (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
+                throw new DuplicateKeyException();
+            throw;
+        }
+    }
+
     public async Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
         if (_context.Session is not null)
