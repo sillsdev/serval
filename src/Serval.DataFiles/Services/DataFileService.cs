@@ -1,6 +1,4 @@
-﻿using Serval.Shared.Contracts;
-
-namespace Serval.Corpora.Services;
+﻿namespace Serval.DataFiles.Services;
 
 public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
 {
@@ -21,6 +19,11 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         _eventBroker = eventBroker;
     }
 
+    public Task<DataFile?> GetAsync(string id, string owner, CancellationToken cancellationToken = default)
+    {
+        return Entities.GetAsync(f => f.Id == id && f.Owner == owner, cancellationToken);
+    }
+
     public async Task<IEnumerable<DataFile>> GetAllAsync(string owner, CancellationToken cancellationToken = default)
     {
         return await Entities.GetAllAsync(c => c.Owner == owner, cancellationToken);
@@ -28,9 +31,10 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
 
     public async Task CreateAsync(DataFile dataFile, Stream stream, CancellationToken cancellationToken = default)
     {
+        dataFile.Filename = Path.GetRandomFileName();
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         await Entities.InsertAsync(dataFile, cancellationToken);
-        string path = GetDataFilePath(dataFile.Id);
+        string path = GetDataFilePath(dataFile);
         try
         {
             using FileStream fileStream = File.OpenWrite(path);
@@ -50,7 +54,7 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         DataFile? dataFile = await Entities.DeleteAsync(id, cancellationToken);
         if (dataFile is not null)
         {
-            string path = GetDataFilePath(dataFile.Id);
+            string path = GetDataFilePath(dataFile);
             if (File.Exists(path))
                 File.Delete(path);
         }
@@ -59,8 +63,8 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         return dataFile is not null;
     }
 
-    private string GetDataFilePath(string id)
+    private string GetDataFilePath(DataFile dataFile)
     {
-        return Path.Combine(_options.CurrentValue.FilesDirectory, id);
+        return Path.Combine(_options.CurrentValue.FilesDirectory, dataFile.Filename);
     }
 }

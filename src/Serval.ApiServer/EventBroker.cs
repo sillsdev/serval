@@ -1,7 +1,7 @@
-﻿using Serval.Core;
-using Serval.Shared.Contracts;
+﻿using Serval.Shared.Contracts;
 using Serval.Shared.Services;
 using Serval.Translation.Services;
+using Serval.Webhooks.Contracts;
 using Serval.Webhooks.Services;
 
 namespace Serval.ApiServer;

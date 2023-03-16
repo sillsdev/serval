@@ -1,4 +1,4 @@
-﻿namespace Serval.Corpora.Entities;
+﻿namespace Serval.DataFiles.Entities;
 
 public class DataFile : IOwnedEntity
 {

@@ -85,10 +85,10 @@ public class TranslationEnginesController : ServalControllerBase
         var newEngine = new TranslationEngine
         {
             Name = engineConfig.Name,
-            SourceLanguage = engineConfig.SourceLanguageTag,
-            TargetLanguage = engineConfig.TargetLanguageTag,
+            SourceLanguage = engineConfig.SourceLanguage,
+            TargetLanguage = engineConfig.TargetLanguage,
             Type = engineConfig.Type,
-            Owner = User.Identity!.Name!
+            Owner = Owner
         };
 
         await _translationEngineService.CreateAsync(newEngine, cancellationToken);
@@ -171,7 +171,7 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
-    public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync(
+    public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateNAsync(
         [NotNull] string id,
         [NotNull] int n,
         [FromBody] string segment,

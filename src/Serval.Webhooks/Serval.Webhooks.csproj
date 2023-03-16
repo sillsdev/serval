@@ -14,7 +14,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Serval.Core\Serval.Core.csproj" />
 		<ProjectReference Include="..\Serval.Shared\Serval.Shared.csproj" />
 	</ItemGroup>
 

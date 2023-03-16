@@ -1,4 +1,4 @@
-﻿namespace Serval.AspNetCore.Services;
+﻿namespace Serval.DataFiles.Services;
 
 public class DataFilesProfile : Profile
 {

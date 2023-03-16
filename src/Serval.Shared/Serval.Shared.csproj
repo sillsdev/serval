@@ -15,7 +15,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Serval.Core\Serval.Core.csproj" />
 		<ProjectReference Include="..\SIL.DataAccess\SIL.DataAccess.csproj" />
 	</ItemGroup>
 

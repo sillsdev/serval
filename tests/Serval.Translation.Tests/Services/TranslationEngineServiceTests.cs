@@ -1,7 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using Serval.Shared.Configuration;
 using Serval.Translation.Engine.V1;
-using Corpus = Serval.Translation.Entities.Corpus;
 
 namespace Serval.Translation.Services;
 

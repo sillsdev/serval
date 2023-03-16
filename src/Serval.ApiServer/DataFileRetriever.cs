@@ -1,17 +1,17 @@
-﻿using Serval.Corpora.Entities;
+﻿using Serval.DataFiles.Entities;
+using Serval.DataFiles.Services;
 using Serval.Shared.Contracts;
 using Serval.Shared.Services;
-using SIL.DataAccess;
 
 namespace Serval.ApiServer;
 
 public class DataFileRetriever : IDataFileRetriever
 {
-    private readonly IRepository<DataFile> _dataFiles;
+    private readonly IDataFileService _dataFileService;
 
-    public DataFileRetriever(IRepository<DataFile> dataFiles)
+    public DataFileRetriever(IDataFileService dataFileService)
     {
-        _dataFiles = dataFiles;
+        _dataFileService = dataFileService;
     }
 
     public async Task<DataFileResult?> GetDataFileAsync(
@@ -20,7 +20,7 @@ public class DataFileRetriever : IDataFileRetriever
         CancellationToken cancellationToken = default
     )
     {
-        DataFile? dataFile = await _dataFiles.GetAsync(f => f.Id == id && f.Owner == owner, cancellationToken);
+        DataFile? dataFile = await _dataFileService.GetAsync(id, owner, cancellationToken);
         if (dataFile is null)
             return null;
         return new DataFileResult

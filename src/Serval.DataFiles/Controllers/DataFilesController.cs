@@ -1,6 +1,7 @@
-﻿namespace Serval.Corpora.Controllers;
+﻿namespace Serval.DataFiles.Controllers;
 
 [Route("files")]
+[OpenApiTag("Files")]
 public class DataFilesController : ServalControllerBase
 {
     private readonly IDataFileService _dataFileService;
@@ -52,6 +53,7 @@ public class DataFilesController : ServalControllerBase
     /// Uploads a file.
     /// </summary>
     /// <param name="file">The file.</param>
+    /// <param name="format">The file format.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="201">The file was uploaded successfully.</response>
     [Authorize(Scopes.CreateFiles)]
@@ -60,10 +62,16 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<DataFileDto>> CreateAsync(
         [BindRequired] IFormFile file,
+        [BindRequired][FromForm] FileFormat format,
         CancellationToken cancellationToken
     )
     {
-        var dataFile = new DataFile { Name = file.FileName };
+        var dataFile = new DataFile
+        {
+            Name = file.FileName,
+            Format = format,
+            Owner = Owner
+        };
         using (Stream stream = file.OpenReadStream())
         {
             await _dataFileService.CreateAsync(dataFile, stream, cancellationToken);

@@ -31,7 +31,6 @@ public static class IServalConfiguratorExtensions
             configurator.Configuration.GetSection(TranslationOptions.Key).Bind(translationOptions);
         if (configure is not null)
             configure(translationOptions);
-        configurator.Services.ConfigureOptions(translationOptions);
 
         foreach (Engine engine in translationOptions.Engines)
         {
