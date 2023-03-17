@@ -62,7 +62,7 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<DataFileDto>> CreateAsync(
         [BindRequired] IFormFile file,
-        [BindRequired][FromForm] FileFormat format,
+        [BindRequired] [FromForm] FileFormat format,
         CancellationToken cancellationToken
     )
     {
