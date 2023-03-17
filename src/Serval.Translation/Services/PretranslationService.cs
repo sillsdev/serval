@@ -12,7 +12,7 @@ public class PretranslationService : EntityServiceBase<Pretranslation>, IPretran
     )
     {
         return await Entities.GetAllAsync(
-            pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == corpusId,
+            pt => pt.EngineRef == engineId && pt.CorpusRef == corpusId,
             cancellationToken
         );
     }
@@ -25,7 +25,7 @@ public class PretranslationService : EntityServiceBase<Pretranslation>, IPretran
     )
     {
         return await Entities.GetAllAsync(
-            pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == corpusId && pt.TextId == textId,
+            pt => pt.EngineRef == engineId && pt.CorpusRef == corpusId && pt.TextId == textId,
             cancellationToken
         );
     }

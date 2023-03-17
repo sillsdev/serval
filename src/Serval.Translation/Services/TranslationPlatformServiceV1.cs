@@ -3,7 +3,7 @@ using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
 
-public class TranslationServiceV1 : TranslationApi.TranslationApiBase
+public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPlatformApiBase
 {
     private const int PretranslationInsertBatchSize = 128;
     private static readonly Empty Empty = new();
@@ -14,7 +14,7 @@ public class TranslationServiceV1 : TranslationApi.TranslationApiBase
     private readonly IEventBroker _eventBroker;
     private readonly IDataAccessContext _dataAccessContext;
 
-    public TranslationServiceV1(
+    public TranslationPlatformServiceV1(
         IRepository<Build> builds,
         IRepository<TranslationEngine> engines,
         IRepository<Pretranslation> pretranslations,
@@ -33,7 +33,7 @@ public class TranslationServiceV1 : TranslationApi.TranslationApiBase
     {
         await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
-            b => b.BuildId == request.BuildId,
+            request.BuildId,
             u => u.Set(b => b.State, BuildState.Active),
             cancellationToken: context.CancellationToken
         );
@@ -66,7 +66,7 @@ public class TranslationServiceV1 : TranslationApi.TranslationApiBase
     {
         await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
-            b => b.BuildId == request.BuildId,
+            request.BuildId,
             u =>
                 u.Set(b => b.State, BuildState.Completed)
                     .Set(b => b.Message, "Completed")
@@ -109,7 +109,7 @@ public class TranslationServiceV1 : TranslationApi.TranslationApiBase
     {
         await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
-            b => b.BuildId == request.BuildId,
+            request.BuildId,
             u => u.Set(b => b.Message, "Canceled").Set(b => b.DateFinished, DateTime.UtcNow),
             cancellationToken: context.CancellationToken
         );
@@ -145,7 +145,7 @@ public class TranslationServiceV1 : TranslationApi.TranslationApiBase
     {
         await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
-            b => b.BuildId == request.BuildId,
+            request.BuildId,
             u =>
                 u.Set(b => b.State, BuildState.Faulted)
                     .Set(b => b.Message, request.Message)
@@ -238,10 +238,7 @@ public class TranslationServiceV1 : TranslationApi.TranslationApiBase
         ServerCallContext context
     )
     {
-        await _pretranslations.DeleteAllAsync(
-            p => p.TranslationEngineRef == request.EngineId,
-            context.CancellationToken
-        );
+        await _pretranslations.DeleteAllAsync(p => p.EngineRef == request.EngineId, context.CancellationToken);
         return Empty;
     }
 
@@ -256,7 +253,7 @@ public class TranslationServiceV1 : TranslationApi.TranslationApiBase
             batch.Add(
                 new Pretranslation
                 {
-                    TranslationEngineRef = request.EngineId,
+                    EngineRef = request.EngineId,
                     CorpusRef = request.CorpusId,
                     TextId = request.TextId,
                     Refs = request.Refs.ToList(),
@@ -270,7 +267,7 @@ public class TranslationServiceV1 : TranslationApi.TranslationApiBase
             }
         }
         if (batch.Count > 0)
-            await _pretranslations.InsertAllAsync(batch, context.CancellationToken);
+            await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
 
         return Empty;
     }

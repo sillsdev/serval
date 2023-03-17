@@ -243,6 +243,7 @@ public class TranslationEngineServiceTests
             Service = new TranslationEngineService(
                 Engines,
                 new MemoryRepository<Build>(),
+                new MemoryRepository<Pretranslation>(),
                 grpcClientFactory,
                 dataFileOptions,
                 new MemoryDataAccessContext(),
@@ -263,18 +264,30 @@ public class TranslationEngineServiceTests
                 Type = "smt",
                 Corpora =
                 {
-                    new Models.Corpus
+                    new Models.ParallelCorpus
                     {
                         Id = "corpus1",
                         SourceLanguage = "es",
                         TargetLanguage = "en",
                         SourceFiles =
                         {
-                            new Models.CorpusFile { Id = "file1", Filename = "file1.txt" }
+                            new Models.ParallelCorpusFile
+                            {
+                                Id = "file1",
+                                Filename = "file1.txt",
+                                Format = Shared.Contracts.FileFormat.Text,
+                                TextId = "all"
+                            }
                         },
                         TargetFiles =
                         {
-                            new Models.CorpusFile { Id = "file2", Filename = "file2.txt" }
+                            new Models.ParallelCorpusFile
+                            {
+                                Id = "file2",
+                                Filename = "file2.txt",
+                                Format = Shared.Contracts.FileFormat.Text,
+                                TextId = "all"
+                            }
                         },
                     }
                 }

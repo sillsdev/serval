@@ -9,12 +9,11 @@ public class GrpcProfile : Profile
         CreateMap<V1.WordGraphArc, WordGraphArc>();
         CreateMap<V1.Phrase, Phrase>();
         CreateMap<V1.AlignedWordPair, AlignedWordPair>();
-        CreateMap<Corpus, V1.Corpus>();
-        CreateMap<CorpusFile, V1.CorpusFile>()
+        CreateMap<ParallelCorpus, V1.ParallelCorpus>();
+        CreateMap<ParallelCorpusFile, V1.ParallelCorpusFile>()
             .ForMember(
                 dest => dest.Location,
                 o => o.MapFrom((cf, _, _, ctxt) => Path.Combine((string)ctxt.Items["Directory"], cf.Filename))
-            )
-            .ForMember(dest => dest.TextId, o => o.Condition(src => src.TextId is not null));
+            );
     }
 }

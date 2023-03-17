@@ -59,7 +59,7 @@ message StartBuildRequest {
     string engine_type = 1;
     string engine_id = 2;
     string build_id = 3;
-    repeated Corpus corpora = 4;
+    repeated ParallelCorpus corpora = 4;
 }
 
 message CancelBuildRequest {
@@ -106,18 +106,19 @@ message WordGraph {
     repeated WordGraphArc arcs = 3;
 }
 
-message Corpus {
-    string source_language = 1;
-    string target_language = 2;
-    bool pretranslate = 3;
-    repeated CorpusFile source_files = 4;
-    repeated CorpusFile target_files = 5;
+message ParallelCorpus {
+    string id = 1;
+    string source_language = 2;
+    string target_language = 3;
+    bool pretranslate = 4;
+    repeated ParallelCorpusFile source_files = 5;
+    repeated ParallelCorpusFile target_files = 6;
 }
 
-message CorpusFile {
+message ParallelCorpusFile {
     string location = 1;
     FileFormat format = 2;
-    optional string text_id = 3;
+    string text_id = 3;
 }
 
 enum FileFormat {

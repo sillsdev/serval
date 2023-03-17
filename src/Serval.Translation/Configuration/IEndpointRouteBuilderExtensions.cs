@@ -4,7 +4,7 @@ public static class IEndpointRouteBuilderExtensions
 {
     public static IEndpointRouteBuilder MapServalTranslationServices(this IEndpointRouteBuilder builder)
     {
-        builder.MapGrpcService<TranslationServiceV1>();
+        builder.MapGrpcService<TranslationPlatformServiceV1>();
 
         return builder;
     }

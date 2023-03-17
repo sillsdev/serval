@@ -1,9 +1,9 @@
 ﻿namespace Serval.Translation.Models;
 
-public class CorpusFile
+public class ParallelCorpusFile
 {
     public string Id { get; set; } = default!;
     public string Filename { get; set; } = default!;
-    public string Format { get; set; } = default!;
-    public string? TextId { get; set; }
+    public FileFormat Format { get; set; } = default!;
+    public string TextId { get; set; } = default!;
 }

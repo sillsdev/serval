@@ -21,8 +21,9 @@ public class DataFileRetriever : IDataFileRetriever
         return new DataFileResult
         {
             DataFileId = id,
+            Name = dataFile.Name,
             Filename = dataFile.Filename,
-            Format = dataFile.Format.ToString()
+            Format = dataFile.Format
         };
     }
 }

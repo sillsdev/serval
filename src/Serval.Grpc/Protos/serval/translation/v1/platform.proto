@@ -4,7 +4,7 @@ package serval.translation.v1;
 
 import "google/protobuf/empty.proto";
 
-service TranslationApi {
+service TranslationPlatformApi {
     rpc UpdateBuildStatus(UpdateBuildStatusRequest) returns (google.protobuf.Empty);
     rpc BuildStarted(BuildStartedRequest) returns (google.protobuf.Empty);
     rpc BuildCompleted(BuildCompletedRequest) returns (google.protobuf.Empty);

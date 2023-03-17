@@ -40,10 +40,11 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
             using FileStream fileStream = File.OpenWrite(path);
             await stream.CopyToAsync(fileStream, cancellationToken);
         }
-        finally
+        catch
         {
             if (File.Exists(path))
                 File.Delete(path);
+            throw;
         }
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
     }

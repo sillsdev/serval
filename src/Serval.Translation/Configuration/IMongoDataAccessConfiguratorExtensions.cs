@@ -30,7 +30,7 @@ public static class IMongoDataAccessConfiguratorExtensions
             {
                 c.Indexes.CreateOrUpdate(
                     new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TranslationEngineRef)
+                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.EngineRef)
                     )
                 );
                 c.Indexes.CreateOrUpdate(

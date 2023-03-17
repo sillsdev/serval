@@ -5,6 +5,7 @@ namespace Serval.Translation.Services;
 public class TranslationEngineService : EntityServiceBase<TranslationEngine>, ITranslationEngineService
 {
     private readonly IRepository<Build> _builds;
+    private readonly IRepository<Pretranslation> _pretranslations;
     private readonly GrpcClientFactory _grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext;
@@ -13,6 +14,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
     public TranslationEngineService(
         IRepository<TranslationEngine> engines,
         IRepository<Build> builds,
+        IRepository<Pretranslation> pretranslations,
         GrpcClientFactory grpcClientFactory,
         IOptionsMonitor<DataFileOptions> dataFileOptions,
         IDataAccessContext dataAccessContext,
@@ -21,6 +23,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         : base(engines)
     {
         _builds = builds;
+        _pretranslations = pretranslations;
         _grpcClientFactory = grpcClientFactory;
         _dataFileOptions = dataFileOptions;
         _dataAccessContext = dataAccessContext;
@@ -161,6 +164,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         await Entities.DeleteAsync(engineId, cancellationToken);
         await _builds.DeleteAllAsync(b => b.EngineRef == engineId, cancellationToken);
+        await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, cancellationToken);
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         await client.DeleteAsync(
@@ -192,7 +196,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
             {
                 engine.Corpora.Select(
                     c =>
-                        _mapper.Map<V1.Corpus>(
+                        _mapper.Map<V1.ParallelCorpus>(
                             c,
                             o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
                         )
@@ -218,7 +222,11 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         );
     }
 
-    public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
+    public Task AddCorpusAsync(
+        string engineId,
+        Models.ParallelCorpus corpus,
+        CancellationToken cancellationToken = default
+    )
     {
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
     }
@@ -229,11 +237,14 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         CancellationToken cancellationToken = default
     )
     {
+        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         TranslationEngine? engine = await Entities.UpdateAsync(
             engineId,
             u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
             cancellationToken: cancellationToken
         );
+        await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken);
+        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
         return engine is not null;
     }
 

@@ -10,6 +10,7 @@ public class TranslationEnginesController : ServalControllerBase
     private readonly IOptionsMonitor<ApiOptions> _apiOptions;
     private readonly IMapper _mapper;
     private readonly IDataFileRetriever _dataFileRetriever;
+    private readonly IIdGenerator _idGenerator;
 
     public TranslationEnginesController(
         IAuthorizationService authService,
@@ -18,7 +19,8 @@ public class TranslationEnginesController : ServalControllerBase
         IPretranslationService pretranslationService,
         IOptionsMonitor<ApiOptions> apiOptions,
         IMapper mapper,
-        IDataFileRetriever dataFileRetriever
+        IDataFileRetriever dataFileRetriever,
+        IIdGenerator idGenerator
     )
         : base(authService)
     {
@@ -28,6 +30,7 @@ public class TranslationEnginesController : ServalControllerBase
         _apiOptions = apiOptions;
         _mapper = mapper;
         _dataFileRetriever = dataFileRetriever;
+        _idGenerator = idGenerator;
     }
 
     /// <summary>
@@ -197,7 +200,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The word graph.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
-    /// <response code="405">The method is not supported.</response>
+    /// <response code="405">The translation engine does not support producing a word graph.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpPost("{id}/get-word-graph")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -229,7 +232,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The engine was trained successfully.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
-    /// <response code="405">The method is not supported.</response>
+    /// <response code="405">The translation engine does not support incremental training.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/train-segment")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -274,9 +277,9 @@ public class TranslationEnginesController : ServalControllerBase
     [HttpPost("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<CorpusDto>> AddCorpusAsync(
+    public async Task<ActionResult<ParallelCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
-        [FromBody] CorpusConfigDto corpusConfig,
+        [FromBody] ParallelCorpusConfigDto corpusConfig,
         CancellationToken cancellationToken
     )
     {
@@ -286,49 +289,23 @@ public class TranslationEnginesController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
 
-        var corpus = new Corpus
+        var corpus = new ParallelCorpus
         {
+            Id = _idGenerator.GenerateId(),
             Name = corpusConfig.Name,
             SourceLanguage = corpusConfig.SourceLanguage,
             TargetLanguage = corpusConfig.TargetLanguage,
             Pretranslate = corpusConfig.Pretranslate ?? false
         };
-        foreach (CorpusFileConfigDto fileConfig in corpusConfig.SourceFiles)
-        {
-            DataFileResult? dataFileResult = await _dataFileRetriever.GetDataFileAsync(
-                fileConfig.FileId,
-                Owner,
-                cancellationToken
-            );
-            if (dataFileResult is null)
-                return UnprocessableEntity();
-            corpus.SourceFiles.Add(
-                new CorpusFile
-                {
-                    Id = fileConfig.FileId,
-                    Filename = dataFileResult.Filename,
-                    TextId = fileConfig.TextId
-                }
-            );
-        }
-        foreach (CorpusFileConfigDto fileConfig in corpusConfig.TargetFiles)
-        {
-            DataFileResult? dataFileResult = await _dataFileRetriever.GetDataFileAsync(
-                fileConfig.FileId,
-                Owner,
-                cancellationToken
-            );
-            if (dataFileResult is null)
-                return UnprocessableEntity();
-            corpus.TargetFiles.Add(
-                new CorpusFile
-                {
-                    Id = fileConfig.FileId,
-                    Filename = dataFileResult.Filename,
-                    TextId = fileConfig.TextId
-                }
-            );
-        }
+        List<ParallelCorpusFile>? sourceFiles = await MapAsync(corpusConfig.SourceFiles, cancellationToken);
+        if (sourceFiles is null)
+            return UnprocessableEntity();
+        corpus.SourceFiles.AddRange(sourceFiles);
+        List<ParallelCorpusFile>? targetFiles = await MapAsync(corpusConfig.TargetFiles, cancellationToken);
+        if (targetFiles is null)
+            return UnprocessableEntity();
+        corpus.TargetFiles.AddRange(targetFiles);
+
         await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
         return Ok(Map(id, corpus));
     }
@@ -344,7 +321,7 @@ public class TranslationEnginesController : ServalControllerBase
     [HttpGet("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<CorpusDto>>> GetAllCorporaAsync(
+    public async Task<ActionResult<IEnumerable<ParallelCorpusDto>>> GetAllCorporaAsync(
         [NotNull] string id,
         CancellationToken cancellationToken
     )
@@ -370,7 +347,7 @@ public class TranslationEnginesController : ServalControllerBase
     [HttpGet("{id}/corpora/{corpusId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<CorpusDto>> GetCorpusAsync(
+    public async Task<ActionResult<ParallelCorpusDto>> GetCorpusAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
         CancellationToken cancellationToken
@@ -382,7 +359,7 @@ public class TranslationEnginesController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
 
-        Corpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
+        ParallelCorpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
         if (corpus == null)
             return NotFound();
 
@@ -647,10 +624,12 @@ public class TranslationEnginesController : ServalControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The build job was cancelled successfully.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="405">The translation engine does not support cancelling builds.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/current-build/cancel")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     public async Task<ActionResult> CancelBuildAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         TranslationEngine? engine = await _engineService.GetAsync(id, cancellationToken);
@@ -663,8 +642,36 @@ public class TranslationEnginesController : ServalControllerBase
         return Ok();
     }
 
-    private CorpusDto Map(string engineId, Corpus corpus)
+    private ParallelCorpusDto Map(string engineId, ParallelCorpus corpus)
     {
-        return _mapper.Map<CorpusDto>(corpus, opts => opts.Items["EngineId"] = engineId);
+        return _mapper.Map<ParallelCorpusDto>(corpus, opts => opts.Items["EngineId"] = engineId);
+    }
+
+    private async Task<List<ParallelCorpusFile>?> MapAsync(
+        IEnumerable<ParallelCorpusFileConfigDto> fileConfigs,
+        CancellationToken cancellationToken
+    )
+    {
+        var files = new List<ParallelCorpusFile>();
+        foreach (ParallelCorpusFileConfigDto fileConfig in fileConfigs)
+        {
+            DataFileResult? dataFileResult = await _dataFileRetriever.GetDataFileAsync(
+                fileConfig.FileId,
+                Owner,
+                cancellationToken
+            );
+            if (dataFileResult is null)
+                throw new InvalidOperationException("Unable to retrieve data file.");
+            files.Add(
+                new ParallelCorpusFile
+                {
+                    Id = fileConfig.FileId,
+                    Filename = dataFileResult.Filename,
+                    TextId = fileConfig.TextId ?? dataFileResult.Name,
+                    Format = dataFileResult.Format
+                }
+            );
+        }
+        return files;
     }
 }

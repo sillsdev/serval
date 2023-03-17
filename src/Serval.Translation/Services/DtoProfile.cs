@@ -28,7 +28,7 @@ public class DtoProfile : Profile
         CreateMap<WordGraph, WordGraphDto>();
         CreateMap<WordGraphArc, WordGraphArcDto>();
         CreateMap<Pretranslation, PretranslationDto>();
-        CreateMap<Corpus, CorpusDto>()
+        CreateMap<ParallelCorpus, ParallelCorpusDto>()
             .ForMember(
                 dest => dest.Url,
                 o =>
@@ -46,7 +46,7 @@ public class DtoProfile : Profile
                             }
                     )
             );
-        CreateMap<CorpusFile, CorpusFileDto>()
+        CreateMap<ParallelCorpusFile, ParallelCorpusFileDto>()
             .ForMember(
                 dest => dest.File,
                 o => o.MapFrom((src, _) => new ResourceLinkDto { Id = src.Id, Url = $"{FilesUrl}/{src.Id}" })

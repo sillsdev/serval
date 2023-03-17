@@ -2,7 +2,7 @@
 
 namespace Serval.Translation.Contracts;
 
-public class CorpusConfigDto
+public class ParallelCorpusConfigDto
 {
     /// <summary>
     /// The corpus name.
@@ -17,8 +17,8 @@ public class CorpusConfigDto
     public bool? Pretranslate { get; set; }
 
     [JsonProperty(Required = Required.Always)]
-    public CorpusFileConfigDto[] SourceFiles { get; set; } = default!;
+    public ParallelCorpusFileConfigDto[] SourceFiles { get; set; } = default!;
 
     [JsonProperty(Required = Required.Always)]
-    public CorpusFileConfigDto[] TargetFiles { get; set; } = default!;
+    public ParallelCorpusFileConfigDto[] TargetFiles { get; set; } = default!;
 }
