@@ -1,16 +1,4 @@
-﻿using System.Security.Claims;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
-using NJsonSchema;
-using NSwag;
-using NSwag.AspNetCore;
-using NSwag.Generation.Processors.Security;
-using Serval.Shared.Controllers;
-using Serval.Shared.Services;
-
-namespace Serval.ApiServer;
+﻿namespace Serval.ApiServer;
 
 public class Startup
 {

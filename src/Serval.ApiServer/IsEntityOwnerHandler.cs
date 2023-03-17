@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Serval.Shared.Entities;
-
-namespace Serval.ApiServer;
+﻿namespace Serval.ApiServer;
 
 public class IsEntityOwnerHandler : AuthorizationHandler<IsOwnerRequirement, IOwnedEntity>
 {

@@ -1,6 +1,4 @@
-﻿using NJsonSchema.Generation;
-
-namespace Serval.ApiServer;
+﻿namespace Serval.ApiServer;
 
 public class ServalSchemaNameGenerator : DefaultSchemaNameGenerator
 {

@@ -1,3 +1,4 @@
+global using AutoMapper;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
 global using Microsoft.Extensions.Options;
@@ -5,5 +6,5 @@ global using NSubstitute;
 global using NUnit.Framework;
 global using Serval.Shared.Configuration;
 global using Serval.Translation.Contracts;
-global using Serval.Translation.Entities;
+global using Serval.Translation.Models;
 global using SIL.DataAccess;

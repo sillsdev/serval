@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-
-namespace Serval.ApiServer;
+﻿namespace Serval.ApiServer;
 
 public class HasScopeRequirement : IAuthorizationRequirement
 {

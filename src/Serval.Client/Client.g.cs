@@ -730,7 +730,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Corpus> AddCorporaAsync(string id, CorpusConfig corpusConfig);
+        System.Threading.Tasks.Task<Corpus> AddCorpusAsync(string id, CorpusConfig corpusConfig);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -740,7 +740,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Corpus> AddCorporaAsync(string id, CorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<Corpus> AddCorpusAsync(string id, CorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets all corpora for a translation engine.
@@ -860,7 +860,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Build> CreateBuildAsync(string id);
+        System.Threading.Tasks.Task<Build> StartBuildAsync(string id);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -869,7 +869,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Build> CreateBuildAsync(string id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<Build> StartBuildAsync(string id, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a build job.
@@ -976,7 +976,7 @@ namespace Serval.Client
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines");
+            urlBuilder_.Append("translation/engines");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1061,7 +1061,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("engineConfig");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines");
+            urlBuilder_.Append("translation/engines");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1150,7 +1150,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}");
+            urlBuilder_.Append("translation/engines/{id}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1242,7 +1242,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}");
+            urlBuilder_.Append("translation/engines/{id}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1333,7 +1333,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("segment");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/translate");
+            urlBuilder_.Append("translation/engines/{id}/translate");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1445,7 +1445,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("segment");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/translate/{n}");
+            urlBuilder_.Append("translation/engines/{id}/translate/{n}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{n}", System.Uri.EscapeDataString(ConvertToString(n, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -1553,7 +1553,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("segment");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/get-word-graph");
+            urlBuilder_.Append("translation/engines/{id}/get-word-graph");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1660,7 +1660,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("segmentPair");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/train-segment");
+            urlBuilder_.Append("translation/engines/{id}/train-segment");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1739,9 +1739,9 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Corpus> AddCorporaAsync(string id, CorpusConfig corpusConfig)
+        public virtual System.Threading.Tasks.Task<Corpus> AddCorpusAsync(string id, CorpusConfig corpusConfig)
         {
-            return AddCorporaAsync(id, corpusConfig, System.Threading.CancellationToken.None);
+            return AddCorpusAsync(id, corpusConfig, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -1752,7 +1752,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Corpus> AddCorporaAsync(string id, CorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<Corpus> AddCorpusAsync(string id, CorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1761,7 +1761,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("corpusConfig");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/corpora");
+            urlBuilder_.Append("translation/engines/{id}/corpora");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1857,7 +1857,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/corpora");
+            urlBuilder_.Append("translation/engines/{id}/corpora");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1954,7 +1954,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("corpusId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/corpora/{corpusId}");
+            urlBuilder_.Append("translation/engines/{id}/corpora/{corpusId}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{corpusId}", System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -2052,7 +2052,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("corpusId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/corpora/{corpusId}");
+            urlBuilder_.Append("translation/engines/{id}/corpora/{corpusId}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{corpusId}", System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -2144,7 +2144,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("corpusId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/corpora/{corpusId}/pretranslations");
+            urlBuilder_.Append("translation/engines/{id}/corpora/{corpusId}/pretranslations");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{corpusId}", System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -2247,7 +2247,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("textId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/corpora/{corpusId}/pretranslations/{textId}");
+            urlBuilder_.Append("translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{corpusId}", System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{textId}", System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
@@ -2341,7 +2341,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/builds");
+            urlBuilder_.Append("translation/engines/{id}/builds");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -2415,9 +2415,9 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Build> CreateBuildAsync(string id)
+        public virtual System.Threading.Tasks.Task<Build> StartBuildAsync(string id)
         {
-            return CreateBuildAsync(id, System.Threading.CancellationToken.None);
+            return StartBuildAsync(id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -2427,13 +2427,13 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Build> CreateBuildAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<Build> StartBuildAsync(string id, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/builds");
+            urlBuilder_.Append("translation/engines/{id}/builds");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -2533,7 +2533,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("buildId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/builds/{buildId}?");
+            urlBuilder_.Append("translation/engines/{id}/builds/{buildId}?");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{buildId}", System.Uri.EscapeDataString(ConvertToString(buildId, System.Globalization.CultureInfo.InvariantCulture)));
             if (minRevision != null)
@@ -2645,7 +2645,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/current-build?");
+            urlBuilder_.Append("translation/engines/{id}/current-build?");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             if (minRevision != null)
             {
@@ -2754,7 +2754,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation_engines/{id}/current-build/cancel");
+            urlBuilder_.Append("translation/engines/{id}/current-build/cancel");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -3707,6 +3707,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Url { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public ResourceLink Engine { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Name { get; set; } = default!;
 
@@ -3728,17 +3731,6 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class CorpusFile
-    {
-        [Newtonsoft.Json.JsonProperty("file", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public ResourceLink File { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("textId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? TextId { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class ResourceLink
     {
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -3746,6 +3738,17 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Url { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CorpusFile
+    {
+        [Newtonsoft.Json.JsonProperty("file", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public ResourceLink File { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("textId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? TextId { get; set; } = default!;
 
     }
 

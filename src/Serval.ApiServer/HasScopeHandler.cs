@@ -1,7 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-
-namespace Serval.ApiServer;
+﻿namespace Serval.ApiServer;
 
 public class HasScopeHandler : AuthorizationHandler<HasScopeRequirement>
 {

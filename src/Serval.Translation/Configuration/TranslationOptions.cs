@@ -4,10 +4,10 @@ public class TranslationOptions
 {
     public const string Key = "Translation";
 
-    public List<Engine> Engines { get; set; } = new List<Engine>();
+    public List<EngineInfo> Engines { get; set; } = new List<EngineInfo>();
 }
 
-public class Engine
+public class EngineInfo
 {
     public string Type { get; set; } = "";
     public string Address { get; set; } = "";

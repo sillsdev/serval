@@ -1,9 +1,4 @@
-﻿using Serval.DataFiles.Entities;
-using Serval.DataFiles.Services;
-using Serval.Shared.Contracts;
-using Serval.Shared.Services;
-
-namespace Serval.ApiServer;
+﻿namespace Serval.ApiServer;
 
 public class DataFileRetriever : IDataFileRetriever
 {

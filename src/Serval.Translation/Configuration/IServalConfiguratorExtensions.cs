@@ -1,4 +1,4 @@
-﻿using Serval.Translation.Engine.V1;
+﻿using Serval.Translation.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -32,7 +32,7 @@ public static class IServalConfiguratorExtensions
         if (configure is not null)
             configure(translationOptions);
 
-        foreach (Engine engine in translationOptions.Engines)
+        foreach (EngineInfo engine in translationOptions.Engines)
         {
             configurator.Services.AddGrpcClient<TranslationEngineApi.TranslationEngineApiClient>(
                 engine.Type,

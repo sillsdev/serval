@@ -1,7 +1,4 @@
-﻿using Serval.Translation.Engine.V1;
-using Corpus = Serval.Translation.Entities.Corpus;
-using GrpcCorpus = Serval.Translation.Engine.V1.Corpus;
-using GrpcCorpusFile = Serval.Translation.Engine.V1.CorpusFile;
+﻿using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
 
@@ -11,23 +8,26 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
     private readonly GrpcClientFactory _grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext;
+    private readonly IMapper _mapper;
 
     public TranslationEngineService(
-        IRepository<TranslationEngine> translationEngines,
+        IRepository<TranslationEngine> engines,
         IRepository<Build> builds,
         GrpcClientFactory grpcClientFactory,
         IOptionsMonitor<DataFileOptions> dataFileOptions,
-        IDataAccessContext dataAccessContext
+        IDataAccessContext dataAccessContext,
+        IMapper mapper
     )
-        : base(translationEngines)
+        : base(engines)
     {
         _builds = builds;
         _grpcClientFactory = grpcClientFactory;
         _dataFileOptions = dataFileOptions;
         _dataAccessContext = dataAccessContext;
+        _mapper = mapper;
     }
 
-    public async Task<TranslationResult?> TranslateAsync(
+    public async Task<Models.TranslationResult?> TranslateAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -48,10 +48,10 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
             },
             cancellationToken: cancellationToken
         );
-        return response.Results[0];
+        return _mapper.Map<Models.TranslationResult>(response.Results[0]);
     }
 
-    public async Task<IEnumerable<TranslationResult>?> TranslateAsync(
+    public async Task<IEnumerable<Models.TranslationResult>?> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -73,10 +73,10 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
             },
             cancellationToken: cancellationToken
         );
-        return response.Results;
+        return response.Results.Select(_mapper.Map<Models.TranslationResult>);
     }
 
-    public async Task<WordGraph?> GetWordGraphAsync(
+    public async Task<Models.WordGraph?> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -96,7 +96,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
             },
             cancellationToken: cancellationToken
         );
-        return response.WordGraph;
+        return _mapper.Map<Models.WordGraph>(response.WordGraph);
     }
 
     public async Task<bool> TrainSegmentPairAsync(
@@ -187,43 +187,18 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         {
             EngineType = engine.Type,
             EngineId = engine.Id,
-            BuildId = build.Id
+            BuildId = build.Id,
+            Corpora =
+            {
+                engine.Corpora.Select(
+                    c =>
+                        _mapper.Map<V1.Corpus>(
+                            c,
+                            o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
+                        )
+                )
+            }
         };
-        foreach (Corpus corpus in engine.Corpora)
-        {
-            request.Corpora.Add(
-                new GrpcCorpus
-                {
-                    SourceLanguage = corpus.SourceLanguage,
-                    TargetLanguage = corpus.TargetLanguage,
-                    Pretranslate = corpus.Pretranslate,
-                    SourceFiles =
-                    {
-                        corpus.SourceFiles.Select(
-                            f =>
-                                new GrpcCorpusFile
-                                {
-                                    Filename = GetDataFilePath(f.Filename),
-                                    Format = f.Format,
-                                    TextId = f.TextId
-                                }
-                        )
-                    },
-                    TargetFiles =
-                    {
-                        corpus.TargetFiles.Select(
-                            f =>
-                                new GrpcCorpusFile
-                                {
-                                    Filename = GetDataFilePath(f.Filename),
-                                    Format = f.Format,
-                                    TextId = f.TextId
-                                }
-                        )
-                    }
-                }
-            );
-        }
         await client.StartBuildAsync(request, cancellationToken: cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
@@ -243,7 +218,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         );
     }
 
-    public Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default)
+    public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
     {
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
     }
@@ -274,10 +249,5 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
                     .RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId),
             cancellationToken
         );
-    }
-
-    private string GetDataFilePath(string id)
-    {
-        return Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, id);
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using Serval.Translation.Engine.V1;
+using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
 
@@ -10,7 +10,7 @@ public class TranslationEngineServiceTests
     public async Task TranslateAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        TranslationResult? result = await env.Service.TranslateAsync("engine1", "Esto es una prueba.");
+        Models.TranslationResult? result = await env.Service.TranslateAsync("engine1", "Esto es una prueba.");
         Assert.That(result, Is.Null);
     }
 
@@ -19,7 +19,7 @@ public class TranslationEngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        TranslationResult? result = await env.Service.TranslateAsync(engineId, "Esto es una prueba.");
+        Models.TranslationResult? result = await env.Service.TranslateAsync(engineId, "Esto es una prueba.");
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Tokens, Is.EqualTo("this is a test .".Split()));
     }
@@ -28,7 +28,7 @@ public class TranslationEngineServiceTests
     public async Task GetWordGraphAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        WordGraph? result = await env.Service.GetWordGraphAsync("engine1", "Esto es una prueba.");
+        Models.WordGraph? result = await env.Service.GetWordGraphAsync("engine1", "Esto es una prueba.");
         Assert.That(result, Is.Null);
     }
 
@@ -37,7 +37,7 @@ public class TranslationEngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "Esto es una prueba.");
+        Models.WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "Esto es una prueba.");
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Arcs.SelectMany(a => a.Tokens), Is.EqualTo("this is a test .".Split()));
     }
@@ -125,7 +125,7 @@ public class TranslationEngineServiceTests
         {
             Engines = new MemoryRepository<TranslationEngine>();
             var translationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
-            var translationResult = new TranslationResult
+            var translationResult = new V1.TranslationResult
             {
                 Tokens = { "this is a test .".Split() },
                 Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
@@ -137,17 +137,17 @@ public class TranslationEngineServiceTests
                     (uint)TranslationSources.Smt,
                     (uint)TranslationSources.Smt
                 },
-                AlignedWordPairs =
+                Alignment =
                 {
-                    new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                    new AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                    new AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
-                    new AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
+                    new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                    new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                    new V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
+                    new V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
+                    new V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
                 },
                 Phrases =
                 {
-                    new Phrase
+                    new V1.Phrase
                     {
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 5,
@@ -161,52 +161,52 @@ public class TranslationEngineServiceTests
             translationServiceClient
                 .TranslateAsync(Arg.Any<TranslateRequest>())
                 .Returns(CreateAsyncUnaryCall(translateResponse));
-            var wordGraph = new WordGraph
+            var wordGraph = new V1.WordGraph
             {
                 FinalStates = { 3 },
                 Arcs =
                 {
-                    new WordGraphArc
+                    new V1.WordGraphArc
                     {
                         PrevState = 0,
                         NextState = 1,
                         Score = 1.0,
                         Tokens = { "this is".Split() },
-                        AlignedWordPairs =
+                        Alignment =
                         {
-                            new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
+                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
                         },
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 2,
                         Sources = { GetSources(2, false) },
                         Confidences = { 1.0, 1.0 }
                     },
-                    new WordGraphArc
+                    new V1.WordGraphArc
                     {
                         PrevState = 1,
                         NextState = 2,
                         Score = 1.0,
                         Tokens = { "a test".Split() },
-                        AlignedWordPairs =
+                        Alignment =
                         {
-                            new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
+                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
                         },
                         SourceSegmentStart = 2,
                         SourceSegmentEnd = 4,
                         Sources = { GetSources(2, false) },
                         Confidences = { 1.0, 1.0 }
                     },
-                    new WordGraphArc
+                    new V1.WordGraphArc
                     {
                         PrevState = 2,
                         NextState = 3,
                         Score = 1.0,
                         Tokens = { new[] { "." } },
-                        AlignedWordPairs =
+                        Alignment =
                         {
-                            new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
+                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
                         },
                         SourceSegmentStart = 4,
                         SourceSegmentEnd = 5,
@@ -236,12 +236,17 @@ public class TranslationEngineServiceTests
                 .Returns(translationServiceClient);
             var dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
+
+            var mapperConfig = new MapperConfiguration(c => c.AddProfile<GrpcProfile>());
+            var mapper = new Mapper(mapperConfig);
+
             Service = new TranslationEngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 grpcClientFactory,
                 dataFileOptions,
-                new MemoryDataAccessContext()
+                new MemoryDataAccessContext(),
+                mapper
             );
         }
 
@@ -255,7 +260,24 @@ public class TranslationEngineServiceTests
                 Id = "engine1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                Type = "smt"
+                Type = "smt",
+                Corpora =
+                {
+                    new Models.Corpus
+                    {
+                        Id = "corpus1",
+                        SourceLanguage = "es",
+                        TargetLanguage = "en",
+                        SourceFiles =
+                        {
+                            new Models.CorpusFile { Id = "file1", Filename = "file1.txt" }
+                        },
+                        TargetFiles =
+                        {
+                            new Models.CorpusFile { Id = "file2", Filename = "file2.txt" }
+                        },
+                    }
+                }
             };
             await Engines.InsertAsync(engine);
             return engine;
