@@ -70,6 +70,10 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                     cancellationToken: cancellationToken
                 );
 
+                await client.DeleteAllPretranslationsAsync(
+                    new DeleteAllPretranslationsRequest { EngineId = request.EngineId },
+                    cancellationToken: CancellationToken.None
+                );
                 using (var call = client.InsertPretranslations(cancellationToken: CancellationToken.None))
                 {
                     foreach (ParallelCorpus corpus in request.Corpora.Where(c => c.Pretranslate))
