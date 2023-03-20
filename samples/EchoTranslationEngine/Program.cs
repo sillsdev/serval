@@ -1,5 +1,4 @@
 using EchoTranslationEngine;
-using Serval.Translation.V1;
 
 var builder = WebApplication.CreateBuilder(args);
 

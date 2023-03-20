@@ -19,6 +19,9 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 - Open "Machine.sln" and debug the ApiServer
 - Now, you are running the complete environment where everything is being debugged and the mongodb is exposed.
 
+### local dev in ubuntu
+* Make sure you install dotnet from the microsoft apr-get repo, otherwise debugging doesn't work!  Also you will need to "searchMicrosoftSymbolServer" for the symbols.
+* To have a local MongoDB, use the docker-compose script to create a replica set of one instance.
 
 ### Development in Docker Compose
 
@@ -89,4 +92,4 @@ This is the QA staging environment. To access it,
     - Copy `Client ID` into Environment variable `MACHINE_CLIENT_ID`
     - Copy `Client Secret` into Environment variable `MACHINE_CLIENT_SECRET`
   - Run tests from `SIL.Machine.WebApi.SpecFlowTests`
-    - The token will automatically be retrieved from Auth0 when you run the tests 
+    - The token will automatically be retrieved from Auth0 when you run the tests

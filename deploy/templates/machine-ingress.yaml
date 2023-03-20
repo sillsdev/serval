@@ -3,7 +3,6 @@ kind: Ingress
 metadata:
   name: machine-ingress
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/proxy-body-size: 100m
 spec:
   ingressClassName: nginx
@@ -21,6 +20,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: machine-server
+                name: machine-api-server
                 port:
                   number: 80

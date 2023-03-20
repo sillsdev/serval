@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: machine-engine-server
+  name: machine-engine-server
+spec:
+  ports:
+    - name: "81"
+      port: 81
+      targetPort: 81
+  selector:
+    app: machine-engine-server
+status:
+  loadBalancer: {}

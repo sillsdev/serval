@@ -1,8 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
-using Serval.Translation.V1;
-
-namespace EchoTranslationEngine;
+﻿namespace EchoTranslationEngine;
 
 public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngineApiBase
 {
