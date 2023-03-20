@@ -1,6 +1,7 @@
 ﻿namespace Serval.Translation.Controllers;
 
-[Route("translation/engines")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/translation/engines")]
 [OpenApiTag("Translation Engines")]
 public class TranslationEnginesController : ServalControllerBase
 {

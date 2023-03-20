@@ -1,6 +1,7 @@
 ﻿namespace Serval.Webhooks.Controllers;
 
-[Route("hooks")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/hooks")]
 public class WebhooksController : ServalControllerBase
 {
     private readonly IWebhookService _hookService;

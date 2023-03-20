@@ -1,6 +1,7 @@
 ﻿namespace Serval.DataFiles.Controllers;
 
-[Route("files")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/files")]
 [OpenApiTag("Files")]
 public class DataFilesController : ServalControllerBase
 {

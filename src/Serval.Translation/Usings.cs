@@ -1,6 +1,7 @@
 ﻿global using System.Diagnostics.CodeAnalysis;
 global using System.Linq.Expressions;
 global using System.Reflection;
+global using Asp.Versioning;
 global using AutoMapper;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;

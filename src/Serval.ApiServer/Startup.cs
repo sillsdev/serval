@@ -69,34 +69,69 @@ public class Startup
         );
         services.AddScoped<IEventBroker, EventBroker>();
         services.AddScoped<IDataFileRetriever, DataFileRetriever>();
+        services
+            .AddApiVersioning(o =>
+            {
+                o.AssumeDefaultVersionWhenUnspecified = false;
+                o.DefaultApiVersion = new ApiVersion(1, 0);
+                o.ReportApiVersions = true;
+                o.ApiVersionReader = new UrlSegmentApiVersionReader();
+            })
+            .AddMvc()
+            .AddApiExplorer(o =>
+            {
+                o.DefaultApiVersion = new ApiVersion(1, 0);
+                o.GroupNameFormat = "'v'VVV";
+                o.SubstituteApiVersionInUrl = true;
+            });
 
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerDocument(doc =>
+        var versions = new[] { new Version(1, 0) };
+        foreach (Version version in versions)
         {
-            doc.SchemaType = SchemaType.OpenApi3;
-            doc.Title = "Serval API";
-            doc.SchemaNameGenerator = new ServalSchemaNameGenerator();
-            doc.UseControllerSummaryAsTagDescription = true;
-            doc.AddSecurity(
-                "bearer",
-                Enumerable.Empty<string>(),
-                new OpenApiSecurityScheme
-                {
-                    Type = OpenApiSecuritySchemeType.OAuth2,
-                    Description = "Auth0 Client Credentials Flow",
-                    Flow = OpenApiOAuth2Flow.Application,
-                    Flows = new OpenApiOAuthFlows
+            services.AddSwaggerDocument(o =>
+            {
+                o.SchemaType = SchemaType.OpenApi3;
+                o.Title = "Serval API";
+                o.Description = "Natural language processing services for minority language Bible translation.";
+                o.DocumentName = "v" + version.Major;
+                o.ApiGroupNames = new[] { "v" + version.Major };
+                o.Version = version.Major + "." + version.Minor;
+
+                o.SchemaNameGenerator = new ServalSchemaNameGenerator();
+                o.UseControllerSummaryAsTagDescription = true;
+                o.AddSecurity(
+                    "bearer",
+                    Enumerable.Empty<string>(),
+                    new OpenApiSecurityScheme
                     {
-                        ClientCredentials = new OpenApiOAuthFlow
+                        Type = OpenApiSecuritySchemeType.OAuth2,
+                        Description = "Auth0 Client Credentials Flow",
+                        Flow = OpenApiOAuth2Flow.Application,
+                        Flows = new OpenApiOAuthFlows
                         {
-                            AuthorizationUrl = $"{authority}authorize",
-                            TokenUrl = $"{authority}oauth/token"
-                        }
-                    },
-                }
-            );
-            doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
-        });
+                            ClientCredentials = new OpenApiOAuthFlow
+                            {
+                                AuthorizationUrl = $"{authority}authorize",
+                                TokenUrl = $"{authority}oauth/token"
+                            }
+                        },
+                    }
+                );
+                o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
+
+                o.AllowReferencesWithProperties = true;
+                o.PostProcess = document =>
+                {
+                    var prefix = "/api/v" + version.Major;
+                    foreach (var pair in document.Paths.ToArray())
+                    {
+                        document.Paths.Remove(pair.Key);
+                        document.Paths[pair.Key.Substring(prefix.Length)] = pair.Value;
+                    }
+                };
+            });
+        }
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -114,7 +149,15 @@ public class Startup
             x.MapServalTranslationServices();
         });
 
-        app.UseOpenApi();
+        app.UseOpenApi(o =>
+        {
+            o.PostProcess = (document, request) =>
+            {
+                // Patch server URL for Swagger UI
+                var prefix = "/api/v" + document.Info.Version.Split('.')[0];
+                document.Servers.First().Url += prefix;
+            };
+        });
         app.UseSwaggerUi3(settings =>
         {
             settings.OAuth2Client = new OAuth2ClientSettings
