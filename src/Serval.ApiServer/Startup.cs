@@ -88,7 +88,7 @@ public class Startup
         {
             services.AddSwaggerDocument(o =>
             {
-                o.SchemaType = SchemaType.OpenApi3;
+                o.SchemaType = SchemaType.Swagger2;
                 o.Title = "Serval API";
                 o.Description = "Natural language processing services for minority language Bible translation.";
                 o.DocumentName = "v" + version.Major;
@@ -116,17 +116,6 @@ public class Startup
                     }
                 );
                 o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
-
-                o.AllowReferencesWithProperties = true;
-                o.PostProcess = document =>
-                {
-                    var prefix = "/api/v" + version.Major;
-                    foreach (var pair in document.Paths.ToArray())
-                    {
-                        document.Paths.Remove(pair.Key);
-                        document.Paths[pair.Key.Substring(prefix.Length)] = pair.Value;
-                    }
-                };
             });
         }
     }
@@ -146,15 +135,7 @@ public class Startup
             x.MapServalTranslationServices();
         });
 
-        app.UseOpenApi(o =>
-        {
-            o.PostProcess = (document, request) =>
-            {
-                // Patch server URL for Swagger UI
-                var prefix = "/api/v" + document.Info.Version.Split('.')[0];
-                document.Servers.First().Url += prefix;
-            };
-        });
+        app.UseOpenApi();
         app.UseSwaggerUi3(settings =>
         {
             settings.OAuth2Client = new OAuth2ClientSettings
