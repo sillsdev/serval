@@ -54,6 +54,7 @@ public class DataFilesController : ServalControllerBase
     /// Uploads a file.
     /// </summary>
     /// <param name="file">The file.</param>
+    /// <param name="name">The name.</param>
     /// <param name="format">The file format.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="201">The file was uploaded successfully.</response>
@@ -63,13 +64,14 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<DataFileDto>> CreateAsync(
         [BindRequired] IFormFile file,
+        [FromForm] string? name,
         [BindRequired] [FromForm] FileFormat format,
         CancellationToken cancellationToken
     )
     {
         var dataFile = new DataFile
         {
-            Name = file.FileName,
+            Name = name ?? file.FileName,
             Format = format,
             Owner = Owner
         };
