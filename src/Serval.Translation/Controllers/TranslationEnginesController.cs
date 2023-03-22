@@ -278,9 +278,9 @@ public class TranslationEnginesController : ServalControllerBase
     [HttpPost("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ParallelCorpusDto>> AddCorpusAsync(
+    public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
-        [FromBody] ParallelCorpusConfigDto corpusConfig,
+        [FromBody] TranslationCorpusConfigDto corpusConfig,
         CancellationToken cancellationToken
     )
     {
@@ -290,7 +290,7 @@ public class TranslationEnginesController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
 
-        var corpus = new ParallelCorpus
+        var corpus = new Corpus
         {
             Id = _idGenerator.GenerateId(),
             Name = corpusConfig.Name,
@@ -298,11 +298,11 @@ public class TranslationEnginesController : ServalControllerBase
             TargetLanguage = corpusConfig.TargetLanguage,
             Pretranslate = corpusConfig.Pretranslate ?? false
         };
-        List<ParallelCorpusFile>? sourceFiles = await MapAsync(corpusConfig.SourceFiles, cancellationToken);
+        List<CorpusFile>? sourceFiles = await MapAsync(corpusConfig.SourceFiles, cancellationToken);
         if (sourceFiles is null)
             return UnprocessableEntity();
         corpus.SourceFiles.AddRange(sourceFiles);
-        List<ParallelCorpusFile>? targetFiles = await MapAsync(corpusConfig.TargetFiles, cancellationToken);
+        List<CorpusFile>? targetFiles = await MapAsync(corpusConfig.TargetFiles, cancellationToken);
         if (targetFiles is null)
             return UnprocessableEntity();
         corpus.TargetFiles.AddRange(targetFiles);
@@ -322,7 +322,7 @@ public class TranslationEnginesController : ServalControllerBase
     [HttpGet("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<ParallelCorpusDto>>> GetAllCorporaAsync(
+    public async Task<ActionResult<IEnumerable<TranslationCorpusDto>>> GetAllCorporaAsync(
         [NotNull] string id,
         CancellationToken cancellationToken
     )
@@ -348,7 +348,7 @@ public class TranslationEnginesController : ServalControllerBase
     [HttpGet("{id}/corpora/{corpusId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ParallelCorpusDto>> GetCorpusAsync(
+    public async Task<ActionResult<TranslationCorpusDto>> GetCorpusAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
         CancellationToken cancellationToken
@@ -360,7 +360,7 @@ public class TranslationEnginesController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
 
-        ParallelCorpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
+        Corpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
         if (corpus == null)
             return NotFound();
 
@@ -643,18 +643,18 @@ public class TranslationEnginesController : ServalControllerBase
         return Ok();
     }
 
-    private ParallelCorpusDto Map(string engineId, ParallelCorpus corpus)
+    private TranslationCorpusDto Map(string engineId, Corpus corpus)
     {
-        return _mapper.Map<ParallelCorpusDto>(corpus, opts => opts.Items["EngineId"] = engineId);
+        return _mapper.Map<TranslationCorpusDto>(corpus, opts => opts.Items["EngineId"] = engineId);
     }
 
-    private async Task<List<ParallelCorpusFile>?> MapAsync(
-        IEnumerable<ParallelCorpusFileConfigDto> fileConfigs,
+    private async Task<List<CorpusFile>?> MapAsync(
+        IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
         CancellationToken cancellationToken
     )
     {
-        var files = new List<ParallelCorpusFile>();
-        foreach (ParallelCorpusFileConfigDto fileConfig in fileConfigs)
+        var files = new List<CorpusFile>();
+        foreach (TranslationCorpusFileConfigDto fileConfig in fileConfigs)
         {
             DataFileResult? dataFileResult = await _dataFileRetriever.GetDataFileAsync(
                 fileConfig.FileId,
@@ -664,7 +664,7 @@ public class TranslationEnginesController : ServalControllerBase
             if (dataFileResult is null)
                 throw new InvalidOperationException("Unable to retrieve data file.");
             files.Add(
-                new ParallelCorpusFile
+                new CorpusFile
                 {
                     Id = fileConfig.FileId,
                     Filename = dataFileResult.Filename,

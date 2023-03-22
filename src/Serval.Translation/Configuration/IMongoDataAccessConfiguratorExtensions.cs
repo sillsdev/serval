@@ -11,11 +11,18 @@ public static class IMongoDataAccessConfiguratorExtensions
         configurator.AddRepository<TranslationEngine>(
             "translation.engines",
             init: c =>
+            {
                 c.Indexes.CreateOrUpdate(
                     new CreateIndexModel<TranslationEngine>(
-                        Builders<TranslationEngine>.IndexKeys.Ascending(p => p.Owner)
+                        Builders<TranslationEngine>.IndexKeys.Ascending(e => e.Owner)
                     )
-                )
+                );
+                c.Indexes.CreateOrUpdate(
+                    new CreateIndexModel<TranslationEngine>(
+                        Builders<TranslationEngine>.IndexKeys.Ascending("corpora._id")
+                    )
+                );
+            }
         );
         configurator.AddRepository<Build>(
             "translation.builds",

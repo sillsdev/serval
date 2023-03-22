@@ -19,7 +19,19 @@ public class EventBroker : IEventBroker
                 await _webhookService.SendEventAsync(
                     WebhookEvent.BuildStarted,
                     buildStarted.Owner,
-                    new { buildStarted.BuildId, buildStarted.EngineId },
+                    new
+                    {
+                        Build = new ResourceLinkDto
+                        {
+                            Id = buildStarted.BuildId,
+                            Url = $"{Urls.TranslationEngines}/builds/{buildStarted.BuildId}"
+                        },
+                        Engine = new ResourceLinkDto
+                        {
+                            Id = buildStarted.EngineId,
+                            Url = $"{Urls.TranslationEngines}/{buildStarted.EngineId}"
+                        }
+                    },
                     cancellationToken
                 );
                 break;
@@ -30,8 +42,16 @@ public class EventBroker : IEventBroker
                     buildFinished.Owner,
                     new
                     {
-                        buildFinished.BuildId,
-                        buildFinished.EngineId,
+                        Build = new ResourceLinkDto
+                        {
+                            Id = buildFinished.BuildId,
+                            Url = $"{Urls.TranslationEngines}/builds/{buildFinished.BuildId}"
+                        },
+                        Engine = new ResourceLinkDto
+                        {
+                            Id = buildFinished.EngineId,
+                            Url = $"{Urls.TranslationEngines}/{buildFinished.EngineId}"
+                        },
                         buildFinished.BuildState,
                         buildFinished.DateFinished
                     },

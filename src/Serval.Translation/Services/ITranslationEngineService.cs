@@ -35,7 +35,7 @@ public interface ITranslationEngineService
 
     Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task AddCorpusAsync(string engineId, ParallelCorpus corpus, CancellationToken cancellationToken = default);
+    Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default);
     Task<bool> DeleteCorpusAsync(string engineId, string corpusId, CancellationToken cancellationToken = default);
 
     Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default);

@@ -142,16 +142,16 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         await Entities.InsertAsync(engine, cancellationToken);
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.CreateAsync(
-            new CreateRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceLanguage = engine.SourceLanguage,
-                TargetLanguage = engine.TargetLanguage
-            },
-            cancellationToken: cancellationToken
-        );
+        var request = new CreateRequest
+        {
+            EngineType = engine.Type,
+            EngineId = engine.Id,
+            SourceLanguage = engine.SourceLanguage,
+            TargetLanguage = engine.TargetLanguage
+        };
+        if (engine.Name is not null)
+            request.EngineName = engine.Name;
+        await client.CreateAsync(request, cancellationToken: cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
     }
 
@@ -196,7 +196,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
             {
                 engine.Corpora.Select(
                     c =>
-                        _mapper.Map<V1.ParallelCorpus>(
+                        _mapper.Map<V1.Corpus>(
                             c,
                             o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
                         )
@@ -222,11 +222,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         );
     }
 
-    public Task AddCorpusAsync(
-        string engineId,
-        Models.ParallelCorpus corpus,
-        CancellationToken cancellationToken = default
-    )
+    public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
     {
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
     }

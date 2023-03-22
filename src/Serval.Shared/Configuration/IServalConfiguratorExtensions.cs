@@ -43,11 +43,15 @@ public static class IServalConfiguratorExtensions
 
     public static IServalConfigurator AddMongoDataAccess(
         this IServalConfigurator configurator,
-        string connectionString,
-        Action<IMongoDataAccessConfigurator> configure
+        Action<IMongoDataAccessConfigurator> configure,
+        string? connectionString = null
     )
     {
-        configurator.Services.AddMongoDataAccess(connectionString, "Serval", configure);
+        configurator.Services.AddMongoDataAccess(
+            connectionString ?? configurator.Configuration.GetConnectionString("Mongo"),
+            "Serval",
+            configure
+        );
         return configurator;
     }
 }

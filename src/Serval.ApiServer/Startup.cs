@@ -52,15 +52,12 @@ public class Startup
         services.AddServal(
             serval =>
             {
-                serval.AddMongoDataAccess(
-                    Configuration.GetConnectionString("Mongo"),
-                    mongo =>
-                    {
-                        mongo.AddTranslationRepositories();
-                        mongo.AddDataFilesRepositories();
-                        mongo.AddWebhooksRepositories();
-                    }
-                );
+                serval.AddMongoDataAccess(mongo =>
+                {
+                    mongo.AddTranslationRepositories();
+                    mongo.AddDataFilesRepositories();
+                    mongo.AddWebhooksRepositories();
+                });
                 serval.AddTranslation();
                 serval.AddDataFiles();
                 serval.AddWebhooks();

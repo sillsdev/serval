@@ -17,8 +17,9 @@ service TranslationEngineApi {
 message CreateRequest {
     string engine_type = 1;
     string engine_id = 2;
-    string source_language = 3;
-    string target_language = 4;
+    optional string engine_name = 3;
+    string source_language = 4;
+    string target_language = 5;
 }
 
 message DeleteRequest {
@@ -59,7 +60,7 @@ message StartBuildRequest {
     string engine_type = 1;
     string engine_id = 2;
     string build_id = 3;
-    repeated ParallelCorpus corpora = 4;
+    repeated Corpus corpora = 4;
 }
 
 message CancelBuildRequest {
@@ -106,16 +107,16 @@ message WordGraph {
     repeated WordGraphArc arcs = 3;
 }
 
-message ParallelCorpus {
+message Corpus {
     string id = 1;
     string source_language = 2;
     string target_language = 3;
     bool pretranslate = 4;
-    repeated ParallelCorpusFile source_files = 5;
-    repeated ParallelCorpusFile target_files = 6;
+    repeated CorpusFile source_files = 5;
+    repeated CorpusFile target_files = 6;
 }
 
-message ParallelCorpusFile {
+message CorpusFile {
     string location = 1;
     FileFormat format = 2;
     string text_id = 3;

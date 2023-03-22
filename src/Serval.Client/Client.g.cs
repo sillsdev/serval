@@ -730,7 +730,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ParallelCorpus> AddCorpusAsync(string id, ParallelCorpusConfig corpusConfig);
+        System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -740,7 +740,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ParallelCorpus> AddCorpusAsync(string id, ParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets all corpora for a translation engine.
@@ -748,7 +748,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ParallelCorpus>> GetAllCorporaAsync(string id);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationCorpus>> GetAllCorporaAsync(string id);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -757,7 +757,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ParallelCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the configuration of a corpus for a translation engine.
@@ -766,7 +766,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The corpus configuration.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ParallelCorpus> GetCorpusAsync(string id, string corpusId);
+        System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -776,7 +776,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The corpus configuration.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ParallelCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes a corpus from a translation engine.
@@ -1739,7 +1739,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<ParallelCorpus> AddCorpusAsync(string id, ParallelCorpusConfig corpusConfig)
+        public virtual System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig)
         {
             return AddCorpusAsync(id, corpusConfig, System.Threading.CancellationToken.None);
         }
@@ -1752,7 +1752,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<ParallelCorpus> AddCorpusAsync(string id, ParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1800,7 +1800,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<ParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1839,7 +1839,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ParallelCorpus>> GetAllCorporaAsync(string id)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationCorpus>> GetAllCorporaAsync(string id)
         {
             return GetAllCorporaAsync(id, System.Threading.CancellationToken.None);
         }
@@ -1851,7 +1851,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ParallelCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1892,7 +1892,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<ParallelCorpus>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<TranslationCorpus>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1932,7 +1932,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The corpus configuration.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<ParallelCorpus> GetCorpusAsync(string id, string corpusId)
+        public virtual System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId)
         {
             return GetCorpusAsync(id, corpusId, System.Threading.CancellationToken.None);
         }
@@ -1945,7 +1945,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The corpus configuration.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<ParallelCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1990,7 +1990,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<ParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -3705,7 +3705,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpus
+    public partial class TranslationCorpus
     {
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Id { get; set; } = default!;
@@ -3729,10 +3729,10 @@ namespace Serval.Client
         public bool Pretranslate { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<ParallelCorpusFile> SourceFiles { get; set; } = default!;
+        public System.Collections.Generic.ICollection<TranslationCorpusFile> SourceFiles { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<ParallelCorpusFile> TargetFiles { get; set; } = default!;
+        public System.Collections.Generic.ICollection<TranslationCorpusFile> TargetFiles { get; set; } = default!;
 
     }
 
@@ -3748,7 +3748,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusFile
+    public partial class TranslationCorpusFile
     {
         [Newtonsoft.Json.JsonProperty("file", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public ResourceLink File { get; set; } = default!;
@@ -3759,7 +3759,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusConfig
+    public partial class TranslationCorpusConfig
     {
         /// <summary>
         /// The corpus name.
@@ -3780,16 +3780,16 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<ParallelCorpusFileConfig> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<ParallelCorpusFileConfig>();
+        public System.Collections.Generic.ICollection<TranslationCorpusFileConfig> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
 
         [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<ParallelCorpusFileConfig> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<ParallelCorpusFileConfig>();
+        public System.Collections.Generic.ICollection<TranslationCorpusFileConfig> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusFileConfig
+    public partial class TranslationCorpusFileConfig
     {
         [Newtonsoft.Json.JsonProperty("fileId", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]

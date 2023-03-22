@@ -76,7 +76,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                 );
                 using (var call = client.InsertPretranslations(cancellationToken: CancellationToken.None))
                 {
-                    foreach (ParallelCorpus corpus in request.Corpora.Where(c => c.Pretranslate))
+                    foreach (Corpus corpus in request.Corpora.Where(c => c.Pretranslate))
                     {
                         var sourceFiles = corpus.SourceFiles
                             .Where(f => f.Format == FileFormat.Text)

@@ -264,14 +264,14 @@ public class TranslationEngineServiceTests
                 Type = "smt",
                 Corpora =
                 {
-                    new Models.ParallelCorpus
+                    new Models.Corpus
                     {
                         Id = "corpus1",
                         SourceLanguage = "es",
                         TargetLanguage = "en",
                         SourceFiles =
                         {
-                            new Models.ParallelCorpusFile
+                            new Models.CorpusFile
                             {
                                 Id = "file1",
                                 Filename = "file1.txt",
@@ -281,7 +281,7 @@ public class TranslationEngineServiceTests
                         },
                         TargetFiles =
                         {
-                            new Models.ParallelCorpusFile
+                            new Models.CorpusFile
                             {
                                 Id = "file2",
                                 Filename = "file2.txt",
