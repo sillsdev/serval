@@ -4,11 +4,17 @@ public class EventBroker : IEventBroker
 {
     private readonly IWebhookService _webhookService;
     private readonly ITranslationEngineService _translationEngineService;
+    private readonly LinkGenerator _linkGenerator;
 
-    public EventBroker(IWebhookService webhookService, ITranslationEngineService translationEngineService)
+    public EventBroker(
+        IWebhookService webhookService,
+        ITranslationEngineService translationEngineService,
+        LinkGenerator linkGenerator
+    )
     {
         _webhookService = webhookService;
         _translationEngineService = translationEngineService;
+        _linkGenerator = linkGenerator;
     }
 
     public async Task PublishAsync<T>(T @event, CancellationToken cancellationToken = default)
@@ -24,12 +30,20 @@ public class EventBroker : IEventBroker
                         Build = new ResourceLinkDto
                         {
                             Id = buildStarted.BuildId,
-                            Url = $"{Urls.TranslationEngines}/builds/{buildStarted.BuildId}"
+                            Url = _linkGenerator.GetPathByAction(
+                                controller: "TranslationEngines",
+                                action: "GetBuild",
+                                values: new { id = buildStarted.EngineId, buildId = buildStarted.BuildId }
+                            )!
                         },
                         Engine = new ResourceLinkDto
                         {
                             Id = buildStarted.EngineId,
-                            Url = $"{Urls.TranslationEngines}/{buildStarted.EngineId}"
+                            Url = _linkGenerator.GetPathByAction(
+                                controller: "TranslationEngines",
+                                action: "Get",
+                                values: new { id = buildStarted.EngineId }
+                            )!
                         }
                     },
                     cancellationToken
@@ -45,12 +59,20 @@ public class EventBroker : IEventBroker
                         Build = new ResourceLinkDto
                         {
                             Id = buildFinished.BuildId,
-                            Url = $"{Urls.TranslationEngines}/builds/{buildFinished.BuildId}"
+                            Url = _linkGenerator.GetPathByAction(
+                                controller: "TranslationEngines",
+                                action: "GetBuild",
+                                values: new { id = buildFinished.EngineId, buildId = buildFinished.BuildId }
+                            )!
                         },
                         Engine = new ResourceLinkDto
                         {
                             Id = buildFinished.EngineId,
-                            Url = $"{Urls.TranslationEngines}/{buildFinished.EngineId}"
+                            Url = _linkGenerator.GetPathByAction(
+                                controller: "TranslationEngines",
+                                action: "Get",
+                                values: new { id = buildFinished.EngineId }
+                            )!
                         },
                         buildFinished.BuildState,
                         buildFinished.DateFinished
