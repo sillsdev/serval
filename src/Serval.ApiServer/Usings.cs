@@ -1,6 +1,10 @@
 ﻿global using System.Security.Claims;
 global using System.Text.Json.Serialization;
 global using Asp.Versioning;
+global using Hangfire;
+global using Hangfire.Mongo;
+global using Hangfire.Mongo.Migration.Strategies;
+global using Hangfire.Mongo.Migration.Strategies.Backup;
 global using MassTransit;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.AspNetCore.Authorization;
@@ -12,3 +16,4 @@ global using NSwag.AspNetCore;
 global using NSwag.Generation.Processors.Security;
 global using Serval.Shared.Controllers;
 global using Serval.Shared.Models;
+global using Serval.Shared.Services;

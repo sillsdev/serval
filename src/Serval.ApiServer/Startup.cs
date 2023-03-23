@@ -64,6 +64,28 @@ public class Startup
             },
             Configuration
         );
+        services.AddTransient<IUrlService, UrlService>();
+
+        services.AddHangfire(
+            c =>
+                c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UseMongoStorage(
+                        Configuration.GetConnectionString("Hangfire"),
+                        new MongoStorageOptions
+                        {
+                            MigrationOptions = new MongoMigrationOptions
+                            {
+                                MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                                BackupStrategy = new CollectionMongoBackupStrategy()
+                            },
+                            CheckConnection = true,
+                            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+                        }
+                    )
+        );
+        services.AddHangfireServer();
 
         services.AddMediator(cfg =>
         {
@@ -139,6 +161,7 @@ public class Startup
         {
             x.MapControllers();
             x.MapServalTranslationServices();
+            x.MapHangfireDashboard();
         });
 
         app.UseOpenApi();

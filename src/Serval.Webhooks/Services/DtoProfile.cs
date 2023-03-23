@@ -10,19 +10,15 @@ public class DtoProfile : Profile
 
 public class WebhookDtoMappingAction : IMappingAction<Webhook, WebhookDto>
 {
-    private readonly LinkGenerator _linkGenerator;
+    private readonly IUrlService _urlService;
 
-    public WebhookDtoMappingAction(LinkGenerator linkGenerator)
+    public WebhookDtoMappingAction(IUrlService urlService)
     {
-        _linkGenerator = linkGenerator;
+        _urlService = urlService;
     }
 
     public void Process(Webhook source, WebhookDto destination, ResolutionContext context)
     {
-        destination.Url = _linkGenerator.GetPathByAction(
-            controller: "Webhooks",
-            action: "Get",
-            values: new { id = source.Id, version = "1" }
-        )!;
+        destination.Url = _urlService.GetUrl("GetWebhook", new { id = source.Id });
     }
 }

@@ -2,6 +2,6 @@
 
 public enum WebhookEvent
 {
-    BuildStarted,
-    BuildFinished
+    TranslationBuildStarted,
+    TranslationBuildFinished
 }

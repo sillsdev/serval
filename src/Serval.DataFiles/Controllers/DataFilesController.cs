@@ -36,7 +36,7 @@ public class DataFilesController : ServalControllerBase
     /// <response code="200">The file.</response>
     /// <response code="403">The authenticated client does not own the corpus.</response>
     [Authorize(Scopes.ReadFiles)]
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetDataFile")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<DataFileDto>> GetAsync([NotNull] string id, CancellationToken cancellationToken)
@@ -64,7 +64,7 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<DataFileDto>> CreateAsync(
         [BindRequired] IFormFile file,
-        [BindRequired, FromForm] FileFormat format,
+        [BindRequired, FromForm] DataFileFormat format,
         [FromForm] string? name,
         CancellationToken cancellationToken
     )

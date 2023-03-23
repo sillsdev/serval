@@ -53,7 +53,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="200">The translation engine.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetTranslationEngine")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<TranslationEngineDto>> GetAsync(
@@ -345,7 +345,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="200">The corpus configuration.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/corpora/{corpusId}")]
+    [HttpGet("{id}/corpora/{corpusId}", Name = "GetTranslationCorpus")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<TranslationCorpusDto>> GetCorpusAsync(
@@ -472,7 +472,7 @@ public class TranslationEnginesController : ServalControllerBase
     [HttpGet("{id}/builds")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<BuildDto>>> GetAllBuildsAsync(
+    public async Task<ActionResult<IEnumerable<TranslationBuildDto>>> GetAllBuildsAsync(
         [NotNull] string id,
         CancellationToken cancellationToken
     )
@@ -483,7 +483,7 @@ public class TranslationEnginesController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
 
-        return Ok((await _buildService.GetAllAsync(id, cancellationToken)).Select(_mapper.Map<BuildDto>));
+        return Ok((await _buildService.GetAllAsync(id, cancellationToken)).Select(_mapper.Map<TranslationBuildDto>));
     }
 
     /// <summary>
@@ -498,12 +498,12 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="404">The build does not exist.</response>
     /// <response code="408">The long polling request timed out.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/builds/{buildId}")]
+    [HttpGet("{id}/builds/{buildId}", Name = "GetTranslationBuild")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status408RequestTimeout)]
-    public async Task<ActionResult<BuildDto>> GetBuildAsync(
+    public async Task<ActionResult<TranslationBuildDto>> GetBuildAsync(
         [NotNull] string id,
         [NotNull] string buildId,
         [FromQuery] long? minRevision,
@@ -527,7 +527,7 @@ public class TranslationEnginesController : ServalControllerBase
             {
                 EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
                 EntityChangeType.Delete => NotFound(),
-                _ => Ok(_mapper.Map<BuildDto>(change.Entity!)),
+                _ => Ok(_mapper.Map<TranslationBuildDto>(change.Entity!)),
             };
         }
         else
@@ -536,7 +536,7 @@ public class TranslationEnginesController : ServalControllerBase
             if (build == null)
                 return NotFound();
 
-            return Ok(_mapper.Map<BuildDto>(build));
+            return Ok(_mapper.Map<TranslationBuildDto>(build));
         }
     }
 
@@ -551,7 +551,10 @@ public class TranslationEnginesController : ServalControllerBase
     [HttpPost("{id}/builds")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<BuildDto>> StartBuildAsync([NotNull] string id, CancellationToken cancellationToken)
+    public async Task<ActionResult<TranslationBuildDto>> StartBuildAsync(
+        [NotNull] string id,
+        CancellationToken cancellationToken
+    )
     {
         TranslationEngine? engine = await _engineService.GetAsync(id, cancellationToken);
         if (engine == null)
@@ -562,7 +565,7 @@ public class TranslationEnginesController : ServalControllerBase
         Build? build = await _engineService.StartBuildAsync(id, cancellationToken);
         if (build == null)
             return NotFound();
-        var dto = _mapper.Map<BuildDto>(build);
+        var dto = _mapper.Map<TranslationBuildDto>(build);
         return Created(dto.Url, dto);
     }
 
@@ -582,7 +585,7 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status408RequestTimeout)]
-    public async Task<ActionResult<BuildDto>> GetCurrentBuildAsync(
+    public async Task<ActionResult<TranslationBuildDto>> GetCurrentBuildAsync(
         [NotNull] string id,
         [FromQuery] long? minRevision,
         CancellationToken cancellationToken
@@ -605,7 +608,7 @@ public class TranslationEnginesController : ServalControllerBase
             {
                 EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
                 EntityChangeType.Delete => NoContent(),
-                _ => Ok(_mapper.Map<BuildDto>(change.Entity!)),
+                _ => Ok(_mapper.Map<TranslationBuildDto>(change.Entity!)),
             };
         }
         else
@@ -614,7 +617,7 @@ public class TranslationEnginesController : ServalControllerBase
             if (build == null)
                 return NoContent();
 
-            return Ok(_mapper.Map<BuildDto>(build));
+            return Ok(_mapper.Map<TranslationBuildDto>(build));
         }
     }
 

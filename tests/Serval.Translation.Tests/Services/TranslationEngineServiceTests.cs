@@ -275,7 +275,7 @@ public class TranslationEngineServiceTests
                             {
                                 Id = "file1",
                                 Filename = "file1.txt",
-                                Format = Shared.Contracts.FileFormat.Text,
+                                Format = Shared.Contracts.DataFileFormat.Text,
                                 TextId = "all"
                             }
                         },
@@ -285,7 +285,7 @@ public class TranslationEngineServiceTests
                             {
                                 Id = "file2",
                                 Filename = "file2.txt",
-                                Format = Shared.Contracts.FileFormat.Text,
+                                Format = Shared.Contracts.DataFileFormat.Text,
                                 TextId = "all"
                             }
                         },

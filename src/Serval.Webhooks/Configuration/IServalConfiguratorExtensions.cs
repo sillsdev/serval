@@ -9,7 +9,7 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         configurator.Services
-            .AddHttpClient<IWebhookService, WebhookService>()
+            .AddHttpClient<WebhookJob>()
             .AddTransientHttpErrorPolicy(
                 b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             );

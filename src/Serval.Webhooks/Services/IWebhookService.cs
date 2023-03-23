@@ -8,10 +8,10 @@ public interface IWebhookService
     Task CreateAsync(Webhook hook, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default);
 
-    Task SendEventAsync<T>(
+    Task SendEventAsync(
         WebhookEvent webhookEvent,
         string owner,
-        T resource,
+        object payload,
         CancellationToken cancellationToken = default
     );
 }

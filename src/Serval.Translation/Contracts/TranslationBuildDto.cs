@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class BuildDto
+public class TranslationBuildDto
 {
     public string Id { get; set; } = default!;
     public string Url { get; set; } = default!;
@@ -13,6 +13,6 @@ public class BuildDto
     /// <summary>
     /// The current build job state.
     /// </summary>
-    public BuildState State { get; set; }
+    public TranslationBuildState State { get; set; }
     public DateTime? DateFinished { get; set; }
 }

@@ -5,7 +5,7 @@ public class DtoProfile : Profile
     public DtoProfile()
     {
         CreateMap<TranslationEngine, TranslationEngineDto>().AfterMap<TranslationEngineDtoMappingAction>();
-        CreateMap<Build, BuildDto>().AfterMap<BuildDtoMappingAction>();
+        CreateMap<Build, TranslationBuildDto>().AfterMap<BuildDtoMappingAction>();
         CreateMap<TranslationResult, TranslationResultDto>();
         CreateMap<AlignedWordPair, AlignedWordPairDto>();
         CreateMap<Phrase, PhraseDto>();
@@ -19,99 +19,69 @@ public class DtoProfile : Profile
 
 public class TranslationEngineDtoMappingAction : IMappingAction<TranslationEngine, TranslationEngineDto>
 {
-    private readonly LinkGenerator _linkGenerator;
+    private readonly IUrlService _urlService;
 
-    public TranslationEngineDtoMappingAction(LinkGenerator linkGenerator)
+    public TranslationEngineDtoMappingAction(IUrlService urlService)
     {
-        _linkGenerator = linkGenerator;
+        _urlService = urlService;
     }
 
     public void Process(TranslationEngine source, TranslationEngineDto destination, ResolutionContext context)
     {
-        destination.Url = _linkGenerator.GetPathByAction(
-            controller: "TranslationEngines",
-            action: "Get",
-            values: new { id = source.Id, version = "1" }
-        )!;
+        destination.Url = _urlService.GetUrl("GetTranslationEngine", new { id = source.Id });
     }
 }
 
-public class BuildDtoMappingAction : IMappingAction<Build, BuildDto>
+public class BuildDtoMappingAction : IMappingAction<Build, TranslationBuildDto>
 {
-    private readonly LinkGenerator _linkGenerator;
+    private readonly IUrlService _urlService;
 
-    public BuildDtoMappingAction(LinkGenerator linkGenerator)
+    public BuildDtoMappingAction(IUrlService urlService)
     {
-        _linkGenerator = linkGenerator;
+        _urlService = urlService;
     }
 
-    public void Process(Build source, BuildDto destination, ResolutionContext context)
+    public void Process(Build source, TranslationBuildDto destination, ResolutionContext context)
     {
-        destination.Url = _linkGenerator.GetPathByAction(
-            controller: "TranslationEngines",
-            action: "GetBuild",
-            values: new
-            {
-                id = source.EngineRef,
-                buildId = source.Id,
-                version = "1"
-            }
-        )!;
+        destination.Url = _urlService.GetUrl("GetTranslationBuild", new { id = source.EngineRef, buildId = source.Id });
 
         destination.Engine = new ResourceLinkDto
         {
             Id = source.EngineRef,
-            Url = _linkGenerator.GetPathByAction(
-                controller: "TranslationEngines",
-                action: "Get",
-                values: new { id = source.EngineRef, version = "1" }
-            )!
+            Url = _urlService.GetUrl("GetTranslationEngine", new { id = source.EngineRef })
         };
     }
 }
 
 public class TranslationCorpusDtoMappingAction : IMappingAction<Corpus, TranslationCorpusDto>
 {
-    private readonly LinkGenerator _linkGenerator;
+    private readonly IUrlService _urlService;
 
-    public TranslationCorpusDtoMappingAction(LinkGenerator linkGenerator)
+    public TranslationCorpusDtoMappingAction(IUrlService urlService)
     {
-        _linkGenerator = linkGenerator;
+        _urlService = urlService;
     }
 
     public void Process(Corpus source, TranslationCorpusDto destination, ResolutionContext context)
     {
         var engineId = (string)context.Items["EngineId"];
-        destination.Url = _linkGenerator.GetPathByAction(
-            controller: "TranslationEngines",
-            action: "GetCorpus",
-            values: new
-            {
-                id = engineId,
-                corpusId = source.Id,
-                version = "1"
-            }
-        )!;
+        destination.Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.Id });
 
         destination.Engine = new ResourceLinkDto
         {
             Id = engineId,
-            Url = _linkGenerator.GetPathByAction(
-                controller: "TranslationEngines",
-                action: "Get",
-                values: new { id = engineId, version = "1" }
-            )!
+            Url = _urlService.GetUrl("GetTranslationEngine", new { id = engineId })
         };
     }
 }
 
 public class TranslationCorpusFileDtoMappingAction : IMappingAction<CorpusFile, TranslationCorpusFileDto>
 {
-    private readonly LinkGenerator _linkGenerator;
+    private readonly IUrlService _urlService;
 
-    public TranslationCorpusFileDtoMappingAction(LinkGenerator linkGenerator)
+    public TranslationCorpusFileDtoMappingAction(IUrlService urlService)
     {
-        _linkGenerator = linkGenerator;
+        _urlService = urlService;
     }
 
     public void Process(CorpusFile source, TranslationCorpusFileDto destination, ResolutionContext context)
@@ -119,11 +89,7 @@ public class TranslationCorpusFileDtoMappingAction : IMappingAction<CorpusFile, 
         destination.File = new ResourceLinkDto
         {
             Id = source.Id,
-            Url = _linkGenerator.GetPathByAction(
-                controller: "DataFiles",
-                action: "Get",
-                values: new { id = source.Id, version = "1" }
-            )!
+            Url = _urlService.GetUrl("GetDataFile", new { id = source.Id })
         };
     }
 }

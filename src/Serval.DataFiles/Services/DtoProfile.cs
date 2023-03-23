@@ -10,19 +10,15 @@ public class DtoProfile : Profile
 
 public class DataFileDtoMappingAction : IMappingAction<DataFile, DataFileDto>
 {
-    private readonly LinkGenerator _linkGenerator;
+    private readonly IUrlService _urlService;
 
-    public DataFileDtoMappingAction(LinkGenerator linkGenerator)
+    public DataFileDtoMappingAction(IUrlService urlService)
     {
-        _linkGenerator = linkGenerator;
+        _urlService = urlService;
     }
 
     public void Process(DataFile source, DataFileDto destination, ResolutionContext context)
     {
-        destination.Url = _linkGenerator.GetPathByAction(
-            controller: "DataFiles",
-            action: "Get",
-            values: new { id = source.Id, version = "1" }
-        )!;
+        destination.Url = _urlService.GetUrl("GetDataFile", new { id = source.Id });
     }
 }
