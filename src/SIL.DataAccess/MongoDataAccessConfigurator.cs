@@ -1,13 +1,11 @@
-﻿namespace SIL.DataAccess;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public class MongoDataAccessConfigurator : IMongoDataAccessConfigurator
 {
-    public MongoDataAccessConfigurator(IServiceCollection services, IMongoDatabase database)
+    public MongoDataAccessConfigurator(IServiceCollection services)
     {
         Services = services;
-        Database = database;
     }
 
     public IServiceCollection Services { get; }
-    public IMongoDatabase Database { get; }
 }

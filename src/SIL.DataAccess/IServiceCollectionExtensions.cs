@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using SIL.DataAccess;
+
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
@@ -30,14 +32,13 @@ public static class IServiceCollectionExtensions
         );
 
         var mongoUrl = new MongoUrl(connectionString);
-        var mongoClient = new MongoClient(mongoUrl);
-        var database = mongoClient.GetDatabase(mongoUrl.DatabaseName);
         services.AddTransient<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
-        services.AddSingleton<IMongoClient>(mongoClient);
-        services.AddSingleton(database);
+        services.AddSingleton<IMongoClient>(sp => new MongoClient(mongoUrl));
+        services.AddSingleton(sp => sp.GetRequiredService<IMongoClient>().GetDatabase(mongoUrl.DatabaseName));
         services.TryAddScoped<IMongoDataAccessContext, MongoDataAccessContext>();
         services.AddScoped<IDataAccessContext>(sp => sp.GetRequiredService<IMongoDataAccessContext>());
-        configure(new MongoDataAccessConfigurator(services, database));
+        services.AddHostedService<MongoDataAccessInitializeService>();
+        configure(new MongoDataAccessConfigurator(services));
         return services;
     }
 }
