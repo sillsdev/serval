@@ -40,7 +40,7 @@ namespace Serval.Client
         /// <param name="name">The name.</param>
         /// <returns>The file was uploaded successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, DataFileFormat format, string? name = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat format, string? name = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -168,7 +168,7 @@ namespace Serval.Client
         /// <param name="name">The name.</param>
         /// <returns>The file was uploaded successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, DataFileFormat format, string? name = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat format, string? name = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("api/v1/files");
@@ -2972,12 +2972,12 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("format", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public DataFileFormat Format { get; set; } = default!;
+        public FileFormat Format { get; set; } = default!;
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum DataFileFormat
+    public enum FileFormat
     {
 
         [System.Runtime.Serialization.EnumMember(Value = @"Text")]
@@ -3363,7 +3363,7 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public TranslationBuildState State { get; set; } = default!;
+        public JobState State { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("dateFinished", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTimeOffset? DateFinished { get; set; } = default!;
@@ -3371,7 +3371,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum TranslationBuildState
+    public enum JobState
     {
 
         [System.Runtime.Serialization.EnumMember(Value = @"Pending")]
