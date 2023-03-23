@@ -13,6 +13,6 @@ public class TranslationBuildDto
     /// <summary>
     /// The current build job state.
     /// </summary>
-    public TranslationBuildState State { get; set; }
+    public JobState State { get; set; }
     public DateTime? DateFinished { get; set; }
 }

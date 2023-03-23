@@ -34,7 +34,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
             request.BuildId,
-            u => u.Set(b => b.State, TranslationBuildState.Active),
+            u => u.Set(b => b.State, JobState.Active),
             cancellationToken: context.CancellationToken
         );
         if (build is null)
@@ -68,7 +68,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         Build? build = await _builds.UpdateAsync(
             request.BuildId,
             u =>
-                u.Set(b => b.State, TranslationBuildState.Completed)
+                u.Set(b => b.State, JobState.Completed)
                     .Set(b => b.Message, "Completed")
                     .Set(b => b.DateFinished, DateTime.UtcNow),
             cancellationToken: context.CancellationToken
@@ -147,7 +147,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         Build? build = await _builds.UpdateAsync(
             request.BuildId,
             u =>
-                u.Set(b => b.State, TranslationBuildState.Faulted)
+                u.Set(b => b.State, JobState.Faulted)
                     .Set(b => b.Message, request.Message)
                     .Set(b => b.DateFinished, DateTime.UtcNow),
             cancellationToken: context.CancellationToken
@@ -188,7 +188,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
                 u.Set(b => b.Message, "Restarting")
                     .Set(b => b.Step, 0)
                     .Set(b => b.PercentCompleted, 0)
-                    .Set(b => b.State, TranslationBuildState.Pending),
+                    .Set(b => b.State, JobState.Pending),
             cancellationToken: context.CancellationToken
         );
         if (build is null)
@@ -200,7 +200,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
     public override async Task<Empty> UpdateBuildStatus(UpdateBuildStatusRequest request, ServerCallContext context)
     {
         await _builds.UpdateAsync(
-            b => b.Id == request.BuildId && b.State == TranslationBuildState.Active,
+            b => b.Id == request.BuildId && b.State == JobState.Active,
             u =>
             {
                 u.Set(b => b.Step, request.Step);

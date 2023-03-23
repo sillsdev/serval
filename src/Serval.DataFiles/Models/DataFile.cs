@@ -7,5 +7,5 @@ public class DataFile : IOwnedEntity
     public string Owner { get; set; } = default!;
     public string Name { get; set; } = default!;
     public string Filename { get; set; } = default!;
-    public DataFileFormat Format { get; set; }
+    public FileFormat Format { get; set; }
 }

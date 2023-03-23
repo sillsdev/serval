@@ -1,6 +1,6 @@
 ﻿namespace Serval.Shared.Contracts;
 
-public enum DataFileFormat
+public enum FileFormat
 {
     Text = 0,
     Paratext = 1
