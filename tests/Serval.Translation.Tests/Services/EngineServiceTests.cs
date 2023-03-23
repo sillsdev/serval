@@ -4,7 +4,7 @@ using Serval.Translation.V1;
 namespace Serval.Translation.Services;
 
 [TestFixture]
-public class TranslationEngineServiceTests
+public class EngineServiceTests
 {
     [Test]
     public async Task TranslateAsync_EngineDoesNotExist()
@@ -68,7 +68,7 @@ public class TranslationEngineServiceTests
     public async Task CreateAsync()
     {
         var env = new TestEnvironment();
-        var engine = new TranslationEngine
+        var engine = new Engine
         {
             Id = "engine1",
             SourceLanguage = "es",
@@ -89,7 +89,7 @@ public class TranslationEngineServiceTests
         string engineId = (await env.CreateEngineAsync()).Id;
         bool result = await env.Service.DeleteAsync("engine1");
         Assert.That(result, Is.True);
-        TranslationEngine? engine = await env.Engines.GetAsync(engineId);
+        Engine? engine = await env.Engines.GetAsync(engineId);
         Assert.That(engine, Is.Null);
     }
 
@@ -123,7 +123,7 @@ public class TranslationEngineServiceTests
     {
         public TestEnvironment()
         {
-            Engines = new MemoryRepository<TranslationEngine>();
+            Engines = new MemoryRepository<Engine>();
             var translationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             var translationResult = new V1.TranslationResult
             {
@@ -240,7 +240,7 @@ public class TranslationEngineServiceTests
             var mapperConfig = new MapperConfiguration(c => c.AddProfile<GrpcProfile>());
             var mapper = new Mapper(mapperConfig);
 
-            Service = new TranslationEngineService(
+            Service = new EngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 new MemoryRepository<Pretranslation>(),
@@ -251,12 +251,12 @@ public class TranslationEngineServiceTests
             );
         }
 
-        public TranslationEngineService Service { get; }
-        public IRepository<TranslationEngine> Engines { get; }
+        public EngineService Service { get; }
+        public IRepository<Engine> Engines { get; }
 
-        public async Task<TranslationEngine> CreateEngineAsync()
+        public async Task<Engine> CreateEngineAsync()
         {
-            var engine = new TranslationEngine
+            var engine = new Engine
             {
                 Id = "engine1",
                 SourceLanguage = "es",

@@ -9,14 +9,14 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
     private static readonly Empty Empty = new();
 
     private readonly IRepository<Build> _builds;
-    private readonly IRepository<TranslationEngine> _engines;
+    private readonly IRepository<Engine> _engines;
     private readonly IRepository<Pretranslation> _pretranslations;
     private readonly IDataAccessContext _dataAccessContext;
     private readonly IPublishEndpoint _publishEndpoint;
 
     public TranslationPlatformServiceV1(
         IRepository<Build> builds,
-        IRepository<TranslationEngine> engines,
+        IRepository<Engine> engines,
         IRepository<Pretranslation> pretranslations,
         IDataAccessContext dataAccessContext,
         IPublishEndpoint publishEndpoint
@@ -40,7 +40,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (build is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-        TranslationEngine? engine = await _engines.UpdateAsync(
+        Engine? engine = await _engines.UpdateAsync(
             build.EngineRef,
             u => u.Set(e => e.IsBuilding, true),
             cancellationToken: context.CancellationToken
@@ -76,7 +76,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (build is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-        TranslationEngine? engine = await _engines.UpdateAsync(
+        Engine? engine = await _engines.UpdateAsync(
             build.EngineRef,
             u =>
                 u.Set(e => e.Confidence, request.Confidence)
@@ -116,7 +116,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (build is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-        TranslationEngine? engine = await _engines.UpdateAsync(
+        Engine? engine = await _engines.UpdateAsync(
             build.EngineRef,
             u => u.Set(e => e.IsBuilding, false),
             cancellationToken: context.CancellationToken
@@ -155,7 +155,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (build is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-        TranslationEngine? engine = await _engines.UpdateAsync(
+        Engine? engine = await _engines.UpdateAsync(
             build.EngineRef,
             u => u.Set(e => e.IsBuilding, false),
             cancellationToken: context.CancellationToken

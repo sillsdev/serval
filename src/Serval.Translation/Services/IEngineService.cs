@@ -1,11 +1,11 @@
 ﻿namespace Serval.Translation.Services;
 
-public interface ITranslationEngineService
+public interface IEngineService
 {
-    Task<IEnumerable<TranslationEngine>> GetAllAsync(string owner, CancellationToken cancellationToken = default);
-    Task<TranslationEngine?> GetAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Engine>> GetAllAsync(string owner, CancellationToken cancellationToken = default);
+    Task<Engine?> GetAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task CreateAsync(TranslationEngine engine, CancellationToken cancellationToken = default);
+    Task CreateAsync(Engine engine, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<TranslationResult?> TranslateAsync(

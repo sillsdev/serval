@@ -8,19 +8,15 @@ public static class IMongoDataAccessConfiguratorExtensions
         this IMongoDataAccessConfigurator configurator
     )
     {
-        configurator.AddRepository<TranslationEngine>(
+        configurator.AddRepository<Engine>(
             "translation.engines",
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<TranslationEngine>(
-                        Builders<TranslationEngine>.IndexKeys.Ascending(e => e.Owner)
-                    )
+                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
                 );
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<TranslationEngine>(
-                        Builders<TranslationEngine>.IndexKeys.Ascending("corpora._id")
-                    )
+                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending("corpora._id"))
                 );
             }
         );

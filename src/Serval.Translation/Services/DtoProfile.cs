@@ -4,7 +4,7 @@ public class DtoProfile : Profile
 {
     public DtoProfile()
     {
-        CreateMap<TranslationEngine, TranslationEngineDto>().AfterMap<TranslationEngineDtoMappingAction>();
+        CreateMap<Engine, TranslationEngineDto>().AfterMap<TranslationEngineDtoMappingAction>();
         CreateMap<Build, TranslationBuildDto>().AfterMap<BuildDtoMappingAction>();
         CreateMap<TranslationResult, TranslationResultDto>();
         CreateMap<AlignedWordPair, AlignedWordPairDto>();
@@ -17,7 +17,7 @@ public class DtoProfile : Profile
     }
 }
 
-public class TranslationEngineDtoMappingAction : IMappingAction<TranslationEngine, TranslationEngineDto>
+public class TranslationEngineDtoMappingAction : IMappingAction<Engine, TranslationEngineDto>
 {
     private readonly IUrlService _urlService;
 
@@ -26,7 +26,7 @@ public class TranslationEngineDtoMappingAction : IMappingAction<TranslationEngin
         _urlService = urlService;
     }
 
-    public void Process(TranslationEngine source, TranslationEngineDto destination, ResolutionContext context)
+    public void Process(Engine source, TranslationEngineDto destination, ResolutionContext context)
     {
         destination.Url = _urlService.GetUrl("GetTranslationEngine", new { id = source.Id });
     }

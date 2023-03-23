@@ -24,7 +24,7 @@ public static class IServalConfiguratorExtensions
 
         configurator.Services.AddScoped<IBuildService, BuildService>();
         configurator.Services.AddScoped<IPretranslationService, PretranslationService>();
-        configurator.Services.AddScoped<ITranslationEngineService, TranslationEngineService>();
+        configurator.Services.AddScoped<IEngineService, EngineService>();
 
         var translationOptions = new TranslationOptions();
         if (configurator.Configuration is not null)

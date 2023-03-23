@@ -2,9 +2,9 @@
 
 public class DataFileDeletedConsumer : IConsumer<DataFileDeleted>
 {
-    private readonly ITranslationEngineService _engineService;
+    private readonly IEngineService _engineService;
 
-    public DataFileDeletedConsumer(ITranslationEngineService engineService)
+    public DataFileDeletedConsumer(IEngineService engineService)
     {
         _engineService = engineService;
     }
