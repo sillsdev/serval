@@ -93,6 +93,8 @@ public class Startup
             cfg.AddDataFilesConsumers();
             cfg.AddWebhooksConsumers();
         });
+        services.AddScoped<IPublishEndpoint>(sp => sp.GetRequiredService<IScopedMediator>());
+        services.AddScoped(sp => sp.GetRequiredService<IScopedMediator>().CreateRequestClient<GetDataFile>());
 
         services
             .AddApiVersioning(o =>

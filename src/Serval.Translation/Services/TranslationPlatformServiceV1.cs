@@ -12,21 +12,21 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
     private readonly IRepository<TranslationEngine> _engines;
     private readonly IRepository<Pretranslation> _pretranslations;
     private readonly IDataAccessContext _dataAccessContext;
-    private readonly IScopedMediator _mediator;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public TranslationPlatformServiceV1(
         IRepository<Build> builds,
         IRepository<TranslationEngine> engines,
         IRepository<Pretranslation> pretranslations,
         IDataAccessContext dataAccessContext,
-        IScopedMediator mediator
+        IPublishEndpoint publishEndpoint
     )
     {
         _builds = builds;
         _engines = engines;
         _pretranslations = pretranslations;
         _dataAccessContext = dataAccessContext;
-        _mediator = mediator;
+        _publishEndpoint = publishEndpoint;
     }
 
     public override async Task<Empty> BuildStarted(BuildStartedRequest request, ServerCallContext context)
@@ -48,7 +48,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (engine is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
-        await _mediator.Publish(
+        await _publishEndpoint.Publish(
             new TranslationBuildStarted
             {
                 BuildId = build.Id,
@@ -88,7 +88,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (engine is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
-        await _mediator.Publish(
+        await _publishEndpoint.Publish(
             new TranslationBuildFinished
             {
                 BuildId = build.Id,
@@ -124,7 +124,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (engine is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
-        await _mediator.Publish(
+        await _publishEndpoint.Publish(
             new TranslationBuildFinished
             {
                 BuildId = build.Id,
@@ -163,7 +163,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (engine is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
-        await _mediator.Publish(
+        await _publishEndpoint.Publish(
             new TranslationBuildFinished
             {
                 BuildId = build.Id,

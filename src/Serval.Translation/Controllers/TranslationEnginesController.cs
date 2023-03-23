@@ -10,7 +10,7 @@ public class TranslationEnginesController : ServalControllerBase
     private readonly IPretranslationService _pretranslationService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions;
     private readonly IMapper _mapper;
-    private readonly IScopedMediator _mediator;
+    private readonly IRequestClient<GetDataFile> _getDataFileClient;
     private readonly IIdGenerator _idGenerator;
 
     public TranslationEnginesController(
@@ -20,7 +20,7 @@ public class TranslationEnginesController : ServalControllerBase
         IPretranslationService pretranslationService,
         IOptionsMonitor<ApiOptions> apiOptions,
         IMapper mapper,
-        IScopedMediator mediator,
+        IRequestClient<GetDataFile> getDataFileClient,
         IIdGenerator idGenerator
     )
         : base(authService)
@@ -30,7 +30,7 @@ public class TranslationEnginesController : ServalControllerBase
         _pretranslationService = pretranslationService;
         _apiOptions = apiOptions;
         _mapper = mapper;
-        _mediator = mediator;
+        _getDataFileClient = getDataFileClient;
         _idGenerator = idGenerator;
     }
 
@@ -656,11 +656,10 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        IRequestClient<GetDataFile> client = _mediator.CreateRequestClient<GetDataFile>();
         var files = new List<CorpusFile>();
         foreach (TranslationCorpusFileConfigDto fileConfig in fileConfigs)
         {
-            var response = await client.GetResponse<DataFileResult, DataFileNotFound>(
+            var response = await _getDataFileClient.GetResponse<DataFileResult, DataFileNotFound>(
                 new GetDataFile { DataFileId = fileConfig.FileId, Owner = Owner },
                 cancellationToken
             );

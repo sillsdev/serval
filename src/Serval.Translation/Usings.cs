@@ -6,7 +6,6 @@ global using AutoMapper;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
 global using MassTransit;
-global using MassTransit.Mediator;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
