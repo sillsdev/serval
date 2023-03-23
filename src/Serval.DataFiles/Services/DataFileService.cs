@@ -4,19 +4,19 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
 {
     private readonly IOptionsMonitor<DataFileOptions> _options;
     private readonly IDataAccessContext _dataAccessContext;
-    private readonly IEventBroker _eventBroker;
+    private readonly IScopedMediator _mediator;
 
     public DataFileService(
         IRepository<DataFile> dataFiles,
         IDataAccessContext dataAccessContext,
         IOptionsMonitor<DataFileOptions> options,
-        IEventBroker eventBroker
+        IScopedMediator mediator
     )
         : base(dataFiles)
     {
         _dataAccessContext = dataAccessContext;
         _options = options;
-        _eventBroker = eventBroker;
+        _mediator = mediator;
     }
 
     public Task<DataFile?> GetAsync(string id, string owner, CancellationToken cancellationToken = default)
@@ -59,7 +59,7 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
             if (File.Exists(path))
                 File.Delete(path);
         }
-        await _eventBroker.PublishAsync(new DataFileDeleted { DataFileId = id }, cancellationToken);
+        await _mediator.Publish(new DataFileDeleted { DataFileId = id }, cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
         return dataFile is not null;
     }

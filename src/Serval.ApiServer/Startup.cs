@@ -64,8 +64,14 @@ public class Startup
             },
             Configuration
         );
-        services.AddScoped<IEventBroker, EventBroker>();
-        services.AddScoped<IDataFileRetriever, DataFileRetriever>();
+
+        services.AddMediator(cfg =>
+        {
+            cfg.AddTranslationConsumers();
+            cfg.AddDataFilesConsumers();
+            cfg.AddWebhooksConsumers();
+        });
+
         services
             .AddApiVersioning(o =>
             {

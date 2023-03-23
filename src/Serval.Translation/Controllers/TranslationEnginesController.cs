@@ -10,7 +10,7 @@ public class TranslationEnginesController : ServalControllerBase
     private readonly IPretranslationService _pretranslationService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions;
     private readonly IMapper _mapper;
-    private readonly IDataFileRetriever _dataFileRetriever;
+    private readonly IScopedMediator _mediator;
     private readonly IIdGenerator _idGenerator;
 
     public TranslationEnginesController(
@@ -20,7 +20,7 @@ public class TranslationEnginesController : ServalControllerBase
         IPretranslationService pretranslationService,
         IOptionsMonitor<ApiOptions> apiOptions,
         IMapper mapper,
-        IDataFileRetriever dataFileRetriever,
+        IScopedMediator mediator,
         IIdGenerator idGenerator
     )
         : base(authService)
@@ -30,7 +30,7 @@ public class TranslationEnginesController : ServalControllerBase
         _pretranslationService = pretranslationService;
         _apiOptions = apiOptions;
         _mapper = mapper;
-        _dataFileRetriever = dataFileRetriever;
+        _mediator = mediator;
         _idGenerator = idGenerator;
     }
 
@@ -653,25 +653,30 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
+        IRequestClient<GetDataFile> client = _mediator.CreateRequestClient<GetDataFile>();
         var files = new List<CorpusFile>();
         foreach (TranslationCorpusFileConfigDto fileConfig in fileConfigs)
         {
-            DataFileResult? dataFileResult = await _dataFileRetriever.GetDataFileAsync(
-                fileConfig.FileId,
-                Owner,
+            var response = await client.GetResponse<DataFileResult, DataFileNotFound>(
+                new GetDataFile { DataFileId = fileConfig.FileId, Owner = Owner },
                 cancellationToken
             );
-            if (dataFileResult is null)
+            if (response.Is(out Response<DataFileResult>? result))
+            {
+                files.Add(
+                    new CorpusFile
+                    {
+                        Id = fileConfig.FileId,
+                        Filename = result.Message.Filename,
+                        TextId = fileConfig.TextId ?? result.Message.Name,
+                        Format = result.Message.Format
+                    }
+                );
+            }
+            else if (response.Is(out Response<DataFileNotFound> _))
+            {
                 throw new InvalidOperationException("Unable to retrieve data file.");
-            files.Add(
-                new CorpusFile
-                {
-                    Id = fileConfig.FileId,
-                    Filename = dataFileResult.Filename,
-                    TextId = fileConfig.TextId ?? dataFileResult.Name,
-                    Format = dataFileResult.Format
-                }
-            );
+            }
         }
         return files;
     }

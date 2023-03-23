@@ -6,6 +6,5 @@ global using Microsoft.AspNetCore.Mvc.Filters;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.Logging;
 global using Serval.Shared.Configuration;
-global using Serval.Shared.Contracts;
 global using Serval.Shared.Models;
 global using SIL.DataAccess;
