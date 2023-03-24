@@ -10,8 +10,6 @@ public class TranslationEnginesController : ServalControllerBase
     private readonly IPretranslationService _pretranslationService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions;
     private readonly IMapper _mapper;
-    private readonly IRequestClient<GetDataFile> _getDataFileClient;
-    private readonly IIdGenerator _idGenerator;
 
     public TranslationEnginesController(
         IAuthorizationService authService,
@@ -19,9 +17,7 @@ public class TranslationEnginesController : ServalControllerBase
         IBuildService buildService,
         IPretranslationService pretranslationService,
         IOptionsMonitor<ApiOptions> apiOptions,
-        IMapper mapper,
-        IRequestClient<GetDataFile> getDataFileClient,
-        IIdGenerator idGenerator
+        IMapper mapper
     )
         : base(authService)
     {
@@ -30,8 +26,6 @@ public class TranslationEnginesController : ServalControllerBase
         _pretranslationService = pretranslationService;
         _apiOptions = apiOptions;
         _mapper = mapper;
-        _getDataFileClient = getDataFileClient;
-        _idGenerator = idGenerator;
     }
 
     /// <summary>
@@ -271,6 +265,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// </summary>
     /// <param name="id">The translation engine id.</param>
     /// <param name="corpusConfig">The corpus configuration.</param>
+    /// <param name="getDataFileClient">The data file client.</param>
+    /// <param name="idGenerator">The id generator.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The corpus was added successfully.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
@@ -281,6 +277,8 @@ public class TranslationEnginesController : ServalControllerBase
     public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
         [FromBody] TranslationCorpusConfigDto corpusConfig,
+        [FromServices] IRequestClient<GetDataFile> getDataFileClient,
+        [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
     {
@@ -292,17 +290,17 @@ public class TranslationEnginesController : ServalControllerBase
 
         var corpus = new Corpus
         {
-            Id = _idGenerator.GenerateId(),
+            Id = idGenerator.GenerateId(),
             Name = corpusConfig.Name,
             SourceLanguage = corpusConfig.SourceLanguage,
             TargetLanguage = corpusConfig.TargetLanguage,
             Pretranslate = corpusConfig.Pretranslate ?? false
         };
-        List<CorpusFile>? sourceFiles = await MapAsync(corpusConfig.SourceFiles, cancellationToken);
+        List<CorpusFile>? sourceFiles = await MapAsync(corpusConfig.SourceFiles, getDataFileClient, cancellationToken);
         if (sourceFiles is null)
             return UnprocessableEntity();
         corpus.SourceFiles.AddRange(sourceFiles);
-        List<CorpusFile>? targetFiles = await MapAsync(corpusConfig.TargetFiles, cancellationToken);
+        List<CorpusFile>? targetFiles = await MapAsync(corpusConfig.TargetFiles, getDataFileClient, cancellationToken);
         if (targetFiles is null)
             return UnprocessableEntity();
         corpus.TargetFiles.AddRange(targetFiles);
@@ -653,13 +651,14 @@ public class TranslationEnginesController : ServalControllerBase
 
     private async Task<List<CorpusFile>?> MapAsync(
         IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
+        IRequestClient<GetDataFile> getDataFileClient,
         CancellationToken cancellationToken
     )
     {
         var files = new List<CorpusFile>();
         foreach (TranslationCorpusFileConfigDto fileConfig in fileConfigs)
         {
-            var response = await _getDataFileClient.GetResponse<DataFileResult, DataFileNotFound>(
+            var response = await getDataFileClient.GetResponse<DataFileResult, DataFileNotFound>(
                 new GetDataFile { DataFileId = fileConfig.FileId, Owner = Owner },
                 cancellationToken
             );
