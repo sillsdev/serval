@@ -11,7 +11,7 @@ public static class DataAccessClassMap
 
     public static void RegisterClass<T>(Action<BsonClassMap<T>> mapSetup)
     {
-        BsonClassMap.RegisterClassMap<T>(cm =>
+        BsonClassMap.TryRegisterClassMap<T>(cm =>
         {
             cm.AutoMap();
             mapSetup?.Invoke(cm);

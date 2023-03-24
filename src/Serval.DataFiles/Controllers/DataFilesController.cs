@@ -23,9 +23,7 @@ public class DataFilesController : ServalControllerBase
     [HttpGet]
     public async Task<IEnumerable<DataFileDto>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return (await _dataFileService.GetAllAsync(User.Identity!.Name!, cancellationToken)).Select(
-            _mapper.Map<DataFileDto>
-        );
+        return (await _dataFileService.GetAllAsync(Owner, cancellationToken)).Select(_mapper.Map<DataFileDto>);
     }
 
     /// <summary>
