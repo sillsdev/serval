@@ -127,15 +127,16 @@ public class EngineServiceTests
             var translationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             var translationResult = new V1.TranslationResult
             {
+                Translation = "this is a test .",
                 Tokens = { "this is a test .".Split() },
                 Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
                 Sources =
                 {
-                    (uint)TranslationSources.Smt,
-                    (uint)TranslationSources.Smt,
-                    (uint)TranslationSources.Smt,
-                    (uint)TranslationSources.Smt,
-                    (uint)TranslationSources.Smt
+                    new TranslationSources { Values = { V1.TranslationSource.Smt } },
+                    new TranslationSources { Values = { V1.TranslationSource.Smt } },
+                    new TranslationSources { Values = { V1.TranslationSource.Smt } },
+                    new TranslationSources { Values = { V1.TranslationSource.Smt } },
+                    new TranslationSources { Values = { V1.TranslationSource.Smt } }
                 },
                 Alignment =
                 {
@@ -156,8 +157,7 @@ public class EngineServiceTests
                     }
                 }
             };
-            var translateResponse = new TranslateResponse();
-            translateResponse.Results.Add(translationResult);
+            var translateResponse = new TranslateResponse { Results = { translationResult } };
             translationServiceClient
                 .TranslateAsync(Arg.Any<TranslateRequest>())
                 .Returns(CreateAsyncUnaryCall(translateResponse));
@@ -296,11 +296,15 @@ public class EngineServiceTests
             return engine;
         }
 
-        private static IEnumerable<uint> GetSources(int count, bool isUnknown)
+        private static IEnumerable<TranslationSources> GetSources(int count, bool isUnknown)
         {
-            var sources = new uint[count];
+            var sources = new TranslationSources[count];
             for (int i = 0; i < count; i++)
-                sources[i] = (uint)(isUnknown ? TranslationSources.None : TranslationSources.Smt);
+            {
+                sources[i] = new TranslationSources();
+                if (!isUnknown)
+                    sources[i].Values.Add(V1.TranslationSource.Smt);
+            }
             return sources;
         }
 

@@ -80,11 +80,15 @@ message Phrase {
     double confidence = 4;
 }
 
+message TranslationSources {
+    repeated TranslationSource values = 1;
+}
+
 message TranslationResult {
     string translation = 1;
     repeated string tokens = 2;
     repeated double confidences = 3;
-    repeated uint32 sources = 4;
+    repeated TranslationSources sources = 4;
     repeated AlignedWordPair alignment = 5;
     repeated Phrase phrases = 6;
 }
@@ -98,7 +102,7 @@ message WordGraphArc {
     int32 source_segment_start = 6;
     int32 source_segment_end = 7;
     repeated AlignedWordPair alignment = 8;
-    repeated uint32 sources = 9;
+    repeated TranslationSources sources = 9;
 }
 
 message WordGraph {
@@ -125,5 +129,12 @@ message CorpusFile {
 enum FileFormat {
     FILE_FORMAT_TEXT = 0;
     FILE_FORMAT_PARATEXT = 1;
+}
+
+enum TranslationSource {
+    TRANSLATION_SOURCE_SMT = 0;
+    TRANSLATION_SOURCE_NMT = 1;
+    TRANSLATION_SOURCE_TRANSFER = 2;
+    TRANSLATION_SOURCE_PREFIX = 3;
 }
 

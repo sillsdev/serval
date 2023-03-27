@@ -10,5 +10,5 @@ public class WordGraphArcDto
     public int SourceSegmentStart { get; set; }
     public int SourceSegmentEnd { get; set; }
     public AlignedWordPairDto[] Alignment { get; set; } = default!;
-    public TranslationSources[] Sources { get; set; } = default!;
+    public TranslationSource[][] Sources { get; set; } = default!;
 }

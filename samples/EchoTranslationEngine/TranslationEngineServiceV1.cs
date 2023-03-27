@@ -36,7 +36,13 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                     Translation = request.Segment,
                     Tokens = { tokens },
                     Confidences = { Enumerable.Repeat(1.0, tokens.Length) },
-                    Sources = { Enumerable.Repeat(0x2u, tokens.Length) },
+                    Sources =
+                    {
+                        Enumerable.Repeat(
+                            new TranslationSources { Values = { TranslationSource.Transfer } },
+                            tokens.Length
+                        )
+                    },
                     Alignment =
                     {
                         Enumerable

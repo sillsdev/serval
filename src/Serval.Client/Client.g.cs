@@ -29,7 +29,7 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -95,7 +95,7 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("api/v1/files");
@@ -132,7 +132,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<DataFile>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<DataFile>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -526,7 +526,7 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The engines.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -574,7 +574,7 @@ namespace Serval.Client
         /// <param name="segment">The source segment.</param>
         /// <returns>The translation results.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationResult>> TranslateNAsync(string id, int n, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationResult>> TranslateNAsync(string id, int n, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -613,7 +613,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -643,7 +643,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The pretranslations.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -654,7 +654,7 @@ namespace Serval.Client
         /// <param name="textId">The text id.</param>
         /// <returns>The pretranslations.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -663,7 +663,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build jobs.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationBuild>> GetAllBuildsAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationBuild>> GetAllBuildsAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -739,7 +739,7 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The engines.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("api/v1/translation/engines");
@@ -776,7 +776,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<TranslationEngine>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<TranslationEngine>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1141,7 +1141,7 @@ namespace Serval.Client
         /// <param name="segment">The source segment.</param>
         /// <returns>The translation results.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationResult>> TranslateNAsync(string id, int n, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationResult>> TranslateNAsync(string id, int n, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1193,7 +1193,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<TranslationResult>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<TranslationResult>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1512,7 +1512,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1553,7 +1553,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<TranslationCorpus>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<TranslationCorpus>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1760,7 +1760,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The pretranslations.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1805,7 +1805,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Pretranslation>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<Pretranslation>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1847,7 +1847,7 @@ namespace Serval.Client
         /// <param name="textId">The text id.</param>
         /// <returns>The pretranslations.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1896,7 +1896,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Pretranslation>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<Pretranslation>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1936,7 +1936,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build jobs.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationBuild>> GetAllBuildsAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationBuild>> GetAllBuildsAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1977,7 +1977,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<TranslationBuild>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<TranslationBuild>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2490,7 +2490,7 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The webhooks.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Webhook>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Webhook>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2554,7 +2554,7 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The webhooks.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Webhook>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Webhook>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("api/v1/hooks");
@@ -2591,7 +2591,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Webhook>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<Webhook>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -3069,45 +3069,41 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("tokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<string> Tokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> Tokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
+        public System.Collections.Generic.IList<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
 
-        [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.Always, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<TranslationSources> Sources { get; set; } = new System.Collections.ObjectModel.Collection<TranslationSources>();
+        public System.Collections.Generic.IList<System.Collections.Generic.IList<TranslationSource>> Sources { get; set; } = new System.Collections.ObjectModel.Collection<System.Collections.Generic.IList<TranslationSource>>();
 
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
+        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
 
         [Newtonsoft.Json.JsonProperty("phrases", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<Phrase> Phrases { get; set; } = new System.Collections.ObjectModel.Collection<Phrase>();
+        public System.Collections.Generic.IList<Phrase> Phrases { get; set; } = new System.Collections.ObjectModel.Collection<Phrase>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    [System.Flags]
-    public enum TranslationSources
+    public enum TranslationSource
     {
 
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 1,
-
         [System.Runtime.Serialization.EnumMember(Value = @"Smt")]
-        Smt = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Transfer")]
-        Transfer = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Prefix")]
-        Prefix = 8,
+        Smt = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Nmt")]
-        Nmt = 16,
+        Nmt = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Transfer")]
+        Transfer = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Prefix")]
+        Prefix = 3,
 
     }
 
@@ -3147,11 +3143,11 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("finalStates", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<int> FinalStates { get; set; } = new System.Collections.ObjectModel.Collection<int>();
+        public System.Collections.Generic.IList<int> FinalStates { get; set; } = new System.Collections.ObjectModel.Collection<int>();
 
         [Newtonsoft.Json.JsonProperty("arcs", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<WordGraphArc> Arcs { get; set; } = new System.Collections.ObjectModel.Collection<WordGraphArc>();
+        public System.Collections.Generic.IList<WordGraphArc> Arcs { get; set; } = new System.Collections.ObjectModel.Collection<WordGraphArc>();
 
     }
 
@@ -3169,11 +3165,11 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("tokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<string> Tokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> Tokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
+        public System.Collections.Generic.IList<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
 
         [Newtonsoft.Json.JsonProperty("sourceSegmentStart", Required = Newtonsoft.Json.Required.Always)]
         public int SourceSegmentStart { get; set; } = default!;
@@ -3183,11 +3179,11 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
+        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
 
-        [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.Always, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<TranslationSources> Sources { get; set; } = new System.Collections.ObjectModel.Collection<TranslationSources>();
+        public System.Collections.Generic.IList<System.Collections.Generic.IList<TranslationSource>> Sources { get; set; } = new System.Collections.ObjectModel.Collection<System.Collections.Generic.IList<TranslationSource>>();
 
     }
 
@@ -3238,11 +3234,11 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<TranslationCorpusFile> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
+        public System.Collections.Generic.IList<TranslationCorpusFile> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
 
         [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<TranslationCorpusFile> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
+        public System.Collections.Generic.IList<TranslationCorpusFile> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
 
     }
 
@@ -3293,11 +3289,11 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<TranslationCorpusFileConfig> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
+        public System.Collections.Generic.IList<TranslationCorpusFileConfig> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
 
         [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<TranslationCorpusFileConfig> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
+        public System.Collections.Generic.IList<TranslationCorpusFileConfig> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
 
     }
 
@@ -3322,7 +3318,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<string> Refs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> Refs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -3408,7 +3404,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("events", Required = Newtonsoft.Json.Required.Always, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<WebhookEvent> Events { get; set; } = new System.Collections.ObjectModel.Collection<WebhookEvent>();
+        public System.Collections.Generic.IList<WebhookEvent> Events { get; set; } = new System.Collections.ObjectModel.Collection<WebhookEvent>();
 
     }
 
@@ -3446,7 +3442,7 @@ namespace Serval.Client
         /// </summary>
         [Newtonsoft.Json.JsonProperty("events", Required = Newtonsoft.Json.Required.Always, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<WebhookEvent> Events { get; set; } = new System.Collections.ObjectModel.Collection<WebhookEvent>();
+        public System.Collections.Generic.IList<WebhookEvent> Events { get; set; } = new System.Collections.ObjectModel.Collection<WebhookEvent>();
 
     }
 
