@@ -3093,17 +3093,14 @@ namespace Serval.Client
     public enum TranslationSource
     {
 
-        [System.Runtime.Serialization.EnumMember(Value = @"Smt")]
-        Smt = 0,
+        [System.Runtime.Serialization.EnumMember(Value = @"Primary")]
+        Primary = 0,
 
-        [System.Runtime.Serialization.EnumMember(Value = @"Nmt")]
-        Nmt = 1,
+        [System.Runtime.Serialization.EnumMember(Value = @"Secondary")]
+        Secondary = 1,
 
-        [System.Runtime.Serialization.EnumMember(Value = @"Transfer")]
-        Transfer = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Prefix")]
-        Prefix = 3,
+        [System.Runtime.Serialization.EnumMember(Value = @"Human")]
+        Human = 2,
 
     }
 

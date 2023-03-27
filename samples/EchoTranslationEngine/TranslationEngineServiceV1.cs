@@ -39,7 +39,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                     Sources =
                     {
                         Enumerable.Repeat(
-                            new TranslationSources { Values = { TranslationSource.Transfer } },
+                            new TranslationSources { Values = { TranslationSource.Primary } },
                             tokens.Length
                         )
                     },

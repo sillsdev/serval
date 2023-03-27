@@ -132,11 +132,11 @@ public class EngineServiceTests
                 Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
                 Sources =
                 {
-                    new TranslationSources { Values = { V1.TranslationSource.Smt } },
-                    new TranslationSources { Values = { V1.TranslationSource.Smt } },
-                    new TranslationSources { Values = { V1.TranslationSource.Smt } },
-                    new TranslationSources { Values = { V1.TranslationSource.Smt } },
-                    new TranslationSources { Values = { V1.TranslationSource.Smt } }
+                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
+                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
+                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
+                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
+                    new TranslationSources { Values = { V1.TranslationSource.Primary } }
                 },
                 Alignment =
                 {
@@ -303,7 +303,7 @@ public class EngineServiceTests
             {
                 sources[i] = new TranslationSources();
                 if (!isUnknown)
-                    sources[i].Values.Add(V1.TranslationSource.Smt);
+                    sources[i].Values.Add(TranslationSource.Primary);
             }
             return sources;
         }

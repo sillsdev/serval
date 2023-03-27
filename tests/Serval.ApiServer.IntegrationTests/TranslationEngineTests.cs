@@ -135,7 +135,7 @@ public class TranslationEngineTests
         Assert.That(result.Sources, Has.Count.EqualTo(5));
         Assert.That(
             result.Sources,
-            Has.All.EquivalentTo(new[] { Client.TranslationSource.Smt, Client.TranslationSource.Transfer })
+            Has.All.EquivalentTo(new[] { Client.TranslationSource.Primary, Client.TranslationSource.Secondary })
         );
     }
 
@@ -191,40 +191,40 @@ public class TranslationEngineTests
                                 {
                                     Values =
                                     {
-                                        Translation.V1.TranslationSource.Smt,
-                                        Translation.V1.TranslationSource.Transfer
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
                                     }
                                 },
                                 new TranslationSources
                                 {
                                     Values =
                                     {
-                                        Translation.V1.TranslationSource.Smt,
-                                        Translation.V1.TranslationSource.Transfer
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
                                     }
                                 },
                                 new TranslationSources
                                 {
                                     Values =
                                     {
-                                        Translation.V1.TranslationSource.Smt,
-                                        Translation.V1.TranslationSource.Transfer
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
                                     }
                                 },
                                 new TranslationSources
                                 {
                                     Values =
                                     {
-                                        Translation.V1.TranslationSource.Smt,
-                                        Translation.V1.TranslationSource.Transfer
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
                                     }
                                 },
                                 new TranslationSources
                                 {
                                     Values =
                                     {
-                                        Translation.V1.TranslationSource.Smt,
-                                        Translation.V1.TranslationSource.Transfer
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
                                     }
                                 }
                             },
