@@ -146,6 +146,18 @@ public class Startup
                     }
                 );
                 o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
+
+                o.AllowReferencesWithProperties = true;
+                o.PostProcess = document =>
+                {
+                    var prefix = "/api/v" + version.Major;
+                    document.Servers.Add(new OpenApiServer { Url = prefix });
+                    foreach (var pair in document.Paths.ToArray())
+                    {
+                        document.Paths.Remove(pair.Key);
+                        document.Paths[pair.Key.Substring(prefix.Length)] = pair.Value;
+                    }
+                };
             });
         }
     }
@@ -166,7 +178,15 @@ public class Startup
             x.MapHangfireDashboard();
         });
 
-        app.UseOpenApi();
+        app.UseOpenApi(o =>
+        {
+            o.PostProcess = (document, request) =>
+            {
+                // Patch server URL for Swagger UI
+                var prefix = "/api/v" + document.Info.Version.Split('.')[0];
+                document.Servers.First().Url += prefix;
+            };
+        });
         app.UseSwaggerUi3(settings =>
         {
             settings.OAuth2Client = new OAuth2ClientSettings

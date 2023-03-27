@@ -115,6 +115,30 @@ public class TranslationEngineTests
         });
     }
 
+    [Test]
+    public async Task TranslateAsync()
+    {
+        using var env = new TestEnvironment();
+        var engine = new Engine
+        {
+            Name = "test",
+            SourceLanguage = "en",
+            TargetLanguage = "en",
+            Type = "Echo",
+            Owner = "client1"
+        };
+        await env.Engines.InsertAsync(engine);
+
+        ITranslationEnginesClient client = env.CreateClient();
+        Client.TranslationResult result = await client.TranslateAsync(engine.Id, "This is a test .");
+        Assert.That(result.Translation, Is.EqualTo("This is a test ."));
+        Assert.That(result.Sources, Has.Count.EqualTo(5));
+        Assert.That(
+            result.Sources,
+            Has.All.EquivalentTo(new[] { Client.TranslationSource.Primary, Client.TranslationSource.Secondary })
+        );
+    }
+
     private class TestEnvironment : DisposableBase
     {
         private readonly IServiceScope _scope;
@@ -156,6 +180,77 @@ public class TranslationEngineTests
                         client
                             .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
                             .Returns(CreateAsyncUnaryCall(new Empty()));
+                        var translationResult = new Translation.V1.TranslationResult
+                        {
+                            Translation = "This is a test .",
+                            Tokens = { "This is a test .".Split() },
+                            Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
+                            Sources =
+                            {
+                                new TranslationSources
+                                {
+                                    Values =
+                                    {
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
+                                    }
+                                },
+                                new TranslationSources
+                                {
+                                    Values =
+                                    {
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
+                                    }
+                                },
+                                new TranslationSources
+                                {
+                                    Values =
+                                    {
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
+                                    }
+                                },
+                                new TranslationSources
+                                {
+                                    Values =
+                                    {
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
+                                    }
+                                },
+                                new TranslationSources
+                                {
+                                    Values =
+                                    {
+                                        Translation.V1.TranslationSource.Primary,
+                                        Translation.V1.TranslationSource.Secondary
+                                    }
+                                }
+                            },
+                            Alignment =
+                            {
+                                new Translation.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                                new Translation.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                                new Translation.V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
+                                new Translation.V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
+                                new Translation.V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
+                            },
+                            Phrases =
+                            {
+                                new Translation.V1.Phrase
+                                {
+                                    SourceSegmentStart = 0,
+                                    SourceSegmentEnd = 5,
+                                    TargetSegmentCut = 5,
+                                    Confidence = 1.0
+                                }
+                            }
+                        };
+                        var translateResponse = new TranslateResponse { Results = { translationResult } };
+                        client
+                            .TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
+                            .Returns(CreateAsyncUnaryCall(translateResponse));
                         var grpcClientFactory = Substitute.For<GrpcClientFactory>();
                         grpcClientFactory
                             .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Echo")

@@ -10,5 +10,5 @@ public class WordGraphArc
     public int SourceSegmentStart { get; set; }
     public int SourceSegmentEnd { get; set; }
     public List<AlignedWordPair> Alignment { get; set; } = new List<AlignedWordPair>();
-    public List<TranslationSources> Sources { get; set; } = new List<TranslationSources>();
+    public List<List<TranslationSource>> Sources { get; set; } = new List<List<TranslationSource>>();
 }

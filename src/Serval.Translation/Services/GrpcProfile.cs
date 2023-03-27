@@ -15,5 +15,7 @@ public class GrpcProfile : Profile
                 dest => dest.Location,
                 o => o.MapFrom((cf, _, _, ctxt) => Path.Combine((string)ctxt.Items["Directory"], cf.Filename))
             );
+        CreateMap<V1.TranslationSources, List<TranslationSource>>()
+            .ConstructUsing(src => src.Values.Select(s => (TranslationSource)s).ToList());
     }
 }
