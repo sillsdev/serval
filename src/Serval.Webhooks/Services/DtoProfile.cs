@@ -2,11 +2,23 @@
 
 public class DtoProfile : Profile
 {
-    private const string WebhooksUrl = "/hooks";
-
     public DtoProfile()
     {
-        CreateMap<Webhook, WebhookDto>()
-            .ForMember(dest => dest.Url, o => o.MapFrom((src, _) => $"{WebhooksUrl}/{src.Id}"));
+        CreateMap<Webhook, WebhookDto>().AfterMap<WebhookDtoMappingAction>();
+    }
+}
+
+public class WebhookDtoMappingAction : IMappingAction<Webhook, WebhookDto>
+{
+    private readonly IUrlService _urlService;
+
+    public WebhookDtoMappingAction(IUrlService urlService)
+    {
+        _urlService = urlService;
+    }
+
+    public void Process(Webhook source, WebhookDto destination, ResolutionContext context)
+    {
+        destination.Url = _urlService.GetUrl("GetWebhook", new { id = source.Id });
     }
 }

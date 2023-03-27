@@ -52,23 +52,50 @@ public class Startup
         services.AddServal(
             serval =>
             {
-                serval.AddMongoDataAccess(
-                    Configuration.GetConnectionString("Mongo"),
-                    mongo =>
-                    {
-                        mongo.AddTranslationRepositories();
-                        mongo.AddDataFilesRepositories();
-                        mongo.AddWebhooksRepositories();
-                    }
-                );
+                serval.AddMongoDataAccess(mongo =>
+                {
+                    mongo.AddTranslationRepositories();
+                    mongo.AddDataFilesRepositories();
+                    mongo.AddWebhooksRepositories();
+                });
                 serval.AddTranslation();
                 serval.AddDataFiles();
                 serval.AddWebhooks();
             },
             Configuration
         );
-        services.AddScoped<IEventBroker, EventBroker>();
-        services.AddScoped<IDataFileRetriever, DataFileRetriever>();
+        services.AddTransient<IUrlService, UrlService>();
+
+        services.AddHangfire(
+            c =>
+                c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UseMongoStorage(
+                        Configuration.GetConnectionString("Hangfire"),
+                        new MongoStorageOptions
+                        {
+                            MigrationOptions = new MongoMigrationOptions
+                            {
+                                MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                                BackupStrategy = new CollectionMongoBackupStrategy()
+                            },
+                            CheckConnection = true,
+                            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+                        }
+                    )
+        );
+        services.AddHangfireServer();
+
+        services.AddMediator(cfg =>
+        {
+            cfg.AddTranslationConsumers();
+            cfg.AddDataFilesConsumers();
+            cfg.AddWebhooksConsumers();
+        });
+        services.AddScoped<IPublishEndpoint>(sp => sp.GetRequiredService<IScopedMediator>());
+        services.AddScoped(sp => sp.GetRequiredService<IScopedMediator>().CreateRequestClient<GetDataFile>());
+
         services
             .AddApiVersioning(o =>
             {
@@ -91,7 +118,7 @@ public class Startup
         {
             services.AddSwaggerDocument(o =>
             {
-                o.SchemaType = SchemaType.OpenApi3;
+                o.SchemaType = SchemaType.Swagger2;
                 o.Title = "Serval API";
                 o.Description = "Natural language processing services for minority language Bible translation.";
                 o.DocumentName = "v" + version.Major;
@@ -119,17 +146,6 @@ public class Startup
                     }
                 );
                 o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
-
-                o.AllowReferencesWithProperties = true;
-                o.PostProcess = document =>
-                {
-                    var prefix = "/api/v" + version.Major;
-                    foreach (var pair in document.Paths.ToArray())
-                    {
-                        document.Paths.Remove(pair.Key);
-                        document.Paths[pair.Key.Substring(prefix.Length)] = pair.Value;
-                    }
-                };
             });
         }
     }
@@ -147,17 +163,10 @@ public class Startup
         {
             x.MapControllers();
             x.MapServalTranslationServices();
+            x.MapHangfireDashboard();
         });
 
-        app.UseOpenApi(o =>
-        {
-            o.PostProcess = (document, request) =>
-            {
-                // Patch server URL for Swagger UI
-                var prefix = "/api/v" + document.Info.Version.Split('.')[0];
-                document.Servers.First().Url += prefix;
-            };
-        });
+        app.UseOpenApi();
         app.UseSwaggerUi3(settings =>
         {
             settings.OAuth2Client = new OAuth2ClientSettings

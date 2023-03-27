@@ -22,12 +22,6 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial interface IDataFilesClient
     {
-        /// <summary>
-        /// Gets all files.
-        /// </summary>
-        /// <returns>The files.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataFile>> GetAllAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -35,30 +29,18 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Uploads a file.
-        /// </summary>
-        /// <returns>The file was uploaded successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat? format);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Uploads a file.
         /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="format">The file format.</param>
+        /// <param name="name">The name.</param>
         /// <returns>The file was uploaded successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat? format, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets a file.
-        /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <returns>The file.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<DataFile> GetAsync(string id);
+        System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat format, string? name = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -67,15 +49,7 @@ namespace Serval.Client
         /// <param name="id">The file id.</param>
         /// <returns>The file.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<DataFile> GetAsync(string id, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Deletes a file.
-        /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <returns>The file was deleted successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteAsync(string id);
+        System.Threading.Tasks.Task<DataFile> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -84,7 +58,7 @@ namespace Serval.Client
         /// <param name="id">The file id.</param>
         /// <returns>The file was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
     }
 
@@ -115,26 +89,16 @@ namespace Serval.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
-        /// <summary>
-        /// Gets all files.
-        /// </summary>
-        /// <returns>The files.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataFile>> GetAllAsync()
-        {
-            return GetAllAsync(System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets all files.
         /// </summary>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("files");
+            urlBuilder_.Append("api/v1/files");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -195,26 +159,19 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Uploads a file.
-        /// </summary>
-        /// <returns>The file was uploaded successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat? format)
-        {
-            return CreateAsync(file, format, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Uploads a file.
         /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="format">The file format.</param>
+        /// <param name="name">The name.</param>
         /// <returns>The file was uploaded successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat? format, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat format, string? name = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("files");
+            urlBuilder_.Append("api/v1/files");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -240,6 +197,11 @@ namespace Serval.Client
                     else
                     {
                         content_.Add(new System.Net.Http.StringContent(ConvertToString(format, System.Globalization.CultureInfo.InvariantCulture)), "format");
+                    }
+
+                    if (name != null)
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture)), "name");
                     }
                     request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
@@ -295,17 +257,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets a file.
-        /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <returns>The file.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataFile> GetAsync(string id)
-        {
-            return GetAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets a file.
@@ -313,13 +264,13 @@ namespace Serval.Client
         /// <param name="id">The file id.</param>
         /// <returns>The file.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataFile> GetAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataFile> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("files/{id}");
+            urlBuilder_.Append("api/v1/files/{id}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -387,17 +338,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Deletes a file.
-        /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <returns>The file was deleted successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteAsync(string id)
-        {
-            return DeleteAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Deletes a file.
@@ -405,13 +345,13 @@ namespace Serval.Client
         /// <param name="id">The file id.</param>
         /// <returns>The file was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("files/{id}");
+            urlBuilder_.Append("api/v1/files/{id}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -579,12 +519,6 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial interface ITranslationEnginesClient
     {
-        /// <summary>
-        /// Gets all translation engines.
-        /// </summary>
-        /// <returns>The engines.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -592,15 +526,7 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The engines.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Creates a new translation engine.
-        /// </summary>
-        /// <param name="engineConfig">The translation engine configuration.</param>
-        /// <returns>The translation engine was created successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationEngine> CreateAsync(TranslationEngineConfig engineConfig);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -609,15 +535,7 @@ namespace Serval.Client
         /// <param name="engineConfig">The translation engine configuration.</param>
         /// <returns>The translation engine was created successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationEngine> CreateAsync(TranslationEngineConfig engineConfig, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The translation engine.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationEngine> GetAsync(string id);
+        System.Threading.Tasks.Task<TranslationEngine> CreateAsync(TranslationEngineConfig engineConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -626,15 +544,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The translation engine.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationEngine> GetAsync(string id, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Deletes a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The engine was successfully deleted.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteAsync(string id);
+        System.Threading.Tasks.Task<TranslationEngine> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -643,16 +553,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The engine was successfully deleted.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Translates a segment of text.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="segment">The source segment.</param>
-        /// <returns>The translation result.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationResult> TranslateAsync(string id, string segment);
+        System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -662,17 +563,7 @@ namespace Serval.Client
         /// <param name="segment">The source segment.</param>
         /// <returns>The translation result.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationResult> TranslateAsync(string id, string segment, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Translates a segment of text into the top N results.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="n">The number of translations.</param>
-        /// <param name="segment">The source segment.</param>
-        /// <returns>The translation results.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationResult>> TranslateNAsync(string id, int n, string segment);
+        System.Threading.Tasks.Task<TranslationResult> TranslateAsync(string id, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -683,16 +574,7 @@ namespace Serval.Client
         /// <param name="segment">The source segment.</param>
         /// <returns>The translation results.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationResult>> TranslateNAsync(string id, int n, string segment, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the word graph that represents all possible translations of a segment of text.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="segment">The source segment.</param>
-        /// <returns>The word graph.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordGraph> GetWordGraphAsync(string id, string segment);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationResult>> TranslateNAsync(string id, int n, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -702,16 +584,7 @@ namespace Serval.Client
         /// <param name="segment">The source segment.</param>
         /// <returns>The word graph.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordGraph> GetWordGraphAsync(string id, string segment, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Incrementally trains a translation engine with a segment pair.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="segmentPair">The segment pair.</param>
-        /// <returns>The engine was trained successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task TrainSegmentAsync(string id, SegmentPair segmentPair);
+        System.Threading.Tasks.Task<WordGraph> GetWordGraphAsync(string id, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -721,16 +594,7 @@ namespace Serval.Client
         /// <param name="segmentPair">The segment pair.</param>
         /// <returns>The engine was trained successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task TrainSegmentAsync(string id, SegmentPair segmentPair, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Adds a corpus to a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusConfig">The corpus configuration.</param>
-        /// <returns>The corpus was added successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ParallelCorpus> AddCorpusAsync(string id, ParallelCorpusConfig corpusConfig);
+        System.Threading.Tasks.Task TrainSegmentAsync(string id, SegmentPair segmentPair, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -740,15 +604,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ParallelCorpus> AddCorpusAsync(string id, ParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets all corpora for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The files.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ParallelCorpus>> GetAllCorporaAsync(string id);
+        System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -757,16 +613,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ParallelCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the configuration of a corpus for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusId">The corpus id.</param>
-        /// <returns>The corpus configuration.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ParallelCorpus> GetCorpusAsync(string id, string corpusId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -776,16 +623,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The corpus configuration.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ParallelCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Removes a corpus from a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusId">The corpus id.</param>
-        /// <returns>The data file was deleted successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId);
+        System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -795,16 +633,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The data file was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets all pretranslations in a corpus of a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusId">The corpus id.</param>
-        /// <returns>The pretranslations.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId);
+        System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -814,17 +643,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The pretranslations.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets all pretranslations in a corpus text of a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusId">The corpus id.</param>
-        /// <param name="textId">The text id.</param>
-        /// <returns>The pretranslations.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -835,15 +654,7 @@ namespace Serval.Client
         /// <param name="textId">The text id.</param>
         /// <returns>The pretranslations.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets all build jobs for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The build jobs.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Build>> GetAllBuildsAsync(string id);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -852,15 +663,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build jobs.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Build>> GetAllBuildsAsync(string id, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Starts a build job for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The build job was started successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Build> StartBuildAsync(string id);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationBuild>> GetAllBuildsAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -869,17 +672,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Build> StartBuildAsync(string id, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets a build job.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="buildId">The build job id.</param>
-        /// <param name="minRevision">The minimum revision.</param>
-        /// <returns>The build job.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Build> GetBuildAsync(string id, string buildId, long? minRevision);
+        System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -890,16 +683,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision.</param>
         /// <returns>The build job.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Build> GetBuildAsync(string id, string buildId, long? minRevision, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the currently running build job for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="minRevision">The minimum revision.</param>
-        /// <returns>The build job.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Build> GetCurrentBuildAsync(string id, long? minRevision);
+        System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -909,15 +693,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision.</param>
         /// <returns>The build job.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Build> GetCurrentBuildAsync(string id, long? minRevision, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Cancels the current build job for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The build job was cancelled successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CancelBuildAsync(string id);
+        System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -926,7 +702,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build job was cancelled successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
     }
 
@@ -957,26 +733,16 @@ namespace Serval.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
-        /// <summary>
-        /// Gets all translation engines.
-        /// </summary>
-        /// <returns>The engines.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync()
-        {
-            return GetAllAsync(System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets all translation engines.
         /// </summary>
         /// <returns>The engines.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines");
+            urlBuilder_.Append("api/v1/translation/engines");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1037,17 +803,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Creates a new translation engine.
-        /// </summary>
-        /// <param name="engineConfig">The translation engine configuration.</param>
-        /// <returns>The translation engine was created successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<TranslationEngine> CreateAsync(TranslationEngineConfig engineConfig)
-        {
-            return CreateAsync(engineConfig, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Creates a new translation engine.
@@ -1055,13 +810,13 @@ namespace Serval.Client
         /// <param name="engineConfig">The translation engine configuration.</param>
         /// <returns>The translation engine was created successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationEngine> CreateAsync(TranslationEngineConfig engineConfig, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationEngine> CreateAsync(TranslationEngineConfig engineConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (engineConfig == null)
                 throw new System.ArgumentNullException("engineConfig");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines");
+            urlBuilder_.Append("api/v1/translation/engines");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1126,17 +881,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The translation engine.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<TranslationEngine> GetAsync(string id)
-        {
-            return GetAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets a translation engine.
@@ -1144,13 +888,13 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The translation engine.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationEngine> GetAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationEngine> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}");
+            urlBuilder_.Append("api/v1/translation/engines/{id}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1218,17 +962,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Deletes a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The engine was successfully deleted.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteAsync(string id)
-        {
-            return DeleteAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Deletes a translation engine.
@@ -1236,13 +969,13 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The engine was successfully deleted.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}");
+            urlBuilder_.Append("api/v1/translation/engines/{id}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1304,18 +1037,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Translates a segment of text.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="segment">The source segment.</param>
-        /// <returns>The translation result.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<TranslationResult> TranslateAsync(string id, string segment)
-        {
-            return TranslateAsync(id, segment, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Translates a segment of text.
@@ -1324,7 +1045,7 @@ namespace Serval.Client
         /// <param name="segment">The source segment.</param>
         /// <returns>The translation result.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationResult> TranslateAsync(string id, string segment, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationResult> TranslateAsync(string id, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1333,7 +1054,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("segment");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/translate");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/translate");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1411,19 +1132,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Translates a segment of text into the top N results.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="n">The number of translations.</param>
-        /// <param name="segment">The source segment.</param>
-        /// <returns>The translation results.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationResult>> TranslateNAsync(string id, int n, string segment)
-        {
-            return TranslateNAsync(id, n, segment, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Translates a segment of text into the top N results.
@@ -1433,7 +1141,7 @@ namespace Serval.Client
         /// <param name="segment">The source segment.</param>
         /// <returns>The translation results.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationResult>> TranslateNAsync(string id, int n, string segment, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationResult>> TranslateNAsync(string id, int n, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1445,7 +1153,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("segment");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/translate/{n}");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/translate/{n}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{n}", System.Uri.EscapeDataString(ConvertToString(n, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -1524,18 +1232,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets the word graph that represents all possible translations of a segment of text.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="segment">The source segment.</param>
-        /// <returns>The word graph.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<WordGraph> GetWordGraphAsync(string id, string segment)
-        {
-            return GetWordGraphAsync(id, segment, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets the word graph that represents all possible translations of a segment of text.
@@ -1544,7 +1240,7 @@ namespace Serval.Client
         /// <param name="segment">The source segment.</param>
         /// <returns>The word graph.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordGraph> GetWordGraphAsync(string id, string segment, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<WordGraph> GetWordGraphAsync(string id, string segment, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1553,7 +1249,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("segment");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/get-word-graph");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/get-word-graph");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1631,18 +1327,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Incrementally trains a translation engine with a segment pair.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="segmentPair">The segment pair.</param>
-        /// <returns>The engine was trained successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task TrainSegmentAsync(string id, SegmentPair segmentPair)
-        {
-            return TrainSegmentAsync(id, segmentPair, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Incrementally trains a translation engine with a segment pair.
@@ -1651,7 +1335,7 @@ namespace Serval.Client
         /// <param name="segmentPair">The segment pair.</param>
         /// <returns>The engine was trained successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task TrainSegmentAsync(string id, SegmentPair segmentPair, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task TrainSegmentAsync(string id, SegmentPair segmentPair, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1660,7 +1344,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("segmentPair");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/train-segment");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/train-segment");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1732,18 +1416,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Adds a corpus to a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusConfig">The corpus configuration.</param>
-        /// <returns>The corpus was added successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<ParallelCorpus> AddCorpusAsync(string id, ParallelCorpusConfig corpusConfig)
-        {
-            return AddCorpusAsync(id, corpusConfig, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Adds a corpus to a translation engine.
@@ -1752,7 +1424,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration.</param>
         /// <returns>The corpus was added successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<ParallelCorpus> AddCorpusAsync(string id, ParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1761,7 +1433,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("corpusConfig");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/corpora");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/corpora");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1800,7 +1472,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<ParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1833,17 +1505,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets all corpora for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The files.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ParallelCorpus>> GetAllCorporaAsync(string id)
-        {
-            return GetAllCorporaAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets all corpora for a translation engine.
@@ -1851,13 +1512,13 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The files.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ParallelCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/corpora");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/corpora");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -1892,7 +1553,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<ParallelCorpus>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<TranslationCorpus>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1925,18 +1586,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets the configuration of a corpus for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusId">The corpus id.</param>
-        /// <returns>The corpus configuration.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<ParallelCorpus> GetCorpusAsync(string id, string corpusId)
-        {
-            return GetCorpusAsync(id, corpusId, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets the configuration of a corpus for a translation engine.
@@ -1945,7 +1594,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The corpus configuration.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<ParallelCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1954,7 +1603,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("corpusId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/corpora/{corpusId}");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/corpora/{corpusId}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{corpusId}", System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -1990,7 +1639,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<ParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2023,18 +1672,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Removes a corpus from a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusId">The corpus id.</param>
-        /// <returns>The data file was deleted successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId)
-        {
-            return DeleteCorpusAsync(id, corpusId, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Removes a corpus from a translation engine.
@@ -2043,7 +1680,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The data file was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -2052,7 +1689,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("corpusId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/corpora/{corpusId}");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/corpora/{corpusId}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{corpusId}", System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -2115,18 +1752,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets all pretranslations in a corpus of a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusId">The corpus id.</param>
-        /// <returns>The pretranslations.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId)
-        {
-            return GetAllPretranslationsAsync(id, corpusId, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets all pretranslations in a corpus of a translation engine.
@@ -2135,7 +1760,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id.</param>
         /// <returns>The pretranslations.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -2144,7 +1769,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("corpusId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/corpora/{corpusId}/pretranslations");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/corpora/{corpusId}/pretranslations");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{corpusId}", System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -2213,19 +1838,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets all pretranslations in a corpus text of a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="corpusId">The corpus id.</param>
-        /// <param name="textId">The text id.</param>
-        /// <returns>The pretranslations.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId)
-        {
-            return GetAllPretranslations2Async(id, corpusId, textId, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets all pretranslations in a corpus text of a translation engine.
@@ -2235,7 +1847,7 @@ namespace Serval.Client
         /// <param name="textId">The text id.</param>
         /// <returns>The pretranslations.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Pretranslation>> GetAllPretranslations2Async(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -2247,7 +1859,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("textId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{corpusId}", System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{textId}", System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
@@ -2317,17 +1929,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets all build jobs for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The build jobs.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Build>> GetAllBuildsAsync(string id)
-        {
-            return GetAllBuildsAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets all build jobs for a translation engine.
@@ -2335,13 +1936,13 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build jobs.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Build>> GetAllBuildsAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TranslationBuild>> GetAllBuildsAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/builds");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/builds");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -2376,7 +1977,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Build>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<TranslationBuild>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2409,17 +2010,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Starts a build job for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The build job was started successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Build> StartBuildAsync(string id)
-        {
-            return StartBuildAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Starts a build job for a translation engine.
@@ -2427,13 +2017,13 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Build> StartBuildAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/builds");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/builds");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -2469,7 +2059,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 201)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Build>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationBuild>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2502,19 +2092,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets a build job.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="buildId">The build job id.</param>
-        /// <param name="minRevision">The minimum revision.</param>
-        /// <returns>The build job.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Build> GetBuildAsync(string id, string buildId, long? minRevision)
-        {
-            return GetBuildAsync(id, buildId, minRevision, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets a build job.
@@ -2524,7 +2101,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision.</param>
         /// <returns>The build job.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Build> GetBuildAsync(string id, string buildId, long? minRevision, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -2533,7 +2110,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("buildId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/builds/{buildId}?");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/builds/{buildId}?");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{buildId}", System.Uri.EscapeDataString(ConvertToString(buildId, System.Globalization.CultureInfo.InvariantCulture)));
             if (minRevision != null)
@@ -2574,7 +2151,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Build>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationBuild>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2619,18 +2196,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets the currently running build job for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <param name="minRevision">The minimum revision.</param>
-        /// <returns>The build job.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Build> GetCurrentBuildAsync(string id, long? minRevision)
-        {
-            return GetCurrentBuildAsync(id, minRevision, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets the currently running build job for a translation engine.
@@ -2639,13 +2204,13 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision.</param>
         /// <returns>The build job.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Build> GetCurrentBuildAsync(string id, long? minRevision, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/current-build?");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/current-build?");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             if (minRevision != null)
             {
@@ -2685,7 +2250,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Build>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationBuild>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2730,17 +2295,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Cancels the current build job for a translation engine.
-        /// </summary>
-        /// <param name="id">The translation engine id.</param>
-        /// <returns>The build job was cancelled successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CancelBuildAsync(string id)
-        {
-            return CancelBuildAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Cancels the current build job for a translation engine.
@@ -2748,13 +2302,13 @@ namespace Serval.Client
         /// <param name="id">The translation engine id.</param>
         /// <returns>The build job was cancelled successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("translation/engines/{id}/current-build/cancel");
+            urlBuilder_.Append("api/v1/translation/engines/{id}/current-build/cancel");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -2929,12 +2483,6 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial interface IWebhooksClient
     {
-        /// <summary>
-        /// Gets all webhooks.
-        /// </summary>
-        /// <returns>The webhooks.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Webhook>> GetAllAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2942,15 +2490,7 @@ namespace Serval.Client
         /// </summary>
         /// <returns>The webhooks.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Webhook>> GetAllAsync(System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Creates a new webhook.
-        /// </summary>
-        /// <param name="hookConfig">The webhook configuration.</param>
-        /// <returns>The webhook was created successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Webhook> CreateAsync(WebhookConfig hookConfig);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Webhook>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2959,15 +2499,7 @@ namespace Serval.Client
         /// <param name="hookConfig">The webhook configuration.</param>
         /// <returns>The webhook was created successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Webhook> CreateAsync(WebhookConfig hookConfig, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets a webhook.
-        /// </summary>
-        /// <param name="id">The webhook id.</param>
-        /// <returns>The webhook.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Webhook> GetAsync(string id);
+        System.Threading.Tasks.Task<Webhook> CreateAsync(WebhookConfig hookConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2976,15 +2508,7 @@ namespace Serval.Client
         /// <param name="id">The webhook id.</param>
         /// <returns>The webhook.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Webhook> GetAsync(string id, System.Threading.CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Deletes a webhook.
-        /// </summary>
-        /// <param name="id">The webhook id.</param>
-        /// <returns>The webhook was successfully deleted.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteAsync(string id);
+        System.Threading.Tasks.Task<Webhook> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2993,7 +2517,7 @@ namespace Serval.Client
         /// <param name="id">The webhook id.</param>
         /// <returns>The webhook was successfully deleted.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
     }
 
@@ -3024,26 +2548,16 @@ namespace Serval.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
-        /// <summary>
-        /// Gets all webhooks.
-        /// </summary>
-        /// <returns>The webhooks.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Webhook>> GetAllAsync()
-        {
-            return GetAllAsync(System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets all webhooks.
         /// </summary>
         /// <returns>The webhooks.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Webhook>> GetAllAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Webhook>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("hooks");
+            urlBuilder_.Append("api/v1/hooks");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3104,17 +2618,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Creates a new webhook.
-        /// </summary>
-        /// <param name="hookConfig">The webhook configuration.</param>
-        /// <returns>The webhook was created successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Webhook> CreateAsync(WebhookConfig hookConfig)
-        {
-            return CreateAsync(hookConfig, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Creates a new webhook.
@@ -3122,13 +2625,13 @@ namespace Serval.Client
         /// <param name="hookConfig">The webhook configuration.</param>
         /// <returns>The webhook was created successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Webhook> CreateAsync(WebhookConfig hookConfig, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<Webhook> CreateAsync(WebhookConfig hookConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (hookConfig == null)
                 throw new System.ArgumentNullException("hookConfig");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("hooks");
+            urlBuilder_.Append("api/v1/hooks");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3193,17 +2696,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Gets a webhook.
-        /// </summary>
-        /// <param name="id">The webhook id.</param>
-        /// <returns>The webhook.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Webhook> GetAsync(string id)
-        {
-            return GetAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Gets a webhook.
@@ -3211,13 +2703,13 @@ namespace Serval.Client
         /// <param name="id">The webhook id.</param>
         /// <returns>The webhook.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Webhook> GetAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<Webhook> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("hooks/{id}");
+            urlBuilder_.Append("api/v1/hooks/{id}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -3285,17 +2777,6 @@ namespace Serval.Client
             }
         }
 
-        /// <summary>
-        /// Deletes a webhook.
-        /// </summary>
-        /// <param name="id">The webhook id.</param>
-        /// <returns>The webhook was successfully deleted.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteAsync(string id)
-        {
-            return DeleteAsync(id, System.Threading.CancellationToken.None);
-        }
-
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Deletes a webhook.
@@ -3303,13 +2784,13 @@ namespace Serval.Client
         /// <param name="id">The webhook id.</param>
         /// <returns>The webhook was successfully deleted.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("hooks/{id}");
+            urlBuilder_.Append("api/v1/hooks/{id}");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -3477,16 +2958,19 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class DataFile
     {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Id { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Url { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Name { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("format", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("format", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public FileFormat Format { get; set; } = default!;
 
@@ -3507,34 +2991,39 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class TranslationEngine
     {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Id { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Url { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Name { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string SourceLanguage { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TargetLanguage { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Type { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("isBuilding", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("isBuilding", Required = Newtonsoft.Json.Required.Always)]
         public bool IsBuilding { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("modelRevision", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("modelRevision", Required = Newtonsoft.Json.Required.Always)]
         public int ModelRevision { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.Always)]
         public double Confidence { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("corpusSize", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("corpusSize", Required = Newtonsoft.Json.Required.Always)]
         public int CorpusSize { get; set; } = default!;
 
     }
@@ -3574,23 +3063,29 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class TranslationResult
     {
-        [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Translation { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("tokens", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<string> Tokens { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("tokens", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<string> Tokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
-        [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<float> Confidences { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
 
-        [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public System.Collections.Generic.ICollection<TranslationSources> Sources { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.Always, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<TranslationSources> Sources { get; set; } = new System.Collections.ObjectModel.Collection<TranslationSources>();
 
-        [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<AlignedWordPair> Alignment { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
 
-        [Newtonsoft.Json.JsonProperty("phrases", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<Phrase> Phrases { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("phrases", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<Phrase> Phrases { get; set; } = new System.Collections.ObjectModel.Collection<Phrase>();
 
     }
 
@@ -3619,10 +3114,10 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class AlignedWordPair
     {
-        [Newtonsoft.Json.JsonProperty("sourceIndex", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sourceIndex", Required = Newtonsoft.Json.Required.Always)]
         public int SourceIndex { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetIndex", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("targetIndex", Required = Newtonsoft.Json.Required.Always)]
         public int TargetIndex { get; set; } = default!;
 
     }
@@ -3630,16 +3125,16 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class Phrase
     {
-        [Newtonsoft.Json.JsonProperty("sourceSegmentStart", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sourceSegmentStart", Required = Newtonsoft.Json.Required.Always)]
         public int SourceSegmentStart { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("sourceSegmentEnd", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sourceSegmentEnd", Required = Newtonsoft.Json.Required.Always)]
         public int SourceSegmentEnd { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetSegmentCut", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("targetSegmentCut", Required = Newtonsoft.Json.Required.Always)]
         public int TargetSegmentCut { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.Always)]
         public double Confidence { get; set; } = default!;
 
     }
@@ -3647,111 +3142,129 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordGraph
     {
-        [Newtonsoft.Json.JsonProperty("initialStateScore", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("initialStateScore", Required = Newtonsoft.Json.Required.Always)]
         public float InitialStateScore { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("finalStates", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<int> FinalStates { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("finalStates", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<int> FinalStates { get; set; } = new System.Collections.ObjectModel.Collection<int>();
 
-        [Newtonsoft.Json.JsonProperty("arcs", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<WordGraphArc> Arcs { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("arcs", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<WordGraphArc> Arcs { get; set; } = new System.Collections.ObjectModel.Collection<WordGraphArc>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordGraphArc
     {
-        [Newtonsoft.Json.JsonProperty("prevState", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("prevState", Required = Newtonsoft.Json.Required.Always)]
         public int PrevState { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("nextState", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("nextState", Required = Newtonsoft.Json.Required.Always)]
         public int NextState { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.Always)]
         public float Score { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("tokens", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<string> Tokens { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("tokens", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<string> Tokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
-        [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<float> Confidences { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
 
-        [Newtonsoft.Json.JsonProperty("sourceSegmentStart", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sourceSegmentStart", Required = Newtonsoft.Json.Required.Always)]
         public int SourceSegmentStart { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("sourceSegmentEnd", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sourceSegmentEnd", Required = Newtonsoft.Json.Required.Always)]
         public int SourceSegmentEnd { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<AlignedWordPair> Alignment { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
 
-        [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public System.Collections.Generic.ICollection<TranslationSources> Sources { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.Always, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<TranslationSources> Sources { get; set; } = new System.Collections.ObjectModel.Collection<TranslationSources>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class SegmentPair
     {
-        [Newtonsoft.Json.JsonProperty("sourceSegment", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sourceSegment", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string SourceSegment { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetSegment", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("targetSegment", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TargetSegment { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("sentenceStart", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sentenceStart", Required = Newtonsoft.Json.Required.Always)]
         public bool SentenceStart { get; set; } = default!;
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpus
+    public partial class TranslationCorpus
     {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Id { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Url { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public ResourceLink Engine { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public ResourceLink Engine { get; set; } = new ResourceLink();
 
         [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Name { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string SourceLanguage { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TargetLanguage { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Always)]
         public bool Pretranslate { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<ParallelCorpusFile> SourceFiles { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<TranslationCorpusFile> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
 
-        [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<ParallelCorpusFile> TargetFiles { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<TranslationCorpusFile> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class ResourceLink
     {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Id { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Url { get; set; } = default!;
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusFile
+    public partial class TranslationCorpusFile
     {
-        [Newtonsoft.Json.JsonProperty("file", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public ResourceLink File { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("file", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public ResourceLink File { get; set; } = new ResourceLink();
 
         [Newtonsoft.Json.JsonProperty("textId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? TextId { get; set; } = default!;
@@ -3759,7 +3272,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusConfig
+    public partial class TranslationCorpusConfig
     {
         /// <summary>
         /// The corpus name.
@@ -3780,16 +3293,16 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<ParallelCorpusFileConfig> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<ParallelCorpusFileConfig>();
+        public System.Collections.Generic.ICollection<TranslationCorpusFileConfig> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
 
         [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<ParallelCorpusFileConfig> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<ParallelCorpusFileConfig>();
+        public System.Collections.Generic.ICollection<TranslationCorpusFileConfig> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusFileConfig
+    public partial class TranslationCorpusFileConfig
     {
         [Newtonsoft.Json.JsonProperty("fileId", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -3803,33 +3316,39 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class Pretranslation
     {
-        [Newtonsoft.Json.JsonProperty("textId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("textId", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TextId { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<string> Refs { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<string> Refs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
-        [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Translation { get; set; } = default!;
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Build
+    public partial class TranslationBuild
     {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Id { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Url { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("revision", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("revision", Required = Newtonsoft.Json.Required.Always)]
         public int Revision { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public ResourceLink Engine { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public ResourceLink Engine { get; set; } = new ResourceLink();
 
-        [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
         public int Step { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -3841,9 +3360,10 @@ namespace Serval.Client
         /// <summary>
         /// The current build job state.
         /// </summary>
-        [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public BuildState State { get; set; } = default!;
+        public JobState State { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("dateFinished", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTimeOffset? DateFinished { get; set; } = default!;
@@ -3851,7 +3371,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum BuildState
+    public enum JobState
     {
 
         [System.Runtime.Serialization.EnumMember(Value = @"Pending")]
@@ -3874,17 +3394,21 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class Webhook
     {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Id { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Url { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("payloadUrl", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("payloadUrl", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string PayloadUrl { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("events", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public System.Collections.Generic.ICollection<WebhookEvent> Events { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("events", Required = Newtonsoft.Json.Required.Always, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<WebhookEvent> Events { get; set; } = new System.Collections.ObjectModel.Collection<WebhookEvent>();
 
     }
 
@@ -3892,11 +3416,11 @@ namespace Serval.Client
     public enum WebhookEvent
     {
 
-        [System.Runtime.Serialization.EnumMember(Value = @"BuildStarted")]
-        BuildStarted = 0,
+        [System.Runtime.Serialization.EnumMember(Value = @"TranslationBuildStarted")]
+        TranslationBuildStarted = 0,
 
-        [System.Runtime.Serialization.EnumMember(Value = @"BuildFinished")]
-        BuildFinished = 1,
+        [System.Runtime.Serialization.EnumMember(Value = @"TranslationBuildFinished")]
+        TranslationBuildFinished = 1,
 
     }
 

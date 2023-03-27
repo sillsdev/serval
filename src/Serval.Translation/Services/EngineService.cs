@@ -2,7 +2,7 @@
 
 namespace Serval.Translation.Services;
 
-public class TranslationEngineService : EntityServiceBase<TranslationEngine>, ITranslationEngineService
+public class EngineService : EntityServiceBase<Engine>, IEngineService
 {
     private readonly IRepository<Build> _builds;
     private readonly IRepository<Pretranslation> _pretranslations;
@@ -11,8 +11,8 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
     private readonly IDataAccessContext _dataAccessContext;
     private readonly IMapper _mapper;
 
-    public TranslationEngineService(
-        IRepository<TranslationEngine> engines,
+    public EngineService(
+        IRepository<Engine> engines,
         IRepository<Build> builds,
         IRepository<Pretranslation> pretranslations,
         GrpcClientFactory grpcClientFactory,
@@ -36,7 +36,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
+        Engine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return null;
 
@@ -61,7 +61,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
+        Engine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return null;
 
@@ -85,7 +85,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
+        Engine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return null;
 
@@ -110,7 +110,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
+        Engine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return false;
 
@@ -129,35 +129,32 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         return true;
     }
 
-    public async Task<IEnumerable<TranslationEngine>> GetAllAsync(
-        string owner,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<IEnumerable<Engine>> GetAllAsync(string owner, CancellationToken cancellationToken = default)
     {
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public override async Task CreateAsync(TranslationEngine engine, CancellationToken cancellationToken = default)
+    public override async Task CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         await Entities.InsertAsync(engine, cancellationToken);
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.CreateAsync(
-            new CreateRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceLanguage = engine.SourceLanguage,
-                TargetLanguage = engine.TargetLanguage
-            },
-            cancellationToken: cancellationToken
-        );
+        var request = new CreateRequest
+        {
+            EngineType = engine.Type,
+            EngineId = engine.Id,
+            SourceLanguage = engine.SourceLanguage,
+            TargetLanguage = engine.TargetLanguage
+        };
+        if (engine.Name is not null)
+            request.EngineName = engine.Name;
+        await client.CreateAsync(request, cancellationToken: cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
     }
 
     public override async Task<bool> DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        TranslationEngine? engine = await Entities.GetAsync(engineId, cancellationToken);
+        Engine? engine = await Entities.GetAsync(engineId, cancellationToken);
         if (engine == null)
             return false;
 
@@ -178,7 +175,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
 
     public async Task<Build?> StartBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
+        Engine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return null;
 
@@ -196,7 +193,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
             {
                 engine.Corpora.Select(
                     c =>
-                        _mapper.Map<V1.ParallelCorpus>(
+                        _mapper.Map<V1.Corpus>(
                             c,
                             o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
                         )
@@ -211,7 +208,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
 
     public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
+        Engine? engine = await GetAsync(engineId, cancellationToken);
         if (engine == null)
             return;
 
@@ -222,11 +219,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         );
     }
 
-    public Task AddCorpusAsync(
-        string engineId,
-        Models.ParallelCorpus corpus,
-        CancellationToken cancellationToken = default
-    )
+    public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
     {
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
     }
@@ -238,7 +231,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
     )
     {
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        TranslationEngine? engine = await Entities.UpdateAsync(
+        Engine? engine = await Entities.UpdateAsync(
             engineId,
             u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
             cancellationToken: cancellationToken

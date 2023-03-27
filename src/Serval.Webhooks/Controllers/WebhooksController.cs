@@ -22,9 +22,7 @@ public class WebhooksController : ServalControllerBase
     [HttpGet]
     public async Task<IEnumerable<WebhookDto>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return (await _hookService.GetAllAsync(User.Identity!.Name!, cancellationToken)).Select(
-            _mapper.Map<WebhookDto>
-        );
+        return (await _hookService.GetAllAsync(Owner, cancellationToken)).Select(_mapper.Map<WebhookDto>);
     }
 
     /// <summary>
@@ -35,7 +33,7 @@ public class WebhooksController : ServalControllerBase
     /// <response code="200">The webhook.</response>
     /// <response code="403">The authenticated client does not own the webhook.</response>
     [Authorize(Scopes.ReadHooks)]
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetWebhook")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<WebhookDto>> GetAsync([NotNull] string id, CancellationToken cancellationToken)
@@ -68,7 +66,7 @@ public class WebhooksController : ServalControllerBase
             Url = hookConfig.PayloadUrl,
             Secret = hookConfig.Secret,
             Events = hookConfig.Events.ToList(),
-            Owner = User.Identity!.Name!
+            Owner = Owner
         };
 
         await _hookService.CreateAsync(newHook, cancellationToken);

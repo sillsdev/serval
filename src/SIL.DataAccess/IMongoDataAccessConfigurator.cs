@@ -1,7 +1,6 @@
-﻿namespace SIL.DataAccess;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public interface IMongoDataAccessConfigurator
 {
     IServiceCollection Services { get; }
-    IMongoDatabase Database { get; }
 }

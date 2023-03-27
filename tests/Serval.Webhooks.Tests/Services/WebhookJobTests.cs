@@ -1,22 +1,22 @@
 ﻿namespace Serval.Webhooks.Services;
 
 [TestFixture]
-public class WebhookServiceTests
+public class WebhookJobTests
 {
     [Test]
-    public async Task SendEventAsync_NoHooks()
+    public async Task RunAsync_NoHooks()
     {
         var env = new TestEnvironment();
         MockedRequest req = env.MockHttp.When("*").Respond(HttpStatusCode.OK);
 
         var payload = new { BuildId = "build1", EngineId = "engine1" };
-        await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", payload);
+        await env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None);
 
         Assert.That(env.MockHttp.GetMatchCount(req), Is.EqualTo(0));
     }
 
     [Test]
-    public async Task SendEventAsync_MatchingHook()
+    public async Task RunAsync_MatchingHook()
     {
         var env = new TestEnvironment();
         env.Hooks.Add(
@@ -26,25 +26,25 @@ public class WebhookServiceTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = { WebhookEvent.BuildStarted }
+                Events = { WebhookEvent.TranslationBuildStarted }
             }
         );
         env.MockHttp
             .Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
-                "sha256=AA472F74F9B51BA61EC4EC79B56193B3A9A21318C146098FF7114070DC8C06FB"
+                "sha256=8EC2360A34811845884D8FCE03866EA8FAD9429AAA9E6247D7A817AD2E170B8F"
             )
             .Respond(HttpStatusCode.OK);
 
         var payload = new { BuildId = "build1", EngineId = "engine1" };
-        await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", payload);
+        await env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None);
 
         env.MockHttp.VerifyNoOutstandingExpectation();
     }
 
     [Test]
-    public async Task SendEventAsync_NoMatchingHook()
+    public async Task RunAsync_NoMatchingHook()
     {
         var env = new TestEnvironment();
         env.Hooks.Add(
@@ -54,19 +54,19 @@ public class WebhookServiceTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = { WebhookEvent.BuildStarted }
+                Events = { WebhookEvent.TranslationBuildStarted }
             }
         );
         MockedRequest req = env.MockHttp.When("*").Respond(HttpStatusCode.OK);
 
         var payload = new { BuildId = "build1", EngineId = "engine1" };
-        await env.Service.SendEventAsync(WebhookEvent.BuildFinished, "client", payload);
+        await env.Job.RunAsync(WebhookEvent.TranslationBuildFinished, "client", payload, CancellationToken.None);
 
         Assert.That(env.MockHttp.GetMatchCount(req), Is.EqualTo(0));
     }
 
     [Test]
-    public async Task SendEventAsync_RequestTimeout()
+    public void RunAsync_RequestTimeout()
     {
         var env = new TestEnvironment();
         env.Hooks.Add(
@@ -76,25 +76,27 @@ public class WebhookServiceTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = { WebhookEvent.BuildStarted }
+                Events = { WebhookEvent.TranslationBuildStarted }
             }
         );
         env.MockHttp
             .Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
-                "sha256=AA472F74F9B51BA61EC4EC79B56193B3A9A21318C146098FF7114070DC8C06FB"
+                "sha256=8EC2360A34811845884D8FCE03866EA8FAD9429AAA9E6247D7A817AD2E170B8F"
             )
             .Respond(HttpStatusCode.RequestTimeout);
 
         var payload = new { BuildId = "build1", EngineId = "engine1" };
-        await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", payload);
+        Assert.ThrowsAsync<HttpRequestException>(
+            () => env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None)
+        );
 
         env.MockHttp.VerifyNoOutstandingExpectation();
     }
 
     [Test]
-    public async Task SendEventAsync_Exception()
+    public void RunAsync_Exception()
     {
         var env = new TestEnvironment();
         env.Hooks.Add(
@@ -104,19 +106,21 @@ public class WebhookServiceTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = { WebhookEvent.BuildStarted }
+                Events = { WebhookEvent.TranslationBuildStarted }
             }
         );
         env.MockHttp
             .Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
-                "sha256=AA472F74F9B51BA61EC4EC79B56193B3A9A21318C146098FF7114070DC8C06FB"
+                "sha256=8EC2360A34811845884D8FCE03866EA8FAD9429AAA9E6247D7A817AD2E170B8F"
             )
             .Throw(new HttpRequestException());
 
         var payload = new { BuildId = "build1", EngineId = "engine1" };
-        await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", payload);
+        Assert.ThrowsAsync<HttpRequestException>(
+            () => env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None)
+        );
 
         env.MockHttp.VerifyNoOutstandingExpectation();
     }
@@ -128,10 +132,10 @@ public class WebhookServiceTests
             var jsonOptions = new JsonOptions();
             jsonOptions.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             jsonOptions.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            Service = new WebhookService(Hooks, new OptionsWrapper<JsonOptions>(jsonOptions), MockHttp.ToHttpClient());
+            Job = new WebhookJob(Hooks, MockHttp.ToHttpClient(), new OptionsWrapper<JsonOptions>(jsonOptions));
         }
 
-        public IWebhookService Service { get; }
+        public WebhookJob Job { get; }
         public MemoryRepository<Webhook> Hooks { get; } = new MemoryRepository<Webhook>();
         public MockHttpMessageHandler MockHttp { get; } = new MockHttpMessageHandler();
     }

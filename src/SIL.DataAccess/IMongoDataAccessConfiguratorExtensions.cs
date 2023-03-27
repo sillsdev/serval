@@ -1,4 +1,4 @@
-﻿namespace SIL.DataAccess;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IMongoDataAccessConfiguratorExtensions
 {
@@ -6,17 +6,26 @@ public static class IMongoDataAccessConfiguratorExtensions
         this IMongoDataAccessConfigurator configurator,
         string collectionName,
         Action<BsonClassMap<T>>? mapSetup = null,
-        Action<IMongoCollection<T>>? init = null
+        Func<IMongoCollection<T>, Task>? init = null
     )
         where T : IEntity
     {
         DataAccessClassMap.RegisterClass<T>(cm => mapSetup?.Invoke(cm));
 
-        IMongoCollection<T> collection = configurator.Database.GetCollection<T>(collectionName);
         if (init is not null)
-            init(collection);
+        {
+            configurator.Services.Configure<MongoDataAccessOptions>(options =>
+            {
+                options.Initializers.Add(database => init(database.GetCollection<T>(collectionName)));
+            });
+        }
+
         configurator.Services.AddScoped<IRepository<T>>(
-            sp => CreateRepository(sp.GetRequiredService<IMongoDataAccessContext>(), collection)
+            sp =>
+                CreateRepository(
+                    sp.GetRequiredService<IMongoDataAccessContext>(),
+                    sp.GetRequiredService<IMongoDatabase>().GetCollection<T>(collectionName)
+                )
         );
         return configurator;
     }

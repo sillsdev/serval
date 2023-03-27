@@ -8,6 +8,6 @@ public class Build : IEntity
     public int Step { get; set; }
     public double? PercentCompleted { get; set; }
     public string? Message { get; set; }
-    public BuildState State { get; set; } = BuildState.Pending;
+    public JobState State { get; set; } = JobState.Pending;
     public DateTime? DateFinished { get; set; }
 }

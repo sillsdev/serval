@@ -1,6 +1,6 @@
 ﻿namespace Serval.Shared.Contracts;
 
-public record BuildStarted
+public record TranslationBuildStarted
 {
     public string BuildId { get; init; } = default!;
     public string EngineId { get; init; } = default!;

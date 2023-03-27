@@ -8,37 +8,40 @@ public static class IMongoDataAccessConfiguratorExtensions
         this IMongoDataAccessConfigurator configurator
     )
     {
-        configurator.AddRepository<TranslationEngine>(
+        configurator.AddRepository<Engine>(
             "translation.engines",
-            init: c =>
-                c.Indexes.CreateOrUpdate(
-                    new CreateIndexModel<TranslationEngine>(
-                        Builders<TranslationEngine>.IndexKeys.Ascending(p => p.Owner)
-                    )
-                )
+            init: async c =>
+            {
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending("corpora._id"))
+                );
+            }
         );
         configurator.AddRepository<Build>(
             "translation.builds",
             init: c =>
-                c.Indexes.CreateOrUpdate(
+                c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
                 )
         );
         configurator.AddRepository<Pretranslation>(
             "translation.pretranslations",
-            init: c =>
+            init: async c =>
             {
-                c.Indexes.CreateOrUpdate(
+                await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Pretranslation>(
                         Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.EngineRef)
                     )
                 );
-                c.Indexes.CreateOrUpdate(
+                await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Pretranslation>(
                         Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.CorpusRef)
                     )
                 );
-                c.Indexes.CreateOrUpdate(
+                await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Pretranslation>(Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId))
                 );
             }

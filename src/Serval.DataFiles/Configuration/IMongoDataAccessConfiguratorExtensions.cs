@@ -9,7 +9,7 @@ public static class IMongoDataAccessConfiguratorExtensions
         configurator.AddRepository<DataFile>(
             "files",
             init: c =>
-                c.Indexes.CreateOrUpdate(
+                c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<DataFile>(Builders<DataFile>.IndexKeys.Ascending(p => p.Owner))
                 )
         );

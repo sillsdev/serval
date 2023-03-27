@@ -2,7 +2,7 @@
 
 namespace Serval.Translation.Contracts;
 
-public class ParallelCorpusFileConfigDto
+public class TranslationCorpusFileConfigDto
 {
     [JsonProperty(Required = Required.Always)]
     public string FileId { get; set; } = default!;

@@ -2,6 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
+		<Version>0.1.0</Version>
+		<Description>Client classes for Serval.</Description>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />

@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Models;
 
-public class TranslationEngine : IOwnedEntity
+public class Engine : IOwnedEntity
 {
     public string Id { get; set; } = default!;
     public int Revision { get; set; } = 1;
@@ -9,7 +9,7 @@ public class TranslationEngine : IOwnedEntity
     public string TargetLanguage { get; set; } = default!;
     public string Type { get; set; } = default!;
     public string Owner { get; set; } = default!;
-    public List<ParallelCorpus> Corpora { get; set; } = new List<ParallelCorpus>();
+    public List<Corpus> Corpora { get; set; } = new List<Corpus>();
     public bool IsBuilding { get; set; }
     public int ModelRevision { get; set; }
     public double Confidence { get; set; }

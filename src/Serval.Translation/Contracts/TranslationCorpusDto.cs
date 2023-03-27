@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class ParallelCorpusDto
+public class TranslationCorpusDto
 {
     public string Id { get; set; } = default!;
     public string Url { get; set; } = default!;
@@ -9,6 +9,6 @@ public class ParallelCorpusDto
     public string SourceLanguage { get; set; } = default!;
     public string TargetLanguage { get; set; } = default!;
     public bool Pretranslate { get; set; }
-    public ParallelCorpusFileDto[] SourceFiles { get; set; } = default!;
-    public ParallelCorpusFileDto[] TargetFiles { get; set; } = default!;
+    public TranslationCorpusFileDto[] SourceFiles { get; set; } = default!;
+    public TranslationCorpusFileDto[] TargetFiles { get; set; } = default!;
 }

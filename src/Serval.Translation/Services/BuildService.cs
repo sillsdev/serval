@@ -13,7 +13,7 @@ public class BuildService : EntityServiceBase<Build>, IBuildService
     public Task<Build?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default)
     {
         return Entities.GetAsync(
-            b => b.EngineRef == parentId && (b.State == BuildState.Active || b.State == BuildState.Pending),
+            b => b.EngineRef == parentId && (b.State == JobState.Active || b.State == JobState.Pending),
             cancellationToken
         );
     }
@@ -34,7 +34,7 @@ public class BuildService : EntityServiceBase<Build>, IBuildService
     )
     {
         return GetNewerRevisionAsync(
-            b => b.EngineRef == parentId && (b.State == BuildState.Active || b.State == BuildState.Pending),
+            b => b.EngineRef == parentId && (b.State == JobState.Active || b.State == JobState.Pending),
             minRevision,
             cancellationToken
         );

@@ -23,9 +23,7 @@ public class DataFilesController : ServalControllerBase
     [HttpGet]
     public async Task<IEnumerable<DataFileDto>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return (await _dataFileService.GetAllAsync(User.Identity!.Name!, cancellationToken)).Select(
-            _mapper.Map<DataFileDto>
-        );
+        return (await _dataFileService.GetAllAsync(Owner, cancellationToken)).Select(_mapper.Map<DataFileDto>);
     }
 
     /// <summary>
@@ -36,7 +34,7 @@ public class DataFilesController : ServalControllerBase
     /// <response code="200">The file.</response>
     /// <response code="403">The authenticated client does not own the corpus.</response>
     [Authorize(Scopes.ReadFiles)]
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetDataFile")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<DataFileDto>> GetAsync([NotNull] string id, CancellationToken cancellationToken)
@@ -54,6 +52,7 @@ public class DataFilesController : ServalControllerBase
     /// Uploads a file.
     /// </summary>
     /// <param name="file">The file.</param>
+    /// <param name="name">The name.</param>
     /// <param name="format">The file format.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="201">The file was uploaded successfully.</response>
@@ -63,13 +62,14 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<DataFileDto>> CreateAsync(
         [BindRequired] IFormFile file,
-        [BindRequired] [FromForm] FileFormat format,
+        [BindRequired, FromForm] FileFormat format,
+        [FromForm] string? name,
         CancellationToken cancellationToken
     )
     {
         var dataFile = new DataFile
         {
-            Name = file.FileName,
+            Name = name ?? file.FileName,
             Format = format,
             Owner = Owner
         };

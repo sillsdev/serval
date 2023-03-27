@@ -1,4 +1,4 @@
-﻿namespace SIL.DataAccess;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public class MemoryDataAccessConfigurator : IMemoryDataAccessConfigurator
 {

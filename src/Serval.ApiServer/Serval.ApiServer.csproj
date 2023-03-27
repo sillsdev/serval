@@ -11,6 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="6.4.0" />
+		<PackageReference Include="Hangfire" Version="1.7.33" />
 		<PackageReference Include="Hangfire.Mongo" Version="1.9.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.14" />
 		<PackageReference Include="NSwag.AspNetCore" Version="13.18.2" />
@@ -39,6 +40,6 @@
 	</PropertyGroup>
 
 	<Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' ">
-		<Exec WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagExe_Net60) run nswag.json /variables:Configuration=$(Configuration)" />
+		<Exec WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;NSWAG=1" Command="$(NSwagExe_Net60) run nswag.json /variables:Configuration=$(Configuration)" />
 	</Target>
 </Project>
