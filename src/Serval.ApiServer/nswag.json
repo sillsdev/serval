@@ -76,7 +76,7 @@
       "useHttpClientCreationMethod": false,
       "httpClientType": "System.Net.Http.HttpClient",
       "useHttpRequestMessageCreationMethod": false,
-      "useBaseUrl": false,
+      "useBaseUrl": true,
       "generateBaseUrlProperty": true,
       "generateSyncMethods": false,
       "generatePrepareRequestAndProcessResponseAsAsyncMethods": false,
