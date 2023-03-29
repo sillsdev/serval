@@ -1,8 +1,8 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-internal class ServalConfigurator : IServalConfigurator
+internal class ServalBuilder : IServalBuilder
 {
-    public ServalConfigurator(IServiceCollection services, IConfiguration? configuration)
+    public ServalBuilder(IServiceCollection services, IConfiguration? configuration)
     {
         Services = services;
         Configuration = configuration;

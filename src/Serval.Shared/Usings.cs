@@ -1,9 +1,11 @@
 ﻿global using Grpc.Core;
+global using Grpc.Net.ClientFactory;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.Filters;
 global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.Extensions.Logging;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Models;
