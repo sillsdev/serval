@@ -152,7 +152,7 @@ public class Startup
                     foreach (var pair in document.Paths.ToArray())
                     {
                         document.Paths.Remove(pair.Key);
-                        document.Paths[pair.Key.Substring(prefix.Length)] = pair.Value;
+                        document.Paths[pair.Key[prefix.Length..]] = pair.Value;
                     }
                 };
             });
@@ -173,7 +173,7 @@ public class Startup
             x.MapControllers();
             x.MapServalTranslationServices();
             x.MapHangfireDashboard();
-            x.MapHealthChecks("/api/health", new HealthCheckOptions { ResponseWriter = WriteHealthCheckResponse });
+            x.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = WriteHealthCheckResponse });
         });
 
         app.UseOpenApi(o =>
