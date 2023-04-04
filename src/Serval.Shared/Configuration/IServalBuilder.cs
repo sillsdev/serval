@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-public interface IServalConfigurator
+public interface IServalBuilder
 {
     IServiceCollection Services { get; }
     IConfiguration? Configuration { get; }

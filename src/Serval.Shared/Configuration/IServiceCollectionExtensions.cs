@@ -2,14 +2,8 @@
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddServal(
-        this IServiceCollection services,
-        Action<IServalConfigurator> configure,
-        IConfiguration? config = null
-    )
+    public static IServalBuilder AddServal(this IServiceCollection services, IConfiguration? configuration = null)
     {
-        var configurator = new ServalConfigurator(services, config);
-        configure(configurator);
-        return services;
+        return new ServalBuilder(services, configuration);
     }
 }
