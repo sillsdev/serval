@@ -37,6 +37,8 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         string path = GetDataFilePath(dataFile);
         try
         {
+            var file = new FileInfo(path);
+            file.Directory!.Create();
             using FileStream fileStream = File.OpenWrite(path);
             await stream.CopyToAsync(fileStream, cancellationToken);
         }
