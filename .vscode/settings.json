@@ -3,5 +3,11 @@
   "editor.formatOnSave": true,
   "[csharp]": {
     "editor.defaultFormatter": "csharpier.csharpier-vscode"
-  }
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "cSpell.words": [
+    "pretranslate"
+  ]
 }

@@ -2,6 +2,28 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "ServalApi Docker",
+            "type": "docker",
+            "containerName": "serval_cntr",
+            "request": "attach",
+            "platform": "netCore",
+            "processName": "Serval.ApiServer",
+            "sourceFileMap": {
+                "/app": "${workspaceFolder}"
+            },
+        },
+        {
+            "name": "Echo Docker",
+            "type": "docker",
+            "containerName": "echo_cntr",
+            "request": "attach",
+            "platform": "netCore",
+            "processName": "EchoTranslationEngine",
+            "sourceFileMap": {
+                "/app": "${workspaceFolder}"
+            },
+        },
+        {
             "name": "Launch Serval",
             "type": "coreclr",
             "request": "launch",
@@ -51,7 +73,17 @@
     "compounds": [
         {
             "name": "ServalComb",
-            "configurations": ["Launch Serval", "Launch Echo"]
+            "configurations": [
+                "Launch Serval",
+                "Launch Echo"
+            ]
+        },
+        {
+            "name": "DockerComb",
+            "configurations": [
+                "ServalApi Docker",
+                "Echo Docker"
+            ]
         }
     ]
 }

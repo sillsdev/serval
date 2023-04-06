@@ -1,0 +1,149 @@
+version: "3"
+services:
+  serval:
+    hostname: serval
+    container_name: serval_cntr
+    build:
+      context: .
+      dockerfile: dockerfile.development
+    environment:
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/serval_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/serval
+      - ASPNETCORE_Auth__Domain=sil-appbuilder.auth0.com
+      - ASPNETCORE_Auth__Audience=https://machine.sil.org
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_Translation__Engines__0__Type=Echo
+      - ASPNETCORE_Translation__Engines__0__Address=http://echo
+      - ASPNETCORE_Translation__Engines__1__Type=SmtTransfer
+      - ASPNETCORE_Translation__Engines__1__Address=http://machine-server
+    expose:
+      - 80
+    ports:
+      - 80:80
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/serval/serval:/var/lib/serval
+    working_dir: '/app/src/Serval.ApiServer'
+    entrypoint:
+      - dotnet
+      - run
+      - --launch-profile
+      - docker
+      - --additionalProbingPath
+      - /root/.nuget/packages
+
+  echo:
+    hostname: echo
+    container_name: echo_cntr
+    build:
+      context: .
+      dockerfile: dockerfile.development
+    environment:
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval
+    expose:
+      - 80
+    ports:
+      - 81:80
+    depends_on:
+      - serval
+    volumes:
+      - .:/app
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/serval/echo:/var/lib/serval
+    working_dir: '/app/samples/EchoTranslationEngine'
+    entrypoint:
+      - dotnet
+      - run
+      - --launch-profile
+      - docker
+      - --additionalProbingPath
+      - /root/.nuget/packages
+
+  machine-server:
+    hostname: machine-server
+    image: ghcr.io/sillsdev/machine:2.5.13
+    environment:
+      - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_TranslationEngines__0=SmtTransfer
+    expose:
+      - 80
+    ports:
+      - 82:80
+    depends_on:
+      - mongo
+      - serval
+    volumes:
+      - "/var/lib/serval/engine_server:/var/lib/machine"
+    working_dir: '/app/engine_server'
+    entrypoint:
+      [
+        'dotnet',
+        '/app/engine_server/SIL.Machine.Serval.EngineServer.dll'
+      ]
+  machine-job-server:
+    hostname: machine-job-server
+    image: ghcr.io/sillsdev/machine:2.5.13
+    environment:
+      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_TranslationEngines__0=SmtTransfer
+    expose:
+      - 80
+    ports:
+      - 83:80
+    depends_on:
+      - mongo
+      - machine-server
+    volumes:
+      - "/var/lib/serval/job_server:/var/lib/machine"
+    working_dir: '/app/job_server'
+    entrypoint:
+      [
+        'dotnet',
+        '/app/job_server/SIL.Machine.Serval.JobServer.dll'
+      ]
+  mongo:
+    hostname: mongo
+    image: mongo:4.2
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    restart: always
+    command: mongod --replSet my-mongo-set
+
+  # this initialization server runs the `rs.initiate` command to
+  # intialize the replica set and could connect the (1) servers to each other
+  mongoinit:
+    image: mongo:4.2
+    # this container will exit after executing the command
+    restart: "no"
+    depends_on:
+      - mongo
+    command: >
+      mongo --host mongo:27017 --eval ' config = { "_id" : "my-mongo-set", "members" : [
+        {
+          "_id" : 0,
+          "host" : "mongo:27017"
+        }
+      ] }; sleep(3000); rs.initiate(config, { force: true }); '

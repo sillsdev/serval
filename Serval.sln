@@ -48,6 +48,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoTranslationEngine", "sa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.ApiServer.IntegrationTests", "tests\Serval.ApiServer.IntegrationTests\Serval.ApiServer.IntegrationTests.csproj", "{0C3DF75B-B022-4EFC-882C-F276F1EC8435}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.SpecFlowTests", "tests\Serval.SpecFlowTests\Serval.SpecFlowTests.csproj", "{1F020042-D7B8-4541-9691-26ECFD1FFC73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +104,10 @@ Global
 		{0C3DF75B-B022-4EFC-882C-F276F1EC8435}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C3DF75B-B022-4EFC-882C-F276F1EC8435}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C3DF75B-B022-4EFC-882C-F276F1EC8435}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F020042-D7B8-4541-9691-26ECFD1FFC73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F020042-D7B8-4541-9691-26ECFD1FFC73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F020042-D7B8-4541-9691-26ECFD1FFC73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F020042-D7B8-4541-9691-26ECFD1FFC73}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -119,6 +125,7 @@ Global
 		{4375A7BF-E3CE-4785-91E3-2ED6FCEB074F} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{A9D08CA2-3CF7-4BB7-A47F-5A567FFDB2CC} = {EBC89079-E3EB-4310-859F-25FF4FE3DEC1}
 		{0C3DF75B-B022-4EFC-882C-F276F1EC8435} = {66246A1C-8D45-40FB-A660-C58577122CA7}
+		{1F020042-D7B8-4541-9691-26ECFD1FFC73} = {66246A1C-8D45-40FB-A660-C58577122CA7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}
