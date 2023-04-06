@@ -254,8 +254,27 @@ public sealed class MachineApiStepDefinitions
         if (files.Length == 0)
             throw new ArgumentException($"The langauge data directory {languageFolder} contains no files!");
         var fileList = new List<DataFile>();
+        var all_files = await dataFilesClient.GetAllAsync();
+        var filename_to_id = (from file in all_files where file.Name is not null select file).ToLookup(
+            file => file.Name!,
+            file => file.Id
+        );
+
         foreach (var fileName in filesToAdd)
         {
+            var full_name = language + ":" + fileName;
+
+            //delete files that have the name name
+            if (filename_to_id.Contains(full_name))
+            {
+                var matched_files = filename_to_id[full_name];
+                foreach (var fileId in matched_files)
+                {
+                    await dataFilesClient.DeleteAsync(fileId);
+                }
+            }
+
+            //add the new files
             string filePath = Path.GetFullPath(Path.Combine(languageFolder, fileName));
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"The corpus file {filePath} does not exist!");

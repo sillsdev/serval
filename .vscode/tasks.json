@@ -19,6 +19,26 @@
                 "reveal": "silent"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "dc-down",
+            "type": "shell",
+            "command": "docker-compose",
+            "args": [
+                "down"
+            ]
+        },
+        {
+            "label": "dc-up",
+            "type": "shell",
+            "command": "docker-compose",
+            "args": [
+                "up"
+            ],
+            "dependsOn": [
+                "dc-down",
+                "build"
+            ]
         }
     ]
 }

@@ -25,15 +25,15 @@ services:
     depends_on:
       - mongo
     volumes:
-      - .:/app
+      - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/serval/serval:/var/lib/serval
     working_dir: '/app/src/Serval.ApiServer'
     entrypoint:
       - dotnet
       - run
-      - --launch-profile
-      - docker
+      - --no-build
+      - --no-launch-profile
       - --additionalProbingPath
       - /root/.nuget/packages
 
@@ -56,15 +56,15 @@ services:
     depends_on:
       - serval
     volumes:
-      - .:/app
+      - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/serval/echo:/var/lib/serval
     working_dir: '/app/samples/EchoTranslationEngine'
     entrypoint:
       - dotnet
       - run
-      - --launch-profile
-      - docker
+      - --no-build
+      - --no-launch-profile
       - --additionalProbingPath
       - /root/.nuget/packages
 

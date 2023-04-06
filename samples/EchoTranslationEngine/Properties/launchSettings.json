@@ -9,10 +9,6 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    "docker": {
-      "commandName": "Project",
-      "launchUrl": "swagger"
     }
   }
 }
