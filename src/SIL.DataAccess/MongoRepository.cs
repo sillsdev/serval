@@ -219,26 +219,16 @@ public class MongoRepository<T> : IRepository<T>
         SortDefinition<BsonDocument> sortDef = Builders<BsonDocument>.Sort.Descending("$natural");
         Expression<Func<BsonDocument, BsonValue>> projectDef = d => d["ts"];
         BsonTimestamp timestamp;
+        BsonDocument bsonDoc;
         if (_context.Session is not null)
         {
-            timestamp = (BsonTimestamp)
-                await oplog
-                    .Find(_context.Session, filterDef)
-                    .Sort(sortDef)
-                    .Project(projectDef)
-                    .FirstAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            bsonDoc = await oplog.Find(_context.Session, filterDef).FirstOrDefaultAsync();
         }
         else
         {
-            timestamp = (BsonTimestamp)
-                await oplog
-                    .Find(filterDef)
-                    .Sort(sortDef)
-                    .Project(projectDef)
-                    .FirstAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            bsonDoc = await oplog.Find(filterDef).FirstOrDefaultAsync();
         }
+        timestamp = (BsonTimestamp)bsonDoc["ts"];
         T? initialEntity = await GetAsync(filter, cancellationToken).ConfigureAwait(false);
         var subscription = new MongoSubscription<T>(_context, _collection, filter.Compile(), timestamp, initialEntity);
         return subscription;
