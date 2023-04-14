@@ -10,7 +10,7 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 
 ### Development locally
 
-- Install MongoDB 4.2 and MongoDBCompass and run it on localhost:27017
+- Install MongoDB 4.2 as a replca set and MongoDBCompass and run it on localhost:27017
   - Create the following folders:
   - C:\var\lib\machine\data
   - C:\var\lib\machine\machine
@@ -25,15 +25,11 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 
 ### Development in Docker Compose
 
-Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-dotnet-dev-certs-https-trust):
-
-- install git and add to path (this will also add openssh)
-- create "C:\usr\local\ca-certificates"
-- copy docker/development/machine_api.conf into the above folder
-- `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout machine_api.key -out machine_api.crt -config machine_api.conf`
-- `openssl pkcs12 -export -out machine_api.pfx -inkey machine_api.key -in machine_api.crt`
-
-### Minikube
+* Build this repository with dotnet build
+* Download this repository and place the https://github.com/sillsdev/machine repo in ../machine, relative to this repo.
+* Build the machine repo with dotnet build in the root of that repo
+* In the serval root, run docker-compose up
+* In either repo, use the launch - attatch (in VS Code) to attatch to the running processes and debug
 
 #### Installation
 

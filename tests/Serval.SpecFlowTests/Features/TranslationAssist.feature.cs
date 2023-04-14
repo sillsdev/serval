@@ -76,12 +76,12 @@ namespace Serval.SpecFlowTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Get Translation Suggestion")]
-        public void GetTranslationSuggestion()
+        [NUnit.Framework.DescriptionAttribute("Get Echo Suggestion")]
+        public void GetEchoSuggestion()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Translation Suggestion", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Echo Suggestion", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 4
  this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -93,16 +93,47 @@ namespace Serval.SpecFlowTests.Features
             {
                 this.ScenarioStart();
 #line 5
-  testRunner.Given("a new SmtTransfer engine for John from es to en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+  testRunner.Given("a new Echo engine for John from es to en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 6
   testRunner.When("a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John\'s engine in" +
                         " es and en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 7
+  testRunner.Then("the translation for John for \"Espíritu\" should be \"Espíritu\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Translation Suggestion")]
+        public void GetTranslationSuggestion()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Translation Suggestion", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 9
+ this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 10
+  testRunner.Given("a new SmtTransfer engine for John from es to en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 11
+  testRunner.When("a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John\'s engine in" +
+                        " es and en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 12
   testRunner.And("John\'s engine is built", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 8
+#line 13
   testRunner.Then("the translation for John for \"Espíritu\" should be \"Spirit\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -116,7 +147,7 @@ namespace Serval.SpecFlowTests.Features
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Translation Suggestion from whole Bible", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 10
+#line 15
  this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -126,16 +157,16 @@ namespace Serval.SpecFlowTests.Features
             else
             {
                 this.ScenarioStart();
-#line 11
+#line 16
   testRunner.Given("a new SmtTransfer engine for John from es to en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 12
+#line 17
   testRunner.When("a text corpora containing bible.txt are added to John\'s engine in es and en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 13
+#line 18
   testRunner.And("John\'s engine is built", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 14
+#line 19
   testRunner.Then("the translation for John for \"Espíritu\" should be \"spirit\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -149,7 +180,7 @@ namespace Serval.SpecFlowTests.Features
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Add training segment", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 16
+#line 21
  this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -159,23 +190,23 @@ namespace Serval.SpecFlowTests.Features
             else
             {
                 this.ScenarioStart();
-#line 17
+#line 22
   testRunner.Given("a new SmtTransfer engine for John from es to en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 18
+#line 23
   testRunner.When("a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John\'s engine in" +
                         " es and en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 19
+#line 24
   testRunner.And("John\'s engine is built", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 20
+#line 25
   testRunner.And("the translation for John for \"ungidos mundo\" is \"ungidos world\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 21
+#line 26
   testRunner.And("a translation for John is added with \"unction world\" for \"ungidos mundo\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 22
+#line 27
   testRunner.Then("the translation for John for \"ungidos mundo\" should be \"unction world\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -189,7 +220,7 @@ namespace Serval.SpecFlowTests.Features
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Add More Corpus", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 24
+#line 29
  this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -199,26 +230,26 @@ namespace Serval.SpecFlowTests.Features
             else
             {
                 this.ScenarioStart();
-#line 25
+#line 30
   testRunner.Given("a new SmtTransfer engine for John from es to en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 26
+#line 31
   testRunner.When("a text corpora containing 3JN.txt are added to John\'s engine in es and en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 27
+#line 32
   testRunner.And("John\'s engine is built", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 28
+#line 33
   testRunner.And("the translation for John for \"verdad mundo\" is \"truth mundo\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 29
+#line 34
   testRunner.When("a text corpora containing 1JN.txt, 2JN.txt are added to John\'s engine in es and e" +
                         "n", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 30
+#line 35
   testRunner.And("John\'s engine is built", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 31
+#line 36
   testRunner.Then("the translation for John for \"verdad mundo\" should be \"truth world\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }

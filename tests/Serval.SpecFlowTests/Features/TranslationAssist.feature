@@ -1,6 +1,11 @@
 ﻿@Integration
 Feature: TranslationAssist
 
+	Scenario: Get Echo Suggestion
+		Given a new Echo engine for John from es to en
+		When a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John's engine in es and en
+		Then the translation for John for "Espíritu" should be "Espíritu"
+
 	Scenario: Get Translation Suggestion
 		Given a new SmtTransfer engine for John from es to en
 		When a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John's engine in es and en
