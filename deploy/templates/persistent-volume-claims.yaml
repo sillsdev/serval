@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: machine-corpora-claim
+  name: serval-claim
   namespace: {{ .Values.namespace}}
 spec:
   storageClassName: "longhorn"
@@ -15,7 +15,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: machine-engines-claim
+  name: machine-claim
   namespace: {{ .Values.namespace}}
 spec:
   storageClassName: "longhorn"
@@ -28,7 +28,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: machine-keys-claim
+  name: keys-claim
   namespace: {{ .Values.namespace}}
 spec:
   storageClassName: "longhorn"

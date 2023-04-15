@@ -22,7 +22,9 @@ spec:
             - /usr/bin/mongod
             - --bind_ip
             - 0.0.0.0
-          image: mongo:4.2-bionic
+            - --replSet
+            - myRS
+          image: mongo:4.2
           imagePullPolicy: "Always"
           name: mongo
           ports:

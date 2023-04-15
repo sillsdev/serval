@@ -10,5 +10,13 @@
   "cSpell.words": [
     "Bson",
     "pretranslate"
-  ]
+  ],
+  "[helm]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+  },
+  "yaml.format.bracketSpacing": false,
+  "yaml.format.enable": true,
+  "files.associations": {
+    "*.yaml": "helm"
+  },
 }

@@ -2,27 +2,28 @@ apiVersion: logging.banzaicloud.io/v1beta1
 kind: Flow
 metadata:
   name: machine
-  namespace: {{ .Values.namespace}}
+  namespace: {{ .Values.namespace }}
 spec:
   filters:
     - concat:
-        multiline_start_regexp: /^[^\s]/  #Instead of using a \n to match the end, a space is used to match the beginning - due to another bug. ( will drop all logs )
-        separator: ' '  #The separator is a space rather than empty because of a bug in how the field is represented ( will not use and empty separator )
+        multiline_start_regexp: /^[^\s]/ #Instead of using a \n to match the end, a space is used to match the beginning - due to another bug. ( will drop all logs )
+        separator: " " #The separator is a space rather than empty because of a bug in how the field is represented ( will not use and empty separator )
     - parser:
         key_name: log
         reserve_data: true
         parse:
-            type: regexp
-            expression: "/(?<type>fail|info).*\\: (?<source>[A-Za-z.0-9]+)/"  # note double backslash and quotes around regexp
+          type: regexp
+          expression: "/(?<type>fail|info).*\\: (?<source>[A-Za-z.0-9]+)/" # note double backslash and quotes around regexp
   globalOutputRefs: []
   localOutputRefs:
     - nlp-loki-output
   match:
     - select:
         container_names:
-          - machine-job-server
-          - machine-engine-server
-          - machine-api-server
+          - machine-job
+          - machine-engine
+          - serval-api
+          - echo
         hosts: []
         labels: {}
 ---
@@ -30,7 +31,7 @@ apiVersion: logging.banzaicloud.io/v1beta1
 kind: Flow
 metadata:
   name: mongo
-  namespace: {{ .Values.namespace}}
+  namespace: {{ .Values.namespace }}
 spec:
   globalOutputRefs: []
   localOutputRefs:

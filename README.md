@@ -33,19 +33,7 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 
 #### Installation
 
-- Install docker, minikube and helm
-- Run: `minikube addons enable ingress` to install ingress
-- Create folder `C:/usr/local`
-
-#### Startup
-
-- Run `minikube start`
-- In a new window, run `minikube mount C:\usr\local:/host`
-- In a new window, run `minikube dashboard` (this will keep running - do it in a separate cmd window)
-- Run `kubectl config use-context minikube`
-- Run `cd deploy`
-- Run `helm install machine-api . -f dev-values.yaml`
-
+- Install docker and helm
 #### Update with new yaml's:
 
 - Run `helm upgrade machine-api . -f dev-values.yaml`

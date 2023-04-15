@@ -1,0 +1,53 @@
+{{- if not .Values.enableEcho}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: echo
+  name: echo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: echo
+    spec:
+          terminationGracePeriodSeconds: 30
+      containers:
+        - command:
+            - dotnet
+            - /app/echo_server/EchoTranslationEngine.dll
+          workingDir: /app/echo_server
+          env:
+            - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
+              value: http://*:80
+            - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
+              value: Http2
+            - name: ASPNETCORE_ConnectionStrings__TranslationPlatformApi
+              value: http://serval:81
+            - name: ASPNETCORE_Logging__LogLevel__Default
+            value: Information
+            - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
+              value: Warning
+          image: {{ .Values.servalImage}}
+          imagePullPolicy: "Always"
+          name: echo-cntr
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "1000Mi"
+              cpu: "1.5"
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
+      hostname: echo
+      restartPolicy: Always
+      volumes: {}
+status: {}
+{{- end }}

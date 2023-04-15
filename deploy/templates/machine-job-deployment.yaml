@@ -2,85 +2,73 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: machine-engine-server
-  name: machine-engine-server
+    app: machine-job
+  name: machine-job
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: machine-engine-server
+      app: machine-job
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: machine-engine-server
+        app: machine-job
     spec:
       terminationGracePeriodSeconds: 30
       containers:
         - command:
             - dotnet
-            - /app/engine_server/SIL.Machine.WebApi.EngineServer.dll
-          workingDir: /app/engine_server
+            - /app/job_server/SIL.Machine.WebApi.JobServer.dll
+          workingDir: /app/job_server
           env:
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
-              value: http://*:81
+              value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
               value: Http2
             - name: ASPNETCORE_ConnectionStrings__Hangfire
               value: mongodb://mongo:27017/machine_jobs
             - name: ASPNETCORE_ConnectionStrings__Mongo
               value: mongodb://mongo:27017/machine
+            - name: ASPNETCORE_ConnectionStrings__Serval
+              value: http://serval:81
             - name: ASPNETCORE_Logging__LogLevel__Default
               value: Information
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
               value: Warning
+            - name: ASPNETCORE_TranslationEngines__0
+              value: SmtTransfer
               {{- if not .Values.localVolume}}
               {{- template "secrets.clearml" }}
               {{- template "secrets.s3" }}
               {{- end}}
-          image: ghcr.io/sillsdev/machine:latest
+          image: {{ .Values.machineImage}}
           imagePullPolicy: "Always"
-          name: machine-engine-server
+          name: machine-job
           ports:
-            - containerPort: 81
+            - containerPort: 80
           resources:
             limits:
               memory: "1000Mi"
-              cpu: "500m"
+              cpu: "1.5"
             requests:
               memory: "100Mi"
               cpu: "100m"
           volumeMounts:
-            - mountPath: /var/lib/machine/engines
-              name: machine-engine-server-engines
-            - mountPath: /var/lib/machine/corpora
-              name: machine-engine-server-corpora
-            - mountPath: /root/.aspnet/DataProtection-Keys
-              name: machine-engine-server-keys
-      hostname: machine-engine-server
+            - mountPath: /var/lib/machine
+              name: machine-mount
+      hostname: machine-job
       restartPolicy: Always
       {{- if .Values.localVolume }}
       volumes:
         - hostPath:
             path: /host/engines #/host should be mounted from C:\usr\local
-          name: machine-engine-server-engines
-        - hostPath:
-            path: /host/corpora
-          name: machine-engine-server-corpora
-        - hostPath:
-            path: /host/DataProtection-Keys
-          name: machine-engine-server-keys
+          name: machine-mount
       {{- else}}
       volumes:
-        - name: machine-engine-server-engines
+        - name: machine-mount
           persistentVolumeClaim:
-            claimName: machine-engines-claim
-        - name: machine-engine-server-corpora
-          persistentVolumeClaim:
-            claimName: machine-corpora-claim
-        - name: machine-engine-server-keys
-          persistentVolumeClaim:
-            claimName: machine-keys-claim
+            claimName: machine-claim
       {{- end}}
 status: {}
