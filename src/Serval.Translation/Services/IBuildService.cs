@@ -15,5 +15,4 @@ public interface IBuildService
         long minRevision,
         CancellationToken cancellationToken = default
     );
-    Task<bool> IsBuildActive(string parentId, CancellationToken cancellationToken = default);
 }

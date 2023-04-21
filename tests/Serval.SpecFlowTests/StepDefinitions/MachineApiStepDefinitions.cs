@@ -137,24 +137,13 @@ public sealed class MachineApiStepDefinitions
         int cRevision = newJob.Revision;
         while (true)
         {
-            try
+            var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id);
+            if (!(result.State == JobState.Active || result.State == JobState.Pending))
             {
-                var result = await translationEnginesClient.GetCurrentBuildAsync(engineId, minRevision: cRevision);
-                cRevision = result.Revision + 1;
+                // build completed
+                break;
             }
-            catch (ServalApiException e)
-            {
-                if (e.StatusCode == 204)
-                {
-                    // build complete - success
-                    break;
-                }
-                else
-                {
-                    throw e;
-                }
-            }
-            Thread.Sleep(100);
+            Thread.Sleep(500);
         }
     }
 
