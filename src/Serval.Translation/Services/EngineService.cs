@@ -136,20 +136,26 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
 
     public override async Task CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
-        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         await Entities.InsertAsync(engine, cancellationToken);
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        var request = new CreateRequest
+        try
         {
-            EngineType = engine.Type,
-            EngineId = engine.Id,
-            SourceLanguage = engine.SourceLanguage,
-            TargetLanguage = engine.TargetLanguage
-        };
-        if (engine.Name is not null)
-            request.EngineName = engine.Name;
-        await client.CreateAsync(request, cancellationToken: cancellationToken);
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+            var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            var request = new CreateRequest
+            {
+                EngineType = engine.Type,
+                EngineId = engine.Id,
+                SourceLanguage = engine.SourceLanguage,
+                TargetLanguage = engine.TargetLanguage
+            };
+            if (engine.Name is not null)
+                request.EngineName = engine.Name;
+            await client.CreateAsync(request, cancellationToken: cancellationToken);
+        }
+        catch
+        {
+            await Entities.DeleteAsync(engine, CancellationToken.None);
+            throw;
+        }
     }
 
     public override async Task<bool> DeleteAsync(string engineId, CancellationToken cancellationToken = default)
@@ -158,16 +164,16 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         if (engine == null)
             return false;
 
-        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        await Entities.DeleteAsync(engineId, cancellationToken);
-        await _builds.DeleteAllAsync(b => b.EngineRef == engineId, cancellationToken);
-        await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, cancellationToken);
-
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         await client.DeleteAsync(
             new DeleteRequest { EngineType = engine.Type, EngineId = engine.Id },
             cancellationToken: cancellationToken
         );
+
+        await _dataAccessContext.BeginTransactionAsync(CancellationToken.None);
+        await Entities.DeleteAsync(engineId, CancellationToken.None);
+        await _builds.DeleteAllAsync(b => b.EngineRef == engineId, CancellationToken.None);
+        await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, CancellationToken.None);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return true;
@@ -179,29 +185,35 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         if (engine == null)
             return null;
 
-        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         var build = new Build { EngineRef = engine.Id };
         await _builds.InsertAsync(build, cancellationToken);
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        var request = new StartBuildRequest
+        try
         {
-            EngineType = engine.Type,
-            EngineId = engine.Id,
-            BuildId = build.Id,
-            Corpora =
+            var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            var request = new StartBuildRequest
             {
-                engine.Corpora.Select(
-                    c =>
-                        _mapper.Map<V1.Corpus>(
-                            c,
-                            o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
-                        )
-                )
-            }
-        };
-        await client.StartBuildAsync(request, cancellationToken: cancellationToken);
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+                EngineType = engine.Type,
+                EngineId = engine.Id,
+                BuildId = build.Id,
+                Corpora =
+                {
+                    engine.Corpora.Select(
+                        c =>
+                            _mapper.Map<V1.Corpus>(
+                                c,
+                                o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
+                            )
+                    )
+                }
+            };
+            await client.StartBuildAsync(request, cancellationToken: cancellationToken);
+        }
+        catch
+        {
+            await _builds.DeleteAsync(build, CancellationToken.None);
+            throw;
+        }
 
         return build;
     }
