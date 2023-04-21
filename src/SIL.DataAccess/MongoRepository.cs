@@ -213,33 +213,30 @@ public class MongoRepository<T> : IRepository<T>
         CancellationToken cancellationToken = default
     )
     {
-        IMongoClient client = _collection.Database.Client;
-        IMongoCollection<BsonDocument> oplog = client.GetDatabase("local").GetCollection<BsonDocument>("oplog.rs");
-        var filterDef = FilterDefinition<BsonDocument>.Empty;
-        SortDefinition<BsonDocument> sortDef = Builders<BsonDocument>.Sort.Descending("$natural");
-        Expression<Func<BsonDocument, BsonValue>> projectDef = d => d["ts"];
-        BsonTimestamp timestamp;
+        var filterDef = new ExpressionFilterDefinition<T>(filter);
+        var findCommand = new BsonDocument
+        {
+            { "find", _collection.CollectionNamespace.CollectionName },
+            { "filter", filterDef.Render(_collection.DocumentSerializer, _collection.Settings.SerializerRegistry) },
+            { "limit", 1 },
+            { "singleBatch", true }
+        };
+        BsonDocument result;
         if (_context.Session is not null)
         {
-            timestamp = (BsonTimestamp)
-                await oplog
-                    .Find(_context.Session, filterDef)
-                    .Sort(sortDef)
-                    .Project(projectDef)
-                    .FirstAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            result = await _collection.Database
+                .RunCommandAsync<BsonDocument>(_context.Session, findCommand, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
         else
         {
-            timestamp = (BsonTimestamp)
-                await oplog
-                    .Find(filterDef)
-                    .Sort(sortDef)
-                    .Project(projectDef)
-                    .FirstAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            result = await _collection.Database
+                .RunCommandAsync<BsonDocument>(findCommand, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
-        T? initialEntity = await GetAsync(filter, cancellationToken).ConfigureAwait(false);
+        BsonDocument? initialEntityDoc = result["cursor"]["firstBatch"].AsBsonArray.FirstOrDefault()?.AsBsonDocument;
+        T? initialEntity = initialEntityDoc is null ? default : BsonSerializer.Deserialize<T>(initialEntityDoc);
+        var timestamp = (BsonTimestamp)result["operationTime"];
         var subscription = new MongoSubscription<T>(_context, _collection, filter.Compile(), timestamp, initialEntity);
         return subscription;
     }
