@@ -597,6 +597,15 @@ public class TranslationEnginesController : ServalControllerBase
 
         if (minRevision != null)
         {
+            var buildIsActive = await TaskEx.Timeout(
+                ct => _buildService.IsBuildActive(id, ct),
+                _apiOptions.CurrentValue.LongPollTimeout,
+                cancellationToken
+            );
+            if (!buildIsActive)
+            {
+                return NoContent();
+            }
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetActiveNewerRevisionAsync(id, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,

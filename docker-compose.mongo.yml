@@ -1,0 +1,27 @@
+version: "3"
+services:
+  mongo:
+    hostname: mongo
+    image: mongo:4.2
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    restart: always
+    command: mongod --replSet myRS
+
+  # this initialization server runs the `rs.initiate` command to
+  # intialize the replica set and could connect the (1) servers to each other
+  mongoinit:
+    image: mongo:4.2
+    # this container will exit after executing the command
+    restart: "no"
+    depends_on:
+      - mongo
+    command: >
+      mongo --host mongo:27017 --eval ' config = { "_id" : "myRS", "members" : [
+        {
+          "_id" : 0,
+          "host" : "mongo:27017"
+        }
+      ] }; sleep(3000); rs.initiate(config, { force: true }); '

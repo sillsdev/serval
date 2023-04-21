@@ -134,11 +134,27 @@ public sealed class MachineApiStepDefinitions
     {
         var engineId = await GetEngineFromUser(user);
         var newJob = await translationEnginesClient.StartBuildAsync(engineId);
-        var percentCompleted = 0.0;
-        while (percentCompleted < 100.0)
+        int cRevision = newJob.Revision;
+        while (true)
         {
-            var result = await translationEnginesClient.GetCurrentBuildAsync(engineId, minRevision: newJob.Revision);
-            percentCompleted = result.PercentCompleted ?? 0;
+            try
+            {
+                var result = await translationEnginesClient.GetCurrentBuildAsync(engineId, minRevision: cRevision);
+                cRevision = result.Revision + 1;
+            }
+            catch (ServalApiException e)
+            {
+                if (e.StatusCode == 204)
+                {
+                    // build complete - success
+                    break;
+                }
+                else
+                {
+                    throw e;
+                }
+            }
+            Thread.Sleep(100);
         }
     }
 
@@ -204,7 +220,7 @@ public sealed class MachineApiStepDefinitions
     public async Task<string> PostCorpusToEngine(
         string engineId,
         FileFormat fileFormat,
-        IEnumerable<string> filesToAdd,
+        string[] filesToAdd,
         string sourceLanguage,
         string targetLanguage,
         bool pretranslate
@@ -212,18 +228,22 @@ public sealed class MachineApiStepDefinitions
     {
         var sourceFiles = await PostFiles(filesToAdd, fileFormat, sourceLanguage);
         var sourceFileConfig = new List<TranslationCorpusFileConfig>();
-        foreach (var file in sourceFiles)
+        foreach (var item in sourceFiles.Select((file, i) => new { i, file }))
         {
-            sourceFileConfig.Add(new TranslationCorpusFileConfig { FileId = file.Id, TextId = file.Id });
+            sourceFileConfig.Add(
+                new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
+            );
         }
 
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
         if (pretranslate is false)
         {
             var targetFiles = await PostFiles(filesToAdd, fileFormat, targetLanguage);
-            foreach (var file in targetFiles)
+            foreach (var item in targetFiles.Select((file, i) => new { i, file }))
             {
-                targetFileConfig.Add(new TranslationCorpusFileConfig { FileId = file.Id, TextId = file.Id });
+                targetFileConfig.Add(
+                    new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
+                );
             }
         }
 

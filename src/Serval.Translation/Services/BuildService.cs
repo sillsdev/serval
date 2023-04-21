@@ -40,6 +40,21 @@ public class BuildService : EntityServiceBase<Build>, IBuildService
         );
     }
 
+    public async Task<bool> IsBuildActive(string parentId, CancellationToken cancellationToken = default)
+    {
+        var activeBuilds = await Entities.GetAllAsync(
+            b => b.EngineRef == parentId && (b.State == JobState.Active || b.State == JobState.Pending)
+        );
+        if (activeBuilds.Any())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     private async Task<EntityChange<Build>> GetNewerRevisionAsync(
         Expression<Func<Build, bool>> filter,
         long minRevision,

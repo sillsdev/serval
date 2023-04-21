@@ -75,5 +75,5 @@ This is the QA staging environment. To access it,
     - Login, go to Applications-> Applications -> "Machine API (Test Application)", or similar
     - Copy `Client ID` into Environment variable `MACHINE_CLIENT_ID`
     - Copy `Client Secret` into Environment variable `MACHINE_CLIENT_SECRET`
-  - Run tests from `SIL.Machine.WebApi.SpecFlowTests`
+  - Run tests from `Serval.SpecFlowTests`
     - The token will automatically be retrieved from Auth0 when you run the tests
