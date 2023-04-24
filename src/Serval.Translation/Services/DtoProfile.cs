@@ -4,8 +4,10 @@ public class DtoProfile : Profile
 {
     public DtoProfile()
     {
+        AllowNullCollections = true;
         CreateMap<Engine, TranslationEngineDto>().AfterMap<TranslationEngineDtoMappingAction>();
         CreateMap<Build, TranslationBuildDto>().AfterMap<BuildDtoMappingAction>();
+        CreateMap<PretranslateCorpus, PretranslateCorpusDto>().AfterMap<PretranslateCorpusDtoMappingAction>();
         CreateMap<TranslationResult, TranslationResultDto>();
         CreateMap<AlignedWordPair, AlignedWordPairDto>();
         CreateMap<Phrase, PhraseDto>();
@@ -90,6 +92,26 @@ public class TranslationCorpusFileDtoMappingAction : IMappingAction<CorpusFile, 
         {
             Id = source.Id,
             Url = _urlService.GetUrl("GetDataFile", new { id = source.Id })
+        };
+    }
+}
+
+public class PretranslateCorpusDtoMappingAction : IMappingAction<PretranslateCorpus, PretranslateCorpusDto>
+{
+    private readonly IUrlService _urlService;
+
+    public PretranslateCorpusDtoMappingAction(IUrlService urlService)
+    {
+        _urlService = urlService;
+    }
+
+    public void Process(PretranslateCorpus source, PretranslateCorpusDto destination, ResolutionContext context)
+    {
+        var engineId = (string)context.Items["EngineId"];
+        destination.Corpus = new ResourceLinkDto
+        {
+            Id = source.CorpusRef,
+            Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
         };
     }
 }

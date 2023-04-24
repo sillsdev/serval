@@ -179,17 +179,17 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         return true;
     }
 
-    public async Task<Build?> StartBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<bool> StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
-        Engine? engine = await GetAsync(engineId, cancellationToken);
+        Engine? engine = await GetAsync(build.EngineRef, cancellationToken);
         if (engine == null)
-            return null;
+            return false;
 
-        var build = new Build { EngineRef = engine.Id };
         await _builds.InsertAsync(build, cancellationToken);
 
         try
         {
+            Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
             var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
             var request = new StartBuildRequest
             {
@@ -198,15 +198,24 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                 BuildId = build.Id,
                 Corpora =
                 {
-                    engine.Corpora.Select(
-                        c =>
-                            _mapper.Map<V1.Corpus>(
-                                c,
-                                o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
-                            )
-                    )
+                    engine.Corpora.Select(c =>
+                    {
+                        var corpus = _mapper.Map<V1.Corpus>(
+                            c,
+                            o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
+                        );
+                        if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
+                        {
+                            corpus.PretranslateAll =
+                                pretranslateCorpus.TextIds is null || pretranslateCorpus.TextIds.Count == 0;
+                            if (pretranslateCorpus.TextIds is not null)
+                                corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
+                        }
+                        return corpus;
+                    })
                 }
             };
+
             await client.StartBuildAsync(request, cancellationToken: cancellationToken);
         }
         catch
@@ -215,7 +224,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
             throw;
         }
 
-        return build;
+        return true;
     }
 
     public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)

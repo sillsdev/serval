@@ -105,11 +105,8 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         if (!await _engineService.DeleteAsync(id, cancellationToken))
             return NotFound();
@@ -136,13 +133,10 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
-        TranslationResult? result = await _engineService.TranslateAsync(engine.Id, segment, cancellationToken);
+        TranslationResult? result = await _engineService.TranslateAsync(id, segment, cancellationToken);
         if (result == null)
             return NotFound();
         return Ok(_mapper.Map<TranslationResultDto>(result));
@@ -170,14 +164,11 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(
-            engine.Id,
+            id,
             n,
             segment,
             cancellationToken
@@ -207,16 +198,13 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
-        WordGraph? result = await _engineService.GetWordGraphAsync(engine.Id, segment, cancellationToken);
-        if (result == null)
+        WordGraph? wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
+        if (wordGraph == null)
             return NotFound();
-        return Ok(_mapper.Map<WordGraphDto>(result));
+        return Ok(_mapper.Map<WordGraphDto>(wordGraph));
     }
 
     /// <summary>
@@ -239,15 +227,12 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         if (
             !await _engineService.TrainSegmentPairAsync(
-                engine.Id,
+                id,
                 segmentPair.SourceSegment,
                 segmentPair.TargetSegment,
                 segmentPair.SentenceStart,
@@ -282,19 +267,15 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         var corpus = new Corpus
         {
             Id = idGenerator.GenerateId(),
             Name = corpusConfig.Name,
             SourceLanguage = corpusConfig.SourceLanguage,
-            TargetLanguage = corpusConfig.TargetLanguage,
-            Pretranslate = corpusConfig.Pretranslate ?? false
+            TargetLanguage = corpusConfig.TargetLanguage
         };
         List<CorpusFile>? sourceFiles = await MapAsync(corpusConfig.SourceFiles, getDataFileClient, cancellationToken);
         if (sourceFiles is null)
@@ -383,11 +364,8 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         if (!await _engineService.DeleteCorpusAsync(id, corpusId, cancellationToken))
             return NotFound();
@@ -413,11 +391,8 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         return Ok(
             (await _pretranslationService.GetAllAsync(id, corpusId, cancellationToken)).Select(
@@ -446,11 +421,8 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? result))
+            return result;
 
         return Ok(
             (await _pretranslationService.GetAllAsync(id, corpusId, textId, cancellationToken)).Select(
@@ -475,13 +447,10 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
-        return Ok((await _buildService.GetAllAsync(id, cancellationToken)).Select(_mapper.Map<TranslationBuildDto>));
+        return Ok((await _buildService.GetAllAsync(id, cancellationToken)).Select(Map));
     }
 
     /// <summary>
@@ -508,11 +477,8 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         if (minRevision != null)
         {
@@ -525,7 +491,7 @@ public class TranslationEnginesController : ServalControllerBase
             {
                 EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
                 EntityChangeType.Delete => NotFound(),
-                _ => Ok(_mapper.Map<TranslationBuildDto>(change.Entity!)),
+                _ => Ok(Map(change.Entity!)),
             };
         }
         else
@@ -534,7 +500,7 @@ public class TranslationEnginesController : ServalControllerBase
             if (build == null)
                 return NotFound();
 
-            return Ok(_mapper.Map<TranslationBuildDto>(build));
+            return Ok(Map(build));
         }
     }
 
@@ -542,6 +508,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// Starts a build job for a translation engine.
     /// </summary>
     /// <param name="id">The translation engine id.</param>
+    /// <param name="buildConfig">The build job configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="201">The build job was started successfully.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
@@ -551,19 +518,24 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<TranslationBuildDto>> StartBuildAsync(
         [NotNull] string id,
+        [FromBody] TranslationBuildConfigDto buildConfig,
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
-        Build? build = await _engineService.StartBuildAsync(id, cancellationToken);
-        if (build == null)
+        var build = new Build
+        {
+            EngineRef = id,
+            Pretranslate = buildConfig.Pretranslate
+                ?.Select(c => new PretranslateCorpus { CorpusRef = c.CorpusId, TextIds = c.TextIds })
+                .ToList()
+        };
+
+        if (!await _engineService.StartBuildAsync(build, cancellationToken))
             return NotFound();
-        var dto = _mapper.Map<TranslationBuildDto>(build);
+        var dto = Map(build);
         return Created(dto.Url, dto);
     }
 
@@ -589,11 +561,8 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         if (minRevision != null)
         {
@@ -606,7 +575,7 @@ public class TranslationEnginesController : ServalControllerBase
             {
                 EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
                 EntityChangeType.Delete => NoContent(),
-                _ => Ok(_mapper.Map<TranslationBuildDto>(change.Entity!)),
+                _ => Ok(Map(change.Entity!)),
             };
         }
         else
@@ -615,7 +584,7 @@ public class TranslationEnginesController : ServalControllerBase
             if (build == null)
                 return NoContent();
 
-            return Ok(_mapper.Map<TranslationBuildDto>(build));
+            return Ok(Map(build));
         }
     }
 
@@ -634,11 +603,8 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     public async Task<ActionResult> CancelBuildAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
 
         await _engineService.CancelBuildAsync(id, cancellationToken);
         return Ok();
@@ -647,6 +613,21 @@ public class TranslationEnginesController : ServalControllerBase
     private TranslationCorpusDto Map(string engineId, Corpus corpus)
     {
         return _mapper.Map<TranslationCorpusDto>(corpus, opts => opts.Items["EngineId"] = engineId);
+    }
+
+    private TranslationBuildDto Map(Build build)
+    {
+        return _mapper.Map<TranslationBuildDto>(build, opts => opts.Items["EngineId"] = build.EngineRef);
+    }
+
+    private async Task<(bool, ActionResult?)> AuthorizeAsync(string id, CancellationToken cancellationToken)
+    {
+        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
+        if (engine == null)
+            return (false, NotFound());
+        if (!await AuthorizeIsOwnerAsync(engine))
+            return (false, Forbid());
+        return (true, null);
     }
 
     private async Task<List<CorpusFile>?> MapAsync(

@@ -4,7 +4,7 @@
 [Produces("application/json")]
 [TypeFilter(typeof(OperationCancelledExceptionFilter))]
 [TypeFilter(typeof(NotSupportedExceptionFilter))]
-public class ServalControllerBase : Controller
+public abstract class ServalControllerBase : Controller
 {
     private readonly IAuthorizationService _authService;
 

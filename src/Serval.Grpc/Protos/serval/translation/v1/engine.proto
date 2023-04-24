@@ -115,9 +115,10 @@ message Corpus {
     string id = 1;
     string source_language = 2;
     string target_language = 3;
-    bool pretranslate = 4;
-    repeated CorpusFile source_files = 5;
-    repeated CorpusFile target_files = 6;
+    bool pretranslate_all = 4;
+    repeated string pretranslate_text_ids = 5;
+    repeated CorpusFile source_files = 6;
+    repeated CorpusFile target_files = 7;
 }
 
 message CorpusFile {

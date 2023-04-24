@@ -107,8 +107,8 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        Build? build = await env.Service.StartBuildAsync(engineId);
-        Assert.That(build, Is.Not.Null);
+        bool result = await env.Service.StartBuildAsync(new Build { EngineRef = engineId });
+        Assert.That(result, Is.True);
     }
 
     [Test]
