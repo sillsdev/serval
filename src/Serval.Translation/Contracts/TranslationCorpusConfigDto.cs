@@ -14,11 +14,10 @@ public class TranslationCorpusConfigDto
 
     [JsonProperty(Required = Required.Always)]
     public string TargetLanguage { get; set; } = default!;
-    public bool? Pretranslate { get; set; }
 
     [JsonProperty(Required = Required.Always)]
-    public TranslationCorpusFileConfigDto[] SourceFiles { get; set; } = default!;
+    public List<TranslationCorpusFileConfigDto> SourceFiles { get; set; } = default!;
 
     [JsonProperty(Required = Required.Always)]
-    public TranslationCorpusFileConfigDto[] TargetFiles { get; set; } = default!;
+    public List<TranslationCorpusFileConfigDto> TargetFiles { get; set; } = default!;
 }

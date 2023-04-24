@@ -31,7 +31,7 @@ public interface IEngineService
         CancellationToken cancellationToken = default
     );
 
-    Task<Build?> StartBuildAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<bool> StartBuildAsync(Build build, CancellationToken cancellationToken = default);
 
     Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
