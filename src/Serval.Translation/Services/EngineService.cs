@@ -9,7 +9,6 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
     private readonly GrpcClientFactory _grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext;
-    private readonly IMapper _mapper;
 
     public EngineService(
         IRepository<Engine> engines,
@@ -17,8 +16,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         IRepository<Pretranslation> pretranslations,
         GrpcClientFactory grpcClientFactory,
         IOptionsMonitor<DataFileOptions> dataFileOptions,
-        IDataAccessContext dataAccessContext,
-        IMapper mapper
+        IDataAccessContext dataAccessContext
     )
         : base(engines)
     {
@@ -27,7 +25,6 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         _grpcClientFactory = grpcClientFactory;
         _dataFileOptions = dataFileOptions;
         _dataAccessContext = dataAccessContext;
-        _mapper = mapper;
     }
 
     public async Task<Models.TranslationResult?> TranslateAsync(
@@ -51,7 +48,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
             },
             cancellationToken: cancellationToken
         );
-        return _mapper.Map<Models.TranslationResult>(response.Results[0]);
+        return Map(response.Results[0]);
     }
 
     public async Task<IEnumerable<Models.TranslationResult>?> TranslateAsync(
@@ -76,7 +73,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
             },
             cancellationToken: cancellationToken
         );
-        return response.Results.Select(_mapper.Map<Models.TranslationResult>);
+        return response.Results.Select(Map);
     }
 
     public async Task<Models.WordGraph?> GetWordGraphAsync(
@@ -99,7 +96,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
             },
             cancellationToken: cancellationToken
         );
-        return _mapper.Map<Models.WordGraph>(response.WordGraph);
+        return Map(response.WordGraph);
     }
 
     public async Task<bool> TrainSegmentPairAsync(
@@ -200,10 +197,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                 {
                     engine.Corpora.Select(c =>
                     {
-                        var corpus = _mapper.Map<V1.Corpus>(
-                            c,
-                            o => o.Items["Directory"] = _dataFileOptions.CurrentValue.FilesDirectory
-                        );
+                        V1.Corpus corpus = Map(c);
                         if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
                         {
                             corpus.PretranslateAll =
@@ -274,5 +268,87 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                     .RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId),
             cancellationToken
         );
+    }
+
+    private Models.TranslationResult Map(V1.TranslationResult source)
+    {
+        return new Models.TranslationResult
+        {
+            Translation = source.Translation,
+            Tokens = source.Tokens.ToList(),
+            Confidences = source.Confidences.ToList(),
+            Sources = source.Sources.Select(Map).ToList(),
+            Alignment = source.Alignment.Select(Map).ToList(),
+            Phrases = source.Phrases.Select(Map).ToList()
+        };
+    }
+
+    private List<Contracts.TranslationSource> Map(TranslationSources source)
+    {
+        return source.Values.Cast<Contracts.TranslationSource>().ToList();
+    }
+
+    private Models.AlignedWordPair Map(V1.AlignedWordPair source)
+    {
+        return new Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
+    }
+
+    private Models.Phrase Map(V1.Phrase source)
+    {
+        return new Models.Phrase
+        {
+            SourceSegmentStart = source.SourceSegmentStart,
+            SourceSegmentEnd = source.SourceSegmentEnd,
+            TargetSegmentCut = source.TargetSegmentCut,
+            Confidence = source.Confidence
+        };
+    }
+
+    private Models.WordGraph Map(V1.WordGraph source)
+    {
+        return new Models.WordGraph
+        {
+            InitialStateScore = source.InitialStateScore,
+            FinalStates = source.FinalStates.ToList(),
+            Arcs = source.Arcs.Select(Map).ToList()
+        };
+    }
+
+    private Models.WordGraphArc Map(V1.WordGraphArc source)
+    {
+        return new Models.WordGraphArc
+        {
+            PrevState = source.PrevState,
+            NextState = source.NextState,
+            Score = source.Score,
+            Tokens = source.Tokens.ToList(),
+            Confidences = source.Confidences.ToList(),
+            SourceSegmentStart = source.SourceSegmentStart,
+            SourceSegmentEnd = source.SourceSegmentEnd,
+            Alignment = source.Alignment.Select(Map).ToList(),
+            Sources = source.Sources.Select(Map).ToList()
+        };
+    }
+
+    private V1.Corpus Map(Models.Corpus source)
+    {
+        return new V1.Corpus
+        {
+            Id = source.Id,
+            SourceLanguage = source.SourceLanguage,
+            TargetLanguage = source.TargetLanguage,
+            SourceFiles = { source.SourceFiles.Select(Map) },
+            TargetFiles = { source.TargetFiles.Select(Map) }
+        };
+    }
+
+    private V1.CorpusFile Map(Models.CorpusFile source)
+    {
+        return new V1.CorpusFile
+        {
+            TextId = source.TextId,
+            Format = (V1.FileFormat)source.Format,
+            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
+        };
     }
 }

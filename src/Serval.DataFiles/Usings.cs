@@ -1,7 +1,5 @@
 ﻿global using System.Diagnostics.CodeAnalysis;
-global using System.Reflection;
 global using Asp.Versioning;
-global using AutoMapper;
 global using MassTransit;
 global using MassTransit.Mediator;
 global using Microsoft.AspNetCore.Authorization;
