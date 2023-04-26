@@ -6,7 +6,6 @@ global using System.Text.Json;
 global using System.Text.Json.Nodes;
 global using System.Text.Json.Serialization;
 global using Asp.Versioning;
-global using AutoMapper;
 global using Hangfire;
 global using MassTransit;
 global using Microsoft.AspNetCore.Authorization;

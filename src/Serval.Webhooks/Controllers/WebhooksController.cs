@@ -5,13 +5,13 @@
 public class WebhooksController : ServalControllerBase
 {
     private readonly IWebhookService _hookService;
-    private readonly IMapper _mapper;
+    private readonly IUrlService _urlService;
 
-    public WebhooksController(IAuthorizationService authService, IWebhookService hookService, IMapper mapper)
+    public WebhooksController(IAuthorizationService authService, IWebhookService hookService, IUrlService urlService)
         : base(authService)
     {
         _hookService = hookService;
-        _mapper = mapper;
+        _urlService = urlService;
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ public class WebhooksController : ServalControllerBase
     [HttpGet]
     public async Task<IEnumerable<WebhookDto>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return (await _hookService.GetAllAsync(Owner, cancellationToken)).Select(_mapper.Map<WebhookDto>);
+        return (await _hookService.GetAllAsync(Owner, cancellationToken)).Select(Map);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public class WebhooksController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(hook))
             return Forbid();
 
-        return Ok(_mapper.Map<WebhookDto>(hook));
+        return Ok(Map(hook));
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class WebhooksController : ServalControllerBase
         };
 
         await _hookService.CreateAsync(newHook, cancellationToken);
-        WebhookDto dto = _mapper.Map<WebhookDto>(newHook);
+        WebhookDto dto = Map(newHook);
         return Created(dto.Url, dto);
     }
 
@@ -96,5 +96,16 @@ public class WebhooksController : ServalControllerBase
         if (!await _hookService.DeleteAsync(id, cancellationToken))
             return NotFound();
         return Ok();
+    }
+
+    private WebhookDto Map(Webhook source)
+    {
+        return new WebhookDto
+        {
+            Id = source.Id,
+            Url = _urlService.GetUrl("GetWebhook", new { id = source.Id }),
+            PayloadUrl = source.Url,
+            Events = source.Events.ToList()
+        };
     }
 }

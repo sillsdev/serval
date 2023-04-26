@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Serval.Shared.Services;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -237,17 +238,13 @@ public class EngineServiceTests
             var dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
 
-            var mapperConfig = new MapperConfiguration(c => c.AddProfile<GrpcProfile>());
-            var mapper = new Mapper(mapperConfig);
-
             Service = new EngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 new MemoryRepository<Pretranslation>(),
                 grpcClientFactory,
                 dataFileOptions,
-                new MemoryDataAccessContext(),
-                mapper
+                new MemoryDataAccessContext()
             );
         }
 

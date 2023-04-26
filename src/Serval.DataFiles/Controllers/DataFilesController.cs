@@ -6,13 +6,17 @@
 public class DataFilesController : ServalControllerBase
 {
     private readonly IDataFileService _dataFileService;
-    private readonly IMapper _mapper;
+    private readonly IUrlService _urlService;
 
-    public DataFilesController(IAuthorizationService authService, IDataFileService dataFileService, IMapper mapper)
+    public DataFilesController(
+        IAuthorizationService authService,
+        IDataFileService dataFileService,
+        IUrlService urlService
+    )
         : base(authService)
     {
         _dataFileService = dataFileService;
-        _mapper = mapper;
+        _urlService = urlService;
     }
 
     /// <summary>
@@ -23,7 +27,7 @@ public class DataFilesController : ServalControllerBase
     [HttpGet]
     public async Task<IEnumerable<DataFileDto>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return (await _dataFileService.GetAllAsync(Owner, cancellationToken)).Select(_mapper.Map<DataFileDto>);
+        return (await _dataFileService.GetAllAsync(Owner, cancellationToken)).Select(Map);
     }
 
     /// <summary>
@@ -45,7 +49,7 @@ public class DataFilesController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(dataFile))
             return Forbid();
 
-        return Ok(_mapper.Map<DataFileDto>(dataFile));
+        return Ok(Map(dataFile));
     }
 
     /// <summary>
@@ -77,7 +81,7 @@ public class DataFilesController : ServalControllerBase
         {
             await _dataFileService.CreateAsync(dataFile, stream, cancellationToken);
         }
-        var dto = _mapper.Map<DataFileDto>(dataFile);
+        var dto = Map(dataFile);
         return Created(dto.Url, dto);
     }
 
@@ -104,5 +108,16 @@ public class DataFilesController : ServalControllerBase
             return NotFound();
 
         return Ok();
+    }
+
+    private DataFileDto Map(DataFile source)
+    {
+        return new DataFileDto
+        {
+            Id = source.Id,
+            Url = _urlService.GetUrl("GetDataFile", new { id = source.Id }),
+            Name = source.Name,
+            Format = source.Format
+        };
     }
 }

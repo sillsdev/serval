@@ -21,8 +21,6 @@ public static class IServalBuilderExtensions
             builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
         }
 
-        builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
         builder.Services.AddScoped<IBuildService, BuildService>();
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
