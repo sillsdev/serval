@@ -1,3 +1,4 @@
+using System.Net;
 using NUnit.Framework;
 
 namespace Serval.SpecFlowTests.StepDefinitions;
@@ -6,8 +7,8 @@ namespace Serval.SpecFlowTests.StepDefinitions;
 public sealed class MachineApiStepDefinitions
 {
     // QA server: "https://machine-api.org/"
-    // localhost: "https://localhost"
-    const string MACHINE_API_TEST_URL = "http://localhost";
+    // localhost: "http://localhost/"
+    const string MACHINE_API_TEST_URL = "https://machine-api.org/";
     readonly Dictionary<string, string> EnginePerUser = new();
     readonly Dictionary<string, string> CorporaPerName = new();
 
@@ -19,7 +20,14 @@ public sealed class MachineApiStepDefinitions
 
     public MachineApiStepDefinitions()
     {
-        httpClient = new HttpClient();
+        //ignore ssl errors
+        var handler = new HttpClientHandler();
+        handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+        handler.ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
+        {
+            return true;
+        };
+        httpClient = new HttpClient(handler);
         httpClient.BaseAddress = new Uri(MACHINE_API_TEST_URL);
 
         dataFilesClient = new DataFilesClient(httpClient);

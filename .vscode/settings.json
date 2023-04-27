@@ -2,7 +2,7 @@
   "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
   "editor.formatOnSave": true,
   "[csharp]": {
-    "editor.defaultFormatter": "csharpier.csharpier-vscode"
+    "editor.defaultFormatter": "csharpier.csharpier-vscode",
   },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
@@ -19,4 +19,10 @@
   "files.associations": {
     "*.yaml": "helm"
   },
+  "gitlens.autolinks": [
+    {
+      "prefix": "#",
+      "url": "https://github.com/sillsdev/serval/issues/<num>"
+    }
+  ],
 }

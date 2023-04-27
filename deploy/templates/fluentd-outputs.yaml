@@ -1,7 +1,7 @@
 apiVersion: logging.banzaicloud.io/v1beta1
 kind: Output
 metadata:
-  name: nlp-loki-output
+  name: {{ .Values.namespace }}-loki-output
   namespace: nlp
 spec:
   loki:

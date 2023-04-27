@@ -1,4 +1,4 @@
-{{- if not .Values.enableEcho}}
+{{- if .Values.enableEcho}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +17,7 @@ spec:
       labels:
         app: echo
     spec:
-          terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 30
       containers:
         - command:
             - dotnet
@@ -29,25 +29,25 @@ spec:
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
               value: Http2
             - name: ASPNETCORE_ConnectionStrings__TranslationPlatformApi
-              value: http://serval:81
+              value: http://serval-api:81
             - name: ASPNETCORE_Logging__LogLevel__Default
-            value: Information
+              value: Information
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
               value: Warning
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
-          name: echo-cntr
+          name: echo
           ports:
             - containerPort: 80
           resources:
             limits:
-              memory: "1000Mi"
-              cpu: "1.5"
+              memory: "200Mi"
+              cpu: "200m"
             requests:
               memory: "100Mi"
               cpu: "100m"
       hostname: echo
       restartPolicy: Always
-      volumes: {}
+      volumes: []
 status: {}
 {{- end }}

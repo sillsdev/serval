@@ -16,7 +16,7 @@ spec:
           expression: "/(?<type>fail|info).*\\: (?<source>[A-Za-z.0-9]+)/" # note double backslash and quotes around regexp
   globalOutputRefs: []
   localOutputRefs:
-    - nlp-loki-output
+    - {{ .Values.namespace }}-loki-output
   match:
     - select:
         container_names:
@@ -35,7 +35,7 @@ metadata:
 spec:
   globalOutputRefs: []
   localOutputRefs:
-    - nlp-loki-output
+    - {{ .Values.namespace }}-loki-output
   match:
     - select:
         container_names:

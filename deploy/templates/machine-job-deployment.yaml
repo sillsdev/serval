@@ -20,7 +20,7 @@ spec:
       containers:
         - command:
             - dotnet
-            - /app/job_server/SIL.Machine.WebApi.JobServer.dll
+            - /app/job_server/SIL.Machine.Serval.JobServer.dll
           workingDir: /app/job_server
           env:
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
@@ -28,11 +28,11 @@ spec:
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
               value: Http2
             - name: ASPNETCORE_ConnectionStrings__Hangfire
-              value: mongodb://mongo:27017/machine_jobs
+              value: mongodb://mongo:27017/machine_jobs?replicaSet=myRS
             - name: ASPNETCORE_ConnectionStrings__Mongo
-              value: mongodb://mongo:27017/machine
+              value: mongodb://mongo:27017/machine?replicaSet=myRS
             - name: ASPNETCORE_ConnectionStrings__Serval
-              value: http://serval:81
+              value: http://serval-api:81
             - name: ASPNETCORE_Logging__LogLevel__Default
               value: Information
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
@@ -50,7 +50,7 @@ spec:
             - containerPort: 80
           resources:
             limits:
-              memory: "1000Mi"
+              memory: "2000Mi"
               cpu: "1.5"
             requests:
               memory: "100Mi"
@@ -58,6 +58,9 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/machine
               name: machine-mount
+            - mountPath: /var/lib/serval
+              name: serval-mount
+              readOnly: true
       hostname: machine-job
       restartPolicy: Always
       {{- if .Values.localVolume }}
@@ -65,10 +68,16 @@ spec:
         - hostPath:
             path: /host/engines #/host should be mounted from C:\usr\local
           name: machine-mount
+        - hostPath:
+            path: /host/serval
+          name: serval-mount
       {{- else}}
       volumes:
         - name: machine-mount
           persistentVolumeClaim:
             claimName: machine-claim
+        - name: serval-mount
+          persistentVolumeClaim:
+            claimName: serval-claim
       {{- end}}
 status: {}

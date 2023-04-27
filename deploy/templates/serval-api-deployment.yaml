@@ -30,9 +30,9 @@ spec:
             - name: ASPNETCORE_Kestrel__Endpoints__Http2__Protocols
               value: Http2
             - name: ASPNETCORE_ConnectionStrings__Hangfire
-              value: mongodb://mongo:27017/serval_jobs
+              value: mongodb://mongo:27017/serval_jobs?replicaSet=myRS
             - name: ASPNETCORE_ConnectionStrings__Mongo
-              value: mongodb://mongo:27017/serval
+              value: mongodb://mongo:27017/serval?replicaSet=myRS
             - name: ASPNETCORE_Logging__LogLevel__Default
               value: Information
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
@@ -44,7 +44,7 @@ spec:
             - name: ASPNETCORE_Translation__Engines__1__Type
               value: SmtTransfer
             - name: ASPNETCORE_Translation__Engines__1__Address
-              value: http://machine-server
+              value: http://machine-engine
               {{- if not .Values.localVolume}}
               {{- template "secrets.clearml" }}
               {{- template "secrets.s3" }}
@@ -67,7 +67,7 @@ spec:
               name: serval-mount
             - mountPath: /root/.aspnet/DataProtection-Keys
               name: server-keys
-      hostname: machine-api-server
+      hostname: serval-api
       restartPolicy: Always
       {{- if .Values.localVolume }}
       volumes:

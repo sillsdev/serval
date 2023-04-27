@@ -2,7 +2,7 @@ version: "3"
 services:
   mongo:
     hostname: mongo
-    image: mongo:4.2
+    image: mongo:6.0
     expose:
       - 27017
     ports:
@@ -13,7 +13,7 @@ services:
   # this initialization server runs the `rs.initiate` command to
   # intialize the replica set and could connect the (1) servers to each other
   mongoinit:
-    image: mongo:4.2
+    image: mongo:6.0
     # this container will exit after executing the command
     restart: "no"
     depends_on:

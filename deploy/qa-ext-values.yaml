@@ -1,4 +1,4 @@
-externalHost: machine-api.org
+externalHost: qa.serval-api.org
 enableTls: true
 namespace: serval
 localVolume: false

@@ -10,7 +10,7 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 
 ### Development locally
 
-- Install MongoDB 4.2 as a replca set and MongoDBCompass and run it on localhost:27017
+- Install MongoDB 6.0 as a replca set and MongoDBCompass and run it on localhost:27017
   - Create the following folders:
   - C:\var\lib\machine\data
   - C:\var\lib\machine\machine
@@ -65,8 +65,14 @@ This is the QA staging environment. To access it,
 
 - Add the dallas-rke KubeConfig to your kubectl configs
 - Run `kubectl config use-context dallas-rke`
-- Run `cd deploy`
-- Run `helm upgrade machine-api . -f qa-values.yaml`
+- To upgrade mongo:
+  - Run `cd deploy_mongo`
+  - For QA internal Run `helm upgrade mongo . -n nlp`
+  - For QA external Run `helm upgrade mongo . -n serval`
+- To upgrade serval:
+  - Run `cd deploy`
+  - For QA internal Run `helm upgrade serval-api . -f qa-int-values.yaml -n nlp`
+  - For QA external Run `helm upgrade serval-api . -f qa-ext-values.yaml -n serval`
 
 ## API BDD Testing
 - Prepare VSC env: follow this guide: https://docs.specflow.org/projects/specflow/en/latest/vscode/vscode-specflow.html

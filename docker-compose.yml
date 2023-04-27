@@ -1,7 +1,7 @@
 version: "3"
 services:
-  serval:
-    hostname: serval
+  serval-api:
+    hostname: serval-api
     container_name: serval_cntr
     build:
       context: .
@@ -19,7 +19,7 @@ services:
       - ASPNETCORE_Translation__Engines__0__Type=Echo
       - ASPNETCORE_Translation__Engines__0__Address=http://echo
       - ASPNETCORE_Translation__Engines__1__Type=SmtTransfer
-      - ASPNETCORE_Translation__Engines__1__Address=http://machine-server
+      - ASPNETCORE_Translation__Engines__1__Address=http://machine-engine
     expose:
       - 80
       - 81
@@ -51,13 +51,13 @@ services:
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_Logging__LogLevel__Default=Information
       - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval:81
+      - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval-api:81
     expose:
       - 80
     ports:
       - 81:80
     depends_on:
-      - serval
+      - serval-api
     volumes:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
@@ -71,9 +71,9 @@ services:
       - --additionalProbingPath
       - /root/.nuget/packages
 
-  machine-server:
-    hostname: machine-server
-    container_name: machine-server-cntr
+  machine-engine:
+    hostname: machine-engine
+    container_name: machine-engine-cntr
     build:
       context: ../machine
       dockerfile: ../machine/dockerfile.development
@@ -83,7 +83,7 @@ services:
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
-      - ASPNETCORE_ConnectionStrings__Serval=http://serval:81
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ASPNETCORE_Logging__LogLevel__Default=Information
       - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_TranslationEngines__0=SmtTransfer
@@ -93,7 +93,7 @@ services:
       - 82:80
     depends_on:
       - mongo
-      - serval
+      - serval-api
     volumes:
       - ../machine:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
@@ -117,7 +117,7 @@ services:
     environment:
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
-      - ASPNETCORE_ConnectionStrings__Serval=http://serval:81
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ASPNETCORE_Logging__LogLevel__Default=Information
       - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
@@ -129,7 +129,7 @@ services:
       - 83:80
     depends_on:
       - mongo
-      - machine-server
+      - machine-engine
     volumes:
       - ../machine:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
@@ -145,26 +145,18 @@ services:
       - /root/.nuget/packages
   mongo:
     hostname: mongo
-    image: mongo:4.2
+    image: mongo:6.0
     expose:
       - 27017
     ports:
       - 27017:27017
     restart: always
-    command: mongod --replSet myRS
-
-  # this initialization server runs the `rs.initiate` command to
-  # intialize the replica set and could connect the (1) servers to each other
-  mongoinit:
-    image: mongo:4.2
-    # this container will exit after executing the command
-    restart: "no"
-    depends_on:
-      - mongo
-    command: >
-      mongo --host mongo:27017 --eval ' config = { "_id" : "myRS", "members" : [
-        {
-          "_id" : 0,
-          "host" : "mongo:27017"
-        }
-      ] }; sleep(3000); rs.initiate(config, { force: true }); '
+    # Run Mongo (with output to normal shell)
+    # then configure the locally running mongo to be a standalone replica set
+    # then hang forever so the container does not exit
+    command:
+      [
+        '/bin/sh',
+        '-c',
+        'mongod --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity'
+      ]
