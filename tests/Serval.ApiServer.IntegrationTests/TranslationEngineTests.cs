@@ -183,7 +183,8 @@ public class TranslationEngineTests
                         var translationResult = new Translation.V1.TranslationResult
                         {
                             Translation = "This is a test .",
-                            Tokens = { "This is a test .".Split() },
+                            SourceTokens = { "This is a test .".Split() },
+                            TargetTokens = { "This is a test .".Split() },
                             Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
                             Sources =
                             {

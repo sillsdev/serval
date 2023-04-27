@@ -34,7 +34,8 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                 new TranslationResult
                 {
                     Translation = request.Segment,
-                    Tokens = { tokens },
+                    SourceTokens = { tokens },
+                    TargetTokens = { tokens },
                     Confidences = { Enumerable.Repeat(1.0, tokens.Length) },
                     Sources =
                     {

@@ -716,7 +716,8 @@ public class TranslationEnginesController : ServalControllerBase
         return new TranslationResultDto
         {
             Translation = source.Translation,
-            Tokens = source.Tokens.ToList(),
+            SourceTokens = source.SourceTokens.ToList(),
+            TargetTokens = source.TargetTokens.ToList(),
             Confidences = source.Confidences.Select(c => (float)c).ToList(),
             Sources = source.Sources.ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
@@ -744,6 +745,7 @@ public class TranslationEnginesController : ServalControllerBase
     {
         return new WordGraphDto
         {
+            SourceWords = source.SourceWords.ToList(),
             InitialStateScore = (float)source.InitialStateScore,
             FinalStates = source.FinalStates.ToList(),
             Arcs = source.Arcs.Select(Map).ToList()
@@ -757,7 +759,7 @@ public class TranslationEnginesController : ServalControllerBase
             PrevState = source.PrevState,
             NextState = source.NextState,
             Score = (float)source.Score,
-            Tokens = source.Tokens.ToList(),
+            Words = source.Words.ToList(),
             Confidences = source.Confidences.Select(c => (float)c).ToList(),
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
