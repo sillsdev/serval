@@ -275,7 +275,8 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         return new Models.TranslationResult
         {
             Translation = source.Translation,
-            Tokens = source.Tokens.ToList(),
+            SourceTokens = source.SourceTokens.ToList(),
+            TargetTokens = source.TargetTokens.ToList(),
             Confidences = source.Confidences.ToList(),
             Sources = source.Sources.Select(Map).ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
@@ -308,6 +309,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
     {
         return new Models.WordGraph
         {
+            SourceWords = source.SourceWords.ToList(),
             InitialStateScore = source.InitialStateScore,
             FinalStates = source.FinalStates.ToList(),
             Arcs = source.Arcs.Select(Map).ToList()
@@ -321,7 +323,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
             PrevState = source.PrevState,
             NextState = source.NextState,
             Score = source.Score,
-            Tokens = source.Tokens.ToList(),
+            Words = source.Words.ToList(),
             Confidences = source.Confidences.ToList(),
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
