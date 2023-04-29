@@ -10,7 +10,7 @@ public class EngineServiceTests
     public async Task TranslateAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        Models.TranslationResult? result = await env.Service.TranslateAsync("engine1", "Esto es una prueba.");
+        Models.TranslationResult? result = await env.Service.TranslateAsync("engine1", "esto es una prueba.");
         Assert.That(result, Is.Null);
     }
 
@@ -19,16 +19,16 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        Models.TranslationResult? result = await env.Service.TranslateAsync(engineId, "Esto es una prueba.");
+        Models.TranslationResult? result = await env.Service.TranslateAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Tokens, Is.EqualTo("this is a test .".Split()));
+        Assert.That(result.Translation, Is.EqualTo("this is a test."));
     }
 
     [Test]
     public async Task GetWordGraphAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        Models.WordGraph? result = await env.Service.GetWordGraphAsync("engine1", "Esto es una prueba.");
+        Models.WordGraph? result = await env.Service.GetWordGraphAsync("engine1", "esto es una prueba.");
         Assert.That(result, Is.Null);
     }
 
@@ -37,9 +37,9 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        Models.WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "Esto es una prueba.");
+        Models.WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Arcs.SelectMany(a => a.Tokens), Is.EqualTo("this is a test .".Split()));
+        Assert.That(result.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a test .".Split()));
     }
 
     [Test]
@@ -48,8 +48,8 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         bool result = await env.Service.TrainSegmentPairAsync(
             "engine1",
-            "Esto es una prueba.",
-            "This is a test.",
+            "esto es una prueba.",
+            "this is a test.",
             true
         );
         Assert.That(result, Is.False);
@@ -60,7 +60,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        bool result = await env.Service.TrainSegmentPairAsync(engineId, "Esto es una prueba.", "This is a test.", true);
+        bool result = await env.Service.TrainSegmentPairAsync(engineId, "esto es una prueba.", "this is a test.", true);
         Assert.That(result, Is.True);
     }
 
@@ -107,8 +107,8 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        Build? build = await env.Service.StartBuildAsync(engineId);
-        Assert.That(build, Is.Not.Null);
+        bool result = await env.Service.StartBuildAsync(new Build { EngineRef = engineId });
+        Assert.That(result, Is.True);
     }
 
     [Test]
@@ -127,8 +127,9 @@ public class EngineServiceTests
             var translationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             var translationResult = new V1.TranslationResult
             {
-                Translation = "this is a test .",
-                Tokens = { "this is a test .".Split() },
+                Translation = "this is a test.",
+                SourceTokens = { "esto es una prueba .".Split() },
+                TargetTokens = { "this is a test .".Split() },
                 Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
                 Sources =
                 {
@@ -163,6 +164,7 @@ public class EngineServiceTests
                 .Returns(CreateAsyncUnaryCall(translateResponse));
             var wordGraph = new V1.WordGraph
             {
+                SourceWords = { "esto es una prueba .".Split() },
                 FinalStates = { 3 },
                 Arcs =
                 {
@@ -171,7 +173,7 @@ public class EngineServiceTests
                         PrevState = 0,
                         NextState = 1,
                         Score = 1.0,
-                        Tokens = { "this is".Split() },
+                        Words = { "this is".Split() },
                         Alignment =
                         {
                             new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
@@ -187,7 +189,7 @@ public class EngineServiceTests
                         PrevState = 1,
                         NextState = 2,
                         Score = 1.0,
-                        Tokens = { "a test".Split() },
+                        Words = { "a test".Split() },
                         Alignment =
                         {
                             new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
@@ -203,7 +205,7 @@ public class EngineServiceTests
                         PrevState = 2,
                         NextState = 3,
                         Score = 1.0,
-                        Tokens = { new[] { "." } },
+                        Words = { new[] { "." } },
                         Alignment =
                         {
                             new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
@@ -237,17 +239,13 @@ public class EngineServiceTests
             var dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
 
-            var mapperConfig = new MapperConfiguration(c => c.AddProfile<GrpcProfile>());
-            var mapper = new Mapper(mapperConfig);
-
             Service = new EngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 new MemoryRepository<Pretranslation>(),
                 grpcClientFactory,
                 dataFileOptions,
-                new MemoryDataAccessContext(),
-                mapper
+                new MemoryDataAccessContext()
             );
         }
 

@@ -86,18 +86,19 @@ message TranslationSources {
 
 message TranslationResult {
     string translation = 1;
-    repeated string tokens = 2;
-    repeated double confidences = 3;
-    repeated TranslationSources sources = 4;
-    repeated AlignedWordPair alignment = 5;
-    repeated Phrase phrases = 6;
+    repeated string source_tokens = 2;
+    repeated string target_tokens = 3;
+    repeated double confidences = 4;
+    repeated TranslationSources sources = 5;
+    repeated AlignedWordPair alignment = 6;
+    repeated Phrase phrases = 7;
 }
 
 message WordGraphArc {
     int32 prev_state = 1;
     int32 next_state = 2;
     double score = 3;
-    repeated string tokens = 4;
+    repeated string words = 4;
     repeated double confidences = 5;
     int32 source_segment_start = 6;
     int32 source_segment_end = 7;
@@ -106,18 +107,20 @@ message WordGraphArc {
 }
 
 message WordGraph {
-    double initial_state_score = 1;
-    repeated int32 final_states = 2;
-    repeated WordGraphArc arcs = 3;
+    repeated string source_words = 1;
+    double initial_state_score = 2;
+    repeated int32 final_states = 3;
+    repeated WordGraphArc arcs = 4;
 }
 
 message Corpus {
     string id = 1;
     string source_language = 2;
     string target_language = 3;
-    bool pretranslate = 4;
-    repeated CorpusFile source_files = 5;
-    repeated CorpusFile target_files = 6;
+    bool pretranslate_all = 4;
+    repeated string pretranslate_text_ids = 5;
+    repeated CorpusFile source_files = 6;
+    repeated CorpusFile target_files = 7;
 }
 
 message CorpusFile {

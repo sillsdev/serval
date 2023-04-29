@@ -6,6 +6,7 @@ public class TranslationBuildDto
     public string Url { get; set; } = default!;
     public int Revision { get; set; }
     public ResourceLinkDto Engine { get; set; } = default!;
+    public List<PretranslateCorpusDto>? Pretranslate { get; set; }
     public int Step { get; set; }
     public double? PercentCompleted { get; set; }
     public string? Message { get; set; }

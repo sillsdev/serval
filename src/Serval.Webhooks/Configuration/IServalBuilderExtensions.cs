@@ -4,8 +4,6 @@ public static class IServalBuilderExtensions
 {
     public static IServalBuilder AddWebhooks(this IServalBuilder builder)
     {
-        builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
         builder.Services
             .AddHttpClient<WebhookJob>()
             .AddTransientHttpErrorPolicy(

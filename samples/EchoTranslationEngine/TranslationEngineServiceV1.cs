@@ -30,7 +30,8 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                 new TranslationResult
                 {
                     Translation = request.Segment,
-                    Tokens = { tokens },
+                    SourceTokens = { tokens },
+                    TargetTokens = { tokens },
                     Confidences = { Enumerable.Repeat(1.0, tokens.Length) },
                     Sources =
                     {
@@ -78,13 +79,24 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                 );
                 using (var call = client.InsertPretranslations(cancellationToken: CancellationToken.None))
                 {
-                    foreach (Corpus corpus in request.Corpora.Where(c => c.Pretranslate))
+                    foreach (Corpus corpus in request.Corpora)
                     {
+                        if (!corpus.PretranslateAll && corpus.PretranslateTextIds.Count == 0)
+                            continue;
+
                         var sourceFiles = corpus.SourceFiles
-                            .Where(f => f.Format == FileFormat.Text)
+                            .Where(
+                                f =>
+                                    (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(f.TextId))
+                                    && f.Format == FileFormat.Text
+                            )
                             .ToDictionary(f => f.TextId, f => f.Location);
                         var targetFiles = corpus.TargetFiles
-                            .Where(f => f.Format == FileFormat.Text)
+                            .Where(
+                                f =>
+                                    (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(f.TextId))
+                                    && f.Format == FileFormat.Text
+                            )
                             .ToDictionary(f => f.TextId, f => f.Location);
 
                         foreach (KeyValuePair<string, string> sourceFile in sourceFiles)

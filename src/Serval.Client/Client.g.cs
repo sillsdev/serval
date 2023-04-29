@@ -677,9 +677,10 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <param name="id">The translation engine id.</param>
+        /// <param name="buildConfig">The build job configuration.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, TranslationBuildConfig buildConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2029,12 +2030,16 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <param name="id">The translation engine id.</param>
+        /// <param name="buildConfig">The build job configuration.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, TranslationBuildConfig buildConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
+
+            if (buildConfig == null)
+                throw new System.ArgumentNullException("buildConfig");
 
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/translation/engines/{id}/builds");
@@ -2046,7 +2051,10 @@ namespace Serval.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(buildConfig, _settings.Value);
+                    var content_ = new System.Net.Http.StringContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
@@ -3088,9 +3096,13 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Translation { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("tokens", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("sourceTokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> Tokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> SourceTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("targetTokens", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> TargetTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -3156,6 +3168,10 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordGraph
     {
+        [Newtonsoft.Json.JsonProperty("sourceWords", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> SourceWords { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
         [Newtonsoft.Json.JsonProperty("initialStateScore", Required = Newtonsoft.Json.Required.Always)]
         public float InitialStateScore { get; set; } = default!;
 
@@ -3181,9 +3197,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.Always)]
         public float Score { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("tokens", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("words", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> Tokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> Words { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -3247,9 +3263,6 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TargetLanguage { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Always)]
-        public bool Pretranslate { get; set; } = default!;
-
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
         public System.Collections.Generic.IList<TranslationCorpusFile> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
@@ -3301,9 +3314,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TargetLanguage { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public bool? Pretranslate { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -3362,6 +3372,9 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required]
         public ResourceLink Engine { get; set; } = new ResourceLink();
 
+        [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<PretranslateCorpus>? Pretranslate { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
         public int Step { get; set; } = default!;
 
@@ -3385,6 +3398,18 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PretranslateCorpus
+    {
+        [Newtonsoft.Json.JsonProperty("corpus", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public ResourceLink Corpus { get; set; } = new ResourceLink();
+
+        [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum JobState
     {
 
@@ -3402,6 +3427,26 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Canceled")]
         Canceled = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TranslationBuildConfig
+    {
+        [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<PretranslateCorpusConfig>? Pretranslate { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PretranslateCorpusConfig
+    {
+        [Newtonsoft.Json.JsonProperty("corpusId", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string CorpusId { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
     }
 

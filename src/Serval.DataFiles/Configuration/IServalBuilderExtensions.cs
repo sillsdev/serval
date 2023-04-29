@@ -9,8 +9,6 @@ public static class IServalBuilderExtensions
         else
             builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
 
-        builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
         builder.Services.AddScoped<IDataFileService, DataFileService>();
         return builder;
     }

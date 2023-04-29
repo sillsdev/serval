@@ -4,9 +4,9 @@ public class WordGraphArc
 {
     public int PrevState { get; set; }
     public int NextState { get; set; }
-    public float Score { get; set; }
-    public List<string> Tokens { get; set; } = new List<string>();
-    public List<float> Confidences { get; set; } = new List<float>();
+    public double Score { get; set; }
+    public List<string> Words { get; set; } = new List<string>();
+    public List<double> Confidences { get; set; } = new List<double>();
     public int SourceSegmentStart { get; set; }
     public int SourceSegmentEnd { get; set; }
     public List<AlignedWordPair> Alignment { get; set; } = new List<AlignedWordPair>();
