@@ -137,7 +137,7 @@ namespace Serval.SpecFlowTests.Features
                 testRunner.Given("a new SmtTransfer engine for John from es to en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
                 testRunner.When("a text corpora containing bible.txt are added to John\'s engine in es and en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
                 testRunner.And("John\'s engine is built", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-                testRunner.Then("the translation for John for \"Espíritu\" should be \"spirit\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+                testRunner.Then("the translation for John for \"Espíritu\" should be \"Spirit\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
             }
             this.ScenarioCleanup();
         }

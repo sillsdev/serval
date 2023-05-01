@@ -66,13 +66,11 @@ This is the QA staging environment. To access it,
 - Add the dallas-rke KubeConfig to your kubectl configs
 - Run `kubectl config use-context dallas-rke`
 - To upgrade mongo:
-  - Run `cd deploy_mongo`
-  - For QA internal Run `helm upgrade mongo . -n nlp`
-  - For QA external Run `helm upgrade mongo . -n serval`
+  - For QA internal Run `helm upgrade mongo deploy_mongo -n nlp`
+  - For QA external Run `helm upgrade mongo deploy_mongo -n serval`
 - To upgrade serval:
-  - Run `cd deploy`
-  - For QA internal Run `helm upgrade serval-api . -f qa-int-values.yaml -n nlp`
-  - For QA external Run `helm upgrade serval-api . -f qa-ext-values.yaml -n serval`
+  - For QA internal Run `helm upgrade serval-api deploy -f deploy/qa-int-values.yaml -n nlp`
+  - For QA external Run `helm upgrade serval-api deploy -f deploy/qa-ext-values.yaml -n serval`
 
 ## API BDD Testing
 - Prepare VSC env: follow this guide: https://docs.specflow.org/projects/specflow/en/latest/vscode/vscode-specflow.html

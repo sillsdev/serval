@@ -18,6 +18,11 @@ public sealed class MachineApiStepDefinitions
     private readonly TranslationEnginesClient translationEnginesClient;
     private string? bearer = null;
 
+    private TranslationBuildConfig translationBuildConfig = new TranslationBuildConfig
+    {
+        Pretranslate = new List<PretranslateCorpusConfig>()
+    };
+
     public MachineApiStepDefinitions()
     {
         //ignore ssl errors
@@ -71,6 +76,7 @@ public sealed class MachineApiStepDefinitions
             }
         );
         EnginePerUser.Add(user, engine.Id);
+        ClearPretranslationConfig();
     }
 
     [When(@"a (.*) corpora containing (.*) are added to (.*)'s engine in (.*) and (.*)")]
@@ -141,7 +147,7 @@ public sealed class MachineApiStepDefinitions
     public async Task WhenEngineIsBuild(string user)
     {
         var engineId = await GetEngineFromUser(user);
-        var newJob = await translationEnginesClient.StartBuildAsync(engineId);
+        var newJob = await translationEnginesClient.StartBuildAsync(engineId, translationBuildConfig);
         int cRevision = newJob.Revision;
         while (true)
         {
@@ -153,6 +159,7 @@ public sealed class MachineApiStepDefinitions
             }
             Thread.Sleep(500);
         }
+        ClearPretranslationConfig();
     }
 
     [When(@"a translation for (.*) is added with ""(.*)"" for ""(.*)""")]
@@ -225,6 +232,7 @@ public sealed class MachineApiStepDefinitions
     {
         var sourceFiles = await PostFiles(filesToAdd, fileFormat, sourceLanguage);
         var sourceFileConfig = new List<TranslationCorpusFileConfig>();
+
         foreach (var item in sourceFiles.Select((file, i) => new { i, file }))
         {
             sourceFileConfig.Add(
@@ -233,15 +241,12 @@ public sealed class MachineApiStepDefinitions
         }
 
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
-        if (pretranslate is false)
+        var targetFiles = await PostFiles(filesToAdd, fileFormat, targetLanguage);
+        foreach (var item in targetFiles.Select((file, i) => new { i, file }))
         {
-            var targetFiles = await PostFiles(filesToAdd, fileFormat, targetLanguage);
-            foreach (var item in targetFiles.Select((file, i) => new { i, file }))
-            {
-                targetFileConfig.Add(
-                    new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
-                );
-            }
+            targetFileConfig.Add(
+                new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
+            );
         }
 
         var response = await translationEnginesClient.AddCorpusAsync(
@@ -249,14 +254,26 @@ public sealed class MachineApiStepDefinitions
             new TranslationCorpusConfig
             {
                 Name = "None",
-                Pretranslate = pretranslate,
                 SourceFiles = sourceFileConfig,
                 SourceLanguage = sourceLanguage,
                 TargetFiles = targetFileConfig,
                 TargetLanguage = targetLanguage
             }
         );
+
+        if (pretranslate)
+        {
+            translationBuildConfig.Pretranslate!.Add(
+                new PretranslateCorpusConfig { CorpusId = response.Id, TextIds = filesToAdd.ToList() }
+            );
+        }
+
         return response.Id;
+    }
+
+    private void ClearPretranslationConfig()
+    {
+        translationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
     }
 
     public async Task<List<DataFile>> PostFiles(IEnumerable<string> filesToAdd, FileFormat fileFormat, string language)

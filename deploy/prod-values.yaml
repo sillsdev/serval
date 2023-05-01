@@ -5,5 +5,5 @@ localVolume: false
 lokiTenent: nlp-tenant
 lokiUrl: http://loki-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:0.5.0
-machineImage: ghcr.io/sillsdev/machine:2.5.13
+machineImage: ghcr.io/sillsdev/machine:2.5.13.1
 enableEcho: true

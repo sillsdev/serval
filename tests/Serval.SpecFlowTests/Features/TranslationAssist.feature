@@ -16,7 +16,7 @@ Feature: TranslationAssist
 		Given a new SmtTransfer engine for John from es to en
 		When a text corpora containing bible.txt are added to John's engine in es and en
 		And John's engine is built
-		Then the translation for John for "Espíritu" should be "spirit"
+		Then the translation for John for "Espíritu" should be "Spirit"
 
 	Scenario: Add training segment
 		Given a new SmtTransfer engine for John from es to en
