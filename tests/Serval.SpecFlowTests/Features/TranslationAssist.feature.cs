@@ -114,7 +114,7 @@ namespace Serval.SpecFlowTests.Features
                 testRunner.When("a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John\'s engine in" +
                         " es and en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
                 testRunner.And("John\'s engine is built", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-                testRunner.Then("the translation for John for \"Espíritu\" should be \"Spirit\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+                testRunner.Then("the translation for John for \"Espíritu\" should be \"spirit\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
             }
             this.ScenarioCleanup();
         }
@@ -161,9 +161,9 @@ namespace Serval.SpecFlowTests.Features
                 testRunner.When("a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John\'s engine in" +
                         " es and en", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
                 testRunner.And("John\'s engine is built", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-                testRunner.And("the translation for John for \"ungidos mundo\" is \"ungidos world\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-                testRunner.And("a translation for John is added with \"unction world\" for \"ungidos mundo\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-                testRunner.Then("the translation for John for \"ungidos mundo\" should be \"unction world\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+                testRunner.And("the translation for John for \"ungidos espíritu\" is \"ungidos spirit\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+                testRunner.And("a translation for John is added with \"unction spirit\" for \"ungidos espíritu\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+                testRunner.Then("the translation for John for \"ungidos espíritu\" should be \"unction spirit\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
             }
             this.ScenarioCleanup();
         }

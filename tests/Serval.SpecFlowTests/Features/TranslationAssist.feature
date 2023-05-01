@@ -10,7 +10,7 @@ Feature: TranslationAssist
 		Given a new SmtTransfer engine for John from es to en
 		When a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John's engine in es and en
 		And John's engine is built
-		Then the translation for John for "Espíritu" should be "Spirit"
+		Then the translation for John for "Espíritu" should be "spirit"
 
 	Scenario: Get Translation Suggestion from whole Bible
 		Given a new SmtTransfer engine for John from es to en
@@ -22,9 +22,9 @@ Feature: TranslationAssist
 		Given a new SmtTransfer engine for John from es to en
 		When a text corpora containing 1JN.txt, 2JN.txt, 3JN.txt are added to John's engine in es and en
 		And John's engine is built
-		And the translation for John for "ungidos mundo" is "ungidos world"
-		And a translation for John is added with "unction world" for "ungidos mundo"
-		Then the translation for John for "ungidos mundo" should be "unction world"
+		And the translation for John for "ungidos espíritu" is "ungidos spirit"
+		And a translation for John is added with "unction spirit" for "ungidos espíritu"
+		Then the translation for John for "ungidos espíritu" should be "unction spirit"
 
 	Scenario: Add More Corpus
 		Given a new SmtTransfer engine for John from es to en
