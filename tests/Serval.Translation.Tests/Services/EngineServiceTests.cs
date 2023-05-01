@@ -260,14 +260,14 @@ public class EngineServiceTests
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "smt",
-                Corpora =
+                Corpora = new List<Models.Corpus>
                 {
                     new Models.Corpus
                     {
                         Id = "corpus1",
                         SourceLanguage = "es",
                         TargetLanguage = "en",
-                        SourceFiles =
+                        SourceFiles = new List<Models.CorpusFile>
                         {
                             new Models.CorpusFile
                             {
@@ -277,7 +277,7 @@ public class EngineServiceTests
                                 TextId = "all"
                             }
                         },
-                        TargetFiles =
+                        TargetFiles = new List<Models.CorpusFile>
                         {
                             new Models.CorpusFile
                             {

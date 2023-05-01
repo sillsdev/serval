@@ -16,8 +16,8 @@ public class TranslationCorpusConfigDto
     public string TargetLanguage { get; set; } = default!;
 
     [JsonProperty(Required = Required.Always)]
-    public List<TranslationCorpusFileConfigDto> SourceFiles { get; set; } = default!;
+    public IList<TranslationCorpusFileConfigDto> SourceFiles { get; set; } = default!;
 
     [JsonProperty(Required = Required.Always)]
-    public List<TranslationCorpusFileConfigDto> TargetFiles { get; set; } = default!;
+    public IList<TranslationCorpusFileConfigDto> TargetFiles { get; set; } = default!;
 }

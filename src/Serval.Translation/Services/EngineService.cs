@@ -284,9 +284,9 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         };
     }
 
-    private List<Contracts.TranslationSource> Map(TranslationSources source)
+    private IReadOnlySet<Contracts.TranslationSource> Map(TranslationSources source)
     {
-        return source.Values.Cast<Contracts.TranslationSource>().ToList();
+        return source.Values.Cast<Contracts.TranslationSource>().ToHashSet();
     }
 
     private Models.AlignedWordPair Map(V1.AlignedWordPair source)
@@ -311,7 +311,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         {
             SourceTokens = source.SourceTokens.ToList(),
             InitialStateScore = source.InitialStateScore,
-            FinalStates = source.FinalStates.ToList(),
+            FinalStates = source.FinalStates.ToHashSet(),
             Arcs = source.Arcs.Select(Map).ToList()
         };
     }

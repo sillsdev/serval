@@ -4,5 +4,5 @@ public class PretranslateCorpusDto
 {
     public ResourceLinkDto Corpus { get; set; } = default!;
 
-    public List<string>? TextIds { get; set; }
+    public IList<string>? TextIds { get; set; }
 }

@@ -264,15 +264,15 @@ public class TranslationEnginesController : ServalControllerBase
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
 
-        Corpus corpus = Map(idGenerator.GenerateId(), corpusConfig);
-        List<CorpusFile>? sourceFiles = await MapAsync(corpusConfig.SourceFiles, getDataFileClient, cancellationToken);
-        if (sourceFiles is null)
-            return UnprocessableEntity();
-        corpus.SourceFiles.AddRange(sourceFiles);
-        List<CorpusFile>? targetFiles = await MapAsync(corpusConfig.TargetFiles, getDataFileClient, cancellationToken);
-        if (targetFiles is null)
-            return UnprocessableEntity();
-        corpus.TargetFiles.AddRange(targetFiles);
+        Corpus corpus;
+        try
+        {
+            corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return UnprocessableEntity(ioe.Message);
+        }
 
         await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
         return Ok(Map(id, corpus));
@@ -593,9 +593,27 @@ public class TranslationEnginesController : ServalControllerBase
         return (true, null);
     }
 
-    private async Task<List<CorpusFile>?> MapAsync(
-        IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
+    private async Task<Corpus> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
+        string corpusId,
+        TranslationCorpusConfigDto source,
+        CancellationToken cancellationToken
+    )
+    {
+        return new Corpus
+        {
+            Id = corpusId,
+            Name = source.Name,
+            SourceLanguage = source.SourceLanguage,
+            TargetLanguage = source.TargetLanguage,
+            SourceFiles = await MapAsync(getDataFileClient, source.SourceFiles, cancellationToken),
+            TargetFiles = await MapAsync(getDataFileClient, source.TargetFiles, cancellationToken)
+        };
+    }
+
+    private async Task<IList<CorpusFile>> MapAsync(
+        IRequestClient<GetDataFile> getDataFileClient,
+        IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
         CancellationToken cancellationToken
     )
     {
@@ -620,7 +638,7 @@ public class TranslationEnginesController : ServalControllerBase
             }
             else if (response.Is(out Response<DataFileNotFound> _))
             {
-                throw new InvalidOperationException("Unable to retrieve data file.");
+                throw new InvalidOperationException($"The data file {fileConfig.FileId} cannot be found.");
             }
         }
         return files;
@@ -635,17 +653,6 @@ public class TranslationEnginesController : ServalControllerBase
             TargetLanguage = source.TargetLanguage,
             Type = source.Type,
             Owner = Owner
-        };
-    }
-
-    private static Corpus Map(string corpusId, TranslationCorpusConfigDto source)
-    {
-        return new Corpus
-        {
-            Id = corpusId,
-            Name = source.Name,
-            SourceLanguage = source.SourceLanguage,
-            TargetLanguage = source.TargetLanguage
         };
     }
 
@@ -747,7 +754,7 @@ public class TranslationEnginesController : ServalControllerBase
         {
             SourceTokens = source.SourceTokens.ToList(),
             InitialStateScore = (float)source.InitialStateScore,
-            FinalStates = source.FinalStates.ToList(),
+            FinalStates = source.FinalStates.ToHashSet(),
             Arcs = source.Arcs.Select(Map).ToList()
         };
     }
