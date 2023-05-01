@@ -26,7 +26,7 @@ public class WebhookJobTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = { WebhookEvent.TranslationBuildStarted }
+                Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted }
             }
         );
         env.MockHttp
@@ -54,7 +54,7 @@ public class WebhookJobTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = { WebhookEvent.TranslationBuildStarted }
+                Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted }
             }
         );
         MockedRequest req = env.MockHttp.When("*").Respond(HttpStatusCode.OK);
@@ -76,7 +76,7 @@ public class WebhookJobTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = { WebhookEvent.TranslationBuildStarted }
+                Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted }
             }
         );
         env.MockHttp
@@ -106,7 +106,7 @@ public class WebhookJobTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = { WebhookEvent.TranslationBuildStarted }
+                Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted }
             }
         );
         env.MockHttp

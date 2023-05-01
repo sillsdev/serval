@@ -98,7 +98,7 @@ message WordGraphArc {
     int32 prev_state = 1;
     int32 next_state = 2;
     double score = 3;
-    repeated string words = 4;
+    repeated string target_tokens = 4;
     repeated double confidences = 5;
     int32 source_segment_start = 6;
     int32 source_segment_end = 7;
@@ -107,7 +107,7 @@ message WordGraphArc {
 }
 
 message WordGraph {
-    repeated string source_words = 1;
+    repeated string source_tokens = 1;
     double initial_state_score = 2;
     repeated int32 final_states = 3;
     repeated WordGraphArc arcs = 4;

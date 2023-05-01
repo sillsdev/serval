@@ -39,7 +39,7 @@ public class EngineServiceTests
         string engineId = (await env.CreateEngineAsync()).Id;
         Models.WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a test .".Split()));
+        Assert.That(result.Arcs.SelectMany(a => a.TargetTokens), Is.EqualTo("this is a test .".Split()));
     }
 
     [Test]
@@ -164,7 +164,7 @@ public class EngineServiceTests
                 .Returns(CreateAsyncUnaryCall(translateResponse));
             var wordGraph = new V1.WordGraph
             {
-                SourceWords = { "esto es una prueba .".Split() },
+                SourceTokens = { "esto es una prueba .".Split() },
                 FinalStates = { 3 },
                 Arcs =
                 {
@@ -173,7 +173,7 @@ public class EngineServiceTests
                         PrevState = 0,
                         NextState = 1,
                         Score = 1.0,
-                        Words = { "this is".Split() },
+                        TargetTokens = { "this is".Split() },
                         Alignment =
                         {
                             new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
@@ -189,7 +189,7 @@ public class EngineServiceTests
                         PrevState = 1,
                         NextState = 2,
                         Score = 1.0,
-                        Words = { "a test".Split() },
+                        TargetTokens = { "a test".Split() },
                         Alignment =
                         {
                             new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
@@ -205,7 +205,7 @@ public class EngineServiceTests
                         PrevState = 2,
                         NextState = 3,
                         Score = 1.0,
-                        Words = { new[] { "." } },
+                        TargetTokens = { ".".Split() },
                         Alignment =
                         {
                             new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
@@ -260,14 +260,14 @@ public class EngineServiceTests
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "smt",
-                Corpora =
+                Corpora = new List<Models.Corpus>
                 {
                     new Models.Corpus
                     {
                         Id = "corpus1",
                         SourceLanguage = "es",
                         TargetLanguage = "en",
-                        SourceFiles =
+                        SourceFiles = new List<Models.CorpusFile>
                         {
                             new Models.CorpusFile
                             {
@@ -277,7 +277,7 @@ public class EngineServiceTests
                                 TextId = "all"
                             }
                         },
-                        TargetFiles =
+                        TargetFiles = new List<Models.CorpusFile>
                         {
                             new Models.CorpusFile
                             {

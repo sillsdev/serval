@@ -2,5 +2,5 @@
 
 public class TranslationBuildConfigDto
 {
-    public List<PretranslateCorpusConfigDto>? Pretranslate { get; set; }
+    public IList<PretranslateCorpusConfigDto>? Pretranslate { get; set; }
 }

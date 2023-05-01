@@ -3106,7 +3106,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
+        public System.Collections.Generic.IList<double> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<double>();
 
         [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -3168,9 +3168,9 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordGraph
     {
-        [Newtonsoft.Json.JsonProperty("sourceWords", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("sourceTokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> SourceWords { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> SourceTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("initialStateScore", Required = Newtonsoft.Json.Required.Always)]
         public float InitialStateScore { get; set; } = default!;
@@ -3195,15 +3195,15 @@ namespace Serval.Client
         public int NextState { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.Always)]
-        public float Score { get; set; } = default!;
+        public double Score { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("words", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("targetTokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> Words { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> TargetTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
+        public System.Collections.Generic.IList<double> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<double>();
 
         [Newtonsoft.Json.JsonProperty("sourceSegmentStart", Required = Newtonsoft.Json.Required.Always)]
         public int SourceSegmentStart { get; set; } = default!;

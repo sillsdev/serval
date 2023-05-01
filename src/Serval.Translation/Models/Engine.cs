@@ -9,7 +9,7 @@ public class Engine : IOwnedEntity
     public string TargetLanguage { get; set; } = default!;
     public string Type { get; set; } = default!;
     public string Owner { get; set; } = default!;
-    public List<Corpus> Corpora { get; set; } = new List<Corpus>();
+    public List<Corpus> Corpora { get; set; } = default!;
     public bool IsBuilding { get; set; }
     public int ModelRevision { get; set; }
     public double Confidence { get; set; }

@@ -8,6 +8,6 @@ public class TranslationCorpusDto
     public string? Name { get; set; }
     public string SourceLanguage { get; set; } = default!;
     public string TargetLanguage { get; set; } = default!;
-    public List<TranslationCorpusFileDto> SourceFiles { get; set; } = default!;
-    public List<TranslationCorpusFileDto> TargetFiles { get; set; } = default!;
+    public IList<TranslationCorpusFileDto> SourceFiles { get; set; } = default!;
+    public IList<TranslationCorpusFileDto> TargetFiles { get; set; } = default!;
 }

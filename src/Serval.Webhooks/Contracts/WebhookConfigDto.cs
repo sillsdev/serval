@@ -20,5 +20,5 @@ public class WebhookConfigDto
     /// The webhook events.
     /// </summary>
     [JsonProperty(Required = Required.Always)]
-    public List<WebhookEvent> Events { get; set; } = default!;
+    public IList<WebhookEvent> Events { get; set; } = default!;
 }
