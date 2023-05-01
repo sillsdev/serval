@@ -7,5 +7,5 @@ public class Webhook : IOwnedEntity
     public string Owner { get; set; } = default!;
     public string Url { get; set; } = default!;
     public string Secret { get; set; } = default!;
-    public List<WebhookEvent> Events { get; set; } = new List<WebhookEvent>();
+    public List<WebhookEvent> Events { get; set; } = default!;
 }

@@ -61,16 +61,9 @@ public class WebhooksController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        var newHook = new Webhook
-        {
-            Url = hookConfig.PayloadUrl,
-            Secret = hookConfig.Secret,
-            Events = hookConfig.Events.ToList(),
-            Owner = Owner
-        };
-
-        await _hookService.CreateAsync(newHook, cancellationToken);
-        WebhookDto dto = Map(newHook);
+        Webhook hook = Map(hookConfig);
+        await _hookService.CreateAsync(hook, cancellationToken);
+        WebhookDto dto = Map(hook);
         return Created(dto.Url, dto);
     }
 
@@ -106,6 +99,17 @@ public class WebhooksController : ServalControllerBase
             Url = _urlService.GetUrl("GetWebhook", new { id = source.Id }),
             PayloadUrl = source.Url,
             Events = source.Events.ToList()
+        };
+    }
+
+    private Webhook Map(WebhookConfigDto source)
+    {
+        return new Webhook
+        {
+            Url = source.PayloadUrl,
+            Secret = source.Secret,
+            Events = source.Events.ToList(),
+            Owner = Owner
         };
     }
 }

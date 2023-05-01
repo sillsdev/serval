@@ -725,7 +725,7 @@ public class TranslationEnginesController : ServalControllerBase
             Translation = source.Translation,
             SourceTokens = source.SourceTokens.ToList(),
             TargetTokens = source.TargetTokens.ToList(),
-            Confidences = source.Confidences.Select(c => (float)c).ToList(),
+            Confidences = source.Confidences.Select(c => Math.Round(c, 8)).ToList(),
             Sources = source.Sources.ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
             Phrases = source.Phrases.Select(Map).ToList()
@@ -744,7 +744,7 @@ public class TranslationEnginesController : ServalControllerBase
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
             TargetSegmentCut = source.TargetSegmentCut,
-            Confidence = (float)source.Confidence
+            Confidence = Math.Round(source.Confidence, 8)
         };
     }
 
@@ -765,9 +765,9 @@ public class TranslationEnginesController : ServalControllerBase
         {
             PrevState = source.PrevState,
             NextState = source.NextState,
-            Score = (float)source.Score,
+            Score = Math.Round(source.Score, 8),
             TargetTokens = source.TargetTokens.ToList(),
-            Confidences = source.Confidences.Select(c => (float)c).ToList(),
+            Confidences = source.Confidences.Select(c => Math.Round(c, 8)).ToList(),
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
             Alignment = source.Alignment.Select(Map).ToList(),

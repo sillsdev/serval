@@ -3106,7 +3106,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
+        public System.Collections.Generic.IList<double> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<double>();
 
         [Newtonsoft.Json.JsonProperty("sources", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -3161,7 +3161,7 @@ namespace Serval.Client
         public int TargetSegmentCut { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.Always)]
-        public float Confidence { get; set; } = default!;
+        public double Confidence { get; set; } = default!;
 
     }
 
@@ -3195,7 +3195,7 @@ namespace Serval.Client
         public int NextState { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.Always)]
-        public float Score { get; set; } = default!;
+        public double Score { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("targetTokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -3203,7 +3203,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<float> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<float>();
+        public System.Collections.Generic.IList<double> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<double>();
 
         [Newtonsoft.Json.JsonProperty("sourceSegmentStart", Required = Newtonsoft.Json.Required.Always)]
         public int SourceSegmentStart { get; set; } = default!;
