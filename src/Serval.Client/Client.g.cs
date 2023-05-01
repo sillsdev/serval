@@ -3161,7 +3161,7 @@ namespace Serval.Client
         public int TargetSegmentCut { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.Always)]
-        public double Confidence { get; set; } = default!;
+        public float Confidence { get; set; } = default!;
 
     }
 

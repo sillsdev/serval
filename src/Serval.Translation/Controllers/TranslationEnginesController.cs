@@ -662,7 +662,7 @@ public class TranslationEnginesController : ServalControllerBase
         {
             EngineRef = engineId,
             Pretranslate = source.Pretranslate
-                ?.Select(c => new PretranslateCorpus { CorpusRef = c.CorpusId, TextIds = c.TextIds })
+                ?.Select(c => new PretranslateCorpus { CorpusRef = c.CorpusId, TextIds = c.TextIds?.ToList() })
                 .ToList()
         };
     }
@@ -744,7 +744,7 @@ public class TranslationEnginesController : ServalControllerBase
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
             TargetSegmentCut = source.TargetSegmentCut,
-            Confidence = source.Confidence
+            Confidence = (float)source.Confidence
         };
     }
 

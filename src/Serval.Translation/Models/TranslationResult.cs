@@ -3,10 +3,10 @@
 public class TranslationResult
 {
     public string Translation { get; set; } = default!;
-    public IList<string> SourceTokens { get; set; } = new List<string>();
-    public IList<string> TargetTokens { get; set; } = new List<string>();
-    public IList<double> Confidences { get; set; } = new List<double>();
-    public IList<IReadOnlySet<TranslationSource>> Sources { get; set; } = default!;
-    public IList<AlignedWordPair> Alignment { get; set; } = default!;
-    public IList<Phrase> Phrases { get; set; } = new List<Phrase>();
+    public List<string> SourceTokens { get; set; } = default!;
+    public List<string> TargetTokens { get; set; } = default!;
+    public List<double> Confidences { get; set; } = default!;
+    public List<IReadOnlySet<TranslationSource>> Sources { get; set; } = default!;
+    public List<AlignedWordPair> Alignment { get; set; } = default!;
+    public List<Phrase> Phrases { get; set; } = default!;
 }
