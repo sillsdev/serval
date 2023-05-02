@@ -243,8 +243,7 @@ public class TranslationEngineTests
                                 {
                                     SourceSegmentStart = 0,
                                     SourceSegmentEnd = 5,
-                                    TargetSegmentCut = 5,
-                                    Confidence = 1.0
+                                    TargetSegmentCut = 5
                                 }
                             }
                         };
