@@ -300,8 +300,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         {
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
-            TargetSegmentCut = source.TargetSegmentCut,
-            Confidence = source.Confidence
+            TargetSegmentCut = source.TargetSegmentCut
         };
     }
 

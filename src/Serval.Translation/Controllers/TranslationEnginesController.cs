@@ -679,7 +679,7 @@ public class TranslationEnginesController : ServalControllerBase
             Type = source.Type,
             IsBuilding = source.IsBuilding,
             ModelRevision = source.ModelRevision,
-            Confidence = source.Confidence,
+            Confidence = Math.Round(source.Confidence, 8),
             CorpusSize = source.CorpusSize
         };
     }
@@ -743,8 +743,7 @@ public class TranslationEnginesController : ServalControllerBase
         {
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
-            TargetSegmentCut = source.TargetSegmentCut,
-            Confidence = Math.Round(source.Confidence, 8)
+            TargetSegmentCut = source.TargetSegmentCut
         };
     }
 

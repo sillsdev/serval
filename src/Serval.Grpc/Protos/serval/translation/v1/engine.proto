@@ -77,7 +77,6 @@ message Phrase {
     int32 source_segment_start = 1;
     int32 source_segment_end = 2;
     int32 target_segment_cut = 3;
-    double confidence = 4;
 }
 
 message TranslationSources {

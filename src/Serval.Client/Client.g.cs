@@ -3160,9 +3160,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("targetSegmentCut", Required = Newtonsoft.Json.Required.Always)]
         public int TargetSegmentCut { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.Always)]
-        public double Confidence { get; set; } = default!;
-
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]

@@ -52,8 +52,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                         {
                             SourceSegmentStart = 0,
                             SourceSegmentEnd = tokens.Length,
-                            TargetSegmentCut = tokens.Length,
-                            Confidence = 1.0
+                            TargetSegmentCut = tokens.Length
                         }
                     }
                 }
