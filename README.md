@@ -29,7 +29,7 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 * Download this repository and place the https://github.com/sillsdev/machine repo in ../machine, relative to this repo.
 * Build the machine repo with dotnet build in the root of that repo
 * In the serval root, run docker-compose up
-* In either repo, use the launch - attatch (in VS Code) to attatch to the running processes and debug
+* To debug serval and echo together, launch "ServalComb" in VSCode
 
 #### Installation
 
