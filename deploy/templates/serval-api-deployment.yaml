@@ -45,10 +45,10 @@ spec:
               value: SmtTransfer
             - name: ASPNETCORE_Translation__Engines__1__Address
               value: http://machine-engine
-              {{- if not .Values.localVolume}}
-              {{- template "secrets.clearml" }}
-              {{- template "secrets.s3" }}
-              {{- end}}
+            - name: ASPNETCORE_Translation__Engines__2__Type
+              value: Nmt
+            - name: ASPNETCORE_Translation__Engines__2__Address
+              value: http://machine-engine
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: serval-api

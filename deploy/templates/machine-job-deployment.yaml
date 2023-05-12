@@ -39,10 +39,12 @@ spec:
               value: Warning
             - name: ASPNETCORE_TranslationEngines__0
               value: SmtTransfer
-              {{- if not .Values.localVolume}}
+            - name: ASPNETCORE_TranslationEngines__1
+              value: Nmt
+            - name: ASPNETCORE_TranslationEngines__1
+              value: Nmt
               {{- template "secrets.clearml" }}
               {{- template "secrets.s3" }}
-              {{- end}}
           image: {{ .Values.machineImage}}
           imagePullPolicy: "Always"
           name: machine-job

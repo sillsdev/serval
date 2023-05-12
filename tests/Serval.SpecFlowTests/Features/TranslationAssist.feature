@@ -35,11 +35,9 @@ Feature: TranslationAssist
 		And John's engine is built
 		Then the translation for John for "verdad mundo" should be "truth world"
 
-#	Scenario: Get NMT Pretranslation
-#		Given a new NMT engine for John from es to en
-#		When a new text corpora named CTrain for John
-#		And MAT.txt, 1JN.txt, 2JN.txt are added to corpora CTrain in es and en
-#		When a new text corpora named CPreTrans for John
-#		And 3JN.txt are added to corpora CPreTrans in es only
-#		And the engine is built for John
-#		Then the pretranslation for John from CPreTrans for 3JN.txt starts with "The elder unto the"
+	Scenario: Get Nmt Pretranslation
+		Given a new Nmt engine for John from es to en
+		When a text corpora containing MAT.txt, 1JN.txt, 2JN.txt are added to John's engine in es and en
+		And a text corpora containing 3JN.txt are added to John's engine in es to translate into en
+		And John's engine is built
+		Then the pretranslation for John for 3JN.txt starts with "The elder unto the"

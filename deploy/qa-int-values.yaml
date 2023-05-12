@@ -4,6 +4,7 @@ namespace: nlp
 localVolume: false
 lokiTenent: nlp-tenant
 lokiUrl: http://loki-gateway.loki.svc.cluster.local
-servalImage: ghcr.io/sillsdev/serval:0.5.0.2
-machineImage: ghcr.io/sillsdev/machine:2.5.13.2
+servalImage: ghcr.io/sillsdev/serval:0.5.0.3
+machineImage: ghcr.io/sillsdev/machine:2.5.13.3
+ClearMLDockerImage: ghcr.io/sillsdev/machine.py:0.9.3.2
 enableEcho: true

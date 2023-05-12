@@ -6,9 +6,10 @@ namespace Serval.SpecFlowTests.StepDefinitions;
 [Binding]
 public sealed class MachineApiStepDefinitions
 {
-    // QA server: "https://machine-api.org/"
+    // QA int server: "https://machine-api.org/"
+    // QA ext server: "https://qa.serval-api.org/"
     // localhost: "http://localhost/"
-    const string MACHINE_API_TEST_URL = "https://machine-api.org/";
+    const string MACHINE_API_TEST_URL = "http://localhost/";
     readonly Dictionary<string, string> EnginePerUser = new();
     readonly Dictionary<string, string> CorporaPerName = new();
 
@@ -159,7 +160,6 @@ public sealed class MachineApiStepDefinitions
             }
             Thread.Sleep(500);
         }
-        ClearPretranslationConfig();
     }
 
     [When(@"a translation for (.*) is added with ""(.*)"" for ""(.*)""")]
@@ -191,12 +191,19 @@ public sealed class MachineApiStepDefinitions
         Assert.AreEqual(targetSegment, translation.Translation);
     }
 
-    /*
-    [Then(@"the pretranslation for (.*) from (.*) for (.*) starts with ""(.*)""")]
-    public async Task ThenThePretranslationShouldBe(string user, string corpusName, string fileId, string targetSegment)
+    [Then(@"the pretranslation for (.*) for (.*) starts with ""(.*)""")]
+    public async Task ThenThePretranslationShouldBe(string user, string fileId, string targetSegment)
     {
         var engineId = await GetEngineFromUser(user);
-        var pretranslations = await translationEnginesClient.GetAllPretranslationsAsync(engineId, corpusId, fileId);
+        if (translationBuildConfig.Pretranslate == null | translationBuildConfig.Pretranslate!.Count == 0)
+        {
+            throw new Exception("Need to have something to pretranslate!");
+        }
+        // just do the first one.  This is lazy but it should work for the time being.
+        var pretranslations = await translationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            translationBuildConfig.Pretranslate[0].CorpusId
+        );
         Assert.IsTrue(
             pretranslations[0].Translation.StartsWith(targetSegment),
             string.Concat(
@@ -206,7 +213,7 @@ public sealed class MachineApiStepDefinitions
                 pretranslations[0].Translation.AsSpan(0, 30)
             )
         );
-    }*/
+    }
 
     public async Task<string> GetEngineFromUser(string user)
     {

@@ -20,6 +20,8 @@ services:
       - ASPNETCORE_Translation__Engines__0__Address=http://echo
       - ASPNETCORE_Translation__Engines__1__Type=SmtTransfer
       - ASPNETCORE_Translation__Engines__1__Address=http://machine-engine
+      - ASPNETCORE_Translation__Engines__2__Type=Nmt
+      - ASPNETCORE_Translation__Engines__2__Address=http://machine-engine
     expose:
       - 80
       - 81
@@ -87,6 +89,17 @@ services:
       - ASPNETCORE_Logging__LogLevel__Default=Information
       - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_TranslationEngines__0=SmtTransfer
+      - ASPNETCORE_TranslationEngines__0=Nmt
+      - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
+      - ClearMLNmtEngine__Queue=lambert_24gb
+      - ClearMLNmtEngine__DockerImage=mpy.local
+      - ClearMLNmtEngine__SaveModel=false
+      - ClearMLNmtEngine__MaxStep=1000
+      - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
+      - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - SharedFile__Uri=s3://aqua-ml-data/
+      - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
+      - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
     expose:
       - 80
     ports:
@@ -123,6 +136,16 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_TranslationEngines__0=SmtTransfer
+      - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
+      - ClearMLNmtEngine__Queue=lambert_24gb
+      - ClearMLNmtEngine__DockerImage=mpy.local
+      - ClearMLNmtEngine__SaveModel=false
+      - ClearMLNmtEngine__MaxStep=1000
+      - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
+      - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - SharedFile__Uri=s3://aqua-ml-data/
+      - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
+      - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
     expose:
       - 80
     ports:
@@ -158,5 +181,5 @@ services:
       [
         '/bin/sh',
         '-c',
-        'mongod --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity'
+        'mongod --quiet --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity'
       ]

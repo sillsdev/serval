@@ -10,7 +10,8 @@
   "cSpell.words": [
     "Bson",
     "pretranslate",
-    "Pretranslation"
+    "Pretranslation",
+    "pretranslations"
   ],
   "[helm]": {
     "editor.defaultFormatter": "redhat.vscode-yaml",
