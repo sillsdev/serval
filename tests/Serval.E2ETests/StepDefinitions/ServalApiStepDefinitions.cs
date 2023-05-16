@@ -1,15 +1,15 @@
 using System.Net;
 using NUnit.Framework;
 
-namespace Serval.SpecFlowTests.StepDefinitions;
+namespace Serval.E2ETests.StepDefinitions;
 
 [Binding]
-public sealed class MachineApiStepDefinitions
+public sealed class ServalApiStepDefinitions
 {
-    // QA int server: "https://machine-api.org/"
+    // QA int server: "https://serval-api.org/"
     // QA ext server: "https://qa.serval-api.org/"
     // localhost: "http://localhost/"
-    const string MACHINE_API_TEST_URL = "http://localhost/";
+    const string SERVAL_API_TEST_URL = "http://localhost/";
     readonly Dictionary<string, string> EnginePerUser = new();
     readonly Dictionary<string, string> CorporaPerName = new();
 
@@ -24,7 +24,7 @@ public sealed class MachineApiStepDefinitions
         Pretranslate = new List<PretranslateCorpusConfig>()
     };
 
-    public MachineApiStepDefinitions()
+    public ServalApiStepDefinitions()
     {
         //ignore ssl errors
         var handler = new HttpClientHandler();
@@ -34,7 +34,7 @@ public sealed class MachineApiStepDefinitions
             return true;
         };
         httpClient = new HttpClient(handler);
-        httpClient.BaseAddress = new Uri(MACHINE_API_TEST_URL);
+        httpClient.BaseAddress = new Uri(SERVAL_API_TEST_URL);
 
         dataFilesClient = new DataFilesClient(httpClient);
         translationEnginesClient = new TranslationEnginesClient(httpClient);
@@ -59,7 +59,7 @@ public sealed class MachineApiStepDefinitions
     )
     {
         setBearer();
-        var existingTranslationEngines = await translationEnginesClient.GetAllAsync();
+        IList<TranslationEngine> existingTranslationEngines = await translationEnginesClient.GetAllAsync();
         foreach (var translationEngine in existingTranslationEngines)
         {
             if (translationEngine.Name == user)
@@ -158,7 +158,8 @@ public sealed class MachineApiStepDefinitions
                 // build completed
                 break;
             }
-            Thread.Sleep(500);
+            // Throttle requests to only 2 x second
+            await Task.Delay(500);
         }
     }
 
@@ -197,7 +198,7 @@ public sealed class MachineApiStepDefinitions
         var engineId = await GetEngineFromUser(user);
         if (translationBuildConfig.Pretranslate == null | translationBuildConfig.Pretranslate!.Count == 0)
         {
-            throw new Exception("Need to have something to pretranslate!");
+            throw new InvalidOperationException("Need to have something to pretranslate!");
         }
         // just do the first one.  This is lazy but it should work for the time being.
         var pretranslations = await translationEnginesClient.GetAllPretranslationsAsync(
@@ -237,13 +238,13 @@ public sealed class MachineApiStepDefinitions
         bool pretranslate
     )
     {
-        var sourceFiles = await PostFiles(filesToAdd, fileFormat, sourceLanguage);
+        List<DataFile> sourceFiles = await PostFiles(filesToAdd, fileFormat, sourceLanguage);
         var sourceFileConfig = new List<TranslationCorpusFileConfig>();
 
-        foreach (var item in sourceFiles.Select((file, i) => new { i, file }))
+        for (var i = 0; i < sourceFiles.Count; i++)
         {
             sourceFileConfig.Add(
-                new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
+                new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
             );
         }
 
@@ -289,17 +290,16 @@ public sealed class MachineApiStepDefinitions
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../..", "data", language)
         );
         if (!Directory.Exists(languageFolder))
-            throw new ArgumentException($"The langauge data directory {languageFolder} does not exist!");
+            throw new ArgumentException($"The language data directory {languageFolder} does not exist!");
         // Collect files for the corpus
         var files = Directory.GetFiles(languageFolder);
         if (files.Length == 0)
-            throw new ArgumentException($"The langauge data directory {languageFolder} contains no files!");
+            throw new ArgumentException($"The language data directory {languageFolder} contains no files!");
         var fileList = new List<DataFile>();
         var all_files = await dataFilesClient.GetAllAsync();
-        var filename_to_id = (from file in all_files where file.Name is not null select file).ToLookup(
-            file => file.Name!,
-            file => file.Id
-        );
+        ILookup<String, String> filename_to_id = all_files
+            .Where(f => f.Name is not null)
+            .ToLookup(file => file.Name!, file => file.Id);
 
         foreach (var fileName in filesToAdd)
         {

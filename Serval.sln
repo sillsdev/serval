@@ -48,7 +48,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoTranslationEngine", "sa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.ApiServer.IntegrationTests", "tests\Serval.ApiServer.IntegrationTests\Serval.ApiServer.IntegrationTests.csproj", "{0C3DF75B-B022-4EFC-882C-F276F1EC8435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.SpecFlowTests", "tests\Serval.SpecFlowTests\Serval.SpecFlowTests.csproj", "{1F020042-D7B8-4541-9691-26ECFD1FFC73}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.E2ETests", "tests\Serval.E2ETests\Serval.E2ETests.csproj", "{1F020042-D7B8-4541-9691-26ECFD1FFC73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

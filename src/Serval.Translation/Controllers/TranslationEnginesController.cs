@@ -488,7 +488,9 @@ public class TranslationEnginesController : ServalControllerBase
     /// Starts a build job for a translation engine.
     /// </summary>
     /// <param name="id">The translation engine id.</param>
-    /// <param name="buildConfig">The build job configuration.</param>
+    /// <param name="buildConfig">
+    /// Specify the corpora or textId's to pretranslate.  Only "untranslated" text will be pretranslated, that is, segments (lines of text) in the specified corpora or textId's that have untranslated text but no translated text.
+    /// </param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="201">The build job was started successfully.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>

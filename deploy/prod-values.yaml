@@ -1,4 +1,4 @@
-externalHost: machine-api.org
+externalHost: serval-api.org
 enableTls: true
 namespace: {{ .Values.namespace}}
 localVolume: false

@@ -93,7 +93,6 @@ services:
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=lambert_24gb
       - ClearMLNmtEngine__DockerImage=mpy.local
-      - ClearMLNmtEngine__SaveModel=false
       - ClearMLNmtEngine__MaxStep=1000
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
@@ -139,7 +138,6 @@ services:
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=lambert_24gb
       - ClearMLNmtEngine__DockerImage=mpy.local
-      - ClearMLNmtEngine__SaveModel=false
       - ClearMLNmtEngine__MaxStep=1000
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"

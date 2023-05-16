@@ -8,20 +8,12 @@ services:
     ports:
       - 27017:27017
     restart: always
-    command: mongod --replSet myRS
-
-  # this initialization server runs the `rs.initiate` command to
-  # intialize the replica set and could connect the (1) servers to each other
-  mongoinit:
-    image: mongo:6.0
-    # this container will exit after executing the command
-    restart: "no"
-    depends_on:
-      - mongo
-    command: >
-      mongo --host mongo:27017 --eval ' config = { "_id" : "myRS", "members" : [
-        {
-          "_id" : 0,
-          "host" : "mongo:27017"
-        }
-      ] }; sleep(3000); rs.initiate(config, { force: true }); '
+    # Run Mongo (with output to normal shell)
+    # then configure the locally running mongo to be a standalone replica set
+    # then hang forever so the container does not exit
+    command:
+      [
+        '/bin/sh',
+        '-c',
+        'mongod --quiet --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity'
+      ]

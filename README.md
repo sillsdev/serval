@@ -11,12 +11,9 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 ### Development locally
 
 - Install MongoDB 6.0 as a replca set and MongoDBCompass and run it on localhost:27017
-  - Create the following folders:
-  - C:\var\lib\machine\data
-  - C:\var\lib\machine\machine
 - set the following environment variables:
   - ASPNETCORE_ENVIRONMENT=Development
-- Open "Machine.sln" and debug the ApiServer
+- Open "Serval.sln" and debug the ApiServer
 - Now, you are running the complete environment where everything is being debugged and the mongodb is exposed.
 
 ### local dev in ubuntu
@@ -36,13 +33,13 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 - Install docker and helm
 #### Update with new yaml's:
 
-- Run `helm upgrade machine-api . -f dev-values.yaml`
+- Run `helm upgrade serval-api . -f dev-values.yaml`
 
 #### To expose a port and see it in your browser:
 
-- Run: `minikube service machine-api --url`
-- In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `127.0.0.1 machine-api.vcap.me`
-- Put the following in a browser: `http://machine-api.vcap.me:<port visible>/swagger`
+- Run: `minikube service serval-api --url`
+- In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `127.0.0.1 serval-api.vcap.me`
+- Put the following in a browser: `http://serval-api.vcap.me:<port visible>/swagger`
 
 #### Pod logs:
 
@@ -53,13 +50,13 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 
 This is the QA staging environment. To access it,
 
-#### To access machine API
+#### To access Serval API
 
 - Use the VPN
 
-* In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `10.3.0.119 machine-api.org`
+* In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `10.3.0.119 serval-api.org`
 
-- go to `https://machine-api.org/swagger` and accept the secuirty warning
+- go to `https://serval-api.org/swagger` and accept the secuirty warning
 
 #### To update the cluster
 
@@ -77,7 +74,7 @@ This is the QA staging environment. To access it,
 - Get auth0 token using curl:
   - Get Client ID and Client Secret from auth0.com
     - Login, go to Applications-> Applications -> "Machine API (Test Application)", or similar
-    - Copy `Client ID` into Environment variable `MACHINE_CLIENT_ID`
-    - Copy `Client Secret` into Environment variable `MACHINE_CLIENT_SECRET`
-  - Run tests from `Serval.SpecFlowTests`
+    - Copy `Client ID` into Environment variable `SERVAL_CLIENT_ID`
+    - Copy `Client Secret` into Environment variable `SERVAL_CLIENT_SECRET`
+  - Run tests from `Serval.E2ETests`
     - The token will automatically be retrieved from Auth0 when you run the tests
