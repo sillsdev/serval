@@ -52,11 +52,12 @@ This is the QA staging environment. To access it,
 
 #### To access Serval API
 
-- Use the VPN
-
-* In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `10.3.0.119 serval-api.org`
-
-- go to `https://serval-api.org/swagger` and accept the secuirty warning
+* Internal QA:
+  * Use the VPN
+  * In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `10.3.0.119 serval-api.org`
+  * go to `https://machine-api.org/swagger` and accept the security warning
+* External QA:
+  * go to `https://qa.serval-api.org/swagger` and accept the security warning
 
 #### To update the cluster
 

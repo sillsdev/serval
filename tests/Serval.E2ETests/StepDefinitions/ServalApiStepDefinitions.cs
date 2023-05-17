@@ -6,7 +6,7 @@ namespace Serval.E2ETests.StepDefinitions;
 [Binding]
 public sealed class ServalApiStepDefinitions
 {
-    // QA int server: "https://serval-api.org/"
+    // QA int server: "https://machine-api.org/"
     // QA ext server: "https://qa.serval-api.org/"
     // localhost: "http://localhost/"
     const string SERVAL_API_TEST_URL = "http://localhost/";
