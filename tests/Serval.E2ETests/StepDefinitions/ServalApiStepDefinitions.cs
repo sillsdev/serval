@@ -249,12 +249,15 @@ public sealed class ServalApiStepDefinitions
         }
 
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
-        var targetFiles = await PostFiles(filesToAdd, fileFormat, targetLanguage);
-        foreach (var item in targetFiles.Select((file, i) => new { i, file }))
+        if (!pretranslate)
         {
-            targetFileConfig.Add(
-                new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
-            );
+            var targetFiles = await PostFiles(filesToAdd, fileFormat, targetLanguage);
+            foreach (var item in targetFiles.Select((file, i) => new { i, file }))
+            {
+                targetFileConfig.Add(
+                    new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
+                );
+            }
         }
 
         var response = await translationEnginesClient.AddCorpusAsync(

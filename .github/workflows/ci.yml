@@ -3,7 +3,7 @@ name: CI Build
 on:
   push:
     branches:
-      - '**'    
+      - '**'
 
 jobs:
   build:
@@ -30,4 +30,4 @@ jobs:
       - name: Build
         run: dotnet build --no-restore -c Release
       - name: Test
-        run: dotnet test --no-build --verbosity normal -c Release
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=E2E" -c Release
