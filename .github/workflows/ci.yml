@@ -29,5 +29,7 @@ jobs:
         run: dotnet csharpier --check .
       - name: Build
         run: dotnet build --no-restore -c Release
+      - name: Pre-Test
+        run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
       - name: Test
-        run: sudo mkdir -p /var/lib/serval && dotnet test --no-build --verbosity normal --filter "TestCategory!=E2E" -c Release
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=E2E" -c Release
