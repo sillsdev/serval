@@ -17,6 +17,7 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         _dataAccessContext = dataAccessContext;
         _options = options;
         _mediator = mediator;
+        Directory.CreateDirectory(_options.CurrentValue.FilesDirectory);
     }
 
     public Task<DataFile?> GetAsync(string id, string owner, CancellationToken cancellationToken = default)

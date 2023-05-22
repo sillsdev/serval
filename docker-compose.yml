@@ -1,0 +1,183 @@
+version: "3"
+services:
+  serval-api:
+    hostname: serval-api
+    container_name: serval_cntr
+    build:
+      context: .
+      dockerfile: dockerfile.development
+    environment:
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
+      - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
+      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/serval_jobs?replicaSet=myRS
+      - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/serval?replicaSet=myRS
+      - ASPNETCORE_Auth__Domain=sil-appbuilder.auth0.com
+      - ASPNETCORE_Auth__Audience=https://machine.sil.org
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_Translation__Engines__0__Type=Echo
+      - ASPNETCORE_Translation__Engines__0__Address=http://echo
+      - ASPNETCORE_Translation__Engines__1__Type=SmtTransfer
+      - ASPNETCORE_Translation__Engines__1__Address=http://machine-engine
+      - ASPNETCORE_Translation__Engines__2__Type=Nmt
+      - ASPNETCORE_Translation__Engines__2__Address=http://machine-engine
+    expose:
+      - 80
+      - 81
+    ports:
+      - 80:80
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app:ro
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/serval:/var/lib/serval
+    working_dir: '/app/src/Serval.ApiServer'
+    entrypoint:
+      - dotnet
+      - run
+      - --no-build
+      - --no-launch-profile
+      - --additionalProbingPath
+      - /root/.nuget/packages
+
+  echo:
+    hostname: echo
+    container_name: echo_cntr
+    build:
+      context: .
+      dockerfile: dockerfile.development
+    environment:
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval-api:81
+    expose:
+      - 80
+    ports:
+      - 81:80
+    depends_on:
+      - serval-api
+    volumes:
+      - .:/app:ro
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/serval:/var/lib/serval
+    working_dir: '/app/samples/EchoTranslationEngine'
+    entrypoint:
+      - dotnet
+      - run
+      - --no-build
+      - --no-launch-profile
+      - --additionalProbingPath
+      - /root/.nuget/packages
+
+  machine-engine:
+    hostname: machine-engine
+    container_name: machine-engine-cntr
+    build:
+      context: ../machine
+      dockerfile: ../machine/dockerfile.development
+
+    environment:
+      - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
+      - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_TranslationEngines__0=SmtTransfer
+      - ASPNETCORE_TranslationEngines__0=Nmt
+      - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
+      - ClearMLNmtEngine__Queue=lambert_24gb
+      - ClearMLNmtEngine__DockerImage=mpy.local
+      - ClearMLNmtEngine__MaxStep=1000
+      - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
+      - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - SharedFile__Uri=s3://aqua-ml-data/
+      - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
+      - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+    expose:
+      - 80
+    ports:
+      - 82:80
+    depends_on:
+      - mongo
+      - serval-api
+    volumes:
+      - ../machine:/app:ro
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/machine:/var/lib/machine
+      - /var/lib/serval:/var/lib/serval
+    working_dir: '/app/src/SIL.Machine.Serval.EngineServer'
+    entrypoint:
+      - dotnet
+      - run
+      - --no-build
+      - --no-launch-profile
+      - --additionalProbingPath
+      - /root/.nuget/packages
+
+  machine-job-server:
+    hostname: machine-job-server
+    container_name: machine-job-cntr
+    build:
+      context: ../machine
+      dockerfile: ../machine/dockerfile.development
+    environment:
+      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
+      - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_TranslationEngines__0=SmtTransfer
+      - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
+      - ClearMLNmtEngine__Queue=lambert_24gb
+      - ClearMLNmtEngine__DockerImage=mpy.local
+      - ClearMLNmtEngine__MaxStep=1000
+      - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
+      - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - SharedFile__Uri=s3://aqua-ml-data/
+      - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
+      - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+    expose:
+      - 80
+    ports:
+      - 83:80
+    depends_on:
+      - mongo
+      - machine-engine
+    volumes:
+      - ../machine:/app:ro
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/machine:/var/lib/machine
+      - /var/lib/serval:/var/lib/serval
+    working_dir: '/app/src/SIL.Machine.Serval.JobServer'
+    entrypoint:
+      - dotnet
+      - run
+      - --no-build
+      - --no-launch-profile
+      - --additionalProbingPath
+      - /root/.nuget/packages
+  mongo:
+    hostname: mongo
+    image: mongo:6.0
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    restart: always
+    # Run Mongo (with output to normal shell)
+    # then configure the locally running mongo to be a standalone replica set
+    # then hang forever so the container does not exit
+    command:
+      [
+        '/bin/sh',
+        '-c',
+        'mongod --quiet --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity'
+      ]

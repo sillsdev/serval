@@ -677,7 +677,7 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <param name="id">The translation engine id.</param>
-        /// <param name="buildConfig">The build job configuration.</param>
+        /// <param name="buildConfig">Specify the corpora or textId's to pretranslate.  Only "untranslated" text will be pretranslated, that is, segments (lines of text) in the specified corpora or textId's that have untranslated text but no translated text.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, TranslationBuildConfig buildConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
@@ -2030,7 +2030,7 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <param name="id">The translation engine id.</param>
-        /// <param name="buildConfig">The build job configuration.</param>
+        /// <param name="buildConfig">Specify the corpora or textId's to pretranslate.  Only "untranslated" text will be pretranslated, that is, segments (lines of text) in the specified corpora or textId's that have untranslated text but no translated text.</param>
         /// <returns>The build job was started successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, TranslationBuildConfig buildConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))

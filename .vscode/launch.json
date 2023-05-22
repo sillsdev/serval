@@ -2,83 +2,88 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console, Xenial)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceRoot}/src/SIL.Machine.WebApi.Server/bin/Debug/netcoreapp2.0/ubuntu.16.04-x64/SIL.Machine.WebApi.Server.dll",
-            "args": [],
-            "cwd": "${workspaceRoot}/src/SIL.Machine.WebApi.Server",
-            "stopAtEntry": false,
-            "console": "integratedTerminal"
+            "name": "ServalApi Docker",
+            "type": "docker",
+            "containerName": "serval_cntr",
+            "request": "attach",
+            "platform": "netCore",
+            "processName": "Serval.ApiServer",
+            "sourceFileMap": {
+                "/app": "${workspaceFolder}"
+            },
         },
         {
-            "name": ".NET Core Launch (web, Xenial)",
+            "name": "Echo Docker",
+            "type": "docker",
+            "containerName": "echo_cntr",
+            "request": "attach",
+            "platform": "netCore",
+            "processName": "EchoTranslationEngine",
+            "sourceFileMap": {
+                "/app": "${workspaceFolder}"
+            },
+        },
+        {
+            "name": "Launch Serval",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}/src/SIL.Machine.WebApi.Server/bin/Debug/netcoreapp2.0/ubuntu.16.04-x64/SIL.Machine.WebApi.Server.dll",
+            "program": "${workspaceFolder}/src/Serval.ApiServer/bin/Debug/net6.0/Serval.ApiServer.dll",
             "args": [],
-            "cwd": "${workspaceRoot}/src/SIL.Machine.WebApi.Server",
+            "cwd": "${workspaceFolder}/src/Serval.ApiServer",
             "stopAtEntry": false,
-            "launchBrowser": {
-                "enabled": false,
-                "args": "${auto-detect-url}",
-                "windows": {
-                    "command": "cmd.exe",
-                    "args": "/C start ${auto-detect-url}"
-                },
-                "osx": {
-                    "command": "open"
-                },
-                "linux": {
-                    "command": "xdg-open"
-                }
+            "console": "internalConsole",
+            "justMyCode": false,
+            "symbolOptions": {
+                "searchPaths": [],
+                "searchMicrosoftSymbolServer": true,
+                "searchNuGetOrgSymbolServer": true
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
-            "sourceFileMap": {
-                "/Views": "${workspaceRoot}/Views"
-            },
-            "console": "integratedTerminal"
         },
         {
-            "name": ".NET Core Launch (web)",
+            "name": "Launch Echo",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}/src/SIL.Machine.WebApi.Server/bin/Debug/netcoreapp2.0/SIL.Machine.WebApi.Server.dll",
+            "program": "${workspaceFolder}/samples/EchoTranslationEngine/bin/Debug/net6.0/EchoTranslationEngine.dll",
             "args": [],
-            "cwd": "${workspaceRoot}/src/SIL.Machine.WebApi.Server",
+            "cwd": "${workspaceFolder}/samples/EchoTranslationEngine",
             "stopAtEntry": false,
-            "launchBrowser": {
-                "enabled": false,
-                "args": "${auto-detect-url}",
-                "windows": {
-                    "command": "cmd.exe",
-                    "args": "/C start ${auto-detect-url}"
-                },
-                "osx": {
-                    "command": "open"
-                },
-                "linux": {
-                    "command": "xdg-open"
-                }
+            "console": "internalConsole",
+            "justMyCode": false,
+            "symbolOptions": {
+                "searchPaths": [],
+                "searchMicrosoftSymbolServer": true,
+                "searchNuGetOrgSymbolServer": true
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
-            "sourceFileMap": {
-                "/Views": "${workspaceRoot}/Views"
-            },
-            "console": "integratedTerminal"
         },
         {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "ServalComb",
+            "configurations": [
+                "Launch Serval",
+                "Launch Echo"
+            ]
+        },
+        {
+            "name": "DockerComb",
+            "configurations": [
+                "ServalApi Docker",
+                "Echo Docker"
+            ]
         }
     ]
 }

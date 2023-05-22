@@ -2,6 +2,29 @@
   "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
   "editor.formatOnSave": true,
   "[csharp]": {
-    "editor.defaultFormatter": "csharpier.csharpier-vscode"
-  }
+    "editor.defaultFormatter": "csharpier.csharpier-vscode",
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "cSpell.words": [
+    "Bson",
+    "pretranslate",
+    "Pretranslation",
+    "pretranslations"
+  ],
+  "[helm]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+  },
+  "yaml.format.bracketSpacing": false,
+  "yaml.format.enable": true,
+  "files.associations": {
+    "*.yaml": "helm"
+  },
+  "gitlens.autolinks": [
+    {
+      "prefix": "#",
+      "url": "https://github.com/sillsdev/serval/issues/<num>"
+    }
+  ],
 }

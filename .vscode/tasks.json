@@ -9,17 +9,36 @@
             "type": "shell",
             "args": [
                 "build",
+                // Ask dotnet build to generate full paths for file names.
                 "/property:GenerateFullPaths=true",
+                // Do not generate summary otherwise it leads to duplicate errors in Problems panel
                 "/consoleloggerparameters:NoSummary"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "group": "build",
             "presentation": {
                 "reveal": "silent"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "dc-down",
+            "type": "shell",
+            "command": "docker-compose",
+            "args": [
+                "down"
+            ]
+        },
+        {
+            "label": "dc-up",
+            "type": "shell",
+            "command": "docker-compose",
+            "args": [
+                "up"
+            ],
+            "dependsOn": [
+                "dc-down",
+                "build"
+            ]
         }
     ]
 }

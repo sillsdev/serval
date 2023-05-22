@@ -1,0 +1,17 @@
+{{- if .Values.enableEcho}}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: echo
+  name: echo
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+  selector:
+    app: echo
+status:
+  loadBalancer: {}
+{{- end}}

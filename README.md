@@ -10,52 +10,36 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 
 ### Development locally
 
-- Install MongoDB 4.2 and MongoDBCompass and run it on localhost:27017
-  - Create the following folders:
-  - C:\var\lib\machine\data
-  - C:\var\lib\machine\machine
+- Install MongoDB 6.0 as a replca set and MongoDBCompass and run it on localhost:27017
 - set the following environment variables:
   - ASPNETCORE_ENVIRONMENT=Development
-- Open "Machine.sln" and debug the ApiServer
+- Open "Serval.sln" and debug the ApiServer
 - Now, you are running the complete environment where everything is being debugged and the mongodb is exposed.
 
+### local dev in ubuntu
+* Make sure you install dotnet from the microsoft apr-get repo, otherwise debugging doesn't work!  Also you will need to "searchMicrosoftSymbolServer" for the symbols.
+* To have a local MongoDB, use the docker-compose script to create a replica set of one instance.
 
 ### Development in Docker Compose
 
-Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-dotnet-dev-certs-https-trust):
-
-- install git and add to path (this will also add openssh)
-- create "C:\usr\local\ca-certificates"
-- copy docker/development/machine_api.conf into the above folder
-- `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout machine_api.key -out machine_api.crt -config machine_api.conf`
-- `openssl pkcs12 -export -out machine_api.pfx -inkey machine_api.key -in machine_api.crt`
-
-### Minikube
+* Build this repository with dotnet build
+* Download this repository and place the https://github.com/sillsdev/machine repo in ../machine, relative to this repo.
+* Build the machine repo with dotnet build in the root of that repo
+* In the serval root, run docker-compose up
+* To debug serval and echo together, launch "ServalComb" in VSCode
 
 #### Installation
 
-- Install docker, minikube and helm
-- Run: `minikube addons enable ingress` to install ingress
-- Create folder `C:/usr/local`
-
-#### Startup
-
-- Run `minikube start`
-- In a new window, run `minikube mount C:\usr\local:/host`
-- In a new window, run `minikube dashboard` (this will keep running - do it in a separate cmd window)
-- Run `kubectl config use-context minikube`
-- Run `cd deploy`
-- Run `helm install machine-api . -f dev-values.yaml`
-
+- Install docker and helm
 #### Update with new yaml's:
 
-- Run `helm upgrade machine-api . -f dev-values.yaml`
+- Run `helm upgrade serval-api . -f dev-values.yaml`
 
 #### To expose a port and see it in your browser:
 
-- Run: `minikube service machine-api --url`
-- In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `127.0.0.1 machine-api.vcap.me`
-- Put the following in a browser: `http://machine-api.vcap.me:<port visible>/swagger`
+- Run: `minikube service serval-api --url`
+- In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `127.0.0.1 serval-api.vcap.me`
+- Put the following in a browser: `http://serval-api.vcap.me:<port visible>/swagger`
 
 #### Pod logs:
 
@@ -66,27 +50,32 @@ Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-d
 
 This is the QA staging environment. To access it,
 
-#### To access machine API
+#### To access Serval API
 
-- Use the VPN
-
-* In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `10.3.0.119 machine-api.org`
-
-- go to `https://machine-api.org/swagger` and accept the secuirty warning
+* Internal QA:
+  * Use the VPN
+  * In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `10.3.0.119 serval-api.org`
+  * go to `https://machine-api.org/swagger` and accept the security warning
+* External QA:
+  * go to `https://qa.serval-api.org/swagger` and accept the security warning
 
 #### To update the cluster
 
 - Add the dallas-rke KubeConfig to your kubectl configs
 - Run `kubectl config use-context dallas-rke`
-- Run `cd deploy`
-- Run `helm upgrade machine-api . -f qa-values.yaml`
+- To upgrade mongo:
+  - For QA internal Run `helm upgrade mongo deploy_mongo -n nlp`
+  - For QA external Run `helm upgrade mongo deploy_mongo -n serval`
+- To upgrade serval:
+  - For QA internal Run `helm upgrade serval-api deploy -f deploy/qa-int-values.yaml -n nlp`
+  - For QA external Run `helm upgrade serval-api deploy -f deploy/qa-ext-values.yaml -n serval`
 
 ## API BDD Testing
 - Prepare VSC env: follow this guide: https://docs.specflow.org/projects/specflow/en/latest/vscode/vscode-specflow.html
 - Get auth0 token using curl:
   - Get Client ID and Client Secret from auth0.com
     - Login, go to Applications-> Applications -> "Machine API (Test Application)", or similar
-    - Copy `Client ID` into Environment variable `MACHINE_CLIENT_ID`
-    - Copy `Client Secret` into Environment variable `MACHINE_CLIENT_SECRET`
-  - Run tests from `SIL.Machine.WebApi.SpecFlowTests`
-    - The token will automatically be retrieved from Auth0 when you run the tests 
+    - Copy `Client ID` into Environment variable `SERVAL_CLIENT_ID`
+    - Copy `Client Secret` into Environment variable `SERVAL_CLIENT_SECRET`
+  - Run tests from `Serval.E2ETests`
+    - The token will automatically be retrieved from Auth0 when you run the tests

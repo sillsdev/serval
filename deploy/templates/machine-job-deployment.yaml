@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: machine-job
+  name: machine-job
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: machine-job
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: machine-job
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - command:
+            - dotnet
+            - /app/job_server/SIL.Machine.Serval.JobServer.dll
+          workingDir: /app/job_server
+          env:
+            - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
+              value: http://*:80
+            - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
+              value: Http2
+            - name: ASPNETCORE_ConnectionStrings__Hangfire
+              value: mongodb://mongo:27017/machine_jobs?replicaSet=myRS
+            - name: ASPNETCORE_ConnectionStrings__Mongo
+              value: mongodb://mongo:27017/machine?replicaSet=myRS
+            - name: ASPNETCORE_ConnectionStrings__Serval
+              value: http://serval-api:81
+            - name: ASPNETCORE_Logging__LogLevel__Default
+              value: Information
+            - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
+              value: Warning
+            - name: ASPNETCORE_TranslationEngines__0
+              value: SmtTransfer
+            - name: ASPNETCORE_TranslationEngines__1
+              value: Nmt
+            - name: ASPNETCORE_TranslationEngines__1
+              value: Nmt
+              {{- template "secrets.clearml" }}
+              {{- template "secrets.s3" }}
+          image: {{ .Values.machineImage}}
+          imagePullPolicy: "Always"
+          name: machine-job
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "2000Mi"
+              cpu: "2.8"
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
+          volumeMounts:
+            - mountPath: /var/lib/machine
+              name: machine-mount
+            - mountPath: /var/lib/serval
+              name: serval-mount
+              readOnly: true
+      hostname: machine-job
+      restartPolicy: Always
+      {{- if .Values.localVolume }}
+      volumes:
+        - hostPath:
+            path: /host/engines #/host should be mounted from C:\usr\local
+          name: machine-mount
+        - hostPath:
+            path: /host/serval
+          name: serval-mount
+      {{- else}}
+      volumes:
+        - name: machine-mount
+          persistentVolumeClaim:
+            claimName: machine-claim
+        - name: serval-mount
+          persistentVolumeClaim:
+            claimName: serval-claim
+      {{- end}}
+status: {}
