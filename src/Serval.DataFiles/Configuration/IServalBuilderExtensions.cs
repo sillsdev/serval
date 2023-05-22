@@ -10,6 +10,7 @@ public static class IServalBuilderExtensions
             builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
 
         builder.Services.AddScoped<IDataFileService, DataFileService>();
+        builder.Services.AddHostedService<DeletedFileCleaner>();
         return builder;
     }
 }

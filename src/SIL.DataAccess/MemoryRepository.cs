@@ -161,11 +161,13 @@ public class MemoryRepository<T> : IRepository<T>
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
         bool upsert = false,
+        bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
     {
         var allSubscriptions = new List<MemorySubscription<T>>();
         T? entity;
+        T? original = default;
         string? serializedEntity = null;
         Func<T, bool> filterFunc = filter.Compile();
         using (await _lock.LockAsync(cancellationToken))
@@ -183,7 +185,6 @@ public class MemoryRepository<T> : IRepository<T>
             });
             if (entity != null || upsert)
             {
-                T? original = default;
                 bool isInsert = entity == null;
                 if (isInsert)
                 {
@@ -213,7 +214,7 @@ public class MemoryRepository<T> : IRepository<T>
         }
         if (entity != null && serializedEntity != null)
             SendToSubscribers(allSubscriptions, EntityChangeType.Update, entity.Id, serializedEntity);
-        return entity;
+        return returnOriginal ? original : entity;
     }
 
     public async Task<int> UpdateAllAsync(

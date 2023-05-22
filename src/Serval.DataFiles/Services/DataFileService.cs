@@ -5,19 +5,25 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
     private readonly IOptionsMonitor<DataFileOptions> _options;
     private readonly IDataAccessContext _dataAccessContext;
     private readonly IScopedMediator _mediator;
+    private readonly IRepository<DeletedFile> _deletedFiles;
+    private readonly IFileSystem _fileSystem;
 
     public DataFileService(
         IRepository<DataFile> dataFiles,
         IDataAccessContext dataAccessContext,
         IOptionsMonitor<DataFileOptions> options,
-        IScopedMediator mediator
+        IScopedMediator mediator,
+        IRepository<DeletedFile> deletedFiles,
+        IFileSystem fileSystem
     )
         : base(dataFiles)
     {
         _dataAccessContext = dataAccessContext;
         _options = options;
         _mediator = mediator;
-        Directory.CreateDirectory(_options.CurrentValue.FilesDirectory);
+        _deletedFiles = deletedFiles;
+        _fileSystem = fileSystem;
+        _fileSystem.CreateDirectory(_options.CurrentValue.FilesDirectory);
     }
 
     public Task<DataFile?> GetAsync(string id, string owner, CancellationToken cancellationToken = default)
@@ -33,21 +39,61 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
     public async Task CreateAsync(DataFile dataFile, Stream stream, CancellationToken cancellationToken = default)
     {
         dataFile.Filename = Path.GetRandomFileName();
-        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        await Entities.InsertAsync(dataFile, cancellationToken);
-        string path = GetDataFilePath(dataFile);
+        string path = GetDataFilePath(dataFile.Filename);
         try
         {
-            using FileStream fileStream = File.OpenWrite(path);
+            using Stream fileStream = _fileSystem.OpenWrite(path);
             await stream.CopyToAsync(fileStream, cancellationToken);
+            await Entities.InsertAsync(dataFile, cancellationToken);
         }
         catch
         {
-            if (File.Exists(path))
-                File.Delete(path);
+            _fileSystem.DeleteFile(path);
             throw;
         }
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+    }
+
+    public async Task<DataFile?> UpdateAsync(string id, Stream stream, CancellationToken cancellationToken = default)
+    {
+        string filename = Path.GetRandomFileName();
+        string path = GetDataFilePath(filename);
+        bool deleteFile = false;
+        try
+        {
+            using Stream fileStream = _fileSystem.OpenWrite(path);
+            await stream.CopyToAsync(fileStream, cancellationToken);
+
+            await _dataAccessContext.BeginTransactionAsync(cancellationToken);
+            DataFile? originalDataFile = await Entities.UpdateAsync(
+                id,
+                u => u.Set(f => f.Filename, filename),
+                returnOriginal: true,
+                cancellationToken: cancellationToken
+            );
+            if (originalDataFile is null)
+            {
+                deleteFile = true;
+            }
+            else
+            {
+                await _deletedFiles.InsertAsync(
+                    new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
+                    cancellationToken
+                );
+            }
+            await _dataAccessContext.CommitTransactionAsync(cancellationToken);
+            return originalDataFile is null ? null : await GetAsync(id, cancellationToken);
+        }
+        catch
+        {
+            deleteFile = true;
+            throw;
+        }
+        finally
+        {
+            if (deleteFile)
+                _fileSystem.DeleteFile(path);
+        }
     }
 
     public override async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
@@ -56,17 +102,18 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         DataFile? dataFile = await Entities.DeleteAsync(id, cancellationToken);
         if (dataFile is not null)
         {
-            string path = GetDataFilePath(dataFile);
-            if (File.Exists(path))
-                File.Delete(path);
+            await _deletedFiles.InsertAsync(
+                new DeletedFile { Filename = dataFile.Filename, DeletedAt = DateTime.UtcNow },
+                cancellationToken
+            );
         }
         await _mediator.Publish(new DataFileDeleted { DataFileId = id }, cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
         return dataFile is not null;
     }
 
-    private string GetDataFilePath(DataFile dataFile)
+    private string GetDataFilePath(string filename)
     {
-        return Path.Combine(_options.CurrentValue.FilesDirectory, dataFile.Filename);
+        return Path.Combine(_options.CurrentValue.FilesDirectory, filename);
     }
 }

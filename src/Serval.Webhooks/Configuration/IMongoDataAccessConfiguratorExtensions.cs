@@ -7,7 +7,7 @@ public static class IMongoDataAccessConfiguratorExtensions
     public static IMongoDataAccessConfigurator AddWebhooksRepositories(this IMongoDataAccessConfigurator configurator)
     {
         configurator.AddRepository<Webhook>(
-            "hooks",
+            "webhooks.hooks",
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(

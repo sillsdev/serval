@@ -252,7 +252,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
             cancellationToken: cancellationToken
         );
         await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken);
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+        await _dataAccessContext.CommitTransactionAsync(cancellationToken);
         return engine is not null;
     }
 
