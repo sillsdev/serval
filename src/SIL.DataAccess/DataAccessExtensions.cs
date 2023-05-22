@@ -50,11 +50,12 @@ public static class DataAccessExtensions
         string id,
         Action<IUpdateBuilder<T>> update,
         bool upsert = false,
+        bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
         where T : IEntity
     {
-        return repo.UpdateAsync(e => e.Id == id, update, upsert, cancellationToken);
+        return repo.UpdateAsync(e => e.Id == id, update, upsert, returnOriginal, cancellationToken);
     }
 
     public static Task<T?> UpdateAsync<T>(
@@ -62,11 +63,12 @@ public static class DataAccessExtensions
         T entity,
         Action<IUpdateBuilder<T>> update,
         bool upsert = false,
+        bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
         where T : IEntity
     {
-        return repo.UpdateAsync(entity.Id, update, upsert, cancellationToken);
+        return repo.UpdateAsync(entity.Id, update, upsert, returnOriginal, cancellationToken);
     }
 
     public static Task<T?> DeleteAsync<T>(
