@@ -41,8 +41,6 @@ spec:
               value: SmtTransfer
             - name: ASPNETCORE_TranslationEngines__1
               value: Nmt
-            - name: ASPNETCORE_TranslationEngines__1
-              value: Nmt
               {{- template "secrets.clearml" }}
               {{- template "secrets.s3" }}
           image: {{ .Values.machineImage}}
