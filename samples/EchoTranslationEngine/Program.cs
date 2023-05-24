@@ -1,7 +1,3 @@
-using EchoTranslationEngine;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Serval.Translation.V1;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

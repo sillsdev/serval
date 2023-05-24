@@ -36,6 +36,13 @@ public interface IEngineService
     Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default);
+    Task<Corpus?> UpdateCorpusAsync(
+        string engineId,
+        string corpusId,
+        IList<CorpusFile>? sourceFiles,
+        IList<CorpusFile>? targetFiles,
+        CancellationToken cancellationToken = default
+    );
     Task<bool> DeleteCorpusAsync(string engineId, string corpusId, CancellationToken cancellationToken = default);
 
     Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default);

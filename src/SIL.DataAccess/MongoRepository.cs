@@ -106,6 +106,7 @@ public class MongoRepository<T> : IRepository<T>
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
         bool upsert = false,
+        bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -115,7 +116,11 @@ public class MongoRepository<T> : IRepository<T>
             update(updateBuilder);
             updateBuilder.Inc(e => e.Revision, 1);
             UpdateDefinition<T> updateDef = updateBuilder.Build();
-            var options = new FindOneAndUpdateOptions<T> { IsUpsert = upsert, ReturnDocument = ReturnDocument.After };
+            var options = new FindOneAndUpdateOptions<T>
+            {
+                IsUpsert = upsert,
+                ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After
+            };
             T? entity;
             if (_context.Session is not null)
             {

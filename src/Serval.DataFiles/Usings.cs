@@ -1,5 +1,7 @@
-﻿global using System.Diagnostics.CodeAnalysis;
+﻿global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
 global using Asp.Versioning;
+global using Cronos;
 global using MassTransit;
 global using MassTransit.Mediator;
 global using Microsoft.AspNetCore.Authorization;
@@ -7,6 +9,9 @@ global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.ModelBinding;
 global using Microsoft.AspNetCore.Routing;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using NSwag.Annotations;
 global using Serval.DataFiles.Consumers;

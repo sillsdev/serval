@@ -13,6 +13,7 @@ public static class Scopes
 
     public const string CreateFiles = "create:files";
     public const string ReadFiles = "read:files";
+    public const string UpdateFiles = "update:files";
     public const string DeleteFiles = "delete:files";
 
     public static IEnumerable<string> All =>
@@ -27,6 +28,7 @@ public static class Scopes
             DeleteHooks,
             CreateFiles,
             ReadFiles,
+            UpdateFiles,
             DeleteFiles
         };
 }

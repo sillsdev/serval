@@ -36,7 +36,7 @@ public class DataFilesController : ServalControllerBase
     /// <param name="id">The file id.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The file.</response>
-    /// <response code="403">The authenticated client does not own the corpus.</response>
+    /// <response code="403">The authenticated client does not own the file.</response>
     [Authorize(Scopes.ReadFiles)]
     [HttpGet("{id}", Name = "GetDataFile")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -53,13 +53,13 @@ public class DataFilesController : ServalControllerBase
     }
 
     /// <summary>
-    /// Uploads a file.
+    /// Creates a new file.
     /// </summary>
     /// <param name="file">The file.</param>
     /// <param name="name">The name.</param>
     /// <param name="format">The file format.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <response code="201">The file was uploaded successfully.</response>
+    /// <response code="201">The file was created successfully.</response>
     [Authorize(Scopes.CreateFiles)]
     [HttpPost]
     [RequestSizeLimit(100_000_000)]
@@ -86,12 +86,46 @@ public class DataFilesController : ServalControllerBase
     }
 
     /// <summary>
+    /// Updates a file.
+    /// </summary>
+    /// <param name="id">The file id.</param>
+    /// <param name="file">The file.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <response code="200">The file was updated successfully.</response>
+    /// <response code="403">The authenticated client does not own the file.</response>
+    [Authorize(Scopes.UpdateFiles)]
+    [HttpPatch("{id}")]
+    [RequestSizeLimit(100_000_000)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<DataFileDto>> UpdateAsync(
+        [NotNull] string id,
+        [BindRequired] IFormFile file,
+        CancellationToken cancellationToken
+    )
+    {
+        DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
+        if (dataFile == null)
+            return NotFound();
+        if (!await AuthorizeIsOwnerAsync(dataFile))
+            return Forbid();
+
+        using (Stream stream = file.OpenReadStream())
+            dataFile = await _dataFileService.UpdateAsync(id, stream, cancellationToken);
+        if (dataFile is null)
+            return NotFound();
+
+        var dto = Map(dataFile);
+        return Ok(dto);
+    }
+
+    /// <summary>
     /// Deletes a file.
     /// </summary>
     /// <param name="id">The file id.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The file was deleted successfully.</response>
-    /// <response code="403">The authenticated client does not own the corpus.</response>
+    /// <response code="403">The authenticated client does not own the file.</response>
     [Authorize(Scopes.DeleteFiles)]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -117,7 +151,8 @@ public class DataFilesController : ServalControllerBase
             Id = source.Id,
             Url = _urlService.GetUrl("GetDataFile", new { id = source.Id }),
             Name = source.Name,
-            Format = source.Format
+            Format = source.Format,
+            Revision = source.Revision
         };
     }
 }

@@ -119,6 +119,43 @@ public class EngineServiceTests
         await env.Service.CancelBuildAsync(engineId);
     }
 
+    [Test]
+    public async Task UpdateCorpusAsync()
+    {
+        var env = new TestEnvironment();
+        Engine engine = await env.CreateEngineAsync();
+        string corpusId = engine.Corpora.First().Id;
+
+        Models.Corpus? corpus = await env.Service.UpdateCorpusAsync(
+            engine.Id,
+            corpusId,
+            sourceFiles: new[]
+            {
+                new Models.CorpusFile
+                {
+                    Id = "file1",
+                    Filename = "file1.txt",
+                    Format = Shared.Contracts.FileFormat.Text,
+                    TextId = "text1"
+                },
+                new Models.CorpusFile
+                {
+                    Id = "file3",
+                    Filename = "file3.txt",
+                    Format = Shared.Contracts.FileFormat.Text,
+                    TextId = "text2"
+                },
+            },
+            null
+        );
+
+        Assert.That(corpus, Is.Not.Null);
+        Assert.That(corpus.SourceFiles.Count, Is.EqualTo(2));
+        Assert.That(corpus.SourceFiles[0].Id, Is.EqualTo("file1"));
+        Assert.That(corpus.SourceFiles[1].Id, Is.EqualTo("file3"));
+        Assert.That(corpus.TargetFiles.Count, Is.EqualTo(1));
+    }
+
     private class TestEnvironment
     {
         public TestEnvironment()
@@ -273,7 +310,7 @@ public class EngineServiceTests
                                 Id = "file1",
                                 Filename = "file1.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
-                                TextId = "all"
+                                TextId = "text1"
                             }
                         },
                         TargetFiles = new List<Models.CorpusFile>
@@ -283,7 +320,7 @@ public class EngineServiceTests
                                 Id = "file2",
                                 Filename = "file2.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
-                                TextId = "all"
+                                TextId = "text1"
                             }
                         },
                     }
