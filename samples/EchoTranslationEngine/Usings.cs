@@ -1,4 +1,6 @@
-﻿global using Google.Protobuf.WellKnownTypes;
+﻿global using System.Threading.Channels;
+global using EchoTranslationEngine;
+global using Google.Protobuf.WellKnownTypes;
 global using Grpc.Core;
-global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Serval.Translation.V1;

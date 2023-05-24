@@ -88,6 +88,12 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (engine is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
+        // delete pretranslations created by the previous build
+        await _pretranslations.DeleteAllAsync(
+            p => p.EngineRef == engine.Id && p.ModelRevision < engine.ModelRevision,
+            context.CancellationToken
+        );
+
         await _publishEndpoint.Publish(
             new TranslationBuildFinished
             {
@@ -123,6 +129,12 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         );
         if (engine is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
+
+        // delete pretranslations that might have been created during the build
+        await _pretranslations.DeleteAllAsync(
+            p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+            context.CancellationToken
+        );
 
         await _publishEndpoint.Publish(
             new TranslationBuildFinished
@@ -163,6 +175,12 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (engine is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
+        // delete pretranslations that might have been created during the build
+        await _pretranslations.DeleteAllAsync(
+            p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+            context.CancellationToken
+        );
+
         await _publishEndpoint.Publish(
             new TranslationBuildFinished
             {
@@ -182,6 +200,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
 
     public override async Task<Empty> BuildRestarting(BuildRestartingRequest request, ServerCallContext context)
     {
+        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
             request.BuildId,
             u =>
@@ -193,6 +212,17 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         );
         if (build is null)
             throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
+
+        Engine? engine = await _engines.GetAsync(build.EngineRef, context.CancellationToken);
+        if (engine is null)
+            throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
+
+        // delete pretranslations that might have been created during the build
+        await _pretranslations.DeleteAllAsync(
+            p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+            context.CancellationToken
+        );
+        await _dataAccessContext.CommitTransactionAsync(context.CancellationToken);
 
         return Empty;
     }
@@ -233,27 +263,30 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         return Empty;
     }
 
-    public override async Task<Empty> DeleteAllPretranslations(
-        DeleteAllPretranslationsRequest request,
-        ServerCallContext context
-    )
-    {
-        await _pretranslations.DeleteAllAsync(p => p.EngineRef == request.EngineId, context.CancellationToken);
-        return Empty;
-    }
-
     public override async Task<Empty> InsertPretranslations(
         IAsyncStreamReader<InsertPretranslationRequest> requestStream,
         ServerCallContext context
     )
     {
+        string engineId = "";
+        int nextModelRevision = 0;
+
         var batch = new List<Pretranslation>();
         await foreach (InsertPretranslationRequest request in requestStream.ReadAllAsync(context.CancellationToken))
         {
+            if (request.EngineId != engineId)
+            {
+                Engine? engine = await _engines.GetAsync(request.EngineId, context.CancellationToken);
+                if (engine is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
+                nextModelRevision = engine.ModelRevision + 1;
+                engineId = request.EngineId;
+            }
             batch.Add(
                 new Pretranslation
                 {
                     EngineRef = request.EngineId,
+                    ModelRevision = nextModelRevision,
                     CorpusRef = request.CorpusId,
                     TextId = request.TextId,
                     Refs = request.Refs.ToList(),

@@ -421,10 +421,17 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
+        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
+        if (engine == null)
+            return NotFound();
+        if (!await AuthorizeIsOwnerAsync(engine))
+            return Forbid();
 
-        return Ok((await _pretranslationService.GetAllAsync(id, corpusId, cancellationToken)).Select(Map));
+        return Ok(
+            (await _pretranslationService.GetAllAsync(id, engine.ModelRevision, corpusId, cancellationToken)).Select(
+                Map
+            )
+        );
     }
 
     /// <summary>
@@ -447,10 +454,17 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? result))
-            return result;
+        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
+        if (engine == null)
+            return NotFound();
+        if (!await AuthorizeIsOwnerAsync(engine))
+            return Forbid();
 
-        return Ok((await _pretranslationService.GetAllAsync(id, corpusId, textId, cancellationToken)).Select(Map));
+        return Ok(
+            (
+                await _pretranslationService.GetAllAsync(id, engine.ModelRevision, corpusId, textId, cancellationToken)
+            ).Select(Map)
+        );
     }
 
     /// <summary>
