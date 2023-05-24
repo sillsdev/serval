@@ -1,6 +1,4 @@
-﻿using System.Threading.Channels;
-
-namespace EchoTranslationEngine;
+﻿namespace EchoTranslationEngine;
 
 public class BackgroundTaskQueue
 {
