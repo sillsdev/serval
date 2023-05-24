@@ -25,6 +25,13 @@ public class DeletedFileCleaner : BackgroundService
         _fileSystem = fileSystem;
     }
 
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await CleanAsync(cancellationToken);
+
+        await base.StartAsync(cancellationToken);
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try

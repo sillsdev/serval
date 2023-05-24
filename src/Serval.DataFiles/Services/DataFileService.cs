@@ -60,8 +60,8 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         bool deleteFile = false;
         try
         {
-            using Stream fileStream = _fileSystem.OpenWrite(path);
-            await stream.CopyToAsync(fileStream, cancellationToken);
+            using (Stream fileStream = _fileSystem.OpenWrite(path))
+                await stream.CopyToAsync(fileStream, cancellationToken);
 
             await _dataAccessContext.BeginTransactionAsync(cancellationToken);
             DataFile? originalDataFile = await Entities.UpdateAsync(

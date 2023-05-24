@@ -239,6 +239,28 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
     }
 
+    public async Task<Models.Corpus?> UpdateCorpusAsync(
+        string engineId,
+        string corpusId,
+        IList<Models.CorpusFile>? sourceFiles,
+        IList<Models.CorpusFile>? targetFiles,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Engine? engine = await Entities.UpdateAsync(
+            e => e.Id == engineId && e.Corpora.Any(c => c.Id == corpusId),
+            u =>
+            {
+                if (sourceFiles is not null)
+                    u.Set(c => c.Corpora[ArrayPosition.FirstMatching].SourceFiles, sourceFiles);
+                if (targetFiles is not null)
+                    u.Set(c => c.Corpora[ArrayPosition.FirstMatching].TargetFiles, targetFiles);
+            },
+            cancellationToken: cancellationToken
+        );
+        return engine?.Corpora.FirstOrDefault(c => c.Id == corpusId);
+    }
+
     public async Task<bool> DeleteCorpusAsync(
         string engineId,
         string corpusId,
