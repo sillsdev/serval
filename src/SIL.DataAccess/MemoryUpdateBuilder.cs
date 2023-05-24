@@ -109,7 +109,7 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T>
         return typeof(Enumerable)
             .GetMethods()
             .Where(m => m.Name == "FirstOrDefault")
-            .Single(m => m.GetParameters().Length == 2)
+            .Single(m => m.GetParameters().Length == 2 && m.GetParameters()[1].Name == "predicate")
             .MakeGenericMethod(type);
     }
 
@@ -139,17 +139,21 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T>
                             switch (index)
                             {
                                 case ArrayPosition.FirstMatching:
-                                    if (_filter.Body is MethodCallExpression callExpr && IsAnyMethod(callExpr.Method))
+                                    foreach (Expression expression in ExpressionHelper.Flatten(_filter))
                                     {
-                                        var predicate = (LambdaExpression)callExpr.Arguments[1];
-                                        Type itemType = predicate.Parameters[0].Type;
-                                        MethodInfo firstOrDefault = GetFirstOrDefaultMethod(itemType);
-                                        newOwner = firstOrDefault.Invoke(
-                                            null,
-                                            new object[] { owner, predicate.Compile() }
-                                        );
-                                        if (newOwner != null)
-                                            newOwners.Add(newOwner);
+                                        if (expression is MethodCallExpression callExpr && IsAnyMethod(callExpr.Method))
+                                        {
+                                            var predicate = (LambdaExpression)callExpr.Arguments[1];
+                                            Type itemType = predicate.Parameters[0].Type;
+                                            MethodInfo firstOrDefault = GetFirstOrDefaultMethod(itemType);
+                                            newOwner = firstOrDefault.Invoke(
+                                                null,
+                                                new object[] { owner, predicate.Compile() }
+                                            );
+                                            if (newOwner != null)
+                                                newOwners.Add(newOwner);
+                                            break;
+                                        }
                                     }
                                     break;
                                 case ArrayPosition.All:

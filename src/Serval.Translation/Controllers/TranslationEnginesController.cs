@@ -1,4 +1,4 @@
-﻿using Serval.Translation.Models;
+﻿using Amazon.Auth.AccessControlPolicy;
 
 namespace Serval.Translation.Controllers;
 
@@ -247,11 +247,11 @@ public class TranslationEnginesController : ServalControllerBase
     /// <param name="getDataFileClient">The data file client.</param>
     /// <param name="idGenerator">The id generator.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <response code="200">The corpus was added successfully.</response>
+    /// <response code="201">The corpus was added successfully.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/corpora")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
@@ -275,6 +275,48 @@ public class TranslationEnginesController : ServalControllerBase
         }
 
         await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
+        TranslationCorpusDto dto = Map(id, corpus);
+        return Created(dto.Url, dto);
+    }
+
+    /// <summary>
+    /// Updates a corpus.
+    /// </summary>
+    /// <param name="id">The translation engine id.</param>
+    /// <param name="corpusId">The corpus id.</param>
+    /// <param name="corpusConfig">The corpus configuration.</param>
+    /// <param name="getDataFileClient">The data file client.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <response code="200">The corpus was updated successfully.</response>
+    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    [Authorize(Scopes.UpdateTranslationEngines)]
+    [HttpPatch("{id}/corpora/{corpusId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<TranslationCorpusDto>> UpdateCorpusAsync(
+        [NotNull] string id,
+        [NotNull] string corpusId,
+        [FromBody] TranslationCorpusUpdateConfigDto corpusConfig,
+        [FromServices] IRequestClient<GetDataFile> getDataFileClient,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
+            return errorResult;
+
+        Corpus? corpus = await _engineService.UpdateCorpusAsync(
+            id,
+            corpusId,
+            corpusConfig.SourceFiles is null
+                ? null
+                : await MapAsync(getDataFileClient, corpusConfig.SourceFiles, cancellationToken),
+            corpusConfig.TargetFiles is null
+                ? null
+                : await MapAsync(getDataFileClient, corpusConfig.TargetFiles, cancellationToken),
+            cancellationToken
+        );
+        if (corpus is null)
+            return NotFound();
         return Ok(Map(id, corpus));
     }
 

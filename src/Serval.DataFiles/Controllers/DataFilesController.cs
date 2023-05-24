@@ -111,9 +111,7 @@ public class DataFilesController : ServalControllerBase
             return Forbid();
 
         using (Stream stream = file.OpenReadStream())
-        {
             dataFile = await _dataFileService.UpdateAsync(id, stream, cancellationToken);
-        }
         if (dataFile is null)
             return NotFound();
 
