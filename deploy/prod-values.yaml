@@ -7,4 +7,5 @@ lokiUrl: http://loki-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:0.5.0
 machineImage: ghcr.io/sillsdev/machine:2.5.13.1
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:0.9.3.2
+ClearMLMaxSteps: 20_000
 enableEcho: true

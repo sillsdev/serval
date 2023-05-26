@@ -13,9 +13,17 @@ public class E2ETests
 
     private ServalClientHelper InitializeClient()
     {
+        var hostUrl = Environment.GetEnvironmentVariable("SERVAL_HOST_URL");
         var clientId = Environment.GetEnvironmentVariable("SERVAL_CLIENT_ID");
         var clientSecret = Environment.GetEnvironmentVariable("SERVAL_CLIENT_SECRET");
-        if (clientId == null)
+        var authUrl = Environment.GetEnvironmentVariable("SERVAL_AUTH_URL");
+        if (hostUrl == null)
+        {
+            Console.WriteLine(
+                "You need a serval host url in the environment variable SERVAL_HOST_URL!  Look at README for instructions on getting one."
+            );
+        }
+        else if (clientId == null)
         {
             Console.WriteLine(
                 "You need an auth0 client_id in the environment variable SERVAL_CLIENT_ID!  Look at README for instructions on getting one."
@@ -27,9 +35,16 @@ public class E2ETests
                 "You need an auth0 client_secret in the environment variable SERVAL_CLIENT_SECRET!  Look at README for instructions on getting one."
             );
         }
+        else if (authUrl == null)
+        {
+            Console.WriteLine(
+                "You need an auth0 authorization url in the environment variable SERVAL_AUTH_URL!  Look at README for instructions on getting one."
+            );
+        }
+
         return new ServalClientHelper(
-            "http://machine-api.org/",
-            "https://sil-appbuilder.auth0.com",
+            hostUrl,
+            authUrl,
             "https://machine.sil.org",
             clientId,
             clientSecret,
@@ -122,13 +137,19 @@ public class E2ETests
         Assert.AreEqual(tResult2.Translation, "truth world");
     }
 
-    /*
-    @E2E
-    Scenario: Get Nmt Pretranslation
-        Given a new Nmt engine for John from es to en
-        When a text corpora containing MAT.txt, 1JN.txt, 2JN.txt are added to John's engine in es and en
-        And a text corpora containing 3JN.txt are added to John's engine in es to translate into en
-        And John's engine is built
-        Then the pretranslation for John for 3JN.txt starts with "The elder unto the"
-    */
+    [Test]
+    public async Task NmtBatch()
+    {
+        await _helperClient.ClearEngines();
+        string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en");
+        var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
+        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        var cId = await _helperClient.PostTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
+        await _helperClient.BuildEngine(engineId);
+        IList<Pretranslation> lTrans = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            cId
+        );
+        Assert.IsTrue(lTrans[0].Translation.Contains("dearly beloved Gaius"));
+    }
 }

@@ -93,7 +93,7 @@ services:
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=lambert_24gb
       - ClearMLNmtEngine__DockerImage=mpy.local
-      - ClearMLNmtEngine__MaxStep=1000
+      - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - SharedFile__Uri=s3://aqua-ml-data/
@@ -138,7 +138,7 @@ services:
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=lambert_24gb
       - ClearMLNmtEngine__DockerImage=mpy.local
-      - ClearMLNmtEngine__MaxStep=1000
+      - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - SharedFile__Uri=s3://aqua-ml-data/
