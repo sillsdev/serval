@@ -37,15 +37,8 @@ spec:
               name: mongo-data
       hostname: mongo
       restartPolicy: Always
-      {{- if .Values.localVolume }}
-      volumes:
-        - hostPath:
-            path: /data/mongodb #this is mounted in the minikube persistent storage of /data: https://minikube.sigs.k8s.io/docs/handbook/persistent_volumes/
-          name: mongo-data
-      {{- else}}
       volumes:
         - name: mongo-data
           persistentVolumeClaim:
-            claimName: 	machine-mongo-claim
-      {{- end}}
+            claimName: 	serval-mongo-claim
 status: {}

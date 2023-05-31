@@ -59,23 +59,28 @@ This is the QA staging environment. To access it,
 * External QA:
   * go to `https://qa.serval-api.org/swagger` and accept the security warning
 
-#### To update the cluster
-
+#### To deploy the cluster
 - Add the dallas-rke KubeConfig to your kubectl configs
 - Run `kubectl config use-context dallas-rke`
-- To upgrade mongo:
-  - For QA internal Run `helm upgrade mongo deploy_mongo -n nlp`
-  - For QA external Run `helm upgrade mongo deploy_mongo -n serval`
-- To upgrade serval:
-  - For QA internal Run `helm upgrade serval-api deploy -f deploy/qa-int-values.yaml -n nlp`
-  - For QA external Run `helm upgrade serval-api deploy -f deploy/qa-ext-values.yaml -n serval`
+- First, startup the storage
+- `helm install serval-pvc deploy/serval-pvc -n nlp -f deploy/qa-int-values.yaml`
+- Then, startup the database (give it 60 seconds)
+- `helm install mongo deploy/mongo -n nlp -f deploy/qa-int-values.yaml`
+- Now you can turn on Serval
+- `helm install serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
 
-## API BDD Testing
-- Prepare VSC env: follow this guide: https://docs.specflow.org/projects/specflow/en/latest/vscode/vscode-specflow.html
+#### To update the cluster
+- To upgrade serval:
+  - For QA internal Run `helm upgrade serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
+  - For QA external Run `helm upgrade serval deploy/serval -n serval -f deploy/qa-ext-values.yaml`
+
+## API E2E Testing
 - Get auth0 token using curl:
   - Get Client ID and Client Secret from auth0.com
     - Login, go to Applications-> Applications -> "Machine API (Test Application)", or similar
     - Copy `Client ID` into Environment variable `SERVAL_CLIENT_ID`
     - Copy `Client Secret` into Environment variable `SERVAL_CLIENT_SECRET`
+    - Copy the auth0 url into Environment variable `SERVAL_AUTH_URL`
+    - Set `SERVAL_HOST_URL` to the api's URL
   - Run tests from `Serval.E2ETests`
     - The token will automatically be retrieved from Auth0 when you run the tests

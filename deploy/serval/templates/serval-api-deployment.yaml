@@ -69,15 +69,6 @@ spec:
               name: server-keys
       hostname: serval-api
       restartPolicy: Always
-      {{- if .Values.localVolume }}
-      volumes:
-        - hostPath:
-            path: /host/serval
-          name: serval-mount
-        - hostPath:
-            path: /host/DataProtection-Keys
-          name: server-keys
-      {{- else}}
       volumes:
         - name: serval-mount
           persistentVolumeClaim:
@@ -85,5 +76,4 @@ spec:
         - name: server-keys
           persistentVolumeClaim:
             claimName: keys-claim
-      {{- end}}
 status: {}

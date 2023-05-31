@@ -1,4 +1,3 @@
-{{- if not .Values.localVolume}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -37,4 +36,16 @@ spec:
   resources:
     requests:
       storage: 50M
-{{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: serval-mongo-claim
+  namespace: {{ .Values.namespace}}
+spec:
+  storageClassName: "longhorn"
+  accessModes:
+      - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

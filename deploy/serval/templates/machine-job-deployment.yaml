@@ -2,26 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: machine-engine
-  name: machine-engine
+    app: machine-job
+  name: machine-job
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: machine-engine
+      app: machine-job
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: machine-engine
+        app: machine-job
     spec:
       terminationGracePeriodSeconds: 30
       containers:
         - command:
             - dotnet
-            - /app/engine_server/SIL.Machine.Serval.EngineServer.dll
-          workingDir: /app/engine_server
+            - /app/job_server/SIL.Machine.Serval.JobServer.dll
+          workingDir: /app/job_server
           env:
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
               value: http://*:80
@@ -41,17 +41,17 @@ spec:
               value: SmtTransfer
             - name: ASPNETCORE_TranslationEngines__1
               value: Nmt
-              {{- template "secrets.clearml" }}
-              {{- template "secrets.s3" }}
+              {{- template "secrets.clearml" . }}
+              {{- template "secrets.s3" . }}
           image: {{ .Values.machineImage}}
           imagePullPolicy: "Always"
-          name: machine-engine
+          name: machine-job
           ports:
             - containerPort: 80
           resources:
             limits:
-              memory: "500Mi"
-              cpu: "500m"
+              memory: "2000Mi"
+              cpu: "2.8"
             requests:
               memory: "100Mi"
               cpu: "100m"
@@ -61,22 +61,8 @@ spec:
             - mountPath: /var/lib/serval
               name: serval-mount
               readOnly: true
-            - mountPath: /root/.aspnet/DataProtection-Keys
-              name: server-keys
-      hostname: machine-engine
+      hostname: machine-job
       restartPolicy: Always
-      {{- if .Values.localVolume }}
-      volumes:
-        - hostPath:
-            path: /host/engines #/host should be mounted from C:\usr\local
-          name: machine-mount
-        - hostPath:
-            path: /host/serval
-          name: serval-mount
-        - hostPath:
-            path: /host/DataProtection-Keys
-          name: server-keys
-      {{- else}}
       volumes:
         - name: machine-mount
           persistentVolumeClaim:
@@ -84,8 +70,4 @@ spec:
         - name: serval-mount
           persistentVolumeClaim:
             claimName: serval-claim
-        - name: server-keys
-          persistentVolumeClaim:
-            claimName: keys-claim
-      {{- end}}
 status: {}
