@@ -23,6 +23,8 @@ spec:
             - /app/api_server/Serval.ApiServer.dll
           workingDir: /app/api_server
           env:
+            - name: Auth__Domain
+              value: {{ .Values.auth0Domain}}
             - name: ASPNETCORE_Kestrel__Endpoints__Http__Url
               value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Http2__Url

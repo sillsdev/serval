@@ -7,13 +7,13 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
+      - Auth__Domain=sil-appbuilder.auth0.com
+      - Auth__Audience=https://machine.sil.org
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
       - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/serval_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/serval?replicaSet=myRS
-      - ASPNETCORE_Auth__Domain=sil-appbuilder.auth0.com
-      - ASPNETCORE_Auth__Audience=https://machine.sil.org
       - ASPNETCORE_Logging__LogLevel__Default=Information
       - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_Translation__Engines__0__Type=Echo
