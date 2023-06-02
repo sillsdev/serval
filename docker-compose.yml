@@ -96,7 +96,7 @@ services:
       - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - SharedFile__Uri=s3://aqua-ml-data/
+      - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
     expose:
@@ -141,7 +141,7 @@ services:
       - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - SharedFile__Uri=s3://aqua-ml-data/
+      - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
     expose:
