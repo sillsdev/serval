@@ -8,5 +8,6 @@ servalImage: ghcr.io/sillsdev/serval:0.5.0.4
 machineImage: ghcr.io/sillsdev/machine:2.5.13.10
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:0.9.3.3
 ClearMLMaxSteps: 10
+ClearMLQueue: lambert_24gb
 SharedFileLocation: s3://aqua-ml-data/int-qa/
 enableEcho: true

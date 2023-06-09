@@ -45,8 +45,15 @@ There are 3 different environments that Serval is deployed to:
 
 ### To update the cluster
 - To upgrade serval:
-  - For QA internal Run `helm upgrade serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
-  - For QA external Run `helm upgrade serval deploy/serval -n serval -f deploy/qa-ext-values.yaml`
+  - For QA internal Run:
+    - `kubectl config use-context dallas-rke`
+    - `helm upgrade serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
+  - For QA external Run:
+    - `kubectl config use-context dallas-rke`
+    - `helm upgrade serval deploy/serval -n serval -f deploy/qa-ext-values.yaml`
+  - For Production Run:
+    - `kubectl config use-context aws-rke`
+    - `helm upgrade serval deploy/serval -n serval -f deploy/values.yaml`
 
 ### To access Serval API
 
