@@ -20,27 +20,36 @@ public class DataFilesController : ServalControllerBase
     }
 
     /// <summary>
-    /// Gets all files.
+    /// Get all files
     /// </summary>
-    /// <response code="200">The files.</response>
+    /// <response code="200">A list of all files owned by the client</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation</response>
     [Authorize(Scopes.ReadFiles)]
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<IEnumerable<DataFileDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         return (await _dataFileService.GetAllAsync(Owner, cancellationToken)).Select(Map);
     }
 
     /// <summary>
-    /// Gets a file.
+    /// Get a file by unique id
     /// </summary>
-    /// <param name="id">The file id.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <response code="200">The file.</response>
-    /// <response code="403">The authenticated client does not own the file.</response>
+    /// <param name="id">The unique identifier for the file</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The file exists</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
+    /// <response code="404">The file does not exist</response>
     [Authorize(Scopes.ReadFiles)]
     [HttpGet("{id}", Name = "GetDataFile")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<DataFileDto>> GetAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
@@ -53,17 +62,46 @@ public class DataFilesController : ServalControllerBase
     }
 
     /// <summary>
-    /// Creates a new file.
+    /// Upload a new file
     /// </summary>
-    /// <param name="file">The file.</param>
-    /// <param name="name">The name.</param>
-    /// <param name="format">The file format.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <response code="201">The file was created successfully.</response>
+    /// <remarks>
+    /// Sample request:
+    ///
+    ///     POST /files
+    ///     {
+    ///        "format": "text",
+    ///        "name": "myTeam:myProject:myFile.txt"
+    ///     }
+    ///
+    /// </remarks>
+    /// <param name="file">
+    /// The file to upload.  Max size: 100MB
+    /// </param>
+    /// <param name="name">
+    /// A name to help identify and distinguish the file.
+    /// Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
+    /// The name does not have to be unique.
+    /// Example: myTranslationTeam:myProject:myFile.txt
+    /// </param>
+    /// <param name="format">
+    /// File format options:
+    /// * **Text**: One translation unit (a.k.a., verse) per line
+    ///   * If there is a tab, the content before the tab is the unique identifier for the line
+    ///   * Otherwise, no tabs should be used in the file.
+    /// * **Paratext**: A complete, zipped Paratext project
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="201">The file was created successfully</response>
+    /// <response code="400">Bad request, including the file being too large</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation</response>
     [Authorize(Scopes.CreateFiles)]
     [HttpPost]
     [RequestSizeLimit(100_000_000)]
     [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<DataFileDto>> CreateAsync(
         [BindRequired] IFormFile file,
         [BindRequired, FromForm] FileFormat format,
@@ -86,18 +124,22 @@ public class DataFilesController : ServalControllerBase
     }
 
     /// <summary>
-    /// Updates a file.
+    /// Update an existing file
     /// </summary>
-    /// <param name="id">The file id.</param>
-    /// <param name="file">The file.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <response code="200">The file was updated successfully.</response>
-    /// <response code="403">The authenticated client does not own the file.</response>
+    /// <param name="id">The existing file's unique id</param>
+    /// <param name="file">The updated file</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The file was updated successfully</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
+    /// <response code="404">The file does not exist and therefore cannot be updated</response>
     [Authorize(Scopes.UpdateFiles)]
     [HttpPatch("{id}")]
     [RequestSizeLimit(100_000_000)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<DataFileDto>> UpdateAsync(
         [NotNull] string id,
         [BindRequired] IFormFile file,
@@ -120,16 +162,23 @@ public class DataFilesController : ServalControllerBase
     }
 
     /// <summary>
-    /// Deletes a file.
+    /// Delete an existing file
     /// </summary>
-    /// <param name="id">The file id.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <response code="200">The file was deleted successfully.</response>
-    /// <response code="403">The authenticated client does not own the file.</response>
+    /// <remarks>
+    /// Note: If a file is in a corpora and the file is deleted, it will be automatically removed from the corpora.
+    /// </remarks>
+    /// <param name="id">The existing file's unique id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The file was deleted successfully</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
+    /// <response code="404">The file does not exist and therefore cannot be deleted</response>
     [Authorize(Scopes.DeleteFiles)]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);

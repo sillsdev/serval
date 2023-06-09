@@ -31,7 +31,7 @@ public static class DataAccessExtensions
     )
         where T : IEntity
     {
-        T? entity = await repo.GetAsync(e => e.Id == id, cancellationToken);
+        T? entity = await repo.GetAsync(e => e.Id.ToString() == id, cancellationToken);
         return new Attempt<T>(entity != null, entity);
     }
 

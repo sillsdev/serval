@@ -1,15 +1,19 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
-namespace Serval.Client;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Serval.Client;
 
 public class ServalClientHelper
 {
     public readonly DataFilesClient dataFilesClient;
     public readonly TranslationEnginesClient translationEnginesClient;
     private readonly HttpClient _httpClient;
-    readonly Dictionary<string, string> EnginePerUser = new();
-    readonly Dictionary<string, string> CorporaPerName = new();
+    readonly Dictionary<string, string> EnginePerUser = new Dictionary<string, string>();
+    readonly Dictionary<string, string> CorporaPerName = new Dictionary<string, string>();
     private string _prefix;
 
     private TranslationBuildConfig translationBuildConfig = new TranslationBuildConfig
@@ -161,7 +165,7 @@ public class ServalClientHelper
         var fileList = new List<DataFile>();
         var allFiles = await dataFilesClient.GetAllAsync();
         ILookup<String, String> filenameToId = allFiles
-            .Where(f => f.Name is not null)
+            .Where(f => f.Name is object) // not null
             .ToLookup(file => file.Name!, file => file.Id);
 
         foreach (var fileName in filesToAdd)

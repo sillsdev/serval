@@ -25,48 +25,67 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Gets all files.
+        /// Get all files
         /// </summary>
-        /// <returns>The files.</returns>
+        /// <returns>A list of all files owned by the client</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.IList<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Creates a new file.
+        /// Upload a new file
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="format">The file format.</param>
-        /// <param name="name">The name.</param>
-        /// <returns>The file was created successfully.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// <br/>            
+        /// <br/>    POST /files
+        /// <br/>    {
+        /// <br/>       "format": "text",
+        /// <br/>       "name": "myTeam:myProject:myFile.txt"
+        /// <br/>    }
+        /// </remarks>
+        /// <param name="file">The file to upload.  Max size: 100MB</param>
+        /// <param name="format">File format options:
+        /// <br/>* **Text**: One translation unit (a.k.a., verse) per line
+        /// <br/>  * If there is a tab, the content before the tab is the unique identifier for the line
+        /// <br/>  * Otherwise, no tabs should be used in the file.
+        /// <br/>* **Paratext**: A complete, zipped Paratext project</param>
+        /// <param name="name">A name to help identify and distinguish the file.
+        /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
+        /// <br/>The name does not have to be unique.
+        /// <br/>Example: myTranslationTeam:myProject:myFile.txt</param>
+        /// <returns>The file was created successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat format, string? name = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Gets a file.
+        /// Get a file by unique id
         /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <returns>The file.</returns>
+        /// <param name="id">The unique identifier for the file</param>
+        /// <returns>The file exists</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DataFile> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Updates a file.
+        /// Update an existing file
         /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <param name="file">The file.</param>
-        /// <returns>The file was updated successfully.</returns>
+        /// <param name="id">The existing file's unique id</param>
+        /// <param name="file">The updated file</param>
+        /// <returns>The file was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DataFile> UpdateAsync(string id, FileParameter file, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Deletes a file.
+        /// Delete an existing file
         /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <returns>The file was deleted successfully.</returns>
+        /// <remarks>
+        /// Note: If a file is in a corpora and the file is deleted, it will be automatically removed from the corpora.
+        /// </remarks>
+        /// <param name="id">The existing file's unique id</param>
+        /// <returns>The file was deleted successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -108,9 +127,9 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Gets all files.
+        /// Get all files
         /// </summary>
-        /// <returns>The files.</returns>
+        /// <returns>A list of all files owned by the client</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<DataFile>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -157,6 +176,18 @@ namespace Serval.Client
                             return objectResponse_.Object;
                         }
                         else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation", status_, responseText_, headers_, null);
+                        }
+                        else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                             throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
@@ -178,12 +209,28 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Creates a new file.
+        /// Upload a new file
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="format">The file format.</param>
-        /// <param name="name">The name.</param>
-        /// <returns>The file was created successfully.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// <br/>            
+        /// <br/>    POST /files
+        /// <br/>    {
+        /// <br/>       "format": "text",
+        /// <br/>       "name": "myTeam:myProject:myFile.txt"
+        /// <br/>    }
+        /// </remarks>
+        /// <param name="file">The file to upload.  Max size: 100MB</param>
+        /// <param name="format">File format options:
+        /// <br/>* **Text**: One translation unit (a.k.a., verse) per line
+        /// <br/>  * If there is a tab, the content before the tab is the unique identifier for the line
+        /// <br/>  * Otherwise, no tabs should be used in the file.
+        /// <br/>* **Paratext**: A complete, zipped Paratext project</param>
+        /// <param name="name">A name to help identify and distinguish the file.
+        /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
+        /// <br/>The name does not have to be unique.
+        /// <br/>Example: myTranslationTeam:myProject:myFile.txt</param>
+        /// <returns>The file was created successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<DataFile> CreateAsync(FileParameter file, FileFormat format, string? name = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -255,6 +302,24 @@ namespace Serval.Client
                             return objectResponse_.Object;
                         }
                         else
+                        if (status_ == 400)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("Bad request, including the file being too large", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation", status_, responseText_, headers_, null);
+                        }
+                        else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                             throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
@@ -276,10 +341,10 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Gets a file.
+        /// Get a file by unique id
         /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <returns>The file.</returns>
+        /// <param name="id">The unique identifier for the file</param>
+        /// <returns>The file exists</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<DataFile> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -330,10 +395,22 @@ namespace Serval.Client
                             return objectResponse_.Object;
                         }
                         else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                        }
+                        else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the file.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the file", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The file does not exist", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -357,11 +434,11 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Updates a file.
+        /// Update an existing file
         /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <param name="file">The file.</param>
-        /// <returns>The file was updated successfully.</returns>
+        /// <param name="id">The existing file's unique id</param>
+        /// <param name="file">The updated file</param>
+        /// <returns>The file was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<DataFile> UpdateAsync(string id, FileParameter file, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -425,10 +502,22 @@ namespace Serval.Client
                             return objectResponse_.Object;
                         }
                         else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                        }
+                        else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the file.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the file", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The file does not exist and therefore cannot be updated", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -452,10 +541,13 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Deletes a file.
+        /// Delete an existing file
         /// </summary>
-        /// <param name="id">The file id.</param>
-        /// <returns>The file was deleted successfully.</returns>
+        /// <remarks>
+        /// Note: If a file is in a corpora and the file is deleted, it will be automatically removed from the corpora.
+        /// </remarks>
+        /// <param name="id">The existing file's unique id</param>
+        /// <returns>The file was deleted successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -500,10 +592,22 @@ namespace Serval.Client
                             return;
                         }
                         else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                        }
+                        else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the file.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the file", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The file does not exist and therefore cannot be deleted", status_, responseText_, headers_, null);
                         }
                         else
                         {
