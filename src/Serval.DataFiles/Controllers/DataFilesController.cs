@@ -79,9 +79,9 @@ public class DataFilesController : ServalControllerBase
     /// </param>
     /// <param name="name">
     /// A name to help identify and distinguish the file.
-    /// Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
+    /// Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
     /// The name does not have to be unique.
-    /// Example: myTranslationTeam:myProject:myFile.txt
+    /// Example: myTranslationTeam:myProject:myLanguage:myFile.txt
     /// </param>
     /// <param name="format">
     /// File format options:
@@ -92,7 +92,7 @@ public class DataFilesController : ServalControllerBase
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The file was created successfully</response>
-    /// <response code="400">Bad request, including the file being too large</response>
+    /// <response code="400">Bad request. Is the file over 100 MB?</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
     [Authorize(Scopes.CreateFiles)]
@@ -130,6 +130,7 @@ public class DataFilesController : ServalControllerBase
     /// <param name="file">The updated file</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The file was updated successfully</response>
+    /// <response code="400">Bad request. Is the file over 100 MB?</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
     /// <response code="404">The file does not exist and therefore cannot be updated</response>
@@ -137,6 +138,7 @@ public class DataFilesController : ServalControllerBase
     [HttpPatch("{id}")]
     [RequestSizeLimit(100_000_000)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
@@ -165,7 +167,9 @@ public class DataFilesController : ServalControllerBase
     /// Delete an existing file
     /// </summary>
     /// <remarks>
-    /// Note: If a file is in a corpora and the file is deleted, it will be automatically removed from the corpora.
+    /// If a file is in a corpora and the file is deleted, it will be automatically removed from the corpora.
+    /// If a build job has started before the file was deleted, the file will be used for the build job, even
+    /// though it will no longer be accessible through the API.
     /// </remarks>
     /// <param name="id">The existing file's unique id</param>
     /// <param name="cancellationToken"></param>
