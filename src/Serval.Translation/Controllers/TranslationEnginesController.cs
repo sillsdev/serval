@@ -121,14 +121,15 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TranslationEngineDto>> CreateAsync(
         [FromBody] TranslationEngineConfigDto engineConfig,
         CancellationToken cancellationToken
     )
     {
         Engine engine = Map(engineConfig);
-        await _engineService.CreateAsync(engine, cancellationToken);
+        bool success = await _engineService.CreateAsync(engine, cancellationToken);
+        if (!success)
+            return BadRequest();
         TranslationEngineDto dto = Map(engine);
         return Created(dto.Url, dto);
     }
@@ -495,7 +496,8 @@ public class TranslationEnginesController : ServalControllerBase
             return NotFound();
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
-
+        if (engine.Corpora is null)
+            return NotFound();
         Corpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
         if (corpus == null)
             return NotFound();
@@ -554,7 +556,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="200">The pretranslations</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
+    /// <response code="404">The engine or corpus does not exist</response>
     /// <response code="405">The method is not supported</response>
     /// <response code="409">The engine needs to be built first</response>
     [Authorize(Scopes.ReadTranslationEngines)]
@@ -577,11 +579,15 @@ public class TranslationEnginesController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
 
-        return Ok(
-            (await _pretranslationService.GetAllAsync(id, engine.ModelRevision, corpusId, cancellationToken)).Select(
-                Map
-            )
+        IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
+            id,
+            engine.ModelRevision,
+            corpusId,
+            cancellationToken
         );
+        if (pretranslations is null || pretranslations.Count() == 0)
+            return NotFound();
+        return Ok((pretranslations).Select(Map));
     }
 
     /// <summary>
@@ -597,7 +603,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="200">The pretranslations</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine or corpus [FIXME !?!?!?! or TextID?] does not exist</response>
+    /// <response code="404">The engine or corpus or text does not exist</response>
     /// <response code="405">The method is not supported</response>
     /// <response code="409">The engine needs to be built first</response>
     [Authorize(Scopes.ReadTranslationEngines)]
@@ -621,11 +627,16 @@ public class TranslationEnginesController : ServalControllerBase
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
 
-        return Ok(
-            (
-                await _pretranslationService.GetAllAsync(id, engine.ModelRevision, corpusId, textId, cancellationToken)
-            ).Select(Map)
+        IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
+            id,
+            engine.ModelRevision,
+            corpusId,
+            textId,
+            cancellationToken
         );
+        if (pretranslations is null || pretranslations.Count() == 0)
+            return NotFound();
+        return Ok((pretranslations).Select(Map));
     }
 
     /// <summary>

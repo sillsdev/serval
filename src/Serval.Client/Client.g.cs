@@ -992,12 +992,12 @@ namespace Serval.Client
         /// Get a build job
         /// </summary>
         /// <remarks>
-        /// If the `minimum revision` is not defined, the current build at whatever state it is
-        /// <br/>will be immediately returned.  If `minimum revision` is defined, Serval will wait for
-        /// <br/>up to 40 seconds for the engine to build to the `minimum revision` specified, else
+        /// If the `minRevision` is not defined, the current build at whatever state it is
+        /// <br/>will be immediately returned.  If `minRevision` is defined, Serval will wait for
+        /// <br/>up to 40 seconds for the engine to build to the `minRevision` specified, else
         /// <br/>will timeout.
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
-        /// <br/>request sets the `minimum revision` to the returned `revision` + 1.  Note: this method
+        /// <br/>request sets the `minRevision` to the returned `revision` + 1.  Note: this method
         /// <br/>should use request throttling.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -1255,12 +1255,6 @@ namespace Serval.Client
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                             throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 404)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -2550,7 +2544,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or corpus does not exist", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
@@ -2668,7 +2662,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus [FIXME !?!?!?! or TextID?] does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or corpus or text does not exist", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
@@ -2916,12 +2910,12 @@ namespace Serval.Client
         /// Get a build job
         /// </summary>
         /// <remarks>
-        /// If the `minimum revision` is not defined, the current build at whatever state it is
-        /// <br/>will be immediately returned.  If `minimum revision` is defined, Serval will wait for
-        /// <br/>up to 40 seconds for the engine to build to the `minimum revision` specified, else
+        /// If the `minRevision` is not defined, the current build at whatever state it is
+        /// <br/>will be immediately returned.  If `minRevision` is defined, Serval will wait for
+        /// <br/>up to 40 seconds for the engine to build to the `minRevision` specified, else
         /// <br/>will timeout.
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
-        /// <br/>request sets the `minimum revision` to the returned `revision` + 1.  Note: this method
+        /// <br/>request sets the `minRevision` to the returned `revision` + 1.  Note: this method
         /// <br/>should use request throttling.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
