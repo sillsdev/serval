@@ -1,7 +1,7 @@
 namespace Serval.ApiServerE2E;
 
 [TestFixture]
-[Category("Integration")]
+[Category("E2E")]
 public class E2ETests
 {
     private ServalClientHelper _helperClient;
