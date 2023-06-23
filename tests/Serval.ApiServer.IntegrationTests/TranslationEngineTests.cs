@@ -7,19 +7,30 @@ using Serval.DataFiles.Models;
 [Category("Integration")]
 public class TranslationEngineTests
 {
-    TestEnvironment env;
+    TestEnvironment _env;
+    TranslationCorpusConfig _testCorpusConfig;
+
+    const string ECHO_ENGINE1_ID = "e00000000000000000000000";
+    const string ECHO_ENGINE2_ID = "e00000000000000000000001";
+    const string ECHO_ENGINE3_ID = "e00000000000000000000002";
+    const string SMT_ENGINE1_ID = "be0000000000000000000000";
+    const string FILE1_ID = "f00000000000000000000000";
+    const string FILE1_FILENAME = "abcd";
+    const string FILE2_ID = "f00000000000000000000001";
+    const string FILE2_FILENAME = "efgh";
+    const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000003";
 
     [SetUp]
     public async Task SetUp()
     {
-        env = new TestEnvironment();
+        _env = new TestEnvironment();
         Engine e0,
             e1,
             e2,
             be0;
         e0 = new Engine
         {
-            Id = "e00000000000000000000000",
+            Id = ECHO_ENGINE1_ID,
             Name = "e0",
             SourceLanguage = "en",
             TargetLanguage = "en",
@@ -28,7 +39,7 @@ public class TranslationEngineTests
         };
         e1 = new Engine
         {
-            Id = "e00000000000000000000001",
+            Id = ECHO_ENGINE2_ID,
             Name = "e1",
             SourceLanguage = "en",
             TargetLanguage = "es",
@@ -37,7 +48,7 @@ public class TranslationEngineTests
         };
         e2 = new Engine
         {
-            Id = "e00000000000000000000002",
+            Id = ECHO_ENGINE3_ID,
             Name = "e2",
             SourceLanguage = "en",
             TargetLanguage = "en",
@@ -46,34 +57,49 @@ public class TranslationEngineTests
         };
         be0 = new Engine
         {
-            Id = "be0000000000000000000000",
+            Id = SMT_ENGINE1_ID,
             Name = "be0",
             SourceLanguage = "en",
             TargetLanguage = "en",
             Type = "SMTTransfer",
             Owner = "client1"
         };
-        await env.Engines.InsertAllAsync(new[] { e0, e1, e2, be0 });
+        await _env.Engines.InsertAllAsync(new[] { e0, e1, e2, be0 });
 
         DataFile srcFile,
             trgFile;
         srcFile = new DataFile
         {
-            Id = "f00000000000000000000000",
+            Id = FILE1_ID,
             Owner = "client1",
             Name = "src.txt",
-            Filename = "abcd",
+            Filename = FILE1_FILENAME,
             Format = Shared.Contracts.FileFormat.Text
         };
         trgFile = new DataFile
         {
-            Id = "f00000000000000000000001",
+            Id = FILE2_ID,
             Owner = "client1",
             Name = "trg.txt",
-            Filename = "efgh",
+            Filename = FILE2_FILENAME,
             Format = Shared.Contracts.FileFormat.Text
         };
-        await env.DataFiles.InsertAllAsync(new[] { srcFile, trgFile });
+        await _env.DataFiles.InsertAllAsync(new[] { srcFile, trgFile });
+
+        _testCorpusConfig = new TranslationCorpusConfig
+        {
+            Name = "TestCorpus",
+            SourceLanguage = "en",
+            TargetLanguage = "en",
+            SourceFiles =
+            {
+                new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
+            },
+            TargetFiles =
+            {
+                new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
+            }
+        };
     }
 
     [Test]
@@ -81,7 +107,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadFiles }, 403)] //Arbitrary unrelated privilege
     public async Task GetAllAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -104,13 +130,13 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, "e00000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadFiles }, 403, "e00000000000000000000000")] //Arbitrary unrelated privilege
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 403, "e00000000000000000000002")] //Engine is not owned
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "e00000000000000000000003")]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 403, ECHO_ENGINE3_ID)] //Engine is not owned
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     public async Task GetByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -138,7 +164,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadFiles }, 403, "Echo")] //Arbitrary unrelated privilege
     public async Task CreateEngineAsync(IEnumerable<string> scope, int expectedStatusCode, string engineType)
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -180,16 +206,12 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(
-        new[] { Scopes.DeleteTranslationEngines, Scopes.ReadTranslationEngines },
-        200,
-        "e00000000000000000000000"
-    )]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 403, "e00000000000000000000000")] //Arbitrary unrelated privilege
-    [TestCase(new[] { Scopes.DeleteTranslationEngines }, 404, "e00000000000000000000003")]
+    [TestCase(new[] { Scopes.DeleteTranslationEngines, Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    [TestCase(new[] { Scopes.DeleteTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     public async Task DeleteEngineByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -217,17 +239,17 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, "e00000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "be0000000000000000000003")]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     // [TestCase(new[] { Scopes.ReadTranslationEngines }, 405, "be0000000000000000000001", "This is a test .")]
-    // [TestCase(new[] { Scopes.ReadTranslationEngines }, 409, "e00000000000000000000000", "This is a test .")]
+    // [TestCase(new[] { Scopes.ReadTranslationEngines }, 409, ECHO_ENGINE1_ID, "This is a test .")]
     public async Task TranslateSegmentWithEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
         string engineId
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         Serval.Client.TranslationResult? result = null;
         switch (expectedStatusCode)
@@ -260,15 +282,15 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, "e00000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "e00000000000000000000003")]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     public async Task TranslateNSegmentWithEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
         string engineId
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         ICollection<Serval.Client.TranslationResult>? results = null;
         switch (expectedStatusCode)
@@ -302,15 +324,15 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, "e00000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "e00000000000000000000003")]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     public async Task GetWordGraphForSegmentByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
         string engineId
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         Serval.Client.WordGraph? wg = null;
         switch (expectedStatusCode)
@@ -340,15 +362,15 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 200, "e00000000000000000000000")]
-    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, "e00000000000000000000003")]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     public async Task TrainEngineByIdOnSegmentPairAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
         string engineId
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         SegmentPair sp = new SegmentPair();
         sp.SourceSegment = "This is a test .";
@@ -376,11 +398,11 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 201, "e00000000000000000000000")]
-    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, "e00000000000000000000003")]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 201, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     public async Task AddCorpusToEngineByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -389,58 +411,26 @@ public class TranslationEngineTests
 
                 Assert.DoesNotThrowAsync(async () =>
                 {
-                    result = await client.AddCorpusAsync(
-                        engineId,
-                        new TranslationCorpusConfig
-                        {
-                            Name = "TestCorpus",
-                            SourceLanguage = "en",
-                            TargetLanguage = "en",
-                            SourceFiles =
-                            {
-                                new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                            },
-                            TargetFiles =
-                            {
-                                new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                            }
-                        }
-                    );
+                    result = await client.AddCorpusAsync(engineId, _testCorpusConfig);
                 });
                 Assert.Multiple(() =>
                 {
                     Assert.That(result.Name, Is.EqualTo("TestCorpus"));
-                    Assert.That(result.SourceFiles.First().File.Id, Is.EqualTo("f00000000000000000000000"));
-                    Assert.That(result.TargetFiles.First().File.Id, Is.EqualTo("f00000000000000000000001"));
+                    Assert.That(result.SourceFiles.First().File.Id, Is.EqualTo(FILE1_ID));
+                    Assert.That(result.TargetFiles.First().File.Id, Is.EqualTo(FILE2_ID));
                 });
-                Engine? engine = await env.Engines.GetAsync(engineId);
+                Engine? engine = await _env.Engines.GetAsync(engineId);
                 Assert.That(engine, Is.Not.Null);
                 Assert.Multiple(() =>
                 {
-                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo("abcd"));
-                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo("efgh"));
+                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
+                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
                 });
                 break;
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    result = await client.AddCorpusAsync(
-                        engineId,
-                        new TranslationCorpusConfig
-                        {
-                            Name = "TestCorpus",
-                            SourceLanguage = "en",
-                            TargetLanguage = "en",
-                            SourceFiles =
-                            {
-                                new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                            },
-                            TargetFiles =
-                            {
-                                new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                            }
-                        }
-                    );
+                    result = await client.AddCorpusAsync(engineId, _testCorpusConfig);
                 });
                 Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -454,17 +444,17 @@ public class TranslationEngineTests
     [TestCase(
         new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
         200,
-        "e00000000000000000000000"
+        ECHO_ENGINE1_ID
     )]
     [TestCase(
         new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
         404,
-        "e00000000000000000000000"
+        ECHO_ENGINE1_ID
     )]
     [TestCase(
         new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
         404,
-        "e00000000000000000000003"
+        DOES_NOT_EXIST_ENGINE_ID
     )]
     public async Task UpdateCorpusByIdForEngineByIdAsync(
         IEnumerable<string> scope,
@@ -472,48 +462,32 @@ public class TranslationEngineTests
         string engineId
     )
     {
-        TranslationEnginesClient client = env.CreateClient(scope);
+        TranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus result = await client.AddCorpusAsync(
-                    engineId,
-                    new TranslationCorpusConfig
-                    {
-                        Name = "TestCorpus",
-                        SourceLanguage = "en",
-                        TargetLanguage = "en",
-                        SourceFiles =
-                        {
-                            new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                        },
-                        TargetFiles =
-                        {
-                            new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                        }
-                    }
-                );
+                TranslationCorpus result = await client.AddCorpusAsync(engineId, _testCorpusConfig);
 
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     var src = new[]
                     {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
+                        new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
                     };
                     var trg = new[]
                     {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
+                        new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
                     };
                     var updateConfig = new TranslationCorpusUpdateConfig { SourceFiles = src, TargetFiles = trg };
                     await client.UpdateCorpusAsync(engineId, result.Id, updateConfig);
                 });
-                Engine? engine = await env.Engines.GetAsync(engineId);
+                Engine? engine = await _env.Engines.GetAsync(engineId);
                 Assert.That(engine, Is.Not.Null);
                 Assert.Multiple(() =>
                 {
-                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo("efgh"));
-                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo("abcd"));
+                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
+                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
                 });
                 break;
             case 400:
@@ -522,11 +496,11 @@ public class TranslationEngineTests
                 {
                     var src = new[]
                     {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
+                        new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
                     };
                     var trg = new[]
                     {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
+                        new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
                     };
                     var updateConfig = new TranslationCorpusUpdateConfig { SourceFiles = src, TargetFiles = trg };
                     await client.UpdateCorpusAsync(engineId, "c00000000000000000000000", updateConfig);
@@ -543,12 +517,12 @@ public class TranslationEngineTests
     [TestCase(
         new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
         200,
-        "e00000000000000000000000"
+        ECHO_ENGINE1_ID
     )]
     [TestCase(
         new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
         404,
-        "e00000000000000000000003"
+        DOES_NOT_EXIST_ENGINE_ID
     )]
     public async Task GetAllCorporaForEngineByIdAsync(
         IEnumerable<string> scope,
@@ -556,28 +530,12 @@ public class TranslationEngineTests
         string engineId
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus result = await client.AddCorpusAsync(
-                    engineId,
-                    new TranslationCorpusConfig
-                    {
-                        Name = "TestCorpus",
-                        SourceLanguage = "en",
-                        TargetLanguage = "en",
-                        SourceFiles =
-                        {
-                            new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                        },
-                        TargetFiles =
-                        {
-                            new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                        }
-                    }
-                );
+                TranslationCorpus result = await client.AddCorpusAsync(engineId, _testCorpusConfig);
                 TranslationCorpus result_afterAdd = (await client.GetAllCorporaAsync(engineId)).First();
                 Assert.Multiple(() =>
                 {
@@ -601,28 +559,10 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(
-        new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines },
-        200,
-        "e00000000000000000000000",
-        true
-    )]
-    [TestCase(
-        new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines },
-        404,
-        "e00000000000000000000000"
-    )]
-    [TestCase(
-        new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines },
-        404,
-        "e00000000000000000000003"
-    )]
-    [TestCase(
-        new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines },
-        404,
-        "e00000000000000000000000",
-        true
-    )]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID, true)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID, true)]
     public async Task GetCorpusByIdForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -630,28 +570,12 @@ public class TranslationEngineTests
         bool addCorpus = false
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         TranslationCorpus? result = null;
         if (addCorpus)
         {
-            result = await client.AddCorpusAsync(
-                engineId,
-                new TranslationCorpusConfig
-                {
-                    Name = "TestCorpus",
-                    SourceLanguage = "en",
-                    TargetLanguage = "en",
-                    SourceFiles =
-                    {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                    },
-                    TargetFiles =
-                    {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                    }
-                }
-            );
+            result = await client.AddCorpusAsync(engineId, _testCorpusConfig);
         }
         switch (expectedStatusCode)
         {
@@ -684,49 +608,21 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(
-        new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines },
-        200,
-        "e00000000000000000000000"
-    )]
-    [TestCase(
-        new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines },
-        404,
-        "e00000000000000000000000"
-    )]
-    [TestCase(
-        new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines },
-        404,
-        "e00000000000000000000003"
-    )]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     public async Task DeleteCorpusByIdForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
         string engineId
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus result = await client.AddCorpusAsync(
-                    engineId,
-                    new TranslationCorpusConfig
-                    {
-                        Name = "TestCorpus",
-                        SourceLanguage = "en",
-                        TargetLanguage = "en",
-                        SourceFiles =
-                        {
-                            new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                        },
-                        TargetFiles =
-                        {
-                            new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                        }
-                    }
-                );
+                TranslationCorpus result = await client.AddCorpusAsync(engineId, _testCorpusConfig);
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     await client.DeleteCorpusAsync(engineId, result.Id);
@@ -752,18 +648,18 @@ public class TranslationEngineTests
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
         200,
-        "e00000000000000000000000"
+        ECHO_ENGINE1_ID
     )]
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
         404,
-        "e00000000000000000000003",
+        DOES_NOT_EXIST_ENGINE_ID,
         false
     )]
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
         404,
-        "e00000000000000000000000",
+        ECHO_ENGINE1_ID,
         false
     )]
     public async Task GetAllPretranslationsForCorpusByIdForEngineByIdAsync(
@@ -773,28 +669,12 @@ public class TranslationEngineTests
         bool addCorpus = true
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex = null;
         TranslationCorpus? added_corpus = null;
         if (addCorpus)
         {
-            added_corpus = await client.AddCorpusAsync(
-                engineId,
-                new TranslationCorpusConfig
-                {
-                    Name = "TestCorpus",
-                    SourceLanguage = "en",
-                    TargetLanguage = "en",
-                    SourceFiles =
-                    {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                    },
-                    TargetFiles =
-                    {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                    }
-                }
-            );
+            added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig);
             Serval.Translation.Models.Pretranslation pret = new Serval.Translation.Models.Pretranslation
             {
                 CorpusRef = added_corpus.Id,
@@ -803,7 +683,7 @@ public class TranslationEngineTests
                 Refs = new List<string> { "ref1", "ref2" },
                 Translation = "translation"
             };
-            await env.Pretranslations.InsertAsync(pret);
+            await _env.Pretranslations.InsertAsync(pret);
         }
 
         switch (expectedStatusCode)
@@ -837,28 +717,28 @@ public class TranslationEngineTests
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
         200,
-        "e00000000000000000000000",
+        ECHO_ENGINE1_ID,
         true,
         "all"
     )]
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
         404,
-        "e00000000000000000000003",
+        DOES_NOT_EXIST_ENGINE_ID,
         false,
         "all"
     )]
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
         404,
-        "e00000000000000000000000",
+        ECHO_ENGINE1_ID,
         false,
         "all"
     )]
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
         404,
-        "e00000000000000000000000",
+        ECHO_ENGINE1_ID,
         true,
         "not_the_right_id"
     )]
@@ -870,37 +750,21 @@ public class TranslationEngineTests
         string textId
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex = null;
         TranslationCorpus? added_corpus = null;
         if (addCorpus)
         {
-            added_corpus = await client.AddCorpusAsync(
-                engineId,
-                new TranslationCorpusConfig
-                {
-                    Name = "TestCorpus",
-                    SourceLanguage = "en",
-                    TargetLanguage = "en",
-                    SourceFiles =
-                    {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                    },
-                    TargetFiles =
-                    {
-                        new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                    }
-                }
-            );
+            added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig);
             Serval.Translation.Models.Pretranslation pret = new Serval.Translation.Models.Pretranslation
             {
                 CorpusRef = added_corpus.Id,
-                TextId = "all", //Note that this is not textId necessarily
+                TextId = "all", //Note that this is not equal to textId necessarily
                 EngineRef = engineId,
                 Refs = new List<string> { "ref1", "ref2" },
                 Translation = "translation"
             };
-            await env.Pretranslations.InsertAsync(pret);
+            await _env.Pretranslations.InsertAsync(pret);
         }
 
         switch (expectedStatusCode)
@@ -932,8 +796,8 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, "be0000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "be0000000000000000000003", false)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, SMT_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
     public async Task GetAllBuildsForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -941,13 +805,13 @@ public class TranslationEngineTests
         bool addBuild = true
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex = null;
         Build? build = null;
         if (addBuild)
         {
             build = new Build { EngineRef = engineId };
-            await env.Builds.InsertAsync(build);
+            await _env.Builds.InsertAsync(build);
         }
         switch (expectedStatusCode)
         {
@@ -977,9 +841,9 @@ public class TranslationEngineTests
     }
 
     [Test] //TODO 408?
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, "be0000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "be0000000000000000000003", false)]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "be0000000000000000000000", false)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, SMT_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, SMT_ENGINE1_ID, false)]
     public async Task GetBuildByIdForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -987,13 +851,13 @@ public class TranslationEngineTests
         bool addBuild = true
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex = null;
         Build? build = null;
         if (addBuild)
         {
             build = new Build { EngineRef = engineId };
-            await env.Builds.InsertAsync(build);
+            await _env.Builds.InsertAsync(build);
         }
         switch (expectedStatusCode)
         {
@@ -1023,43 +887,27 @@ public class TranslationEngineTests
         }
     }
 
-    [Test] //TODO
+    [Test]
     [TestCase(
         new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
         201,
-        "e00000000000000000000000"
+        ECHO_ENGINE1_ID
     )]
     [TestCase(
         new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
         404,
-        "e00000000000000000000003"
+        DOES_NOT_EXIST_ENGINE_ID
     )]
     public async Task StartBuildsForEngineByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex = null;
         PretranslateCorpusConfig? ptcc = null;
         TranslationBuildConfig? tbc = null;
         switch (expectedStatusCode)
         {
             case 201:
-                TranslationCorpus added_corpus = await client.AddCorpusAsync(
-                    engineId,
-                    new TranslationCorpusConfig
-                    {
-                        Name = "TestCorpus",
-                        SourceLanguage = "en",
-                        TargetLanguage = "en",
-                        SourceFiles =
-                        {
-                            new TranslationCorpusFileConfig { FileId = "f00000000000000000000000", TextId = "all" }
-                        },
-                        TargetFiles =
-                        {
-                            new TranslationCorpusFileConfig { FileId = "f00000000000000000000001", TextId = "all" }
-                        }
-                    }
-                );
+                TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig);
                 Serval.Client.TranslationBuild? result_afterStart = null;
                 ptcc = new PretranslateCorpusConfig
                 {
@@ -1100,9 +948,9 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, "e00000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 204, "e00000000000000000000000", false)]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "e00000000000000000000003", false)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 204, ECHO_ENGINE1_ID, false)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
     public async Task GetCurrentBuildForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -1110,14 +958,14 @@ public class TranslationEngineTests
         bool addBuild = true
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex = null;
         Build? build = null;
         TranslationBuild? result = null;
         if (addBuild)
         {
             build = new Build { EngineRef = engineId };
-            await env.Builds.InsertAsync(build);
+            await _env.Builds.InsertAsync(build);
         }
 
         switch (expectedStatusCode)
@@ -1146,9 +994,9 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 200, "e00000000000000000000000")]
-    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, "e00000000000000000000003", false)]
-    // [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, "e00000000000000000000000", false)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
+    // [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, ECHO_ENGINE1_ID, false)]
     public async Task CancelCurrentBuildForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -1156,13 +1004,13 @@ public class TranslationEngineTests
         bool addBuild = false
     )
     {
-        ITranslationEnginesClient client = env.CreateClient(scope);
+        ITranslationEnginesClient client = _env.CreateClient(scope);
         ServalApiException? ex = null;
         Build? build = null;
         if (addBuild)
         {
             build = new Build { EngineRef = engineId };
-            await env.Builds.InsertAsync(build);
+            await _env.Builds.InsertAsync(build);
         }
 
         switch (expectedStatusCode)
@@ -1189,7 +1037,7 @@ public class TranslationEngineTests
     [TearDown]
     public void TearDown()
     {
-        env.Dispose();
+        _env.Dispose();
     }
 
     private class TestEnvironment : DisposableBase

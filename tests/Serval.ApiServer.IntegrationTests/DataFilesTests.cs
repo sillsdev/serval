@@ -7,41 +7,51 @@ using Microsoft.AspNetCore.Mvc;
 [Category("Integration")]
 public class DataFilesTests
 {
-    TestEnvironment env;
+    TestEnvironment _env;
+
+    const string ID1 = "000000000000000000000000";
+    const string NAME1 = "sample1.txt";
+
+    const string ID2 = "000000000000000000000001";
+    const string NAME2 = "sample2.txt";
+
+    const string ID3 = "000000000000000000000002";
+    const string NAME3 = "sample3.txt";
+    const string DOES_NOT_EXIST_ID = "00000000000000000000003";
 
     [SetUp]
     public async Task SetUp()
     {
-        env = new TestEnvironment();
+        _env = new TestEnvironment();
         DataFile file1,
             file2,
             file3;
 
         file1 = new DataFile
         {
-            Id = "000000000000000000000000",
+            Id = ID1,
             Owner = "client1",
-            Name = "sample1.txt",
-            Filename = "sample1.txt",
+            Name = NAME1,
+            Filename = NAME1,
             Format = FileFormat.Text
         };
         file2 = new DataFile
         {
-            Id = "000000000000000000000001",
+            Id = ID2,
             Owner = "client1",
-            Name = "sample2.txt",
-            Filename = "sample2.txt",
+            Name = NAME2,
+            Filename = NAME2,
             Format = FileFormat.Text
         };
         file3 = new DataFile
         {
-            Id = "000000000000000000000002",
+            Id = ID3,
             Owner = "client2",
-            Name = "sample3.txt",
-            Filename = "sample3.txt",
+            Name = NAME3,
+            Filename = NAME3,
             Format = FileFormat.Text
         };
-        await env.DataFiles.InsertAllAsync(new[] { file1, file2, file3 });
+        await _env.DataFiles.InsertAllAsync(new[] { file1, file2, file3 });
     }
 
     [Test]
@@ -50,7 +60,7 @@ public class DataFilesTests
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403)]
     public async Task GetAllAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
-        DataFilesClient client = env.CreateClient(scope);
+        DataFilesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -80,20 +90,20 @@ public class DataFilesTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.ReadFiles }, 200, "000000000000000000000000")]
-    // [TestCase(new[] { Scopes.ReadFiles }, 401, "000000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadFiles }, 403, "000000000000000000000002")]
-    [TestCase(new[] { Scopes.CreateTranslationEngines }, 403, "000000000000000000000000")]
-    [TestCase(new[] { Scopes.ReadFiles }, 404, "000000000000000000000005")]
+    [TestCase(new[] { Scopes.ReadFiles }, 200, ID1)]
+    // [TestCase(new[] { Scopes.ReadFiles }, 401, ID1)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ID3)]
+    [TestCase(new[] { Scopes.CreateTranslationEngines }, 403, ID1)]
+    [TestCase(new[] { Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
     public async Task GetByIDAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
-        DataFilesClient client = env.CreateClient(scope);
+        DataFilesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
                 Serval.Client.DataFile result = await client.GetAsync(fileId);
-                Assert.That(result.Name, Is.EqualTo("sample1.txt"));
+                Assert.That(result.Name, Is.EqualTo(NAME1));
                 break;
             case 401:
                 //NOTE Covered in end-to-end tests
@@ -119,7 +129,7 @@ public class DataFilesTests
     [TestCase(new[] { Scopes.ReadFiles }, 403)]
     public async Task CreateAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
-        DataFilesClient client = env.CreateClient(scope);
+        DataFilesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         FileParameter fp;
         Stream fs;
@@ -167,26 +177,26 @@ public class DataFilesTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 200, "000000000000000000000000")]
-    [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 400, "000000000000000000000000")]
-    [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 403, "000000000000000000000002")]
-    [TestCase(new[] { Scopes.ReadFiles }, 403, "000000000000000000000000")]
-    [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 404, "000000000000000000000005")]
+    [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 200, ID1)]
+    [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 400, ID1)]
+    [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 403, ID3)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ID1)]
+    [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
     public async Task UpdateAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
-        DataFilesClient client = env.CreateClient(scope);
+        DataFilesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
                 Serval.Client.DataFile result = await client.GetAsync(fileId);
-                Assert.That(result.Name, Is.EqualTo("sample1.txt"));
+                Assert.That(result.Name, Is.EqualTo(NAME1));
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     await client.UpdateAsync(fileId, new FileParameter(new MemoryStream()));
                 });
                 Serval.Client.DataFile resultAfterUpdate = await client.GetAsync(fileId);
-                Assert.That(resultAfterUpdate.Id, Is.EqualTo("000000000000000000000000"));
+                Assert.That(resultAfterUpdate.Id, Is.EqualTo(ID1));
                 break;
             case 400:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -210,27 +220,27 @@ public class DataFilesTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 200, "000000000000000000000000")]
-    // [TestCase(new[] { Scopes.ReadFiles }, 401, "000000000000000000000000")]
-    [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 403, "000000000000000000000002")]
-    [TestCase(new[] { Scopes.ReadFiles }, 403, "000000000000000000000000")]
-    [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 404, "000000000000000000000005")]
+    [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 200, ID1)]
+    // [TestCase(new[] { Scopes.ReadFiles }, 401, ID1)]
+    [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 403, ID3)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ID1)]
+    [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
     public async Task DeleteAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
-        DataFilesClient client = env.CreateClient(scope);
+        DataFilesClient client = _env.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
                 Serval.Client.DataFile result = await client.GetAsync(fileId);
-                Assert.That(result.Name, Is.EqualTo("sample1.txt"));
+                Assert.That(result.Name, Is.EqualTo(NAME1));
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     await client.DeleteAsync(fileId);
                 });
                 ICollection<Serval.Client.DataFile> results = await client.GetAllAsync();
                 Assert.That(results, Has.Count.EqualTo(1));
-                Assert.That(results.First().Id, Is.EqualTo("000000000000000000000001"));
+                Assert.That(results.First().Id, Is.EqualTo(ID2));
                 break;
             case 401:
                 //NOTE Covered in end-to-end tests
@@ -254,7 +264,7 @@ public class DataFilesTests
     [TearDown]
     public void TearDown()
     {
-        env.Dispose();
+        _env.Dispose();
     }
 
     private class TestEnvironment : DisposableBase
