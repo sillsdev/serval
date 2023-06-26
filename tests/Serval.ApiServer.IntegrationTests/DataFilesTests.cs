@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 [Category("Integration")]
 public class DataFilesTests
 {
-    TestEnvironment _env;
+    TestEnvironment? _env;
 
     const string ID1 = "000000000000000000000000";
     const string NAME1 = "sample1.txt";
@@ -60,7 +60,7 @@ public class DataFilesTests
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403)]
     public async Task GetAllAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
-        DataFilesClient client = _env.CreateClient(scope);
+        DataFilesClient client = _env!.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -80,7 +80,7 @@ public class DataFilesTests
                     await client.GetAllAsync();
                 });
                 Assert.NotNull(ex);
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
 
             default:
@@ -97,7 +97,7 @@ public class DataFilesTests
     [TestCase(new[] { Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
     public async Task GetByIDAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
-        DataFilesClient client = _env.CreateClient(scope);
+        DataFilesClient client = _env!.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -114,7 +114,7 @@ public class DataFilesTests
                 {
                     await client.GetAsync(fileId);
                 });
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Invalid expectedStatusCode. Check test case for typo.");
@@ -127,9 +127,9 @@ public class DataFilesTests
     // [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 401)]
     [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 400)]
     [TestCase(new[] { Scopes.ReadFiles }, 403)]
-    public async Task CreateAsync(IEnumerable<string> scope, int expectedStatusCode)
+    public void CreateAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
-        DataFilesClient client = _env.CreateClient(scope);
+        DataFilesClient client = _env!.CreateClient(scope);
         ServalApiException? ex;
         FileParameter fp;
         Stream fs;
@@ -158,7 +158,7 @@ public class DataFilesTests
                     await client.CreateAsync(fp, Client.FileFormat.Text);
                 });
                 fs.Dispose();
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             case 403:
                 fs = new MemoryStream();
@@ -168,7 +168,7 @@ public class DataFilesTests
                     await client.CreateAsync(fp, Client.FileFormat.Text);
                 });
                 fs.Dispose();
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -184,7 +184,7 @@ public class DataFilesTests
     [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
     public async Task UpdateAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
-        DataFilesClient client = _env.CreateClient(scope);
+        DataFilesClient client = _env!.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -203,7 +203,7 @@ public class DataFilesTests
                 {
                     await client.UpdateAsync(fileId, new FileParameter(new MemoryStream(new byte[2_000_000_000])));
                 });
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             case 403:
             case 404:
@@ -211,7 +211,7 @@ public class DataFilesTests
                 {
                     await client.UpdateAsync(fileId, new FileParameter(new MemoryStream()));
                 });
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -227,7 +227,7 @@ public class DataFilesTests
     [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
     public async Task DeleteAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
-        DataFilesClient client = _env.CreateClient(scope);
+        DataFilesClient client = _env!.CreateClient(scope);
         ServalApiException? ex;
         switch (expectedStatusCode)
         {
@@ -251,7 +251,7 @@ public class DataFilesTests
                 {
                     await client.DeleteAsync(fileId);
                 });
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 ICollection<Serval.Client.DataFile> resultsAfterDelete = await client.GetAllAsync();
                 Assert.That(resultsAfterDelete, Has.Count.EqualTo(2));
                 break;
@@ -264,7 +264,7 @@ public class DataFilesTests
     [TearDown]
     public void TearDown()
     {
-        _env.Dispose();
+        _env!.Dispose();
     }
 
     private class TestEnvironment : DisposableBase

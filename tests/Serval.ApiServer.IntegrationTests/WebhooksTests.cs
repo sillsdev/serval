@@ -29,9 +29,9 @@ public class WebhooksTests
 
     [Test]
     [TestCase(null, 200)] //null gives all scope privileges
-    public async Task GetAllWebhooksAsync(IEnumerable<string>? scope, int expectedStatusCode)
+    public void GetAllWebhooksAsync(IEnumerable<string>? scope, int expectedStatusCode)
     {
-        WebhooksClient client = _env.CreateClient(scope);
+        WebhooksClient client = _env!.CreateClient(scope);
         switch (expectedStatusCode)
         {
             case 200:
@@ -41,7 +41,7 @@ public class WebhooksTests
                     result = (await client.GetAllAsync()).First();
                 });
                 Assert.NotNull(result);
-                Assert.That(result.Id, Is.EqualTo(ID));
+                Assert.That(result!.Id, Is.EqualTo(ID));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -52,9 +52,9 @@ public class WebhooksTests
     [Test]
     [TestCase(null, 200, ID)] //null gives all scope privileges
     [TestCase(null, 404, DOES_NOT_EXIST_ID)]
-    public async Task GetWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
+    public void GetWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
     {
-        WebhooksClient client = _env.CreateClient(scope);
+        WebhooksClient client = _env!.CreateClient(scope);
         ServalApiException? ex = null;
         switch (expectedStatusCode)
         {
@@ -65,14 +65,14 @@ public class WebhooksTests
                     result = await client.GetAsync(webhookId);
                 });
                 Assert.NotNull(result);
-                Assert.That(result.Id, Is.EqualTo(ID));
+                Assert.That(result!.Id, Is.EqualTo(ID));
                 break;
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAsync(webhookId);
                 });
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -83,9 +83,9 @@ public class WebhooksTests
     [Test]
     [TestCase(null, 200, ID)] //null gives all scope privileges
     [TestCase(null, 404, DOES_NOT_EXIST_ID)]
-    public async Task DeleteWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
+    public void DeleteWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
     {
-        WebhooksClient client = _env.CreateClient(scope);
+        WebhooksClient client = _env!.CreateClient(scope);
         ServalApiException? ex = null;
         switch (expectedStatusCode)
         {
@@ -98,14 +98,14 @@ public class WebhooksTests
                 {
                     await client.GetAsync(webhookId);
                 });
-                Assert.That(ex.StatusCode, Is.EqualTo(404));
+                Assert.That(ex!.StatusCode, Is.EqualTo(404));
                 break;
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.DeleteAsync(webhookId);
                 });
-                Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -115,9 +115,9 @@ public class WebhooksTests
 
     [Test]
     [TestCase(null, 201)]
-    public async Task CreateWebhookAsync(IEnumerable<string> scope, int expectedStatusCode)
+    public void CreateWebhookAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
-        WebhooksClient client = _env.CreateClient(scope);
+        WebhooksClient client = _env!.CreateClient(scope);
         switch (expectedStatusCode)
         {
             case 201:
@@ -139,10 +139,10 @@ public class WebhooksTests
                 Serval.Client.Webhook? result_afterCreate = null;
                 Assert.DoesNotThrowAsync(async () =>
                 {
-                    result_afterCreate = await client.GetAsync(result.Id);
+                    result_afterCreate = await client.GetAsync(result!.Id);
                 });
                 Assert.NotNull(result_afterCreate);
-                Assert.That(result_afterCreate.PayloadUrl, Is.EqualTo(result.PayloadUrl));
+                Assert.That(result_afterCreate!.PayloadUrl, Is.EqualTo(result!.PayloadUrl));
 
                 break;
             default:
@@ -152,9 +152,9 @@ public class WebhooksTests
     }
 
     [TearDown]
-    public async Task TearDown()
+    public void TearDown()
     {
-        _env.Dispose();
+        _env!.Dispose();
     }
 
     private class TestEnvironment : DisposableBase

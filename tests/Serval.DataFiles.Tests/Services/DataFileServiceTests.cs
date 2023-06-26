@@ -62,7 +62,7 @@ public class DataFileServiceTests
             dataFile = await env.Service.UpdateAsync("file1", stream);
 
         Assert.That(dataFile, Is.Not.Null);
-        Assert.That(dataFile.Revision, Is.EqualTo(2));
+        Assert.That(dataFile!.Revision, Is.EqualTo(2));
         Assert.That(Encoding.UTF8.GetString(fileStream.ToArray()), Is.EqualTo(content));
         DeletedFile deletedFile = env.DeletedFiles.Entities.Single();
         Assert.That(deletedFile.Filename, Is.EqualTo("file1.txt"));

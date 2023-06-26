@@ -21,7 +21,7 @@ public class EngineServiceTests
         string engineId = (await env.CreateEngineAsync()).Id;
         Models.TranslationResult? result = await env.Service.TranslateAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Translation, Is.EqualTo("this is a test."));
+        Assert.That(result!.Translation, Is.EqualTo("this is a test."));
     }
 
     [Test]
@@ -39,7 +39,7 @@ public class EngineServiceTests
         string engineId = (await env.CreateEngineAsync()).Id;
         Models.WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Arcs.SelectMany(a => a.TargetTokens), Is.EqualTo("this is a test .".Split()));
+        Assert.That(result!.Arcs.SelectMany(a => a.TargetTokens), Is.EqualTo("this is a test .".Split()));
     }
 
     [Test]
@@ -150,7 +150,7 @@ public class EngineServiceTests
         );
 
         Assert.That(corpus, Is.Not.Null);
-        Assert.That(corpus.SourceFiles.Count, Is.EqualTo(2));
+        Assert.That(corpus!.SourceFiles.Count, Is.EqualTo(2));
         Assert.That(corpus.SourceFiles[0].Id, Is.EqualTo("file1"));
         Assert.That(corpus.SourceFiles[1].Id, Is.EqualTo("file3"));
         Assert.That(corpus.TargetFiles.Count, Is.EqualTo(1));
