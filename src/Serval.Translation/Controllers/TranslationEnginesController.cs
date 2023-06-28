@@ -189,6 +189,9 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
+        Build? activeBuild = await _buildService.GetActiveAsync(id);
+        if (activeBuild == null || activeBuild.Pretranslate == null || activeBuild.Pretranslate.Count() == 0)
+            return Conflict();
 
         TranslationResult? result = await _engineService.TranslateAsync(id, segment, cancellationToken);
         if (result == null)
@@ -228,6 +231,9 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
+        Build? activeBuild = await _buildService.GetActiveAsync(id);
+        if (activeBuild == null || activeBuild.Pretranslate == null || activeBuild.Pretranslate.Count() == 0)
+            return Conflict();
 
         IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(
             id,
@@ -270,6 +276,9 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
+        Build? activeBuild = await _buildService.GetActiveAsync(id);
+        if (activeBuild == null || activeBuild.Pretranslate == null || activeBuild.Pretranslate.Count() == 0)
+            return Conflict();
 
         WordGraph? wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
         if (wordGraph == null)
@@ -310,6 +319,9 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
+        Build? activeBuild = await _buildService.GetActiveAsync(id);
+        if (activeBuild == null || activeBuild.Pretranslate == null || activeBuild.Pretranslate.Count() == 0)
+            return Conflict();
 
         if (
             !await _engineService.TrainSegmentPairAsync(
@@ -578,7 +590,6 @@ public class TranslationEnginesController : ServalControllerBase
             return NotFound();
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
-
         IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
             id,
             engine.ModelRevision,
@@ -587,6 +598,9 @@ public class TranslationEnginesController : ServalControllerBase
         );
         if (pretranslations is null || pretranslations.Count() == 0)
             return NotFound();
+        Build? activeBuild = await _buildService.GetActiveAsync(id);
+        if (activeBuild == null || activeBuild.Pretranslate == null || activeBuild.Pretranslate.Count() == 0)
+            return Conflict();
         return Ok((pretranslations).Select(Map));
     }
 
@@ -626,7 +640,6 @@ public class TranslationEnginesController : ServalControllerBase
             return NotFound();
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
-
         IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
             id,
             engine.ModelRevision,
@@ -636,6 +649,9 @@ public class TranslationEnginesController : ServalControllerBase
         );
         if (pretranslations is null || pretranslations.Count() == 0)
             return NotFound();
+        Build? activeBuild = await _buildService.GetActiveAsync(id);
+        if (activeBuild == null || activeBuild.Pretranslate == null || activeBuild.Pretranslate.Count() == 0)
+            return Conflict();
         return Ok((pretranslations).Select(Map));
     }
 
