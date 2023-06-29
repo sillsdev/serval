@@ -266,17 +266,9 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig!);
-                var ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = added_corpus.Id,
-                    TextIds = new List<string> { "all" }
-                };
-                var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
-                Assert.DoesNotThrowAsync(async () =>
-                {
-                    await client.StartBuildAsync(engineId, tbc);
-                });
+                await _env.Builds.InsertAsync(
+                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                );
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     result = await client.TranslateAsync(engineId, "This is a test .");
@@ -342,18 +334,9 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig!);
-                var ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = added_corpus.Id,
-                    TextIds = new List<string> { "all" }
-                };
-                var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
-                Assert.DoesNotThrowAsync(async () =>
-                {
-                    await client.StartBuildAsync(engineId, tbc);
-                });
-
+                await _env.Builds.InsertAsync(
+                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                );
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     results = await client.TranslateNAsync(engineId, 1, "This is a test .");
@@ -399,17 +382,9 @@ public class TranslationEngineTests
         {
             case 200:
                 TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig!);
-                var ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = added_corpus.Id,
-                    TextIds = new List<string> { "all" }
-                };
-                var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
-                Assert.DoesNotThrowAsync(async () =>
-                {
-                    await client.StartBuildAsync(engineId, tbc);
-                });
-
+                await _env.Builds.InsertAsync(
+                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                );
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     wg = await client.GetWordGraphAsync(engineId, "This is a test .");
@@ -455,16 +430,9 @@ public class TranslationEngineTests
         {
             case 200:
                 TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig!);
-                var ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = added_corpus.Id,
-                    TextIds = new List<string> { "all" }
-                };
-                var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
-                Assert.DoesNotThrowAsync(async () =>
-                {
-                    await client.StartBuildAsync(engineId, tbc);
-                });
+                await _env.Builds.InsertAsync(
+                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                );
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     await client.TrainSegmentAsync(engineId, sp);
@@ -782,17 +750,9 @@ public class TranslationEngineTests
         {
             case 200:
                 Assert.True(addCorpus, "Check that addCorpus is true - cannot build without added corpus");
-                var ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = added_corpus!.Id,
-                    TextIds = new List<string> { "all" }
-                };
-
-                var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
-                Assert.DoesNotThrowAsync(async () =>
-                {
-                    await client.StartBuildAsync(engineId, tbc);
-                });
+                await _env.Builds.InsertAsync(
+                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                );
                 ICollection<Serval.Client.Pretranslation>? results = null;
                 Assert.DoesNotThrowAsync(async () =>
                 {
@@ -883,16 +843,9 @@ public class TranslationEngineTests
         {
             case 200:
                 Assert.True(addCorpus, "Check that addCorpus is true - cannot build without added corpus");
-                var ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = added_corpus!.Id,
-                    TextIds = new List<string> { "all" }
-                };
-                var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
-                Assert.DoesNotThrowAsync(async () =>
-                {
-                    await client.StartBuildAsync(engineId, tbc);
-                });
+                await _env.Builds.InsertAsync(
+                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                );
                 ICollection<Serval.Client.Pretranslation>? results = null;
                 Assert.DoesNotThrowAsync(async () =>
                 {
