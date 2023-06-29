@@ -56,9 +56,10 @@ public class E2ETests
     public async Task GetEchoSuggestion()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "en");
+        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "en", "Echo1");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
         Assert.AreEqual(tResult.Translation, "Espíritu");
     }
@@ -67,7 +68,7 @@ public class E2ETests
     public async Task GetSmtTranslation()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en");
+        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT1");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
@@ -80,7 +81,7 @@ public class E2ETests
     public async Task GetSmtWholeBible()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en");
+        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT2");
         await _helperClient.PostTextCorpusToEngine(engineId, new string[] { "bible.txt" }, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
@@ -91,7 +92,7 @@ public class E2ETests
     public async Task GetSmtAddSegment()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en");
+        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
@@ -120,7 +121,7 @@ public class E2ETests
     public async Task GetSmtMoreCorpus()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en");
+        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT4");
         await _helperClient.PostTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(
@@ -141,7 +142,7 @@ public class E2ETests
     public async Task NmtBatch()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en");
+        string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT1");
         var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
         await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
         var cId = await _helperClient.PostTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);

@@ -1094,12 +1094,12 @@ public class TranslationEngineTests
     [Test]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
-    // [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, ECHO_ENGINE1_ID, false)] currently no-op when no build
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, ECHO_ENGINE1_ID, false)]
     public async Task CancelCurrentBuildForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
         string engineId,
-        bool addBuild = false
+        bool addBuild = true
     )
     {
         ITranslationEnginesClient client = _env!.CreateClient(scope);

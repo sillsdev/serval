@@ -867,6 +867,9 @@ public class TranslationEnginesController : ServalControllerBase
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
 
+        if (await _buildService.GetActiveAsync(id) == null)
+            return NotFound();
+
         await _engineService.CancelBuildAsync(id, cancellationToken);
         return Ok();
     }

@@ -1,0 +1,45 @@
+name: Test CI for E2E
+
+on:
+  push:
+    branches:
+      - "integration_testing"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Start containers
+        run: docker compose up -d --build
+
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Check formatting
+        run: dotnet csharpier --check .
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Pre-Test
+        run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow" -c Release
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down
