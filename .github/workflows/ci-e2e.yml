@@ -9,7 +9,17 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+
+    env:
+      SERVAL_CLIENT_ID: ${{ secrets.SERVAL_CLIENT_ID }}
+      SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ClearML_AccessKey: ${{ secrets.ClearML_AccessKey }}
+      ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+      SERVAL_HOST_URL: http://localhost
+      SERVAL_AUTH_URL: https://sil-appbuilder.auth0.com
 
     steps:
       - uses: actions/checkout@v3
@@ -20,7 +30,7 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Start containers
-        run: docker compose up -d --build
+        run: docker compose up -d
 
       - name: Restore dotnet tools
         run: dotnet tool restore
@@ -38,7 +48,7 @@ jobs:
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow" -c Release
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E" -c Release
 
       - name: Stop containers
         if: always()
