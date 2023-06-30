@@ -29,6 +29,9 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
+      - name: Get Machine
+        run: cd .. && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../serval
+
       - name: Start containers
         run: docker compose up -d
 
