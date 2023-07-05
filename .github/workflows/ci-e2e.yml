@@ -1,4 +1,4 @@
-name: Test CI for E2E
+name: "CI Build: E2E tests"
 
 on:
   push:
@@ -20,6 +20,7 @@ jobs:
       ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
       SERVAL_HOST_URL: http://localhost
       SERVAL_AUTH_URL: https://sil-appbuilder.auth0.com
+      # ASPNETCORE_ENVIRONMENT: Development
 
     steps:
       - uses: actions/checkout@v3
@@ -30,10 +31,7 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Get Machine
-        run: cd .. && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../serval
-
-      - name: Start containers
-        run: docker compose up -d
+        run: cd .. && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../serval && dotnet build
 
       - name: Restore dotnet tools
         run: dotnet tool restore
@@ -41,18 +39,25 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Check formatting
-        run: dotnet csharpier --check .
-
       - name: Build
-        run: dotnet build --no-restore -c Release
+        run: dotnet build --no-restore
+
+      - name: Start containers
+        run: docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+
+      - name: Debug network
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
       - name: Pre-Test
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E" -c Release
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
+
+      - name: Debug network (Post test)
+        if: ${{ failure() }}
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
       - name: Stop containers
-        if: always()
+        if: ${{ success() || failure() }}
         run: docker compose down
