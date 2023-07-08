@@ -1,3 +1,6 @@
+[![Integration & Unit Tests](https://github.com/sillsdev/serval/actions/workflows/ci.yml/badge.svg)](https://github.com/sillsdev/serval/actions/workflows/ci.yml)
+[![End-To-End Tests](https://github.com/sillsdev/serval/actions/workflows/ci-e2e.yml/badge.svg)](https://github.com/sillsdev/serval/actions/workflows/ci-e2e.yml)
+
 # Serval
 
 Serval is a REST API for natural language processing services.
