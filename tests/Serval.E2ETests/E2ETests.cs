@@ -1,3 +1,5 @@
+using static Serval.Shared.Utils.AutoToString;
+
 namespace Serval.ApiServerE2E;
 
 [TestFixture]
@@ -152,5 +154,130 @@ public class E2ETests
             cId
         );
         Assert.IsTrue(lTrans[0].Translation.Contains("dearly beloved Gaius"));
+    }
+
+    [Test]
+    public async Task CircuitousRouteGetWordGraphAsync()
+    {
+        await _helperClient.ClearEngines();
+
+        //Create echo engine
+        string echoEngineId = await _helperClient.CreateNewEngine("Echo", "es", "en", "Echo2");
+        //Try to get word graph - should fail: unbuilt
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await _helperClient.translationEnginesClient.GetWordGraphAsync(echoEngineId, "verdad");
+        });
+        Assert.NotNull(ex);
+        Assert.That(ex!.StatusCode, Is.EqualTo(409));
+
+        //Add corpus
+        await _helperClient.PostTextCorpusToEngine(
+            echoEngineId,
+            new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
+            "es",
+            "en",
+            false
+        );
+
+        //Build engine
+        await _helperClient.BuildEngine(echoEngineId);
+
+        //Try to get word graph - should fail: unsupported function for echo engine
+        ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await _helperClient.translationEnginesClient.GetWordGraphAsync(echoEngineId, "verdad");
+        });
+        Assert.NotNull(ex);
+        Assert.That(ex!.StatusCode, Is.EqualTo(405));
+
+        //Create smt engine
+        string smtEngineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT5");
+
+        //Add corpus
+        var cId = await _helperClient.PostTextCorpusToEngine(
+            smtEngineId,
+            new string[] { "2JN.txt", "3JN.txt" },
+            "es",
+            "en",
+            false
+        );
+
+        //Build the new engine
+        await _helperClient.BuildEngine(smtEngineId);
+
+        // //Oops, wrong corpus - cancel build
+        // await _helperClient.translationEnginesClient.CancelBuildAsync(smtEngineId);
+
+        //Remove added corpus (shouldn't affect translation)
+        await _helperClient.translationEnginesClient.DeleteCorpusAsync(smtEngineId, cId);
+
+        //Add corpus
+        await _helperClient.PostTextCorpusToEngine(
+            smtEngineId,
+            new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
+            "es",
+            "en",
+            false
+        );
+
+        //Build the new engine
+        await _helperClient.BuildEngine(smtEngineId);
+
+        WordGraph result = await _helperClient.translationEnginesClient.GetWordGraphAsync(smtEngineId, "verdad");
+        Assert.That(result.SourceTokens, Has.Count.EqualTo(1));
+        Assert.That(
+            result.Arcs
+                .Where(arc => arc != null && arc.Confidences != null)!
+                .MaxBy(arc => arc.Confidences.Average())!
+                .TargetTokens.All(tk => tk == "truth"),
+            "Best translation should have been 'truth'but returned word graph: \n{0}",
+            GetAutoToString(result)
+        );
+    }
+
+    [Test]
+    public async Task CircuitousRouteTranslateTopNAsync()
+    {
+        const int N = 3;
+
+        //Create engine
+        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "en", "fa", "SMT6");
+
+        //Retrieve engine
+        TranslationEngine? engine = await _helperClient.translationEnginesClient.GetAsync(engineId);
+        Assert.NotNull(engine);
+        Assert.That(engine.Type, Is.EqualTo("SmtTransfer"));
+
+        //Add corpus
+        string cId = await _helperClient.PostTextCorpusToEngine(
+            engineId,
+            new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
+            "en",
+            "fa",
+            false
+        );
+
+        //Retrieve corpus
+        TranslationCorpus? corpus = await _helperClient.translationEnginesClient.GetCorpusAsync(engineId, cId);
+        Assert.NotNull(corpus);
+        Assert.That(corpus.SourceLanguage, Is.EqualTo("en"));
+        Assert.That(corpus.TargetFiles, Has.Count.EqualTo(3));
+
+        //Build engine
+        await _helperClient.BuildEngine(engineId);
+
+        //Get top `N` translations
+        ICollection<TranslationResult> results = await _helperClient.translationEnginesClient.TranslateNAsync(
+            engineId,
+            N,
+            "love"
+        );
+        Assert.NotNull(results);
+        Assert.That(
+            results.MaxBy(t => t.Confidences.Average())!.Translation,
+            Is.EqualTo("amour"),
+            "Expected best translation to be 'amour' but results were this:\n" + GetAutoToString(results)
+        );
     }
 }
