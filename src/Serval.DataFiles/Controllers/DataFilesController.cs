@@ -90,6 +90,7 @@ public class DataFilesController : ServalControllerBase
     ///   * Otherwise, no tabs should be used in the file.
     /// * **Paratext**: A complete, zipped Paratext project
     /// </param>
+    /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The file was created successfully</response>
     /// <response code="400">Bad request. Is the file over 100 MB?</response>
@@ -105,12 +106,14 @@ public class DataFilesController : ServalControllerBase
     public async Task<ActionResult<DataFileDto>> CreateAsync(
         [BindRequired] IFormFile file,
         [BindRequired, FromForm] FileFormat format,
+        [FromServices] IIdGenerator idGenerator,
         [FromForm] string? name,
         CancellationToken cancellationToken
     )
     {
         var dataFile = new DataFile
         {
+            Id = idGenerator.GenerateId(),
             Name = name ?? file.FileName,
             Format = format,
             Owner = Owner

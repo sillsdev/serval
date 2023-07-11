@@ -1,6 +1,4 @@
-﻿using Amazon.Auth.AccessControlPolicy;
-
-namespace Serval.Translation.Controllers;
+﻿namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
@@ -109,6 +107,7 @@ public class TranslationEnginesController : ServalControllerBase
     ///
     /// </remarks>
     /// <param name="engineConfig">The translation engine configuration (see above)</param>
+    /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The translation engine was created successfully</response>
     /// <response code="400">Bad request.  Is the engine type correct?</response>
@@ -123,10 +122,12 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<TranslationEngineDto>> CreateAsync(
         [FromBody] TranslationEngineConfigDto engineConfig,
+        [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
     {
         Engine engine = Map(engineConfig);
+        engine.Id = idGenerator.GenerateId();
         bool success = await _engineService.CreateAsync(engine, cancellationToken);
         if (!success)
             return BadRequest();

@@ -274,7 +274,9 @@ public class DataFilesTests
 
         public TestEnvironment()
         {
-            _mongoClient = new MongoClient();
+            var clientSettings = new MongoClientSettings();
+            clientSettings.LinqProvider = LinqProvider.V2;
+            _mongoClient = new MongoClient(clientSettings);
             ResetDatabases();
 
             Factory = new ServalWebApplicationFactory();

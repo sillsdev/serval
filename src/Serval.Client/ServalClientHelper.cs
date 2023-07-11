@@ -82,13 +82,18 @@ public class ServalClientHelper
         return engine.Id;
     }
 
+    public async Task<TranslationBuild> StartBuildAsync(string engineId)
+    {
+        return await translationEnginesClient.StartBuildAsync(engineId, translationBuildConfig);
+    }
+
     public async Task BuildEngine(string engineId)
     {
-        var newJob = await translationEnginesClient.StartBuildAsync(engineId, translationBuildConfig);
+        var newJob = await StartBuildAsync(engineId);
         int cRevision = newJob.Revision;
         while (true)
         {
-            var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id);
+            var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, cRevision);
             if (!(result.State == JobState.Active || result.State == JobState.Pending))
             {
                 // build completed
@@ -96,6 +101,7 @@ public class ServalClientHelper
             }
             // Throttle requests to only 2 x second
             await Task.Delay(500);
+            cRevision = result.Revision + 1;
         }
     }
 

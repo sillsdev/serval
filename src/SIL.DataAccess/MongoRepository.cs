@@ -55,7 +55,7 @@ public class MongoRepository<T> : IRepository<T>
     public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
     {
         entity.Revision = 1;
-        try
+        await TryCatchDuplicate<object?>(async () =>
         {
             if (_context.Session is not null)
             {
@@ -67,13 +67,8 @@ public class MongoRepository<T> : IRepository<T>
             {
                 await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
-        }
-        catch (MongoWriteException e)
-        {
-            if (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
-                throw new DuplicateKeyException(e);
-            throw;
-        }
+            return null;
+        });
     }
 
     public async Task InsertAllAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default)
@@ -81,7 +76,7 @@ public class MongoRepository<T> : IRepository<T>
         foreach (T entity in entities)
             entity.Revision = 1;
 
-        try
+        await TryCatchDuplicate<object?>(async () =>
         {
             if (_context.Session is not null)
             {
@@ -93,55 +88,39 @@ public class MongoRepository<T> : IRepository<T>
             {
                 await _collection.InsertManyAsync(entities, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
-        }
-        catch (MongoWriteException e)
-        {
-            if (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
-                throw new DuplicateKeyException(e);
-            throw;
-        }
+            return null;
+        });
     }
 
     public async Task<T?> UpdateAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
-        bool upsert = false,
         bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
     {
-        try
+        var updateBuilder = new MongoUpdateBuilder<T>();
+        update(updateBuilder);
+        updateBuilder.Inc(e => e.Revision, 1);
+        UpdateDefinition<T> updateDef = updateBuilder.Build();
+        var options = new FindOneAndUpdateOptions<T>
         {
-            var updateBuilder = new MongoUpdateBuilder<T>();
-            update(updateBuilder);
-            updateBuilder.Inc(e => e.Revision, 1);
-            UpdateDefinition<T> updateDef = updateBuilder.Build();
-            var options = new FindOneAndUpdateOptions<T>
-            {
-                IsUpsert = upsert,
-                ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After
-            };
-            T? entity;
-            if (_context.Session is not null)
-            {
-                entity = await _collection
-                    .FindOneAndUpdateAsync(_context.Session, filter, updateDef, options, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                entity = await _collection
-                    .FindOneAndUpdateAsync(filter, updateDef, options, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            return entity;
-        }
-        catch (MongoWriteException e)
+            ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After
+        };
+        T? entity;
+        if (_context.Session is not null)
         {
-            if (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
-                throw new DuplicateKeyException();
-            throw;
+            entity = await _collection
+                .FindOneAndUpdateAsync(_context.Session, filter, updateDef, options, cancellationToken)
+                .ConfigureAwait(false);
         }
+        else
+        {
+            entity = await _collection
+                .FindOneAndUpdateAsync(filter, updateDef, options, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        return entity;
     }
 
     public async Task<int> UpdateAllAsync(
@@ -150,33 +129,24 @@ public class MongoRepository<T> : IRepository<T>
         CancellationToken cancellationToken = default
     )
     {
-        try
+        var updateBuilder = new MongoUpdateBuilder<T>();
+        update(updateBuilder);
+        updateBuilder.Inc(e => e.Revision, 1);
+        UpdateDefinition<T> updateDef = updateBuilder.Build();
+        UpdateResult result;
+        if (_context.Session is not null)
         {
-            var updateBuilder = new MongoUpdateBuilder<T>();
-            update(updateBuilder);
-            updateBuilder.Inc(e => e.Revision, 1);
-            UpdateDefinition<T> updateDef = updateBuilder.Build();
-            UpdateResult result;
-            if (_context.Session is not null)
-            {
-                result = await _collection
-                    .UpdateManyAsync(_context.Session, filter, updateDef, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                result = await _collection
-                    .UpdateManyAsync(filter, updateDef, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            return (int)result.ModifiedCount;
+            result = await _collection
+                .UpdateManyAsync(_context.Session, filter, updateDef, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
-        catch (MongoWriteException e)
+        else
         {
-            if (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
-                throw new DuplicateKeyException();
-            throw;
+            result = await _collection
+                .UpdateManyAsync(filter, updateDef, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
+        return (int)result.ModifiedCount;
     }
 
     public async Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
@@ -219,10 +189,15 @@ public class MongoRepository<T> : IRepository<T>
     )
     {
         var filterDef = new ExpressionFilterDefinition<T>(filter);
+        var renderedFilter = filterDef.Render(
+            _collection.DocumentSerializer,
+            _collection.Settings.SerializerRegistry,
+            LinqProvider.V2
+        );
         var findCommand = new BsonDocument
         {
             { "find", _collection.CollectionNamespace.CollectionName },
-            { "filter", filterDef.Render(_collection.DocumentSerializer, _collection.Settings.SerializerRegistry) },
+            { "filter", renderedFilter },
             { "limit", 1 },
             { "singleBatch", true }
         };
@@ -244,5 +219,25 @@ public class MongoRepository<T> : IRepository<T>
         var timestamp = (BsonTimestamp)result["operationTime"];
         var subscription = new MongoSubscription<T>(_context, _collection, filter.Compile(), timestamp, initialEntity);
         return subscription;
+    }
+
+    private async Task<TR> TryCatchDuplicate<TR>(Func<Task<TR>> func)
+    {
+        try
+        {
+            return await func();
+        }
+        catch (MongoCommandException e)
+        {
+            if (e.CodeName == "DuplicateKey")
+                throw new DuplicateKeyException();
+            throw;
+        }
+        catch (MongoWriteException e)
+        {
+            if (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
+                throw new DuplicateKeyException();
+            throw;
+        }
     }
 }
