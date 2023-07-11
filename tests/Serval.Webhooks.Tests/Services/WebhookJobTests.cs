@@ -3,6 +3,8 @@
 [TestFixture]
 public class WebhookJobTests
 {
+    const string HOOK1_ID = "000000000000000000000001";
+
     [Test]
     public async Task RunAsync_NoHooks()
     {
@@ -22,7 +24,7 @@ public class WebhookJobTests
         env.Hooks.Add(
             new Webhook
             {
-                Id = "hook1",
+                Id = HOOK1_ID,
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
@@ -50,7 +52,7 @@ public class WebhookJobTests
         env.Hooks.Add(
             new Webhook
             {
-                Id = "hook1",
+                Id = HOOK1_ID,
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
@@ -72,7 +74,7 @@ public class WebhookJobTests
         env.Hooks.Add(
             new Webhook
             {
-                Id = "hook1",
+                Id = HOOK1_ID,
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
@@ -102,7 +104,7 @@ public class WebhookJobTests
         env.Hooks.Add(
             new Webhook
             {
-                Id = "hook1",
+                Id = HOOK1_ID,
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",

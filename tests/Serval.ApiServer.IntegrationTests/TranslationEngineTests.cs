@@ -10,15 +10,16 @@ public class TranslationEngineTests
     TestEnvironment? _env;
     TranslationCorpusConfig? _testCorpusConfig;
 
-    const string ECHO_ENGINE1_ID = "e00000000000000000000000";
-    const string ECHO_ENGINE2_ID = "e00000000000000000000001";
-    const string ECHO_ENGINE3_ID = "e00000000000000000000002";
-    const string SMT_ENGINE1_ID = "be0000000000000000000000";
-    const string FILE1_ID = "f00000000000000000000000";
+    const string ECHO_ENGINE1_ID = "e00000000000000000000001";
+    const string ECHO_ENGINE2_ID = "e00000000000000000000002";
+    const string ECHO_ENGINE3_ID = "e00000000000000000000003";
+    const string SMT_ENGINE1_ID = "be0000000000000000000001";
+    const string FILE1_ID = "f00000000000000000000001";
     const string FILE1_FILENAME = "abcd";
-    const string FILE2_ID = "f00000000000000000000001";
+    const string FILE2_ID = "f00000000000000000000002";
     const string FILE2_FILENAME = "efgh";
-    const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000003";
+    const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
+    const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
 
     [SetUp]
     public async Task SetUp()
@@ -488,7 +489,7 @@ public class TranslationEngineTests
                         new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
                     };
                     var updateConfig = new TranslationCorpusUpdateConfig { SourceFiles = src, TargetFiles = trg };
-                    await client.UpdateCorpusAsync(engineId, "c00000000000000000000000", updateConfig);
+                    await client.UpdateCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -578,10 +579,7 @@ public class TranslationEngineTests
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    TranslationCorpus result_afterAdd = await client.GetCorpusAsync(
-                        engineId,
-                        "c00000000000000000000000"
-                    );
+                    TranslationCorpus result_afterAdd = await client.GetCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID);
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -618,7 +616,7 @@ public class TranslationEngineTests
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.DeleteCorpusAsync(engineId, "c00000000000000000000000");
+                    await client.DeleteCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID);
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;

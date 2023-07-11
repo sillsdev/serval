@@ -5,13 +5,15 @@ namespace Serval.DataFiles.Services;
 [TestFixture]
 public class DataFileServiceTests
 {
+    const string DATA_FILE_ID = "df0000000000000000000001";
+
     [Test]
     public async Task CreateAsync_NoError()
     {
         var env = new TestEnvironment();
         using var fileStream = new MemoryStream();
         env.FileSystem.OpenWrite(Arg.Any<string>()).Returns(fileStream);
-        var dataFile = new DataFile { Name = "file2" };
+        var dataFile = new DataFile { Id = DATA_FILE_ID, Name = "file2" };
         string content = "This is a file.";
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
             await env.Service.CreateAsync(dataFile, stream);
@@ -27,14 +29,14 @@ public class DataFileServiceTests
         env.DataFiles.Add(
             new DataFile
             {
-                Id = "file1",
+                Id = DATA_FILE_ID,
                 Name = "file1",
                 Filename = "file1.txt"
             }
         );
         using var fileStream = new MemoryStream();
         env.FileSystem.OpenWrite(Arg.Any<string>()).Returns(fileStream);
-        var dataFile = new DataFile { Id = "file1", Name = "file1" };
+        var dataFile = new DataFile { Id = DATA_FILE_ID, Name = "file1" };
         string content = "This is a file.";
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
             Assert.ThrowsAsync<DuplicateKeyException>(() => env.Service.CreateAsync(dataFile, stream));
@@ -49,7 +51,7 @@ public class DataFileServiceTests
         env.DataFiles.Add(
             new DataFile
             {
-                Id = "file1",
+                Id = DATA_FILE_ID,
                 Name = "file1",
                 Filename = "file1.txt"
             }
@@ -59,7 +61,7 @@ public class DataFileServiceTests
         string content = "This is a file.";
         DataFile? dataFile;
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            dataFile = await env.Service.UpdateAsync("file1", stream);
+            dataFile = await env.Service.UpdateAsync(DATA_FILE_ID, stream);
 
         Assert.That(dataFile, Is.Not.Null);
         Assert.That(dataFile!.Revision, Is.EqualTo(2));
@@ -77,7 +79,7 @@ public class DataFileServiceTests
         string content = "This is a file.";
         DataFile? dataFile;
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            dataFile = await env.Service.UpdateAsync("file1", stream);
+            dataFile = await env.Service.UpdateAsync(DATA_FILE_ID, stream);
 
         Assert.That(dataFile, Is.Null);
         env.FileSystem.Received().DeleteFile(Arg.Any<string>());
@@ -90,15 +92,15 @@ public class DataFileServiceTests
         env.DataFiles.Add(
             new DataFile
             {
-                Id = "file1",
+                Id = DATA_FILE_ID,
                 Name = "file1",
                 Filename = "file1.txt"
             }
         );
-        bool deleted = await env.Service.DeleteAsync("file1");
+        bool deleted = await env.Service.DeleteAsync(DATA_FILE_ID);
 
         Assert.That(deleted, Is.True);
-        Assert.That(env.DataFiles.Contains("file1"), Is.False);
+        Assert.That(env.DataFiles.Contains(DATA_FILE_ID), Is.False);
         DeletedFile deletedFile = env.DeletedFiles.Entities.Single();
         Assert.That(deletedFile.Filename, Is.EqualTo("file1.txt"));
         await env.Mediator.Received().Publish(Arg.Any<DataFileDeleted>(), Arg.Any<CancellationToken>());
@@ -108,7 +110,7 @@ public class DataFileServiceTests
     public async Task DeleteAsync_DoesNotExist()
     {
         var env = new TestEnvironment();
-        bool deleted = await env.Service.DeleteAsync("file1");
+        bool deleted = await env.Service.DeleteAsync(DATA_FILE_ID);
 
         Assert.That(deleted, Is.False);
     }

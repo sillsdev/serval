@@ -80,6 +80,7 @@
         },
         {
             "name": "DockerComb",
+            "justMyCode": false,
             "configurations": [
                 "ServalApi Docker",
                 "Echo Docker"
