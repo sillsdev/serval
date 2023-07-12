@@ -6,6 +6,8 @@ namespace Serval.Translation.Services;
 [TestFixture]
 public class EngineServiceTests
 {
+    const string BUILD1_ID = "b00000000000000000000001";
+
     [Test]
     public async Task TranslateAsync_EngineDoesNotExist()
     {
@@ -107,7 +109,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        bool result = await env.Service.StartBuildAsync(new Build { EngineRef = engineId });
+        bool result = await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
         Assert.That(result, Is.True);
     }
 

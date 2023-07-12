@@ -3,13 +3,20 @@
 [TestFixture]
 public class BuildServiceTests
 {
+    const string BUILD1_ID = "b00000000000000000000001";
+
     [Test]
     public async Task GetActiveNewerRevisionAsync_Insert()
     {
         var builds = new MemoryRepository<Build>();
         var service = new BuildService(builds);
         Task<EntityChange<Build>> task = service.GetActiveNewerRevisionAsync("engine1", 1);
-        var build = new Build { EngineRef = "engine1", PercentCompleted = 0.1 };
+        var build = new Build
+        {
+            Id = BUILD1_ID,
+            EngineRef = "engine1",
+            PercentCompleted = 0.1
+        };
         await builds.InsertAsync(build);
         EntityChange<Build> change = await task;
         Assert.That(change.Type, Is.EqualTo(EntityChangeType.Insert));
@@ -22,7 +29,7 @@ public class BuildServiceTests
     {
         var builds = new MemoryRepository<Build>();
         var service = new BuildService(builds);
-        var build = new Build { EngineRef = "engine1" };
+        var build = new Build { Id = BUILD1_ID, EngineRef = "engine1" };
         await builds.InsertAsync(build);
         Task<EntityChange<Build>> task = service.GetNewerRevisionAsync(build.Id, 2);
         await builds.UpdateAsync(build, u => u.Set(b => b.PercentCompleted, 0.1));
@@ -37,7 +44,7 @@ public class BuildServiceTests
     {
         var builds = new MemoryRepository<Build>();
         var service = new BuildService(builds);
-        var build = new Build { EngineRef = "engine1" };
+        var build = new Build { Id = BUILD1_ID, EngineRef = "engine1" };
         await builds.InsertAsync(build);
         Task<EntityChange<Build>> task = service.GetNewerRevisionAsync(build.Id, 2);
         await builds.DeleteAsync(build);

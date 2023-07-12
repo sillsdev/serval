@@ -31,7 +31,7 @@ public static class DataAccessExtensions
     )
         where T : IEntity
     {
-        T? entity = await repo.GetAsync(e => e.Id.ToString() == id, cancellationToken);
+        T? entity = await repo.GetAsync(e => e.Id == id, cancellationToken);
         return new Attempt<T>(entity != null, entity);
     }
 
@@ -49,26 +49,24 @@ public static class DataAccessExtensions
         this IRepository<T> repo,
         string id,
         Action<IUpdateBuilder<T>> update,
-        bool upsert = false,
         bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
         where T : IEntity
     {
-        return repo.UpdateAsync(e => e.Id == id, update, upsert, returnOriginal, cancellationToken);
+        return repo.UpdateAsync(e => e.Id == id, update, returnOriginal, cancellationToken);
     }
 
     public static Task<T?> UpdateAsync<T>(
         this IRepository<T> repo,
         T entity,
         Action<IUpdateBuilder<T>> update,
-        bool upsert = false,
         bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
         where T : IEntity
     {
-        return repo.UpdateAsync(entity.Id, update, upsert, returnOriginal, cancellationToken);
+        return repo.UpdateAsync(e => e.Id == entity.Id, update, returnOriginal, cancellationToken);
     }
 
     public static Task<T?> DeleteAsync<T>(
