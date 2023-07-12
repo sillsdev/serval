@@ -17,7 +17,7 @@ public class DataFilesTests
 
     const string ID3 = "000000000000000000000003";
     const string NAME3 = "sample3.txt";
-    const string DOES_NOT_EXIST_ID = "00000000000000000000004";
+    const string DOES_NOT_EXIST_ID = "000000000000000000000004";
 
     [SetUp]
     public async Task SetUp()
