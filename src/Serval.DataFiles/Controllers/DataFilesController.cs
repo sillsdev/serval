@@ -25,11 +25,13 @@ public class DataFilesController : ServalControllerBase
     /// <response code="200">A list of all files owned by the client</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadFiles)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<IEnumerable<DataFileDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         return (await _dataFileService.GetAllAsync(Owner, cancellationToken)).Select(Map);
@@ -44,12 +46,14 @@ public class DataFilesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
     /// <response code="404">The file does not exist</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadFiles)]
     [HttpGet("{id}", Name = "GetDataFile")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<DataFileDto>> GetAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
@@ -95,6 +99,7 @@ public class DataFilesController : ServalControllerBase
     /// <response code="400">Bad request. Is the file over 100 MB?</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.CreateFiles)]
     [HttpPost]
     [RequestSizeLimit(100_000_000)]
@@ -102,6 +107,7 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<DataFileDto>> CreateAsync(
         [BindRequired] IFormFile file,
         [BindRequired, FromForm] FileFormat format,
@@ -134,6 +140,7 @@ public class DataFilesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
     /// <response code="404">The file does not exist and therefore cannot be updated</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.UpdateFiles)]
     [HttpPatch("{id}")]
     [RequestSizeLimit(100_000_000)]
@@ -142,6 +149,7 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<DataFileDto>> UpdateAsync(
         [NotNull] string id,
         [BindRequired] IFormFile file,
@@ -177,12 +185,14 @@ public class DataFilesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
     /// <response code="404">The file does not exist and therefore cannot be deleted</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.DeleteFiles)]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> DeleteAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
