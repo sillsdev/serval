@@ -9,15 +9,15 @@ public class DataFilesTests
 {
     TestEnvironment? _env;
 
-    const string ID1 = "000000000000000000000000";
+    const string ID1 = "000000000000000000000001";
     const string NAME1 = "sample1.txt";
 
-    const string ID2 = "000000000000000000000001";
+    const string ID2 = "000000000000000000000002";
     const string NAME2 = "sample2.txt";
 
-    const string ID3 = "000000000000000000000002";
+    const string ID3 = "000000000000000000000003";
     const string NAME3 = "sample3.txt";
-    const string DOES_NOT_EXIST_ID = "00000000000000000000003";
+    const string DOES_NOT_EXIST_ID = "000000000000000000000004";
 
     [SetUp]
     public async Task SetUp()
@@ -274,7 +274,9 @@ public class DataFilesTests
 
         public TestEnvironment()
         {
-            _mongoClient = new MongoClient();
+            var clientSettings = new MongoClientSettings();
+            clientSettings.LinqProvider = LinqProvider.V2;
+            _mongoClient = new MongoClient(clientSettings);
             ResetDatabases();
 
             Factory = new ServalWebApplicationFactory();

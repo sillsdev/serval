@@ -24,7 +24,7 @@ public class BuildService : EntityServiceBase<Build>, IBuildService
         CancellationToken cancellationToken = default
     )
     {
-        return GetNewerRevisionAsync(b => b.Id == id, minRevision, cancellationToken);
+        return GetNewerRevisionAsync(e => e.Id == id, minRevision, cancellationToken);
     }
 
     public Task<EntityChange<Build>> GetActiveNewerRevisionAsync(

@@ -116,7 +116,10 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
         Build? build = await _builds.UpdateAsync(
             request.BuildId,
-            u => u.Set(b => b.Message, "Canceled").Set(b => b.DateFinished, DateTime.UtcNow),
+            u =>
+                u.Set(b => b.Message, "Canceled")
+                    .Set(b => b.DateFinished, DateTime.UtcNow)
+                    .Set(b => b.State, JobState.Canceled),
             cancellationToken: context.CancellationToken
         );
         if (build is null)

@@ -11,6 +11,7 @@ global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Options;
 global using MongoDB.Bson;
 global using MongoDB.Bson.Serialization;
+global using MongoDB.Bson.Serialization.Attributes;
 global using MongoDB.Bson.Serialization.Conventions;
 global using MongoDB.Bson.Serialization.Serializers;
 global using MongoDB.Driver;

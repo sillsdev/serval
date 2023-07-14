@@ -77,7 +77,12 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
             else
             {
                 await _deletedFiles.InsertAsync(
-                    new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
+                    new DeletedFile
+                    {
+                        Id = originalDataFile.Id,
+                        Filename = originalDataFile.Filename,
+                        DeletedAt = DateTime.UtcNow
+                    },
                     cancellationToken
                 );
             }
@@ -103,7 +108,12 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         if (dataFile is not null)
         {
             await _deletedFiles.InsertAsync(
-                new DeletedFile { Filename = dataFile.Filename, DeletedAt = DateTime.UtcNow },
+                new DeletedFile
+                {
+                    Id = id,
+                    Filename = dataFile.Filename,
+                    DeletedAt = DateTime.UtcNow
+                },
                 cancellationToken
             );
         }

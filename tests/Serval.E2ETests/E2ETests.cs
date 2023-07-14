@@ -79,6 +79,24 @@ public class E2ETests
     }
 
     [Test]
+    public async Task GetSmtCancelAndRestartBuild()
+    {
+        await _helperClient.ClearEngines();
+        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en");
+        var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
+        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        // start and cancel first job after 2 seconds
+        var firstJob = await _helperClient.StartBuildAsync(engineId);
+        await Task.Delay(2000);
+        await _helperClient.translationEnginesClient.CancelBuildAsync(engineId);
+        await Task.Delay(2000);
+        // do a second job normally and make sure it works.
+        await _helperClient.BuildEngine(engineId);
+        TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
+        Assert.AreEqual(tResult.Translation, "spirit");
+    }
+
+    [Test]
     [Category("slow")]
     public async Task GetSmtWholeBible()
     {
@@ -154,6 +172,37 @@ public class E2ETests
             cId
         );
         Assert.IsTrue(lTrans[0].Translation.Contains("dearly beloved Gaius"));
+    }
+
+    [Test]
+    public async Task GetNmtCancelAndRestartBuild()
+    {
+        await _helperClient.ClearEngines();
+        string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en");
+        var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
+        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        // start and cancel first job after 2 seconds
+        var build = await _helperClient.StartBuildAsync(engineId);
+        await Task.Delay(4000);
+        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
+        Assert.That(build.State == JobState.Active || build.State == JobState.Pending);
+
+        await _helperClient.translationEnginesClient.CancelBuildAsync(engineId);
+        await Task.Delay(2000);
+        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
+        Assert.That(build.State == JobState.Canceled);
+
+        // do a second job normally and make sure it works.
+        build = await _helperClient.StartBuildAsync(engineId);
+        await Task.Delay(4000);
+        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
+        Assert.That(build.State == JobState.Active || build.State == JobState.Pending);
+
+        // and cancel again - let's not wait forever
+        await _helperClient.translationEnginesClient.CancelBuildAsync(engineId);
+        await Task.Delay(2000);
+        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
+        Assert.That(build.State == JobState.Canceled);
     }
 
     [Test]
