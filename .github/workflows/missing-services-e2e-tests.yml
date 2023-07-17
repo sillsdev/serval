@@ -14,11 +14,11 @@ jobs:
 
     env:
       SERVAL_CLIENT_ID: ${{ secrets.SERVAL_CLIENT_ID }}
-      # SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
+      SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       ClearML_AccessKey: ${{ secrets.ClearML_AccessKey }}
-      # ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+      ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
       SERVAL_HOST_URL: http://localhost
       SERVAL_AUTH_URL: https://sil-appbuilder.auth0.com
 
@@ -44,10 +44,6 @@ jobs:
 
       - name: Start containers
         run: docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
-        env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
@@ -58,20 +54,12 @@ jobs:
       #Mongo
       - name: Test Working Mongo
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=MongoWorking"
-        env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Kill Mongo
         run: docker stop serval-mongo-1
 
       - name: Test Not Working Mongo
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=MongoNotWorking"
-        env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Restart Mongo
         run: docker start serval-mongo-1 && sleep 20
@@ -79,60 +67,36 @@ jobs:
       #Engine Server
       - name: Test Working Engine Server
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerWorking"
-        env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Kill Engine Server
         run: docker stop machine-engine-cntr
-        env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Test Not Working EngineServer
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerNotWorking"
-        env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Restart Engine Server
         run: docker start machine-engine-cntr && sleep 5
-        env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       #ClearML
       - name: Restart containers with new env
         run: docker compose down && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
         env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ClearML_SecretKey: "not_the_right_key"
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Test Not Working ClearML
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=ClearMLNotWorking"
         env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ClearML_SecretKey: "not_the_right_key"
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       #Auth0
       - name: Restart containers with new env
         run: docker compose down && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
         env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
           SERVAL_CLIENT_SECRET: "not_the_right_key"
 
       - name: Test Not Working Auth0
         run: echo $SERVAL_CLIENT_SECRET && echo "|" && dotnet test --no-build --verbosity normal --filter "TestCategory=Auth0NotWorking"
         env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
           SERVAL_CLIENT_SECRET: "not_the_right_key"
 
       #AWS
@@ -140,15 +104,11 @@ jobs:
         run: docker compose down && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
         env:
           AWS_SECRET_ACCESS_KEY: "not_the_right_key"
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Test Not Working AWS
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=AWSNotWorking"
         env:
           AWS_SECRET_ACCESS_KEY: "not_the_right_key"
-          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       #Clean up
       - name: Debug network (Post test)
