@@ -58,12 +58,20 @@ jobs:
       #Mongo
       - name: Test Working Mongo
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=MongoWorking"
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Kill Mongo
         run: docker stop serval-mongo-1
 
       - name: Test Not Working Mongo
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=MongoNotWorking"
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Restart Mongo
         run: docker start serval-mongo-1 && sleep 20
@@ -91,6 +99,10 @@ jobs:
 
       - name: Test Not Working ClearML
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=ClearMLNotWorking"
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ClearML_SecretKey: not_the_right_key
+          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       #Auth0
       - name: Restart containers with new env
@@ -102,6 +114,10 @@ jobs:
 
       - name: Test Not Working Auth0
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=Auth0NotWorking"
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+          SERVAL_CLIENT_SECRET: not_the_right_key
 
       #AWS
       - name: Restart containers with new env
@@ -113,6 +129,10 @@ jobs:
 
       - name: Test Not Working AWS
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=AWSNotWorking"
+        env:
+          AWS_SECRET_ACCESS_KEY: not_the_right_key
+          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       #Clean up
       - name: Debug network (Post test)
