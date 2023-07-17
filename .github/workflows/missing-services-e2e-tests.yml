@@ -79,15 +79,31 @@ jobs:
       #Engine Server
       - name: Test Working Engine Server
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerWorking"
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Kill Engine Server
         run: docker stop machine-engine-cntr
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Test Not Working EngineServer
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerNotWorking"
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       - name: Restart Engine Server
         run: docker start machine-engine-cntr && sleep 5
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+          SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
 
       #ClearML
       - name: Restart containers with new env
