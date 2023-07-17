@@ -4,10 +4,10 @@ namespace Serval.E2ETests
     [Category("E2EMissingServices")]
     public class E2EMissingServicesTests
     {
-        private ServalClientHelper _helperClient;
+        private ServalClientHelper? _helperClient;
 
         [SetUp]
-        public async Task Setup()
+        public void Setup()
         {
             _helperClient = InitializeClient();
         }
@@ -15,21 +15,21 @@ namespace Serval.E2ETests
         [Test]
         [Category("MongoWorking")]
         [Category("Auth0Working")]
-        public async Task UseMongoAndAuth0Async()
+        public void UseMongoAndAuth0Async()
         {
             Assert.DoesNotThrowAsync(async () =>
             {
-                await _helperClient.dataFilesClient.GetAllAsync();
+                await _helperClient!.dataFilesClient.GetAllAsync();
             });
         }
 
         [Test]
         [Category("EngineServerWorking")]
-        public async Task UseEngineServerAsync()
+        public void UseEngineServerAsync()
         {
             Assert.DoesNotThrowAsync(async () =>
             {
-                string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
+                string engineId = await _helperClient!.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
                 var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
                 await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
                 await _helperClient.BuildEngine(engineId);
@@ -38,11 +38,11 @@ namespace Serval.E2ETests
 
         [Test]
         [Category("ClearMLNotWorking")]
-        public async Task UseMissingClearMLAsync()
+        public void UseMissingClearMLAsync()
         {
             Assert.ThrowsAsync<ServalApiException>(async () =>
             {
-                string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT1");
+                string engineId = await _helperClient!.CreateNewEngine("Nmt", "es", "en", "NMT1");
                 var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
                 await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
                 var cId = await _helperClient.PostTextCorpusToEngine(
@@ -62,11 +62,11 @@ namespace Serval.E2ETests
 
         [Test]
         [Category("AWSNotWorking")]
-        public async Task UseMissingAWSAsync()
+        public void UseMissingAWSAsync()
         {
             Assert.ThrowsAsync<ServalApiException>(async () =>
             {
-                string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT1");
+                string engineId = await _helperClient!.CreateNewEngine("Nmt", "es", "en", "NMT1");
                 var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
                 await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
                 var cId = await _helperClient.PostTextCorpusToEngine(
@@ -86,11 +86,11 @@ namespace Serval.E2ETests
 
         [Test]
         [Category("MongoNotWorking")]
-        public async Task UseMissingMongoAsync()
+        public void UseMissingMongoAsync()
         {
             ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
             {
-                await _helperClient.dataFilesClient.GetAllAsync();
+                await _helperClient!.dataFilesClient.GetAllAsync();
             });
             Assert.NotNull(ex);
             Assert.That(ex!.StatusCode, Is.EqualTo(503));
@@ -98,11 +98,11 @@ namespace Serval.E2ETests
 
         [Test]
         [Category("EngineServerNotWorking")]
-        public async Task UseMissingEngineServerAsync()
+        public void UseMissingEngineServerAsync()
         {
             ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
             {
-                string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
+                string engineId = await _helperClient!.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
                 var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
                 await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
                 await _helperClient.BuildEngine(engineId);
@@ -113,11 +113,11 @@ namespace Serval.E2ETests
 
         [Test]
         [Category("Auth0NotWorking")]
-        public async Task UseMissingAuth0Async()
+        public void UseMissingAuth0Async()
         {
             ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
             {
-                await _helperClient.dataFilesClient.GetAllAsync();
+                await _helperClient!.dataFilesClient.GetAllAsync();
             });
             Assert.NotNull(ex);
             Assert.That(ex!.StatusCode, Is.EqualTo(503));
