@@ -805,8 +805,7 @@ namespace Serval.Client
         /// <br/>fine tuned from the NLLB-200 from Meta and inherits thw 200 language codes.
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
-        /// <br/>FIXME - is this accurate? A sample engine that will echo whatever text is sent to it.  Has full
-        /// <br/>coverage of the API endpoints.
+        /// <br/>Has coverage of creation, building, and translation endpoints
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -1008,8 +1007,6 @@ namespace Serval.Client
         /// <br/>that is, segments (lines of text) in the specified corpora or textId's that have
         /// <br/>untranslated text but no translated text.  If the engine does not support
         /// <br/>pretranslation, these fields have no effect.
-        /// <br/>FIXME - what if no corpora or files are added?
-        /// <br/>FIXME - can you queue up multiple build jobs?  What happens if you keep requesting?
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -1052,12 +1049,8 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Cancel the current build job for a translation engine
+        /// Cancel the current build job (whether pending or active) for a translation engine
         /// </summary>
-        /// <remarks>
-        /// FIXME: What if there are queued builds?  Will they start?
-        /// <br/>FIXME: Will it cancel even if the build is just pending?
-        /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <returns>The build job was cancelled successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -1208,8 +1201,7 @@ namespace Serval.Client
         /// <br/>fine tuned from the NLLB-200 from Meta and inherits thw 200 language codes.
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
-        /// <br/>FIXME - is this accurate? A sample engine that will echo whatever text is sent to it.  Has full
-        /// <br/>coverage of the API endpoints.
+        /// <br/>Has coverage of creation, building, and translation endpoints
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -2924,8 +2916,6 @@ namespace Serval.Client
         /// <br/>that is, segments (lines of text) in the specified corpora or textId's that have
         /// <br/>untranslated text but no translated text.  If the engine does not support
         /// <br/>pretranslation, these fields have no effect.
-        /// <br/>FIXME - what if no corpora or files are added?
-        /// <br/>FIXME - can you queue up multiple build jobs?  What happens if you keep requesting?
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -3008,7 +2998,13 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or corpora specified in the config do not exist", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 409)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("There is already an active/pending build", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -3295,12 +3291,8 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Cancel the current build job for a translation engine
+        /// Cancel the current build job (whether pending or active) for a translation engine
         /// </summary>
-        /// <remarks>
-        /// FIXME: What if there are queued builds?  Will they start?
-        /// <br/>FIXME: Will it cancel even if the build is just pending?
-        /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <returns>The build job was cancelled successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>

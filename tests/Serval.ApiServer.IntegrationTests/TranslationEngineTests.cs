@@ -2,6 +2,7 @@ namespace Serval.ApiServer;
 using Serval.Translation.V1;
 using Google.Protobuf.WellKnownTypes;
 using Serval.DataFiles.Models;
+using static Serval.Shared.Utils.AutoToString;
 
 [TestFixture]
 [Category("Integration")]
@@ -985,7 +986,12 @@ public class TranslationEngineTests
         404,
         DOES_NOT_EXIST_ENGINE_ID
     )]
-    public async Task StartBuildsForEngineByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
+    [TestCase(
+        new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
+        404,
+        ECHO_ENGINE1_ID
+    )]
+    public async Task StartBuildForEngineByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
         ITranslationEnginesClient client = _env!.CreateClient(scope);
         ServalApiException? ex = null;
@@ -994,6 +1000,7 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 201:
+                TranslationBuild? build;
                 TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig!);
                 Serval.Client.TranslationBuild? result_afterStart = null;
                 ptcc = new PretranslateCorpusConfig
@@ -1008,11 +1015,13 @@ public class TranslationEngineTests
                 });
                 Assert.DoesNotThrowAsync(async () =>
                 {
-                    await client.StartBuildAsync(engineId, tbc);
+                    build = await client.StartBuildAsync(engineId, tbc);
+                    Assert.NotNull(build);
                 });
                 Assert.DoesNotThrowAsync(async () =>
                 {
-                    await client.GetCurrentBuildAsync(engineId);
+                    build = await client.GetCurrentBuildAsync(engineId);
+                    Assert.NotNull(build);
                 });
                 break;
             case 404:
@@ -1128,6 +1137,32 @@ public class TranslationEngineTests
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
                 break;
         }
+    }
+
+    [Test]
+    public async Task TryToQueueMultipleBuildsPerSingleUser()
+    {
+        ITranslationEnginesClient client = _env!.CreateClient();
+        var engineId = NMT_ENGINE1_ID;
+        var expectedStatusCode = 409;
+        TranslationBuild? build = null;
+        TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig!);
+        var ptcc = new PretranslateCorpusConfig
+        {
+            CorpusId = added_corpus.Id,
+            TextIds = new List<string> { "all" }
+        };
+        var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            build = await client.StartBuildAsync(engineId, tbc);
+        });
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            build = await client.StartBuildAsync(engineId, tbc);
+        });
+        Assert.NotNull(ex);
+        Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
     }
 
     [TearDown]

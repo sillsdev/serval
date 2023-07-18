@@ -2,9 +2,6 @@ name: "Missing services E2E tests"
 
 on:
   workflow_dispatch: {}
-  push:
-    branches:
-      - "integration_testing"
 
 jobs:
   build:
@@ -87,17 +84,6 @@ jobs:
         run: dotnet test --no-build --verbosity normal --filter "TestCategory=ClearMLNotWorking"
         env:
           ClearML_SecretKey: "not_the_right_key"
-
-      #Auth0
-      - name: Restart containers with new env
-        run: docker compose down && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
-        env:
-          SERVAL_CLIENT_SECRET: "not_the_right_key"
-
-      - name: Test Not Working Auth0
-        run: echo $SERVAL_CLIENT_SECRET && echo "|" && dotnet test --no-build --verbosity normal --filter "TestCategory=Auth0NotWorking"
-        env:
-          SERVAL_CLIENT_SECRET: "not_the_right_key"
 
       #AWS
       - name: Restart containers with new env

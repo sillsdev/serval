@@ -281,7 +281,7 @@ public class E2ETests
                 .MaxBy(arc => arc.Confidences.Average())!
                 .TargetTokens.All(tk => tk == "truth"),
             "Best translation should have been 'truth'but returned word graph: \n{0}",
-            GetAutoToString(result)
+            Stringify(result)
         );
     }
 
@@ -326,7 +326,7 @@ public class E2ETests
         Assert.That(
             results.MaxBy(t => t.Confidences.Average())!.Translation,
             Is.EqualTo("amour"),
-            "Expected best translation to be 'amour' but results were this:\n" + GetAutoToString(results)
+            "Expected best translation to be 'amour' but results were this:\n" + Stringify(results)
         );
     }
 }

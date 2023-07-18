@@ -99,8 +99,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// fine tuned from the NLLB-200 from Meta and inherits thw 200 language codes.
     /// Typical endpoints: pretranslate
     /// ### Echo
-    /// FIXME - is this accurate? A sample engine that will echo whatever text is sent to it.  Has full
-    /// coverage of the API endpoints.
+    /// Has coverage of creation, building, and translation endpoints
     /// ## Sample request:
     ///
     ///     {
@@ -784,8 +783,6 @@ public class TranslationEnginesController : ServalControllerBase
     /// that is, segments (lines of text) in the specified corpora or textId's that have
     /// untranslated text but no translated text.  If the engine does not support
     /// pretranslation, these fields have no effect.
-    /// FIXME - what if no corpora or files are added?
-    /// FIXME - can you queue up multiple build jobs?  What happens if you keep requesting?
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
@@ -794,7 +791,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="400">Bad request</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client does not own the translation engine</response>
-    /// <response code="404">The engine or does not exist</response>
+    /// <response code="404">The engine or corpora specified in the config do not exist</response>
+    /// <response code="409">There is already an active/pending build</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/builds")]
@@ -803,6 +801,7 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationBuildDto>> StartBuildAsync(
         [NotNull] string id,
@@ -812,10 +811,19 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-
+        if (await _buildService.GetActiveAsync(id) is not null)
+            return Conflict();
         Build build = Map(id, buildConfig);
-        if (!await _engineService.StartBuildAsync(build, cancellationToken))
+        bool startedBuild = false;
+        try
+        {
+            startedBuild = await _engineService.StartBuildAsync(build, cancellationToken);
+        }
+        catch { }
+
+        if (!startedBuild)
             return NotFound();
+
         var dto = Map(build);
         return Created(dto.Url, dto);
     }
@@ -881,11 +889,9 @@ public class TranslationEnginesController : ServalControllerBase
     }
 
     /// <summary>
-    /// Cancel the current build job for a translation engine
+    /// Cancel the current build job (whether pending or active) for a translation engine
     /// </summary>
     /// <remarks>
-    /// FIXME: What if there are queued builds?  Will they start?
-    /// FIXME: Will it cancel even if the build is just pending?
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>

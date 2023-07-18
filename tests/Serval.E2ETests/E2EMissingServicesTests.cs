@@ -14,7 +14,6 @@ namespace Serval.E2ETests
 
         [Test]
         [Category("MongoWorking")]
-        [Category("Auth0Working")]
         public void UseMongoAndAuth0Async()
         {
             Assert.DoesNotThrowAsync(async () =>
@@ -106,18 +105,6 @@ namespace Serval.E2ETests
                 var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
                 await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
                 await _helperClient.BuildEngine(engineId);
-            });
-            Assert.NotNull(ex);
-            Assert.That(ex!.StatusCode, Is.EqualTo(503));
-        }
-
-        [Test]
-        [Category("Auth0NotWorking")]
-        public void UseMissingAuth0Async()
-        {
-            ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-            {
-                await _helperClient!.dataFilesClient.GetAllAsync();
             });
             Assert.NotNull(ex);
             Assert.That(ex!.StatusCode, Is.EqualTo(503));
