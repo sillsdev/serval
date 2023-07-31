@@ -4,9 +4,8 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
 {
     private static readonly Empty Empty = new();
     private readonly BackgroundTaskQueue _taskQueue;
-    private readonly ILogger<TranslationEngineServiceV1> _logger;
 
-    public TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, ILogger<TranslationEngineServiceV1> logger)
+    public TranslationEngineServiceV1(BackgroundTaskQueue taskQueue)
     {
         _taskQueue = taskQueue;
     }
@@ -160,7 +159,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
                                                         TextId = sourceFile.Key,
-                                                        Refs = { sourceLineKVPair.Key },
+                                                        Refs = { $"{sourceFile.Key}:{sourceLineKVPair.Key}" },
                                                         Translation = sourceLine
                                                     },
                                                     cancellationToken
@@ -207,7 +206,10 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
                                                         TextId = sourceFile.Key,
-                                                        Refs = { sourceLine.Split('\t').FirstOrDefault("") },
+                                                        Refs =
+                                                        {
+                                                            $"{sourceFile.Key}:{sourceLine.Split('\t').FirstOrDefault("")}"
+                                                        },
                                                         Translation = sourceLine.Split('\t').LastOrDefault("")
                                                     },
                                                     cancellationToken
