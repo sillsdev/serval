@@ -132,7 +132,15 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine engine = Map(engineConfig);
+        Engine engine;
+        try
+        {
+            engine = Map(engineConfig);
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return UnprocessableEntity(ioe.Message);
+        }
         engine.Id = idGenerator.GenerateId();
         bool success = await _engineService.CreateAsync(engine, cancellationToken);
         if (!success)
@@ -938,6 +946,8 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
+        if (source.SourceLanguage == source.TargetLanguage)
+            throw new InvalidOperationException("Source and target languages must be different");
         return new Corpus
         {
             Id = corpusId,
@@ -984,6 +994,8 @@ public class TranslationEnginesController : ServalControllerBase
 
     private Engine Map(TranslationEngineConfigDto source)
     {
+        if (source.SourceLanguage == source.TargetLanguage)
+            throw new InvalidOperationException("Source and target languages must be different");
         return new Engine
         {
             Name = source.Name,
