@@ -88,7 +88,7 @@ public class TranslationEnginesController : ServalControllerBase
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **sourceLanguage**: The source language code
-    ///   * FIXME - is this accurate?!?!?!: Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
+    ///   * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
     /// * **targetLanguage**: The target language code
     /// * **type**: Either **SMTTransfer** or **Nmt**
     /// ### SMTTransfer
@@ -421,7 +421,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// </summary>
     /// <remarks>
     /// See posting a new corpus for details of use.  Will completely replace corpora files associations.
-    /// FIXME - is this accurate?!?!?!?!? - Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
+    /// Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
