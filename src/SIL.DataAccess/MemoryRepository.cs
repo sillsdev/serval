@@ -116,8 +116,6 @@ public class MemoryRepository<T> : IRepository<T>
     public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
     {
         entity.Revision = 1;
-        if (string.IsNullOrEmpty(entity.Id))
-            entity.Id = ObjectId.GenerateNewId().ToString();
         var allSubscriptions = new List<MemorySubscription<T>>();
         string serializedEntity;
         using (await _lock.LockAsync(cancellationToken))
@@ -136,8 +134,6 @@ public class MemoryRepository<T> : IRepository<T>
         foreach (T entity in entities)
         {
             entity.Revision = 1;
-            if (string.IsNullOrEmpty(entity.Id))
-                entity.Id = ObjectId.GenerateNewId().ToString();
         }
         var serializedEntities = new List<(string, string, List<MemorySubscription<T>>)>();
         using (await _lock.LockAsync(cancellationToken))
@@ -160,7 +156,6 @@ public class MemoryRepository<T> : IRepository<T>
     public async Task<T?> UpdateAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
-        bool upsert = false,
         bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
@@ -183,34 +178,17 @@ public class MemoryRepository<T> : IRepository<T>
                     return false;
                 }
             });
-            if (entity != null || upsert)
-            {
-                bool isInsert = entity == null;
-                if (isInsert)
-                {
-                    entity = (T)Activator.CreateInstance(typeof(T))!;
-                    string? id = ExpressionHelper.FindEqualsConstantValue<T, string>(e => e.Id, filter.Body);
-                    entity.Id = id ?? ObjectId.GenerateNewId().ToString();
-                    entity.Revision = 0;
-                }
-                else
-                {
-                    original = Entities.AsQueryable().FirstOrDefault(filter);
-                }
-                Debug.Assert(entity != null);
-                var builder = new MemoryUpdateBuilder<T>(filter, entity, isInsert);
-                update(builder);
-                entity.Revision++;
+            if (entity == null)
+                return entity; // file not found
 
-                if (isInsert && Contains(entity.Id))
-                    throw new DuplicateKeyException();
+            original = Entities.AsQueryable().FirstOrDefault(filter);
+            Debug.Assert(entity != null);
+            var builder = new MemoryUpdateBuilder<T>(filter, entity, isInsert: false);
+            update(builder);
+            entity.Revision++;
 
-                if (CheckDuplicateKeys(entity, original))
-                    throw new DuplicateKeyException();
-
-                serializedEntity = Replace(entity);
-                GetSubscriptions(entity, allSubscriptions);
-            }
+            serializedEntity = Replace(entity);
+            GetSubscriptions(entity, allSubscriptions);
         }
         if (entity != null && serializedEntity != null)
             SendToSubscribers(allSubscriptions, EntityChangeType.Update, entity.Id, serializedEntity);
@@ -233,9 +211,6 @@ public class MemoryRepository<T> : IRepository<T>
                 var builder = new MemoryUpdateBuilder<T>(filter, entity, isInsert: false);
                 update(builder);
                 entity.Revision++;
-
-                if (CheckDuplicateKeys(entity, original))
-                    throw new DuplicateKeyException();
 
                 Replace(entity);
             }

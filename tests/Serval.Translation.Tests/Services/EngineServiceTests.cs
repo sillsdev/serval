@@ -6,6 +6,8 @@ namespace Serval.Translation.Services;
 [TestFixture]
 public class EngineServiceTests
 {
+    const string BUILD1_ID = "b00000000000000000000001";
+
     [Test]
     public async Task TranslateAsync_EngineDoesNotExist()
     {
@@ -21,7 +23,7 @@ public class EngineServiceTests
         string engineId = (await env.CreateEngineAsync()).Id;
         Models.TranslationResult? result = await env.Service.TranslateAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Translation, Is.EqualTo("this is a test."));
+        Assert.That(result!.Translation, Is.EqualTo("this is a test."));
     }
 
     [Test]
@@ -39,7 +41,7 @@ public class EngineServiceTests
         string engineId = (await env.CreateEngineAsync()).Id;
         Models.WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Arcs.SelectMany(a => a.TargetTokens), Is.EqualTo("this is a test .".Split()));
+        Assert.That(result!.Arcs.SelectMany(a => a.TargetTokens), Is.EqualTo("this is a test .".Split()));
     }
 
     [Test]
@@ -107,7 +109,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        bool result = await env.Service.StartBuildAsync(new Build { EngineRef = engineId });
+        bool result = await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
         Assert.That(result, Is.True);
     }
 
@@ -150,7 +152,7 @@ public class EngineServiceTests
         );
 
         Assert.That(corpus, Is.Not.Null);
-        Assert.That(corpus.SourceFiles.Count, Is.EqualTo(2));
+        Assert.That(corpus!.SourceFiles.Count, Is.EqualTo(2));
         Assert.That(corpus.SourceFiles[0].Id, Is.EqualTo("file1"));
         Assert.That(corpus.SourceFiles[1].Id, Is.EqualTo("file3"));
         Assert.That(corpus.TargetFiles.Count, Is.EqualTo(1));

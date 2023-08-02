@@ -1,7 +1,7 @@
 apiVersion: logging.banzaicloud.io/v1beta1
 kind: Flow
 metadata:
-  name: machine
+  name: serval-flow
   namespace: {{ .Values.namespace }}
 spec:
   filters:
@@ -30,7 +30,7 @@ spec:
 apiVersion: logging.banzaicloud.io/v1beta1
 kind: Flow
 metadata:
-  name: mongo
+  name: mongo-flow
   namespace: {{ .Values.namespace }}
 spec:
   globalOutputRefs: []

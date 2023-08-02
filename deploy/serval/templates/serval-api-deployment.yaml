@@ -23,6 +23,8 @@ spec:
             - /app/api_server/Serval.ApiServer.dll
           workingDir: /app/api_server
           env:
+            - name: Auth__Domain
+              value: {{ .Values.auth0Domain}}
             - name: ASPNETCORE_Kestrel__Endpoints__Http__Url
               value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Http2__Url
@@ -69,15 +71,6 @@ spec:
               name: server-keys
       hostname: serval-api
       restartPolicy: Always
-      {{- if .Values.localVolume }}
-      volumes:
-        - hostPath:
-            path: /host/serval
-          name: serval-mount
-        - hostPath:
-            path: /host/DataProtection-Keys
-          name: server-keys
-      {{- else}}
       volumes:
         - name: serval-mount
           persistentVolumeClaim:
@@ -85,5 +78,4 @@ spec:
         - name: server-keys
           persistentVolumeClaim:
             claimName: keys-claim
-      {{- end}}
 status: {}

@@ -131,12 +131,14 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public override async Task CreateAsync(Engine engine, CancellationToken cancellationToken = default)
+    public override async Task<bool> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
         await Entities.InsertAsync(engine, cancellationToken);
         try
         {
             var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            if (client is null)
+                return false;
             var request = new CreateRequest
             {
                 EngineType = engine.Type,
@@ -147,6 +149,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
             if (engine.Name is not null)
                 request.EngineName = engine.Name;
             await client.CreateAsync(request, cancellationToken: cancellationToken);
+            return true;
         }
         catch
         {
@@ -268,14 +271,22 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
     )
     {
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        Engine? engine = await Entities.UpdateAsync(
+        Engine? original_engine = await Entities.UpdateAsync(
             engineId,
             u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
+            returnOriginal: true,
             cancellationToken: cancellationToken
         );
         await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(cancellationToken);
-        return engine is not null;
+        return original_engine is not null
+            && original_engine.Corpora is not null
+            && original_engine.Corpora
+                .FindAll(c =>
+                {
+                    return c.Id == corpusId;
+                })
+                .Count() > 0;
     }
 
     public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)

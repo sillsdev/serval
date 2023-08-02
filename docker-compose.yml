@@ -7,13 +7,13 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
+      - Auth__Domain=sil-appbuilder.auth0.com
+      - Auth__Audience=https://machine.sil.org
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
       - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/serval_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/serval?replicaSet=myRS
-      - ASPNETCORE_Auth__Domain=sil-appbuilder.auth0.com
-      - ASPNETCORE_Auth__Audience=https://machine.sil.org
       - ASPNETCORE_Logging__LogLevel__Default=Information
       - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_Translation__Engines__0__Type=Echo
@@ -93,10 +93,10 @@ services:
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=lambert_24gb
       - ClearMLNmtEngine__DockerImage=mpy.local
-      - ClearMLNmtEngine__MaxStep=1000
+      - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - SharedFile__Uri=s3://aqua-ml-data/
+      - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
     expose:
@@ -138,10 +138,10 @@ services:
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=lambert_24gb
       - ClearMLNmtEngine__DockerImage=mpy.local
-      - ClearMLNmtEngine__MaxStep=1000
+      - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - SharedFile__Uri=s3://aqua-ml-data/
+      - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
     expose:
@@ -151,6 +151,7 @@ services:
     depends_on:
       - mongo
       - machine-engine
+      - serval-api
     volumes:
       - ../machine:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro

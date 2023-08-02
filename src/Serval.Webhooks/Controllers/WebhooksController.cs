@@ -18,8 +18,11 @@ public class WebhooksController : ServalControllerBase
     /// Gets all webhooks.
     /// </summary>
     /// <response code="200">The webhooks.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadHooks)]
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<IEnumerable<WebhookDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         return (await _hookService.GetAllAsync(Owner, cancellationToken)).Select(Map);
@@ -32,10 +35,14 @@ public class WebhooksController : ServalControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The webhook.</response>
     /// <response code="403">The authenticated client does not own the webhook.</response>
+    /// <response code="404">The webhook does not exist</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadHooks)]
     [HttpGet("{id}", Name = "GetWebhook")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<WebhookDto>> GetAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         Webhook? hook = await _hookService.GetAsync(id, cancellationToken);
@@ -53,9 +60,11 @@ public class WebhooksController : ServalControllerBase
     /// <param name="hookConfig">The webhook configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="201">The webhook was created successfully.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.CreateHooks)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<WebhookDto>> CreateAsync(
         [FromBody] WebhookConfigDto hookConfig,
         CancellationToken cancellationToken
@@ -74,10 +83,14 @@ public class WebhooksController : ServalControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The webhook was successfully deleted.</response>
     /// <response code="403">The authenticated client does not own the webhook.</response>
+    /// <response code="404">The webhook does not exist</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.DeleteHooks)]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> DeleteAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         Webhook? hook = await _hookService.GetAsync(id, cancellationToken);

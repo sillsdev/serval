@@ -41,8 +41,8 @@ spec:
               value: SmtTransfer
             - name: ASPNETCORE_TranslationEngines__1
               value: Nmt
-              {{- template "secrets.clearml" }}
-              {{- template "secrets.s3" }}
+              {{- template "secrets.clearml" . }}
+              {{- template "secrets.s3" . }}
           image: {{ .Values.machineImage}}
           imagePullPolicy: "Always"
           name: machine-engine
@@ -65,18 +65,6 @@ spec:
               name: server-keys
       hostname: machine-engine
       restartPolicy: Always
-      {{- if .Values.localVolume }}
-      volumes:
-        - hostPath:
-            path: /host/engines #/host should be mounted from C:\usr\local
-          name: machine-mount
-        - hostPath:
-            path: /host/serval
-          name: serval-mount
-        - hostPath:
-            path: /host/DataProtection-Keys
-          name: server-keys
-      {{- else}}
       volumes:
         - name: machine-mount
           persistentVolumeClaim:
@@ -87,5 +75,4 @@ spec:
         - name: server-keys
           persistentVolumeClaim:
             claimName: keys-claim
-      {{- end}}
 status: {}

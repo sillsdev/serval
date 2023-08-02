@@ -41,10 +41,8 @@ spec:
               value: SmtTransfer
             - name: ASPNETCORE_TranslationEngines__1
               value: Nmt
-            - name: ASPNETCORE_TranslationEngines__1
-              value: Nmt
-              {{- template "secrets.clearml" }}
-              {{- template "secrets.s3" }}
+              {{- template "secrets.clearml" . }}
+              {{- template "secrets.s3" . }}
           image: {{ .Values.machineImage}}
           imagePullPolicy: "Always"
           name: machine-job
@@ -53,7 +51,7 @@ spec:
           resources:
             limits:
               memory: "2000Mi"
-              cpu: "2.8"
+              cpu: "1.9"
             requests:
               memory: "100Mi"
               cpu: "100m"
@@ -65,15 +63,6 @@ spec:
               readOnly: true
       hostname: machine-job
       restartPolicy: Always
-      {{- if .Values.localVolume }}
-      volumes:
-        - hostPath:
-            path: /host/engines #/host should be mounted from C:\usr\local
-          name: machine-mount
-        - hostPath:
-            path: /host/serval
-          name: serval-mount
-      {{- else}}
       volumes:
         - name: machine-mount
           persistentVolumeClaim:
@@ -81,5 +70,4 @@ spec:
         - name: serval-mount
           persistentVolumeClaim:
             claimName: serval-claim
-      {{- end}}
 status: {}

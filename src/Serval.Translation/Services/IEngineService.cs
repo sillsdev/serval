@@ -5,7 +5,7 @@ public interface IEngineService
     Task<IEnumerable<Engine>> GetAllAsync(string owner, CancellationToken cancellationToken = default);
     Task<Engine?> GetAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task CreateAsync(Engine engine, CancellationToken cancellationToken = default);
+    Task<bool> CreateAsync(Engine engine, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<TranslationResult?> TranslateAsync(
