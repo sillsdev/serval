@@ -102,53 +102,115 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                     sourceFile.Value,
                                     cancellationToken
                                 );
+
                                 if (targetFiles.TryGetValue(sourceFile.Key, out string? targetPath))
                                 {
                                     string[] targetLines = await File.ReadAllLinesAsync(targetPath, cancellationToken);
-                                    int lineNum = 1;
-                                    foreach (
-                                        (string sourceLine, string targetLine) in sourceLines
-                                            .Select(l => l.Trim())
-                                            .Zip(targetLines.Select(l => l.Trim()))
-                                    )
+                                    bool isTabSeparated =
+                                        (sourceLines.Length > 0) && (sourceLines[0].Split('\t').Length > 1);
+                                    if (!isTabSeparated)
                                     {
-                                        if (sourceLine.Length > 0 && targetLine.Length == 0)
+                                        int lineNum = 1;
+                                        foreach (
+                                            (string sourceLine, string targetLine) in sourceLines
+                                                .Select(l => l.Trim())
+                                                .Zip(targetLines.Select(l => l.Trim()))
+                                        )
                                         {
+                                            if (sourceLine.Length > 0)
+                                            {
+                                                await call.RequestStream.WriteAsync(
+                                                    new InsertPretranslationRequest
+                                                    {
+                                                        EngineId = request.EngineId,
+                                                        CorpusId = corpus.Id,
+                                                        TextId = sourceFile.Key,
+                                                        Refs = { $"{sourceFile.Key}:{lineNum}" },
+                                                        Translation = targetLine.Length > 0 ? targetLine : sourceLine
+                                                    },
+                                                    cancellationToken
+                                                );
+                                            }
+                                            lineNum++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var sourceLinesDict = sourceLines.ToDictionary(
+                                            l => l.Split('\t')[0].Trim(),
+                                            l => l.Split('\t')[1].Trim()
+                                        );
+                                        var targetLinesDict = targetLines.ToDictionary(
+                                            l => l.Split('\t')[0].Trim(),
+                                            l => l.Contains('\t') ? l.Split('\t')[1].Trim() : string.Empty
+                                        );
+                                        foreach (KeyValuePair<string, string> targetLineKVPair in targetLinesDict)
+                                        {
+                                            string? sourceLine = null;
+                                            sourceLinesDict.TryGetValue(targetLineKVPair.Key, out sourceLine);
+                                            sourceLine ??= string.Empty;
+                                            string? targetLine = targetLineKVPair.Value;
                                             await call.RequestStream.WriteAsync(
                                                 new InsertPretranslationRequest
                                                 {
                                                     EngineId = request.EngineId,
                                                     CorpusId = corpus.Id,
                                                     TextId = sourceFile.Key,
-                                                    Refs = { $"{sourceFile.Key}:{lineNum}" },
-                                                    Translation = sourceLine
+                                                    Refs = { $"{sourceFile.Key}:{targetLineKVPair.Key}" },
+                                                    Translation = targetLine.Length > 0 ? targetLine : sourceLine
                                                 },
                                                 cancellationToken
                                             );
                                         }
-                                        lineNum++;
                                     }
                                 }
                                 else
                                 {
-                                    int lineNum = 1;
-                                    foreach (string sourceLine in sourceLines.Select(l => l.Trim()))
+                                    bool isTabSeparated =
+                                        (sourceLines.Length > 0) && (sourceLines[0].Split('\t').Length > 1);
+                                    if (!isTabSeparated)
                                     {
-                                        if (sourceLine.Length > 0)
+                                        int lineNum = 1;
+                                        foreach (string sourceLine in sourceLines.Select(l => l.Trim()))
                                         {
-                                            await call.RequestStream.WriteAsync(
-                                                new InsertPretranslationRequest
-                                                {
-                                                    EngineId = request.EngineId,
-                                                    CorpusId = corpus.Id,
-                                                    TextId = sourceFile.Key,
-                                                    Refs = { $"{sourceFile.Key}:{lineNum}" },
-                                                    Translation = sourceLine
-                                                },
-                                                cancellationToken
-                                            );
+                                            if (sourceLine.Length > 0)
+                                            {
+                                                await call.RequestStream.WriteAsync(
+                                                    new InsertPretranslationRequest
+                                                    {
+                                                        EngineId = request.EngineId,
+                                                        CorpusId = corpus.Id,
+                                                        TextId = sourceFile.Key,
+                                                        Refs = { $"{sourceFile.Key}:{lineNum}" },
+                                                        Translation = sourceLine
+                                                    },
+                                                    cancellationToken
+                                                );
+                                            }
+                                            lineNum++;
                                         }
-                                        lineNum++;
+                                    }
+                                    else
+                                    {
+                                        foreach (string sourceLine in sourceLines.Select(l => l.Trim()))
+                                        {
+                                            if (sourceLine.Length > 0)
+                                            {
+                                                await call.RequestStream.WriteAsync(
+                                                    new InsertPretranslationRequest
+                                                    {
+                                                        EngineId = request.EngineId,
+                                                        CorpusId = corpus.Id,
+                                                        TextId = sourceFile.Key,
+                                                        Refs = { $"{sourceFile.Key}:{sourceLine.Split('\t')[0]}" },
+                                                        Translation = sourceLine.Contains('\t')
+                                                            ? sourceLine.Split('\t')[1].Trim()
+                                                            : string.Empty
+                                                    },
+                                                    cancellationToken
+                                                );
+                                            }
+                                        }
                                     }
                                 }
                             }
