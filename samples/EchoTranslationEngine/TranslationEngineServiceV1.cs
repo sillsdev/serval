@@ -117,7 +117,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                                 .Zip(targetLines.Select(l => l.Trim()))
                                         )
                                         {
-                                            if (sourceLine.Length > 0 && targetLine.Length == 0)
+                                            if (sourceLine.Length > 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
                                                     new InsertPretranslationRequest
@@ -126,7 +126,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                                         CorpusId = corpus.Id,
                                                         TextId = sourceFile.Key,
                                                         Refs = { $"{sourceFile.Key}:{lineNum}" },
-                                                        Translation = sourceLine
+                                                        Translation = targetLine.Length > 0 ? targetLine : sourceLine
                                                     },
                                                     cancellationToken
                                                 );
@@ -142,29 +142,25 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                         );
                                         var targetLinesDict = targetLines.ToDictionary(
                                             l => l.Split('\t')[0].Trim(),
-                                            l => l.Split('\t').LastOrDefault("").Trim()
+                                            l => l.Contains('\t') ? l.Split('\t')[1].Trim() : string.Empty
                                         );
-                                        foreach (KeyValuePair<string, string> sourceLineKVPair in sourceLinesDict)
+                                        foreach (KeyValuePair<string, string> targetLineKVPair in targetLinesDict)
                                         {
-                                            if (!targetLinesDict.ContainsKey(sourceLineKVPair.Key))
-                                                continue;
-                                            var sourceLine = sourceLineKVPair.Value;
-                                            string targetLine = "";
-                                            targetLinesDict.TryGetValue(sourceLineKVPair.Key, out targetLine!);
-                                            if (sourceLine.Length > 0 && targetLine.Length == 0)
-                                            {
-                                                await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationRequest
-                                                    {
-                                                        EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{sourceLineKVPair.Key}" },
-                                                        Translation = sourceLine
-                                                    },
-                                                    cancellationToken
-                                                );
-                                            }
+                                            string? sourceLine = null;
+                                            sourceLinesDict.TryGetValue(targetLineKVPair.Key, out sourceLine);
+                                            sourceLine ??= string.Empty;
+                                            string? targetLine = targetLineKVPair.Value;
+                                            await call.RequestStream.WriteAsync(
+                                                new InsertPretranslationRequest
+                                                {
+                                                    EngineId = request.EngineId,
+                                                    CorpusId = corpus.Id,
+                                                    TextId = sourceFile.Key,
+                                                    Refs = { $"{sourceFile.Key}:{targetLineKVPair.Key}" },
+                                                    Translation = targetLine.Length > 0 ? targetLine : sourceLine
+                                                },
+                                                cancellationToken
+                                            );
                                         }
                                     }
                                 }
@@ -206,11 +202,10 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
                                                         TextId = sourceFile.Key,
-                                                        Refs =
-                                                        {
-                                                            $"{sourceFile.Key}:{sourceLine.Split('\t').FirstOrDefault("")}"
-                                                        },
-                                                        Translation = sourceLine.Split('\t').LastOrDefault("")
+                                                        Refs = { $"{sourceFile.Key}:{sourceLine.Split('\t')[0]}" },
+                                                        Translation = sourceLine.Contains('\t')
+                                                            ? sourceLine.Split('\t')[1].Trim()
+                                                            : string.Empty
                                                     },
                                                     cancellationToken
                                                 );
