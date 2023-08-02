@@ -118,6 +118,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
+    /// <response code="422">The engine was specified incorrectly.  Did you use the same language for the source and target?</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.CreateTranslationEngines)]
     [HttpPost]
@@ -125,6 +126,7 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationEngineDto>> CreateAsync(
         [FromBody] TranslationEngineConfigDto engineConfig,
@@ -389,6 +391,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
+    /// <response code="422">The engine was specified incorrectly.  Did you use the same language for the source and target?</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/corpora")]
@@ -397,6 +400,7 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
         [NotNull] string id,

@@ -796,8 +796,8 @@ namespace Serval.Client
         /// <br/>* **sourceLanguage**: The source language code
         /// <br/>  * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
         /// <br/>* **targetLanguage**: The target language code
-        /// <br/>* **type**: Either **SMTTransfer** or **Nmt**
-        /// <br/>### SMTTransfer
+        /// <br/>* **type**: Either **SmtTransfer** or **Nmt**
+        /// <br/>### SmtTransfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
@@ -1192,8 +1192,8 @@ namespace Serval.Client
         /// <br/>* **sourceLanguage**: The source language code
         /// <br/>  * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
         /// <br/>* **targetLanguage**: The target language code
-        /// <br/>* **type**: Either **SMTTransfer** or **Nmt**
-        /// <br/>### SMTTransfer
+        /// <br/>* **type**: Either **SmtTransfer** or **Nmt**
+        /// <br/>### SmtTransfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
@@ -1282,6 +1282,12 @@ namespace Serval.Client
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                             throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 422)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine was specified incorrectly.  Did you use the same language for the source and target?", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -2106,6 +2112,12 @@ namespace Serval.Client
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                             throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 422)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine was specified incorrectly.  Did you use the same language for the source and target?", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
