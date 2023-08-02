@@ -2,9 +2,6 @@ name: "Missing services E2E tests"
 
 on:
   workflow_dispatch: {}
-  push:
-    branches:
-      - "integration_testing"
 
 jobs:
   build:
