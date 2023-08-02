@@ -90,8 +90,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// * **sourceLanguage**: The source language code
     ///   * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
     /// * **targetLanguage**: The target language code
-    /// * **type**: Either **SMTTransfer** or **Nmt**
-    /// ### SMTTransfer
+    /// * **type**: Either **SmtTransfer** or **Nmt**
+    /// ### SmtTransfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
     /// Typical endpoints: translate, get-word-graph, train-segment
     /// ### Nmt
