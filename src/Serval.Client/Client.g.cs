@@ -794,10 +794,10 @@ namespace Serval.Client
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **sourceLanguage**: The source language code
-        /// <br/>  * FIXME - is this accurate?!?!?!: Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
+        /// <br/>  * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
         /// <br/>* **targetLanguage**: The target language code
-        /// <br/>* **type**: Either **SMTTransfer** or **Nmt**
-        /// <br/>### SMTTransfer
+        /// <br/>* **type**: Either **SmtTransfer** or **Nmt**
+        /// <br/>### SmtTransfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
@@ -924,7 +924,7 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// See posting a new corpus for details of use.  Will completely replace corpora files associations.
-        /// <br/>FIXME - is this accurate?!?!?!?!? - Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
+        /// <br/>Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -1190,10 +1190,10 @@ namespace Serval.Client
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **sourceLanguage**: The source language code
-        /// <br/>  * FIXME - is this accurate?!?!?!: Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
+        /// <br/>  * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
         /// <br/>* **targetLanguage**: The target language code
-        /// <br/>* **type**: Either **SMTTransfer** or **Nmt**
-        /// <br/>### SMTTransfer
+        /// <br/>* **type**: Either **SmtTransfer** or **Nmt**
+        /// <br/>### SmtTransfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
@@ -1282,6 +1282,12 @@ namespace Serval.Client
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                             throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 422)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine was specified incorrectly.  Did you use the same language for the source and target?", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -2108,6 +2114,12 @@ namespace Serval.Client
                             throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
                         }
                         else
+                        if (status_ == 422)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine was specified incorrectly.  Did you use the same language for the source and target?", status_, responseText_, headers_, null);
+                        }
+                        else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -2238,7 +2250,7 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// See posting a new corpus for details of use.  Will completely replace corpora files associations.
-        /// <br/>FIXME - is this accurate?!?!?!?!? - Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
+        /// <br/>Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>

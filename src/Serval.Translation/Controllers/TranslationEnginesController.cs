@@ -88,10 +88,10 @@ public class TranslationEnginesController : ServalControllerBase
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **sourceLanguage**: The source language code
-    ///   * FIXME - is this accurate?!?!?!: Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
+    ///   * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
     /// * **targetLanguage**: The target language code
-    /// * **type**: Either **SMTTransfer** or **Nmt**
-    /// ### SMTTransfer
+    /// * **type**: Either **SmtTransfer** or **Nmt**
+    /// ### SmtTransfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
     /// Typical endpoints: translate, get-word-graph, train-segment
     /// ### Nmt
@@ -118,6 +118,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
+    /// <response code="422">The engine was specified incorrectly.  Did you use the same language for the source and target?</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.CreateTranslationEngines)]
     [HttpPost]
@@ -125,6 +126,7 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationEngineDto>> CreateAsync(
         [FromBody] TranslationEngineConfigDto engineConfig,
@@ -132,7 +134,15 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine engine = Map(engineConfig);
+        Engine engine;
+        try
+        {
+            engine = Map(engineConfig);
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return UnprocessableEntity(ioe.Message);
+        }
         engine.Id = idGenerator.GenerateId();
         bool success = await _engineService.CreateAsync(engine, cancellationToken);
         if (!success)
@@ -381,6 +391,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
+    /// <response code="422">The engine was specified incorrectly.  Did you use the same language for the source and target?</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/corpora")]
@@ -389,6 +400,7 @@ public class TranslationEnginesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
@@ -421,7 +433,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// </summary>
     /// <remarks>
     /// See posting a new corpus for details of use.  Will completely replace corpora files associations.
-    /// FIXME - is this accurate?!?!?!?!? - Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
+    /// Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -938,6 +950,8 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
+        if (source.SourceLanguage == source.TargetLanguage)
+            throw new InvalidOperationException("Source and target languages must be different");
         return new Corpus
         {
             Id = corpusId,
@@ -984,6 +998,8 @@ public class TranslationEnginesController : ServalControllerBase
 
     private Engine Map(TranslationEngineConfigDto source)
     {
+        if (source.SourceLanguage == source.TargetLanguage)
+            throw new InvalidOperationException("Source and target languages must be different");
         return new Engine
         {
             Name = source.Name,

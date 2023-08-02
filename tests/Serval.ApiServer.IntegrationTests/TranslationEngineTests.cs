@@ -37,7 +37,7 @@ public class TranslationEngineTests
             Id = ECHO_ENGINE1_ID,
             Name = "e0",
             SourceLanguage = "en",
-            TargetLanguage = "en",
+            TargetLanguage = "es",
             Type = "Echo",
             Owner = "client1"
         };
@@ -55,7 +55,7 @@ public class TranslationEngineTests
             Id = ECHO_ENGINE3_ID,
             Name = "e2",
             SourceLanguage = "en",
-            TargetLanguage = "en",
+            TargetLanguage = "es",
             Type = "Echo",
             Owner = "client2"
         };
@@ -64,7 +64,7 @@ public class TranslationEngineTests
             Id = SMT_ENGINE1_ID,
             Name = "be0",
             SourceLanguage = "en",
-            TargetLanguage = "en",
+            TargetLanguage = "es",
             Type = "SMTTransfer",
             Owner = "client1"
         };
@@ -73,7 +73,7 @@ public class TranslationEngineTests
             Id = NMT_ENGINE1_ID,
             Name = "ce0",
             SourceLanguage = "en",
-            TargetLanguage = "en",
+            TargetLanguage = "es",
             Type = "Nmt",
             Owner = "client1"
         };
@@ -104,7 +104,7 @@ public class TranslationEngineTests
         {
             Name = "TestCorpus",
             SourceLanguage = "en",
-            TargetLanguage = "en",
+            TargetLanguage = "es",
             SourceFiles =
             {
                 new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
@@ -188,7 +188,7 @@ public class TranslationEngineTests
                     {
                         Name = "test",
                         SourceLanguage = "en",
-                        TargetLanguage = "en",
+                        TargetLanguage = "es",
                         Type = engineType
                     }
                 );
@@ -206,7 +206,7 @@ public class TranslationEngineTests
                         {
                             Name = "test",
                             SourceLanguage = "en",
-                            TargetLanguage = "en",
+                            TargetLanguage = "es",
                             Type = engineType
                         }
                     );
@@ -1163,6 +1163,38 @@ public class TranslationEngineTests
         });
         Assert.NotNull(ex);
         Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+    }
+
+    [Test]
+    public void AddEngineWithSameSourceAndTargetLangs()
+    {
+        ITranslationEnginesClient client = _env!.CreateClient();
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.CreateAsync(
+                new TranslationEngineConfig
+                {
+                    SourceLanguage = "en",
+                    TargetLanguage = "en",
+                    Type = "Echo"
+                }
+            );
+        });
+        Assert.NotNull(ex);
+        Assert.That(ex!.StatusCode, Is.EqualTo(422));
+    }
+
+    [Test]
+    public void AddCorpusWithSameSourceAndTargetLangs()
+    {
+        ITranslationEnginesClient client = _env!.CreateClient();
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            _testCorpusConfig!.SourceLanguage = _testCorpusConfig.TargetLanguage;
+            await client.AddCorpusAsync(ECHO_ENGINE1_ID, _testCorpusConfig);
+        });
+        Assert.NotNull(ex);
+        Assert.That(ex!.StatusCode, Is.EqualTo(422));
     }
 
     [TearDown]
