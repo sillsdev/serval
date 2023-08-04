@@ -29,4 +29,5 @@
       "url": "https://github.com/sillsdev/serval/issues/<num>"
     }
   ],
+  "dotnet.defaultSolution": "Serval.sln",
 }
