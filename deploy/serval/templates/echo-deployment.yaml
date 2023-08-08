@@ -46,8 +46,15 @@ spec:
             requests:
               memory: "100Mi"
               cpu: "100m"
+          volumeMounts:
+            - mountPath: /var/lib/serval
+              name: serval-mount
+              readOnly: true
       hostname: echo
       restartPolicy: Always
-      volumes: []
+      volumes:
+        - name: serval-mount
+          persistentVolumeClaim:
+            claimName: serval-claim
 status: {}
 {{- end }}

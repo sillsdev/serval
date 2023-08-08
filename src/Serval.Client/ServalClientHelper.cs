@@ -90,10 +90,10 @@ public class ServalClientHelper
     public async Task BuildEngine(string engineId)
     {
         var newJob = await StartBuildAsync(engineId);
-        int cRevision = newJob.Revision;
+        await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
         while (true)
         {
-            var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, cRevision);
+            var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id);
             if (!(result.State == JobState.Active || result.State == JobState.Pending))
             {
                 // build completed
@@ -101,11 +101,10 @@ public class ServalClientHelper
             }
             // Throttle requests to only 2 x second
             await Task.Delay(500);
-            cRevision = result.Revision + 1;
         }
     }
 
-    public async Task<string> PostTextCorpusToEngine(
+    public async Task<string> AddTextCorpusToEngine(
         string engineId,
         string[] filesToAdd,
         string sourceLanguage,
@@ -113,7 +112,7 @@ public class ServalClientHelper
         bool pretranslate
     )
     {
-        List<DataFile> sourceFiles = await PostFiles(filesToAdd, FileFormat.Text, sourceLanguage);
+        List<DataFile> sourceFiles = await UploadFiles(filesToAdd, FileFormat.Text, sourceLanguage);
         var sourceFileConfig = new List<TranslationCorpusFileConfig>();
 
         for (var i = 0; i < sourceFiles.Count; i++)
@@ -126,7 +125,7 @@ public class ServalClientHelper
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
         if (!pretranslate)
         {
-            var targetFiles = await PostFiles(filesToAdd, FileFormat.Text, targetLanguage);
+            var targetFiles = await UploadFiles(filesToAdd, FileFormat.Text, targetLanguage);
             foreach (var item in targetFiles.Select((file, i) => new { i, file }))
             {
                 targetFileConfig.Add(
@@ -157,7 +156,7 @@ public class ServalClientHelper
         return response.Id;
     }
 
-    public async Task<List<DataFile>> PostFiles(IEnumerable<string> filesToAdd, FileFormat fileFormat, string language)
+    public async Task<List<DataFile>> UploadFiles(IEnumerable<string> filesToAdd, FileFormat fileFormat, string language)
     {
         string languageFolder = Path.GetFullPath(
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../..", "data", language)
