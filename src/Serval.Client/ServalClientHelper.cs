@@ -156,7 +156,11 @@ public class ServalClientHelper
         return response.Id;
     }
 
-    public async Task<List<DataFile>> UploadFiles(IEnumerable<string> filesToAdd, FileFormat fileFormat, string language)
+    public async Task<List<DataFile>> UploadFiles(
+        IEnumerable<string> filesToAdd,
+        FileFormat fileFormat,
+        string language
+    )
     {
         string languageFolder = Path.GetFullPath(
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../..", "data", language)

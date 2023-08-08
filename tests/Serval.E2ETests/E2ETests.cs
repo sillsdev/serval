@@ -71,16 +71,18 @@ public class E2ETests
     {
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Echo", "es", "en", "Echo1");
-        var books = new string[] { "1JN.txt", "2JN.txt"};
+        var books = new string[] { "1JN.txt", "2JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
-        books = new string[] { "3JN.txt"};
+        books = new string[] { "3JN.txt" };
         var corpusId = await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", true);
         await _helperClient.BuildEngine(engineId);
         var corpora = _helperClient.translationEnginesClient.GetAllCorporaAsync(engineId);
-        var pretranslations = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(engineId,corpusId);
+        var pretranslations = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            corpusId
+        );
         Assert.IsTrue(pretranslations.Count > 1);
     }
-
 
     [Test]
     public async Task GetSmtTranslation()
