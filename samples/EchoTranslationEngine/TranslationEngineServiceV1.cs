@@ -244,4 +244,43 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
 
         return Empty;
     }
+
+    public override Task<Empty> TrainSegmentPair(TrainSegmentPairRequest request, ServerCallContext _)
+    {
+        return Task.FromResult(Empty);
+    }
+
+    public override Task<GetWordGraphResponse> GetWordGraph(GetWordGraphRequest request, ServerCallContext _)
+    {
+        var tokens = request.Segment.Split();
+        return Task.FromResult(
+            new GetWordGraphResponse
+            {
+                WordGraph = new WordGraph
+                {
+                    InitialStateScore = 0.0,
+                    SourceTokens = { tokens },
+                    Arcs =
+                    {
+                        from index in Enumerable.Range(0, tokens.Length - 1)
+                        select new WordGraphArc
+                        {
+                            PrevState = index,
+                            NextState = index + 1,
+                            Score = 1.0,
+                            TargetTokens = { tokens[index] },
+                            Confidences = { 1.0 },
+                            SourceSegmentStart = index,
+                            SourceSegmentEnd = index + 1,
+                            Alignment =
+                            {
+                                new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
+                            }
+                        }
+                    },
+                    FinalStates = { tokens.Length }
+                }
+            }
+        );
+    }
 }

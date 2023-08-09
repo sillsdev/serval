@@ -796,7 +796,7 @@ namespace Serval.Client
         /// <br/>* **sourceLanguage**: The source language code
         /// <br/>  * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
         /// <br/>* **targetLanguage**: The target language code
-        /// <br/>* **type**: Either **SmtTransfer** or **Nmt**
+        /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
         /// <br/>### SmtTransfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
@@ -805,7 +805,7 @@ namespace Serval.Client
         /// <br/>fine tuned from the NLLB-200 from Meta and inherits thw 200 language codes.
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
-        /// <br/>Has coverage of creation, building, and translation endpoints
+        /// <br/>Typical endpoints: create, build (including pretranslations), translate
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -1192,7 +1192,7 @@ namespace Serval.Client
         /// <br/>* **sourceLanguage**: The source language code
         /// <br/>  * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
         /// <br/>* **targetLanguage**: The target language code
-        /// <br/>* **type**: Either **SmtTransfer** or **Nmt**
+        /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
         /// <br/>### SmtTransfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
@@ -1201,7 +1201,7 @@ namespace Serval.Client
         /// <br/>fine tuned from the NLLB-200 from Meta and inherits thw 200 language codes.
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
-        /// <br/>Has coverage of creation, building, and translation endpoints
+        /// <br/>Typical endpoints: create, build (including pretranslations), translate
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {

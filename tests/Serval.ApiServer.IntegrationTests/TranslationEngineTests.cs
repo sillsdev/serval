@@ -37,7 +37,7 @@ public class TranslationEngineTests
             Id = ECHO_ENGINE1_ID,
             Name = "e0",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             Type = "Echo",
             Owner = "client1"
         };
@@ -46,7 +46,7 @@ public class TranslationEngineTests
             Id = ECHO_ENGINE2_ID,
             Name = "e1",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             Type = "Echo",
             Owner = "client1"
         };
@@ -55,7 +55,7 @@ public class TranslationEngineTests
             Id = ECHO_ENGINE3_ID,
             Name = "e2",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             Type = "Echo",
             Owner = "client2"
         };
@@ -64,7 +64,7 @@ public class TranslationEngineTests
             Id = SMT_ENGINE1_ID,
             Name = "be0",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             Type = "SMTTransfer",
             Owner = "client1"
         };
@@ -73,7 +73,7 @@ public class TranslationEngineTests
             Id = NMT_ENGINE1_ID,
             Name = "ce0",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             Type = "Nmt",
             Owner = "client1"
         };
@@ -104,7 +104,7 @@ public class TranslationEngineTests
         {
             Name = "TestCorpus",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             SourceFiles =
             {
                 new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
@@ -188,7 +188,7 @@ public class TranslationEngineTests
                     {
                         Name = "test",
                         SourceLanguage = "en",
-                        TargetLanguage = "es",
+                        TargetLanguage = "en",
                         Type = engineType
                     }
                 );
@@ -206,7 +206,7 @@ public class TranslationEngineTests
                         {
                             Name = "test",
                             SourceLanguage = "en",
-                            TargetLanguage = "es",
+                            TargetLanguage = "en",
                             Type = engineType
                         }
                     );

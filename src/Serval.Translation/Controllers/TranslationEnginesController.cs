@@ -88,18 +88,21 @@ public class TranslationEnginesController : ServalControllerBase
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **sourceLanguage**: The source language code
-    ///   * Note that for NMT, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
+    ///   * Note that for Nmt, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
     /// * **targetLanguage**: The target language code
-    /// * **type**: Either **SmtTransfer** or **Nmt**
+    /// * **type**: **SmtTransfer** or **Nmt** or **Echo**
     /// ### SmtTransfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
     /// Typical endpoints: translate, get-word-graph, train-segment
     /// ### Nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is
-    /// fine tuned from the NLLB-200 from Meta and inherits thw 200 language codes.
+    /// fine tuned from the NLLB-200 from Meta and inherits the 200 language codes.
     /// Typical endpoints: pretranslate
     /// ### Echo
-    /// Has coverage of creation, building, and translation endpoints
+    /// The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
+    /// return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user
+    /// in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would
+    /// yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
     /// ## Sample request:
     ///
     ///     {
@@ -367,14 +370,14 @@ public class TranslationEnginesController : ServalControllerBase
     /// <remarks>
     /// ## Parameters
     /// * **name**: A name to help identify and distinguish the corpus from other corpora
-    ///   * The name does not have to be unique, as the corpus is uniquely identified by the auto-generated id
+    ///   * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
     /// * **sourceLanguage**: The source language code
     ///   * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
     /// * **targetLanguage**: The target language code
     /// * **SourceFiles**: The source files associated with the corpus
     ///   * **FileId**: The unique id referencing the uploaded file
-    ///   * **TextId**: The client defined name to associate source and target files.
-    ///     * If the TextId in the SourceFiles and TargetFiles matches, they will be used to train the engine.
+    ///   * **TextId**: The client-defined name to associate source and target files.
+    ///     * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
     ///     * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines
     ///     of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
     ///     * A TextId should only be used at most once in SourceFiles and in TargetFiles.
@@ -432,7 +435,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// Update a corpus with a new set of files
     /// </summary>
     /// <remarks>
-    /// See posting a new corpus for details of use.  Will completely replace corpora files associations.
+    /// See posting a new corpus for details of use.  Will completely replace corpus' file associations.
     /// Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
@@ -998,7 +1001,7 @@ public class TranslationEnginesController : ServalControllerBase
 
     private Engine Map(TranslationEngineConfigDto source)
     {
-        if (source.SourceLanguage == source.TargetLanguage)
+        if (source.SourceLanguage == source.TargetLanguage && source.Type != "Echo")
             throw new InvalidOperationException("Source and target languages must be different");
         return new Engine
         {
