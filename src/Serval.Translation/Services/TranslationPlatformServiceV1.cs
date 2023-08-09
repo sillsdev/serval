@@ -233,7 +233,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
     public override async Task<Empty> UpdateBuildStatus(UpdateBuildStatusRequest request, ServerCallContext context)
     {
         await _builds.UpdateAsync(
-            b => b.Id == request.BuildId && b.State == JobState.Active,
+            b => b.Id == request.BuildId && (b.State == JobState.Active || b.State == JobState.Pending),
             u =>
             {
                 u.Set(b => b.Step, request.Step);
