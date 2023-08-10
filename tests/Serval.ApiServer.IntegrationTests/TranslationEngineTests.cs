@@ -10,6 +10,7 @@ public class TranslationEngineTests
 {
     TestEnvironment? _env;
     TranslationCorpusConfig? _testCorpusConfig;
+    TranslationCorpusConfig? _testCorpusConfigNonEcho;
 
     const string ECHO_ENGINE1_ID = "e00000000000000000000001";
     const string ECHO_ENGINE2_ID = "e00000000000000000000002";
@@ -114,6 +115,20 @@ public class TranslationEngineTests
                 new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
             }
         };
+        _testCorpusConfigNonEcho = new TranslationCorpusConfig
+        {
+            Name = "TestCorpus",
+            SourceLanguage = "en",
+            TargetLanguage = "es",
+            SourceFiles =
+            {
+                new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
+            },
+            TargetFiles =
+            {
+                new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
+            }
+        };
     }
 
     [Test]
@@ -198,6 +213,20 @@ public class TranslationEngineTests
                 Assert.That(engine.Name, Is.EqualTo("test"));
                 break;
             case 400:
+                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.CreateAsync(
+                        new TranslationEngineConfig
+                        {
+                            Name = "test",
+                            SourceLanguage = "en",
+                            TargetLanguage = "es",
+                            Type = engineType
+                        }
+                    );
+                });
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
             case 403:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -1146,7 +1175,7 @@ public class TranslationEngineTests
         var engineId = NMT_ENGINE1_ID;
         var expectedStatusCode = 409;
         TranslationBuild? build = null;
-        TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig!);
+        TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfigNonEcho!);
         var ptcc = new PretranslateCorpusConfig
         {
             CorpusId = added_corpus.Id,
@@ -1176,7 +1205,7 @@ public class TranslationEngineTests
                 {
                     SourceLanguage = "en",
                     TargetLanguage = "en",
-                    Type = "Echo"
+                    Type = "Nmt"
                 }
             );
         });
@@ -1190,8 +1219,7 @@ public class TranslationEngineTests
         ITranslationEnginesClient client = _env!.CreateClient();
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
-            _testCorpusConfig!.SourceLanguage = _testCorpusConfig.TargetLanguage;
-            await client.AddCorpusAsync(ECHO_ENGINE1_ID, _testCorpusConfig);
+            await client.AddCorpusAsync(NMT_ENGINE1_ID, _testCorpusConfig!);
         });
         Assert.NotNull(ex);
         Assert.That(ex!.StatusCode, Is.EqualTo(422));

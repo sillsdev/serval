@@ -416,10 +416,18 @@ public class TranslationEnginesController : ServalControllerBase
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
 
+        bool isEcho = (await _engineService.GetAsync(id, cancellationToken))?.Type == "Echo";
+
         Corpus corpus;
         try
         {
-            corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
+            corpus = await MapAsync(
+                getDataFileClient,
+                idGenerator.GenerateId(),
+                corpusConfig,
+                cancellationToken,
+                isEcho
+            );
         }
         catch (InvalidOperationException ioe)
         {
@@ -950,10 +958,11 @@ public class TranslationEnginesController : ServalControllerBase
         IRequestClient<GetDataFile> getDataFileClient,
         string corpusId,
         TranslationCorpusConfigDto source,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        bool isEcho = false
     )
     {
-        if (source.SourceLanguage == source.TargetLanguage)
+        if (source.SourceLanguage == source.TargetLanguage && !isEcho)
             throw new InvalidOperationException("Source and target languages must be different");
         return new Corpus
         {
