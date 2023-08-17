@@ -138,18 +138,19 @@ public class TranslationEnginesController : ServalControllerBase
     )
     {
         Engine engine;
+        engine = Map(engineConfig);
+        engine.Id = idGenerator.GenerateId();
         try
         {
-            engine = Map(engineConfig);
+            bool success = await _engineService.CreateAsync(engine, cancellationToken);
+            if (!success)
+                return BadRequest();
         }
-        catch (InvalidOperationException ioe)
+        catch (ArgumentException ae)
         {
-            return UnprocessableEntity(ioe.Message);
+            return UnprocessableEntity(ae.Message);
         }
-        engine.Id = idGenerator.GenerateId();
-        bool success = await _engineService.CreateAsync(engine, cancellationToken);
-        if (!success)
-            return BadRequest();
+
         TranslationEngineDto dto = Map(engine);
         return Created(dto.Url, dto);
     }
@@ -416,23 +417,14 @@ public class TranslationEnginesController : ServalControllerBase
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
 
-        bool isEcho = (await _engineService.GetAsync(id, cancellationToken))?.Type == "Echo";
-
-        Corpus corpus;
-        try
-        {
-            corpus = await MapAsync(
-                getDataFileClient,
-                idGenerator.GenerateId(),
-                corpusConfig,
-                cancellationToken,
-                isEcho
+        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
+        if (engine is null)
+            return NotFound();
+        Corpus corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
+        if (engine.SourceLanguage != corpus.SourceLanguage || engine.TargetLanguage != corpus.TargetLanguage)
+            return UnprocessableEntity(
+                $"Source and target languages, {corpus.SourceLanguage} & {corpus.TargetLanguage}, do not match engine source and target languages, {engine.SourceLanguage} & {engine.TargetLanguage}"
             );
-        }
-        catch (InvalidOperationException ioe)
-        {
-            return UnprocessableEntity(ioe.Message);
-        }
 
         await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
         TranslationCorpusDto dto = Map(id, corpus);
@@ -958,12 +950,9 @@ public class TranslationEnginesController : ServalControllerBase
         IRequestClient<GetDataFile> getDataFileClient,
         string corpusId,
         TranslationCorpusConfigDto source,
-        CancellationToken cancellationToken,
-        bool isEcho = false
+        CancellationToken cancellationToken
     )
     {
-        if (source.SourceLanguage == source.TargetLanguage && !isEcho)
-            throw new InvalidOperationException("Source and target languages must be different");
         return new Corpus
         {
             Id = corpusId,
@@ -1010,8 +999,6 @@ public class TranslationEnginesController : ServalControllerBase
 
     private Engine Map(TranslationEngineConfigDto source)
     {
-        if (source.SourceLanguage == source.TargetLanguage && source.Type != "Echo")
-            throw new InvalidOperationException("Source and target languages must be different");
         return new Engine
         {
             Name = source.Name,

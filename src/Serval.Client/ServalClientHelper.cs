@@ -101,7 +101,7 @@ public class ServalClientHelper
             }
             // Throttle requests to only 2 x second
             await Task.Delay(500);
-            cRevision = result.Revision + 1;
+            // cRevision = result.Revision + 1;
         }
     }
 

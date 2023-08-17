@@ -12,6 +12,8 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
 
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
+        if (request.SourceLanguage != request.TargetLanguage)
+            throw new ArgumentException("Source and target languages must be the same");
         return Task.FromResult(Empty);
     }
 
@@ -106,8 +108,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                 if (targetFiles.TryGetValue(sourceFile.Key, out string? targetPath))
                                 {
                                     string[] targetLines = await File.ReadAllLinesAsync(targetPath, cancellationToken);
-                                    bool isTabSeparated =
-                                        (sourceLines.Length > 0) && (sourceLines[0].Split('\t').Length > 1);
+                                    bool isTabSeparated = (sourceLines.Length > 0) && sourceLines[0].Contains('/');
                                     if (!isTabSeparated)
                                     {
                                         int lineNum = 1;
@@ -117,7 +118,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                                 .Zip(targetLines.Select(l => l.Trim()))
                                         )
                                         {
-                                            if (sourceLine.Length > 0)
+                                            if (sourceLine.Length > 0 && targetLine.Length == 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
                                                     new InsertPretranslationRequest
@@ -126,7 +127,7 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                                         CorpusId = corpus.Id,
                                                         TextId = sourceFile.Key,
                                                         Refs = { $"{sourceFile.Key}:{lineNum}" },
-                                                        Translation = targetLine.Length > 0 ? targetLine : sourceLine
+                                                        Translation = sourceLine
                                                     },
                                                     cancellationToken
                                                 );
@@ -150,24 +151,26 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                                             sourceLinesDict.TryGetValue(targetLineKVPair.Key, out sourceLine);
                                             sourceLine ??= string.Empty;
                                             string? targetLine = targetLineKVPair.Value;
-                                            await call.RequestStream.WriteAsync(
-                                                new InsertPretranslationRequest
-                                                {
-                                                    EngineId = request.EngineId,
-                                                    CorpusId = corpus.Id,
-                                                    TextId = sourceFile.Key,
-                                                    Refs = { $"{sourceFile.Key}:{targetLineKVPair.Key}" },
-                                                    Translation = targetLine.Length > 0 ? targetLine : sourceLine
-                                                },
-                                                cancellationToken
-                                            );
+                                            if (sourceLine.Length > 0 && targetLine.Length == 0)
+                                            {
+                                                await call.RequestStream.WriteAsync(
+                                                    new InsertPretranslationRequest
+                                                    {
+                                                        EngineId = request.EngineId,
+                                                        CorpusId = corpus.Id,
+                                                        TextId = sourceFile.Key,
+                                                        Refs = { $"{sourceFile.Key}:{targetLineKVPair.Key}" },
+                                                        Translation = sourceLine
+                                                    },
+                                                    cancellationToken
+                                                );
+                                            }
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    bool isTabSeparated =
-                                        (sourceLines.Length > 0) && (sourceLines[0].Split('\t').Length > 1);
+                                    bool isTabSeparated = (sourceLines.Length > 0) && sourceLines[0].Contains('/');
                                     if (!isTabSeparated)
                                     {
                                         int lineNum = 1;
@@ -262,21 +265,25 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                     SourceTokens = { tokens },
                     Arcs =
                     {
-                        from index in Enumerable.Range(0, tokens.Length - 1)
-                        select new WordGraphArc
-                        {
-                            PrevState = index,
-                            NextState = index + 1,
-                            Score = 1.0,
-                            TargetTokens = { tokens[index] },
-                            Confidences = { 1.0 },
-                            SourceSegmentStart = index,
-                            SourceSegmentEnd = index + 1,
-                            Alignment =
-                            {
-                                new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
-                            }
-                        }
+                        Enumerable
+                            .Range(0, tokens.Length - 1)
+                            .Select(
+                                index =>
+                                    new WordGraphArc
+                                    {
+                                        PrevState = index,
+                                        NextState = index + 1,
+                                        Score = 1.0,
+                                        TargetTokens = { tokens[index] },
+                                        Confidences = { 1.0 },
+                                        SourceSegmentStart = index,
+                                        SourceSegmentEnd = index + 1,
+                                        Alignment =
+                                        {
+                                            new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
+                                        }
+                                    }
+                            )
                     },
                     FinalStates = { tokens.Length }
                 }

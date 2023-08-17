@@ -65,7 +65,7 @@ public class TranslationEngineTests
             Id = SMT_ENGINE1_ID,
             Name = "be0",
             SourceLanguage = "en",
-            TargetLanguage = "en",
+            TargetLanguage = "es",
             Type = "SMTTransfer",
             Owner = "client1"
         };
@@ -74,7 +74,7 @@ public class TranslationEngineTests
             Id = NMT_ENGINE1_ID,
             Name = "ce0",
             SourceLanguage = "en",
-            TargetLanguage = "en",
+            TargetLanguage = "es",
             Type = "Nmt",
             Owner = "client1"
         };
@@ -1192,25 +1192,6 @@ public class TranslationEngineTests
         });
         Assert.NotNull(ex);
         Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
-    }
-
-    [Test]
-    public void AddEngineWithSameSourceAndTargetLangs()
-    {
-        ITranslationEnginesClient client = _env!.CreateClient();
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.CreateAsync(
-                new TranslationEngineConfig
-                {
-                    SourceLanguage = "en",
-                    TargetLanguage = "en",
-                    Type = "Nmt"
-                }
-            );
-        });
-        Assert.NotNull(ex);
-        Assert.That(ex!.StatusCode, Is.EqualTo(422));
     }
 
     [Test]
