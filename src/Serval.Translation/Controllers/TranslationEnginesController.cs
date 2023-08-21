@@ -146,9 +146,11 @@ public class TranslationEnginesController : ServalControllerBase
             if (!success)
                 return BadRequest();
         }
-        catch (ArgumentException ae)
+        catch (RpcException rpcEx)
         {
-            return UnprocessableEntity(ae.Message);
+            if (rpcEx.StatusCode == Grpc.Core.StatusCode.InvalidArgument)
+                return UnprocessableEntity(rpcEx.Message);
+            return BadRequest();
         }
 
         TranslationEngineDto dto = Map(engine);

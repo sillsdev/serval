@@ -13,7 +13,10 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
         if (request.SourceLanguage != request.TargetLanguage)
-            throw new ArgumentException("Source and target languages must be the same");
+        {
+            Status status = new Status(StatusCode.InvalidArgument, "Source and target languages must be the same");
+            throw new RpcException(status);
+        }
         return Task.FromResult(Empty);
     }
 
