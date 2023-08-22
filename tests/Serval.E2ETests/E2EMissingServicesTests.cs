@@ -30,7 +30,7 @@ namespace Serval.E2ETests
             {
                 string engineId = await _helperClient!.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
                 var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-                await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+                await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
                 await _helperClient.BuildEngine(engineId);
             });
         }
@@ -43,8 +43,8 @@ namespace Serval.E2ETests
             {
                 string engineId = await _helperClient!.CreateNewEngine("Nmt", "es", "en", "NMT1");
                 var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
-                await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
-                var cId = await _helperClient.PostTextCorpusToEngine(
+                await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+                var cId = await _helperClient.AddTextCorpusToEngine(
                     engineId,
                     new string[] { "3JN.txt" },
                     "es",
@@ -67,8 +67,8 @@ namespace Serval.E2ETests
             {
                 string engineId = await _helperClient!.CreateNewEngine("Nmt", "es", "en", "NMT1");
                 var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
-                await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
-                var cId = await _helperClient.PostTextCorpusToEngine(
+                await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+                var cId = await _helperClient.AddTextCorpusToEngine(
                     engineId,
                     new string[] { "3JN.txt" },
                     "es",
@@ -103,7 +103,7 @@ namespace Serval.E2ETests
             {
                 string engineId = await _helperClient!.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
                 var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-                await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+                await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
                 await _helperClient.BuildEngine(engineId);
             });
             Assert.NotNull(ex);

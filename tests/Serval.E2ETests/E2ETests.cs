@@ -60,10 +60,28 @@ public class E2ETests
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Echo", "es", "en", "Echo1");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
         Assert.AreEqual(tResult.Translation, "Espíritu");
+    }
+
+    [Test]
+    public async Task GetEchoPretranslate()
+    {
+        await _helperClient.ClearEngines();
+        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "en", "Echo1");
+        var books = new string[] { "1JN.txt", "2JN.txt" };
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+        books = new string[] { "3JN.txt" };
+        var corpusId = await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", true);
+        await _helperClient.BuildEngine(engineId);
+        var corpora = _helperClient.translationEnginesClient.GetAllCorporaAsync(engineId);
+        var pretranslations = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            corpusId
+        );
+        Assert.IsTrue(pretranslations.Count > 1);
     }
 
     [Test]
@@ -72,7 +90,7 @@ public class E2ETests
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT1");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
         Assert.AreEqual(tResult.Translation, "spirit");
@@ -84,7 +102,7 @@ public class E2ETests
     {
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT2");
-        await _helperClient.PostTextCorpusToEngine(engineId, new string[] { "bible.txt" }, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "bible.txt" }, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
         Assert.AreEqual(tResult.Translation, "Spirit");
@@ -96,7 +114,7 @@ public class E2ETests
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(
             engineId,
@@ -124,14 +142,14 @@ public class E2ETests
     {
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT4");
-        await _helperClient.PostTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(
             engineId,
             "verdad mundo"
         );
         Assert.AreEqual(tResult.Translation, "truth mundo");
-        await _helperClient.PostTextCorpusToEngine(engineId, new string[] { "1JN.txt", "2JN.txt" }, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "1JN.txt", "2JN.txt" }, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult2 = await _helperClient.translationEnginesClient.TranslateAsync(
             engineId,
@@ -146,8 +164,8 @@ public class E2ETests
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT1");
         var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
-        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
-        var cId = await _helperClient.PostTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+        var cId = await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
         await _helperClient.BuildEngine(engineId);
         IList<Pretranslation> lTrans = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
             engineId,
@@ -162,7 +180,7 @@ public class E2ETests
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT2");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         // start and cancel first job after 2 seconds
         var build = await _helperClient.StartBuildAsync(engineId);
         await Task.Delay(4000);
@@ -219,7 +237,7 @@ public class E2ETests
         await _helperClient.translationEnginesClient.DeleteCorpusAsync(smtEngineId, cId);
 
         //Add corpus
-        await _helperClient.PostTextCorpusToEngine(
+        await _helperClient.AddTextCorpusToEngine(
             smtEngineId,
             new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
             "es",
@@ -256,7 +274,7 @@ public class E2ETests
         Assert.That(engine.Type, Is.EqualTo("SmtTransfer"));
 
         //Add corpus
-        string cId = await _helperClient.PostTextCorpusToEngine(
+        string cId = await _helperClient.AddTextCorpusToEngine(
             engineId,
             new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
             "en",
