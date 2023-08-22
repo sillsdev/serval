@@ -10,6 +10,7 @@ public class TranslationEngineTests
 {
     TestEnvironment? _env;
     TranslationCorpusConfig? _testCorpusConfig;
+    TranslationCorpusConfig? _testCorpusConfigNonEcho;
 
     const string ECHO_ENGINE1_ID = "e00000000000000000000001";
     const string ECHO_ENGINE2_ID = "e00000000000000000000002";
@@ -37,7 +38,7 @@ public class TranslationEngineTests
             Id = ECHO_ENGINE1_ID,
             Name = "e0",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             Type = "Echo",
             Owner = "client1"
         };
@@ -46,7 +47,7 @@ public class TranslationEngineTests
             Id = ECHO_ENGINE2_ID,
             Name = "e1",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             Type = "Echo",
             Owner = "client1"
         };
@@ -55,7 +56,7 @@ public class TranslationEngineTests
             Id = ECHO_ENGINE3_ID,
             Name = "e2",
             SourceLanguage = "en",
-            TargetLanguage = "es",
+            TargetLanguage = "en",
             Type = "Echo",
             Owner = "client2"
         };
@@ -101,6 +102,20 @@ public class TranslationEngineTests
         await _env.DataFiles.InsertAllAsync(new[] { srcFile, trgFile });
 
         _testCorpusConfig = new TranslationCorpusConfig
+        {
+            Name = "TestCorpus",
+            SourceLanguage = "en",
+            TargetLanguage = "en",
+            SourceFiles =
+            {
+                new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
+            },
+            TargetFiles =
+            {
+                new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
+            }
+        };
+        _testCorpusConfigNonEcho = new TranslationCorpusConfig
         {
             Name = "TestCorpus",
             SourceLanguage = "en",
@@ -188,7 +203,7 @@ public class TranslationEngineTests
                     {
                         Name = "test",
                         SourceLanguage = "en",
-                        TargetLanguage = "es",
+                        TargetLanguage = "en",
                         Type = engineType
                     }
                 );
@@ -198,7 +213,6 @@ public class TranslationEngineTests
                 Assert.That(engine.Name, Is.EqualTo("test"));
                 break;
             case 400:
-            case 403:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.CreateAsync(
@@ -207,6 +221,21 @@ public class TranslationEngineTests
                             Name = "test",
                             SourceLanguage = "en",
                             TargetLanguage = "es",
+                            Type = engineType
+                        }
+                    );
+                });
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+            case 403:
+                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.CreateAsync(
+                        new TranslationEngineConfig
+                        {
+                            Name = "test",
+                            SourceLanguage = "en",
+                            TargetLanguage = "en",
                             Type = engineType
                         }
                     );
@@ -1146,7 +1175,7 @@ public class TranslationEngineTests
         var engineId = NMT_ENGINE1_ID;
         var expectedStatusCode = 409;
         TranslationBuild? build = null;
-        TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfig!);
+        TranslationCorpus added_corpus = await client.AddCorpusAsync(engineId, _testCorpusConfigNonEcho!);
         var ptcc = new PretranslateCorpusConfig
         {
             CorpusId = added_corpus.Id,
@@ -1166,32 +1195,12 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void AddEngineWithSameSourceAndTargetLangs()
-    {
-        ITranslationEnginesClient client = _env!.CreateClient();
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.CreateAsync(
-                new TranslationEngineConfig
-                {
-                    SourceLanguage = "en",
-                    TargetLanguage = "en",
-                    Type = "Echo"
-                }
-            );
-        });
-        Assert.NotNull(ex);
-        Assert.That(ex!.StatusCode, Is.EqualTo(422));
-    }
-
-    [Test]
     public void AddCorpusWithSameSourceAndTargetLangs()
     {
         ITranslationEnginesClient client = _env!.CreateClient();
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
-            _testCorpusConfig!.SourceLanguage = _testCorpusConfig.TargetLanguage;
-            await client.AddCorpusAsync(ECHO_ENGINE1_ID, _testCorpusConfig);
+            await client.AddCorpusAsync(NMT_ENGINE1_ID, _testCorpusConfig!);
         });
         Assert.NotNull(ex);
         Assert.That(ex!.StatusCode, Is.EqualTo(422));

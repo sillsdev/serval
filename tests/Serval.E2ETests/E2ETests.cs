@@ -97,24 +97,6 @@ public class E2ETests
     }
 
     [Test]
-    public async Task GetSmtCancelAndRestartBuild()
-    {
-        await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en");
-        var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
-        // start and cancel first job after 2 seconds
-        var firstJob = await _helperClient.StartBuildAsync(engineId);
-        await Task.Delay(2000);
-        await _helperClient.translationEnginesClient.CancelBuildAsync(engineId);
-        await Task.Delay(2000);
-        // do a second job normally and make sure it works.
-        await _helperClient.BuildEngine(engineId);
-        TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
-        Assert.AreEqual(tResult.Translation, "spirit");
-    }
-
-    [Test]
     [Category("slow")]
     public async Task GetSmtWholeBible()
     {
@@ -196,7 +178,7 @@ public class E2ETests
     public async Task GetNmtCancelAndRestartBuild()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en");
+        string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT2");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         // start and cancel first job after 2 seconds
@@ -228,38 +210,16 @@ public class E2ETests
     {
         await _helperClient.ClearEngines();
 
-        //Create echo engine
-        string echoEngineId = await _helperClient.CreateNewEngine("Echo", "es", "en", "Echo2");
+        //Create smt engine
+        string smtEngineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT5");
+
         //Try to get word graph - should fail: unbuilt
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
-            await _helperClient.translationEnginesClient.GetWordGraphAsync(echoEngineId, "verdad");
+            await _helperClient.translationEnginesClient.GetWordGraphAsync(smtEngineId, "verdad");
         });
         Assert.NotNull(ex);
         Assert.That(ex!.StatusCode, Is.EqualTo(409));
-
-        //Add corpus
-        await _helperClient.AddTextCorpusToEngine(
-            echoEngineId,
-            new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
-            "es",
-            "en",
-            false
-        );
-
-        //Build engine
-        await _helperClient.BuildEngine(echoEngineId);
-
-        //Try to get word graph - should fail: unsupported function for echo engine
-        ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await _helperClient.translationEnginesClient.GetWordGraphAsync(echoEngineId, "verdad");
-        });
-        Assert.NotNull(ex);
-        Assert.That(ex!.StatusCode, Is.EqualTo(405));
-
-        //Create smt engine
-        string smtEngineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT5");
 
         //Add corpus
         var cId = await _helperClient.AddTextCorpusToEngine(
@@ -272,9 +232,6 @@ public class E2ETests
 
         //Build the new engine
         await _helperClient.BuildEngine(smtEngineId);
-
-        // //Oops, wrong corpus - cancel build
-        // await _helperClient.translationEnginesClient.CancelBuildAsync(smtEngineId);
 
         //Remove added corpus (shouldn't affect translation)
         await _helperClient.translationEnginesClient.DeleteCorpusAsync(smtEngineId, cId);
@@ -346,5 +303,23 @@ public class E2ETests
             Is.EqualTo("amour"),
             "Expected best translation to be 'amour' but results were this:\n" + Stringify(results)
         );
+    }
+
+    [Test]
+    public async Task GetSmtCancelAndRestartBuild()
+    {
+        await _helperClient.ClearEngines();
+        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT7");
+        var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+        // start and cancel first job after 2 seconds
+        await _helperClient.StartBuildAsync(engineId);
+        await Task.Delay(2000);
+        await _helperClient.translationEnginesClient.CancelBuildAsync(engineId);
+        await Task.Delay(2000);
+        // do a second job normally and make sure it works.
+        await _helperClient.BuildEngine(engineId);
+        TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
+        Assert.AreEqual(tResult.Translation, "spirit");
     }
 }
