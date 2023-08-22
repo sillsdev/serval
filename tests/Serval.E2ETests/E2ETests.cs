@@ -222,7 +222,7 @@ public class E2ETests
         Assert.That(ex!.StatusCode, Is.EqualTo(409));
 
         //Add corpus
-        var cId = await _helperClient.PostTextCorpusToEngine(
+        var cId = await _helperClient.AddTextCorpusToEngine(
             smtEngineId,
             new string[] { "2JN.txt", "3JN.txt" },
             "es",
@@ -311,7 +311,7 @@ public class E2ETests
         await _helperClient.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT7");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-        await _helperClient.PostTextCorpusToEngine(engineId, books, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         // start and cancel first job after 2 seconds
         await _helperClient.StartBuildAsync(engineId);
         await Task.Delay(2000);
