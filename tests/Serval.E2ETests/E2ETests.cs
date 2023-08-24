@@ -58,9 +58,9 @@ public class E2ETests
     public async Task GetEchoSuggestion()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "en", "Echo1");
+        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo1");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
-        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "es", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
         Assert.AreEqual(tResult.Translation, "Espíritu");
@@ -70,11 +70,11 @@ public class E2ETests
     public async Task GetEchoPretranslate()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "en", "Echo1");
+        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo1");
         var books = new string[] { "1JN.txt", "2JN.txt" };
-        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "es", false);
         books = new string[] { "3JN.txt" };
-        var corpusId = await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", true);
+        var corpusId = await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "es", true);
         await _helperClient.BuildEngine(engineId);
         var corpora = _helperClient.translationEnginesClient.GetAllCorporaAsync(engineId);
         var pretranslations = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(

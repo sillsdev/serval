@@ -113,14 +113,6 @@ public class ServalClientHelper
     )
     {
         List<DataFile> sourceFiles = await UploadFiles(filesToAdd, FileFormat.Text, sourceLanguage);
-        var sourceFileConfig = new List<TranslationCorpusFileConfig>();
-
-        for (var i = 0; i < sourceFiles.Count; i++)
-        {
-            sourceFileConfig.Add(
-                new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
-            );
-        }
 
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
         if (!pretranslate)
@@ -130,6 +122,24 @@ public class ServalClientHelper
             {
                 targetFileConfig.Add(
                     new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
+                );
+            }
+        }
+
+        var sourceFileConfig = new List<TranslationCorpusFileConfig>();
+
+        if (sourceLanguage == targetLanguage && !pretranslate)
+        {
+            // if it's the same langague, and we are not pretranslating, do nothing (echo for suggestions)
+            // if pretranslating, we need to upload the source separately
+            // if different languages, we are not echoing.
+        }
+        else
+        {
+            for (var i = 0; i < sourceFiles.Count; i++)
+            {
+                sourceFileConfig.Add(
+                    new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
                 );
             }
         }
