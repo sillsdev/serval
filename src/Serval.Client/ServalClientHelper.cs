@@ -91,6 +91,7 @@ public class ServalClientHelper
     {
         var newJob = await StartBuildAsync(engineId);
         await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
+        int pollIntervalMs = 500; // start throttle at 0.5 seconds
         while (true)
         {
             var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id);
@@ -99,8 +100,10 @@ public class ServalClientHelper
                 // build completed
                 break;
             }
-            // Throttle requests to only 2 x second
-            await Task.Delay(500);
+            // Throttle requests
+            await Task.Delay(pollIntervalMs);
+            // increase throttle exponentially to 10 seconds
+            pollIntervalMs = (int)Math.Min(pollIntervalMs * 1.2, 10_000);
         }
     }
 

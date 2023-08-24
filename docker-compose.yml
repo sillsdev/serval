@@ -136,7 +136,7 @@ services:
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_TranslationEngines__0=SmtTransfer
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
-      - ClearMLNmtEngine__Queue=production
+      - ClearMLNmtEngine__Queue=lambert_24gb
       - ClearMLNmtEngine__DockerImage=ghcr.io/sillsdev/machine.py:0.9.3.6
       - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
