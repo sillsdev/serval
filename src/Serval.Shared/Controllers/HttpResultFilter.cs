@@ -13,7 +13,7 @@ namespace Serval.Shared.Controllers
 
         public override Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
-            if (context.Result is ObjectResult r && r.StatusCode / 100 > 3)
+            if ((context.Result is ObjectResult r) && (r.StatusCode >= 400))
             {
                 _logger.LogInformation($"Responded with code {r.StatusCode}. Trace: {Activity.Current?.Id}");
             }
