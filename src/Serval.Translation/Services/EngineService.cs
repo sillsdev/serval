@@ -136,7 +136,8 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         await Entities.InsertAsync(engine, cancellationToken);
         try
         {
-            var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            TranslationEngineApi.TranslationEngineApiClient? client =
+                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
             if (client is null)
                 return false;
             var request = new CreateRequest
@@ -271,7 +272,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
     )
     {
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        Engine? original_engine = await Entities.UpdateAsync(
+        Engine? originalEngine = await Entities.UpdateAsync(
             engineId,
             u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
             returnOriginal: true,
@@ -279,14 +280,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         );
         await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(cancellationToken);
-        return original_engine is not null
-            && original_engine.Corpora is not null
-            && original_engine.Corpora
-                .FindAll(c =>
-                {
-                    return c.Id == corpusId;
-                })
-                .Count() > 0;
+        return originalEngine is not null && originalEngine.Corpora.Any(c => c.Id == corpusId);
     }
 
     public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)

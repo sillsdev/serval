@@ -50,7 +50,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.ApiServer.Integratio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.E2ETests", "tests\Serval.E2ETests\Serval.E2ETests.csproj", "{1F020042-D7B8-4541-9691-26ECFD1FFC73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.DataFiles.Tests", "tests\Serval.DataFiles.Tests\Serval.DataFiles.Tests.csproj", "{63E4D71B-11BE-4D68-A876-5B1B5F0A4C88}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.DataFiles.Tests", "tests\Serval.DataFiles.Tests\Serval.DataFiles.Tests.csproj", "{63E4D71B-11BE-4D68-A876-5B1B5F0A4C88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

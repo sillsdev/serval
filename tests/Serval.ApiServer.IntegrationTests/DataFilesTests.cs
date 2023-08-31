@@ -1,7 +1,6 @@
+using Nito.AsyncEx;
+
 namespace Serval.ApiServer;
-using Serval.DataFiles.Models;
-using Shared.Contracts;
-using Microsoft.AspNetCore.Mvc;
 
 [TestFixture]
 [Category("Integration")]
@@ -23,33 +22,29 @@ public class DataFilesTests
     public async Task SetUp()
     {
         _env = new TestEnvironment();
-        DataFile file1,
-            file2,
-            file3;
-
-        file1 = new DataFile
+        var file1 = new DataFiles.Models.DataFile
         {
             Id = ID1,
             Owner = "client1",
             Name = NAME1,
             Filename = NAME1,
-            Format = FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text
         };
-        file2 = new DataFile
+        var file2 = new DataFiles.Models.DataFile
         {
             Id = ID2,
             Owner = "client1",
             Name = NAME2,
             Filename = NAME2,
-            Format = FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text
         };
-        file3 = new DataFile
+        var file3 = new DataFiles.Models.DataFile
         {
             Id = ID3,
             Owner = "client2",
             Name = NAME3,
             Filename = NAME3,
-            Format = FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text
         };
         await _env.DataFiles.InsertAllAsync(new[] { file1, file2, file3 });
     }
@@ -61,11 +56,10 @@ public class DataFilesTests
     public async Task GetAllAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
         DataFilesClient client = _env!.CreateClient(scope);
-        ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
-                ICollection<Serval.Client.DataFile> results = await client.GetAllAsync();
+                ICollection<DataFile> results = await client.GetAllAsync();
 
                 Assert.That(results, Has.Count.EqualTo(2));
                 Assert.That(results.All(dataFile => dataFile.Revision == 1));
@@ -75,11 +69,11 @@ public class DataFilesTests
                 expectedStatusCode = 403;
                 goto case 403;
             case 403:
-                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAllAsync();
                 });
-                Assert.NotNull(ex);
+                Assert.That(ex, Is.Not.Null);
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
 
@@ -98,11 +92,10 @@ public class DataFilesTests
     public async Task GetByIDAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
         DataFilesClient client = _env!.CreateClient(scope);
-        ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
-                Serval.Client.DataFile result = await client.GetAsync(fileId);
+                DataFile result = await client.GetAsync(fileId);
                 Assert.That(result.Name, Is.EqualTo(NAME1));
                 break;
             case 401:
@@ -110,7 +103,7 @@ public class DataFilesTests
                 goto case 403;
             case 403:
             case 404:
-                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAsync(fileId);
                 });
@@ -127,47 +120,45 @@ public class DataFilesTests
     // [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 401)]
     [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 400)]
     [TestCase(new[] { Scopes.ReadFiles }, 403)]
-    public void CreateAsync(IEnumerable<string> scope, int expectedStatusCode)
+    public async Task CreateAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
         DataFilesClient client = _env!.CreateClient(scope);
-        ServalApiException? ex;
-        FileParameter fp;
-        Stream fs;
+        ServalApiException ex;
         switch (expectedStatusCode)
         {
             case 201:
-                Assert.DoesNotThrowAsync(async () =>
+                using (var fs = new MemoryStream())
                 {
-                    fs = new MemoryStream();
-                    fp = new FileParameter(fs);
-                    await client.CreateAsync(fp, Client.FileFormat.Text);
-                    ICollection<Serval.Client.DataFile> results = await client.GetAllAsync();
+                    var fp = new FileParameter(fs);
+                    await client.CreateAsync(fp, FileFormat.Text);
+                    ICollection<DataFile> results = await client.GetAllAsync();
 
                     Assert.That(results, Has.Count.EqualTo(3)); //2 from set-up + 1 added above = 3
                     Assert.That(results.All(dataFile => dataFile.Revision == 1));
-                    fs.Dispose();
-                });
+                }
                 break;
             case 400:
                 byte[] bytes = new byte[2_000_000_000];
-                fs = new MemoryStream(bytes);
-                fp = new FileParameter(fs);
-                fp = new FileParameter(fs);
-                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                using (var fs = new MemoryStream(bytes))
                 {
-                    await client.CreateAsync(fp, Client.FileFormat.Text);
-                });
-                fs.Dispose();
+                    var fp = new FileParameter(fs);
+                    fp = new FileParameter(fs);
+                    ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                    {
+                        await client.CreateAsync(fp, FileFormat.Text);
+                    });
+                }
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             case 403:
-                fs = new MemoryStream();
-                fp = new FileParameter(fs);
-                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                using (var fs = new MemoryStream())
                 {
-                    await client.CreateAsync(fp, Client.FileFormat.Text);
-                });
-                fs.Dispose();
+                    var fp = new FileParameter(fs);
+                    ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                    {
+                        await client.CreateAsync(fp, FileFormat.Text);
+                    });
+                }
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -185,17 +176,17 @@ public class DataFilesTests
     public async Task UpdateAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
         DataFilesClient client = _env!.CreateClient(scope);
-        ServalApiException? ex;
+        ServalApiException ex;
         switch (expectedStatusCode)
         {
             case 200:
-                Serval.Client.DataFile result = await client.GetAsync(fileId);
+                DataFile result = await client.GetAsync(fileId);
                 Assert.That(result.Name, Is.EqualTo(NAME1));
                 Assert.DoesNotThrowAsync(async () =>
                 {
                     await client.UpdateAsync(fileId, new FileParameter(new MemoryStream()));
                 });
-                Serval.Client.DataFile resultAfterUpdate = await client.GetAsync(fileId);
+                DataFile resultAfterUpdate = await client.GetAsync(fileId);
                 Assert.That(resultAfterUpdate.Id, Is.EqualTo(ID1));
                 break;
             case 400:
@@ -228,17 +219,13 @@ public class DataFilesTests
     public async Task DeleteAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
         DataFilesClient client = _env!.CreateClient(scope);
-        ServalApiException? ex;
         switch (expectedStatusCode)
         {
             case 200:
-                Serval.Client.DataFile result = await client.GetAsync(fileId);
+                DataFile result = await client.GetAsync(fileId);
                 Assert.That(result.Name, Is.EqualTo(NAME1));
-                Assert.DoesNotThrowAsync(async () =>
-                {
-                    await client.DeleteAsync(fileId);
-                });
-                ICollection<Serval.Client.DataFile> results = await client.GetAllAsync();
+                await client.DeleteAsync(fileId);
+                ICollection<DataFile> results = await client.GetAllAsync();
                 Assert.That(results, Has.Count.EqualTo(1));
                 Assert.That(results.First().Id, Is.EqualTo(ID2));
                 break;
@@ -247,12 +234,12 @@ public class DataFilesTests
                 goto case 403;
             case 403:
             case 404:
-                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.DeleteAsync(fileId);
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
-                ICollection<Serval.Client.DataFile> resultsAfterDelete = await client.GetAllAsync();
+                ICollection<DataFile> resultsAfterDelete = await client.GetAllAsync();
                 Assert.That(resultsAfterDelete, Has.Count.EqualTo(2));
                 break;
             default:
@@ -274,8 +261,7 @@ public class DataFilesTests
 
         public TestEnvironment()
         {
-            var clientSettings = new MongoClientSettings();
-            clientSettings.LinqProvider = LinqProvider.V2;
+            var clientSettings = new MongoClientSettings { LinqProvider = LinqProvider.V2 };
             _mongoClient = new MongoClient(clientSettings);
             ResetDatabases();
 

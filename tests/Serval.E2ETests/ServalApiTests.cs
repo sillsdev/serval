@@ -1,14 +1,12 @@
-using static Serval.Shared.Utils.AutoToString;
-
-namespace Serval.ApiServerE2E;
+namespace Serval.E2ETests;
 
 [TestFixture]
 [Category("E2E")]
-public class E2ETests
+public class ServalApiTests
 {
     private ServalClientHelper _helperClient;
 
-    public E2ETests()
+    public ServalApiTests()
     {
         _helperClient = InitializeClient();
     }
@@ -256,7 +254,7 @@ public class E2ETests
                 .MaxBy(arc => arc.Confidences.Average())!
                 .TargetTokens.All(tk => tk == "truth"),
             "Best translation should have been 'truth'but returned word graph: \n{0}",
-            Stringify(result)
+            JsonSerializer.Serialize(result)
         );
     }
 
@@ -301,7 +299,7 @@ public class E2ETests
         Assert.That(
             results.MaxBy(t => t.Confidences.Average())!.Translation,
             Is.EqualTo("amour"),
-            "Expected best translation to be 'amour' but results were this:\n" + Stringify(results)
+            "Expected best translation to be 'amour' but results were this:\n" + JsonSerializer.Serialize(results)
         );
     }
 
