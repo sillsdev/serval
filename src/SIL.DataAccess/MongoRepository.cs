@@ -55,7 +55,7 @@ public class MongoRepository<T> : IRepository<T>
     public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
     {
         entity.Revision = 1;
-        await TryCatchDuplicate<object?>(async () =>
+        await TryCatchDuplicate(async () =>
         {
             if (_context.Session is not null)
             {
@@ -67,7 +67,6 @@ public class MongoRepository<T> : IRepository<T>
             {
                 await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
-            return null;
         });
     }
 
@@ -76,7 +75,7 @@ public class MongoRepository<T> : IRepository<T>
         foreach (T entity in entities)
             entity.Revision = 1;
 
-        await TryCatchDuplicate<object?>(async () =>
+        await TryCatchDuplicate(async () =>
         {
             if (_context.Session is not null)
             {
@@ -88,13 +87,13 @@ public class MongoRepository<T> : IRepository<T>
             {
                 await _collection.InsertManyAsync(entities, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
-            return null;
         });
     }
 
     public async Task<T?> UpdateAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
+        bool upsert = false,
         bool returnOriginal = false,
         CancellationToken cancellationToken = default
     )
@@ -105,6 +104,7 @@ public class MongoRepository<T> : IRepository<T>
         UpdateDefinition<T> updateDef = updateBuilder.Build();
         var options = new FindOneAndUpdateOptions<T>
         {
+            IsUpsert = upsert,
             ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After
         };
         T? entity;
@@ -221,11 +221,11 @@ public class MongoRepository<T> : IRepository<T>
         return subscription;
     }
 
-    private async Task<TR> TryCatchDuplicate<TR>(Func<Task<TR>> func)
+    private async Task TryCatchDuplicate(Func<Task> action)
     {
         try
         {
-            return await func();
+            await action();
         }
         catch (MongoCommandException e)
         {

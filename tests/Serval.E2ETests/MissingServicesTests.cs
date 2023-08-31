@@ -2,7 +2,7 @@ namespace Serval.E2ETests
 {
     [TestFixture]
     [Category("E2EMissingServices")]
-    public class E2EMissingServicesTests
+    public class MissingServicesTests
     {
         private ServalClientHelper? _helperClient;
 

@@ -1,8 +1,6 @@
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
 global using Microsoft.Extensions.Options;
-global using MongoDB.Bson;
-global using MongoDB.Bson.Serialization.Attributes;
 global using NSubstitute;
 global using NUnit.Framework;
 global using Serval.Shared.Configuration;

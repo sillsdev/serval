@@ -2998,7 +2998,7 @@ namespace Serval.Client
                         if (status_ == 400)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("Bad request", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A corpus id is invalid", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 401)
@@ -3016,7 +3016,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpora specified in the config do not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
@@ -3028,7 +3028,7 @@ namespace Serval.Client
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {

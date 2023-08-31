@@ -1,4 +1,7 @@
-﻿namespace Serval.Translation.Controllers;
+﻿using Serval.Translation.Models;
+using System.Threading;
+
+namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
@@ -137,8 +140,7 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        Engine engine;
-        engine = Map(engineConfig);
+        Engine engine = Map(engineConfig);
         engine.Id = idGenerator.GenerateId();
         try
         {
@@ -150,7 +152,7 @@ public class TranslationEnginesController : ServalControllerBase
         {
             if (rpcEx.StatusCode == Grpc.Core.StatusCode.InvalidArgument)
                 return UnprocessableEntity(rpcEx.Message);
-            return BadRequest();
+            throw;
         }
 
         TranslationEngineDto dto = Map(engine);
@@ -216,7 +218,7 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        if (!await isBuilt(id))
+        if (!await IsBuilt(id))
             return Conflict();
 
         TranslationResult? result = await _engineService.TranslateAsync(id, segment, cancellationToken);
@@ -259,7 +261,7 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        if (!await isBuilt(id))
+        if (!await IsBuilt(id))
             return Conflict();
 
         IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(
@@ -305,7 +307,7 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        if (!await isBuilt(id))
+        if (!await IsBuilt(id))
             return Conflict();
 
         WordGraph? wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
@@ -349,7 +351,7 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        if (!await isBuilt(id))
+        if (!await IsBuilt(id))
             return Conflict();
 
         if (
@@ -416,12 +418,11 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
         Engine? engine = await _engineService.GetAsync(id, cancellationToken);
         if (engine is null)
             return NotFound();
+        if (!await AuthorizeIsOwnerAsync(engine))
+            return Forbid();
         Corpus corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
         if (engine.SourceLanguage != corpus.SourceLanguage || engine.TargetLanguage != corpus.TargetLanguage)
             return UnprocessableEntity(
@@ -546,8 +547,6 @@ public class TranslationEnginesController : ServalControllerBase
             return NotFound();
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
-        if (engine.Corpora is null)
-            return NotFound();
         Corpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
         if (corpus == null)
             return NotFound();
@@ -640,7 +639,7 @@ public class TranslationEnginesController : ServalControllerBase
         );
         if (pretranslations is null || pretranslations.Count() == 0)
             return NotFound();
-        if (!await isBuilt(id))
+        if (!await IsBuilt(id))
             return Conflict();
         return Ok((pretranslations).Select(Map));
     }
@@ -692,7 +691,7 @@ public class TranslationEnginesController : ServalControllerBase
         );
         if (pretranslations is null || pretranslations.Count() == 0)
             return NotFound();
-        if (!await isBuilt(id))
+        if (!await IsBuilt(id))
             return Conflict();
         return Ok((pretranslations).Select(Map));
     }
@@ -805,12 +804,12 @@ public class TranslationEnginesController : ServalControllerBase
     /// <param name="buildConfig">The build config (see remarks)</param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The build job was started successfully</response>
-    /// <response code="400">Bad request</response>
+    /// <response code="400">A corpus id is invalid</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client does not own the translation engine</response>
-    /// <response code="404">The engine or corpora specified in the config do not exist</response>
+    /// <response code="404">The engine does not exist</response>
     /// <response code="409">There is already an active/pending build</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/builds")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -826,19 +825,25 @@ public class TranslationEnginesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
+        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
+        if (engine is null)
+            return NotFound();
+        if (!await AuthorizeIsOwnerAsync(engine))
+            return Forbid();
+
         if (await _buildService.GetActiveAsync(id) is not null)
             return Conflict();
-        Build build = Map(id, buildConfig);
-        bool startedBuild = false;
+
+        Build build;
         try
         {
-            startedBuild = await _engineService.StartBuildAsync(build, cancellationToken);
+            build = Map(engine, buildConfig);
         }
-        catch { }
-
-        if (!startedBuild)
+        catch (InvalidOperationException ioe)
+        {
+            return BadRequest(ioe.Message);
+        }
+        if (!await _engineService.StartBuildAsync(build, cancellationToken))
             return NotFound();
 
         var dto = Map(build);
@@ -1007,19 +1012,30 @@ public class TranslationEnginesController : ServalControllerBase
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
             Type = source.Type,
-            Owner = Owner
+            Owner = Owner,
+            Corpora = new List<Corpus>()
         };
     }
 
-    private static Build Map(string engineId, TranslationBuildConfigDto source)
+    private static Build Map(Engine engine, TranslationBuildConfigDto source)
     {
-        return new Build
+        var build = new Build { EngineRef = engine.Id };
+        if (source.Pretranslate != null)
         {
-            EngineRef = engineId,
-            Pretranslate = source.Pretranslate
-                ?.Select(c => new PretranslateCorpus { CorpusRef = c.CorpusId, TextIds = c.TextIds?.ToList() })
-                .ToList()
-        };
+            var pretranslateCorpora = new List<PretranslateCorpus>();
+            var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
+            foreach (PretranslateCorpusConfigDto ptcc in source.Pretranslate)
+            {
+                if (!corpusIds.Contains(ptcc.CorpusId))
+                    throw new InvalidOperationException($"The corpus {ptcc.CorpusId} is not valid.");
+
+                pretranslateCorpora.Add(
+                    new PretranslateCorpus { CorpusRef = ptcc.CorpusId, TextIds = ptcc.TextIds?.ToList() }
+                );
+            }
+            build.Pretranslate = pretranslateCorpora;
+        }
+        return build;
     }
 
     private TranslationEngineDto Map(Engine source)
@@ -1171,7 +1187,7 @@ public class TranslationEnginesController : ServalControllerBase
         };
     }
 
-    private async Task<bool> isBuilt(string id)
+    private async Task<bool> IsBuilt(string id)
     {
         IEnumerable<Build> builds = await _buildService.GetAllAsync(id);
         return builds != null && builds.Any(b => b.State == JobState.Completed);

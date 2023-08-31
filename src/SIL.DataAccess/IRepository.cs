@@ -12,6 +12,7 @@ public interface IRepository<T>
     Task<T?> UpdateAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
+        bool upsert = false,
         bool returnOriginal = false,
         CancellationToken cancellationToken = default
     );
