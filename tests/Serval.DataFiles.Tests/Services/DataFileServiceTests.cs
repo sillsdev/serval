@@ -115,6 +115,34 @@ public class DataFileServiceTests
         Assert.That(deleted, Is.False);
     }
 
+    [Test]
+    public async Task DeleteAsync_Twice()
+    {
+        var env = new TestEnvironment();
+        env.DataFiles.Add(
+            new DataFile
+            {
+                Id = DATA_FILE_ID,
+                Name = "file1",
+                Filename = "file1.txt"
+            }
+        );
+        bool deleted = await env.Service.DeleteAsync(DATA_FILE_ID);
+        Assert.That(deleted, Is.True);
+        // The same file would not be added twice, but this is to check
+        env.DataFiles.Add(
+            new DataFile
+            {
+                Id = DATA_FILE_ID,
+                Name = "file1",
+                Filename = "file1.txt"
+            }
+        );
+        deleted = await env.Service.DeleteAsync(DATA_FILE_ID);
+        // The real condition is a race condition - trying to delete the same file twice (at the same time).  One should fail.
+        Assert.That(deleted, Is.False);
+    }
+
     private class TestEnvironment
     {
         public TestEnvironment()
