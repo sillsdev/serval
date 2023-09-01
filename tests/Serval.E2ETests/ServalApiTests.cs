@@ -68,7 +68,7 @@ public class ServalApiTests
     public async Task GetEchoPretranslate()
     {
         await _helperClient.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo1");
+        string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo2");
         var books = new string[] { "1JN.txt", "2JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "es", false);
         books = new string[] { "3JN.txt" };
