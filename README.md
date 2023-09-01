@@ -11,6 +11,10 @@ Serval is a REST API for natural language processing services.
 
 All C# code should be formatted using [CSharpier](https://csharpier.com/). The best way to enable support for CSharpier is to install the appropriate [IDE extension](https://csharpier.com/docs/Editors) and configure it to format on save.
 
+### Coding conventions
+
+[Here](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/identifier-names) is a good overview of naming conventions. [Here](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions) is a good overview of coding conventions. If you want to get in to even more detail, check out the [Framework design guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/).
+
 ### Development locally
 
 - Install MongoDB 6.0 as a replca set and MongoDBCompass and run it on localhost:27017
