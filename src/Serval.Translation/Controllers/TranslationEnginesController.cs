@@ -637,11 +637,9 @@ public class TranslationEnginesController : ServalControllerBase
             corpusId,
             cancellationToken
         );
-        if (pretranslations is null || pretranslations.Count() == 0)
-            return NotFound();
         if (!await IsBuilt(id))
             return Conflict();
-        return Ok((pretranslations).Select(Map));
+        return Ok(pretranslations.Select(Map));
     }
 
     /// <summary>
@@ -657,7 +655,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="200">The pretranslations</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine or corpus or text does not exist</response>
+    /// <response code="404">The engine or corpus does not exist</response>
     /// <response code="405">The method is not supported</response>
     /// <response code="409">The engine needs to be built first</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
@@ -689,11 +687,9 @@ public class TranslationEnginesController : ServalControllerBase
             textId,
             cancellationToken
         );
-        if (pretranslations is null || pretranslations.Count() == 0)
-            return NotFound();
         if (!await IsBuilt(id))
             return Conflict();
-        return Ok((pretranslations).Select(Map));
+        return Ok(pretranslations.Select(Map));
     }
 
     /// <summary>

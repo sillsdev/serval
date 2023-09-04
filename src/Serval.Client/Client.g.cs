@@ -2785,7 +2785,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus or text does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or corpus does not exist", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)

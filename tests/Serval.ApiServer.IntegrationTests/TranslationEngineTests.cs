@@ -685,7 +685,7 @@ public class TranslationEngineTests
     )]
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
-        404,
+        409,
         ECHO_ENGINE1_ID,
         false
     )]
@@ -766,14 +766,14 @@ public class TranslationEngineTests
     )]
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
-        404,
+        409,
         ECHO_ENGINE1_ID,
         false,
         "all"
     )]
     [TestCase(
         new[] { Scopes.ReadTranslationEngines, Scopes.CreateTranslationEngines, Scopes.UpdateTranslationEngines },
-        404,
+        409,
         ECHO_ENGINE1_ID,
         true,
         "not_the_right_id"
