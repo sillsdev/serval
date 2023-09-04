@@ -1,7 +1,4 @@
-﻿using Serval.Translation.Models;
-using System.Threading;
-
-namespace Serval.Translation.Controllers;
+﻿namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
@@ -218,8 +215,6 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        if (!await IsBuilt(id))
-            return Conflict();
 
         TranslationResult? result = await _engineService.TranslateAsync(id, segment, cancellationToken);
         if (result == null)
@@ -261,8 +256,6 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        if (!await IsBuilt(id))
-            return Conflict();
 
         IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(
             id,
@@ -307,8 +300,6 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        if (!await IsBuilt(id))
-            return Conflict();
 
         WordGraph? wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
         if (wordGraph == null)
@@ -351,8 +342,6 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        if (!await IsBuilt(id))
-            return Conflict();
 
         if (
             !await _engineService.TrainSegmentPairAsync(
@@ -600,55 +589,8 @@ public class TranslationEnginesController : ServalControllerBase
     ///   * The references defined in the SourceFile per line, if any.
     ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
     /// * **Translation**: the text of the pretranslation
-    /// </remarks>
-    /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">The pretranslations</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine or corpus does not exist</response>
-    /// <response code="405">The method is not supported</response>
-    /// <response code="409">The engine needs to be built first</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/corpora/{corpusId}/pretranslations")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetAllPretranslationsAsync(
-        [NotNull] string id,
-        [NotNull] string corpusId,
-        CancellationToken cancellationToken
-    )
-    {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
-        IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
-            id,
-            engine.ModelRevision,
-            corpusId,
-            cancellationToken
-        );
-        if (pretranslations is null || pretranslations.Count() == 0)
-            return NotFound();
-        if (!await IsBuilt(id))
-            return Conflict();
-        return Ok((pretranslations).Select(Map));
-    }
-
-    /// <summary>
-    /// Gets all pretranslations from a TextId
-    /// </summary>
-    /// <remarks>
-    /// Similar to "get all pretranslations of a corpus," except that the results are filtered by TextId.
+    ///
+    /// Pretranslations can be filtered by text id.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -657,28 +599,26 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="200">The pretranslations</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine or corpus or text does not exist</response>
-    /// <response code="405">The method is not supported</response>
-    /// <response code="409">The engine needs to be built first</response>
+    /// <response code="404">The engine or corpus does not exist</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/corpora/{corpusId}/pretranslations/{textId}")]
+    [HttpGet("{id}/corpora/{corpusId}/pretranslations")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetAllPretranslationsAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
-        [NotNull] string textId,
+        [FromQuery] string? textId,
         CancellationToken cancellationToken
     )
     {
         Engine? engine = await _engineService.GetAsync(id, cancellationToken);
         if (engine == null)
+            return NotFound();
+        if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
         if (!await AuthorizeIsOwnerAsync(engine))
             return Forbid();
@@ -689,11 +629,7 @@ public class TranslationEnginesController : ServalControllerBase
             textId,
             cancellationToken
         );
-        if (pretranslations is null || pretranslations.Count() == 0)
-            return NotFound();
-        if (!await IsBuilt(id))
-            return Conflict();
-        return Ok((pretranslations).Select(Map));
+        return Ok(pretranslations.Select(Map));
     }
 
     /// <summary>
@@ -1185,11 +1121,5 @@ public class TranslationEnginesController : ServalControllerBase
             },
             TextId = source.TextId
         };
-    }
-
-    private async Task<bool> IsBuilt(string id)
-    {
-        IEnumerable<Build> builds = await _buildService.GetAllAsync(id);
-        return builds != null && builds.Any(b => b.State == JobState.Completed);
     }
 }
