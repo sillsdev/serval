@@ -13,7 +13,6 @@ public class ServalClientHelper
     public readonly TranslationEnginesClient translationEnginesClient;
     private readonly HttpClient _httpClient;
     readonly Dictionary<string, string> EnginePerUser = new Dictionary<string, string>();
-    readonly Dictionary<string, string> CorporaPerName = new Dictionary<string, string>();
     private string _prefix;
 
     private TranslationBuildConfig translationBuildConfig = new TranslationBuildConfig
@@ -60,6 +59,7 @@ public class ServalClientHelper
             }
         }
         translationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
+        EnginePerUser.Clear();
     }
 
     public async Task<string> CreateNewEngine(
