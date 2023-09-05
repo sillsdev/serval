@@ -103,19 +103,28 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
 
     public override async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
+        // return true if the deletion was successful, false if the file did not exist or was already deleted.
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         DataFile? dataFile = await Entities.DeleteAsync(id, cancellationToken);
         if (dataFile is not null)
         {
-            await _deletedFiles.InsertAsync(
-                new DeletedFile
-                {
-                    Id = id,
-                    Filename = dataFile.Filename,
-                    DeletedAt = DateTime.UtcNow
-                },
-                cancellationToken
-            );
+            try
+            {
+                await _deletedFiles.InsertAsync(
+                    new DeletedFile
+                    {
+                        Id = id,
+                        Filename = dataFile.Filename,
+                        DeletedAt = DateTime.UtcNow
+                    },
+                    cancellationToken
+                );
+            }
+            catch (DuplicateKeyException)
+            {
+                // if it was already deleted, return false
+                return false;
+            }
         }
         await _mediator.Publish(new DataFileDeleted { DataFileId = id }, cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
