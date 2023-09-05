@@ -91,3 +91,9 @@ There are 3 different environments that Serval is deployed to:
 ### Access S3 bucket
 
 - to view files, run `aws s3 ls s3://aqua-ml-data/<deployment environment>`
+
+### Mongo investigation
+
+* First, get the pod name: `kubectl get pods -n serval`
+* Then forward to local port, such as 28015: `kubectl port-forward <pod name> 28015:27017 -n serval`
+* Then open MongoDB Compass and connect to `mongodb://localhost:28015/?directConnection=true`
