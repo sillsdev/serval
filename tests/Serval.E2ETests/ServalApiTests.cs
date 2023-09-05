@@ -4,9 +4,10 @@ namespace Serval.E2ETests;
 [Category("E2E")]
 public class ServalApiTests
 {
-    private ServalClientHelper _helperClient;
+    private ServalClientHelper? _helperClient;
 
-    public ServalApiTests()
+    [SetUp]
+    public void SetUp()
     {
         _helperClient = InitializeClient();
     }
@@ -55,7 +56,7 @@ public class ServalApiTests
     [Test]
     public async Task GetEchoSuggestion()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo1");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "es", false);
@@ -67,7 +68,7 @@ public class ServalApiTests
     [Test]
     public async Task GetEchoPretranslate()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo2");
         var books = new string[] { "1JN.txt", "2JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "es", false);
@@ -85,7 +86,7 @@ public class ServalApiTests
     [Test]
     public async Task GetSmtTranslation()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT1");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
@@ -98,7 +99,7 @@ public class ServalApiTests
     [Category("slow")]
     public async Task GetSmtWholeBible()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT2");
         await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "bible.txt" }, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
@@ -109,7 +110,7 @@ public class ServalApiTests
     [Test]
     public async Task GetSmtAddSegment()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
@@ -138,7 +139,7 @@ public class ServalApiTests
     [Test]
     public async Task GetSmtMoreCorpus()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT4");
         await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
@@ -159,7 +160,7 @@ public class ServalApiTests
     [Test]
     public async Task NmtBatch()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT1");
         var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
@@ -175,7 +176,7 @@ public class ServalApiTests
     [Test]
     public async Task GetNmtCancelAndRestartBuild()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT2");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
@@ -206,7 +207,7 @@ public class ServalApiTests
     [Test]
     public async Task CircuitousRouteGetWordGraphAsync()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
 
         //Create smt engine
         string smtEngineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT5");
@@ -264,7 +265,7 @@ public class ServalApiTests
         const int N = 3;
 
         //Create engine
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "en", "fa", "SMT6");
+        string engineId = await _helperClient!.CreateNewEngine("SmtTransfer", "en", "fa", "SMT6");
 
         //Retrieve engine
         TranslationEngine? engine = await _helperClient.translationEnginesClient.GetAsync(engineId);
@@ -306,7 +307,7 @@ public class ServalApiTests
     [Test]
     public async Task GetSmtCancelAndRestartBuild()
     {
-        await _helperClient.ClearEngines();
+        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT7");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
