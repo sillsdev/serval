@@ -89,7 +89,7 @@ services:
       - ASPNETCORE_Logging__LogLevel__Default=Information
       - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_TranslationEngines__0=SmtTransfer
-      - ASPNETCORE_TranslationEngines__0=Nmt
+      - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=production
       - ClearMLNmtEngine__DockerImage=ghcr.io/sillsdev/machine.py:0.9.3.6
@@ -135,6 +135,7 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_TranslationEngines__0=SmtTransfer
+      - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=lambert_24gb
       - ClearMLNmtEngine__DockerImage=ghcr.io/sillsdev/machine.py:0.9.3.6
