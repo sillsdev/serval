@@ -79,7 +79,6 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
                 await _deletedFiles.InsertAsync(
                     new DeletedFile
                     {
-                        Id = originalDataFile.Id,
                         Filename = originalDataFile.Filename,
                         DeletedAt = DateTime.UtcNow
                     },
@@ -108,23 +107,14 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         DataFile? dataFile = await Entities.DeleteAsync(id, cancellationToken);
         if (dataFile is not null)
         {
-            try
-            {
-                await _deletedFiles.InsertAsync(
-                    new DeletedFile
-                    {
-                        Id = id,
-                        Filename = dataFile.Filename,
-                        DeletedAt = DateTime.UtcNow
-                    },
-                    cancellationToken
-                );
-            }
-            catch (DuplicateKeyException)
-            {
-                // if it was already deleted, return false
-                return false;
-            }
+            await _deletedFiles.InsertAsync(
+                new DeletedFile
+                {
+                    Filename = dataFile.Filename,
+                    DeletedAt = DateTime.UtcNow
+                },
+                cancellationToken
+            );
         }
         await _mediator.Publish(new DataFileDeleted { DataFileId = id }, cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
