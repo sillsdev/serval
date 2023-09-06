@@ -1,11 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Serval.Client;
 
 public class ServalClientHelper
 {
@@ -20,16 +13,9 @@ public class ServalClientHelper
         Pretranslate = new List<PretranslateCorpusConfig>()
     };
 
-    public ServalClientHelper(
-        string servalUrl,
-        string authUrl,
-        string audience,
-        string clientId,
-        string clientSecret,
-        string prefix = "SCE_",
-        bool ignoreSSLErrors = false
-    )
+    public ServalClientHelper(string audience, string prefix = "SCE_", bool ignoreSSLErrors = false)
     {
+        Dictionary<string, string> env = GetEnvironment();
         //setup http client
         if (ignoreSSLErrors)
         {
@@ -38,15 +24,52 @@ public class ServalClientHelper
         }
         else
             _httpClient = new HttpClient();
-        _httpClient.BaseAddress = new Uri(servalUrl);
+        _httpClient.BaseAddress = new Uri(env["hostUrl"]);
         _httpClient.Timeout = TimeSpan.FromSeconds(10);
         dataFilesClient = new DataFilesClient(_httpClient);
         translationEnginesClient = new TranslationEnginesClient(_httpClient);
         _httpClient.DefaultRequestHeaders.Add(
             "authorization",
-            $"Bearer {GetAuth0Authentication(authUrl, audience, clientId, clientSecret).Result}"
+            $"Bearer {GetAuth0Authentication(env["authUrl"], audience, env["clientId"], env["clientSecret"]).Result}"
         );
         _prefix = prefix;
+    }
+
+    public static Dictionary<string, string> GetEnvironment()
+    {
+        Dictionary<string, string> env =
+            new()
+            {
+                { "hostUrl", Environment.GetEnvironmentVariable("SERVAL_HOST_URL") ?? "" },
+                { "clientId", Environment.GetEnvironmentVariable("SERVAL_CLIENT_ID") ?? "" },
+                { "clientSecret", Environment.GetEnvironmentVariable("SERVAL_CLIENT_SECRET") ?? "" },
+                { "authUrl", Environment.GetEnvironmentVariable("SERVAL_AUTH_URL") ?? "" }
+            };
+        if (env["hostUrl"] == null)
+        {
+            Console.WriteLine(
+                "You need a serval host url in the environment variable SERVAL_HOST_URL!  Look at README for instructions on getting one."
+            );
+        }
+        else if (env["clientId"] == null)
+        {
+            Console.WriteLine(
+                "You need an auth0 client_id in the environment variable SERVAL_CLIENT_ID!  Look at README for instructions on getting one."
+            );
+        }
+        else if (env["clientSecret"] == null)
+        {
+            Console.WriteLine(
+                "You need an auth0 client_secret in the environment variable SERVAL_CLIENT_SECRET!  Look at README for instructions on getting one."
+            );
+        }
+        else if (env["authUrl"] == null)
+        {
+            Console.WriteLine(
+                "You need an auth0 authorization url in the environment variable SERVAL_AUTH_URL!  Look at README for instructions on getting one."
+            );
+        }
+        return env;
     }
 
     public async Task ClearEngines(string name = "")
@@ -105,6 +128,26 @@ public class ServalClientHelper
             await Task.Delay(pollIntervalMs);
             // increase throttle exponentially to 10 seconds
             pollIntervalMs = (int)Math.Min(pollIntervalMs * 1.2, 10_000);
+        }
+    }
+
+    public async Task CancelBuild(string engineId, string buildId, int timeoutSeconds = 20)
+    {
+        await translationEnginesClient.CancelBuildAsync(engineId);
+        int pollIntervalMs = 1000;
+        int tries = 1;
+        while (true)
+        {
+            var build = await translationEnginesClient.GetBuildAsync(engineId, buildId);
+            if (build.State != JobState.Pending && build.State != JobState.Active)
+            {
+                break;
+            }
+            if (tries++ > timeoutSeconds)
+            {
+                throw new TimeoutException($"The job did not fully cancel in {timeoutSeconds}");
+            }
+            await Task.Delay(pollIntervalMs);
         }
     }
 
