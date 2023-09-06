@@ -7,7 +7,7 @@ lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:0.6.2
 machineImage: ghcr.io/sillsdev/machine:3.2.0
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:0.9.3.6
-ClearMLMaxSteps: 20000
-ClearMLQueue: production
+ClearMLMaxSteps: 10
+ClearMLQueue: lambert_24gb
 SharedFileLocation: s3://aqua-ml-data/ext-qa/
 enableEcho: true

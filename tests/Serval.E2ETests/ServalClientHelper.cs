@@ -39,6 +39,7 @@ public class ServalClientHelper
         else
             _httpClient = new HttpClient();
         _httpClient.BaseAddress = new Uri(servalUrl);
+        _httpClient.Timeout = TimeSpan.FromSeconds(10);
         dataFilesClient = new DataFilesClient(_httpClient);
         translationEnginesClient = new TranslationEnginesClient(_httpClient);
         _httpClient.DefaultRequestHeaders.Add(
