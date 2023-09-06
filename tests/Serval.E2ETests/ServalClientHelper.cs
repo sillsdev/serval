@@ -107,6 +107,28 @@ public class ServalClientHelper
         }
     }
 
+    public async Task CancelBuild(string engineId)
+    {
+        await translationEnginesClient.CancelBuildAsync(engineId);
+        int pollIntervalMs = 500; // start throttle at 0.5 seconds
+        while (true)
+        {
+            try
+            {
+                var build = await translationEnginesClient.GetCurrentBuildAsync(engineId);
+            }
+            catch (ServalApiException e)
+            {
+                if (e.StatusCode == 204)
+                    break;
+            }
+            // Throttle requests
+            await Task.Delay(pollIntervalMs);
+            // increase throttle exponentially to 10 seconds
+            pollIntervalMs = (int)Math.Min(pollIntervalMs * 1.2, 10_000);
+        }
+    }
+
     public async Task<string> AddTextCorpusToEngine(
         string engineId,
         string[] filesToAdd,

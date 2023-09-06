@@ -313,8 +313,7 @@ public class ServalApiTests
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         // start and cancel first job after 2 seconds
         await _helperClient.StartBuildAsync(engineId);
-        await _helperClient.translationEnginesClient.CancelBuildAsync(engineId);
-        await Task.Delay(10_000);
+        await _helperClient.CancelBuild(engineId);
         // do a second job normally and make sure it works.
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
