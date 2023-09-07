@@ -125,6 +125,7 @@ public class ServalApiTests
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         var cId = await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
         await _helperClient.BuildEngine(engineId);
+        await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
             engineId,
             cId
