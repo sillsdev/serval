@@ -9,48 +9,7 @@ public class ServalApiTests
     [SetUp]
     public void SetUp()
     {
-        _helperClient = InitializeClient();
-    }
-
-    private ServalClientHelper InitializeClient()
-    {
-        var hostUrl = Environment.GetEnvironmentVariable("SERVAL_HOST_URL");
-        var clientId = Environment.GetEnvironmentVariable("SERVAL_CLIENT_ID");
-        var clientSecret = Environment.GetEnvironmentVariable("SERVAL_CLIENT_SECRET");
-        var authUrl = Environment.GetEnvironmentVariable("SERVAL_AUTH_URL");
-        if (hostUrl == null)
-        {
-            Console.WriteLine(
-                "You need a serval host url in the environment variable SERVAL_HOST_URL!  Look at README for instructions on getting one."
-            );
-        }
-        else if (clientId == null)
-        {
-            Console.WriteLine(
-                "You need an auth0 client_id in the environment variable SERVAL_CLIENT_ID!  Look at README for instructions on getting one."
-            );
-        }
-        else if (clientSecret == null)
-        {
-            Console.WriteLine(
-                "You need an auth0 client_secret in the environment variable SERVAL_CLIENT_SECRET!  Look at README for instructions on getting one."
-            );
-        }
-        else if (authUrl == null)
-        {
-            Console.WriteLine(
-                "You need an auth0 authorization url in the environment variable SERVAL_AUTH_URL!  Look at README for instructions on getting one."
-            );
-        }
-
-        return new ServalClientHelper(
-            hostUrl,
-            authUrl,
-            "https://machine.sil.org",
-            clientId,
-            clientSecret,
-            ignoreSSLErrors: true
-        );
+        _helperClient = new ServalClientHelper("https://machine.sil.org", ignoreSSLErrors: true);
     }
 
     [Test]
@@ -180,28 +139,7 @@ public class ServalApiTests
         string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT2");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
-        // start and cancel first job after 2 seconds
-        var build = await _helperClient.StartBuildAsync(engineId);
-        await Task.Delay(4000);
-        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
-        Assert.That(build.State == JobState.Active || build.State == JobState.Pending);
-
-        await _helperClient.translationEnginesClient.CancelBuildAsync(engineId);
-        await Task.Delay(2000);
-        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
-        Assert.That(build.State == JobState.Canceled);
-
-        // do a second job normally and make sure it works.
-        build = await _helperClient.StartBuildAsync(engineId);
-        await Task.Delay(4000);
-        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
-        Assert.That(build.State == JobState.Active || build.State == JobState.Pending);
-
-        // and cancel again - let's not wait forever
-        await _helperClient.translationEnginesClient.CancelBuildAsync(engineId);
-        await Task.Delay(2000);
-        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
-        Assert.That(build.State == JobState.Canceled);
+        await StartAndCancelTwice(engineId);
     }
 
     [Test]
@@ -311,12 +249,37 @@ public class ServalApiTests
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT7");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
-        // start and cancel first job after 2 seconds
-        await _helperClient.StartBuildAsync(engineId);
-        await _helperClient.CancelBuild(engineId);
-        // do a second job normally and make sure it works.
+
+        await StartAndCancelTwice(engineId);
+
+        // do a job normally and make sure it works.
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
         Assert.AreEqual(tResult.Translation, "spirit");
+    }
+
+    async Task StartAndCancelTwice(string engineId)
+    {
+        // start and first job
+        var build = await _helperClient!.StartBuildAsync(engineId);
+        await Task.Delay(1000);
+        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
+        Assert.That(build.State == JobState.Active || build.State == JobState.Pending);
+
+        // and then cancel it
+        await _helperClient.CancelBuild(engineId, build.Id);
+        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
+        Assert.That(build.State == JobState.Canceled);
+
+        // do a second job normally and make sure it works.
+        build = await _helperClient.StartBuildAsync(engineId);
+        await Task.Delay(1000);
+        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
+        Assert.That(build.State == JobState.Active || build.State == JobState.Pending);
+
+        // and cancel again - let's not wait forever
+        await _helperClient.CancelBuild(engineId, build.Id);
+        build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
+        Assert.That(build.State == JobState.Canceled);
     }
 }
