@@ -2,13 +2,13 @@ using System.Diagnostics;
 
 namespace Serval.Shared.Controllers
 {
-    public class HttpResultFilter : ResultFilterAttribute
+    public class ErrorResultFilter : ResultFilterAttribute
     {
         private readonly ILogger _logger;
 
-        public HttpResultFilter(ILoggerFactory loggerFactory)
+        public ErrorResultFilter(ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.CreateLogger<HttpResultFilter>();
+            _logger = loggerFactory.CreateLogger<ErrorResultFilter>();
         }
 
         public override Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)

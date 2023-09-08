@@ -1,21 +1,19 @@
-using Newtonsoft.Json.Linq;
-
 namespace Serval.Shared.Controllers;
 
-public class ServiceUnavailableException : ExceptionFilterAttribute
+public class ServiceUnavailableExceptionFilter : ExceptionFilterAttribute
 {
-    private readonly ILogger<ServiceUnavailableException> _logger;
+    private readonly ILogger<ServiceUnavailableExceptionFilter> _logger;
 
-    public ServiceUnavailableException(ILoggerFactory loggerFactory)
+    public ServiceUnavailableExceptionFilter(ILoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<ServiceUnavailableException>();
+        _logger = loggerFactory.CreateLogger<ServiceUnavailableExceptionFilter>();
     }
 
     public override void OnException(ExceptionContext context)
     {
         if (
-            (context.Exception is System.TimeoutException)
-            || (context.Exception is Grpc.Core.RpcException rpcEx && rpcEx.StatusCode == StatusCode.Unavailable)
+            (context.Exception is TimeoutException)
+            || (context.Exception is RpcException rpcEx && rpcEx.StatusCode == StatusCode.Unavailable)
         )
         {
             _logger.Log(
