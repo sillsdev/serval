@@ -216,17 +216,7 @@ public class TranslationEnginesController : ServalControllerBase
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
 
-        TranslationResult? result;
-        try
-        {
-            result = await _engineService.TranslateAsync(id, segment, cancellationToken);
-        }
-        catch (RpcException r)
-        {
-            if (r.StatusCode == Grpc.Core.StatusCode.FailedPrecondition)
-                return Conflict();
-            throw;
-        }
+        TranslationResult? result = await _engineService.TranslateAsync(id, segment, cancellationToken);
         if (result == null)
             return NotFound();
         return Ok(Map(result));
@@ -267,17 +257,13 @@ public class TranslationEnginesController : ServalControllerBase
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
 
-        IEnumerable<TranslationResult>? results;
-        try
-        {
-            results = await _engineService.TranslateAsync(id, n, segment, cancellationToken);
-        }
-        catch (RpcException r)
-        {
-            if (r.StatusCode == Grpc.Core.StatusCode.FailedPrecondition)
-                return Conflict();
-            throw;
-        }
+        IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(
+            id,
+            n,
+            segment,
+            cancellationToken
+        );
+
         if (results == null)
             return NotFound();
         return Ok(results.Select(Map));
@@ -315,17 +301,8 @@ public class TranslationEnginesController : ServalControllerBase
     {
         if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
             return errorResult;
-        WordGraph? wordGraph;
-        try
-        {
-            wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
-        }
-        catch (RpcException r)
-        {
-            if (r.StatusCode == Grpc.Core.StatusCode.FailedPrecondition)
-                return Conflict();
-            throw;
-        }
+        WordGraph? wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
+
         if (wordGraph == null)
             return NotFound();
         return Ok(Map(wordGraph));

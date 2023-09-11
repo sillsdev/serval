@@ -7,6 +7,7 @@
 [TypeFilter(typeof(ServiceUnavailableExceptionFilter))]
 [TypeFilter(typeof(ErrorResultFilter))]
 [TypeFilter(typeof(AbortedRpcExceptionFilter))]
+[TypeFilter(typeof(FailedPreconditionRpcExceptionFilter))]
 public abstract class ServalControllerBase : Controller
 {
     private readonly IAuthorizationService _authService;
