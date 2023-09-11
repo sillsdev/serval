@@ -226,6 +226,14 @@ public class ServalApiTests
         Assert.That(corpus.SourceLanguage, Is.EqualTo("en"));
         Assert.That(corpus.TargetFiles, Has.Count.EqualTo(3));
 
+        //Try to translate - should fail: unbuilt
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await _helperClient.translationEnginesClient.TranslateNAsync(engineId, N, "love");
+        });
+        Assert.NotNull(ex);
+        Assert.That(ex!.StatusCode, Is.EqualTo(409));
+
         //Build engine
         await _helperClient.BuildEngine(engineId);
 
