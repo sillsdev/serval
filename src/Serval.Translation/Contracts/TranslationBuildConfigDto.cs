@@ -2,5 +2,6 @@
 
 public class TranslationBuildConfigDto
 {
+    public string? Name { get; set; }
     public IList<PretranslateCorpusConfigDto>? Pretranslate { get; set; }
 }

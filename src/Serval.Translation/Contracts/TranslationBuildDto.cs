@@ -5,6 +5,7 @@ public class TranslationBuildDto
     public string Id { get; set; } = default!;
     public string Url { get; set; } = default!;
     public int Revision { get; set; }
+    public string? Name { get; set; }
     public ResourceLinkDto Engine { get; set; } = default!;
     public IList<PretranslateCorpusDto>? Pretranslate { get; set; }
     public int Step { get; set; }

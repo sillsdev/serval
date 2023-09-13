@@ -960,7 +960,7 @@ public class TranslationEnginesController : ServalControllerBase
 
     private static Build Map(Engine engine, TranslationBuildConfigDto source)
     {
-        var build = new Build { EngineRef = engine.Id };
+        var build = new Build { EngineRef = engine.Id, Name = source.Name };
         if (source.Pretranslate != null)
         {
             var pretranslateCorpora = new List<PretranslateCorpus>();
@@ -1003,6 +1003,7 @@ public class TranslationEnginesController : ServalControllerBase
             Id = source.Id,
             Url = _urlService.GetUrl("GetTranslationBuild", new { id = source.EngineRef, buildId = source.Id }),
             Revision = source.Revision,
+            Name = source.Name,
             Engine = new ResourceLinkDto
             {
                 Id = source.EngineRef,
