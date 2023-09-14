@@ -4317,6 +4317,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("dateFinished", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTimeOffset? DateFinished { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Options { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -4357,6 +4360,9 @@ namespace Serval.Client
     {
         [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<PretranslateCorpusConfig>? Pretranslate { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Options { get; set; } = default!;
 
     }
 

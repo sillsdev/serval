@@ -1,4 +1,6 @@
-﻿namespace Serval.Translation.Controllers;
+﻿using System.Text.Json;
+
+namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
@@ -784,6 +786,10 @@ public class TranslationEnginesController : ServalControllerBase
         {
             return BadRequest(ioe.Message);
         }
+        catch (ArgumentException ae)
+        {
+            return BadRequest(ae.Message);
+        }
         if (!await _engineService.StartBuildAsync(build, cancellationToken))
             return NotFound();
 
@@ -976,6 +982,15 @@ public class TranslationEnginesController : ServalControllerBase
             }
             build.Pretranslate = pretranslateCorpora;
         }
+        try
+        {
+            JsonSerializer.Deserialize<JsonObject>(source.Options ?? "{}");
+        }
+        catch (Exception e)
+        {
+            throw new ArgumentException($"Unable to parse field 'options' : {e.Message}");
+        }
+        build.Options = source.Options;
         return build;
     }
 
@@ -1013,7 +1028,8 @@ public class TranslationEnginesController : ServalControllerBase
             PercentCompleted = source.PercentCompleted,
             Message = source.Message,
             State = source.State,
-            DateFinished = source.DateFinished
+            DateFinished = source.DateFinished,
+            Options = source.Options
         };
     }
 

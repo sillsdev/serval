@@ -11,4 +11,5 @@ public class Build : IEntity
     public string? Message { get; set; }
     public JobState State { get; set; } = JobState.Pending;
     public DateTime? DateFinished { get; set; }
+    public string? Options { get; set; }
 }
