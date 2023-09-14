@@ -157,6 +157,14 @@ public class Startup
                 };
             });
         }
+
+        services
+            .AddOpenTelemetry()
+            .WithTracing(builder =>
+            {
+                builder.AddAspNetCoreInstrumentation().AddConsoleExporter();
+                builder.AddHttpClientInstrumentation().AddConsoleExporter();
+            });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
