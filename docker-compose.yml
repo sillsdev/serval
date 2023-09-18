@@ -92,7 +92,7 @@ services:
       - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=production
-      - ClearMLNmtEngine__DockerImage=ghcr.io/sillsdev/machine.py:0.9.3.6
+      - ClearMLNmtEngine__DockerImage=ghcr.io/sillsdev/machine.py:0.9.3.7
       - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
@@ -138,7 +138,7 @@ services:
       - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearMLNmtEngine__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearMLNmtEngine__Queue=lambert_24gb
-      - ClearMLNmtEngine__DockerImage=ghcr.io/sillsdev/machine.py:0.9.3.6
+      - ClearMLNmtEngine__DockerImage=ghcr.io/sillsdev/machine.py:0.9.3.7
       - ClearMLNmtEngine__MaxSteps=10
       - "ClearMLNmtEngine__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearMLNmtEngine__SecretKey=${ClearML_SecretKey:?secret key needed}"
