@@ -88,7 +88,7 @@ public class TranslationEnginesController : ServalControllerBase
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **sourceLanguage**: The source language code
-    ///   * Note that for Nmt, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
+    ///   * Note that for Nmt, if the source or target language code matches an [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag), it will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200) and use the language as-is.
     /// * **targetLanguage**: The target language code
     /// * **type**: **SmtTransfer** or **Nmt** or **Echo**
     /// ### SmtTransfer
