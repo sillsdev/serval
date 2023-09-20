@@ -794,7 +794,7 @@ namespace Serval.Client
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **sourceLanguage**: The source language code
-        /// <br/>  * Note that for Nmt, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
+        /// <br/>  * Note that for Nmt, if the source or target language code matches an [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag), it will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200) and use the language as-is.
         /// <br/>* **targetLanguage**: The target language code
         /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
         /// <br/>### SmtTransfer
@@ -1182,7 +1182,7 @@ namespace Serval.Client
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **sourceLanguage**: The source language code
-        /// <br/>  * Note that for Nmt, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
+        /// <br/>  * Note that for Nmt, if the source or target language code matches an [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag), it will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200) and use the language as-is.
         /// <br/>* **targetLanguage**: The target language code
         /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
         /// <br/>### SmtTransfer
