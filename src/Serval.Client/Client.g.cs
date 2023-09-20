@@ -793,16 +793,15 @@ namespace Serval.Client
         /// <br/>* **name**: A name to help identify and distinguish the file.
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code
-        /// <br/>  * Note that for Nmt, if the source or target language code matches an [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag), it will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200) and use the language as-is.
-        /// <br/>* **targetLanguage**: The target language code
+        /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+        /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
         /// <br/>### SmtTransfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is
-        /// <br/>fine tuned from the NLLB-200 from Meta and inherits the 200 language codes.
+        /// <br/>fine tuned from the NLLB-200 from Meta and inherits the 200 language codes. Valid IETF language tags will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), and NLLB will be used as-is.
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
         /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
@@ -1181,16 +1180,15 @@ namespace Serval.Client
         /// <br/>* **name**: A name to help identify and distinguish the file.
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code
-        /// <br/>  * Note that for Nmt, if the source or target language code matches an [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag), it will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200) and use the language as-is.
-        /// <br/>* **targetLanguage**: The target language code
+        /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+        /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
         /// <br/>### SmtTransfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is
-        /// <br/>fine tuned from the NLLB-200 from Meta and inherits the 200 language codes.
+        /// <br/>fine tuned from the NLLB-200 from Meta and inherits the 200 language codes. Valid IETF language tags will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), and NLLB will be used as-is.
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
         /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
