@@ -164,6 +164,7 @@ public class Startup
             {
                 builder.AddAspNetCoreInstrumentation().AddConsoleExporter();
                 builder.AddHttpClientInstrumentation().AddConsoleExporter();
+                builder.AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources").AddConsoleExporter();
             });
     }
 
