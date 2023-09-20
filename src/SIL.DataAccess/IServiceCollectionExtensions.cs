@@ -32,6 +32,7 @@ public static class IServiceCollectionExtensions
         services.Configure<MongoDataAccessOptions>(options => options.Url = new MongoUrl(connectionString));
         services.AddTransient<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
         var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
+        clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
         clientSettings.LinqProvider = LinqProvider.V2;
         services.AddSingleton<IMongoClient>(sp => new MongoClient(clientSettings));
         services.AddSingleton(
