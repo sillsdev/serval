@@ -87,16 +87,15 @@ public class TranslationEnginesController : ServalControllerBase
     /// * **name**: A name to help identify and distinguish the file.
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-    /// * **sourceLanguage**: The source language code
-    ///   * Note that for Nmt, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
-    /// * **targetLanguage**: The target language code
+    /// * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+    /// * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
     /// * **type**: **SmtTransfer** or **Nmt** or **Echo**
     /// ### SmtTransfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
     /// Typical endpoints: translate, get-word-graph, train-segment
     /// ### Nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is
-    /// fine tuned from the NLLB-200 from Meta and inherits the 200 language codes.
+    /// fine tuned from the NLLB-200 from Meta and inherits the 200 language codes. Valid IETF language tags will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), and NLLB will be used as-is.
     /// Typical endpoints: pretranslate
     /// ### Echo
     /// The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
@@ -960,7 +959,7 @@ public class TranslationEnginesController : ServalControllerBase
 
     private static Build Map(Engine engine, TranslationBuildConfigDto source)
     {
-        var build = new Build { EngineRef = engine.Id };
+        var build = new Build { EngineRef = engine.Id, Name = source.Name };
         if (source.Pretranslate != null)
         {
             var pretranslateCorpora = new List<PretranslateCorpus>();
@@ -1003,6 +1002,7 @@ public class TranslationEnginesController : ServalControllerBase
             Id = source.Id,
             Url = _urlService.GetUrl("GetTranslationBuild", new { id = source.EngineRef, buildId = source.Id }),
             Revision = source.Revision,
+            Name = source.Name,
             Engine = new ResourceLinkDto
             {
                 Id = source.EngineRef,
