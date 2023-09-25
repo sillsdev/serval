@@ -106,14 +106,15 @@ public class ServalClientHelper
         return engine.Id;
     }
 
-    public async Task<TranslationBuild> StartBuildAsync(string engineId)
+    public async Task<TranslationBuild> StartBuildAsync(string engineId, bool useStrictParsing = false)
     {
+        translationBuildConfig.Options = "{\"useStrictParsing\":" + $"\"{useStrictParsing}\"" + "}";
         return await translationEnginesClient.StartBuildAsync(engineId, translationBuildConfig);
     }
 
-    public async Task BuildEngine(string engineId)
+    public async Task<string> BuildEngine(string engineId, bool useStrictParsing = false)
     {
-        var newJob = await StartBuildAsync(engineId);
+        var newJob = await StartBuildAsync(engineId, useStrictParsing);
         await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
         int pollIntervalMs = 500; // start throttle at 0.5 seconds
         while (true)
@@ -129,6 +130,7 @@ public class ServalClientHelper
             // increase throttle exponentially to 10 seconds
             pollIntervalMs = (int)Math.Min(pollIntervalMs * 1.2, 10_000);
         }
+        return newJob.Id;
     }
 
     public async Task CancelBuild(string engineId, string buildId, int timeoutSeconds = 20)

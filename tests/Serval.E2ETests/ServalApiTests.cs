@@ -13,7 +13,7 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task GetEchoSuggestion()
+    public async Task GetEchoSuggestionAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo1");
@@ -25,7 +25,7 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task GetEchoPretranslate()
+    public async Task GetEchoPretranslateAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo2");
@@ -43,7 +43,7 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task GetSmtTranslation()
+    public async Task GetSmtTranslationAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT1");
@@ -56,7 +56,7 @@ public class ServalApiTests
 
     [Test]
     [Category("slow")]
-    public async Task GetSmtWholeBible()
+    public async Task GetSmtWholeBibleAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT2");
@@ -67,7 +67,7 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task GetSmtAddSegment()
+    public async Task GetSmtAddSegmentAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
@@ -96,7 +96,7 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task GetSmtMoreCorpus()
+    public async Task GetSmtMoreCorpusAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT4");
@@ -117,7 +117,7 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task NmtBatch()
+    public async Task NmtBatchAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT1");
@@ -134,13 +134,13 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task GetNmtCancelAndRestartBuild()
+    public async Task GetNmtCancelAndRestartBuildAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT2");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
-        await StartAndCancelTwice(engineId);
+        await StartAndCancelTwiceAsync(engineId);
     }
 
     [Test]
@@ -244,14 +244,14 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task GetSmtCancelAndRestartBuild()
+    public async Task GetSmtCancelAndRestartBuildAsync()
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT7");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
 
-        await StartAndCancelTwice(engineId);
+        await StartAndCancelTwiceAsync(engineId);
 
         // do a job normally and make sure it works.
         await _helperClient.BuildEngine(engineId);
@@ -259,7 +259,7 @@ public class ServalApiTests
         Assert.AreEqual(tResult.Translation, "spirit");
     }
 
-    async Task StartAndCancelTwice(string engineId)
+    async Task StartAndCancelTwiceAsync(string engineId)
     {
         // start and first job
         var build = await _helperClient!.StartBuildAsync(engineId);
@@ -282,5 +282,26 @@ public class ServalApiTests
         await _helperClient.CancelBuild(engineId, build.Id);
         build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
         Assert.That(build.State == JobState.Canceled);
+    }
+
+    [Test]
+    [TestCase("2JN.txt", true, false)]
+    [TestCase("2JN_EXTRATAB.txt", false, false)]
+    [TestCase("2JN_MIXEDREFS.txt", false, false)]
+    [TestCase("2JN_USERDEFINEDREFS.txt", false, false)]
+    [TestCase("2JN_EXTRATAB.txt", true, true)]
+    [TestCase("2JN_MIXEDREFS.txt", true, true)]
+    [TestCase("2JN_USERDEFINEDREFS.txt", true, false)]
+    public async Task BuildWithMalformedFilesAsync(string filename, bool useStrictParsing, bool shouldFail)
+    {
+        await _helperClient!.ClearEngines();
+        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT7");
+        var books = new string[] { filename };
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+        var buildId = await _helperClient.BuildEngine(engineId, useStrictParsing);
+        Assert.That(
+            (await _helperClient.translationEnginesClient.GetBuildAsync(engineId, buildId)).State == JobState.Faulted,
+            Is.EqualTo(shouldFail)
+        );
     }
 }
