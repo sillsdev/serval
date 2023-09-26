@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 public class ServalClientHelper
@@ -112,20 +113,25 @@ public class ServalClientHelper
     public async Task BuildEngine(string engineId)
     {
         var newJob = await StartBuildAsync(engineId);
+        int revision = newJob.Revision;
         await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
-        int pollIntervalMs = 500; // start throttle at 0.5 seconds
         while (true)
         {
-            var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id);
-            if (!(result.State == JobState.Active || result.State == JobState.Pending))
+            try
             {
-                // build completed
-                break;
+                var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, revision + 1);
+                if (!(result.State == JobState.Active || result.State == JobState.Pending))
+                {
+                    // build completed
+                    break;
+                }
+                revision++;
             }
-            // Throttle requests
-            await Task.Delay(pollIntervalMs);
-            // increase throttle exponentially to 10 seconds
-            pollIntervalMs = (int)Math.Min(pollIntervalMs * 1.2, 10_000);
+            catch
+            {
+                // Throttle requests
+                await Task.Delay(500);
+            }
         }
     }
 
