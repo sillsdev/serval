@@ -8,7 +8,7 @@ public class ServalClientHelper
     readonly Dictionary<string, string> EnginePerUser = new Dictionary<string, string>();
     private string _prefix;
 
-    private TranslationBuildConfig translationBuildConfig = new TranslationBuildConfig
+    public TranslationBuildConfig translationBuildConfig = new TranslationBuildConfig
     {
         Pretranslate = new List<PretranslateCorpusConfig>()
     };
