@@ -331,7 +331,7 @@ public class ServalApiTests
                 TargetFiles = new TranslationCorpusFileConfig[] { }
             }
         );
-        _helperClient.translationBuildConfig.Pretranslate!.Add(
+        _helperClient.TranslationBuildConfig.Pretranslate!.Add(
             new PretranslateCorpusConfig { CorpusId = corpus.Id, TextIds = new string[] { "JHN", "REV" } }
         );
         await _helperClient.BuildEngine(engineId);
