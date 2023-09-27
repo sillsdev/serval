@@ -127,7 +127,7 @@ public class ServalClientHelper
                     // build completed
                     break;
                 }
-                revision++;
+                revision = result.Revision;
             }
             catch (TaskCanceledException e)
             {
