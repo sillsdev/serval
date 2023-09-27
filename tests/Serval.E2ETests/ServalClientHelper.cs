@@ -129,8 +129,10 @@ public class ServalClientHelper
                 }
                 revision++;
             }
-            catch
+            catch (TaskCanceledException e)
             {
+                if (!e.Message.Contains("canceled due to the configured HttpClient.Timeout"))
+                    throw;
                 // Throttle requests
                 await Task.Delay(500);
             }
