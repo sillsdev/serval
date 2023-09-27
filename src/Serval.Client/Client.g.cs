@@ -49,7 +49,7 @@ namespace Serval.Client
         /// <br/>* **Text**: One translation unit (a.k.a., verse) per line
         /// <br/>  * If there is a tab, the content before the tab is the unique identifier for the line
         /// <br/>  * Otherwise, no tabs should be used in the file.
-        /// <br/>* **Paratext**: A complete, zipped Paratext project</param>
+        /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.</param>
         /// <param name="name">A name to help identify and distinguish the file.
         /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
         /// <br/>The name does not have to be unique.
@@ -233,7 +233,7 @@ namespace Serval.Client
         /// <br/>* **Text**: One translation unit (a.k.a., verse) per line
         /// <br/>  * If there is a tab, the content before the tab is the unique identifier for the line
         /// <br/>  * Otherwise, no tabs should be used in the file.
-        /// <br/>* **Paratext**: A complete, zipped Paratext project</param>
+        /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.</param>
         /// <param name="name">A name to help identify and distinguish the file.
         /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
         /// <br/>The name does not have to be unique.
@@ -812,8 +812,8 @@ namespace Serval.Client
         /// <br/>            
         /// <br/>    {
         /// <br/>      "name": "myTeam:myProject:myEngine",
-        /// <br/>      "sourceLanguage": "ell_Grek",
-        /// <br/>      "targetLanguage": "eng_Latn",
+        /// <br/>      "sourceLanguage": "el",
+        /// <br/>      "targetLanguage": "en",
         /// <br/>      "type": "Nmt"
         /// <br/>    }
         /// </remarks>
@@ -899,9 +899,9 @@ namespace Serval.Client
         /// <br/>  * **FileId**: The unique id referencing the uploaded file
         /// <br/>  * **TextId**: The client-defined name to associate source and target files.
         /// <br/>    * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-        /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines
-        /// <br/>    of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
+        /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
         /// <br/>    * A TextId should only be used at most once in SourceFiles and in TargetFiles.
+        /// <br/>    * If the file is a Paratext project, this field should be left blank. Any TextId provided will be ignored.
         /// <br/>* **TargetFiles**: The source files associated with the corpus
         /// <br/>  * Same as SourceFiles.  Parallel texts must have a matching TextId.
         /// </remarks>
@@ -993,11 +993,12 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora or textId's to pretranslate.  Even when a corpus or TextId
-        /// <br/>is selected for pretranslation, only "untranslated" text will be pretranslated,
+        /// Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
+        /// <br/>is selected for pretranslation, only "untranslated" text will be pretranslated:
         /// <br/>that is, segments (lines of text) in the specified corpora or textId's that have
-        /// <br/>untranslated text but no translated text.  If the engine does not support
-        /// <br/>pretranslation, these fields have no effect.
+        /// <br/>untranslated text but no translated text. If a corpus is a Paratext project,
+        /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
+        /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -1199,8 +1200,8 @@ namespace Serval.Client
         /// <br/>            
         /// <br/>    {
         /// <br/>      "name": "myTeam:myProject:myEngine",
-        /// <br/>      "sourceLanguage": "ell_Grek",
-        /// <br/>      "targetLanguage": "eng_Latn",
+        /// <br/>      "sourceLanguage": "el",
+        /// <br/>      "targetLanguage": "en",
         /// <br/>      "type": "Nmt"
         /// <br/>    }
         /// </remarks>
@@ -2017,9 +2018,9 @@ namespace Serval.Client
         /// <br/>  * **FileId**: The unique id referencing the uploaded file
         /// <br/>  * **TextId**: The client-defined name to associate source and target files.
         /// <br/>    * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-        /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines
-        /// <br/>    of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
+        /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
         /// <br/>    * A TextId should only be used at most once in SourceFiles and in TargetFiles.
+        /// <br/>    * If the file is a Paratext project, this field should be left blank. Any TextId provided will be ignored.
         /// <br/>* **TargetFiles**: The source files associated with the corpus
         /// <br/>  * Same as SourceFiles.  Parallel texts must have a matching TextId.
         /// </remarks>
@@ -2794,11 +2795,12 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora or textId's to pretranslate.  Even when a corpus or TextId
-        /// <br/>is selected for pretranslation, only "untranslated" text will be pretranslated,
+        /// Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
+        /// <br/>is selected for pretranslation, only "untranslated" text will be pretranslated:
         /// <br/>that is, segments (lines of text) in the specified corpora or textId's that have
-        /// <br/>untranslated text but no translated text.  If the engine does not support
-        /// <br/>pretranslation, these fields have no effect.
+        /// <br/>untranslated text but no translated text. If a corpus is a Paratext project,
+        /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
+        /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
