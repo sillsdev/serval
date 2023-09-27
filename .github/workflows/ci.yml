@@ -32,7 +32,7 @@ jobs:
       - name: Pre-Test
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
       - name: Test
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=E2E&TestCategory!=E2EMissingServices" -c Release
+        run: dotnet test --verbosity normal --filter "TestCategory!=E2E&TestCategory!=E2EMissingServices" --collect "Code Coverage"
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
