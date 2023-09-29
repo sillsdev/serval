@@ -21,7 +21,7 @@ public class ServalClientHelper
         else
             _httpClient = new HttpClient();
         _httpClient.BaseAddress = new Uri(env["hostUrl"]);
-        _httpClient.Timeout = TimeSpan.FromSeconds(10);
+        _httpClient.Timeout = TimeSpan.FromSeconds(60);
         dataFilesClient = new DataFilesClient(_httpClient);
         translationEnginesClient = new TranslationEnginesClient(_httpClient);
         _httpClient.DefaultRequestHeaders.Add(
@@ -127,10 +127,11 @@ public class ServalClientHelper
                 }
                 revision = result.Revision;
             }
-            catch (TaskCanceledException e)
+            catch (ServalApiException e)
             {
-                if (!e.Message.Contains("canceled due to the configured HttpClient.Timeout"))
+                if (e.StatusCode != 408)
                     throw;
+
                 // Throttle requests
                 await Task.Delay(500);
             }
