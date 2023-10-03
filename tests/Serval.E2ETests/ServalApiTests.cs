@@ -134,6 +134,24 @@ public class ServalApiTests
     }
 
     [Test]
+    public async Task NmtLargeBatch()
+    {
+        await _helperClient!.ClearEngines();
+        string engineId = await _helperClient.CreateNewEngine("Nmt", "es", "en", "NMT3");
+        var books = new string[] { "bible_LARGEFILE.txt" };
+        await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+        var cId = await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
+        await _helperClient.BuildEngine(engineId);
+        await Task.Delay(1000);
+        IList<Pretranslation> lTrans = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            cId
+        );
+        TestContext.WriteLine(lTrans[0].Translation);
+        Assert.IsTrue(lTrans[0].Translation.Contains("beloved"));
+    }
+
+    [Test]
     public async Task GetNmtCancelAndRestartBuild()
     {
         await _helperClient!.ClearEngines();
@@ -282,5 +300,49 @@ public class ServalApiTests
         await _helperClient.CancelBuild(engineId, build.Id);
         build = await _helperClient.translationEnginesClient.GetBuildAsync(engineId, build.Id);
         Assert.That(build.State == JobState.Canceled);
+    }
+
+    [Test]
+    public async Task ParatextProjectNmtJobAsync()
+    {
+        await _helperClient!.ClearEngines();
+        DataFile file = await _helperClient.dataFilesClient.CreateAsync(
+            new FileParameter(data: File.OpenRead("../../../data/TestProject.zip")),
+            FileFormat.Paratext
+        );
+        string engineId = await _helperClient.CreateNewEngine("Nmt", "en", "es", "NMT4");
+        await _helperClient.AddTextCorpusToEngine(
+            engineId,
+            new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
+            "en",
+            "es",
+            false
+        );
+        TranslationCorpus corpus = await _helperClient.translationEnginesClient.AddCorpusAsync(
+            engineId,
+            new TranslationCorpusConfig
+            {
+                SourceLanguage = "en",
+                TargetLanguage = "es",
+                SourceFiles = new TranslationCorpusFileConfig[]
+                {
+                    new TranslationCorpusFileConfig { FileId = file.Id }
+                },
+                TargetFiles = new TranslationCorpusFileConfig[] { }
+            }
+        );
+        _helperClient.TranslationBuildConfig.Pretranslate!.Add(
+            new PretranslateCorpusConfig { CorpusId = corpus.Id, TextIds = new string[] { "JHN", "REV" } }
+        );
+        await _helperClient.BuildEngine(engineId);
+        Assert.That(
+            (await _helperClient.translationEnginesClient.GetAllBuildsAsync(engineId)).First().State
+                == JobState.Completed
+        );
+        IList<Pretranslation> lTrans = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            corpus.Id
+        );
+        Assert.That(lTrans, Is.Not.Empty);
     }
 }

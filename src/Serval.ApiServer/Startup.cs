@@ -2,12 +2,15 @@
 
 public class Startup
 {
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
     {
         Configuration = configuration;
+        Environment = environment;
     }
 
     public IConfiguration Configuration { get; }
+
+    public IWebHostEnvironment Environment { get; }
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -157,6 +160,18 @@ public class Startup
                 };
             });
         }
+        if (Environment.IsDevelopment())
+            services
+                .AddOpenTelemetry()
+                .WithTracing(builder =>
+                {
+                    builder
+                        .AddAspNetCoreInstrumentation()
+                        .AddHttpClientInstrumentation()
+                        .AddGrpcClientInstrumentation()
+                        .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
+                        .AddConsoleExporter();
+                });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -8,11 +8,6 @@ public class ServalClientHelper
     readonly Dictionary<string, string> EnginePerUser = new Dictionary<string, string>();
     private string _prefix;
 
-    private TranslationBuildConfig translationBuildConfig = new TranslationBuildConfig
-    {
-        Pretranslate = new List<PretranslateCorpusConfig>()
-    };
-
     public ServalClientHelper(string audience, string prefix = "SCE_", bool ignoreSSLErrors = false)
     {
         Dictionary<string, string> env = GetEnvironment();
@@ -33,7 +28,10 @@ public class ServalClientHelper
             $"Bearer {GetAuth0Authentication(env["authUrl"], audience, env["clientId"], env["clientSecret"]).Result}"
         );
         _prefix = prefix;
+        TranslationBuildConfig = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig>() };
     }
+
+    public TranslationBuildConfig TranslationBuildConfig { get; set; }
 
     public static Dictionary<string, string> GetEnvironment()
     {
@@ -82,7 +80,7 @@ public class ServalClientHelper
                 await translationEnginesClient.DeleteAsync(translationEngine.Id);
             }
         }
-        translationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
+        TranslationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
         EnginePerUser.Clear();
     }
 
@@ -108,7 +106,7 @@ public class ServalClientHelper
 
     public async Task<TranslationBuild> StartBuildAsync(string engineId)
     {
-        return await translationEnginesClient.StartBuildAsync(engineId, translationBuildConfig);
+        return await translationEnginesClient.StartBuildAsync(engineId, TranslationBuildConfig);
     }
 
     public async Task BuildEngine(string engineId)
@@ -205,7 +203,7 @@ public class ServalClientHelper
 
         if (pretranslate)
         {
-            translationBuildConfig.Pretranslate!.Add(
+            TranslationBuildConfig.Pretranslate!.Add(
                 new PretranslateCorpusConfig { CorpusId = response.Id, TextIds = filesToAdd.ToList() }
             );
         }

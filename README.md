@@ -1,5 +1,6 @@
 [![Integration & Unit Tests](https://github.com/sillsdev/serval/actions/workflows/ci.yml/badge.svg)](https://github.com/sillsdev/serval/actions/workflows/ci.yml)
 [![End-To-End Tests](https://github.com/sillsdev/serval/actions/workflows/ci-e2e.yml/badge.svg)](https://github.com/sillsdev/serval/actions/workflows/ci-e2e.yml)
+[![codecov](https://codecov.io/gh/sillsdev/serval/graph/badge.svg?token=0PEQ9LXPK9)](https://codecov.io/gh/sillsdev/serval)
 
 # Serval
 

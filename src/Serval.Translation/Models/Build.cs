@@ -4,6 +4,7 @@ public class Build : IEntity
 {
     public string Id { get; set; } = default!;
     public int Revision { get; set; } = 1;
+    public string? Name { get; set; }
     public string EngineRef { get; set; } = default!;
     public List<PretranslateCorpus>? Pretranslate { get; set; }
     public int Step { get; set; }

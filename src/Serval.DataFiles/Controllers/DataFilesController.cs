@@ -92,7 +92,7 @@ public class DataFilesController : ServalControllerBase
     /// * **Text**: One translation unit (a.k.a., verse) per line
     ///   * If there is a tab, the content before the tab is the unique identifier for the line
     ///   * Otherwise, no tabs should be used in the file.
-    /// * **Paratext**: A complete, zipped Paratext project
+    /// * **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.
     /// </param>
     /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>

@@ -89,16 +89,15 @@ public class TranslationEnginesController : ServalControllerBase
     /// * **name**: A name to help identify and distinguish the file.
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-    /// * **sourceLanguage**: The source language code
-    ///   * Note that for Nmt, if the source or target language code matches an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), it will map directly and use the language as-is.
-    /// * **targetLanguage**: The target language code
+    /// * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+    /// * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
     /// * **type**: **SmtTransfer** or **Nmt** or **Echo**
     /// ### SmtTransfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
     /// Typical endpoints: translate, get-word-graph, train-segment
     /// ### Nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is
-    /// fine tuned from the NLLB-200 from Meta and inherits the 200 language codes.
+    /// fine tuned from the NLLB-200 from Meta and inherits the 200 language codes. Valid IETF language tags will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), and NLLB will be used as-is.
     /// Typical endpoints: pretranslate
     /// ### Echo
     /// The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
@@ -109,8 +108,8 @@ public class TranslationEnginesController : ServalControllerBase
     ///
     ///     {
     ///       "name": "myTeam:myProject:myEngine",
-    ///       "sourceLanguage": "ell_Grek",
-    ///       "targetLanguage": "eng_Latn",
+    ///       "sourceLanguage": "el",
+    ///       "targetLanguage": "en",
     ///       "type": "Nmt"
     ///     }
     ///
@@ -374,9 +373,9 @@ public class TranslationEnginesController : ServalControllerBase
     ///   * **FileId**: The unique id referencing the uploaded file
     ///   * **TextId**: The client-defined name to associate source and target files.
     ///     * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-    ///     * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines
-    ///     of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
+    ///     * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
     ///     * A TextId should only be used at most once in SourceFiles and in TargetFiles.
+    ///     * If the file is a Paratext project, this field should be left blank. Any TextId provided will be ignored.
     /// * **TargetFiles**: The source files associated with the corpus
     ///   * Same as SourceFiles.  Parallel texts must have a matching TextId.
     /// </remarks>
@@ -737,11 +736,12 @@ public class TranslationEnginesController : ServalControllerBase
     /// Starts a build job for a translation engine.
     /// </summary>
     /// <remarks>
-    /// Specify the corpora or textId's to pretranslate.  Even when a corpus or TextId
-    /// is selected for pretranslation, only "untranslated" text will be pretranslated,
+    /// Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
+    /// is selected for pretranslation, only "untranslated" text will be pretranslated:
     /// that is, segments (lines of text) in the specified corpora or textId's that have
-    /// untranslated text but no translated text.  If the engine does not support
-    /// pretranslation, these fields have no effect.
+    /// untranslated text but no translated text. If a corpus is a Paratext project,
+    /// you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
+    /// in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
@@ -966,7 +966,7 @@ public class TranslationEnginesController : ServalControllerBase
 
     private static Build Map(Engine engine, TranslationBuildConfigDto source)
     {
-        var build = new Build { EngineRef = engine.Id };
+        var build = new Build { EngineRef = engine.Id, Name = source.Name };
         if (source.Pretranslate != null)
         {
             var pretranslateCorpora = new List<PretranslateCorpus>();
@@ -1018,6 +1018,7 @@ public class TranslationEnginesController : ServalControllerBase
             Id = source.Id,
             Url = _urlService.GetUrl("GetTranslationBuild", new { id = source.EngineRef, buildId = source.Id }),
             Revision = source.Revision,
+            Name = source.Name,
             Engine = new ResourceLinkDto
             {
                 Id = source.EngineRef,
