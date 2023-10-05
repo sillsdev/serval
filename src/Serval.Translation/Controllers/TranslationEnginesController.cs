@@ -984,13 +984,12 @@ public class TranslationEnginesController : ServalControllerBase
         }
         try
         {
-            JsonSerializer.Deserialize<JsonObject>(source.Options ?? "{}");
+            build.Options = JsonConvert.DeserializeObject<IDictionary<string, object>>(source.Options ?? "{}");
         }
         catch (Exception e)
         {
             throw new ArgumentException($"Unable to parse field 'options' : {e.Message}");
         }
-        build.Options = source.Options;
         return build;
     }
 
@@ -1030,7 +1029,7 @@ public class TranslationEnginesController : ServalControllerBase
             Message = source.Message,
             State = source.State,
             DateFinished = source.DateFinished,
-            Options = source.Options
+            Options = JsonConvert.SerializeObject(source.Options)
         };
     }
 

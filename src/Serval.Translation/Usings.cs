@@ -11,6 +11,7 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Routing;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.Options;
+global using Newtonsoft.Json;
 global using NSwag.Annotations;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Contracts;
