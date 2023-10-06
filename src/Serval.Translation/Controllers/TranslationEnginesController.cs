@@ -984,7 +984,12 @@ public class TranslationEnginesController : ServalControllerBase
         }
         try
         {
-            build.Options = JsonConvert.DeserializeObject<IDictionary<string, object>>(source.Options ?? "{}");
+            var jsonSerializerOptions = new JsonSerializerOptions();
+            jsonSerializerOptions.Converters.Add(new ObjectToInferredTypesConverter());
+            build.Options = JsonSerializer.Deserialize<IDictionary<string, object>>(
+                source.Options ?? "{}",
+                jsonSerializerOptions
+            );
         }
         catch (Exception e)
         {
@@ -1029,7 +1034,7 @@ public class TranslationEnginesController : ServalControllerBase
             Message = source.Message,
             State = source.State,
             DateFinished = source.DateFinished,
-            Options = JsonConvert.SerializeObject(source.Options)
+            Options = JsonSerializer.Serialize(source.Options)
         };
     }
 
