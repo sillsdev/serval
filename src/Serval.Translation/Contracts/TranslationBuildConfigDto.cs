@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Nodes;
-
-namespace Serval.Translation.Contracts;
+﻿namespace Serval.Translation.Contracts;
 
 public class TranslationBuildConfigDto
 {

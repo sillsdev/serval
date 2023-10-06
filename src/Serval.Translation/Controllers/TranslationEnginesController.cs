@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace Serval.Translation.Controllers;
+﻿namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
