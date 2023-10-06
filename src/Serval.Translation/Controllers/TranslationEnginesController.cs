@@ -668,13 +668,13 @@ public class TranslationEnginesController : ServalControllerBase
     /// Get a build job
     /// </summary>
     /// <remarks>
-    /// If the `minRevision` is not defined, the current build at whatever state it is
+    /// If the `minRevision` is not defined, the current build, at whatever state it is,
     /// will be immediately returned.  If `minRevision` is defined, Serval will wait for
     /// up to 40 seconds for the engine to build to the `minRevision` specified, else
     /// will timeout.
     /// A use case is to actively query the state of the current build, where the subsequent
-    /// request sets the `minRevision` to the returned `revision` + 1.  Note: this method
-    /// should use request throttling.
+    /// request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
+    /// Note: this method should use request throttling.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildId">The build job id</param>
@@ -685,7 +685,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client does not own the translation engine</response>
     /// <response code="404">The engine or build does not exist</response>
-    /// <response code="408">The long polling request timed out</response>
+    /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/builds/{buildId}", Name = "GetTranslationBuild")]
@@ -795,7 +795,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// Get the currently running build job for a translation engine
     /// </summary>
     /// <remarks>
-    /// See "Get a Build Job" for details on minimum revision.
+    /// See documentation on endpoint /translation/engines/{id}/builds/{id} - "Get a Build Job" for details on using `minRevision`.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="minRevision">The minimum revision</param>
@@ -806,7 +806,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
-    /// <response code="408">The long polling request timed out.  Did you start the build?</response>
+    /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/current-build")]
