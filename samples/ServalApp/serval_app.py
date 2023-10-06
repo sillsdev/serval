@@ -12,13 +12,17 @@ if not st.session_state.get('authorized',False):
         st.session_state['client_id'] = st.text_input(label='Client ID')
         st.session_state['client_secret'] = st.text_input(label='Client Secret', type='password')
         if st.form_submit_button("Authorize"):
-            try:
-                serval_auth = ServalBearerAuth(client_id=st.session_state['client_id'] if st.session_state['client_id'] != "" else "<invalid>",client_secret=st.session_state['client_secret'] if st.session_state['client_secret'] != "" else "<invalid>")
-                st.session_state['authorized'] = True
-                st.rerun()
-            except ValueError:
-                st.error('Unable to authorize - please check your credentials')
+            st.session_state['authorized'] = True
+            st.rerun()
+        if st.session_state.get('authorization_failure', False):
+            st.error('Invalid credentials. Please check your credentials.')
 else:
+    try:
+        serval_auth = ServalBearerAuth(client_id=st.session_state['client_id'] if st.session_state['client_id'] != "" else "<invalid>", client_secret=st.session_state['client_secret'] if st.session_state['client_secret'] != "" else "<invalid>")
+    except ValueError:
+        st.session_state['authorized'] = False
+        st.session_state['authorization_failure'] = True
+        st.rerun()
     client = RemoteCaller(url_prefix="http://localhost",auth=serval_auth)
     engine = create_engine("sqlite:///builds.db")
     Session = sessionmaker(bind=engine)
