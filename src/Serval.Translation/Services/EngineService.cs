@@ -197,6 +197,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                 EngineType = engine.Type,
                 EngineId = engine.Id,
                 BuildId = build.Id,
+                Options = JsonSerializer.Serialize(build.Options),
                 Corpora =
                 {
                     engine.Corpora.Select(c =>

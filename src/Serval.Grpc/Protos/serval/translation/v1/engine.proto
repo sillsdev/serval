@@ -60,7 +60,8 @@ message StartBuildRequest {
     string engine_type = 1;
     string engine_id = 2;
     string build_id = 3;
-    repeated Corpus corpora = 4;
+    optional string options = 4;
+    repeated Corpus corpora = 5;
 }
 
 message CancelBuildRequest {

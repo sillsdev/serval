@@ -17,4 +17,5 @@ public class TranslationBuildDto
     /// </summary>
     public JobState State { get; set; }
     public DateTime? DateFinished { get; set; }
+    public string? Options { get; set; }
 }

@@ -784,6 +784,10 @@ public class TranslationEnginesController : ServalControllerBase
         {
             return BadRequest(ioe.Message);
         }
+        catch (ArgumentException ae)
+        {
+            return BadRequest(ae.Message);
+        }
         if (!await _engineService.StartBuildAsync(build, cancellationToken))
             return NotFound();
 
@@ -976,6 +980,19 @@ public class TranslationEnginesController : ServalControllerBase
             }
             build.Pretranslate = pretranslateCorpora;
         }
+        try
+        {
+            var jsonSerializerOptions = new JsonSerializerOptions();
+            jsonSerializerOptions.Converters.Add(new ObjectToInferredTypesConverter());
+            build.Options = JsonSerializer.Deserialize<IDictionary<string, object>>(
+                source.Options ?? "{}",
+                jsonSerializerOptions
+            );
+        }
+        catch (Exception e)
+        {
+            throw new ArgumentException($"Unable to parse field 'options' : {e.Message}");
+        }
         return build;
     }
 
@@ -1014,7 +1031,8 @@ public class TranslationEnginesController : ServalControllerBase
             PercentCompleted = source.PercentCompleted,
             Message = source.Message,
             State = source.State,
-            DateFinished = source.DateFinished
+            DateFinished = source.DateFinished,
+            Options = JsonSerializer.Serialize(source.Options)
         };
     }
 

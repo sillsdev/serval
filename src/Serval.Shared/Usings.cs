@@ -1,5 +1,7 @@
 ﻿global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
+global using System.Text.Json;
+global using System.Text.Json.Serialization;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
