@@ -71,19 +71,10 @@ else:
         st.session_state['email'] = st.text_input(label="Email", placeholder="johndoe@example.com")
         if st.session_state.get('email','') == '' and tried_to_submit:
             st.warning("Please enter an email address", icon='⬆️')
-
-        st.session_state['passcode'] = st.text_input(label="Passcode", placeholder="")
-        if st.session_state.get('passcode','') == '' and tried_to_submit:
-            st.warning("Please enter the passcode", icon='⬆️')
-
         if tried_to_submit:
             st.error(st.session_state.get('error',"Something went wrong. Please try again in a moment."))
         if st.form_submit_button("Generate translations"):
-            if not is_valid_passcode(st.session_state.get('passcode','')):
-                st.session_state['tried_to_submit'] = True
-                st.session_state['error'] = "The passcode was invalid."
-                st.rerun()
-            elif already_active_build_for(st.session_state['email']):
+            if already_active_build_for(st.session_state['email']):
                 st.session_state['tried_to_submit'] = True
                 st.session_state['error'] = "There is already an a pending or active build associated with this email address. Please wait for the previous build to finish."
                 st.rerun()
