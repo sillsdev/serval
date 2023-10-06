@@ -1,3 +1,5 @@
+namespace Serval.Shared.Utils;
+
 public class ObjectToInferredTypesConverter : JsonConverter<object>
 {
     public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
