@@ -94,7 +94,7 @@ public class DataFilesController : ServalControllerBase
     ///     > verse_001_005 (tab) Ὑπομνῆσαι δὲ ὑμᾶς βούλομαι , εἰδότας ὑμᾶς ἅπαξ τοῦτο
     ///     > verse_001_006	(tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
     ///     > verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
-    ///   * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the linenumber.
+    ///   * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
     /// * **Paratext**: A complete, zipped Paratext project
     /// </param>    /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
