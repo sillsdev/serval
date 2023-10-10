@@ -298,6 +298,16 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         );
     }
 
+    public async Task<Queue> GetQueueDepthAsync(string engineType, CancellationToken cancellationToken = default)
+    {
+        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
+        GetQueueDepthResponse response = await client.GetQueueDepthAsync(
+            new GetQueueDepthRequest { EngineType = engineType },
+            cancellationToken: cancellationToken
+        );
+        return new Queue { Depth = response.Depth };
+    }
+
     private Models.TranslationResult Map(V1.TranslationResult source)
     {
         return new Models.TranslationResult
