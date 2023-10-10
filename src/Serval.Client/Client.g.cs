@@ -49,10 +49,10 @@ namespace Serval.Client
         /// <br/>* **Text**: One translation unit (a.k.a., verse) per line
         /// <br/>  * If a line contains a tab, characters before the tab are used as a unique identifier for the line, characters after the tab are understood as the content of the verse, and if there is another tab following the verse content, characters after this second tab are assumed to be column codes like "ss" etc. for sectioning and other formatting. See this example of a tab-delimited text file:
         /// <br/>    &gt; verse_001_005 (tab) Ὑπομνῆσαι δὲ ὑμᾶς βούλομαι , εἰδότας ὑμᾶς ἅπαξ τοῦτο
-        /// <br/>    &gt; verse_001_006	(tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
+        /// <br/>    &gt; verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
         /// <br/>    &gt; verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
-        /// <br/>  * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the linenumber.
-        /// <br/>* **Paratext**: A complete, zipped Paratext project</param>
+        /// <br/>  * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
+        /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.</param>
         /// <param name="name">A name to help identify and distinguish the file.
         /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
         /// <br/>The name does not have to be unique.
@@ -236,10 +236,10 @@ namespace Serval.Client
         /// <br/>* **Text**: One translation unit (a.k.a., verse) per line
         /// <br/>  * If a line contains a tab, characters before the tab are used as a unique identifier for the line, characters after the tab are understood as the content of the verse, and if there is another tab following the verse content, characters after this second tab are assumed to be column codes like "ss" etc. for sectioning and other formatting. See this example of a tab-delimited text file:
         /// <br/>    &gt; verse_001_005 (tab) Ὑπομνῆσαι δὲ ὑμᾶς βούλομαι , εἰδότας ὑμᾶς ἅπαξ τοῦτο
-        /// <br/>    &gt; verse_001_006	(tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
+        /// <br/>    &gt; verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
         /// <br/>    &gt; verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
-        /// <br/>  * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the linenumber.
-        /// <br/>* **Paratext**: A complete, zipped Paratext project</param>
+        /// <br/>  * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
+        /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.</param>
         /// <param name="name">A name to help identify and distinguish the file.
         /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
         /// <br/>The name does not have to be unique.
