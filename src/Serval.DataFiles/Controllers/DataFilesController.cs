@@ -92,7 +92,7 @@ public class DataFilesController : ServalControllerBase
     /// * **Text**: One translation unit (a.k.a., verse) per line
     ///   * If a line contains a tab, characters before the tab are used as a unique identifier for the line, characters after the tab are understood as the content of the verse, and if there is another tab following the verse content, characters after this second tab are assumed to be column codes like "ss" etc. for sectioning and other formatting. See this example of a tab-delimited text file:
     ///     > verse_001_005 (tab) Ὑπομνῆσαι δὲ ὑμᾶς βούλομαι , εἰδότας ὑμᾶς ἅπαξ τοῦτο
-    ///     > verse_001_006	(tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
+    ///     > verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
     ///     > verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
     ///   * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
     /// * **Paratext**: A complete, zipped Paratext project
