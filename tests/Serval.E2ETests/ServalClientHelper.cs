@@ -29,7 +29,11 @@ public class ServalClientHelper
             $"Bearer {GetAuth0Authentication(env["authUrl"], audience, env["clientId"], env["clientSecret"]).Result}"
         );
         _prefix = prefix;
-        TranslationBuildConfig = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig>() };
+        TranslationBuildConfig = new TranslationBuildConfig
+        {
+            Pretranslate = new List<PretranslateCorpusConfig>(),
+            Options = "{\"max_steps\":10}"
+        };
     }
 
     public TranslationBuildConfig TranslationBuildConfig { get; set; }

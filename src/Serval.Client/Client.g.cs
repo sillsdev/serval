@@ -999,6 +999,10 @@ namespace Serval.Client
         /// <br/>untranslated text but no translated text. If a corpus is a Paratext project,
         /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
+        /// <br/>            
+        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
+        /// <br/>A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -1011,13 +1015,13 @@ namespace Serval.Client
         /// Get a build job
         /// </summary>
         /// <remarks>
-        /// If the `minRevision` is not defined, the current build at whatever state it is
+        /// If the `minRevision` is not defined, the current build, at whatever state it is,
         /// <br/>will be immediately returned.  If `minRevision` is defined, Serval will wait for
         /// <br/>up to 40 seconds for the engine to build to the `minRevision` specified, else
         /// <br/>will timeout.
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
-        /// <br/>request sets the `minRevision` to the returned `revision` + 1.  Note: this method
-        /// <br/>should use request throttling.
+        /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
+        /// <br/>Note: this method should use request throttling.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -1031,7 +1035,7 @@ namespace Serval.Client
         /// Get the currently running build job for a translation engine
         /// </summary>
         /// <remarks>
-        /// See "Get a Build Job" for details on minimum revision.
+        /// See documentation on endpoint /translation/engines/{id}/builds/{id} - "Get a Build Job" for details on using `minRevision`.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="minRevision">The minimum revision</param>
@@ -2801,6 +2805,10 @@ namespace Serval.Client
         /// <br/>untranslated text but no translated text. If a corpus is a Paratext project,
         /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
+        /// <br/>            
+        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
+        /// <br/>A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -2922,13 +2930,13 @@ namespace Serval.Client
         /// Get a build job
         /// </summary>
         /// <remarks>
-        /// If the `minRevision` is not defined, the current build at whatever state it is
+        /// If the `minRevision` is not defined, the current build, at whatever state it is,
         /// <br/>will be immediately returned.  If `minRevision` is defined, Serval will wait for
         /// <br/>up to 40 seconds for the engine to build to the `minRevision` specified, else
         /// <br/>will timeout.
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
-        /// <br/>request sets the `minRevision` to the returned `revision` + 1.  Note: this method
-        /// <br/>should use request throttling.
+        /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
+        /// <br/>Note: this method should use request throttling.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -3020,7 +3028,7 @@ namespace Serval.Client
                         if (status_ == 408)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The long polling request timed out", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The long polling request timed out. This is expected behavior if you\'re using long-polling with the minRevision strategy specified in the docs", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -3053,7 +3061,7 @@ namespace Serval.Client
         /// Get the currently running build job for a translation engine
         /// </summary>
         /// <remarks>
-        /// See "Get a Build Job" for details on minimum revision.
+        /// See documentation on endpoint /translation/engines/{id}/builds/{id} - "Get a Build Job" for details on using `minRevision`.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="minRevision">The minimum revision</param>
@@ -3146,7 +3154,7 @@ namespace Serval.Client
                         if (status_ == 408)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The long polling request timed out.  Did you start the build?", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The long polling request timed out. This is expected behavior if you\'re using long-polling with the minRevision strategy specified in the docs", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
