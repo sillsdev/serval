@@ -117,3 +117,6 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 
 [Here](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/identifier-names) is a good overview of naming conventions. [Here](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions) is a good overview of coding conventions. If you want to get in to even more detail, check out the [Framework design guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/).
 
+## Documentation
+
+See the Swagger documentation for Serval [here](https://prod.serval-api.org/swagger/index.html).
