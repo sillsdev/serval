@@ -1008,6 +1008,10 @@ namespace Serval.Client
         /// <br/>untranslated text but no translated text. If a corpus is a Paratext project,
         /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
+        /// <br/>            
+        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
+        /// <br/>A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -2903,6 +2907,10 @@ namespace Serval.Client
         /// <br/>untranslated text but no translated text. If a corpus is a Paratext project,
         /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
+        /// <br/>            
+        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
+        /// <br/>A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
