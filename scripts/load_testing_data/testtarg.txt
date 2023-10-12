@@ -1,0 +1,43 @@
+mt1_001	Jude
+mt2_001	The General Epistle of
+p_001	
+p_002	
+p_003	
+p_004	
+p_005	
+p_006	
+rem_001	Jude Draft Translation	ss
+s_001	Greetings
+s_002	The false teachers	ss
+s_003	Exhortations to remain steadfast and rebuke those in error	ss
+s_004	Benediction	ss
+verse_001_001	Jude , a slave of Jesus Christ , and brother of James .
+verse_001_001_001	To those who are called , sanctified by God the Father , and preserved in Jesus Christ :
+verse_001_001_002	
+verse_001_002	
+verse_001_003	Beloved , while I was making every effort to write to you concerning the common salvation , I found it necessary to write to you , exhorting you to struggle for the faith that was once for all delivered to the saints .
+verse_001_004	For certain men have sneaked in , who long ago were written down for this judgment , ungodly men , who turn the grace of our God into sensuality and deny the only Lord God , and our Lord Jesus Christ .	ss
+verse_001_005	But I want to remind you , though you once knew this , that the Lord , having saved the people out of the land of Egypt , afterwards destroyed those who did not believe .
+verse_001_006	And the angels who did not keep their domain , but abandoned their own dwelling , He has kept in eternal chains under darkness for the judgment of the great day .
+verse_001_007	As Sodom and Gomorrah , and the cities around them , who in a similar way lived in sexual immorality and went after strange flesh , are set forth as an example , suffering the vengance of eternal fire .
+verse_001_007_001		ss
+verse_001_008	Nevertheless , in the same way these dreamers defile the flesh , reject authority , and blaspheme the glorious .
+verse_001_009	But Michael the archangel , when disputing with the devil , arguing about the body of Moses , dared not give him a blasphemous judgment , but said , " The Lord rebuke you ! "	ss
+verse_001_010	But these blaspheme whatever they do not know , and whatever they know of the world , like irrational animals , in these things are corrupted .	ss
+verse_001_011	Woe to them ! For they have gone in the way of Cain , and run after the error of Balaam for reward , and perished in the rebellion of Korah .	ss
+verse_001_012	These are hidden reefs in your love feasts , feasting with you fearlessly , caring only for themselves . Waterless clouds , carried about by wind . Autumn trees , unfruitful , twice dead , uprooted ;
+verse_001_013	wild sea waves , foaming up their own shame ; wandering stars for who the gloom of darkness is reserved forever .
+verse_001_013_001		ss
+verse_001_014	And also Enoch , the seventh from Adam , prophesised about these , saying , " Behold the Lord comes with ten thousands of His saints ,
+verse_001_015	to execute judgment on all , to convict all who are ungodly among them of all their ungodly works , their ungodly lives , and all of the cruelties these ungodly sinners have spoken against Him . "
+verse_001_016	These are grumblers , complainers , going after their own lusts , and their mouth speaks boastfully , flattering people for the sake of advantage .
+verse_001_017	But you , beloved , remember the words which were spoken before by the apostles of our Lord Jesus Christ ,	ss
+verse_001_018	that they told you that : " In the last time there will be mockers , following after their own ungodly lusts . "
+verse_001_019	 
+verse_001_020	But you , beloved , building yourselves up on your most holy faith , praying in the Holy Spirit ,
+verse_001_021	keep yourselves in the love of God , waiting for the mercy of our Lord Jesus Christ to eternal life .
+verse_001_021_001		ss
+verse_001_022	And for those who are doubting , have mercy ;
+verse_001_023	
+verse_001_024	Now unto him who is able to keep you from falling , and present you faultless before the presence of His glory with exceeding joy .	ss
+verse_001_025	To the only wise God our Saviour , be glory and majesty , dominion and power , both now and forever . Amen .
