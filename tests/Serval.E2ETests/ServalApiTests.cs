@@ -157,7 +157,7 @@ public class ServalApiTests
             await Task.Delay(500);
         }
         //Wait for at least some tasks to be queued
-        await Task.Delay(10_000);
+        await Task.Delay(20_000);
         string builds = "";
         for (int i = 0; i < NUM_ENGINES; i++)
         {

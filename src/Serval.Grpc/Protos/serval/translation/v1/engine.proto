@@ -12,7 +12,7 @@ service TranslationEngineApi {
     rpc TrainSegmentPair(TrainSegmentPairRequest) returns (google.protobuf.Empty);
     rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
     rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
-    rpc GetQueueDepth(GetQueueDepthRequest) returns (GetQueueDepthResponse);
+    rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
 }
 
 message CreateRequest {
@@ -70,12 +70,12 @@ message CancelBuildRequest {
     string engine_id = 2;
 }
 
-message GetQueueDepthRequest {
+message GetQueueSizeRequest {
     string engine_type = 1;
 }
 
-message GetQueueDepthResponse {
-    int32 depth = 1;
+message GetQueueSizeResponse {
+    int32 size = 1;
 }
 
 message AlignedWordPair {

@@ -4122,8 +4122,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("size", Required = Newtonsoft.Json.Required.Always)]
         public int Size { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("engineType", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? EngineType { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("engineType", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string EngineType { get; set; } = default!;
 
     }
 

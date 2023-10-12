@@ -294,8 +294,8 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
         );
     }
 
-    public override Task<GetQueueDepthResponse> GetQueueDepth(GetQueueDepthRequest request, ServerCallContext context)
+    public override Task<GetQueueSizeResponse> GetQueueSize(GetQueueSizeRequest request, ServerCallContext context)
     {
-        return Task.FromResult(new GetQueueDepthResponse { Depth = 0 });
+        return Task.FromResult(new GetQueueSizeResponse { Size = 0 });
     }
 }
