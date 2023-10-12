@@ -90,6 +90,7 @@ services:
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Queue=lambert_24gb
       - ClearML__DockerImage=mpy.local
+      - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
@@ -134,6 +135,7 @@ services:
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Queue=lambert_24gb
       - ClearML__DockerImage=mpy.local
+      - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
