@@ -23,6 +23,8 @@ spec:
             - /app/engine_server/SIL.Machine.Serval.EngineServer.dll
           workingDir: /app/engine_server
           env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: {{ .Values.machineEnvironment }}
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
               value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
@@ -33,10 +35,6 @@ spec:
               value: mongodb://mongo:27017/machine?replicaSet=myRS
             - name: ASPNETCORE_ConnectionStrings__Serval
               value: http://serval-api:81
-            - name: ASPNETCORE_Logging__LogLevel__Default
-              value: Information
-            - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
-              value: Warning
             - name: ASPNETCORE_TranslationEngines__0
               value: SmtTransfer
             - name: ASPNETCORE_TranslationEngines__1

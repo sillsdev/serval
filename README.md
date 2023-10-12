@@ -27,7 +27,14 @@ Build the Machine repo:
   ```
   dotnet build machine
   ```
-Make sure that the environment variable ASPNETCORE_ENVIRONMENT is set to "Development" by running `export ASPNETCORE_ENVIRONMENT=Development` or adding it to your `.bashrc`.
+Now, if you are using a local docker image and have a GPU with at least 12 GB of RAM:
+* Clone the [Machine repo](https://github.com/sillsdev/machine.py) into an adjacent folder to Serval:
+* Build the docker image with `docker build . -t mpy.local`
+* Register your machine as a ClearML agent (see dev team for details)
+* In docker-compose.yml, update `ClearML__Queue` to be the queue that your computer (agent) is listening to
+If you will use the standard Machine.py images:
+* In docker-compose.yml, update `ClearML__Queue` and `ClearML__DockerImage` to the appropriate values
+
 In the Serval root, run docker compose up
   ```
   cd serval && docker compose up
