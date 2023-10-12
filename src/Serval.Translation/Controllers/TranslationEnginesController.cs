@@ -192,19 +192,19 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="403">The authenticated client cannot perform the operation</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("queues/{engineType}")]
+    [HttpGet("queues")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<QueueDto>> GetQueueDepth(
-        [NotNull] string engineType,
+    public async Task<ActionResult<QueueDto>> GetQueueAsync(
+        [FromBody] string engineType,
         CancellationToken cancellationToken
     )
     {
         try
         {
-            return Map(await _engineService.GetQueueDepthAsync(engineType, cancellationToken));
+            return Map(await _engineService.GetQueueAsync(engineType, cancellationToken));
         }
         catch (InvalidOperationException ioe)
         {
@@ -1030,7 +1030,7 @@ public class TranslationEnginesController : ServalControllerBase
         return build;
     }
 
-    private QueueDto Map(Queue source) => new() { Depth = source.Depth };
+    private QueueDto Map(Queue source) => new() { Size = source.Size, EngineType = source.EngineType };
 
     private TranslationEngineDto Map(Engine source)
     {

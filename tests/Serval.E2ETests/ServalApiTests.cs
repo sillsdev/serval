@@ -165,23 +165,19 @@ public class ServalApiTests
             builds += $"{JsonSerializer.Serialize(build)}\n";
         }
 
-        builds +=
-            "Depth = " + (await _helperClient.translationEnginesClient.GetQueueDepthAsync("Nmt")).Depth.ToString();
+        builds += "Depth = " + (await _helperClient.translationEnginesClient.GetQueueAsync("Nmt")).Size.ToString();
 
         //Status message of last started build says that there is at least one job ahead of it in the queue
         // (this variable due to how many jobs may already exist in the production queue from other Serval instances)
         TranslationBuild newestEngineCurrentBuild = await _helperClient.translationEnginesClient.GetCurrentBuildAsync(
             engineIds[NUM_ENGINES - 1]
         );
+        Assert.NotNull(newestEngineCurrentBuild.QueueDepth, JsonSerializer.Serialize(newestEngineCurrentBuild));
         Assert.Multiple(async () =>
         {
+            Assert.That(newestEngineCurrentBuild.QueueDepth, Is.GreaterThan(0), message: builds);
             Assert.That(
-                newestEngineCurrentBuild.QueueDepth,
-                Is.GreaterThan(0),
-                message: builds
-            );
-            Assert.That(
-                (await _helperClient.translationEnginesClient.GetQueueDepthAsync("Nmt")).Depth,
+                (await _helperClient.translationEnginesClient.GetQueueAsync("Nmt")).Size,
                 Is.GreaterThanOrEqualTo(NUM_ENGINES - NUM_WORKERS)
             );
         });
