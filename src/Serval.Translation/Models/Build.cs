@@ -10,6 +10,7 @@ public class Build : IEntity
     public int Step { get; set; }
     public double? PercentCompleted { get; set; }
     public string? Message { get; set; }
+    public int? QueueDepth { get; set; }
     public JobState State { get; set; } = JobState.Pending;
     public DateTime? DateFinished { get; set; }
     public IDictionary<string, object>? Options { get; set; }

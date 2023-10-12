@@ -176,7 +176,7 @@ public class ServalApiTests
         Assert.Multiple(async () =>
         {
             Assert.That(
-                int.Parse(newestEngineCurrentBuild.Message?.Split(": ").Last() ?? "0"),
+                newestEngineCurrentBuild.QueueDepth,
                 Is.GreaterThan(0),
                 message: builds
             );

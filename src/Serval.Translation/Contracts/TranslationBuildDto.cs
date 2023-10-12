@@ -12,6 +12,8 @@ public class TranslationBuildDto
     public double? PercentCompleted { get; set; }
     public string? Message { get; set; }
 
+    public int? QueueDepth { get; set; }
+
     /// <summary>
     /// The current build job state.
     /// </summary>

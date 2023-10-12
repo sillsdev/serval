@@ -4427,6 +4427,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Message { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("queueDepth", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int? QueueDepth { get; set; } = default!;
+
         /// <summary>
         /// The current build job state.
         /// </summary>

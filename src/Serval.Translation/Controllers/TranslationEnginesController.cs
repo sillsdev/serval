@@ -1066,6 +1066,7 @@ public class TranslationEnginesController : ServalControllerBase
             Step = source.Step,
             PercentCompleted = source.PercentCompleted,
             Message = source.Message,
+            QueueDepth = source.QueueDepth,
             State = source.State,
             DateFinished = source.DateFinished,
             Options = JsonSerializer.Serialize(source.Options)

@@ -246,6 +246,8 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
                 }
                 if (request.HasMessage)
                     u.Set(b => b.Message, request.Message);
+                if (request.HasQueueDepth)
+                    u.Set(b => b.QueueDepth, request.QueueDepth);
             },
             cancellationToken: context.CancellationToken
         );
