@@ -183,11 +183,11 @@ public class TranslationEnginesController : ServalControllerBase
     }
 
     /// <summary>
-    /// Get queue depth
+    /// Get queue information for a given engine type
     /// </summary>
     /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The queue depth for the specified engine type</response>
+    /// <response code="200">Queue information for the specified engine type</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>

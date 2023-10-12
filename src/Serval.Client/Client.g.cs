@@ -842,10 +842,10 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get queue depth
+        /// Get queue information for a given engine type
         /// </summary>
         /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
-        /// <returns>The queue depth for the specified engine type</returns>
+        /// <returns>Queue information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<Queue> GetQueueAsync(string engineType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -1516,10 +1516,10 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get queue depth
+        /// Get queue information for a given engine type
         /// </summary>
         /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
-        /// <returns>The queue depth for the specified engine type</returns>
+        /// <returns>Queue information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<Queue> GetQueueAsync(string engineType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
