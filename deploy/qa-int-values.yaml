@@ -1,4 +1,5 @@
 externalHost: qa-int.serval-api.org
+environment: Staging
 enableTls: true
 namespace: nlp
 auth0Domain: sil-appbuilder.auth0.com
@@ -7,7 +8,6 @@ lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:0.7.1
 machineImage: ghcr.io/sillsdev/machine:3.3.2
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:0.9.5
-ClearMLMaxSteps: 10
 ClearMLQueue: lambert_24gb
 SharedFileLocation: s3://aqua-ml-data/int-qa/
 enableEcho: true
