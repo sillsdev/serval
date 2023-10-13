@@ -136,7 +136,7 @@ services:
       - ASPNETCORE_TranslationEngines__0=SmtTransfer
       - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
-      - ClearML__Queue=lambert_24gb
+      - ClearML__Queue=production
       - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:0.9.5.1
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"

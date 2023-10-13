@@ -21,6 +21,7 @@ message UpdateBuildStatusRequest {
     int32 step = 2;
     optional double percent_completed = 3;
     optional string message = 4;
+    optional int32 queue_depth = 5;
 }
 
 message BuildStartedRequest {

@@ -183,6 +183,36 @@ public class TranslationEnginesController : ServalControllerBase
     }
 
     /// <summary>
+    /// Get queue information for a given engine type
+    /// </summary>
+    /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">Queue information for the specified engine type</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    [Authorize(Scopes.ReadTranslationEngines)]
+    [HttpGet("queues")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<QueueDto>> GetQueueAsync(
+        [FromBody] string engineType,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            return Map(await _engineService.GetQueueAsync(engineType, cancellationToken));
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return BadRequest(ioe.Message);
+        }
+    }
+
+    /// <summary>
     /// Translate a segment of text
     /// </summary>
     /// <param name="id">The translation engine id</param>
@@ -1000,6 +1030,8 @@ public class TranslationEnginesController : ServalControllerBase
         return build;
     }
 
+    private QueueDto Map(Queue source) => new() { Size = source.Size, EngineType = source.EngineType };
+
     private TranslationEngineDto Map(Engine source)
     {
         return new TranslationEngineDto
@@ -1034,6 +1066,7 @@ public class TranslationEnginesController : ServalControllerBase
             Step = source.Step,
             PercentCompleted = source.PercentCompleted,
             Message = source.Message,
+            QueueDepth = source.QueueDepth,
             State = source.State,
             DateFinished = source.DateFinished,
             Options = JsonSerializer.Serialize(source.Options)
