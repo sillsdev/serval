@@ -92,7 +92,7 @@ services:
       - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Queue=production
-      - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:0.9.5.1
+      - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:0.9.6.2
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
@@ -137,7 +137,7 @@ services:
       - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Queue=production
-      - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:0.9.5.1
+      - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:0.9.6.2
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/

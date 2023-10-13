@@ -704,7 +704,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// will timeout.
     /// A use case is to actively query the state of the current build, where the subsequent
     /// request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
-    /// Note: this method should use request throttling.
+    /// This method should use request throttling.
+    /// Note: Within the returned build, percentCompleted is a value between 0 and 1.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildId">The build job id</param>
