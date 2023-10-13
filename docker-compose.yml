@@ -7,6 +7,7 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
       - Auth__Domain=sil-appbuilder.auth0.com
       - Auth__Audience=https://machine.sil.org
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
@@ -14,8 +15,6 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/serval_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/serval?replicaSet=myRS
-      - ASPNETCORE_Logging__LogLevel__Default=Information
-      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_Translation__Engines__0__Type=Echo
       - ASPNETCORE_Translation__Engines__0__Address=http://echo
       - ASPNETCORE_Translation__Engines__1__Type=SmtTransfer
@@ -49,10 +48,9 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
-      - ASPNETCORE_Logging__LogLevel__Default=Information
-      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval-api:81
     expose:
       - 80
@@ -81,18 +79,16 @@ services:
       dockerfile: ../machine/dockerfile.development
 
     environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
-      - ASPNETCORE_Logging__LogLevel__Default=Information
-      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - ASPNETCORE_TranslationEngines__0=SmtTransfer
-      - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
-      - ClearML__Queue=production
-      - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:0.9.5.1
+      - ClearML__Queue=lambert_24gb
+      - ClearML__DockerImage=mpy.local
+      - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
@@ -126,18 +122,16 @@ services:
       context: ../machine
       dockerfile: ../machine/dockerfile.development
     environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
-      - ASPNETCORE_Logging__LogLevel__Default=Information
-      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
-      - ASPNETCORE_TranslationEngines__0=SmtTransfer
-      - ASPNETCORE_TranslationEngines__1=Nmt
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
-      - ClearML__Queue=production
-      - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:0.9.5.1
+      - ClearML__Queue=lambert_24gb
+      - ClearML__DockerImage=mpy.local
+      - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/

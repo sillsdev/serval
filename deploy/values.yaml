@@ -1,4 +1,5 @@
 externalHost: prod.serval-api.org
+environment: Production
 enableTls: true
 namespace: serval
 auth0Domain: languagetechnology.auth0.com
@@ -7,7 +8,6 @@ lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:0.7.1
 machineImage: ghcr.io/sillsdev/machine:3.3.2
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:0.9.5
-ClearMLMaxSteps: 20000
 ClearMLQueue: production
 SharedFileLocation: s3://aqua-ml-data/production/
 enableEcho: true
