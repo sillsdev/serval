@@ -77,6 +77,15 @@ There are 3 different environments that Serval is deployed to:
     - `kubectl config use-context aws-rke`
     - `helm upgrade serval deploy/serval -n serval -f deploy/values.yaml`
 
+### Environments:
+- Production:
+  - Full deployment, full NMT and SMT builds
+- Staging:
+  - Full Deploymnet, dummy NMT building (10 steps, small model)
+  - Also used for Docker-compose local staging
+- Development:
+  - Non-docker use only
+
 ## Debugging
 ### To access Serval API
 * Internal QA:

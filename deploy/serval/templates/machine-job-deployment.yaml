@@ -24,7 +24,7 @@ spec:
           workingDir: /app/job_server
           env:
             - name: ASPNETCORE_ENVIRONMENT
-              value: {{ .Values.machineEnvironment}}
+              value: {{ .Values.environment}}
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
               value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols

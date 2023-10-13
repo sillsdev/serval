@@ -25,7 +25,7 @@ spec:
           workingDir: /app/echo_server
           env:
             - name: ASPNETCORE_ENVIRONMENT
-              value: Production
+              value: {{ .Values.environment}}
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
               value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
