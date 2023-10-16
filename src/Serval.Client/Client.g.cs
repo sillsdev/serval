@@ -4455,7 +4455,7 @@ namespace Serval.Client
         public System.DateTimeOffset? DateFinished { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Options { get; set; } = default!;
+        public object? Options { get; set; } = default!;
 
     }
 
