@@ -772,8 +772,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
     /// in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
     ///
-    /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
-    /// A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+    /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+    /// A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
     /// number of training iterations in order to reduce turnaround time for testing purposes.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
@@ -1020,7 +1020,7 @@ public class TranslationEnginesController : ServalControllerBase
             var jsonSerializerOptions = new JsonSerializerOptions();
             jsonSerializerOptions.Converters.Add(new ObjectToInferredTypesConverter());
             build.Options = JsonSerializer.Deserialize<IDictionary<string, object>>(
-                source.Options ?? "{}",
+                source.Options?.ToString() ?? "{}",
                 jsonSerializerOptions
             );
         }

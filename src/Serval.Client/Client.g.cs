@@ -1015,8 +1015,8 @@ namespace Serval.Client
         /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
         /// <br/>            
-        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
-        /// <br/>A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        /// <br/>A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
         /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -2918,8 +2918,8 @@ namespace Serval.Client
         /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
         /// <br/>            
-        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
-        /// <br/>A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        /// <br/>A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
         /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -4504,7 +4504,7 @@ namespace Serval.Client
         public System.Collections.Generic.IList<PretranslateCorpusConfig>? Pretranslate { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Options { get; set; } = default!;
+        public object? Options { get; set; } = default!;
 
     }
 
