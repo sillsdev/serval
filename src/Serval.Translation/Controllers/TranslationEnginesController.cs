@@ -1070,7 +1070,7 @@ public class TranslationEnginesController : ServalControllerBase
             QueueDepth = source.QueueDepth,
             State = source.State,
             DateFinished = source.DateFinished,
-            Options = JsonSerializer.Serialize(source.Options)
+            Options = source.Options
         };
     }
 
