@@ -32,7 +32,7 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Get Machine
-        run: cd .. && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../serval && dotnet build
+        run: cd .. && mkdir tmp && cd tmp && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../../serval && dotnet build
 
       - name: Restore dotnet tools
         run: dotnet tool restore
