@@ -192,7 +192,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="403">The authenticated client cannot perform the operation</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("queues")]
+    [HttpPost("queues")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
