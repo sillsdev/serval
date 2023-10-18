@@ -77,8 +77,8 @@ services:
     hostname: machine-engine
     container_name: machine-engine-cntr
     build:
-      context: ../machine
-      dockerfile: ../machine/dockerfile.development
+      context: ${MACHINE_TESTING_DIR:-../machine}
+      dockerfile: ${MACHINE_TESTING_DIR:-../machine}/dockerfile.development
 
     environment:
       - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
@@ -106,7 +106,7 @@ services:
       - mongo
       - serval-api
     volumes:
-      - ../machine:/app:ro
+      - ${MACHINE_TESTING_DIR:-../machine}:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
@@ -123,8 +123,8 @@ services:
     hostname: machine-job-server
     container_name: machine-job-cntr
     build:
-      context: ../machine
-      dockerfile: ../machine/dockerfile.development
+      context: ${MACHINE_TESTING_DIR:-../machine}
+      dockerfile: ${MACHINE_TESTING_DIR:-../machine}/dockerfile.development
     environment:
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
@@ -152,7 +152,7 @@ services:
       - machine-engine
       - serval-api
     volumes:
-      - ../machine:/app:ro
+      - ${MACHINE_TESTING_DIR:-../machine}:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
