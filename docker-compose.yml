@@ -78,7 +78,7 @@ services:
     container_name: machine-engine-cntr
     build:
       context: ${MACHINE_TESTING_DIR:-../machine}
-      dockerfile: ${MACHINE_TESTING_DIR:-../machine}/dockerfile.development
+      dockerfile: ../machine/dockerfile.development
 
     environment:
       - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
@@ -124,7 +124,7 @@ services:
     container_name: machine-job-cntr
     build:
       context: ${MACHINE_TESTING_DIR:-../machine}
-      dockerfile: ${MACHINE_TESTING_DIR:-../machine}/dockerfile.development
+      dockerfile: ../machine/dockerfile.development
     environment:
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
