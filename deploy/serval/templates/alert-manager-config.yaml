@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: limit-alerts
+  namespace: {{ .Values.namespace }}
+spec:
+  receivers:
+    - emailConfigs:
+        - authPassword:
+            key: ?????
+            name: ?????
+          authUsername: ??????
+          from: serval-dallas@languagetechnology.org
+          requireTLS: true
+          sendResolved: true
+          smarthost: ?????
+          tlsConfig: {}
+          to: 'john_lambert@sil.org, eli_lowry@sil.org'
+      name: alert-nlp
+  route:
+    groupBy: [...]
+    groupInterval: 5m
+    groupWait: 10s
+    receiver: alert-nlp
+    repeatInterval: 4h

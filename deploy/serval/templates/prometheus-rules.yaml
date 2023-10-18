@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  namespace: {{ .Values.namespace }}
+spec:
+  groups:
+    - name: cpu
+      rules:
+        - alert: cpu-80perc-{{ .Values.namspace }}
+          annotations:
+            description: >-
+              '{{ $labels.container }} has high CPU.'
+          expr: >-
+            max(rate (container_cpu_usage_seconds_total {image!="", namespace=~"serval|nlp", container!="POD" } [3m]))
+            by (container, namespace) 
+            / on (container, namespace) 
+            min(kube_pod_container_resource_limits{resource="cpu", namespace=~"serval|nlp", container!="POD"}) 
+            by (container, namespace) * 100 >= 80
+          for: 0s
+          labels:
+            severity: warning
