@@ -7,19 +7,19 @@ spec:
   receivers:
     - emailConfigs:
         - authPassword:
-            key: ?????
-            name: ?????
-          authUsername: ??????
-          from: serval-dallas@languagetechnology.org
+            name: aqua-ml-data
+            key: smtp_password
+          authUsername: {{ .Values.alertEmail }}
+          from: {{ .Values.alertEmail }}
           requireTLS: true
           sendResolved: true
-          smarthost: ?????
+          smarthost: mail.languagetechnology.org:587
           tlsConfig: {}
-          to: 'john_lambert@sil.org, eli_lowry@sil.org'
-      name: alert-nlp
+          to: {{ .Values.emailsToAlert }}
+      name: alert-serval
   route:
-    groupBy: [...]
+    groupBy: []
     groupInterval: 5m
     groupWait: 10s
-    receiver: alert-nlp
+    receiver: alert-serval
     repeatInterval: 4h

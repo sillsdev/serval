@@ -1,5 +1,7 @@
 externalHost: qa-int.serval-api.org
 environment: Staging
+alertEmail: int-qa-serval-alerts@languagetechnology.org
+emailsToAlert: john_lambert@sil.org
 enableTls: true
 namespace: nlp
 auth0Domain: sil-appbuilder.auth0.com
