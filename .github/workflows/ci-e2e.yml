@@ -44,7 +44,7 @@ jobs:
         run: dotnet build --no-restore
 
       - name: Start containers
-        run: tree .. && export MACHINE_TESTING_DIR="../machine_testing_dir/machine" && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+        run: export MACHINE_TESTING_DIR="../machine_testing_dir/machine" && docker-compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
@@ -61,4 +61,4 @@ jobs:
 
       - name: Stop containers
         if: ${{ success() || failure() }}
-        run: docker compose down
+        run: docker-compose down
