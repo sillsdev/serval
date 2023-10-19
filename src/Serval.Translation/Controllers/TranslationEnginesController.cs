@@ -183,6 +183,36 @@ public class TranslationEnginesController : ServalControllerBase
     }
 
     /// <summary>
+    /// Get queue information for a given engine type
+    /// </summary>
+    /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">Queue information for the specified engine type</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    [Authorize(Scopes.ReadTranslationEngines)]
+    [HttpGet("queues")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<QueueDto>> GetQueueAsync(
+        [FromBody] string engineType,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            return Map(await _engineService.GetQueueAsync(engineType, cancellationToken));
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return BadRequest(ioe.Message);
+        }
+    }
+
+    /// <summary>
     /// Translate a segment of text
     /// </summary>
     /// <param name="id">The translation engine id</param>
@@ -668,13 +698,13 @@ public class TranslationEnginesController : ServalControllerBase
     /// Get a build job
     /// </summary>
     /// <remarks>
-    /// If the `minRevision` is not defined, the current build at whatever state it is
+    /// If the `minRevision` is not defined, the current build, at whatever state it is,
     /// will be immediately returned.  If `minRevision` is defined, Serval will wait for
     /// up to 40 seconds for the engine to build to the `minRevision` specified, else
     /// will timeout.
     /// A use case is to actively query the state of the current build, where the subsequent
-    /// request sets the `minRevision` to the returned `revision` + 1.  Note: this method
-    /// should use request throttling.
+    /// request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
+    /// Note: this method should use request throttling.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildId">The build job id</param>
@@ -685,7 +715,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client does not own the translation engine</response>
     /// <response code="404">The engine or build does not exist</response>
-    /// <response code="408">The long polling request timed out</response>
+    /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/builds/{buildId}", Name = "GetTranslationBuild")]
@@ -740,6 +770,10 @@ public class TranslationEnginesController : ServalControllerBase
     /// untranslated text but no translated text. If a corpus is a Paratext project,
     /// you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
     /// in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
+    ///
+    /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
+    /// A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+    /// number of training iterations in order to reduce turnaround time for testing purposes.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
@@ -784,6 +818,10 @@ public class TranslationEnginesController : ServalControllerBase
         {
             return BadRequest(ioe.Message);
         }
+        catch (ArgumentException ae)
+        {
+            return BadRequest(ae.Message);
+        }
         if (!await _engineService.StartBuildAsync(build, cancellationToken))
             return NotFound();
 
@@ -795,7 +833,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// Get the currently running build job for a translation engine
     /// </summary>
     /// <remarks>
-    /// See "Get a Build Job" for details on minimum revision.
+    /// See documentation on endpoint /translation/engines/{id}/builds/{id} - "Get a Build Job" for details on using `minRevision`.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="minRevision">The minimum revision</param>
@@ -806,7 +844,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
-    /// <response code="408">The long polling request timed out.  Did you start the build?</response>
+    /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/current-build")]
@@ -976,8 +1014,23 @@ public class TranslationEnginesController : ServalControllerBase
             }
             build.Pretranslate = pretranslateCorpora;
         }
+        try
+        {
+            var jsonSerializerOptions = new JsonSerializerOptions();
+            jsonSerializerOptions.Converters.Add(new ObjectToInferredTypesConverter());
+            build.Options = JsonSerializer.Deserialize<IDictionary<string, object>>(
+                source.Options ?? "{}",
+                jsonSerializerOptions
+            );
+        }
+        catch (Exception e)
+        {
+            throw new ArgumentException($"Unable to parse field 'options' : {e.Message}");
+        }
         return build;
     }
+
+    private QueueDto Map(Queue source) => new() { Size = source.Size, EngineType = source.EngineType };
 
     private TranslationEngineDto Map(Engine source)
     {
@@ -1013,8 +1066,10 @@ public class TranslationEnginesController : ServalControllerBase
             Step = source.Step,
             PercentCompleted = source.PercentCompleted,
             Message = source.Message,
+            QueueDepth = source.QueueDepth,
             State = source.State,
-            DateFinished = source.DateFinished
+            DateFinished = source.DateFinished,
+            Options = JsonSerializer.Serialize(source.Options)
         };
     }
 

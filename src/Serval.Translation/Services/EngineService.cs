@@ -197,6 +197,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                 EngineType = engine.Type,
                 EngineId = engine.Id,
                 BuildId = build.Id,
+                Options = JsonSerializer.Serialize(build.Options),
                 Corpora =
                 {
                     engine.Corpora.Select(c =>
@@ -295,6 +296,16 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                     .RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId),
             cancellationToken
         );
+    }
+
+    public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
+    {
+        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
+        GetQueueSizeResponse response = await client.GetQueueSizeAsync(
+            new GetQueueSizeRequest { EngineType = engineType },
+            cancellationToken: cancellationToken
+        );
+        return new Queue { Size = response.Size, EngineType = engineType };
     }
 
     private Models.TranslationResult Map(V1.TranslationResult source)

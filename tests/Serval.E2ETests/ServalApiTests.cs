@@ -134,6 +134,64 @@ public class ServalApiTests
     }
 
     [Test]
+    public async Task NmtQueueMultiple()
+    {
+        await _helperClient!.ClearEngines();
+        const int NUM_ENGINES = 9;
+        const int NUM_WORKERS = 6;
+        string[] engineIds = new string[NUM_ENGINES];
+        for (int i = 0; i < NUM_ENGINES; i++)
+        {
+            _helperClient.TranslationBuildConfig = new()
+            {
+                Pretranslate = new List<PretranslateCorpusConfig>(),
+                Options = "{\"max_steps\":10}"
+            };
+            engineIds[i] = await _helperClient.CreateNewEngine("Nmt", "es", "en", $"NMT1_{i}");
+            string engineId = engineIds[i];
+            var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
+            await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+            await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
+            await _helperClient.StartBuildAsync(engineId);
+            //Ensure that tasks are enqueued roughly in order
+            await Task.Delay(500);
+        }
+        //Wait for at least some tasks to be queued
+        await Task.Delay(20_000);
+        string builds = "";
+        for (int i = 0; i < NUM_ENGINES; i++)
+        {
+            TranslationBuild build = await _helperClient.translationEnginesClient.GetCurrentBuildAsync(engineIds[i]);
+            builds += $"{JsonSerializer.Serialize(build)}\n";
+        }
+
+        builds += "Depth = " + (await _helperClient.translationEnginesClient.GetQueueAsync("Nmt")).Size.ToString();
+
+        //Status message of last started build says that there is at least one job ahead of it in the queue
+        // (this variable due to how many jobs may already exist in the production queue from other Serval instances)
+        TranslationBuild newestEngineCurrentBuild = await _helperClient.translationEnginesClient.GetCurrentBuildAsync(
+            engineIds[NUM_ENGINES - 1]
+        );
+        Assert.NotNull(newestEngineCurrentBuild.QueueDepth, JsonSerializer.Serialize(newestEngineCurrentBuild));
+        Assert.Multiple(async () =>
+        {
+            Assert.That(newestEngineCurrentBuild.QueueDepth, Is.GreaterThan(0), message: builds);
+            Assert.That(
+                (await _helperClient.translationEnginesClient.GetQueueAsync("Nmt")).Size,
+                Is.GreaterThanOrEqualTo(NUM_ENGINES - NUM_WORKERS)
+            );
+        });
+        for (int i = 0; i < NUM_ENGINES; i++)
+        {
+            try
+            {
+                await _helperClient.translationEnginesClient.CancelBuildAsync(engineIds[i]);
+            }
+            catch { }
+        }
+    }
+
+    [Test]
     public async Task NmtLargeBatch()
     {
         await _helperClient!.ClearEngines();
