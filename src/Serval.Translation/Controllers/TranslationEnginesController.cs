@@ -784,7 +784,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
-    /// <response code="409">There is already an active/pending build</response>
+    /// <response code="409">There is already an active or pending build or a build in the process of being canceled</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/builds")]
