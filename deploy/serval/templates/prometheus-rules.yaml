@@ -1,21 +1,63 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-rules
   namespace: {{ .Values.namespace }}
 spec:
   groups:
     - name: cpu
       rules:
-        - alert: cpu-80perc-{{ .Values.namspace }}
+        - alert: cpu-80perc
           annotations:
             description: >-
-              '{{ $labels.container }} has high CPU.'
+              '{{ "{{ $labels.container }}" }} has high CPU for over 3 minutes.'
           expr: >-
-            max(rate (container_cpu_usage_seconds_total {image!="", namespace=~"serval|nlp", container!="POD" } [3m]))
-            by (container, namespace) 
-            / on (container, namespace) 
-            min(kube_pod_container_resource_limits{resource="cpu", namespace=~"serval|nlp", container!="POD"}) 
-            by (container, namespace) * 100 >= 80
+            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container!~"POD|machine-job" } [3m])) 
+            by (container) / on (container) 
+            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container!~"POD|machine-job"}) 
+            by (container) * 100 >= 80
+          for: 0s
+          labels:
+            severity: warning
+    - name: cpu-job
+      rules:
+        - alert: cpu-long-job
+          annotations:
+            description: >-
+              '{{ "{{ $labels.container }}" }} has a job running over 3 hours.'
+          expr: >-
+            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container="machine-job" } [3h])) 
+            by (container) / on (container) 
+            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container="machine-job"}) 
+            by (container) * 100 >= 80
+          for: 0s
+          labels:
+            severity: warning
+    - name: memory
+      rules:
+        - alert: memory-near-limit
+          annotations:
+            description: >-
+              '{{ "{{ $labels.container }}" }} is over 80% memory.'
+          expr: >-
+            min (container_memory_working_set_bytes{image!="", namespace="{{ .Values.namespace }}", container!="POD" })
+            by (container) / on (container)
+            min (kube_pod_container_resource_limits{resource="memory", namespace="{{ .Values.namespace }}", container!="POD"})
+            by (container) * 100 >= 80
+          for: 0s
+          labels:
+            severity: warning
+    - name: disk
+      rules:
+        - alert: disk-near-limit
+          annotations:
+            description: >-
+              '{{ "{{ $labels.container }}" }} is over 80% disk space utilization.'
+          expr: >-
+            min (kubelet_volume_stats_used_bytes{namespace="{{ .Values.namespace }}"})
+            by (persistentvolumeclaim) / on (persistentvolumeclaim)
+            min (kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace="{{ .Values.namespace }}"})
+            by (persistentvolumeclaim) * 100 > 80
           for: 0s
           labels:
             severity: warning
