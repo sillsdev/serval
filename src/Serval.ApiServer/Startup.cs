@@ -221,7 +221,8 @@ public class Startup
             settings.CustomJavaScriptPath = "js/auth0.js";
         });
 
-        app.UseOpenTelemetryPrometheusScrapingEndpoint();
+        if (!Environment.IsDevelopment())
+            app.UseOpenTelemetryPrometheusScrapingEndpoint();
     }
 
     private static Task WriteHealthCheckResponse(HttpContext context, HealthReport healthReport)
