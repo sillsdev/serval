@@ -49,9 +49,6 @@ else:
     def already_active_build_for(email:str):
         return len(session.query(Build).where(Build.email == email).all()) > 0
 
-    def is_valid_passcode(passcode:str):
-        return passcode == os.environ.get('SERVAL_APP_PASSCODE')
-
     st.subheader("Neural Machine Translation")
 
     tried_to_submit = st.session_state.get('tried_to_submit', False)

@@ -73,6 +73,9 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
     if exp == TranslationEngineConfig:
         return translation_engine_config_from_obj(obj, path=path)
 
+    if exp == Queue:
+        return queue_from_obj(obj, path=path)
+
     if exp == TranslationResult:
         return translation_result_from_obj(obj, path=path)
 
@@ -204,6 +207,10 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
     if exp == TranslationEngineConfig:
         assert isinstance(obj, TranslationEngineConfig)
         return translation_engine_config_to_jsonable(obj, path=path)
+
+    if exp == Queue:
+        assert isinstance(obj, Queue)
+        return queue_to_jsonable(obj, path=path)
 
     if exp == TranslationResult:
         assert isinstance(obj, TranslationResult)
@@ -680,6 +687,82 @@ def translation_engine_config_to_jsonable(
 
     if translation_engine_config.name is not None:
         res['name'] = translation_engine_config.name
+
+    return res
+
+
+class Queue:
+    def __init__(
+            self,
+            size: int,
+            engine_type: str) -> None:
+        """Initializes with the given values."""
+        self.size = size
+
+        self.engine_type = engine_type
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to queue_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return queue_to_jsonable(self)
+
+
+def new_queue() -> Queue:
+    """Generates an instance of Queue with default values."""
+    return Queue(
+        size=0,
+        engine_type='')
+
+
+def queue_from_obj(obj: Any, path: str = "") -> Queue:
+    """
+    Generates an instance of Queue from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of Queue
+    :param path: path to the object used for debugging
+    :return: parsed instance of Queue
+    """
+    if not isinstance(obj, dict):
+        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+
+    size_from_obj = from_obj(
+        obj['size'],
+        expected=[int],
+        path=path + '.size')  # type: int
+
+    engine_type_from_obj = from_obj(
+        obj['engineType'],
+        expected=[str],
+        path=path + '.engineType')  # type: str
+
+    return Queue(
+        size=size_from_obj,
+        engine_type=engine_type_from_obj)
+
+
+def queue_to_jsonable(
+        queue: Queue,
+        path: str = "") -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of Queue.
+
+    :param queue: instance of Queue to be JSON-ized
+    :param path: path to the queue used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res['size'] = queue.size
+
+    res['engineType'] = queue.engine_type
 
     return res
 
@@ -2088,7 +2171,9 @@ class TranslationBuild:
             pretranslate: Optional[List['PretranslateCorpus']] = None,
             percent_completed: Optional[float] = None,
             message: Optional[str] = None,
-            date_finished: Optional[str] = None) -> None:
+            queue_depth: Optional[int] = None,
+            date_finished: Optional[str] = None,
+            options: Optional[str] = None) -> None:
         """Initializes with the given values."""
         self.id = id
 
@@ -2111,7 +2196,11 @@ class TranslationBuild:
 
         self.message = message
 
+        self.queue_depth = queue_depth
+
         self.date_finished = date_finished
+
+        self.options = options
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -2215,6 +2304,15 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
     else:
         message_from_obj = None
 
+    obj_queue_depth = obj.get('queueDepth', None)
+    if obj_queue_depth is not None:
+        queue_depth_from_obj = from_obj(
+            obj_queue_depth,
+            expected=[int],
+            path=path + '.queueDepth')  # type: Optional[int]
+    else:
+        queue_depth_from_obj = None
+
     obj_date_finished = obj.get('dateFinished', None)
     if obj_date_finished is not None:
         date_finished_from_obj = from_obj(
@@ -2223,6 +2321,15 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
             path=path + '.dateFinished')  # type: Optional[str]
     else:
         date_finished_from_obj = None
+
+    obj_options = obj.get('options', None)
+    if obj_options is not None:
+        options_from_obj = from_obj(
+            obj_options,
+            expected=[str],
+            path=path + '.options')  # type: Optional[str]
+    else:
+        options_from_obj = None
 
     return TranslationBuild(
         id=id_from_obj,
@@ -2235,7 +2342,9 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
         pretranslate=pretranslate_from_obj,
         percent_completed=percent_completed_from_obj,
         message=message_from_obj,
-        date_finished=date_finished_from_obj)
+        queue_depth=queue_depth_from_obj,
+        date_finished=date_finished_from_obj,
+        options=options_from_obj)
 
 
 def translation_build_to_jsonable(
@@ -2280,8 +2389,14 @@ def translation_build_to_jsonable(
     if translation_build.message is not None:
         res['message'] = translation_build.message
 
+    if translation_build.queue_depth is not None:
+        res['queueDepth'] = translation_build.queue_depth
+
     if translation_build.date_finished is not None:
         res['dateFinished'] = translation_build.date_finished
+
+    if translation_build.options is not None:
+        res['options'] = translation_build.options
 
     return res
 
@@ -2376,11 +2491,14 @@ class TranslationBuildConfig:
     def __init__(
             self,
             name: Optional[str] = None,
-            pretranslate: Optional[List['PretranslateCorpusConfig']] = None) -> None:
+            pretranslate: Optional[List['PretranslateCorpusConfig']] = None,
+            options: Optional[str] = None) -> None:
         """Initializes with the given values."""
         self.name = name
 
         self.pretranslate = pretranslate
+
+        self.options = options
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -2430,9 +2548,19 @@ def translation_build_config_from_obj(obj: Any, path: str = "") -> TranslationBu
     else:
         pretranslate_from_obj = None
 
+    obj_options = obj.get('options', None)
+    if obj_options is not None:
+        options_from_obj = from_obj(
+            obj_options,
+            expected=[str],
+            path=path + '.options')  # type: Optional[str]
+    else:
+        options_from_obj = None
+
     return TranslationBuildConfig(
         name=name_from_obj,
-        pretranslate=pretranslate_from_obj)
+        pretranslate=pretranslate_from_obj,
+        options=options_from_obj)
 
 
 def translation_build_config_to_jsonable(
@@ -2455,6 +2583,9 @@ def translation_build_config_to_jsonable(
         translation_build_config.pretranslate,
         expected=[list, PretranslateCorpusConfig],
         path='{}.pretranslate'.format(path))
+
+    if translation_build_config.options is not None:
+        res['options'] = translation_build_config.options
 
     return res
 
@@ -2789,8 +2920,11 @@ class RemoteCaller:
         :param format:
             File format options:
             * **Text**: One translation unit (a.k.a., verse) per line
-              * If there is a tab, the content before the tab is the unique identifier for the line
-              * Otherwise, no tabs should be used in the file.
+              * If a line contains a tab, characters before the tab are used as a unique identifier for the line, characters after the tab are understood as the content of the verse, and if there is another tab following the verse content, characters after this second tab are assumed to be column codes like "ss" etc. for sectioning and other formatting. See this example of a tab-delimited text file:
+                > verse_001_005 (tab) Ὑπομνῆσαι δὲ ὑμᾶς βούλομαι , εἰδότας ὑμᾶς ἅπαξ τοῦτο
+                > verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
+                > verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
+              * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
             * **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.
         :param name:
             A name to help identify and distinguish the file.
@@ -3027,6 +3161,33 @@ class RemoteCaller:
         with contextlib.closing(resp):
             resp.raise_for_status()
             return resp.content
+
+    def translation_engines_get_queue(
+            self,
+            engine_type: str) -> 'Queue':
+        """
+        Send a get request to /api/v1/translation/engines/queues.
+
+        :param engine_type: A valid engine type: SmtTransfer, Nmt, or Echo
+
+        :return: Queue information for the specified engine type
+        """
+        url = self.url_prefix + '/api/v1/translation/engines/queues'
+
+        data = engine_type
+
+
+        resp = self.session.request(
+            method='get',
+            url=url,
+            json=data,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(
+                obj=resp.json(),
+                expected=[Queue])
 
     def translation_engines_translate(
             self,
@@ -3411,13 +3572,17 @@ class RemoteCaller:
             self,
             id: str,
             build_config: 'TranslationBuildConfig') -> bytes:
-        """
+        r"""
         Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
         is selected for pretranslation, only "untranslated" text will be pretranslated:
         that is, segments (lines of text) in the specified corpora or textId's that have
         untranslated text but no translated text. If a corpus is a Paratext project,
         you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
+                    
+        The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
+        A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        number of training iterations in order to reduce turnaround time for testing purposes.
 
         :param id: The translation engine id
         :param build_config: The build config (see remarks)
@@ -3451,13 +3616,13 @@ class RemoteCaller:
             build_id: str,
             min_revision: Optional[int] = None) -> 'TranslationBuild':
         """
-        If the `minRevision` is not defined, the current build at whatever state it is
+        If the `minRevision` is not defined, the current build, at whatever state it is,
         will be immediately returned.  If `minRevision` is defined, Serval will wait for
         up to 40 seconds for the engine to build to the `minRevision` specified, else
         will timeout.
         A use case is to actively query the state of the current build, where the subsequent
-        request sets the `minRevision` to the returned `revision` + 1.  Note: this method
-        should use request throttling.
+        request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
+        Note: this method should use request throttling.
 
         :param id: The translation engine id
         :param build_id: The build job id
@@ -3494,7 +3659,7 @@ class RemoteCaller:
             id: str,
             min_revision: Optional[int] = None) -> 'TranslationBuild':
         """
-        See "Get a Build Job" for details on minimum revision.
+        See documentation on endpoint /translation/engines/{id}/builds/{id} - "Get a Build Job" for details on using `minRevision`.
 
         :param id: The translation engine id
         :param min_revision: The minimum revision
