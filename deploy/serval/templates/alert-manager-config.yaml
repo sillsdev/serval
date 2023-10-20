@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: limit-alerts
+  namespace: {{ .Values.namespace }}
+spec:
+  receivers:
+    - emailConfigs:
+        - authPassword:
+            name: aqua-ml-data
+            key: smtp_password
+          authUsername: {{ .Values.alertEmail }}
+          from: {{ .Values.alertEmail }}
+          requireTLS: true
+          sendResolved: true
+          smarthost: mail.languagetechnology.org:587
+          tlsConfig: {}
+          to: {{ .Values.emailsToAlert }}
+      name: alert-serval
+  route:
+    groupBy: []
+    groupInterval: 5m
+    groupWait: 10s
+    receiver: alert-serval
+    repeatInterval: 4h

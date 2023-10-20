@@ -32,19 +32,10 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Get Machine
-        run: cd .. && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../serval && dotnet build
-
-      - name: Restore dotnet tools
-        run: dotnet tool restore
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --no-restore
+        run: cd .. && mkdir machine_testing_dir && cd machine_testing_dir && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../../serval && dotnet build #separate repos to guarantee failures when grpc or data access is not up to date
 
       - name: Start containers
-        run: docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+        run: export MACHINE_TESTING_DIR="../machine_testing_dir/machine" && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr

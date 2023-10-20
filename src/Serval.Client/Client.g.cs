@@ -1015,8 +1015,8 @@ namespace Serval.Client
         /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
         /// <br/>            
-        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
-        /// <br/>A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        /// <br/>A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
         /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -1036,7 +1036,8 @@ namespace Serval.Client
         /// <br/>will timeout.
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
-        /// <br/>Note: this method should use request throttling.
+        /// <br/>This method should use request throttling.
+        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -1545,7 +1546,7 @@ namespace Serval.Client
                     var content_ = new System.Net.Http.StringContent(json_);
                     content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
                     request_.Content = content_;
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     PrepareRequest(client_, request_, urlBuilder_);
@@ -2917,8 +2918,8 @@ namespace Serval.Client
         /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
         /// <br/>            
-        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
-        /// <br/>A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        /// <br/>A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
         /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -3008,7 +3009,7 @@ namespace Serval.Client
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("There is already an active/pending build", status_, responseText_, headers_, null);
+                            throw new ServalApiException("There is already an active or pending build or a build in the process of being canceled", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -3047,7 +3048,8 @@ namespace Serval.Client
         /// <br/>will timeout.
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
-        /// <br/>Note: this method should use request throttling.
+        /// <br/>This method should use request throttling.
+        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -4455,7 +4457,7 @@ namespace Serval.Client
         public System.DateTimeOffset? DateFinished { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Options { get; set; } = default!;
+        public object? Options { get; set; } = default!;
 
     }
 
@@ -4502,7 +4504,7 @@ namespace Serval.Client
         public System.Collections.Generic.IList<PretranslateCorpusConfig>? Pretranslate { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Options { get; set; } = default!;
+        public object? Options { get; set; } = default!;
 
     }
 

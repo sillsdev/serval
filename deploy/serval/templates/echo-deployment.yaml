@@ -24,16 +24,14 @@ spec:
             - /app/echo_server/EchoTranslationEngine.dll
           workingDir: /app/echo_server
           env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: {{ .Values.environment}}
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
               value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
               value: Http2
             - name: ASPNETCORE_ConnectionStrings__TranslationPlatformApi
               value: http://serval-api:81
-            - name: ASPNETCORE_Logging__LogLevel__Default
-              value: Information
-            - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
-              value: Warning
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: echo

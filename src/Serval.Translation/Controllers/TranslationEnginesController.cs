@@ -192,7 +192,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="403">The authenticated client cannot perform the operation</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("queues")]
+    [HttpPost("queues")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -704,7 +704,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// will timeout.
     /// A use case is to actively query the state of the current build, where the subsequent
     /// request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
-    /// Note: this method should use request throttling.
+    /// This method should use request throttling.
+    /// Note: Within the returned build, percentCompleted is a value between 0 and 1.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildId">The build job id</param>
@@ -771,8 +772,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
     /// in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
     ///
-    /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
-    /// A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+    /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+    /// A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
     /// number of training iterations in order to reduce turnaround time for testing purposes.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
@@ -783,7 +784,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
-    /// <response code="409">There is already an active/pending build</response>
+    /// <response code="409">There is already an active or pending build or a build in the process of being canceled</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/builds")]
@@ -1019,7 +1020,7 @@ public class TranslationEnginesController : ServalControllerBase
             var jsonSerializerOptions = new JsonSerializerOptions();
             jsonSerializerOptions.Converters.Add(new ObjectToInferredTypesConverter());
             build.Options = JsonSerializer.Deserialize<IDictionary<string, object>>(
-                source.Options ?? "{}",
+                source.Options?.ToString() ?? "{}",
                 jsonSerializerOptions
             );
         }
@@ -1069,7 +1070,7 @@ public class TranslationEnginesController : ServalControllerBase
             QueueDepth = source.QueueDepth,
             State = source.State,
             DateFinished = source.DateFinished,
-            Options = JsonSerializer.Serialize(source.Options)
+            Options = source.Options
         };
     }
 

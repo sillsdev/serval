@@ -5,5 +5,10 @@ public class TranslationBuildConfigDto
     public string? Name { get; set; }
     public IList<PretranslateCorpusConfigDto>? Pretranslate { get; set; }
 
-    public string? Options { get; set; }
+    /// <example>
+    /// {
+    ///   "property" : "value"
+    /// }
+    /// </example>
+    public object? Options { get; set; }
 }
