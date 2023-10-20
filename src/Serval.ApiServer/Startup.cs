@@ -172,6 +172,12 @@ public class Startup
                         .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
                         .AddConsoleExporter();
                 });
+        else
+        {
+            services
+                .AddOpenTelemetry()
+                .WithMetrics(opts => opts.AddAspNetCoreInstrumentation().AddPrometheusExporter());
+        }
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -214,6 +220,9 @@ public class Startup
 
             settings.CustomJavaScriptPath = "js/auth0.js";
         });
+
+        if (!Environment.IsDevelopment())
+            app.UseOpenTelemetryPrometheusScrapingEndpoint();
     }
 
     private static Task WriteHealthCheckResponse(HttpContext context, HealthReport healthReport)
