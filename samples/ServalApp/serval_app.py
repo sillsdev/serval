@@ -19,26 +19,26 @@ def send_emails():
     try:
         def started(build:Build, email_server:ServalAppEmailServer, data=None):
             print(f"\tStarted {build}")
-            session.delete(build)
             email_server.send_build_started_email(build.email)
+            session.delete(build)
             session.add(Build(build_id=build.build_id, engine_id=build.engine_id, email=build.email, state=State.Active, corpus_id=build.corpus_id))
 
         def faulted(build:Build, email_server:ServalAppEmailServer, data=None):
             print(f"\tFaulted {build}")
-            session.delete(build)
             email_server.send_build_faulted_email(build.email, error=data)
+            session.delete(build)
 
         def completed(build:Build, email_server:ServalAppEmailServer, data=None):
             print(f"\tCompleted {build}")
-            session.delete(build)
             pretranslations = client.translation_engines_get_all_pretranslations(build.engine_id, build.corpus_id)
             email_server.send_build_completed_email(build.email, '\n'.join([f"{'|'.join(pretranslation.refs)}\t{pretranslation.translation}" for pretranslation in pretranslations]))
+            session.delete(build)
 
         def update(build:Build, email_server:ServalAppEmailServer, data=None):
             print(f"\tUpdated {build}")
 
         serval_auth = ServalBearerAuth()
-        client = RemoteCaller(url_prefix="https://prod.serval-api.org",auth=serval_auth)
+        client = RemoteCaller(url_prefix=os.environ.get('SERVAL_HOST_URL'),auth=serval_auth)
         responses:"dict[str,function]" = {"Completed":completed, "Faulted":faulted, "Canceled":faulted}
 
         def get_update(build:Build, email_server:ServalAppEmailServer):
@@ -63,7 +63,7 @@ def send_emails():
         with ServalAppEmailServer(os.environ.get('SERVAL_APP_EMAIL_PASSWORD')) as email_server:
             while(True):
                 send_updates(email_server)
-                sleep(300) #Once every five minutes...
+                sleep(os.environ.get('SERVAL_APP_UPDATE_FREQ_SEC',300))
     except Exception as e:
         print(e)
         st.session_state['background_process_has_started'] = False
@@ -110,7 +110,7 @@ else:
                 )
             )
         )
-        build = json.loads(client.translation_engines_start_build(engine['id'], TranslationBuildConfig(pretranslate=[PretranslateCorpusConfig(corpus_id=corpus["id"], text_ids= [] if st.session_state['source_files'][0].name[-4:] == '.zip' else list(map(lambda f: f.name, st.session_state['source_files'])))], options="{\"max_steps\":10}")))
+        build = json.loads(client.translation_engines_start_build(engine['id'], TranslationBuildConfig(pretranslate=[PretranslateCorpusConfig(corpus_id=corpus["id"], text_ids= [] if st.session_state['source_files'][0].name[-4:] == '.zip' else list(map(lambda f: f.name, st.session_state['source_files'])))], options="{\"max_steps\":" + os.environ.get('SERVAL_APP_MAX_STEPS',10) + "}")))
         session.add(Build(build_id=build['id'],engine_id=engine['id'],email=st.session_state['email'],state=build['state'],corpus_id=corpus['id']))
         session.commit()
 
