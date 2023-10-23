@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "servalapp"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.9.7 || >3.9.7,<4.0"
+email = "^4.0.2"
+streamlit = "^1.27.2"
+requests = "^2.31.0"
+SQLAlchemy = "^2.0.22"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
