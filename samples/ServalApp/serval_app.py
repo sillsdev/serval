@@ -38,7 +38,7 @@ def send_emails():
             print(f"\tUpdated {build}")
 
         serval_auth = ServalBearerAuth()
-        client = RemoteCaller(url_prefix="http://localhost",auth=serval_auth)
+        client = RemoteCaller(url_prefix="https://prod.serval-api.org",auth=serval_auth)
         responses:"dict[str,function]" = {"Completed":completed, "Faulted":faulted, "Canceled":faulted}
 
         def get_update(build:Build, email_server:ServalAppEmailServer):
@@ -91,7 +91,7 @@ else:
         st.session_state['authorized'] = False
         st.session_state['authorization_failure'] = True
         st.rerun()
-    client = RemoteCaller(url_prefix="http://localhost",auth=serval_auth)
+    client = RemoteCaller(url_prefix="https://prod.serval-api.org",auth=serval_auth)
     engine = create_engine("sqlite:///builds.db")
     Session = sessionmaker(bind=engine)
     session = Session()
