@@ -24,10 +24,7 @@ class Build(Base):
 
     def __repr__(self):
         return self.__str__()
-
-def create_tables():
+def clear_and_regenerate_tables():
     engine = create_engine("sqlite:///builds.db")
     metadata.drop_all(bind=engine)
     metadata.create_all(bind=engine)
-
-
