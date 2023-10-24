@@ -1,21 +1,30 @@
 import json
 import os
 import re
-import traceback
 from threading import Thread
 from time import sleep
 
 import streamlit as st
 from db import Build, State, create_db_if_not_exists
 from serval_auth_module import ServalBearerAuth
-from serval_client_module import (PretranslateCorpusConfig, RemoteCaller, TranslationBuildConfig,
-                                  TranslationCorpusConfig, TranslationCorpusFileConfig, TranslationEngineConfig)
+from serval_client_module import (
+    PretranslateCorpusConfig,
+    RemoteCaller,
+    TranslationBuildConfig,
+    TranslationCorpusConfig,
+    TranslationCorpusFileConfig,
+    TranslationEngineConfig,
+)
 from serval_email_module import ServalAppEmailServer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from streamlit.logger import get_logger, set_log_level
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 create_db_if_not_exists()
+
+set_log_level("INFO")
+logger = get_logger(__name__)
 
 
 def send_emails():
@@ -25,8 +34,8 @@ def send_emails():
     try:
 
         def started(build: Build, email_server: ServalAppEmailServer, data=None):
-            print(f"\tStarted {build}")
-            email_server.send_build_started_email(build.email)
+            logger.info(f"Started:\n{build}")
+            email_server.send_build_started_email(build.email, str(build))
             session.delete(build)
             session.add(
                 Build(
@@ -39,12 +48,12 @@ def send_emails():
             )
 
         def faulted(build: Build, email_server: ServalAppEmailServer, data=None):
-            print(f"\tFaulted {build}")
-            email_server.send_build_faulted_email(build.email, error=data)
+            logger.warn(f"Faulted:\n{build}")
+            email_server.send_build_faulted_email(build.email, str(build), error=data)
             session.delete(build)
 
         def completed(build: Build, email_server: ServalAppEmailServer, data=None):
-            print(f"\tCompleted {build}")
+            logger.info(f"Completed:\{build}")
             pretranslations = client.translation_engines_get_all_pretranslations(
                 build.engine_id, build.corpus_id
             )
@@ -56,11 +65,12 @@ def send_emails():
                         for pretranslation in pretranslations
                     ]
                 ),
+                str(build),
             )
             session.delete(build)
 
-        def update(build: Build, email_server: ServalAppEmailServer, data=None):
-            print(f"\tUpdated {build}")
+        def default_update(build: Build, email_server: ServalAppEmailServer, data=None):
+            logger.info(f"Updated:\n{build}")
 
         serval_auth = ServalBearerAuth()
         client = RemoteCaller(
@@ -79,21 +89,22 @@ def send_emails():
             if build.state == State.Pending and build_update.state == "Active":
                 started(build, email_server)
             else:
-                responses.get(build_update.state, update)(
+                responses.get(build_update.state, default_update)(
                     build, email_server, build_update.message
                 )
             session.commit()
 
         def send_updates(email_server: ServalAppEmailServer):
-            print("Checking for updates...")
+            logger.info("Checking for updates...")
             with session.no_autoflush:
                 builds = session.query(Build).all()
                 for build in builds:
                     try:
                         get_update(build, email_server)
                     except Exception as e:
-                        print(f"\tFailed to update {build} because of exception {e}")
-                        traceback.print_exc()
+                        logger.error(
+                            f"Failed to update {build} because of exception {e}"
+                        )
                         raise e
 
         with ServalAppEmailServer(
@@ -101,9 +112,9 @@ def send_emails():
         ) as email_server:
             while True:
                 send_updates(email_server)
-                sleep(os.environ.get("SERVAL_APP_UPDATE_FREQ_SEC", 300))
+                sleep(int(os.environ.get("SERVAL_APP_UPDATE_FREQ_SEC", 300)))
     except Exception as e:
-        print(e)
+        logger.exception(e)
         st.session_state["background_process_has_started"] = False
 
 
@@ -153,7 +164,9 @@ else:
                     source_language=st.session_state["source_language"],
                     target_language=st.session_state["target_language"],
                     type="Nmt",
-                    name=f'serval_app_engine:{st.session_state["email"]}',
+                    name=st.session_state["build_name"]
+                    if "build_name" in st.session_state
+                    else f'serval_app_engine:{st.session_state["email"]}',
                 )
             )
         )
@@ -162,7 +175,8 @@ else:
                 client.data_files_create(
                     st.session_state["source_files"][i],
                     format="Paratext"
-                    if st.session_state["source_files"][i].name[-4:] == ".zip"
+                    if st.session_state["source_files"][i].name[-4:]
+                    in [".zip", ".tar", "r.gz"]
                     else "Text",
                 )
             )
@@ -223,6 +237,9 @@ else:
                     options='{"max_steps":'
                     + str(os.environ.get("SERVAL_APP_MAX_STEPS", 10))
                     + "}",
+                    name=st.session_state["build_name"]
+                    if "build_name" in st.session_state
+                    else f'serval_app_engine:{st.session_state["email"]}',
                 ),
             )
         )
@@ -233,17 +250,35 @@ else:
                 email=st.session_state["email"],
                 state=build["state"],
                 corpus_id=corpus["id"],
+                client_id=st.session_state["client_id"],
+                source_files=", ".join(
+                    list(map(lambda f: f.name, st.session_state["source_files"]))
+                ),
+                target_files=", ".join(
+                    list(map(lambda f: f.name, st.session_state["target_files"]))
+                ),
+                name=st.session_state["build_name"],
             )
         )
         session.commit()
 
-    def already_active_build_for(email: str):
-        return len(session.query(Build).where(Build.email == email).all()) > 0
+    def already_active_build_for(email: str, client: str):
+        return (
+            len(
+                session.query(Build)
+                .where(Build.email == email and Build.client_id == client)
+                .all()
+            )
+            > 0
+        )
 
     st.subheader("Neural Machine Translation")
 
     tried_to_submit = st.session_state.get("tried_to_submit", False)
     with st.form(key="NmtTranslationForm"):
+        st.session_state["build_name"] = st.text_input(
+            label="Build Name", placeholder="MyBuild (Optional)"
+        )
         st.session_state["source_language"] = st.text_input(
             label="Source language tag*", placeholder="en"
         )
@@ -294,11 +329,13 @@ else:
                 )
             )
         if st.form_submit_button("Generate translations"):
-            if already_active_build_for(st.session_state["email"]):
+            if already_active_build_for(
+                st.session_state["email"], st.session_state["client_id"]
+            ):
                 st.session_state["tried_to_submit"] = True
                 st.session_state[
                     "error"
-                ] = "There is already an a pending or active build associated with this email address. \
+                ] = "There is already an a pending or active build associated with this email address and client id. \
                     Please wait for the previous build to finish."
                 st.rerun()
             elif (

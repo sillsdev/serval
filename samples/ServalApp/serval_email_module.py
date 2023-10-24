@@ -31,11 +31,11 @@ class ServalAppEmailServer:
         self.server.close()
 
     def send_build_completed_email(
-        self, recipient_address: str, pretranslations_file_data: str
+        self, recipient_address: str, pretranslations_file_data: str, build_info: str
     ):
         msg = EmailMessage()
         msg.set_content(
-            """Hi!
+            f"""Hi!
 
 Your NMT engine has completed building. Attached are the \
     translations of untranslated source text in the files you included.
@@ -43,6 +43,8 @@ Your NMT engine has completed building. Attached are the \
 If you are experiencing difficulties using this application, please contact eli_lowry@sil.org.
 
 Thank you!
+
+{build_info}
 """
         )
         msg["From"] = self.sender_address
@@ -51,7 +53,9 @@ Thank you!
         msg.add_attachment(pretranslations_file_data, filename="translations.txt")
         self.server.send_message(msg)
 
-    def send_build_faulted_email(self, recipient_address: str, error=""):
+    def send_build_faulted_email(
+        self, recipient_address: str, build_info: str, error=""
+    ):
         msg = EmailMessage()
         msg.set_content(
             f"""Hi!
@@ -62,6 +66,8 @@ Your NMT engine has failed to build{" with the following error message: " + erro
 If you continue to experience difficulties using this application, please contact eli_lowry@sil.org.
 
 Thank you!
+
+{build_info}
 """
         )
         msg["From"] = self.sender_address
@@ -69,16 +75,17 @@ Thank you!
         msg["Subject"] = "Your NMT build job has failed"
         self.server.send_message(msg)
 
-    def send_build_started_email(self, recipient_address: str):
+    def send_build_started_email(self, recipient_address: str, build_info: str):
         msg = EmailMessage()
         msg.set_content(
-            """Hi!
+            f"""Hi!
 
 Your NMT engine has started building. We will contact you when it is complete.
 
 If you are experiencing difficulties using this application, please contact eli_lowry@sil.org.
 
 Thank you!
+{build_info}
 """
         )
         msg["From"] = self.sender_address

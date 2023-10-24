@@ -17,22 +17,22 @@ Base = declarative_base(metadata=metadata)
 
 class Build(Base):
     __tablename__ = "builds"
+
+    __mapper_args__ = {"confirm_deleted_rows": False}
+
     build_id = Column("build_id", String, primary_key=True)
     engine_id = Column("engine_id", String, primary_key=True)
-    email = Column("email", String)
-    state = Column("state", Enum(State))
-    corpus_id = Column("corpus_id", String)
+    name = Column("name", String)
+    email = Column("email", String, nullable=False)
+    state = Column("state", Enum(State), nullable=False)
+    corpus_id = Column("corpus_id", String, nullable=False)
+    client_id = Column("client_id", String, nullable=False)
+    source_files = Column("source_files", String)
+    target_files = Column("target_files", String)
 
     def __str__(self):
-        return str(
-            {
-                "build_id": self.build_id,
-                "engine_id": self.engine_id,
-                "email": self.email,
-                "state": self.state,
-                "corpus_id": self.corpus_id,
-            }
-        )
+        return f"Build name: {self.name}\nBuild id: {self.build_id}\nClient ID: {self.client_id}\nSource files: \
+{self.source_files}\nTarget files: {self.target_files}"
 
     def __repr__(self):
         return self.__str__()
