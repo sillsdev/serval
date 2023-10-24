@@ -7,9 +7,9 @@ namespace: serval
 auth0Domain: languagetechnology.auth0.com
 lokiTenent: nlp-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
-servalImage: ghcr.io/sillsdev/serval:0.8.0
-machineImage: ghcr.io/sillsdev/machine:3.4.0
-ClearMLDockerImage: ghcr.io/sillsdev/machine.py:0.9.6.2
+servalImage: ghcr.io/sillsdev/serval:0.9.0
+machineImage: ghcr.io/sillsdev/machine:3.4.2
+ClearMLDockerImage: ghcr.io/sillsdev/machine.py:0.9.7.1
 ClearMLQueue: production
 SharedFileLocation: s3://aqua-ml-data/production/
 enableEcho: true
