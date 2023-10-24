@@ -1,5 +1,6 @@
+import smtplib
+import ssl
 from email.message import EmailMessage
-import smtplib, ssl
 
 
 class ServalAppEmailServer:
@@ -36,7 +37,8 @@ class ServalAppEmailServer:
         msg.set_content(
             """Hi!
 
-Your NMT engine has completed building. Attached are the translations of untranslated source text in the files you included.
+Your NMT engine has completed building. Attached are the \
+    translations of untranslated source text in the files you included.
 
 If you are experiencing difficulties using this application, please contact eli_lowry@sil.org.
 
@@ -54,7 +56,8 @@ Thank you!
         msg.set_content(
             f"""Hi!
 
-Your NMT engine has failed to build{" with the following error message: " + error if error != "" else ""}. Please make sure the information you specified is correct and try again after a while.
+Your NMT engine has failed to build{" with the following error message: " + error if error != "" else ""}. \
+    Please make sure the information you specified is correct and try again after a while.
 
 If you continue to experience difficulties using this application, please contact eli_lowry@sil.org.
 

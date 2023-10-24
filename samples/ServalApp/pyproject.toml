@@ -2,7 +2,7 @@
 name = "servalapp"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Eli Lowry <eli_lowry@sil.org>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

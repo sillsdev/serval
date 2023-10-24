@@ -1,16 +1,21 @@
+import json
+import os
+import re
+import traceback
+from threading import Thread
+from time import sleep
+
 import streamlit as st
-from streamlit.runtime.scriptrunner import add_script_run_ctx
-from serval_client_module import *
-from serval_auth_module import *
+from db import Build, State, create_db_if_not_exists
+from serval_auth_module import ServalBearerAuth
+from serval_client_module import (PretranslateCorpusConfig, RemoteCaller, TranslationBuildConfig,
+                                  TranslationCorpusConfig, TranslationCorpusFileConfig, TranslationEngineConfig)
+from serval_email_module import ServalAppEmailServer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from db import Build
-from time import sleep
-from threading import Thread
-import os
-from db import Build, State
-from serval_email_module import ServalAppEmailServer
-import re
+from streamlit.runtime.scriptrunner import add_script_run_ctx
+
+create_db_if_not_exists()
 
 
 def send_emails():
@@ -80,7 +85,7 @@ def send_emails():
             session.commit()
 
         def send_updates(email_server: ServalAppEmailServer):
-            print(f"Checking for updates...")
+            print("Checking for updates...")
             with session.no_autoflush:
                 builds = session.query(Build).all()
                 for build in builds:
@@ -88,6 +93,7 @@ def send_emails():
                         get_update(build, email_server)
                     except Exception as e:
                         print(f"\tFailed to update {build} because of exception {e}")
+                        traceback.print_exc()
                         raise e
 
         with ServalAppEmailServer(
@@ -133,7 +139,9 @@ else:
         st.session_state["authorized"] = False
         st.session_state["authorization_failure"] = True
         st.rerun()
-    client = RemoteCaller(url_prefix="https://prod.serval-api.org", auth=serval_auth)
+    client = RemoteCaller(
+        url_prefix=os.environ.get("SERVAL_HOST_URL"), auth=serval_auth
+    )
     engine = create_engine("sqlite:///builds.db")
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -213,7 +221,7 @@ else:
                         )
                     ],
                     options='{"max_steps":'
-                    + os.environ.get("SERVAL_APP_MAX_STEPS", 10)
+                    + str(os.environ.get("SERVAL_APP_MAX_STEPS", 10))
                     + "}",
                 ),
             )
@@ -290,7 +298,8 @@ else:
                 st.session_state["tried_to_submit"] = True
                 st.session_state[
                     "error"
-                ] = "There is already an a pending or active build associated with this email address. Please wait for the previous build to finish."
+                ] = "There is already an a pending or active build associated with this email address. \
+                    Please wait for the previous build to finish."
                 st.rerun()
             elif (
                 st.session_state["source_language"] != ""
@@ -313,6 +322,7 @@ else:
                 ] = "Some required fields were left blank. Please fill in all fields above"
                 st.rerun()
         st.markdown(
-            "<sub>\* Use IETF tags if possible. See [here](https://en.wikipedia.org/wiki/IETF_language_tag) for more information on IETF tags.</sub>",
+            "<sub>\* Use IETF tags if possible. See [here](https://en.wikipedia.org/wiki/IETF_language_tag) \
+                for more information on IETF tags.</sub>",
             unsafe_allow_html=True,
         )

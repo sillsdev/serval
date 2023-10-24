@@ -1,7 +1,8 @@
-import requests
 import json
 import os
 import time
+
+import requests
 
 
 class ServalBearerAuth(requests.auth.AuthBase):
@@ -46,5 +47,6 @@ class ServalBearerAuth(requests.auth.AuthBase):
             self.token = r.json()["access_token"] if r is not None else None
         except Exception as e:
             raise ValueError(
-                f"Token cannot be None. Failed to retrieve token from auth server; responded with {r.status_code if r is not None else '<unknown>'}. Original exception: {e}"
+                f"Token cannot be None. Failed to retrieve token from auth server; responded \
+                    with {r.status_code if r is not None else '<unknown>'}. Original exception: {e}"
             )

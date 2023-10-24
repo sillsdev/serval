@@ -2173,7 +2173,7 @@ class TranslationBuild:
             message: Optional[str] = None,
             queue_depth: Optional[int] = None,
             date_finished: Optional[str] = None,
-            options: Optional[str] = None) -> None:
+            options: Optional[Any] = None) -> None:
         """Initializes with the given values."""
         self.id = id
 
@@ -2322,14 +2322,7 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
     else:
         date_finished_from_obj = None
 
-    obj_options = obj.get('options', None)
-    if obj_options is not None:
-        options_from_obj = from_obj(
-            obj_options,
-            expected=[str],
-            path=path + '.options')  # type: Optional[str]
-    else:
-        options_from_obj = None
+    options_from_obj = obj.get('options', None)
 
     return TranslationBuild(
         id=id_from_obj,
@@ -2492,7 +2485,7 @@ class TranslationBuildConfig:
             self,
             name: Optional[str] = None,
             pretranslate: Optional[List['PretranslateCorpusConfig']] = None,
-            options: Optional[str] = None) -> None:
+            options: Optional[Any] = None) -> None:
         """Initializes with the given values."""
         self.name = name
 
@@ -2548,14 +2541,7 @@ def translation_build_config_from_obj(obj: Any, path: str = "") -> TranslationBu
     else:
         pretranslate_from_obj = None
 
-    obj_options = obj.get('options', None)
-    if obj_options is not None:
-        options_from_obj = from_obj(
-            obj_options,
-            expected=[str],
-            path=path + '.options')  # type: Optional[str]
-    else:
-        options_from_obj = None
+    options_from_obj = obj.get('options', None)
 
     return TranslationBuildConfig(
         name=name_from_obj,
@@ -3166,7 +3152,7 @@ class RemoteCaller:
             self,
             engine_type: str) -> 'Queue':
         """
-        Send a get request to /api/v1/translation/engines/queues.
+        Send a post request to /api/v1/translation/engines/queues.
 
         :param engine_type: A valid engine type: SmtTransfer, Nmt, or Echo
 
@@ -3178,7 +3164,7 @@ class RemoteCaller:
 
 
         resp = self.session.request(
-            method='get',
+            method='post',
             url=url,
             json=data,
         )
@@ -3572,7 +3558,7 @@ class RemoteCaller:
             self,
             id: str,
             build_config: 'TranslationBuildConfig') -> bytes:
-        r"""
+        """
         Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
         is selected for pretranslation, only "untranslated" text will be pretranslated:
         that is, segments (lines of text) in the specified corpora or textId's that have
@@ -3580,8 +3566,8 @@ class RemoteCaller:
         you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
                     
-        The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON string.
-        A typical use case would be to set `"options"` to `"{\"max_steps\":10}"` in order to configure the maximum
+        The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
         number of training iterations in order to reduce turnaround time for testing purposes.
 
         :param id: The translation engine id
@@ -3622,7 +3608,8 @@ class RemoteCaller:
         will timeout.
         A use case is to actively query the state of the current build, where the subsequent
         request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
-        Note: this method should use request throttling.
+        This method should use request throttling.
+        Note: Within the returned build, percentCompleted is a value between 0 and 1.
 
         :param id: The translation engine id
         :param build_id: The build job id

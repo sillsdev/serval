@@ -1,6 +1,7 @@
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, MetaData, String, Enum, create_engine
 import enum
+
+from sqlalchemy import Column, Enum, MetaData, String, create_engine
+from sqlalchemy.orm import declarative_base
 
 
 class State(enum.Enum):
@@ -37,7 +38,6 @@ class Build(Base):
         return self.__str__()
 
 
-def clear_and_regenerate_tables():
+def create_db_if_not_exists():
     engine = create_engine("sqlite:///builds.db")
-    metadata.drop_all(bind=engine)
     metadata.create_all(bind=engine)
