@@ -359,7 +359,7 @@ else:
                 ] = "Some required fields were left blank. Please fill in all fields above"
                 st.rerun()
         st.markdown(
-            "<sub>\* Use IETF tags if possible. See [here](https://en.wikipedia.org/wiki/IETF_language_tag) \
-                for more information on IETF tags.</sub>",
+            f"<sub>\* Use IETF tags if possible. See [here](https://en.wikipedia.org/wiki/IETF_language_tag) \
+                for more information on IETF tags. For more details, see [the Serval API documentation]({os.environ.get('SERVAL_HOST_URL')}/swagger/index.html#/Translation%20Engines/TranslationEngines_Create).</sub>",
             unsafe_allow_html=True,
         )
