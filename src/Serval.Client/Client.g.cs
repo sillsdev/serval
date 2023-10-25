@@ -807,7 +807,10 @@ namespace Serval.Client
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is
-        /// <br/>fine tuned from the NLLB-200 from Meta and inherits the 200 language codes. Valid IETF language tags will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), and NLLB will be used as-is.
+        /// <br/>fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).
+        /// <br/>If you use a language among NLLB's supported languages,
+        /// <br/>Serval will utilize everything the NLLB-200 model already knows about that language when translating.
+        /// <br/>If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
         /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
@@ -907,9 +910,9 @@ namespace Serval.Client
         /// ## Parameters
         /// <br/>* **name**: A name to help identify and distinguish the corpus from other corpora
         /// <br/>  * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code
+        /// <br/>* **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
         /// <br/>  * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-        /// <br/>* **targetLanguage**: The target language code
+        /// <br/>* **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
         /// <br/>* **SourceFiles**: The source files associated with the corpus
         /// <br/>  * **FileId**: The unique id referencing the uploaded file
         /// <br/>  * **TextId**: The client-defined name to associate source and target files.
@@ -1209,7 +1212,10 @@ namespace Serval.Client
         /// <br/>Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is
-        /// <br/>fine tuned from the NLLB-200 from Meta and inherits the 200 language codes. Valid IETF language tags will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), and NLLB will be used as-is.
+        /// <br/>fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).
+        /// <br/>If you use a language among NLLB's supported languages,
+        /// <br/>Serval will utilize everything the NLLB-200 model already knows about that language when translating.
+        /// <br/>If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
         /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
@@ -2127,9 +2133,9 @@ namespace Serval.Client
         /// ## Parameters
         /// <br/>* **name**: A name to help identify and distinguish the corpus from other corpora
         /// <br/>  * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code
+        /// <br/>* **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
         /// <br/>  * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-        /// <br/>* **targetLanguage**: The target language code
+        /// <br/>* **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
         /// <br/>* **SourceFiles**: The source files associated with the corpus
         /// <br/>  * **FileId**: The unique id referencing the uploaded file
         /// <br/>  * **TextId**: The client-defined name to associate source and target files.
