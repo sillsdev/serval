@@ -32,7 +32,7 @@ class ServalBearerAuth(requests.auth.AuthBase):
         data = {
             "client_id": f"{self.__client_id}",
             "client_secret": f"{self.__client_secret}",
-            "audience": "https://machine.sil.org",
+            "audience": "https://serval-api.org",
             "grant_type": "client_credentials",
         }
 

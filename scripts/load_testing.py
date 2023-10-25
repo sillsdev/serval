@@ -25,7 +25,7 @@ def main():
     data = {
         "client_id": f"{SERVAL_CLIENT_ID}",
         "client_secret":f"{SERVAL_CLIENT_SECRET}",
-        "audience":"https://machine.sil.org",
+        "audience":"https://serval-api.org",
         "grant_type":"client_credentials"
         }
 
