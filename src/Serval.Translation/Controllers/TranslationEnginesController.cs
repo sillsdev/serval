@@ -95,7 +95,10 @@ public class TranslationEnginesController : ServalControllerBase
     /// Typical endpoints: translate, get-word-graph, train-segment
     /// ### Nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is
-    /// fine tuned from the NLLB-200 from Meta and inherits the 200 language codes. Valid IETF language tags will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), and NLLB will be used as-is.
+    /// fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).
+    /// If you use a language among NLLB's supported languages,
+    /// Serval will utilize everything the NLLB-200 model already knows about that language when translating.
+    /// If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
     /// Typical endpoints: pretranslate
     /// ### Echo
     /// The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
@@ -394,9 +397,9 @@ public class TranslationEnginesController : ServalControllerBase
     /// ## Parameters
     /// * **name**: A name to help identify and distinguish the corpus from other corpora
     ///   * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-    /// * **sourceLanguage**: The source language code
+    /// * **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
     ///   * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-    /// * **targetLanguage**: The target language code
+    /// * **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
     /// * **SourceFiles**: The source files associated with the corpus
     ///   * **FileId**: The unique id referencing the uploaded file
     ///   * **TextId**: The client-defined name to associate source and target files.
