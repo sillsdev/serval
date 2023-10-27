@@ -35,7 +35,7 @@ jobs:
         id: find_matching_branch
         continue-on-error: true
         if: ${{ github.ref_name }} != "main"
-        run: cd .. && git clone && https://github.com/sillsdev/machine.git --branch ${{ github.ref_name }} && dotnet build machine && dotnet build serval
+        run: cd .. && git clone https://github.com/sillsdev/machine.git --branch ${{ github.ref_name }} && dotnet build machine && dotnet build serval
 
       - name: Get Machine
         if: steps.find_matching_branch.outcome != 'success'
