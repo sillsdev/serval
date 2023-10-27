@@ -46,11 +46,13 @@ def send_emails():
                     corpus_id=build.corpus_id,
                 )
             )
+            logger.info("Email sent and build deleted.")
 
         def faulted(build: Build, email_server: ServalAppEmailServer, data=None):
             logger.warn(f"Faulted:\n{build}")
             email_server.send_build_faulted_email(build.email, str(build), error=data)
             session.delete(build)
+            logger.info("Email sent and build deleted.")
 
         def completed(build: Build, email_server: ServalAppEmailServer, data=None):
             logger.info(f"Completed:\{build}")
@@ -68,6 +70,7 @@ def send_emails():
                 str(build),
             )
             session.delete(build)
+            logger.info("Email sent and build deleted.")
 
         def default_update(build: Build, email_server: ServalAppEmailServer, data=None):
             logger.info(f"Updated:\n{build}")
