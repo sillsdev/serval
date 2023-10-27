@@ -10,7 +10,7 @@ public class ServalApiSlowTests
     [SetUp]
     public void SetUp()
     {
-        _helperClient = new ServalClientHelper("https://machine.sil.org", ignoreSSLErrors: true);
+        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true);
     }
 
     [Test]

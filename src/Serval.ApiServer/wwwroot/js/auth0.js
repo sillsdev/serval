@@ -3,7 +3,7 @@ var f = window.fetch;
 window.fetch = function (url, opts) {
     if (opts && opts.body && typeof opts.body === 'string' && opts.body.indexOf('client_credentials') !== -1) {
         // We know the audience - just add it.
-        opts.body += '&audience=https://machine.sil.org';
+        opts.body += '&audience=https://serval-api.org/';
     }
     return f(url, opts);
 };

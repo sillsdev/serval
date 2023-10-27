@@ -9,7 +9,7 @@ namespace Serval.E2ETests
         [SetUp]
         public void Setup()
         {
-            _helperClient = new ServalClientHelper("https://machine.sil.org", ignoreSSLErrors: true);
+            _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true);
         }
 
         [Test]
