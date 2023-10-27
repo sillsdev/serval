@@ -31,11 +31,18 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
+      - name: Check if there is a corresponding branch in Machine
+        id: find_matching_branch
+        continue-on-error: true
+        if: ${{ github.ref_name }} != "main"
+        run: cd .. && git clone && https://github.com/sillsdev/machine.git --branch ${{ github.ref_name }} && dotnet build machine && dotnet build serval
+
       - name: Get Machine
-        run: cd .. && mkdir machine_testing_dir && cd machine_testing_dir && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../../serval && dotnet build #separate repos to guarantee failures when grpc or data access is not up to date
+        if: steps.find_matching_branch.outcome != 'success'
+        run: cd .. && mkdir machine_testing_dir && cd machine_testing_dir && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../../serval && dotnet build && export MACHINE_TESTING_DIR="../machine_testing_dir/machine" #separate repos to guarantee failures when grpc or data access is not up to date
 
       - name: Start containers
-        run: export MACHINE_TESTING_DIR="../machine_testing_dir/machine" && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+        run:  docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
