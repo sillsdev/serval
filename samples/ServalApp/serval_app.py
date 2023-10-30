@@ -46,7 +46,7 @@ def send_emails():
                     corpus_id=build.corpus_id,
                 )
             )
-            logger.info("Email sent and build deleted.")
+            logger.info("Email sent and build updated.")
 
         def faulted(build: Build, email_server: ServalAppEmailServer, data=None):
             logger.warn(f"Faulted:\n{build}")
