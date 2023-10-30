@@ -59,7 +59,8 @@ Thank you!
         self.server.starttls(context=self.context)
         self.server.ehlo()
         self.server.login(self.sender_address, self.__password)
-        self.server.send_message(msg)
+        errs = self.server.send_message(msg)
+        print(errs)
 
     def send_build_faulted_email(
         self, recipient_address: str, build_info: str, error=""
@@ -84,7 +85,8 @@ Thank you!
         self.server.starttls(context=self.context)
         self.server.ehlo()
         self.server.login(self.sender_address, self.__password)
-        self.server.send_message(msg)
+        errs = self.server.send_message(msg)
+        print(errs)
 
     def send_build_started_email(self, recipient_address: str, build_info: str):
         msg = EmailMessage()
@@ -106,4 +108,5 @@ Thank you!
         self.server.starttls(context=self.context)
         self.server.ehlo()
         self.server.login(self.sender_address, self.__password)
-        self.server.send_message(msg)
+        errs = self.server.send_message(msg)
+        print(errs)
