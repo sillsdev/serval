@@ -803,20 +803,15 @@ namespace Serval.Client
         /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
         /// <br/>### SmtTransfer
-        /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
-        /// <br/>Typical endpoints: translate, get-word-graph, train-segment
+        /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
-        /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is
-        /// <br/>fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).
-        /// <br/>If you use a language among NLLB's supported languages,
-        /// <br/>Serval will utilize everything the NLLB-200 model already knows about that language when translating.
-        /// <br/>If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
+        /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
+        /// <br/>            
+        /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
+        /// <br/>            
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
-        /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
-        /// <br/>return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user
-        /// <br/>in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would
-        /// <br/>yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -1208,20 +1203,15 @@ namespace Serval.Client
         /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
         /// <br/>### SmtTransfer
-        /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
-        /// <br/>Typical endpoints: translate, get-word-graph, train-segment
+        /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### Nmt
-        /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is
-        /// <br/>fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).
-        /// <br/>If you use a language among NLLB's supported languages,
-        /// <br/>Serval will utilize everything the NLLB-200 model already knows about that language when translating.
-        /// <br/>If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
+        /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
+        /// <br/>            
+        /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
+        /// <br/>            
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### Echo
-        /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
-        /// <br/>return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user
-        /// <br/>in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would
-        /// <br/>yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
