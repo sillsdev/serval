@@ -22,7 +22,7 @@ class ServalAppEmailServer:
         return len(self.__password) * "*"
 
     def __enter__(self):
-        context = ssl.create_default_context()
+        context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
         self.server = smtplib.SMTP_SSL(host=self.host, port=self.port, context=context)
         self.server.login(self.sender_address, self.__password)
         return self
