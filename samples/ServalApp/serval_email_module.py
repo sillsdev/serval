@@ -9,7 +9,7 @@ class ServalAppEmailServer:
         password,
         sender_address="serval-app@languagetechnology.org",
         host="mail.languagetechnology.org",
-        port=465,
+        port=587,
     ) -> None:
         self.__password = password
         self.sender_address = sender_address
@@ -23,7 +23,10 @@ class ServalAppEmailServer:
 
     def __enter__(self):
         context = ssl.create_default_context()  # ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        self.server = smtplib.SMTP_SSL(host=self.host, port=self.port, context=context)
+        self.server = smtplib.SMTP(host=self.host, port=self.port)
+        self.server.ehlo()
+        self.server.starttls(context=context)
+        self.server.ehlo()
         self.server.login(self.sender_address, self.__password)
         return self
 
