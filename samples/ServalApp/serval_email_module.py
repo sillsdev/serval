@@ -26,6 +26,7 @@ class ServalAppEmailServer:
             ssl.create_default_context()
         )  # ssl.SSLContext(ssl.PROTOCOL_SSLv23)
         self.server = smtplib.SMTP(host=self.host, port=self.port)
+        self.server.set_debuglevel(1)
         # self.server.ehlo()
         # self.server.starttls(context=context)
         # self.server.ehlo()
