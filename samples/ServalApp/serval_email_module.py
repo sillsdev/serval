@@ -56,7 +56,6 @@ Thank you!
         msg["To"] = recipient_address
         msg["Subject"] = "Your NMT build job is complete!"
         msg.add_attachment(pretranslations_file_data, filename="translations.txt")
-        self.server.ehlo()
         self.server.starttls(context=self.context)
         self.server.ehlo()
         self.server.login(self.sender_address, self.__password)
@@ -82,7 +81,6 @@ Thank you!
         msg["From"] = self.sender_address
         msg["To"] = recipient_address
         msg["Subject"] = "Your NMT build job has failed"
-        self.server.ehlo()
         self.server.starttls(context=self.context)
         self.server.ehlo()
         self.server.login(self.sender_address, self.__password)
@@ -105,7 +103,6 @@ Thank you!
         msg["To"] = recipient_address
         msg["Subject"] = "Your NMT build job has started building!"
 
-        self.server.ehlo()
         self.server.starttls(context=self.context)
         self.server.ehlo()
         self.server.login(self.sender_address, self.__password)
