@@ -25,8 +25,11 @@ class ServalAppEmailServer:
         self.context = (
             ssl.create_default_context()
         )  # ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        self.server = smtplib.SMTP(host=self.host, port=self.port)
+        self.server = smtplib.SMTP_SSL(
+            host=self.host, port=self.port, context=self.context
+        )
         self.server.set_debuglevel(1)
+        self.server.login(self.sender_address, self.__password)
         # self.server.ehlo()
         # self.server.starttls(context=context)
         # self.server.ehlo()
@@ -57,9 +60,6 @@ Thank you!
         msg["To"] = recipient_address
         msg["Subject"] = "Your NMT build job is complete!"
         msg.add_attachment(pretranslations_file_data, filename="translations.txt")
-        self.server.starttls(context=self.context)
-        self.server.ehlo()
-        self.server.login(self.sender_address, self.__password)
         errs = self.server.send_message(msg)
         print(errs)
 
@@ -83,9 +83,6 @@ Thank you!
         msg["From"] = self.sender_address
         msg["To"] = recipient_address
         msg["Subject"] = "Your NMT build job has failed"
-        self.server.starttls(context=self.context)
-        self.server.ehlo()
-        self.server.login(self.sender_address, self.__password)
         errs = self.server.send_message(msg)
         print(errs)
 
@@ -105,9 +102,5 @@ Thank you!
         msg["From"] = self.sender_address
         msg["To"] = recipient_address
         msg["Subject"] = "Your NMT build job has started building!"
-
-        self.server.starttls(context=self.context)
-        self.server.ehlo()
-        self.server.login(self.sender_address, self.__password)
         errs = self.server.send_message(msg)
         print(errs)
