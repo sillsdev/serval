@@ -9,7 +9,7 @@ class ServalAppEmailServer:
         password,
         sender_address="serval-app@languagetechnology.org",
         host="mail.languagetechnology.org",
-        port=587,
+        port=465,
     ) -> None:
         self.__password = password
         self.sender_address = sender_address
