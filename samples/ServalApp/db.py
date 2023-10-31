@@ -38,6 +38,11 @@ class Build(Base):
         return self.__str__()
 
 
+class Param(Base):
+    __tablename__ = "params"
+    param_name = Column("param_name", String, primary_key=True)
+
+
 def create_db_if_not_exists():
     engine = create_engine("sqlite:///builds.db")
     metadata.create_all(bind=engine)

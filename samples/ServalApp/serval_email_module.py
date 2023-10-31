@@ -37,6 +37,7 @@ class ServalAppEmailServer:
         return self
 
     def __exit__(self, *args):
+        self.server.quit()
         self.server.close()
 
     def send_build_completed_email(
