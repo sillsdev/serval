@@ -80,7 +80,7 @@ def send_emails():
                             for pretranslation in pretranslations
                         ]
                     ),
-                    str(build),
+                    build,
                 )
                 session.delete(build)
                 session.commit()

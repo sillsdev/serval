@@ -1,6 +1,10 @@
 import smtplib
 import ssl
-from email.message import EmailMessage
+from email.mime.application import MIMEApplication
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.utils import formatdate
+from db import Build
 
 
 class ServalAppEmailServer:
@@ -9,7 +13,7 @@ class ServalAppEmailServer:
         password,
         sender_address="serval-app@languagetechnology.org",
         host="mail.languagetechnology.org",
-        port=465,
+        port=587,
     ) -> None:
         self.__password = password
         self.sender_address = sender_address
@@ -22,18 +26,11 @@ class ServalAppEmailServer:
         return len(self.__password) * "*"
 
     def __enter__(self):
-        self.context = (
-            ssl.create_default_context()
-        )  # ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        self.server = smtplib.SMTP_SSL(
-            host=self.host, port=self.port, context=self.context
-        )
+        # self.context = ssl.create_default_context()
+        self.server = smtplib.SMTP(host=self.host, port=self.port)
         self.server.set_debuglevel(1)
+        self.server.starttls()
         self.server.login(self.sender_address, self.__password)
-        # self.server.ehlo()
-        # self.server.starttls(context=context)
-        # self.server.ehlo()
-        # self.server.login(self.sender_address, self.__password)
         return self
 
     def __exit__(self, *args):
@@ -41,11 +38,13 @@ class ServalAppEmailServer:
         self.server.close()
 
     def send_build_completed_email(
-        self, recipient_address: str, pretranslations_file_data: str, build_info: str
+        self, recipient_address: str, pretranslations_file_data: str, build: Build
     ):
-        msg = EmailMessage()
-        msg.set_content(
-            f"""Hi!
+        build_info = str(build)
+        msg = MIMEMultipart()
+        msg.attach(
+            MIMEText(
+                f"""Hi!
 
 Your NMT engine has completed building. Attached are the \
     translations of untranslated source text in the files you included.
@@ -56,20 +55,25 @@ Thank you!
 
 {build_info}
 """
+            )
         )
         msg["From"] = self.sender_address
         msg["To"] = recipient_address
+        msg["Date"] = formatdate(localtime=True)
         msg["Subject"] = "Your NMT build job is complete!"
-        msg.add_attachment(pretranslations_file_data, filename="translations.txt")
+        part = MIMEApplication(pretranslations_file_data, Name=f"{build.name}.txt")
+        part["Content-Disposition"] = f'attachment; filename="{build.name}.txt"'
+        msg.attach(part)
         errs = self.server.send_message(msg)
         print(errs)
 
     def send_build_faulted_email(
         self, recipient_address: str, build_info: str, error=""
     ):
-        msg = EmailMessage()
-        msg.set_content(
-            f"""Hi!
+        msg = MIMEMultipart()
+        msg.attach(
+            MIMEText(
+                f"""Hi!
 
 Your NMT engine has failed to build{" with the following error message: " + error if error != "" else ""}. \
     Please make sure the information you specified is correct and try again after a while.
@@ -80,16 +84,17 @@ Thank you!
 
 {build_info}
 """
+            )
         )
         msg["From"] = self.sender_address
         msg["To"] = recipient_address
+        msg["Date"] = formatdate(localtime=True)
         msg["Subject"] = "Your NMT build job has failed"
         errs = self.server.send_message(msg)
         print(errs)
 
     def send_build_started_email(self, recipient_address: str, build_info: str):
-        msg = EmailMessage()
-        msg.set_content(
+        msg = MIMEText(
             f"""Hi!
 
 Your NMT engine has started building. We will contact you when it is complete.
@@ -102,6 +107,7 @@ Thank you!
         )
         msg["From"] = self.sender_address
         msg["To"] = recipient_address
+        msg["Date"] = formatdate(localtime=True)
         msg["Subject"] = "Your NMT build job has started building!"
         errs = self.server.send_message(msg)
         print(errs)
