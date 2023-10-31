@@ -159,7 +159,6 @@ if not st.session_state.get("authorized", False):
         st.session_state["client_secret"] = st.text_input(
             label="Client Secret", type="password"
         )
-        logger.info("HERE_")
         if st.form_submit_button("Authorize"):
             try:
                 st.session_state["serval_auth"] = ServalBearerAuth(
