@@ -23,3 +23,10 @@ spec:
                 name: serval-api
                 port:
                   number: 80
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: default-http-backend
+                port:
+                  number: 80
