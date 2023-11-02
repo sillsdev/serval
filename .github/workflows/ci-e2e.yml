@@ -39,24 +39,25 @@ jobs:
 
       - name: Get Machine
         if: steps.find_matching_branch.outcome != 'success'
-        run: cd .. && mkdir machine_testing_dir && cd machine_testing_dir && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../../serval && dotnet build && export MACHINE_TESTING_DIR="../machine_testing_dir/machine" #separate repos to guarantee failures when grpc or data access is not up to date
+        run: cd .. && mkdir machine_testing_dir && cd machine_testing_dir && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../../serval && dotnet build && export MACHINE_TESTING_DIR="../machine_testing_dir/machine" && docker compose -f "docker-compose.yml" up -d && sleep 20 #separate repos to guarantee failures when grpc or data access is not up to date
 
       - name: Start containers
-        run:  echo $MACHINE_TESTING_DIR #&& docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+        if: steps.find_matching_branch.outcome == 'success'
+        run:  docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
-      # - name: Debug network
-      #   run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+      - name: Debug network
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
-      # - name: Pre-Test
-      #   run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
+      - name: Pre-Test
+        run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
 
-      # - name: Test
-      #   run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
+      - name: Test
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
 
-      # - name: Debug network (Post test)
-      #   if: ${{ failure() }}
-      #   run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+      - name: Debug network (Post test)
+        if: ${{ failure() }}
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
-      # - name: Stop containers
-      #   if: ${{ success() || failure() }}
-      #   run: docker compose down
+      - name: Stop containers
+        if: ${{ success() || failure() }}
+        run: docker compose down
