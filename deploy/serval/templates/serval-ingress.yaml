@@ -27,6 +27,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: non-existant-service-to-be-a-dead-end
+                name: default-http-backend
                 port:
                   number: 80
