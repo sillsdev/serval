@@ -12,7 +12,7 @@ class ServalAppEmailServer:
         self,
         password,
         sender_address="serval-app@languagetechnology.org",
-        host="mail.languagetechnology.org",
+        host="gator4145.hostgator.com",  # "mail.languagetechnology.org",
         port=587,
     ) -> None:
         self.__password = password
