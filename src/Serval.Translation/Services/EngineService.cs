@@ -191,6 +191,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         try
         {
             Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
+            Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
             var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
             var request = new StartBuildRequest
             {
@@ -209,6 +210,12 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                                 pretranslateCorpus.TextIds is null || pretranslateCorpus.TextIds.Count == 0;
                             if (pretranslateCorpus.TextIds is not null)
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
+                        }
+                        if (trainOn?.TryGetValue(c.Id, out TrainingCorpus? trainingCorpus) ?? false)
+                        {
+                            corpus.TrainOnAll = trainingCorpus.TextIds is null || trainingCorpus.TextIds.Count == 0;
+                            if (trainingCorpus.TextIds is not null)
+                                corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
                         }
                         return corpus;
                     })
