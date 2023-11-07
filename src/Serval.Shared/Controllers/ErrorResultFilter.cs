@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Serval.Shared.Controllers
 {
-    public class ErrorResultFilter : ResultFilterAttribute
+    public class ErrorResultFilter : IAlwaysRunResultFilter
     {
         private readonly ILogger _logger;
 
@@ -12,7 +12,9 @@ namespace Serval.Shared.Controllers
             _logger = loggerFactory.CreateLogger<ErrorResultFilter>();
         }
 
-        public override Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+        public void OnResultExecuted(ResultExecutedContext context) { }
+
+        public void OnResultExecuting(ResultExecutingContext context)
         {
             if ((context.Result is ObjectResult r) && (r.StatusCode >= 400))
             {
@@ -20,7 +22,6 @@ namespace Serval.Shared.Controllers
                     $"Client {((Controller)context.Controller).User.Identity?.Name?.ToString()} made request:\n {JsonSerializer.Serialize(((Controller)context.Controller).ControllerContext.RouteData.Values, new JsonSerializerOptions { WriteIndented = true })}.\n Serval responded with code {r.StatusCode}. Trace: {Activity.Current?.Id}"
                 );
             }
-            return base.OnResultExecutionAsync(context, next);
         }
     }
 }
