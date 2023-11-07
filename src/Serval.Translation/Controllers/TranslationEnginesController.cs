@@ -1,4 +1,6 @@
-﻿namespace Serval.Translation.Controllers;
+﻿using System.Net.Sockets;
+
+namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
@@ -998,10 +1000,10 @@ public class TranslationEnginesController : ServalControllerBase
     private static Build Map(Engine engine, TranslationBuildConfigDto source)
     {
         var build = new Build { EngineRef = engine.Id, Name = source.Name };
+        var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
         if (source.Pretranslate != null)
         {
             var pretranslateCorpora = new List<PretranslateCorpus>();
-            var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
             foreach (PretranslateCorpusConfigDto ptcc in source.Pretranslate)
             {
                 if (!corpusIds.Contains(ptcc.CorpusId))
@@ -1012,6 +1014,17 @@ public class TranslationEnginesController : ServalControllerBase
                 );
             }
             build.Pretranslate = pretranslateCorpora;
+        }
+        if (source.TrainOn != null)
+        {
+            var trainOnCorpora = new List<TrainingCorpus>();
+            foreach (TrainingCorpusConfigDto tcc in source.TrainOn)
+            {
+                if (!corpusIds.Contains(tcc.CorpusId))
+                    throw new InvalidOperationException($"The corpus {tcc.CorpusId} is not valid.");
+                trainOnCorpora.Add(new TrainingCorpus { CorpusRef = tcc.CorpusId, TextIds = tcc.TextIds?.ToList() });
+            }
+            build.TrainOn = trainOnCorpora;
         }
         try
         {
@@ -1061,6 +1074,7 @@ public class TranslationEnginesController : ServalControllerBase
                 Id = source.EngineRef,
                 Url = _urlService.GetUrl("GetTranslationEngine", new { id = source.EngineRef })
             },
+            TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             Pretranslate = source.Pretranslate?.Select(s => Map(source.EngineRef, s)).ToList(),
             Step = source.Step,
             PercentCompleted = source.PercentCompleted,
@@ -1075,6 +1089,19 @@ public class TranslationEnginesController : ServalControllerBase
     private PretranslateCorpusDto Map(string engineId, PretranslateCorpus source)
     {
         return new PretranslateCorpusDto
+        {
+            Corpus = new ResourceLinkDto
+            {
+                Id = source.CorpusRef,
+                Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
+            },
+            TextIds = source.TextIds
+        };
+    }
+
+    private TrainingCorpusDto Map(string engineId, TrainingCorpus source)
+    {
+        return new TrainingCorpusDto
         {
             Corpus = new ResourceLinkDto
             {

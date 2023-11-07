@@ -3,6 +3,7 @@
 public class TranslationBuildConfigDto
 {
     public string? Name { get; set; }
+    public IList<TrainingCorpusConfigDto>? TrainOn { get; set; }
     public IList<PretranslateCorpusConfigDto>? Pretranslate { get; set; }
 
     /// <example>
