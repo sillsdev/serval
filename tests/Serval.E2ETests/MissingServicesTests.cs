@@ -61,26 +61,15 @@ namespace Serval.E2ETests
 
         [Test]
         [Category("AWSNotWorking")]
-        public void UseMissingAWSAsync()
+        public async Task UseMissingAWSAsync()
         {
-            Assert.ThrowsAsync<ServalApiException>(async () =>
-            {
-                string engineId = await _helperClient!.CreateNewEngine("Nmt", "es", "en", "NMT1");
-                var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
-                await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
-                var cId = await _helperClient.AddTextCorpusToEngine(
-                    engineId,
-                    new string[] { "3JN.txt" },
-                    "es",
-                    "en",
-                    true
-                );
-                await _helperClient.BuildEngine(engineId);
-                IList<TranslationBuild>? builds = await _helperClient.translationEnginesClient.GetAllBuildsAsync(
-                    engineId
-                );
-                Assert.That(builds.First().State, Is.EqualTo(JobState.Faulted));
-            });
+            string engineId = await _helperClient!.CreateNewEngine("Nmt", "es", "en", "NMT1");
+            var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
+            await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
+            await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
+            await _helperClient.BuildEngine(engineId);
+            IList<TranslationBuild>? builds = await _helperClient.translationEnginesClient.GetAllBuildsAsync(engineId);
+            Assert.That(builds.First().State, Is.EqualTo(JobState.Faulted));
         }
 
         [Test]
