@@ -217,7 +217,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                             if (trainingCorpus.TextIds is not null)
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
                         }
-                        else if (trainOn is not null && trainOn.Count == 0)
+                        else if (trainOn is null)
                         {
                             corpus.TrainOnAll = true;
                         }
