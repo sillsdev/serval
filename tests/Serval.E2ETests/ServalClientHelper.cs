@@ -32,8 +32,7 @@ public class ServalClientHelper
         TranslationBuildConfig = new TranslationBuildConfig
         {
             Pretranslate = new List<PretranslateCorpusConfig>(),
-            Options = "{\"max_steps\":10}",
-            TrainOn = new List<TrainingCorpusConfig>()
+            Options = "{\"max_steps\":10}"
         };
     }
 
@@ -87,7 +86,6 @@ public class ServalClientHelper
             }
         }
         TranslationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
-        TranslationBuildConfig.TrainOn = new List<TrainingCorpusConfig>();
         EnginePerUser.Clear();
     }
 
