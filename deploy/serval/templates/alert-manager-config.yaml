@@ -17,9 +17,14 @@ spec:
           tlsConfig: {}
           to: {{ .Values.emailsToAlert }}
       name: alert-serval
+    - name: 'null'
   route:
     groupBy: []
     groupInterval: 5m
     groupWait: 10s
     receiver: alert-serval
     repeatInterval: 4h
+    routes:
+    - matchers:
+        - alertname =~ "KubeQuotaAlmostFull|KubeQuotaFullyUsed|InfoInhibitor|Watchdog"
+      receiver: 'null'
