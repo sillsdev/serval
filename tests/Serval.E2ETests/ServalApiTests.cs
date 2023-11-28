@@ -356,34 +356,37 @@ public class ServalApiTests
     public async Task ParatextProjectNmtJobAsync()
     {
         await _helperClient!.ClearEngines();
-        DataFile file = await _helperClient.dataFilesClient.CreateAsync(
+        DataFile file1 = await _helperClient.dataFilesClient.CreateAsync(
             new FileParameter(data: File.OpenRead("../../../data/TestProject.zip")),
             FileFormat.Paratext
         );
-        string engineId = await _helperClient.CreateNewEngine("Nmt", "en", "es", "NMT4");
-        await _helperClient.AddTextCorpusToEngine(
-            engineId,
-            new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
-            "en",
-            "es",
-            false
+        DataFile file2 = await _helperClient.dataFilesClient.CreateAsync(
+            new FileParameter(data: File.OpenRead("../../../data/TestProjectTarget.zip")),
+            FileFormat.Paratext
         );
+        string engineId = await _helperClient.CreateNewEngine("Nmt", "en", "sbp", "NMT4");
+
         TranslationCorpus corpus = await _helperClient.translationEnginesClient.AddCorpusAsync(
             engineId,
             new TranslationCorpusConfig
             {
                 SourceLanguage = "en",
-                TargetLanguage = "es",
+                TargetLanguage = "sbp",
                 SourceFiles = new TranslationCorpusFileConfig[]
                 {
-                    new TranslationCorpusFileConfig { FileId = file.Id }
+                    new TranslationCorpusFileConfig { FileId = file1.Id }
                 },
-                TargetFiles = new TranslationCorpusFileConfig[] { }
+                TargetFiles = new TranslationCorpusFileConfig[]
+                {
+                    new TranslationCorpusFileConfig { FileId = file2.Id }
+                }
             }
         );
         _helperClient.TranslationBuildConfig.Pretranslate!.Add(
             new PretranslateCorpusConfig { CorpusId = corpus.Id, TextIds = new string[] { "JHN", "REV" } }
         );
+        _helperClient.TranslationBuildConfig.Options = "{\"max_steps\":10, \"use_key_terms\":true}";
+
         await _helperClient.BuildEngine(engineId);
         Assert.That(
             (await _helperClient.translationEnginesClient.GetAllBuildsAsync(engineId)).First().State
