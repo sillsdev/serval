@@ -776,7 +776,8 @@ public class TranslationEnginesController : ServalControllerBase
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
     /// A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
-    /// number of training iterations in order to reduce turnaround time for testing purposes.
+    /// number of training iterations in order to reduce turnaround time for testing purposes. See [this](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing)
+    /// for using `"options"` to include Paratext key terms data in training.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
