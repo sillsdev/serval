@@ -889,7 +889,9 @@ namespace Serval.Client
         /// Incrementally train a translation engine with a segment pair
         /// </summary>
         /// <remarks>
-        /// What does `SentenceStart` do?
+        /// A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
+        /// <br/>that should be set to true if this segment pair forms the beginning of a sentence. (This information
+        /// <br/>will be used to reconstruct proper capitalization when training/inferencing).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="segmentPair">The segment pair</param>
@@ -2000,7 +2002,9 @@ namespace Serval.Client
         /// Incrementally train a translation engine with a segment pair
         /// </summary>
         /// <remarks>
-        /// What does `SentenceStart` do?
+        /// A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
+        /// <br/>that should be set to true if this segment pair forms the beginning of a sentence. (This information
+        /// <br/>will be used to reconstruct proper capitalization when training/inferencing).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="segmentPair">The segment pair</param>
