@@ -1017,7 +1017,8 @@ namespace Serval.Client
         /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
-        /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
+        /// <br/>number of training iterations in order to reduce turnaround time for testing purposes. See [this](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing)
+        /// <br/>for using `"options"` to include Paratext key terms data in training.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -2920,7 +2921,8 @@ namespace Serval.Client
         /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
-        /// <br/>number of training iterations in order to reduce turnaround time for testing purposes.
+        /// <br/>number of training iterations in order to reduce turnaround time for testing purposes. See [this](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing)
+        /// <br/>for using `"options"` to include Paratext key terms data in training.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
