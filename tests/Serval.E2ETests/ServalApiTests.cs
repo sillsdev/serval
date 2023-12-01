@@ -1,3 +1,8 @@
+using System.IO.Compression;
+using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
+using DnsClient.Protocol;
+
 namespace Serval.E2ETests;
 
 [TestFixture]
@@ -356,14 +361,21 @@ public class ServalApiTests
     public async Task ParatextProjectNmtJobAsync()
     {
         await _helperClient!.ClearEngines();
+        ZipFile.CreateFromDirectory("../../../data/TestProject", "TestProject.zip");
+        ZipFile.CreateFromDirectory("../../../data/TestProjectTarget", "TestProjectTarget.zip");
+
         DataFile file1 = await _helperClient.dataFilesClient.CreateAsync(
-            new FileParameter(data: File.OpenRead("../../../data/TestProject.zip")),
+            new FileParameter(data: File.OpenRead("TestProject.zip")),
             FileFormat.Paratext
         );
         DataFile file2 = await _helperClient.dataFilesClient.CreateAsync(
-            new FileParameter(data: File.OpenRead("../../../data/TestProjectTarget.zip")),
+            new FileParameter(data: File.OpenRead("TestProjectTarget.zip")),
             FileFormat.Paratext
         );
+
+        File.Delete("TestProject.zip");
+        File.Delete("TestProjectTarget.zip");
+
         string engineId = await _helperClient.CreateNewEngine("Nmt", "en", "sbp", "NMT4");
 
         TranslationCorpus corpus = await _helperClient.translationEnginesClient.AddCorpusAsync(

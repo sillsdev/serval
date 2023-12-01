@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BiblicalTermsList>
+  <Term Id="אַדְמָה">
+    <Transliteration>ʾadmāh</Transliteration>
+    <Domain>settlement</Domain>
+    <Language>hebrew</Language>
+    <Category>PN</Category>
+    <Gloss>Admah</Gloss>
+    <References>
+      <Verse>00101001900</Verse>
+      <Verse>00101400200</Verse>
+      <Verse>00101400800</Verse>
+      <Verse>00502902300</Verse>
+      <Verse>02801100800</Verse>
+    </References>
+  </Term>
+  <Term Id="עַבְדָּא-2">
+    <Transliteration>ʿabdāʾ-2</Transliteration>
+    <Domain>person</Domain>
+    <Language>hebrew</Language>
+    <Category>PN</Category>
+    <Gloss>Abda</Gloss>
+    <References>
+      <Verse>01601101700</Verse>
+    </References>
+  </Term>
+  <Term Id="אֱלֹהִים">
+    <Gloss>God</Gloss>
+  </Term>
+  <Versification>English</Versification>
+</BiblicalTermsList>
