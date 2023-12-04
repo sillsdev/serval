@@ -356,28 +356,27 @@ public class ServalApiTests
     public async Task ParatextProjectNmtJobAsync()
     {
         await _helperClient!.ClearEngines();
+        string tempDirectory = Path.GetTempPath();
         DataFile file1,
             file2;
         try
         {
-            Directory.CreateDirectory("tmp_e2e");
-            ZipFile.CreateFromDirectory("../../../data/TestProject", "tmp_e2e/TestProject.zip");
-            ZipFile.CreateFromDirectory("../../../data/TestProjectTarget", "tmp_e2e/TestProjectTarget.zip");
+            ZipFile.CreateFromDirectory("../../../data/TestProject", $"{tempDirectory}/TestProject.zip");
+            ZipFile.CreateFromDirectory("../../../data/TestProjectTarget", $"{tempDirectory}/TestProjectTarget.zip");
 
             file1 = await _helperClient.dataFilesClient.CreateAsync(
-                new FileParameter(data: File.OpenRead("tmp_e2e/TestProject.zip")),
+                new FileParameter(data: File.OpenRead($"{tempDirectory}/TestProject.zip")),
                 FileFormat.Paratext
             );
             file2 = await _helperClient.dataFilesClient.CreateAsync(
-                new FileParameter(data: File.OpenRead("tmp_e2e/TestProjectTarget.zip")),
+                new FileParameter(data: File.OpenRead($"{tempDirectory}/TestProjectTarget.zip")),
                 FileFormat.Paratext
             );
         }
         finally
         {
-            File.Delete("tmp_e2e/TestProject.zip");
-            File.Delete("tmp_e2e/TestProjectTarget.zip");
-            Directory.Delete("tmp_e2e");
+            File.Delete($"{tempDirectory}/TestProject.zip");
+            File.Delete($"{tempDirectory}/TestProjectTarget.zip");
         }
 
         string engineId = await _helperClient.CreateNewEngine("Nmt", "en", "sbp", "NMT4");
