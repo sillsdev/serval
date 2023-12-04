@@ -361,22 +361,28 @@ public class ServalApiTests
             file2;
         try
         {
-            ZipFile.CreateFromDirectory("../../../data/TestProject", $"{tempDirectory}/TestProject.zip");
-            ZipFile.CreateFromDirectory("../../../data/TestProjectTarget", $"{tempDirectory}/TestProjectTarget.zip");
+            ZipFile.CreateFromDirectory(
+                Path.Combine("..", "..", "..", "data", "TestProject"),
+                Path.Combine(tempDirectory, "TestProject.zip")
+            );
+            ZipFile.CreateFromDirectory(
+                Path.Combine("..", "..", "..", "data", "TestProjectTarget"),
+                Path.Combine(tempDirectory, "TestProjectTarget.zip")
+            );
 
             file1 = await _helperClient.dataFilesClient.CreateAsync(
-                new FileParameter(data: File.OpenRead($"{tempDirectory}/TestProject.zip")),
+                new FileParameter(data: File.OpenRead(Path.Combine(tempDirectory, "TestProject.zip"))),
                 FileFormat.Paratext
             );
             file2 = await _helperClient.dataFilesClient.CreateAsync(
-                new FileParameter(data: File.OpenRead($"{tempDirectory}/TestProjectTarget.zip")),
+                new FileParameter(data: File.OpenRead(Path.Combine(tempDirectory, "TestProjectTarget.zip"))),
                 FileFormat.Paratext
             );
         }
         finally
         {
-            File.Delete($"{tempDirectory}/TestProject.zip");
-            File.Delete($"{tempDirectory}/TestProjectTarget.zip");
+            File.Delete(Path.Combine(tempDirectory, "TestProject.zip"));
+            File.Delete(Path.Combine(tempDirectory, "TestProjectTarget.zip"));
         }
 
         string engineId = await _helperClient.CreateNewEngine("Nmt", "en", "sbp", "NMT4");
