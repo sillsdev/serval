@@ -1,8 +1,3 @@
-using System.IO.Compression;
-using System.Reflection.PortableExecutable;
-using System.Runtime.InteropServices;
-using DnsClient.Protocol;
-
 namespace Serval.E2ETests;
 
 [TestFixture]
