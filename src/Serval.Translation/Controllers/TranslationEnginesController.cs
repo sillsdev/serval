@@ -775,6 +775,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
     ///
     /// Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
+    /// Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
+    /// To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
     /// A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
