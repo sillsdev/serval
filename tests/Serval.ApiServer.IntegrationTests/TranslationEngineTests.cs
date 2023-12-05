@@ -929,6 +929,7 @@ public class TranslationEngineTests
     {
         ITranslationEnginesClient client = _env!.CreateClient(scope);
         PretranslateCorpusConfig ptcc;
+        TrainingCorpusConfig tcc;
         TranslationBuildConfig tbc;
         switch (expectedStatusCode)
         {
@@ -939,7 +940,17 @@ public class TranslationEngineTests
                     CorpusId = addedCorpus.Id,
                     TextIds = new List<string> { "all" }
                 };
-                tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
+                tcc = new()
+                {
+                    CorpusId = addedCorpus.Id,
+                    TextIds = new List<string> { "all" }
+                };
+                tbc = new TranslationBuildConfig
+                {
+                    Pretranslate = new List<PretranslateCorpusConfig> { ptcc },
+                    TrainOn = new List<TrainingCorpusConfig> { tcc },
+                    Options = "{\"max_steps\":10}"
+                };
                 TranslationBuild resultAfterStart;
                 Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -1091,6 +1102,17 @@ public class TranslationEngineTests
         });
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(422));
+    }
+
+    [Test]
+    [TestCase("SmtTransfer")]
+    [TestCase("Nmt")]
+    [TestCase("Echo")]
+    public async Task GetQueueAsync(string engineType)
+    {
+        ITranslationEnginesClient client = _env!.CreateClient();
+        Client.Queue queue = await client.GetQueueAsync(engineType);
+        Assert.That(queue.Size, Is.EqualTo(0));
     }
 
     [TearDown]
