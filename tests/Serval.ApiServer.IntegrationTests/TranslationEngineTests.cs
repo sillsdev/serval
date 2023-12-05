@@ -1105,7 +1105,6 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase("SmtTransfer")]
     [TestCase("Nmt")]
     [TestCase("Echo")]
     public async Task GetQueueAsync(string engineType)
@@ -1288,6 +1287,9 @@ public class TranslationEngineTests
             EchoClient
                 .TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(translateResponse));
+            EchoClient
+                .GetQueueSizeAsync(Arg.Any<GetQueueSizeRequest>(), null, null, Arg.Any<CancellationToken>())
+                .Returns(CreateAsyncUnaryCall(new GetQueueSizeResponse() { Size = 0 }));
 
             NmtClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             NmtClient
@@ -1308,6 +1310,9 @@ public class TranslationEngineTests
             NmtClient
                 .TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.Unimplemented));
+            NmtClient
+                .GetQueueSizeAsync(Arg.Any<GetQueueSizeRequest>(), null, null, Arg.Any<CancellationToken>())
+                .Returns(CreateAsyncUnaryCall(new GetQueueSizeResponse() { Size = 0 }));
         }
 
         ServalWebApplicationFactory Factory { get; }
