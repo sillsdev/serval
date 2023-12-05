@@ -949,7 +949,8 @@ public class TranslationEngineTests
                 {
                     Pretranslate = new List<PretranslateCorpusConfig> { ptcc },
                     TrainOn = new List<TrainingCorpusConfig> { tcc },
-                    Options = "{\"max_steps\":10}"
+                    Options =
+                        "{\"max_steps\":10, \"use_key_terms\":false, \"some_double\":10.5, \"some_string\":\"string\"}"
                 };
                 TranslationBuild resultAfterStart;
                 Assert.ThrowsAsync<ServalApiException>(async () =>
