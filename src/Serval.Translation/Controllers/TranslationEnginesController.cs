@@ -340,7 +340,9 @@ public class TranslationEnginesController : ServalControllerBase
     /// Incrementally train a translation engine with a segment pair
     /// </summary>
     /// <remarks>
-    /// What does `SentenceStart` do?
+    /// A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
+    /// that should be set to true if this segment pair forms the beginning of a sentence. (This information
+    /// will be used to reconstruct proper capitalization when training/inferencing).
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="segmentPair">The segment pair</param>
@@ -773,6 +775,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
     ///
     /// Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
+    /// Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
+    /// To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
     /// A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum

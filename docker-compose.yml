@@ -87,7 +87,7 @@ services:
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Queue=lambert_24gb
-      - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:latest
+      - ClearML__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
@@ -130,7 +130,7 @@ services:
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Queue=lambert_24gb
-      - ClearML__DockerImage=ghcr.io/sillsdev/machine.py:latest
+      - ClearML__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
