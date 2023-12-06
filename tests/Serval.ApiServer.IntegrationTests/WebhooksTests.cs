@@ -29,6 +29,7 @@ public class WebhooksTests
 
     [Test]
     [TestCase(null, 200)] //null gives all scope privileges
+    [TestCase(new string[] { Scopes.ReadFiles }, 403)] //Arbitrary unrelated privilege
     public async Task GetAllWebhooksAsync(IEnumerable<string>? scope, int expectedStatusCode)
     {
         WebhooksClient client = _env!.CreateClient(scope);
@@ -37,6 +38,14 @@ public class WebhooksTests
             case 200:
                 Webhook result = (await client.GetAllAsync()).First();
                 Assert.That(result.Id, Is.EqualTo(ID));
+                break;
+            case 403:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.GetAllAsync();
+                });
+                Assert.That(ex, Is.Not.Null);
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -47,6 +56,7 @@ public class WebhooksTests
     [Test]
     [TestCase(null, 200, ID)] //null gives all scope privileges
     [TestCase(null, 404, DOES_NOT_EXIST_ID)]
+    [TestCase(new string[] { Scopes.ReadFiles }, 403, ID)] //Arbitrary unrelated privilege
     public async Task GetWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
     {
         WebhooksClient client = _env!.CreateClient(scope);
@@ -56,6 +66,7 @@ public class WebhooksTests
                 Webhook result = await client.GetAsync(webhookId);
                 Assert.That(result.Id, Is.EqualTo(ID));
                 break;
+            case 403:
             case 404:
                 var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -72,6 +83,7 @@ public class WebhooksTests
     [Test]
     [TestCase(null, 200, ID)] //null gives all scope privileges
     [TestCase(null, 404, DOES_NOT_EXIST_ID)]
+    [TestCase(new string[] { Scopes.ReadFiles }, 403, ID)] //Arbitrary unrelated privilege
     public async Task DeleteWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
     {
         WebhooksClient client = _env!.CreateClient(scope);
@@ -86,6 +98,7 @@ public class WebhooksTests
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(404));
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -101,6 +114,7 @@ public class WebhooksTests
 
     [Test]
     [TestCase(null, 201)]
+    [TestCase(new string[] { Scopes.ReadFiles }, 403)] //Arbitrary unrelated privilege
     public async Task CreateWebhookAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
         WebhooksClient client = _env!.CreateClient(scope);
@@ -118,6 +132,21 @@ public class WebhooksTests
                 Webhook resultAfterCreate = await client.GetAsync(result.Id);
                 Assert.That(resultAfterCreate.PayloadUrl, Is.EqualTo(result.PayloadUrl));
 
+                break;
+            case 403:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    Webhook result = await client.CreateAsync(
+                        new WebhookConfig
+                        {
+                            PayloadUrl = "/a/different/url",
+                            Secret = "M0rEs3CreTz#",
+                            Events = { WebhookEvent.TranslationBuildStarted }
+                        }
+                    );
+                });
+                Assert.That(ex, Is.Not.Null);
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");

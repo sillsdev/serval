@@ -50,26 +50,26 @@ jobs:
 
       #Mongo
       - name: Test Working Mongo
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory=MongoWorking"
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory=MongoWorking" --collect:"Xplat Code Coverage"
 
       - name: Kill Mongo
         run: docker stop serval-mongo-1
 
       - name: Test Not Working Mongo
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory=MongoNotWorking"
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory=MongoNotWorking" --collect:"Xplat Code Coverage"
 
       - name: Restart Mongo
         run: docker start serval-mongo-1 && sleep 20
 
       #Engine Server
       - name: Test Working Engine Server
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerWorking"
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerWorking" --collect:"Xplat Code Coverage"
 
       - name: Kill Engine Server
         run: docker stop machine-engine-cntr
 
       - name: Test Not Working EngineServer
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerNotWorking"
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerNotWorking" --collect:"Xplat Code Coverage"
 
       - name: Restart Engine Server
         run: docker start machine-engine-cntr && sleep 5
@@ -81,7 +81,7 @@ jobs:
           ClearML_SecretKey: "not_the_right_key"
 
       - name: Test Not Working ClearML
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory=ClearMLNotWorking"
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory=ClearMLNotWorking" --collect:"Xplat Code Coverage"
         env:
           ClearML_SecretKey: "not_the_right_key"
 
@@ -92,9 +92,15 @@ jobs:
           AWS_SECRET_ACCESS_KEY: "not_the_right_key"
 
       - name: Test Not Working AWS
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory=AWSNotWorking"
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory=AWSNotWorking" --collect:"Xplat Code Coverage"
         env:
           AWS_SECRET_ACCESS_KEY: "not_the_right_key"
+
+      #Coverage export
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       #Clean up
       - name: Debug network (Post test)
