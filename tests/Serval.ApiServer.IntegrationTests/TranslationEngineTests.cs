@@ -276,6 +276,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task TranslateSegmentWithEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -308,6 +309,7 @@ public class TranslationEngineTests
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -325,6 +327,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task TranslateNSegmentWithEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -362,6 +365,7 @@ public class TranslationEngineTests
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -379,6 +383,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task GetWordGraphForSegmentByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -411,6 +416,7 @@ public class TranslationEngineTests
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -428,6 +434,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task TrainEngineByIdOnSegmentPairAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -461,6 +468,7 @@ public class TranslationEngineTests
                 });
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -477,6 +485,7 @@ public class TranslationEngineTests
     [Test]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 201, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task AddCorpusToEngineByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
         ITranslationEnginesClient client = _env!.CreateClient(scope);
@@ -498,6 +507,7 @@ public class TranslationEngineTests
                     Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
                 });
                 break;
+            case 403:
             case 404:
                 var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -527,6 +537,7 @@ public class TranslationEngineTests
         404,
         DOES_NOT_EXIST_ENGINE_ID
     )]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task UpdateCorpusByIdForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -557,6 +568,7 @@ public class TranslationEngineTests
                 });
                 break;
             case 400:
+            case 403:
             case 404:
                 var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -590,6 +602,7 @@ public class TranslationEngineTests
         404,
         DOES_NOT_EXIST_ENGINE_ID
     )]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task GetAllCorporaForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -610,6 +623,7 @@ public class TranslationEngineTests
                     Assert.That(resultAfterAdd.TargetLanguage, Is.EqualTo(result.TargetLanguage));
                 });
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -629,6 +643,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID, true)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task GetCorpusByIdForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -656,6 +671,7 @@ public class TranslationEngineTests
                     Assert.That(resultAfterAdd.TargetLanguage, Is.EqualTo(result.TargetLanguage));
                 });
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -674,6 +690,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task DeleteCorpusByIdForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -690,6 +707,7 @@ public class TranslationEngineTests
                 ICollection<TranslationCorpus> resultsAfterDelete = await client.GetAllCorporaAsync(engineId);
                 Assert.That(resultsAfterDelete, Has.Count.EqualTo(0));
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -818,6 +836,7 @@ public class TranslationEngineTests
     [Test]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, SMT_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task GetAllBuildsForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -844,6 +863,7 @@ public class TranslationEngineTests
                     Assert.That(results.First().State, Is.EqualTo(JobState.Pending));
                 });
                 break;
+            case 403:
             case 404:
                 var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -861,6 +881,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 408, SMT_ENGINE1_ID, true)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, SMT_ENGINE1_ID, false)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task GetBuildByIdForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -888,6 +909,7 @@ public class TranslationEngineTests
                     Assert.That(result.State, Is.EqualTo(JobState.Pending));
                 });
                 break;
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -925,6 +947,7 @@ public class TranslationEngineTests
         400,
         ECHO_ENGINE1_ID
     )]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task StartBuildForEngineByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
         ITranslationEnginesClient client = _env!.CreateClient(scope);
@@ -965,6 +988,7 @@ public class TranslationEngineTests
                 Assert.That(build, Is.Not.Null);
                 break;
             case 400:
+            case 403:
             case 404:
                 ptcc = new PretranslateCorpusConfig
                 {
@@ -989,6 +1013,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 408, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 204, ECHO_ENGINE1_ID, false)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID, false)] //Arbitrary unrelated privilege
     public async Task GetCurrentBuildForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -1013,6 +1038,7 @@ public class TranslationEngineTests
                 Assert.That(result.Id, Is.EqualTo(build!.Id));
                 break;
             case 204:
+            case 403:
             case 404:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -1038,6 +1064,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, ECHO_ENGINE1_ID, false)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID, false)] //Arbitrary unrelated privilege
     public async Task CancelCurrentBuildForEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
@@ -1058,6 +1085,7 @@ public class TranslationEngineTests
             case 200:
                 await client.CancelBuildAsync(engineId);
                 break;
+            case 403:
             case 404:
                 var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -1113,6 +1141,18 @@ public class TranslationEngineTests
         ITranslationEnginesClient client = _env!.CreateClient();
         Client.Queue queue = await client.GetQueueAsync(engineType);
         Assert.That(queue.Size, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void GetQueueAsync_NotAuthorized()
+    {
+        ITranslationEnginesClient client = _env!.CreateClient(new string[] { Scopes.ReadFiles });
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            Client.Queue queue = await client.GetQueueAsync("Echo");
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(403));
     }
 
     [TearDown]
