@@ -6,6 +6,7 @@ public interface IDataFileService
     Task<DataFile?> GetAsync(string id, CancellationToken cancellationToken = default);
     Task<DataFile?> GetAsync(string id, string owner, CancellationToken cancellationToken = default);
     Task CreateAsync(DataFile dataFile, Stream stream, CancellationToken cancellationToken = default);
+    Task<Stream?> ReadAsync(string id, CancellationToken cancellationToken = default);
     Task<DataFile?> UpdateAsync(string id, Stream stream, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default);
 }
