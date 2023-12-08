@@ -116,13 +116,6 @@ public class Startup
         var versions = new[] { new Version(1, 0) };
         foreach (Version version in versions)
         {
-            services.AddSwaggerGen(o =>
-            {
-                o.MapType<FileContentResult>(
-                    () => new Microsoft.OpenApi.Models.OpenApiSchema { Type = "file", Format = "binary" }
-                );
-            });
-
             services.AddSwaggerDocument(o =>
             {
                 o.SchemaType = SchemaType.Swagger2;

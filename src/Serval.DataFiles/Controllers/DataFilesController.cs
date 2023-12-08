@@ -146,7 +146,7 @@ public class DataFilesController : ServalControllerBase
     /// <response code="404">The file does not exist</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadFiles)]
-    [HttpPost("{id}/download")]
+    [HttpPost("{id}/contents")]
     [Produces("application/octet-stream")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
