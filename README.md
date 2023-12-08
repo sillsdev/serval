@@ -44,7 +44,7 @@ If using vscode, launch "DockerComb" to debug Serval and the for-testing-only Ec
 ### Development locally
 Alternatively, you can develop without containerizing Serval.
 
-Install MongoDB 6.0 as a replica set run it on localhost:27017. (You can run `docker compose -f "docker-compose.mongo.yaml" up` from the root of the serval repo to do so).
+Install MongoDB 6.0 as a replica set run it on localhost:27017. (You can run `docker compose -f docker-compose.mongo.yml up` from the root of the serval repo to do so).
 
 Make sure that the environment variable ASPNETCORE_ENVIRONMENT is set to "Development" by running `export ASPNETCORE_ENVIRONMENT=Development` or adding it to your `.bashrc`.
 
