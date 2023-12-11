@@ -1,4 +1,5 @@
 global using System.Security.Claims;
+global using System.Text;
 global using System.Text.Encodings.Web;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;

@@ -166,6 +166,67 @@ public class DataFilesTests
     }
 
     [Test]
+    [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 200, "")]
+    [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 403, ID3)]
+    [TestCase(new[] { Scopes.CreateFiles, Scopes.UpdateFiles }, 403, "")]
+    [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
+    public async Task DownloadAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
+    {
+        DataFilesClient client = _env!.CreateClient(scope);
+        ServalApiException ex;
+        string content = "This is a file.";
+        var contentBytes = Encoding.UTF8.GetBytes(content);
+
+        DataFile file;
+        using (var fs = new MemoryStream(contentBytes))
+        {
+            var fp = new FileParameter(fs);
+            file = await client.CreateAsync(fp, FileFormat.Text);
+        }
+        if (fileId == "")
+            fileId = file.Id;
+
+        switch (expectedStatusCode)
+        {
+            case 200:
+                try
+                {
+                    FileResponse downloadedFile = await client.DownloadAsync(fileId);
+                    byte[] data;
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        downloadedFile.Stream.CopyTo(memoryStream);
+                        data = memoryStream.ToArray();
+                    }
+                    Assert.That(data, Is.EqualTo(contentBytes));
+                }
+                catch (Exception e)
+                {
+                    Assert.Fail("DownloadAsync threw an exception: " + e.Message);
+                }
+                break;
+            case 400:
+                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.DownloadAsync(fileId);
+                });
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+            case 403:
+            case 404:
+                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.DownloadAsync(fileId);
+                });
+                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
     [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 200, ID1)]
     [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 400, ID1)]
     [TestCase(new[] { Scopes.UpdateFiles, Scopes.ReadFiles }, 403, ID3)]
