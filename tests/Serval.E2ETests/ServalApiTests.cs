@@ -146,10 +146,10 @@ public class ServalApiTests
             await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
             await _helperClient.StartBuildAsync(engineId);
             //Ensure that tasks are enqueued roughly in order
-            await Task.Delay(500);
+            await Task.Delay(1_000);
         }
         //Wait for at least some tasks to be queued
-        await Task.Delay(20_000);
+        await Task.Delay(40_000);
         string builds = "";
         for (int i = 0; i < NUM_ENGINES; i++)
         {
@@ -164,7 +164,10 @@ public class ServalApiTests
         TranslationBuild newestEngineCurrentBuild = await _helperClient.translationEnginesClient.GetCurrentBuildAsync(
             engineIds[NUM_ENGINES - 1]
         );
-        Assert.NotNull(newestEngineCurrentBuild.QueueDepth, JsonSerializer.Serialize(newestEngineCurrentBuild));
+        Assert.NotNull(
+            newestEngineCurrentBuild.QueueDepth,
+            JsonSerializer.Serialize(newestEngineCurrentBuild) + "|||" + builds
+        );
         Assert.Multiple(async () =>
         {
             Assert.That(newestEngineCurrentBuild.QueueDepth, Is.GreaterThan(0), message: builds);
