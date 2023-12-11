@@ -17,10 +17,9 @@ public class StatusController : ServalControllerBase
     /// Get Health
     /// </summary>
     /// <remarks>Provides an indication about the health of the API</remarks>
-    /// <response code="200">API is healthy</response>
+    /// <response code="200">The API health status</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
-    /// <response code="503">API is unhealthy or in degraded state</response>
     [Authorize(Scopes.ReadStatus)]
     [HttpGet("health")]
     [ProducesResponseType(typeof(HealthReportDto), (int)HttpStatusCode.OK)]
