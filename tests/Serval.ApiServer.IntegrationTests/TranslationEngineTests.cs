@@ -860,7 +860,7 @@ public class TranslationEngineTests
                 {
                     Assert.That(results.First().Revision, Is.EqualTo(1));
                     Assert.That(results.First().Id, Is.EqualTo(build!.Id));
-                    Assert.That(results.First().State, Is.EqualTo(JobState.Pending));
+                    Assert.That(results.First().State, Is.EqualTo(Client.JobState.Pending));
                 });
                 break;
             case 403:
@@ -906,7 +906,7 @@ public class TranslationEngineTests
                 {
                     Assert.That(result.Revision, Is.EqualTo(1));
                     Assert.That(result.Id, Is.EqualTo(build.Id));
-                    Assert.That(result.State, Is.EqualTo(JobState.Pending));
+                    Assert.That(result.State, Is.EqualTo(Client.JobState.Pending));
                 });
                 break;
             case 403:

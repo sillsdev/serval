@@ -128,7 +128,7 @@ public class DataFilesTests
                 using (var fs = new MemoryStream())
                 {
                     var fp = new FileParameter(fs);
-                    await client.CreateAsync(fp, FileFormat.Text);
+                    await client.CreateAsync(fp, Client.FileFormat.Text);
                     ICollection<DataFile> results = await client.GetAllAsync();
 
                     Assert.That(results, Has.Count.EqualTo(3)); //2 from set-up + 1 added above = 3
@@ -143,7 +143,7 @@ public class DataFilesTests
                     fp = new FileParameter(fs);
                     ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                     {
-                        await client.CreateAsync(fp, FileFormat.Text);
+                        await client.CreateAsync(fp, Client.FileFormat.Text);
                     });
                 }
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
@@ -154,7 +154,7 @@ public class DataFilesTests
                     var fp = new FileParameter(fs);
                     ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                     {
-                        await client.CreateAsync(fp, FileFormat.Text);
+                        await client.CreateAsync(fp, Client.FileFormat.Text);
                     });
                 }
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
