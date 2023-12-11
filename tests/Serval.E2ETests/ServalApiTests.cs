@@ -130,7 +130,7 @@ public class ServalApiTests
     {
         await _helperClient!.ClearEngines();
         const int NUM_ENGINES = 9;
-        const int NUM_WORKERS = 6;
+        const int NUM_WORKERS = 1;
         string[] engineIds = new string[NUM_ENGINES];
         for (int i = 0; i < NUM_ENGINES; i++)
         {
@@ -164,18 +164,8 @@ public class ServalApiTests
         TranslationBuild newestEngineCurrentBuild = await _helperClient.translationEnginesClient.GetCurrentBuildAsync(
             engineIds[NUM_ENGINES - 1]
         );
-        Assert.NotNull(
-            newestEngineCurrentBuild.QueueDepth,
-            JsonSerializer.Serialize(newestEngineCurrentBuild) + "|||" + builds
-        );
-        Assert.Multiple(async () =>
-        {
-            Assert.That(newestEngineCurrentBuild.QueueDepth, Is.GreaterThan(0), message: builds);
-            Assert.That(
-                (await _helperClient.translationEnginesClient.GetQueueAsync("Nmt")).Size,
-                Is.GreaterThanOrEqualTo(NUM_ENGINES - NUM_WORKERS)
-            );
-        });
+        int? queueDepth = newestEngineCurrentBuild.QueueDepth;
+        Queue queue = await _helperClient.translationEnginesClient.GetQueueAsync("Nmt");
         for (int i = 0; i < NUM_ENGINES; i++)
         {
             try
@@ -184,6 +174,12 @@ public class ServalApiTests
             }
             catch { }
         }
+        Assert.NotNull(queueDepth, JsonSerializer.Serialize(newestEngineCurrentBuild) + "|||" + builds);
+        Assert.Multiple(() =>
+        {
+            Assert.That(queueDepth, Is.GreaterThan(0), message: builds);
+            Assert.That(queue.Size, Is.GreaterThanOrEqualTo(NUM_ENGINES - NUM_WORKERS));
+        });
     }
 
     [Test]
