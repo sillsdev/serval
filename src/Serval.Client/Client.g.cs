@@ -1127,7 +1127,7 @@ namespace Serval.Client
         /// <br/>To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-        /// <br/>A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
+        /// <br/>A [typical use case](https://github.com/sillsdev/serval/wiki/NMT-Job-Settings) would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
         /// <br/>number of training iterations in order to reduce turnaround time for testing purposes. See [this](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing)
         /// <br/>for another use of the `"options"` parameter: excluding Paratext key terms data. (By default, Paratext key terms data will be incorporated and used for training).
         /// </remarks>
@@ -3035,7 +3035,7 @@ namespace Serval.Client
         /// <br/>To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-        /// <br/>A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
+        /// <br/>A [typical use case](https://github.com/sillsdev/serval/wiki/NMT-Job-Settings) would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
         /// <br/>number of training iterations in order to reduce turnaround time for testing purposes. See [this](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing)
         /// <br/>for another use of the `"options"` parameter: excluding Paratext key terms data. (By default, Paratext key terms data will be incorporated and used for training).
         /// </remarks>
