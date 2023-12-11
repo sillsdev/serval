@@ -1,4 +1,5 @@
-﻿global using System.Security.Claims;
+﻿global using System.Net;
+global using System.Security.Claims;
 global using System.Text;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;
@@ -18,6 +19,7 @@ global using Microsoft.IdentityModel.Tokens;
 global using NJsonSchema;
 global using NJsonSchema.Generation;
 global using NSwag;
+global using NSwag.Annotations;
 global using NSwag.AspNetCore;
 global using NSwag.Generation.Processors.Security;
 global using OpenTelemetry.Trace;
