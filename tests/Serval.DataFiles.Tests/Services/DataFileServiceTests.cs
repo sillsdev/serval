@@ -45,6 +45,37 @@ public class DataFileServiceTests
     }
 
     [Test]
+    public async Task DownloadAsync_Exists()
+    {
+        var env = new TestEnvironment();
+        env.DataFiles.Add(
+            new DataFile
+            {
+                Id = DATA_FILE_ID,
+                Name = "file1",
+                Filename = "file1.txt"
+            }
+        );
+        byte[] content = Encoding.UTF8.GetBytes("This is a file.");
+        using var fileStream = new MemoryStream(content);
+        env.FileSystem.OpenRead(Arg.Any<string>()).Returns(fileStream);
+        Stream? downloadedStream = await env.Service.ReadAsync(DATA_FILE_ID);
+        Assert.That(downloadedStream, Is.Not.Null);
+        Assert.That(new StreamReader(downloadedStream).ReadToEnd(), Is.EqualTo(content));
+    }
+
+    [Test]
+    public async Task DownloadAsync_DoesNotExists()
+    {
+        var env = new TestEnvironment();
+        byte[] content = Encoding.UTF8.GetBytes("This is a file.");
+        using var fileStream = new MemoryStream(content);
+        env.FileSystem.OpenRead(Arg.Any<string>()).Returns(fileStream);
+        Stream? downloadedStream = await env.Service.ReadAsync(DATA_FILE_ID);
+        Assert.That(downloadedStream, Is.Null);
+    }
+
+    [Test]
     public async Task UpdateAsync_Exists()
     {
         var env = new TestEnvironment();

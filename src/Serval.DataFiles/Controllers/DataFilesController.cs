@@ -136,6 +136,39 @@ public class DataFilesController : ServalControllerBase
     }
 
     /// <summary>
+    /// Download a file
+    /// </summary>
+    /// <param name="id">The unique identifier for the file</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The file exists</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
+    /// <response code="404">The file does not exist</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    [Authorize(Scopes.ReadFiles)]
+    [HttpPost("{id}/contents")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult> DownloadAsync([NotNull] string id, CancellationToken cancellationToken)
+    {
+        DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
+        if (dataFile == null)
+            return NotFound();
+        if (!await AuthorizeIsOwnerAsync(dataFile))
+            return Forbid();
+
+        Stream? stream = await _dataFileService.ReadAsync(id, cancellationToken);
+        if (stream == null)
+            return NotFound();
+
+        return File(stream, "application/octet-stream", dataFile.Name);
+    }
+
+    /// <summary>
     /// Update an existing file
     /// </summary>
     /// <param name="id">The existing file's unique id</param>
