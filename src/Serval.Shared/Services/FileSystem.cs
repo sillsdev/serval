@@ -17,4 +17,9 @@ public class FileSystem : IFileSystem
     {
         return File.OpenWrite(path);
     }
+
+    public Stream OpenRead(string path)
+    {
+        return File.OpenRead(path);
+    }
 }

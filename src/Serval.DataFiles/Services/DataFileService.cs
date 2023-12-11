@@ -53,6 +53,15 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         }
     }
 
+    public async Task<Stream?> ReadAsync(string id, CancellationToken cancellationToken = default)
+    {
+        DataFile? dataFile = await GetAsync(id, cancellationToken);
+        if (dataFile is null)
+            return null;
+        string path = GetDataFilePath(dataFile.Filename);
+        return _fileSystem.OpenRead(path);
+    }
+
     public async Task<DataFile?> UpdateAsync(string id, Stream stream, CancellationToken cancellationToken = default)
     {
         string filename = Path.GetRandomFileName();
