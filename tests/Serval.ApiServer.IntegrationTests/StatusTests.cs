@@ -24,10 +24,10 @@ public class StatusTests
         {
             case 200:
                 // the grpc services are not running, so the health check will fail
-                var healthReport = await client.GetHealthAsync();
+                HealthReport healthReport = await client.GetHealthAsync();
                 Assert.That(healthReport, Is.Not.Null);
                 Assert.That(healthReport.Status.ToString(), Is.Not.EqualTo("Healthy"));
-                Assert.That(healthReport.Entries.Count, Is.EqualTo(5));
+                Assert.That(healthReport.Entries, Has.Count.EqualTo(5));
                 break;
             case 403:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -48,15 +48,16 @@ public class StatusTests
     [TestCase(new[] { Scopes.ReadStatus }, 200)]
     // [TestCase(new[] { Scopes.ReadStatus }, 401)]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403)]
-    public async Task GetVersionAsunc(IEnumerable<string> scope, int expectedStatusCode)
+    public async Task GetDeploymentAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
         StatusClient client = _env!.CreateClient(scope);
         switch (expectedStatusCode)
         {
             case 200:
-                DeploymentVersion result = await client.GetVersionAsync();
+                DeploymentInfo result = await client.GetDeploymentInfoAsync();
                 Assert.That(result, Is.Not.Null);
-                Assert.That(result.ServalAppVersion, Is.Not.EqualTo("Unknown"));
+                Assert.That(result.DeploymentVersion, Is.Not.EqualTo("Unknown"));
+                Assert.That(result.AspNetCoreEnvironment, Is.Not.EqualTo("Unknown"));
                 break;
             case 403:
                 var ex = Assert.ThrowsAsync<ServalApiException>(async () =>

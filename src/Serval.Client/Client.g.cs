@@ -29,7 +29,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<DeploymentVersion> GetVersionAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<DeploymentInfo> GetDeploymentInfoAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
     }
 
@@ -147,10 +147,10 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DeploymentVersion> GetVersionAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<DeploymentInfo> GetDeploymentInfoAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/status/app_version");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/status/deployment-info");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -184,7 +184,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<DeploymentVersion>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<DeploymentInfo>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -4344,9 +4344,9 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TotalDuration { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("entries", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("results", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IDictionary<string, HealthReportEntry> Entries { get; set; } = new System.Collections.Generic.Dictionary<string, HealthReportEntry>();
+        public System.Collections.Generic.IDictionary<string, HealthReportEntry> Results { get; set; } = new System.Collections.Generic.Dictionary<string, HealthReportEntry>();
 
     }
 
@@ -4370,17 +4370,21 @@ namespace Serval.Client
         public string Exception { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("data", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Data { get; set; } = default!;
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IDictionary<string, string> Data { get; set; } = new System.Collections.Generic.Dictionary<string, string>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.18.2.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class DeploymentVersion
+    public partial class DeploymentInfo
     {
-        [Newtonsoft.Json.JsonProperty("servalAppVersion", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("deploymentVersion", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string ServalAppVersion { get; set; } = default!;
+        public string DeploymentVersion { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("aspNetCoreEnvironment", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string AspNetCoreEnvironment { get; set; } = default!;
 
     }
 
