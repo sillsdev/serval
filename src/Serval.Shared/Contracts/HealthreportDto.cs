@@ -1,4 +1,4 @@
-namespace Serval.ApiServer.Controllers;
+namespace Serval.Shared.Contracts;
 
 public class HealthReportDto
 {

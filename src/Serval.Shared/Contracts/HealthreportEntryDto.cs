@@ -1,4 +1,4 @@
-namespace Serval.ApiServer.Controllers;
+namespace Serval.Shared.Contracts;
 
 public class HealthReportEntryDto
 {
@@ -6,5 +6,5 @@ public class HealthReportEntryDto
     public string Duration { get; set; } = default!;
     public string Description { get; set; } = default!;
     public string Exception { get; set; } = default!;
-    public string Data { get; set; } = default!;
+    public IDictionary<string, string> Data { get; set; } = default!;
 }
