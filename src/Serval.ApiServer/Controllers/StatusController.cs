@@ -45,7 +45,7 @@ public class StatusController : ServalControllerBase
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
     [Authorize(Scopes.ReadStatus)]
-    [HttpGet("deployment_info")]
+    [HttpGet("deployment-info")]
     [ProducesResponseType(typeof(DeploymentInfoDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]

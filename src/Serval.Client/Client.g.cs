@@ -150,7 +150,7 @@ namespace Serval.Client
         public virtual async System.Threading.Tasks.Task<DeploymentInfo> GetDeploymentInfoAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/status/deployment_info");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/status/deployment-info");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
