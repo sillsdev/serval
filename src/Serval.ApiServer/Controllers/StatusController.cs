@@ -81,8 +81,8 @@ public class StatusController : ServalControllerBase
         {
             Status = healthReportEntry.Status.ToString(),
             Duration = healthReportEntry.Duration.ToString(),
-            Description = healthReportEntry.Description ?? string.Empty,
-            Exception = healthReportEntry.Exception?.ToString() ?? string.Empty,
+            Description = healthReportEntry.Description,
+            Exception = healthReportEntry.Exception?.ToString(),
             Data = healthReportEntry.Data is null
                 ? new Dictionary<string, string>()
                 : healthReportEntry.Data.ToDictionary(f => f.Key, f => f.Value.ToString() ?? string.Empty)
