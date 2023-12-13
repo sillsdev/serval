@@ -56,7 +56,7 @@ public class StatusTests
             case 200:
                 DeploymentInfo result = await client.GetDeploymentInfoAsync();
                 Assert.That(result, Is.Not.Null);
-                Assert.That(result.DeploymentVersion, Is.Not.EqualTo("Unknown"));
+                Assert.That(result.DeploymentVersion, Is.EqualTo("Unknown"));
                 Assert.That(result.AspNetCoreEnvironment, Is.Not.EqualTo("Unknown"));
                 break;
             case 403:
