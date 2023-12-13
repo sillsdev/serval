@@ -27,6 +27,8 @@ spec:
               value: {{ .Values.auth0Domain}}
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.environment}}
+            - name: ASPNETCORE_DeploymentVersion
+              value: {{ default "undefined" .Values.deploymentVersion}}
             - name: ASPNETCORE_Kestrel__Endpoints__Http__Url
               value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Http2__Url
