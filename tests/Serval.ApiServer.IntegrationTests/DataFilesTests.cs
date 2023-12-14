@@ -181,7 +181,7 @@ public class DataFilesTests
         using (var fs = new MemoryStream(contentBytes))
         {
             var fp = new FileParameter(fs);
-            file = await client.CreateAsync(fp, FileFormat.Text);
+            file = await client.CreateAsync(fp, Client.FileFormat.Text);
         }
         if (fileId == "")
             fileId = file.Id;
