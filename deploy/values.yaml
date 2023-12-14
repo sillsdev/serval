@@ -1,5 +1,6 @@
 externalHost: prod.serval-api.org
 environment: Production
+deploymentVersion: '1.1.0'
 alertEmail: prod-serval-alerts@languagetechnology.org
 emailsToAlert: 'john_lambert@sil.org, eli_lowry@sil.org'
 enableTls: true

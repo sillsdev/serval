@@ -1,5 +1,6 @@
 externalHost: qa-int.serval-api.org
 environment: Staging
+deploymentVersion: 'internal-qa'
 alertEmail: int-qa-serval-alerts@languagetechnology.org
 emailsToAlert: john_lambert@sil.org
 enableTls: true
