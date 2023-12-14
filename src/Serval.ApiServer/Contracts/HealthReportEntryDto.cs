@@ -6,5 +6,5 @@ public class HealthReportEntryDto
     public string Duration { get; set; } = default!;
     public string? Description { get; set; } = null;
     public string? Exception { get; set; } = null;
-    public IDictionary<string, string> Data { get; set; } = default!;
+    public IDictionary<string, string>? Data { get; set; } = null;
 }
