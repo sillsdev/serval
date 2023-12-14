@@ -779,9 +779,8 @@ public class TranslationEnginesController : ServalControllerBase
     /// To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-    /// A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
-    /// number of training iterations in order to reduce turnaround time for testing purposes. See [this](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing)
-    /// for another use of the `"options"` parameter: excluding Paratext key terms data. (By default, Paratext key terms data will be incorporated and used for training).
+    /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Job-Settings) about configuring job parameters.
+    /// See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
