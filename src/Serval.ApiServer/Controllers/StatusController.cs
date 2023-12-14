@@ -84,9 +84,9 @@ public class StatusController : ServalControllerBase
             Description = healthReportEntry.Description,
             Exception = healthReportEntry.Exception?.ToString(),
             Data =
-                (healthReportEntry.Data is null | healthReportEntry.Data!.Count == 0)
+                healthReportEntry.Data.Count == 0
                     ? null
-                    : healthReportEntry.Data!.ToDictionary(f => f.Key, f => f.Value.ToString() ?? string.Empty)
+                    : healthReportEntry.Data.ToDictionary(f => f.Key, f => f.Value.ToString() ?? string.Empty)
         };
     }
 }
