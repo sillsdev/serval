@@ -12,6 +12,43 @@ from typing import Any, BinaryIO, Dict, List, MutableMapping, Optional, cast
 import requests
 import requests.auth
 
+from http.client import HTTPResponse
+
+import urllib3
+
+
+class _WrappedResponse(urllib3.HTTPResponse):
+    """
+    Wrap `requests.Response` so that it fits the `BinaryIO` interface.
+
+    If we directly used `requests.Response`, the user would need to use `requests.Response.raw`,
+    but explicitly close `requests.Response`.
+    This is confusing and error-prone, so we wrap it all together into a `BinaryIO` interface.
+
+    Additionally, `requests` have no official type annotation making it hard
+    for client code to be statically type-checked.
+    """
+
+    # noinspection PyMissingConstructor
+    def __init__(self, response: requests.Response):
+        self._response = response
+
+    def __getattr__(self, item):
+        return getattr(self._response.raw, item)
+
+    def close(self):
+        self._response.close()
+
+
+def _wrap_response(resp: requests.Response) -> HTTPResponse:
+    """
+    Wrap HTTPResponse object.
+    """
+
+    # urllib3.HTTPResponse has compatible interface of standard http lib.
+    # (see docs for urllib3.HTTPResponse)
+    return cast(HTTPResponse, _WrappedResponse(resp))
+
 
 def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
     """
@@ -63,6 +100,15 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
             adict[key] = from_obj(value, expected=expected[1:], path='{}[{!r}]'.format(path, key))
 
         return adict
+
+    if exp == HealthReport:
+        return health_report_from_obj(obj, path=path)
+
+    if exp == HealthReportEntry:
+        return health_report_entry_from_obj(obj, path=path)
+
+    if exp == DeploymentInfo:
+        return deployment_info_from_obj(obj, path=path)
 
     if exp == DataFile:
         return data_file_from_obj(obj, path=path)
@@ -118,11 +164,17 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
     if exp == TranslationBuild:
         return translation_build_from_obj(obj, path=path)
 
+    if exp == TrainingCorpus:
+        return training_corpus_from_obj(obj, path=path)
+
     if exp == PretranslateCorpus:
         return pretranslate_corpus_from_obj(obj, path=path)
 
     if exp == TranslationBuildConfig:
         return translation_build_config_from_obj(obj, path=path)
+
+    if exp == TrainingCorpusConfig:
+        return training_corpus_config_from_obj(obj, path=path)
 
     if exp == PretranslateCorpusConfig:
         return pretranslate_corpus_config_from_obj(obj, path=path)
@@ -196,6 +248,18 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
 
         return adict
 
+    if exp == HealthReport:
+        assert isinstance(obj, HealthReport)
+        return health_report_to_jsonable(obj, path=path)
+
+    if exp == HealthReportEntry:
+        assert isinstance(obj, HealthReportEntry)
+        return health_report_entry_to_jsonable(obj, path=path)
+
+    if exp == DeploymentInfo:
+        assert isinstance(obj, DeploymentInfo)
+        return deployment_info_to_jsonable(obj, path=path)
+
     if exp == DataFile:
         assert isinstance(obj, DataFile)
         return data_file_to_jsonable(obj, path=path)
@@ -268,6 +332,10 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         assert isinstance(obj, TranslationBuild)
         return translation_build_to_jsonable(obj, path=path)
 
+    if exp == TrainingCorpus:
+        assert isinstance(obj, TrainingCorpus)
+        return training_corpus_to_jsonable(obj, path=path)
+
     if exp == PretranslateCorpus:
         assert isinstance(obj, PretranslateCorpus)
         return pretranslate_corpus_to_jsonable(obj, path=path)
@@ -275,6 +343,10 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
     if exp == TranslationBuildConfig:
         assert isinstance(obj, TranslationBuildConfig)
         return translation_build_config_to_jsonable(obj, path=path)
+
+    if exp == TrainingCorpusConfig:
+        assert isinstance(obj, TrainingCorpusConfig)
+        return training_corpus_config_to_jsonable(obj, path=path)
 
     if exp == PretranslateCorpusConfig:
         assert isinstance(obj, PretranslateCorpusConfig)
@@ -289,6 +361,300 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         return webhook_config_to_jsonable(obj, path=path)
 
     raise ValueError("Unexpected `expected` type: {}".format(exp))
+
+
+class HealthReport:
+    def __init__(
+            self,
+            status: str,
+            total_duration: str,
+            results: Dict[str, 'HealthReportEntry']) -> None:
+        """Initializes with the given values."""
+        self.status = status
+
+        self.total_duration = total_duration
+
+        self.results = results
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to health_report_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return health_report_to_jsonable(self)
+
+
+def new_health_report() -> HealthReport:
+    """Generates an instance of HealthReport with default values."""
+    return HealthReport(
+        status='',
+        total_duration='',
+        results=dict())
+
+
+def health_report_from_obj(obj: Any, path: str = "") -> HealthReport:
+    """
+    Generates an instance of HealthReport from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of HealthReport
+    :param path: path to the object used for debugging
+    :return: parsed instance of HealthReport
+    """
+    if not isinstance(obj, dict):
+        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+
+    status_from_obj = from_obj(
+        obj['status'],
+        expected=[str],
+        path=path + '.status')  # type: str
+
+    total_duration_from_obj = from_obj(
+        obj['totalDuration'],
+        expected=[str],
+        path=path + '.totalDuration')  # type: str
+
+    results_from_obj = from_obj(
+        obj['results'],
+        expected=[dict, HealthReportEntry],
+        path=path + '.results')  # type: Dict[str, 'HealthReportEntry']
+
+    return HealthReport(
+        status=status_from_obj,
+        total_duration=total_duration_from_obj,
+        results=results_from_obj)
+
+
+def health_report_to_jsonable(
+        health_report: HealthReport,
+        path: str = "") -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of HealthReport.
+
+    :param health_report: instance of HealthReport to be JSON-ized
+    :param path: path to the health_report used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res['status'] = health_report.status
+
+    res['totalDuration'] = health_report.total_duration
+
+    res['results'] = to_jsonable(
+        health_report.results,
+        expected=[dict, HealthReportEntry],
+        path='{}.results'.format(path))
+
+    return res
+
+
+class HealthReportEntry:
+    def __init__(
+            self,
+            status: str,
+            duration: str,
+            description: Optional[str] = None,
+            exception: Optional[str] = None,
+            data: Optional[Dict[str, str]] = None) -> None:
+        """Initializes with the given values."""
+        self.status = status
+
+        self.duration = duration
+
+        self.description = description
+
+        self.exception = exception
+
+        self.data = data
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to health_report_entry_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return health_report_entry_to_jsonable(self)
+
+
+def new_health_report_entry() -> HealthReportEntry:
+    """Generates an instance of HealthReportEntry with default values."""
+    return HealthReportEntry(
+        status='',
+        duration='')
+
+
+def health_report_entry_from_obj(obj: Any, path: str = "") -> HealthReportEntry:
+    """
+    Generates an instance of HealthReportEntry from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of HealthReportEntry
+    :param path: path to the object used for debugging
+    :return: parsed instance of HealthReportEntry
+    """
+    if not isinstance(obj, dict):
+        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+
+    status_from_obj = from_obj(
+        obj['status'],
+        expected=[str],
+        path=path + '.status')  # type: str
+
+    duration_from_obj = from_obj(
+        obj['duration'],
+        expected=[str],
+        path=path + '.duration')  # type: str
+
+    obj_description = obj.get('description', None)
+    if obj_description is not None:
+        description_from_obj = from_obj(
+            obj_description,
+            expected=[str],
+            path=path + '.description')  # type: Optional[str]
+    else:
+        description_from_obj = None
+
+    obj_exception = obj.get('exception', None)
+    if obj_exception is not None:
+        exception_from_obj = from_obj(
+            obj_exception,
+            expected=[str],
+            path=path + '.exception')  # type: Optional[str]
+    else:
+        exception_from_obj = None
+
+    obj_data = obj.get('data', None)
+    if obj_data is not None:
+        data_from_obj = from_obj(
+            obj_data,
+            expected=[dict, str],
+            path=path + '.data')  # type: Optional[Dict[str, str]]
+    else:
+        data_from_obj = None
+
+    return HealthReportEntry(
+        status=status_from_obj,
+        duration=duration_from_obj,
+        description=description_from_obj,
+        exception=exception_from_obj,
+        data=data_from_obj)
+
+
+def health_report_entry_to_jsonable(
+        health_report_entry: HealthReportEntry,
+        path: str = "") -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of HealthReportEntry.
+
+    :param health_report_entry: instance of HealthReportEntry to be JSON-ized
+    :param path: path to the health_report_entry used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res['status'] = health_report_entry.status
+
+    res['duration'] = health_report_entry.duration
+
+    if health_report_entry.description is not None:
+        res['description'] = health_report_entry.description
+
+    if health_report_entry.exception is not None:
+        res['exception'] = health_report_entry.exception
+
+    if health_report_entry.data is not None:
+        res['data'] = to_jsonable(
+        health_report_entry.data,
+        expected=[dict, str],
+        path='{}.data'.format(path))
+
+    return res
+
+
+class DeploymentInfo:
+    def __init__(
+            self,
+            deployment_version: str,
+            asp_net_core_environment: str) -> None:
+        """Initializes with the given values."""
+        self.deployment_version = deployment_version
+
+        self.asp_net_core_environment = asp_net_core_environment
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to deployment_info_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return deployment_info_to_jsonable(self)
+
+
+def new_deployment_info() -> DeploymentInfo:
+    """Generates an instance of DeploymentInfo with default values."""
+    return DeploymentInfo(
+        deployment_version='',
+        asp_net_core_environment='')
+
+
+def deployment_info_from_obj(obj: Any, path: str = "") -> DeploymentInfo:
+    """
+    Generates an instance of DeploymentInfo from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of DeploymentInfo
+    :param path: path to the object used for debugging
+    :return: parsed instance of DeploymentInfo
+    """
+    if not isinstance(obj, dict):
+        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+
+    deployment_version_from_obj = from_obj(
+        obj['deploymentVersion'],
+        expected=[str],
+        path=path + '.deploymentVersion')  # type: str
+
+    asp_net_core_environment_from_obj = from_obj(
+        obj['aspNetCoreEnvironment'],
+        expected=[str],
+        path=path + '.aspNetCoreEnvironment')  # type: str
+
+    return DeploymentInfo(
+        deployment_version=deployment_version_from_obj,
+        asp_net_core_environment=asp_net_core_environment_from_obj)
+
+
+def deployment_info_to_jsonable(
+        deployment_info: DeploymentInfo,
+        path: str = "") -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of DeploymentInfo.
+
+    :param deployment_info: instance of DeploymentInfo to be JSON-ized
+    :param path: path to the deployment_info used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res['deploymentVersion'] = deployment_info.deployment_version
+
+    res['aspNetCoreEnvironment'] = deployment_info.asp_net_core_environment
+
+    return res
 
 
 class DataFile:
@@ -2168,6 +2534,7 @@ class TranslationBuild:
             step: int,
             state: str,
             name: Optional[str] = None,
+            train_on: Optional[List['TrainingCorpus']] = None,
             pretranslate: Optional[List['PretranslateCorpus']] = None,
             percent_completed: Optional[float] = None,
             message: Optional[str] = None,
@@ -2189,6 +2556,8 @@ class TranslationBuild:
         self.state = state
 
         self.name = name
+
+        self.train_on = train_on
 
         self.pretranslate = pretranslate
 
@@ -2277,6 +2646,15 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
     else:
         name_from_obj = None
 
+    obj_train_on = obj.get('trainOn', None)
+    if obj_train_on is not None:
+        train_on_from_obj = from_obj(
+            obj_train_on,
+            expected=[list, TrainingCorpus],
+            path=path + '.trainOn')  # type: Optional[List['TrainingCorpus']]
+    else:
+        train_on_from_obj = None
+
     obj_pretranslate = obj.get('pretranslate', None)
     if obj_pretranslate is not None:
         pretranslate_from_obj = from_obj(
@@ -2332,6 +2710,7 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
         step=step_from_obj,
         state=state_from_obj,
         name=name_from_obj,
+        train_on=train_on_from_obj,
         pretranslate=pretranslate_from_obj,
         percent_completed=percent_completed_from_obj,
         message=message_from_obj,
@@ -2370,6 +2749,12 @@ def translation_build_to_jsonable(
     if translation_build.name is not None:
         res['name'] = translation_build.name
 
+    if translation_build.train_on is not None:
+        res['trainOn'] = to_jsonable(
+        translation_build.train_on,
+        expected=[list, TrainingCorpus],
+        path='{}.trainOn'.format(path))
+
     if translation_build.pretranslate is not None:
         res['pretranslate'] = to_jsonable(
         translation_build.pretranslate,
@@ -2390,6 +2775,92 @@ def translation_build_to_jsonable(
 
     if translation_build.options is not None:
         res['options'] = translation_build.options
+
+    return res
+
+
+class TrainingCorpus:
+    def __init__(
+            self,
+            corpus: 'ResourceLink',
+            text_ids: Optional[List[str]] = None) -> None:
+        """Initializes with the given values."""
+        self.corpus = corpus
+
+        self.text_ids = text_ids
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to training_corpus_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return training_corpus_to_jsonable(self)
+
+
+def new_training_corpus() -> TrainingCorpus:
+    """Generates an instance of TrainingCorpus with default values."""
+    return TrainingCorpus(
+        corpus=new_resource_link__)
+
+
+def training_corpus_from_obj(obj: Any, path: str = "") -> TrainingCorpus:
+    """
+    Generates an instance of TrainingCorpus from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of TrainingCorpus
+    :param path: path to the object used for debugging
+    :return: parsed instance of TrainingCorpus
+    """
+    if not isinstance(obj, dict):
+        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+
+    corpus_from_obj = from_obj(
+        obj['corpus'],
+        expected=[ResourceLink],
+        path=path + '.corpus')  # type: 'ResourceLink'
+
+    obj_text_ids = obj.get('textIds', None)
+    if obj_text_ids is not None:
+        text_ids_from_obj = from_obj(
+            obj_text_ids,
+            expected=[list, str],
+            path=path + '.textIds')  # type: Optional[List[str]]
+    else:
+        text_ids_from_obj = None
+
+    return TrainingCorpus(
+        corpus=corpus_from_obj,
+        text_ids=text_ids_from_obj)
+
+
+def training_corpus_to_jsonable(
+        training_corpus: TrainingCorpus,
+        path: str = "") -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of TrainingCorpus.
+
+    :param training_corpus: instance of TrainingCorpus to be JSON-ized
+    :param path: path to the training_corpus used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res['corpus'] = to_jsonable(
+        training_corpus.corpus,
+        expected=[ResourceLink],
+        path='{}.corpus'.format(path))
+
+    if training_corpus.text_ids is not None:
+        res['textIds'] = to_jsonable(
+        training_corpus.text_ids,
+        expected=[list, str],
+        path='{}.textIds'.format(path))
 
     return res
 
@@ -2484,10 +2955,13 @@ class TranslationBuildConfig:
     def __init__(
             self,
             name: Optional[str] = None,
+            train_on: Optional[List['TrainingCorpusConfig']] = None,
             pretranslate: Optional[List['PretranslateCorpusConfig']] = None,
             options: Optional[Any] = None) -> None:
         """Initializes with the given values."""
         self.name = name
+
+        self.train_on = train_on
 
         self.pretranslate = pretranslate
 
@@ -2532,6 +3006,15 @@ def translation_build_config_from_obj(obj: Any, path: str = "") -> TranslationBu
     else:
         name_from_obj = None
 
+    obj_train_on = obj.get('trainOn', None)
+    if obj_train_on is not None:
+        train_on_from_obj = from_obj(
+            obj_train_on,
+            expected=[list, TrainingCorpusConfig],
+            path=path + '.trainOn')  # type: Optional[List['TrainingCorpusConfig']]
+    else:
+        train_on_from_obj = None
+
     obj_pretranslate = obj.get('pretranslate', None)
     if obj_pretranslate is not None:
         pretranslate_from_obj = from_obj(
@@ -2545,6 +3028,7 @@ def translation_build_config_from_obj(obj: Any, path: str = "") -> TranslationBu
 
     return TranslationBuildConfig(
         name=name_from_obj,
+        train_on=train_on_from_obj,
         pretranslate=pretranslate_from_obj,
         options=options_from_obj)
 
@@ -2564,6 +3048,12 @@ def translation_build_config_to_jsonable(
     if translation_build_config.name is not None:
         res['name'] = translation_build_config.name
 
+    if translation_build_config.train_on is not None:
+        res['trainOn'] = to_jsonable(
+        translation_build_config.train_on,
+        expected=[list, TrainingCorpusConfig],
+        path='{}.trainOn'.format(path))
+
     if translation_build_config.pretranslate is not None:
         res['pretranslate'] = to_jsonable(
         translation_build_config.pretranslate,
@@ -2572,6 +3062,89 @@ def translation_build_config_to_jsonable(
 
     if translation_build_config.options is not None:
         res['options'] = translation_build_config.options
+
+    return res
+
+
+class TrainingCorpusConfig:
+    def __init__(
+            self,
+            corpus_id: str,
+            text_ids: Optional[List[str]] = None) -> None:
+        """Initializes with the given values."""
+        self.corpus_id = corpus_id
+
+        self.text_ids = text_ids
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to training_corpus_config_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return training_corpus_config_to_jsonable(self)
+
+
+def new_training_corpus_config() -> TrainingCorpusConfig:
+    """Generates an instance of TrainingCorpusConfig with default values."""
+    return TrainingCorpusConfig(
+        corpus_id='')
+
+
+def training_corpus_config_from_obj(obj: Any, path: str = "") -> TrainingCorpusConfig:
+    """
+    Generates an instance of TrainingCorpusConfig from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of TrainingCorpusConfig
+    :param path: path to the object used for debugging
+    :return: parsed instance of TrainingCorpusConfig
+    """
+    if not isinstance(obj, dict):
+        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+
+    corpus_id_from_obj = from_obj(
+        obj['corpusId'],
+        expected=[str],
+        path=path + '.corpusId')  # type: str
+
+    obj_text_ids = obj.get('textIds', None)
+    if obj_text_ids is not None:
+        text_ids_from_obj = from_obj(
+            obj_text_ids,
+            expected=[list, str],
+            path=path + '.textIds')  # type: Optional[List[str]]
+    else:
+        text_ids_from_obj = None
+
+    return TrainingCorpusConfig(
+        corpus_id=corpus_id_from_obj,
+        text_ids=text_ids_from_obj)
+
+
+def training_corpus_config_to_jsonable(
+        training_corpus_config: TrainingCorpusConfig,
+        path: str = "") -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of TrainingCorpusConfig.
+
+    :param training_corpus_config: instance of TrainingCorpusConfig to be JSON-ized
+    :param path: path to the training_corpus_config used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res['corpusId'] = training_corpus_config.corpus_id
+
+    if training_corpus_config.text_ids is not None:
+        res['textIds'] = to_jsonable(
+        training_corpus_config.text_ids,
+        expected=[list, str],
+        path='{}.textIds'.format(path))
 
     return res
 
@@ -2872,6 +3445,38 @@ class RemoteCaller:
             self.session = requests.Session()
             self.session.auth = self.auth
 
+    def status_get_health(self) -> 'HealthReport':
+        """
+        Send a get request to /api/v1/status/health.
+
+        :return:
+        """
+        url = self.url_prefix + '/api/v1/status/health'
+
+        resp = self.session.request(method='get', url=url)
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(
+                obj=resp.json(),
+                expected=[HealthReport])
+
+    def status_get_deployment_info(self) -> 'DeploymentInfo':
+        """
+        Send a get request to /api/v1/status/deployment-info.
+
+        :return:
+        """
+        url = self.url_prefix + '/api/v1/status/deployment-info'
+
+        resp = self.session.request(method='get', url=url)
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(
+                obj=resp.json(),
+                expected=[DeploymentInfo])
+
     def data_files_get_all(self) -> List['DataFile']:
         """
         Send a get request to /api/v1/files.
@@ -3029,6 +3634,31 @@ class RemoteCaller:
             resp.raise_for_status()
             return resp.content
 
+    def data_files_download(
+            self,
+            id: str) -> BinaryIO:
+        """
+        Send a post request to /api/v1/files/{id}/contents.
+
+        :param id: The unique identifier for the file
+
+        :return: The file exists
+        """
+        url = "".join([
+            self.url_prefix,
+            '/api/v1/files/',
+            str(id),
+            '/contents'])
+
+        resp = self.session.request(
+            method='post',
+            url=url,
+            stream=True,
+        )
+
+        resp.raise_for_status()
+        return _wrap_response(resp)
+
     def translation_engines_get_all(self) -> List['TranslationEngine']:
         """
         Send a get request to /api/v1/translation/engines.
@@ -3057,17 +3687,15 @@ class RemoteCaller:
         * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         * **type**: **SmtTransfer** or **Nmt** or **Echo**
         ### SmtTransfer
-        The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions.
-        Typical endpoints: translate, get-word-graph, train-segment
+        The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         ### Nmt
-        The Neural Machine Translation engine is primarily used for pretranslations.  It is
-        fine tuned from the NLLB-200 from Meta and inherits the 200 language codes. Valid IETF language tags will be converted to an [NLLB-200 code](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200), and NLLB will be used as-is.
+        The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
+                    
+        If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
+                    
         Typical endpoints: pretranslate
         ### Echo
-        The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build
-        return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user
-        in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would
-        yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         ## Sample request:
                     
             {
@@ -3282,7 +3910,9 @@ class RemoteCaller:
             id: str,
             segment_pair: 'SegmentPair') -> bytes:
         """
-        What does `SentenceStart` do?
+        A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
+        that should be set to true if this segment pair forms the beginning of a sentence. (This information
+        will be used to reconstruct proper capitalization when training/inferencing).
 
         :param id: The translation engine id
         :param segment_pair: The segment pair
@@ -3318,9 +3948,9 @@ class RemoteCaller:
         ## Parameters
         * **name**: A name to help identify and distinguish the corpus from other corpora
           * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-        * **sourceLanguage**: The source language code
+        * **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
           * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-        * **targetLanguage**: The target language code
+        * **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
         * **SourceFiles**: The source files associated with the corpus
           * **FileId**: The unique id referencing the uploaded file
           * **TextId**: The client-defined name to associate source and target files.
@@ -3566,9 +4196,13 @@ class RemoteCaller:
         you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
                     
+        Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
+        Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
+        To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+                    
         The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-        A typical use case would be to set `"options"` to `{"max_steps":10}` in order to configure the maximum
-        number of training iterations in order to reduce turnaround time for testing purposes.
+        See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Job-Settings) about configuring job parameters.
+        See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
 
         :param id: The translation engine id
         :param build_config: The build config (see remarks)

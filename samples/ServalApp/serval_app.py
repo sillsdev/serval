@@ -260,7 +260,7 @@ else:
                         )
                     ],
                     options='{"max_steps":'
-                    + str(os.environ.get("SERVAL_APP_MAX_STEPS", 10))
+                    + str(os.environ.get("SERVAL_APP_MAX_STEPS", 20_000))
                     + "}",
                     name=st.session_state["build_name"]
                     if "build_name" in st.session_state
