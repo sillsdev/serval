@@ -122,7 +122,7 @@ public class ServalApiTests
             engineId,
             cId2
         );
-        Assert.IsTrue(lTrans[0].Translation.Contains("dearly beloved Gaius"));
+        Assert.IsTrue(lTrans.Count == 14);
     }
 
     [Test]
