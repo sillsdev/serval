@@ -23,6 +23,7 @@ spec:
                 name: serval-api
                 port:
                   number: 80
+            # hide metrics and health endpoints
           - path: /metrics
             pathType: Prefix
             backend:
@@ -30,3 +31,10 @@ spec:
                 name: default-http-backend
                 port:
                   number: 80
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: default-http-backend
+                port:
+                  number: 81
