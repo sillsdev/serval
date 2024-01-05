@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Logging;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -283,7 +284,8 @@ public class EngineServiceTests
                 new MemoryRepository<Pretranslation>(),
                 grpcClientFactory,
                 dataFileOptions,
-                new MemoryDataAccessContext()
+                new MemoryDataAccessContext(),
+                new LoggerFactory()
             );
         }
 

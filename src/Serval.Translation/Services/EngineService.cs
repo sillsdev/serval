@@ -9,6 +9,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
     private readonly GrpcClientFactory _grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext;
+    private readonly ILogger<EngineService> _logger;
 
     public EngineService(
         IRepository<Engine> engines,
@@ -16,7 +17,8 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         IRepository<Pretranslation> pretranslations,
         GrpcClientFactory grpcClientFactory,
         IOptionsMonitor<DataFileOptions> dataFileOptions,
-        IDataAccessContext dataAccessContext
+        IDataAccessContext dataAccessContext,
+        ILoggerFactory loggerFactory
     )
         : base(engines)
     {
@@ -25,6 +27,7 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         _grpcClientFactory = grpcClientFactory;
         _dataFileOptions = dataFileOptions;
         _dataAccessContext = dataAccessContext;
+        _logger = loggerFactory.CreateLogger<EngineService>();
     }
 
     public async Task<Models.TranslationResult?> TranslateAsync(
@@ -225,6 +228,36 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                     })
                 }
             };
+
+            // Log the build request summary
+            try
+            {
+                JsonObject buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
+                // correct build options parsing
+                buildRequestSummary.Remove("Options");
+                try
+                {
+                    buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
+                }
+                catch (Exception)
+                {
+                    buildRequestSummary.Add(
+                        "Options",
+                        "Build \"Options\" failed parsing: " + (request.Options ?? "null")
+                    );
+                }
+                // get the number of previous builds for the engine
+                int numPreviousBuilds =
+                    (await _builds.GetAllAsync(b => b.EngineRef == engine.Id, cancellationToken)).Count - 1;
+                buildRequestSummary.Add("Event", "BuildRequest");
+                buildRequestSummary.Add("NumPreviousBuilds", numPreviousBuilds);
+                _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
+            }
+            catch (Exception)
+            {
+                _logger.LogInformation("Error parsing build request summary.");
+                _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
+            }
 
             await client.StartBuildAsync(request, cancellationToken: cancellationToken);
         }
