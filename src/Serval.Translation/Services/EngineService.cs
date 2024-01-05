@@ -239,21 +239,19 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
                 {
                     buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
                 }
-                catch (Exception)
+                catch (JsonException)
                 {
                     buildRequestSummary.Add(
                         "Options",
                         "Build \"Options\" failed parsing: " + (request.Options ?? "null")
                     );
                 }
-                // get the number of previous builds for the engine
-                int numPreviousBuilds =
-                    (await _builds.GetAllAsync(b => b.EngineRef == engine.Id, cancellationToken)).Count - 1;
                 buildRequestSummary.Add("Event", "BuildRequest");
-                buildRequestSummary.Add("NumPreviousBuilds", numPreviousBuilds);
+                buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
+                buildRequestSummary.Add("ClientId", engine.Owner);
                 _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
             }
-            catch (Exception)
+            catch (JsonException)
             {
                 _logger.LogInformation("Error parsing build request summary.");
                 _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
