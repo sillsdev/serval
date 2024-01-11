@@ -50,7 +50,7 @@ public class Startup
         services
             .AddHealthChecks()
             .AddDiskStorageHealthCheck(
-                x => x.AddDrive(driveLetter, 2_000_000),
+                x => x.AddDrive(driveLetter, 1_000), // 1GB
                 "Data File Storage Capacity",
                 HealthStatus.Degraded
             );
