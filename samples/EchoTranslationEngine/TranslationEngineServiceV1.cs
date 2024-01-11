@@ -1,14 +1,10 @@
 ﻿namespace EchoTranslationEngine;
 
-public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngineApiBase
+public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthCheckService healthCheckService) : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
-    private readonly BackgroundTaskQueue _taskQueue;
-
-    public TranslationEngineServiceV1(BackgroundTaskQueue taskQueue)
-    {
-        _taskQueue = taskQueue;
-    }
+    private readonly BackgroundTaskQueue _taskQueue = taskQueue;
+    private readonly HealthCheckService _healthCheckService = healthCheckService;
 
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
@@ -297,5 +293,12 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
     public override Task<GetQueueSizeResponse> GetQueueSize(GetQueueSizeRequest request, ServerCallContext context)
     {
         return Task.FromResult(new GetQueueSizeResponse { Size = 0 });
+    }
+
+    public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
+    {
+        HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
+        HealthCheckResponse healthCheckResponse = WriteGrpcHealthCheckResponse.Generate(healthReport);
+        return healthCheckResponse;
     }
 }

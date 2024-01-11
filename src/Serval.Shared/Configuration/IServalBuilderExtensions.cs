@@ -43,10 +43,10 @@ public static class IServalBuilderExtensions
         Action<IMongoDataAccessConfigurator> configure
     )
     {
-        builder.Services.AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"), "Serval", configure);
+        builder.Services.AddMongoDataAccess(builder.Configuration!.GetConnectionString("Mongo")!, "Serval", configure);
         builder.Services
             .AddHealthChecks()
-            .AddMongoDb(builder.Configuration.GetConnectionString("Mongo"), name: "Mongo");
+            .AddMongoDb(builder.Configuration!.GetConnectionString("Mongo")!, name: "Mongo");
         return builder;
     }
 }

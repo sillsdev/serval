@@ -8,17 +8,16 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock,
         IConfiguration configuration
     )
-        : base(options, logger, encoder, clock)
+        : base(options, logger, encoder)
     {
         _configuration = configuration;
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        string scope = Context.Request.Headers["Scope"][0];
+        string scope = Context.Request.Headers["Scope"][0]!;
         string authority = $"https://{_configuration["Auth:Domain"]}/";
         var claims = new[]
         {

@@ -13,6 +13,7 @@ service TranslationEngineApi {
     rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
     rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
     rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
+    rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse);
 }
 
 message CreateRequest {
@@ -103,6 +104,13 @@ message TranslationResult {
     repeated Phrase phrases = 7;
 }
 
+message HealthCheckResponse {
+    HealthCheckStatus Status = 1;
+    string Duration = 2;
+    map<string, string> Data = 3;
+    optional string Exception = 4;
+}
+
 message WordGraphArc {
     int32 prev_state = 1;
     int32 next_state = 2;
@@ -151,3 +159,8 @@ enum TranslationSource {
     TRANSLATION_SOURCE_HUMAN = 2;
 }
 
+enum HealthCheckStatus {
+    Unhealthy = 0;
+    Degraded = 1;
+    Healthy = 2;
+}

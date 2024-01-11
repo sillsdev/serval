@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<Version>1.0.0</Version>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -14,11 +14,12 @@
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="6.4.0" />
 		<PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="6.0.2" />
 		<PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
+		<PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.2" />
 		<PackageReference Include="Hangfire" Version="1.7.33" />
 		<PackageReference Include="Hangfire.Mongo" Version="1.9.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.14" />
-		<PackageReference Include="NSwag.AspNetCore" Version="13.18.2" />
-		<PackageReference Include="NSwag.MSBuild" Version="13.18.2">
+		<PackageReference Include="NSwag.AspNetCore" Version="13.20.0" />
+		<PackageReference Include="NSwag.MSBuild" Version="13.20.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

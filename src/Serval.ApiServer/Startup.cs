@@ -42,6 +42,24 @@ public class Startup
             });
         services.AddHealthChecks().AddIdentityServer(new Uri(authority), name: "Auth0");
 
+        string DataFilesDir = Configuration!.GetSection(DataFileOptions.Key)!.GetValue<string>("FilesDirectory")!;
+        // find drive letter for DataFilesDir
+        string driveLetter = Path.GetPathRoot(DataFilesDir)![..1];
+
+        // add health check for disk storage capacity
+        services
+            .AddHealthChecks()
+            .AddDiskStorageHealthCheck(
+                x => x.AddDrive(driveLetter, 2_000_000),
+                "Data File Storage Capacity",
+                HealthStatus.Degraded
+            );
+
+        services.AddOutputCache(options =>
+        {
+            options.AddPolicy("CacheHealthStatus", builder => builder.Expire(TimeSpan.FromSeconds(10)));
+        });
+
         services.AddAuthorization(o =>
         {
             foreach (string scope in Scopes.All)
@@ -188,12 +206,14 @@ public class Startup
 
         app.UseRouting();
         app.UseAuthorization();
+        app.UseOutputCache();
         app.UseEndpoints(x =>
         {
             x.MapControllers();
             x.MapServalTranslationServices();
             x.MapHangfireDashboard();
-            x.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = WriteHealthCheckResponse });
+            x.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = WriteHealthCheckResponse.Generate });
+            ;
         });
 
         app.UseOpenApi(o =>
@@ -223,48 +243,5 @@ public class Startup
 
         if (!Environment.IsDevelopment())
             app.UseOpenTelemetryPrometheusScrapingEndpoint();
-    }
-
-    private static Task WriteHealthCheckResponse(HttpContext context, HealthReport healthReport)
-    {
-        context.Response.ContentType = "application/json; charset=utf-8";
-
-        var options = new JsonWriterOptions { Indented = true };
-
-        using var memoryStream = new MemoryStream();
-        using (var jsonWriter = new Utf8JsonWriter(memoryStream, options))
-        {
-            jsonWriter.WriteStartObject();
-            jsonWriter.WriteString("status", healthReport.Status.ToString());
-            jsonWriter.WriteStartObject("results");
-
-            foreach (KeyValuePair<string, HealthReportEntry> healthReportEntry in healthReport.Entries)
-            {
-                jsonWriter.WriteStartObject(healthReportEntry.Key);
-                jsonWriter.WriteString("status", healthReportEntry.Value.Status.ToString());
-                if (healthReportEntry.Value.Description is not null || healthReportEntry.Value.Exception is not null)
-                    jsonWriter.WriteString(
-                        "description",
-                        healthReportEntry.Value.Description ?? healthReportEntry.Value.Exception?.Message
-                    );
-                if (healthReportEntry.Value.Data.Count > 0)
-                {
-                    jsonWriter.WriteStartObject("data");
-                    foreach (var item in healthReportEntry.Value.Data)
-                    {
-                        jsonWriter.WritePropertyName(item.Key);
-
-                        JsonSerializer.Serialize(jsonWriter, item.Value, item.Value?.GetType() ?? typeof(object));
-                    }
-                    jsonWriter.WriteEndObject();
-                }
-                jsonWriter.WriteEndObject();
-            }
-
-            jsonWriter.WriteEndObject();
-            jsonWriter.WriteEndObject();
-        }
-
-        return context.Response.WriteAsync(Encoding.UTF8.GetString(memoryStream.ToArray()));
     }
 }

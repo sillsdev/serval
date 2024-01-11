@@ -37,10 +37,6 @@ public static class IServalBuilderExtensions
                 engine.Type,
                 o => o.Address = new Uri(engine.Address)
             );
-            builder.Services.AddGrpcClient<Health.HealthClient>(
-                engine.Type + "_Health",
-                o => o.Address = new Uri(engine.Address)
-            );
             builder.Services.AddHealthChecks().AddCheck<GrpcServiceHealthCheck>(engine.Type);
         }
 

@@ -18,7 +18,7 @@ public class ServiceUnavailableExceptionFilter : ExceptionFilterAttribute
         {
             _logger.Log(
                 LogLevel.Error,
-                "A user tried to access an unavailable service. See health-check logs for more details.",
+                "A user tried to access an unavailable service. Exception: \n{Exception}",
                 context.Exception
             );
             context.Result = new StatusCodeResult(StatusCodes.Status503ServiceUnavailable);
