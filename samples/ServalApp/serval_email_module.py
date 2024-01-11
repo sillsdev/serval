@@ -1,9 +1,10 @@
 import smtplib
 import ssl
 from email.mime.application import MIMEApplication
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.utils import formatdate
+
 from db import Build
 
 

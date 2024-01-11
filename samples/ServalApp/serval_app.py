@@ -5,7 +5,7 @@ from threading import Thread
 from time import sleep
 
 import streamlit as st
-from db import Build, State, Param, create_db_if_not_exists
+from db import Build, Param, State, create_db_if_not_exists
 from serval_auth_module import ServalBearerAuth
 from serval_client_module import (
     PretranslateCorpusConfig,

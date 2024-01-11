@@ -256,8 +256,8 @@ public class ServalApiTests
         WordGraph result = await _helperClient.translationEnginesClient.GetWordGraphAsync(smtEngineId, "verdad");
         Assert.That(result.SourceTokens, Has.Count.EqualTo(1));
         Assert.That(
-            result.Arcs
-                .Where(arc => arc != null && arc.Confidences != null)!
+            result
+                .Arcs.Where(arc => arc != null && arc.Confidences != null)!
                 .MaxBy(arc => arc.Confidences.Average())!
                 .TargetTokens.All(tk => tk == "truth"),
             "Best translation should have been 'truth'but returned word graph: \n{0}",

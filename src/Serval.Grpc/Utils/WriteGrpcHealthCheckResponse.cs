@@ -14,13 +14,14 @@ public class WriteGrpcHealthCheckResponse
         {
             healthCheckResultData.Add(entry.Key, $"{entry.Value.Status}: {entry.Value.Description ?? ""}");
             if ((entry.Value.Exception?.ToString() ?? "") != "")
-                if(healthCheckResultException is null)
+                if (healthCheckResultException is null)
                     healthCheckResultException = $"{entry.Key}: {entry.Value.Exception}";
                 else
                     healthCheckResultException += $"\n{entry.Key}: {entry.Value.Exception}";
         }
         // Assemble response
-        HealthCheckResponse healthCheckReponse = new HealthCheckResponse{
+        HealthCheckResponse healthCheckReponse = new HealthCheckResponse
+        {
             Status = (HealthCheckStatus)healthReport.Status,
             Duration = healthReport.TotalDuration.ToString(),
             Exception = healthCheckResultException ?? ""
@@ -30,5 +31,5 @@ public class WriteGrpcHealthCheckResponse
             healthCheckReponse.Data.Add(entry.Key, entry.Value);
         }
         return healthCheckReponse;
-    }   
+    }
 }
