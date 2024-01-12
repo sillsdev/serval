@@ -105,10 +105,9 @@ message TranslationResult {
 }
 
 message HealthCheckResponse {
-    HealthCheckStatus Status = 1;
-    string Duration = 2;
-    map<string, string> Data = 3;
-    optional string Exception = 4;
+    HealthCheckStatus status = 1;
+    map<string, string> data = 2;
+    optional string error = 3;
 }
 
 message WordGraphArc {
@@ -160,7 +159,7 @@ enum TranslationSource {
 }
 
 enum HealthCheckStatus {
-    Unhealthy = 0;
-    Degraded = 1;
-    Healthy = 2;
+    UNHEALTHY = 0;
+    DEGRADED = 1;
+    HEALTHY = 2;
 }

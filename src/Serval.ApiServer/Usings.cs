@@ -1,5 +1,7 @@
 ﻿global using System.Net;
 global using System.Security.Claims;
+global using System.Text;
+global using System.Text.Json;
 global using System.Text.Json.Serialization;
 global using Asp.Versioning;
 global using Hangfire;
@@ -30,4 +32,3 @@ global using Serval.Shared.Contracts;
 global using Serval.Shared.Controllers;
 global using Serval.Shared.Models;
 global using Serval.Shared.Services;
-global using Serval.Shared.Utils;

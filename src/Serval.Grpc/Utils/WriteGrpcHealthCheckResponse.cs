@@ -20,12 +20,8 @@ public class WriteGrpcHealthCheckResponse
                     healthCheckResultException += $"\n{entry.Key}: {entry.Value.Exception}";
         }
         // Assemble response
-        HealthCheckResponse healthCheckReponse = new HealthCheckResponse
-        {
-            Status = (HealthCheckStatus)healthReport.Status,
-            Duration = healthReport.TotalDuration.ToString(),
-            Exception = healthCheckResultException ?? ""
-        };
+        HealthCheckResponse healthCheckReponse =
+            new() { Status = (HealthCheckStatus)healthReport.Status, Error = healthCheckResultException ?? "" };
         foreach (KeyValuePair<string, string> entry in healthCheckResultData)
         {
             healthCheckReponse.Data.Add(entry.Key, entry.Value);

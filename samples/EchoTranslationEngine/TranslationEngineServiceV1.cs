@@ -1,10 +1,16 @@
 ﻿namespace EchoTranslationEngine;
 
-public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthCheckService healthCheckService) : TranslationEngineApi.TranslationEngineApiBase
+public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
-    private readonly BackgroundTaskQueue _taskQueue = taskQueue;
-    private readonly HealthCheckService _healthCheckService = healthCheckService;
+    private readonly BackgroundTaskQueue _taskQueue;
+    private readonly HealthCheckService _healthCheckService;
+
+    public TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthCheckService healthCheckService)
+    {
+        _taskQueue = taskQueue;
+        _healthCheckService = healthCheckService;
+    }
 
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {

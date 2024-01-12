@@ -16,6 +16,8 @@ public class Startup
     {
         services.AddRouting(o => o.LowercaseUrls = true);
 
+        services.AddOutputCache();
+
         services
             .AddControllers()
             .AddJsonOptions(o =>
@@ -42,9 +44,10 @@ public class Startup
             });
         services.AddHealthChecks().AddIdentityServer(new Uri(authority), name: "Auth0");
 
-        string DataFilesDir = Configuration!.GetSection(DataFileOptions.Key)!.GetValue<string>("FilesDirectory")!;
+        var dataFileOptions = new DataFileOptions();
+        Configuration.GetSection(DataFileOptions.Key).Bind(dataFileOptions);
         // find drive letter for DataFilesDir
-        string driveLetter = Path.GetPathRoot(DataFilesDir)![..1];
+        string driveLetter = Path.GetPathRoot(dataFileOptions.FilesDirectory)![..1];
 
         // add health check for disk storage capacity
         services
@@ -54,11 +57,6 @@ public class Startup
                 "Data File Storage Capacity",
                 HealthStatus.Degraded
             );
-
-        services.AddOutputCache(options =>
-        {
-            options.AddPolicy("CacheHealthStatus", builder => builder.Expire(TimeSpan.FromSeconds(10)));
-        });
 
         services.AddAuthorization(o =>
         {
@@ -206,15 +204,15 @@ public class Startup
 
         app.UseRouting();
         app.UseAuthorization();
-        app.UseOutputCache();
         app.UseEndpoints(x =>
         {
             x.MapControllers();
             x.MapServalTranslationServices();
             x.MapHangfireDashboard();
             x.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = WriteHealthCheckResponse.Generate });
-            ;
         });
+
+        app.UseOutputCache();
 
         app.UseOpenApi(o =>
         {
