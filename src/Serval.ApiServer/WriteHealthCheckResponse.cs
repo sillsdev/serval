@@ -1,4 +1,4 @@
-namespace Serval.Shared.Utils;
+namespace Serval.ApiServer;
 
 public class WriteHealthCheckResponse
 {

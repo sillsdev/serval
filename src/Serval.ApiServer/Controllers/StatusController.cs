@@ -32,7 +32,7 @@ public class StatusController : ServalControllerBase
     /// <response code="403">The authenticated client cannot perform the operation</response>
     [Authorize(Scopes.ReadStatus)]
     [HttpGet("health")]
-    [OutputCache(PolicyName = "CacheHealthStatus")]
+    [OutputCache]
     [ProducesResponseType(typeof(HealthReportDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -47,10 +47,10 @@ public class StatusController : ServalControllerBase
     /// </summary>
     /// <remarks>Provides an indication about the health of the API</remarks>
     /// <response code="200">The API health status</response>
-    [HttpGet("health-public")]
-    [OutputCache(PolicyName = "CacheHealthStatus")]
+    [HttpGet("ping")]
+    [OutputCache]
     [ProducesResponseType(typeof(HealthReportDto), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<HealthReportDto>> GetPublicHealthAsync()
+    public async Task<ActionResult<HealthReportDto>> GetPingAsync()
     {
         var report = await _healthCheckService.CheckHealthAsync();
         HealthReportDto reportDto = Map(report);

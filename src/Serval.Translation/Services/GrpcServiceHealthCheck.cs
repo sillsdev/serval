@@ -20,21 +20,21 @@ public class GrpcServiceHealthCheck : IHealthCheck
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(
             context.Registration.Name
         );
-        HealthCheckResponse? healthReport = await client.HealthCheckAsync(
+        HealthCheckResponse? healthCheckResponse = await client.HealthCheckAsync(
             new Google.Protobuf.WellKnownTypes.Empty(),
             cancellationToken: cancellationToken
         );
-        if (healthReport is null)
+        if (healthCheckResponse is null)
             return HealthCheckResult.Unhealthy(
                 $"Health check for {context.Registration.Name} failed with response null"
             );
         // map health report to health check result
         HealthCheckResult healthCheckResult =
             new(
-                status: (HealthStatus)healthReport.Status,
+                status: (HealthStatus)healthCheckResponse.Status,
                 description: context.Registration.Name,
-                exception: healthReport.Exception is null ? null : new Exception(healthReport.Exception),
-                data: healthReport.Data.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value)
+                exception: healthCheckResponse.Error is null ? null : new Exception(healthCheckResponse.Error),
+                data: healthCheckResponse.Data.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value)
             );
         return healthCheckResult;
     }
