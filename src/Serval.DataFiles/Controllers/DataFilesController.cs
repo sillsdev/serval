@@ -56,12 +56,8 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<DataFileDto>> GetAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
-        if (dataFile == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(dataFile))
-            return Forbid();
-
+        DataFile dataFile = await _dataFileService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(dataFile);
         return Ok(Map(dataFile));
     }
 
@@ -155,16 +151,9 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> DownloadAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
-        if (dataFile == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(dataFile))
-            return Forbid();
-
-        Stream? stream = await _dataFileService.ReadAsync(id, cancellationToken);
-        if (stream == null)
-            return NotFound();
-
+        DataFile dataFile = await _dataFileService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(dataFile);
+        Stream stream = await _dataFileService.ReadAsync(id, cancellationToken);
         return File(stream, "application/octet-stream", dataFile.Name);
     }
 
@@ -195,16 +184,11 @@ public class DataFilesController : ServalControllerBase
         CancellationToken cancellationToken
     )
     {
-        DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
-        if (dataFile == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(dataFile))
-            return Forbid();
+        await AuthorizeAsync(id, cancellationToken);
 
+        DataFile dataFile;
         using (Stream stream = file.OpenReadStream())
             dataFile = await _dataFileService.UpdateAsync(id, stream, cancellationToken);
-        if (dataFile is null)
-            return NotFound();
 
         var dto = Map(dataFile);
         return Ok(dto);
@@ -234,16 +218,15 @@ public class DataFilesController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> DeleteAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        DataFile? dataFile = await _dataFileService.GetAsync(id, cancellationToken);
-        if (dataFile == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(dataFile))
-            return Forbid();
-
-        if (!await _dataFileService.DeleteAsync(id, cancellationToken))
-            return NotFound();
-
+        await AuthorizeAsync(id, cancellationToken);
+        await _dataFileService.DeleteAsync(id, cancellationToken);
         return Ok();
+    }
+
+    private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
+    {
+        DataFile dataFile = await _dataFileService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(dataFile);
     }
 
     private DataFileDto Map(DataFile source)

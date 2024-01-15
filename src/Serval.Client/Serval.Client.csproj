@@ -5,6 +5,7 @@
 		<Version>1.2.0</Version>
 		<Description>Client classes for Serval.</Description>
 		<RootNamespace>Serval.Client</RootNamespace>
+		<NoWarn>8618</NoWarn>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />

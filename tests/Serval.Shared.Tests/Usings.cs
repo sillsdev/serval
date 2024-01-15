@@ -1,12 +1,8 @@
 global using System.Text;
-global using Grpc.Core;
-global using Grpc.Net.ClientFactory;
+global using System.Xml.Linq;
 global using Microsoft.Extensions.Options;
 global using NSubstitute;
 global using NUnit.Framework;
 global using Serval.Shared.Configuration;
-global using Serval.Shared.Services;
-global using Serval.Translation.Models;
-global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
 global using SIL.Scripture;

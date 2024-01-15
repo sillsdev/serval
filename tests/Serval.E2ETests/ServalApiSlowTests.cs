@@ -5,22 +5,28 @@ namespace Serval.E2ETests;
 [Category("slow")]
 public class ServalApiSlowTests
 {
-    private ServalClientHelper? _helperClient;
+    private ServalClientHelper _helperClient;
 
     [SetUp]
-    public void SetUp()
+    public async Task SetUp()
     {
         _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true);
+        await _helperClient.InitAsync();
     }
 
     [Test]
     public async Task GetSmtWholeBible()
     {
-        await _helperClient!.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT2");
-        await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "bible.txt" }, "es", "en", false);
-        await _helperClient.BuildEngine(engineId);
-        TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
-        Assert.AreEqual(tResult.Translation, "Spirit");
+        string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT2");
+        await _helperClient.AddTextCorpusToEngineAsync(engineId, ["bible.txt"], "es", "en", false);
+        await _helperClient.BuildEngineAsync(engineId);
+        TranslationResult tResult = await _helperClient.TranslationEnginesClient.TranslateAsync(engineId, "Espíritu");
+        Assert.That(tResult.Translation, Is.EqualTo("Spirit"));
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        await _helperClient.DisposeAsync();
     }
 }

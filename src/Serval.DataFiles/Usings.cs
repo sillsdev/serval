@@ -23,4 +23,5 @@ global using Serval.Shared.Contracts;
 global using Serval.Shared.Controllers;
 global using Serval.Shared.Models;
 global using Serval.Shared.Services;
+global using Serval.Shared.Utils;
 global using SIL.DataAccess;
