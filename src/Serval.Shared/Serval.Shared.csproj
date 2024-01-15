@@ -15,10 +15,12 @@
 		<PackageReference Include="Grpc.Core.Api" Version="2.52.0" />
 		<PackageReference Include="Grpc.HealthCheck" Version="2.52.0" />
 		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.52.0" />
+		<PackageReference Include="SIL.Machine" Version="3.0.0" Condition="!Exists('..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\SIL.DataAccess\SIL.DataAccess.csproj" />
+		<ProjectReference Include="..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 	</ItemGroup>
 
 </Project>

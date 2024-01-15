@@ -1,14 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+namespace Serval.E2ETests;
 
-public class ServalClientHelper
+public class ServalClientHelper : IAsyncDisposable
 {
-    public readonly DataFilesClient dataFilesClient;
-    public readonly TranslationEnginesClient translationEnginesClient;
-    public readonly TranslationClient translationClient;
     private readonly HttpClient _httpClient;
-    readonly Dictionary<string, string> EnginePerUser = [];
-    private string _prefix;
+    private readonly Dictionary<string, string> _enginePerUser = [];
+    private readonly string _prefix;
 
     public ServalClientHelper(string audience, string prefix = "SCE_", bool ignoreSSLErrors = false)
     {
@@ -23,9 +19,9 @@ public class ServalClientHelper
             _httpClient = new HttpClient();
         _httpClient.BaseAddress = new Uri(env["hostUrl"]);
         _httpClient.Timeout = TimeSpan.FromSeconds(60);
-        dataFilesClient = new DataFilesClient(_httpClient);
-        translationEnginesClient = new TranslationEnginesClient(_httpClient);
-        translationClient = new TranslationClient(_httpClient);
+        DataFilesClient = new DataFilesClient(_httpClient);
+        TranslationEnginesClient = new TranslationEnginesClient(_httpClient);
+        TranslationEngineTypesClient = new TranslationEngineTypesClient(_httpClient);
         _httpClient.DefaultRequestHeaders.Add(
             "authorization",
             $"Bearer {GetAuth0Authentication(env["authUrl"], audience, env["clientId"], env["clientSecret"]).Result}"
@@ -37,6 +33,10 @@ public class ServalClientHelper
             Options = "{\"max_steps\":10}"
         };
     }
+
+    public DataFilesClient DataFilesClient { get; }
+    public TranslationEnginesClient TranslationEnginesClient { get; }
+    public TranslationEngineTypesClient TranslationEngineTypesClient { get; }
 
     public TranslationBuildConfig TranslationBuildConfig { get; set; }
 
@@ -79,16 +79,16 @@ public class ServalClientHelper
 
     public async Task ClearEngines(string name = "")
     {
-        IList<TranslationEngine> existingTranslationEngines = await translationEnginesClient.GetAllAsync();
+        IList<TranslationEngine> existingTranslationEngines = await TranslationEnginesClient.GetAllAsync();
         foreach (var translationEngine in existingTranslationEngines)
         {
             if (translationEngine.Name?.Contains(_prefix + name) ?? false)
             {
-                await translationEnginesClient.DeleteAsync(translationEngine.Id);
+                await TranslationEnginesClient.DeleteAsync(translationEngine.Id);
             }
         }
         TranslationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
-        EnginePerUser.Clear();
+        _enginePerUser.Clear();
     }
 
     public async Task<string> CreateNewEngine(
@@ -98,7 +98,7 @@ public class ServalClientHelper
         string name = ""
     )
     {
-        var engine = await translationEnginesClient.CreateAsync(
+        var engine = await TranslationEnginesClient.CreateAsync(
             new TranslationEngineConfig
             {
                 Name = _prefix + name,
@@ -107,25 +107,25 @@ public class ServalClientHelper
                 Type = engineTypeString
             }
         );
-        EnginePerUser.Add(name, engine.Id);
+        _enginePerUser.Add(name, engine.Id);
         return engine.Id;
     }
 
     public async Task<TranslationBuild> StartBuildAsync(string engineId)
     {
-        return await translationEnginesClient.StartBuildAsync(engineId, TranslationBuildConfig);
+        return await TranslationEnginesClient.StartBuildAsync(engineId, TranslationBuildConfig);
     }
 
     public async Task BuildEngine(string engineId)
     {
         var newJob = await StartBuildAsync(engineId);
         int revision = newJob.Revision;
-        await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
+        await TranslationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
         while (true)
         {
             try
             {
-                var result = await translationEnginesClient.GetBuildAsync(engineId, newJob.Id, revision + 1);
+                var result = await TranslationEnginesClient.GetBuildAsync(engineId, newJob.Id, revision + 1);
                 if (!(result.State == JobState.Active || result.State == JobState.Pending))
                 {
                     // build completed
@@ -146,12 +146,12 @@ public class ServalClientHelper
 
     public async Task CancelBuild(string engineId, string buildId, int timeoutSeconds = 20)
     {
-        await translationEnginesClient.CancelBuildAsync(engineId);
+        await TranslationEnginesClient.CancelBuildAsync(engineId);
         int pollIntervalMs = 1000;
         int tries = 1;
         while (true)
         {
-            var build = await translationEnginesClient.GetBuildAsync(engineId, buildId);
+            var build = await TranslationEnginesClient.GetBuildAsync(engineId, buildId);
             if (build.State != JobState.Pending && build.State != JobState.Active)
             {
                 break;
@@ -204,7 +204,7 @@ public class ServalClientHelper
             }
         }
 
-        var response = await translationEnginesClient.AddCorpusAsync(
+        var response = await TranslationEnginesClient.AddCorpusAsync(
             id: engineId,
             new TranslationCorpusConfig
             {
@@ -242,9 +242,9 @@ public class ServalClientHelper
         if (files.Length == 0)
             throw new ArgumentException($"The language data directory {languageFolder} contains no files!");
         var fileList = new List<DataFile>();
-        var allFiles = await dataFilesClient.GetAllAsync();
-        ILookup<String, String> filenameToId = allFiles
-            .Where(f => f.Name is object) // not null
+        var allFiles = await DataFilesClient.GetAllAsync();
+        ILookup<string, string> filenameToId = allFiles
+            .Where(f => f.Name is not null)
             .ToLookup(file => file.Name!, file => file.Id);
 
         foreach (var fileName in filesToAdd)
@@ -257,7 +257,7 @@ public class ServalClientHelper
                 var matchedFiles = filenameToId[fullName];
                 foreach (var fileId in matchedFiles)
                 {
-                    await dataFilesClient.DeleteAsync(fileId);
+                    await DataFilesClient.DeleteAsync(fileId);
                 }
             }
 
@@ -265,7 +265,7 @@ public class ServalClientHelper
             string filePath = Path.GetFullPath(Path.Combine(languageFolder, fileName));
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"The corpus file {filePath} does not exist!");
-            var response = await dataFilesClient.CreateAsync(
+            var response = await DataFilesClient.CreateAsync(
                 file: new FileParameter(data: File.OpenRead(filePath), fileName: fileName),
                 format: fileFormat,
                 name: fullName
@@ -275,43 +275,53 @@ public class ServalClientHelper
         return fileList;
     }
 
-    private async Task<string> GetAuth0Authentication(
+    private static async Task<string> GetAuth0Authentication(
         string authUrl,
         string audience,
         string clientId,
         string clientSecret
     )
     {
-        var authHttpClient = new HttpClient();
-        authHttpClient.Timeout = TimeSpan.FromSeconds(3);
-        var request = new HttpRequestMessage(HttpMethod.Post, authUrl + "/oauth/token");
-        request.Content = new FormUrlEncodedContent(
-            new Dictionary<string, string>
-            {
-                { "grant_type", "client_credentials" },
-                { "client_id", clientId },
-                { "client_secret", clientSecret },
-                { "audience", audience },
-            }
-        );
+        var authHttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+        var request = new HttpRequestMessage(HttpMethod.Post, authUrl + "/oauth/token")
+        {
+            Content = new FormUrlEncodedContent(
+                new Dictionary<string, string>
+                {
+                    { "grant_type", "client_credentials" },
+                    { "client_id", clientId },
+                    { "client_secret", clientSecret },
+                    { "audience", audience },
+                }
+            )
+        };
         var response = authHttpClient.SendAsync(request).Result;
         if (response.Content is null)
             throw new HttpRequestException("Error getting auth0 Authentication.");
-        var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-            await response.Content.ReadAsStringAsync()
-        );
+        var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(await response.Content.ReadAsStringAsync());
         return dict?["access_token"] ?? "";
     }
 
-    private HttpClientHandler GetHttHandlerToIgnoreSslErrors()
+    private static HttpClientHandler GetHttHandlerToIgnoreSslErrors()
     {
         //ignore ssl errors
-        HttpClientHandler handler = new HttpClientHandler();
-        handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-        handler.ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
-        {
-            return true;
-        };
+        HttpClientHandler handler =
+            new()
+            {
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+                ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
+                {
+                    return true;
+                }
+            };
         return handler;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await ClearEngines();
+
+        _httpClient.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

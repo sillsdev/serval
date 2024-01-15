@@ -1,6 +1,7 @@
 global using System.Security.Claims;
 global using System.Text;
 global using System.Text.Encodings.Web;
+global using System.Xml.Linq;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
 global using Hangfire;
@@ -16,7 +17,9 @@ global using MongoDB.Driver.Linq;
 global using NSubstitute;
 global using NUnit.Framework;
 global using Serval.Client;
+global using Serval.Shared.Configuration;
 global using Serval.Shared.Controllers;
+global using Serval.Shared.Services;
 global using Serval.Translation.Models;
 global using SIL.DataAccess;
 global using SIL.ObjectModel;

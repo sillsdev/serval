@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
+using Serval.Shared.Utils;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -10,11 +11,10 @@ public class EngineServiceTests
     const string BUILD1_ID = "b00000000000000000000001";
 
     [Test]
-    public async Task TranslateAsync_EngineDoesNotExist()
+    public void TranslateAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        Models.TranslationResult? result = await env.Service.TranslateAsync("engine1", "esto es una prueba.");
-        Assert.That(result, Is.Null);
+        Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.TranslateAsync("engine1", "esto es una prueba."));
     }
 
     [Test]
@@ -28,11 +28,12 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task GetWordGraphAsync_EngineDoesNotExist()
+    public void GetWordGraphAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        Models.WordGraph? result = await env.Service.GetWordGraphAsync("engine1", "esto es una prueba.");
-        Assert.That(result, Is.Null);
+        Assert.ThrowsAsync<EntityNotFoundException>(
+            () => env.Service.GetWordGraphAsync("engine1", "esto es una prueba.")
+        );
     }
 
     [Test]
@@ -46,16 +47,12 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task TrainSegmentAsync_EngineDoesNotExist()
+    public void TrainSegmentAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        bool result = await env.Service.TrainSegmentPairAsync(
-            "engine1",
-            "esto es una prueba.",
-            "this is a test.",
-            true
+        Assert.ThrowsAsync<EntityNotFoundException>(
+            () => env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true)
         );
-        Assert.That(result, Is.False);
     }
 
     [Test]
@@ -63,8 +60,9 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        bool result = await env.Service.TrainSegmentPairAsync(engineId, "esto es una prueba.", "this is a test.", true);
-        Assert.That(result, Is.True);
+        Assert.DoesNotThrowAsync(
+            () => env.Service.TrainSegmentPairAsync(engineId, "esto es una prueba.", "this is a test.", true)
+        );
     }
 
     [Test]
@@ -90,8 +88,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        bool result = await env.Service.DeleteAsync("engine1");
-        Assert.That(result, Is.True);
+        await env.Service.DeleteAsync("engine1");
         Engine? engine = await env.Engines.GetAsync(engineId);
         Assert.That(engine, Is.Null);
     }
@@ -101,8 +98,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         await env.CreateEngineAsync();
-        bool result = await env.Service.DeleteAsync("engine3");
-        Assert.That(result, Is.False);
+        Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.DeleteAsync("engine3"));
     }
 
     [Test]
@@ -110,8 +106,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        bool result = await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
-        Assert.That(result, Is.True);
+        Assert.DoesNotThrowAsync(() => env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId }));
     }
 
     [Test]

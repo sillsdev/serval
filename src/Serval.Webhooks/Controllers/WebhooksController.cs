@@ -45,12 +45,8 @@ public class WebhooksController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<WebhookDto>> GetAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        Webhook? hook = await _hookService.GetAsync(id, cancellationToken);
-        if (hook == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(hook))
-            return Forbid();
-
+        Webhook hook = await _hookService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(hook);
         return Ok(Map(hook));
     }
 
@@ -93,15 +89,15 @@ public class WebhooksController : ServalControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> DeleteAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        Webhook? hook = await _hookService.GetAsync(id, cancellationToken);
-        if (hook == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(hook))
-            return Forbid();
-
-        if (!await _hookService.DeleteAsync(id, cancellationToken))
-            return NotFound();
+        await AuthorizeAsync(id, cancellationToken);
+        await _hookService.DeleteAsync(id, cancellationToken);
         return Ok();
+    }
+
+    private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
+    {
+        Webhook hook = await _hookService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(hook);
     }
 
     private WebhookDto Map(Webhook source)

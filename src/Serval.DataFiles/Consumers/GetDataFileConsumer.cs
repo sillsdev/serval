@@ -1,4 +1,6 @@
-﻿namespace Serval.DataFiles.Consumers;
+﻿using Serval.Shared.Utils;
+
+namespace Serval.DataFiles.Consumers;
 
 public class GetDataFileConsumer : IConsumer<GetDataFile>
 {
@@ -11,19 +13,13 @@ public class GetDataFileConsumer : IConsumer<GetDataFile>
 
     public async Task Consume(ConsumeContext<GetDataFile> context)
     {
-        DataFile? dataFile = await _dataFileService.GetAsync(
-            context.Message.DataFileId,
-            context.Message.Owner,
-            context.CancellationToken
-        );
-        if (dataFile is null)
+        try
         {
-            await context.RespondAsync(
-                new DataFileNotFound { DataFileId = context.Message.DataFileId, Owner = context.Message.Owner }
+            DataFile dataFile = await _dataFileService.GetAsync(
+                context.Message.DataFileId,
+                context.Message.Owner,
+                context.CancellationToken
             );
-        }
-        else
-        {
             await context.RespondAsync(
                 new DataFileResult
                 {
@@ -32,6 +28,12 @@ public class GetDataFileConsumer : IConsumer<GetDataFile>
                     Filename = dataFile.Filename,
                     Format = dataFile.Format
                 }
+            );
+        }
+        catch (EntityNotFoundException)
+        {
+            await context.RespondAsync(
+                new DataFileNotFound { DataFileId = context.Message.DataFileId, Owner = context.Message.Owner }
             );
         }
     }

@@ -5,7 +5,7 @@ namespace Serval.E2ETests;
 [Category("slow")]
 public class ServalApiSlowTests
 {
-    private ServalClientHelper? _helperClient;
+    private ServalClientHelper _helperClient;
 
     [SetUp]
     public void SetUp()
@@ -16,11 +16,16 @@ public class ServalApiSlowTests
     [Test]
     public async Task GetSmtWholeBible()
     {
-        await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT2");
-        await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "bible.txt" }, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, ["bible.txt"], "es", "en", false);
         await _helperClient.BuildEngine(engineId);
-        TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(engineId, "Espíritu");
-        Assert.AreEqual(tResult.Translation, "Spirit");
+        TranslationResult tResult = await _helperClient.TranslationEnginesClient.TranslateAsync(engineId, "Espíritu");
+        Assert.That(tResult.Translation, Is.EqualTo("Spirit"));
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        await _helperClient.DisposeAsync();
     }
 }
