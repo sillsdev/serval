@@ -85,24 +85,23 @@ public class Startup
             .AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
 
-        services.AddHangfire(
-            c =>
-                c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                    .UseSimpleAssemblyNameTypeSerializer()
-                    .UseRecommendedSerializerSettings()
-                    .UseMongoStorage(
-                        Configuration.GetConnectionString("Hangfire"),
-                        new MongoStorageOptions
+        services.AddHangfire(c =>
+            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseMongoStorage(
+                    Configuration.GetConnectionString("Hangfire"),
+                    new MongoStorageOptions
+                    {
+                        MigrationOptions = new MongoMigrationOptions
                         {
-                            MigrationOptions = new MongoMigrationOptions
-                            {
-                                MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                                BackupStrategy = new CollectionMongoBackupStrategy()
-                            },
-                            CheckConnection = true,
-                            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
-                        }
-                    )
+                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                            BackupStrategy = new CollectionMongoBackupStrategy()
+                        },
+                        CheckConnection = true,
+                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+                    }
+                )
         );
         services.AddHangfireServer();
 

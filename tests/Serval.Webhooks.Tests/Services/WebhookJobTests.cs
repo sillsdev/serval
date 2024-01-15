@@ -31,8 +31,7 @@ public class WebhookJobTests
                 Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted }
             }
         );
-        env.MockHttp
-            .Expect("https://test.client.com/hook")
+        env.MockHttp.Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
                 "sha256=8EC2360A34811845884D8FCE03866EA8FAD9429AAA9E6247D7A817AD2E170B8F"
@@ -81,8 +80,7 @@ public class WebhookJobTests
                 Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted }
             }
         );
-        env.MockHttp
-            .Expect("https://test.client.com/hook")
+        env.MockHttp.Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
                 "sha256=8EC2360A34811845884D8FCE03866EA8FAD9429AAA9E6247D7A817AD2E170B8F"
@@ -111,8 +109,7 @@ public class WebhookJobTests
                 Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted }
             }
         );
-        env.MockHttp
-            .Expect("https://test.client.com/hook")
+        env.MockHttp.Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
                 "sha256=8EC2360A34811845884D8FCE03866EA8FAD9429AAA9E6247D7A817AD2E170B8F"

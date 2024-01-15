@@ -204,14 +204,18 @@ public class MongoRepository<T> : IRepository<T>
         BsonDocument result;
         if (_context.Session is not null)
         {
-            result = await _collection.Database
-                .RunCommandAsync<BsonDocument>(_context.Session, findCommand, cancellationToken: cancellationToken)
+            result = await _collection
+                .Database.RunCommandAsync<BsonDocument>(
+                    _context.Session,
+                    findCommand,
+                    cancellationToken: cancellationToken
+                )
                 .ConfigureAwait(false);
         }
         else
         {
-            result = await _collection.Database
-                .RunCommandAsync<BsonDocument>(findCommand, cancellationToken: cancellationToken)
+            result = await _collection
+                .Database.RunCommandAsync<BsonDocument>(findCommand, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         BsonDocument? initialEntityDoc = result["cursor"]["firstBatch"].AsBsonArray.FirstOrDefault()?.AsBsonDocument;

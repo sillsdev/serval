@@ -35,10 +35,9 @@ public static class IServiceCollectionExtensions
         clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
         clientSettings.LinqProvider = LinqProvider.V2;
         services.AddSingleton<IMongoClient>(sp => new MongoClient(clientSettings));
-        services.AddSingleton(
-            sp =>
-                sp.GetRequiredService<IMongoClient>()
-                    .GetDatabase(sp.GetRequiredService<IOptions<MongoDataAccessOptions>>().Value.Url.DatabaseName)
+        services.AddSingleton(sp =>
+            sp.GetRequiredService<IMongoClient>()
+                .GetDatabase(sp.GetRequiredService<IOptions<MongoDataAccessOptions>>().Value.Url.DatabaseName)
         );
         services.TryAddScoped<IMongoDataAccessContext, MongoDataAccessContext>();
         services.AddScoped<IDataAccessContext>(sp => sp.GetRequiredService<IMongoDataAccessContext>());

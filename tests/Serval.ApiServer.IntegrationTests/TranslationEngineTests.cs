@@ -300,8 +300,7 @@ public class TranslationEngineTests
                 );
                 break;
             case 409:
-                _env.EchoClient
-                    .TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
+                _env.EchoClient.TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
                     .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.Aborted));
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -356,8 +355,7 @@ public class TranslationEngineTests
                 );
                 break;
             case 409:
-                _env.EchoClient
-                    .TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
+                _env.EchoClient.TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
                     .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.Aborted));
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -407,8 +405,12 @@ public class TranslationEngineTests
                 });
                 break;
             case 409:
-                _env.EchoClient
-                    .GetWordGraphAsync(Arg.Any<GetWordGraphRequest>(), null, null, Arg.Any<CancellationToken>())
+                _env.EchoClient.GetWordGraphAsync(
+                    Arg.Any<GetWordGraphRequest>(),
+                    null,
+                    null,
+                    Arg.Any<CancellationToken>()
+                )
                     .Returns(CreateAsyncUnaryCall<GetWordGraphResponse>(StatusCode.Aborted));
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -459,8 +461,12 @@ public class TranslationEngineTests
                 await client.TrainSegmentAsync(engineId, sp);
                 break;
             case 409:
-                _env.EchoClient
-                    .TrainSegmentPairAsync(Arg.Any<TrainSegmentPairRequest>(), null, null, Arg.Any<CancellationToken>())
+                _env.EchoClient.TrainSegmentPairAsync(
+                    Arg.Any<TrainSegmentPairRequest>(),
+                    null,
+                    null,
+                    Arg.Any<CancellationToken>()
+                )
                     .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
