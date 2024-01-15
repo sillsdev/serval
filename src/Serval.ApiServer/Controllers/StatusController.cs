@@ -32,7 +32,6 @@ public class StatusController : ServalControllerBase
     /// <response code="403">The authenticated client cannot perform the operation</response>
     [Authorize(Scopes.ReadStatus)]
     [HttpGet("health")]
-    [OutputCache]
     [ProducesResponseType(typeof(HealthReportDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -43,7 +42,7 @@ public class StatusController : ServalControllerBase
     }
 
     /// <summary>
-    /// Get Summary of Health on Publically available endpoint
+    /// Get Summary of Health on Publically available endpoint, cached for 10 seconds (if not authenticated).
     /// </summary>
     /// <remarks>Provides an indication about the health of the API</remarks>
     /// <response code="200">The API health status</response>

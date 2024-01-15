@@ -15,9 +15,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddRouting(o => o.LowercaseUrls = true);
-
-        services.AddOutputCache();
-
+        services.AddOutputCache(options =>
+        {
+            options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
+        });
         services
             .AddControllers()
             .AddJsonOptions(o =>
@@ -203,16 +204,14 @@ public class Startup
         app.UseAuthentication();
 
         app.UseRouting();
+        app.UseOutputCache();
         app.UseAuthorization();
         app.UseEndpoints(x =>
         {
             x.MapControllers();
             x.MapServalTranslationServices();
             x.MapHangfireDashboard();
-            x.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = WriteHealthCheckResponse.Generate });
         });
-
-        app.UseOutputCache();
 
         app.UseOpenApi(o =>
         {
