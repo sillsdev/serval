@@ -3,25 +3,17 @@ namespace Serval.ApiServer.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/status")]
 [OpenApiTag("Status")]
-public class StatusController : ServalControllerBase
+public class StatusController(
+    HealthCheckService healthCheckService,
+    IAuthorizationService authService,
+    IWebHostEnvironment env,
+    IConfiguration configuration
+) : ServalControllerBase(authService)
 {
-    private readonly HealthCheckService _healthCheckService;
-    private readonly IWebHostEnvironment _env;
+    private readonly HealthCheckService _healthCheckService = healthCheckService;
+    private readonly IWebHostEnvironment _env = env;
 
-    private readonly IConfiguration _configuration;
-
-    public StatusController(
-        HealthCheckService healthCheckService,
-        IAuthorizationService authService,
-        IWebHostEnvironment env,
-        IConfiguration configuration
-    )
-        : base(authService)
-    {
-        _healthCheckService = healthCheckService;
-        _env = env;
-        _configuration = configuration;
-    }
+    private readonly IConfiguration _configuration = configuration;
 
     /// <summary>
     /// Get Health

@@ -1,16 +1,12 @@
 ﻿namespace EchoTranslationEngine;
 
-public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngineApiBase
+public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthCheckService healthCheckService)
+    : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
-    private readonly BackgroundTaskQueue _taskQueue;
-    private readonly HealthCheckService _healthCheckService;
+    private readonly BackgroundTaskQueue _taskQueue = taskQueue;
 
-    public TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthCheckService healthCheckService)
-    {
-        _taskQueue = taskQueue;
-        _healthCheckService = healthCheckService;
-    }
+    private readonly HealthCheckService _healthCheckService = healthCheckService;
 
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
@@ -88,18 +84,16 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                             if (!corpus.PretranslateAll && corpus.PretranslateTextIds.Count == 0)
                                 continue;
 
-                            var sourceFiles = corpus.SourceFiles
-                                .Where(
-                                    f =>
-                                        (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(f.TextId))
-                                        && f.Format == FileFormat.Text
+                            var sourceFiles = corpus
+                                .SourceFiles.Where(f =>
+                                    (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(f.TextId))
+                                    && f.Format == FileFormat.Text
                                 )
                                 .ToDictionary(f => f.TextId, f => f.Location);
-                            var targetFiles = corpus.TargetFiles
-                                .Where(
-                                    f =>
-                                        (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(f.TextId))
-                                        && f.Format == FileFormat.Text
+                            var targetFiles = corpus
+                                .TargetFiles.Where(f =>
+                                    (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(f.TextId))
+                                    && f.Format == FileFormat.Text
                                 )
                                 .ToDictionary(f => f.TextId, f => f.Location);
 
@@ -272,23 +266,20 @@ public class TranslationEngineServiceV1 : TranslationEngineApi.TranslationEngine
                     {
                         Enumerable
                             .Range(0, tokens.Length - 1)
-                            .Select(
-                                index =>
-                                    new WordGraphArc
-                                    {
-                                        PrevState = index,
-                                        NextState = index + 1,
-                                        Score = 1.0,
-                                        TargetTokens = { tokens[index] },
-                                        Confidences = { 1.0 },
-                                        SourceSegmentStart = index,
-                                        SourceSegmentEnd = index + 1,
-                                        Alignment =
-                                        {
-                                            new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
-                                        }
-                                    }
-                            )
+                            .Select(index => new WordGraphArc
+                            {
+                                PrevState = index,
+                                NextState = index + 1,
+                                Score = 1.0,
+                                TargetTokens = { tokens[index] },
+                                Confidences = { 1.0 },
+                                SourceSegmentStart = index,
+                                SourceSegmentEnd = index + 1,
+                                Alignment =
+                                {
+                                    new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
+                                }
+                            })
                     },
                     FinalStates = { tokens.Length }
                 }

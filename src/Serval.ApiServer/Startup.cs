@@ -48,7 +48,9 @@ public class Startup
         var dataFileOptions = new DataFileOptions();
         Configuration.GetSection(DataFileOptions.Key).Bind(dataFileOptions);
         // find drive letter for DataFilesDir
-        string driveLetter = Path.GetPathRoot(dataFileOptions.FilesDirectory)![..1];
+        string? driveLetter = Path.GetPathRoot(dataFileOptions.FilesDirectory)?[..1];
+        if (driveLetter == null)
+            throw new InvalidOperationException("Cannot find drive letter for DataFilesDir");
 
         // add health check for disk storage capacity
         services
