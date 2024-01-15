@@ -23,9 +23,9 @@ public class TranslationEnginesController(
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The engines</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -43,10 +43,10 @@ public class TranslationEnginesController(
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The translation engine</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
 
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}", Name = "GetTranslationEngine")]
@@ -60,12 +60,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
-
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
         return Ok(Map(engine));
     }
 
@@ -103,20 +99,18 @@ public class TranslationEnginesController(
     /// <param name="engineConfig">The translation engine configuration (see above)</param>
     /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
-    /// <response code="201">The translation engine was created successfully</response>
-    /// <response code="400">Bad request.  Is the engine type correct?</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="422">The engine was specified incorrectly.  Did you use the same language for the source and target?</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="201">The new translation engine</response>
+    /// <response code="400">Bad request. Is the engine type correct?</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.CreateTranslationEngines)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationEngineDto>> CreateAsync(
         [FromBody] TranslationEngineConfigDto engineConfig,
@@ -126,19 +120,7 @@ public class TranslationEnginesController(
     {
         Engine engine = Map(engineConfig);
         engine.Id = idGenerator.GenerateId();
-        try
-        {
-            bool success = await _engineService.CreateAsync(engine, cancellationToken);
-            if (!success)
-                return BadRequest();
-        }
-        catch (RpcException rpcEx)
-        {
-            if (rpcEx.StatusCode == Grpc.Core.StatusCode.InvalidArgument)
-                return UnprocessableEntity(rpcEx.Message);
-            throw;
-        }
-
+        await _engineService.CreateAsync(engine, cancellationToken);
         TranslationEngineDto dto = Map(engine);
         return Created(dto.Url, dto);
     }
@@ -148,11 +130,11 @@ public class TranslationEnginesController(
     /// </summary>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The engine was successfully deleted</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist and therefore cannot be deleted</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="200">The engine was successfully deleted.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist and therefore cannot be deleted.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.DeleteTranslationEngines)]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -162,11 +144,8 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> DeleteAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
-        if (!await _engineService.DeleteAsync(id, cancellationToken))
-            return NotFound();
+        await AuthorizeAsync(id, cancellationToken);
+        await _engineService.DeleteAsync(id, cancellationToken);
         return Ok();
     }
 
@@ -178,12 +157,12 @@ public class TranslationEnginesController(
     /// <param name="cancellationToken"></param>
     /// <response code="200">The translation result</response>
     /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="405">The method is not supported</response>
-    /// <response code="409">The engine needs to be built before it can translate segments</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="405">The method is not supported.</response>
+    /// <response code="409">The engine needs to be built before it can translate segments.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpPost("{id}/translate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -200,12 +179,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
-        TranslationResult? result = await _engineService.TranslateAsync(id, segment, cancellationToken);
-        if (result == null)
-            return NotFound();
+        await AuthorizeAsync(id, cancellationToken);
+        TranslationResult result = await _engineService.TranslateAsync(id, segment, cancellationToken);
         return Ok(Map(result));
     }
 
@@ -218,12 +193,12 @@ public class TranslationEnginesController(
     /// <param name="cancellationToken"></param>
     /// <response code="200">The translation results</response>
     /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="405">The method is not supported</response>
-    /// <response code="409">The engine needs to be built before it can translate segments</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="405">The method is not supported.</response>
+    /// <response code="409">The engine needs to be built before it can translate segments.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpPost("{id}/translate/{n}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -241,17 +216,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
-        IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(
-            id,
-            n,
-            segment,
-            cancellationToken
-        );
-        if (results == null)
-            return NotFound();
+        await AuthorizeAsync(id, cancellationToken);
+        IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(id, n, segment, cancellationToken);
         return Ok(results.Select(Map));
     }
 
@@ -263,12 +229,12 @@ public class TranslationEnginesController(
     /// <param name="cancellationToken"></param>
     /// <response code="200">The word graph result</response>
     /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="405">The method is not supported</response>
-    /// <response code="409">The engine needs to be built first</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="405">The method is not supported.</response>
+    /// <response code="409">The engine needs to be built first.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpPost("{id}/get-word-graph")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -285,12 +251,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
-        WordGraph? wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
-        if (wordGraph == null)
-            return NotFound();
+        await AuthorizeAsync(id, cancellationToken);
+        WordGraph wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
         return Ok(Map(wordGraph));
     }
 
@@ -305,14 +267,14 @@ public class TranslationEnginesController(
     /// <param name="id">The translation engine id</param>
     /// <param name="segmentPair">The segment pair</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The engine was trained successfully</response>
+    /// <response code="200">The engine was trained successfully.</response>
     /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="405">The method is not supported</response>
-    /// <response code="409">The engine needs to be built first</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="405">The method is not supported.</response>
+    /// <response code="409">The engine needs to be built first.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/train-segment")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -329,21 +291,14 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
-        if (
-            !await _engineService.TrainSegmentPairAsync(
-                id,
-                segmentPair.SourceSegment,
-                segmentPair.TargetSegment,
-                segmentPair.SentenceStart,
-                cancellationToken
-            )
-        )
-        {
-            return NotFound();
-        }
+        await AuthorizeAsync(id, cancellationToken);
+        await _engineService.TrainSegmentPairAsync(
+            id,
+            segmentPair.SourceSegment,
+            segmentPair.TargetSegment,
+            segmentPair.SentenceStart,
+            cancellationToken
+        );
         return Ok();
     }
 
@@ -372,13 +327,12 @@ public class TranslationEnginesController(
     /// <param name="getDataFileClient"></param>
     /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
-    /// <response code="201">The corpus was added successfully</response>
+    /// <response code="201">The added corpus</response>
     /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="422">The engine was specified incorrectly.  Did you use the same language for the source and target?</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -386,7 +340,6 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
@@ -396,17 +349,9 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine is null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
         Corpus corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
-        if (engine.SourceLanguage != corpus.SourceLanguage || engine.TargetLanguage != corpus.TargetLanguage)
-            return UnprocessableEntity(
-                $"Source and target languages, {corpus.SourceLanguage} & {corpus.TargetLanguage}, do not match engine source and target languages, {engine.SourceLanguage} & {engine.TargetLanguage}"
-            );
-
         await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
         TranslationCorpusDto dto = Map(id, corpus);
         return Created(dto.Url, dto);
@@ -416,8 +361,8 @@ public class TranslationEnginesController(
     /// Update a corpus with a new set of files
     /// </summary>
     /// <remarks>
-    /// See posting a new corpus for details of use.  Will completely replace corpus' file associations.
-    /// Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
+    /// See posting a new corpus for details of use. Will completely replace corpus' file associations.
+    /// Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -426,10 +371,10 @@ public class TranslationEnginesController(
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus was updated successfully</response>
     /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine or corpus does not exist</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or corpus does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPatch("{id}/corpora/{corpusId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -446,10 +391,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
-        Corpus? corpus = await _engineService.UpdateCorpusAsync(
+        await AuthorizeAsync(id, cancellationToken);
+        Corpus corpus = await _engineService.UpdateCorpusAsync(
             id,
             corpusId,
             corpusConfig.SourceFiles is null
@@ -460,8 +403,6 @@ public class TranslationEnginesController(
                 : await MapAsync(getDataFileClient, corpusConfig.TargetFiles, cancellationToken),
             cancellationToken
         );
-        if (corpus is null)
-            return NotFound();
         return Ok(Map(id, corpus));
     }
 
@@ -487,12 +428,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
-
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
         return Ok(engine.Corpora.Select(c => Map(id, c)));
     }
 
@@ -503,10 +440,10 @@ public class TranslationEnginesController(
     /// <param name="corpusId">The corpus id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus configuration</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine or corpus does not exist</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or corpus does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/corpora/{corpusId}", Name = "GetTranslationCorpus")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -520,15 +457,11 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
         Corpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
         if (corpus == null)
             return NotFound();
-
         return Ok(Map(id, corpus));
     }
 
@@ -541,11 +474,11 @@ public class TranslationEnginesController(
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The data file was deleted successfully</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine or corpus does not exist</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="200">The data file was deleted successfully.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or corpus does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpDelete("{id}/corpora/{corpusId}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -559,12 +492,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
-        if (!await _engineService.DeleteCorpusAsync(id, corpusId, cancellationToken))
-            return NotFound();
-
+        await AuthorizeAsync(id, cancellationToken);
+        await _engineService.DeleteCorpusAsync(id, corpusId, cancellationToken);
         return Ok();
     }
 
@@ -586,11 +515,11 @@ public class TranslationEnginesController(
     /// <param name="textId">The text id (optional)</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The pretranslations</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine or corpus does not exist</response>
-    /// <response code="409">The engine needs to be built first</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or corpus does not exist.</response>
+    /// <response code="409">The engine needs to be built first.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/corpora/{corpusId}/pretranslations")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -606,11 +535,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
         if (engine.ModelRevision == 0)
@@ -627,15 +553,125 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
+    /// Get all pretranslations for the specified text in a corpus of a translation engine
+    /// </summary>
+    /// <remarks>
+    /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+    /// * **TextId**: The TextId of the SourceFile defined when the corpus was created.
+    /// * **Refs** (a list of strings): A list of references including:
+    ///   * The references defined in the SourceFile per line, if any.
+    ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
+    /// * **Translation**: the text of the pretranslation
+    /// </remarks>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="corpusId">The corpus id</param>
+    /// <param name="textId">The text id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The pretranslations</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or corpus does not exist.</response>
+    /// <response code="409">The engine needs to be built first.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.ReadTranslationEngines)]
+    [HttpGet("{id}/corpora/{corpusId}/pretranslations/{textId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetPretranslationsByTextIdAsync(
+        [NotNull] string id,
+        [NotNull] string corpusId,
+        [NotNull] string textId,
+        CancellationToken cancellationToken
+    )
+    {
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
+        if (!engine.Corpora.Any(c => c.Id == corpusId))
+            return NotFound();
+        if (engine.ModelRevision == 0)
+            return Conflict();
+
+        IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
+            id,
+            engine.ModelRevision,
+            corpusId,
+            textId,
+            cancellationToken
+        );
+        return Ok(pretranslations.Select(Map));
+    }
+
+    /// <summary>
+    /// Get a pretranslated Scripture book in USFM format.
+    /// </summary>
+    /// <remarks>
+    /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
+    /// segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
+    /// pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+    /// </remarks>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="corpusId">The corpus id</param>
+    /// <param name="textId">The text id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The book in USFM format</response>
+    /// <response code="204">The specified book does not exist in the source or target corpus.</response>
+    /// <response code="400">The corpus is not a valid Scripture corpus.</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or corpus does not exist.</response>
+    /// <response code="409">The engine needs to be built first.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.ReadTranslationEngines)]
+    [HttpGet("{id}/corpora/{corpusId}/pretranslations/{textId}/usfm")]
+    [Produces("text/plain")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/plain")]
+    [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> GetPretranslatedUsfmAsync(
+        [NotNull] string id,
+        [NotNull] string corpusId,
+        [NotNull] string textId,
+        CancellationToken cancellationToken
+    )
+    {
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
+        if (!engine.Corpora.Any(c => c.Id == corpusId))
+            return NotFound();
+        if (engine.ModelRevision == 0)
+            return Conflict();
+
+        string usfm = await _pretranslationService.GetUsfmAsync(
+            id,
+            engine.ModelRevision,
+            corpusId,
+            textId,
+            cancellationToken
+        );
+        if (usfm == "")
+            return NoContent();
+        return Content(usfm, "text/plain");
+    }
+
+    /// <summary>
     /// Get all build jobs for a translation engine
     /// </summary>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The build jobs</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/builds")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -648,9 +684,7 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
+        await AuthorizeAsync(id, cancellationToken);
         return Ok((await _buildService.GetAllAsync(id, cancellationToken)).Select(Map));
     }
 
@@ -672,16 +706,14 @@ public class TranslationEnginesController(
     /// <param name="minRevision">The minimum revision</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The build job</response>
-    /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client does not own the translation engine</response>
-    /// <response code="404">The engine or build does not exist</response>
-    /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="404">The engine or build does not exist.</response>
+    /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/builds/{buildId}", Name = "GetTranslationBuild")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
@@ -694,9 +726,7 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
+        await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
             EntityChange<Build> change = await TaskEx.Timeout(
@@ -713,10 +743,7 @@ public class TranslationEnginesController(
         }
         else
         {
-            Build? build = await _buildService.GetAsync(buildId, cancellationToken);
-            if (build == null)
-                return NotFound();
-
+            Build build = await _buildService.GetAsync(buildId, cancellationToken);
             return Ok(Map(build));
         }
     }
@@ -743,12 +770,12 @@ public class TranslationEnginesController(
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="201">The build job was started successfully</response>
-    /// <response code="400">A corpus id is invalid</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="409">There is already an active or pending build or a build in the process of being canceled</response>
+    /// <response code="201">The new build job</response>
+    /// <response code="400">A corpus id is invalid.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="409">There is already an active or pending build or a build in the process of being canceled.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/builds")]
@@ -765,30 +792,10 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine is null)
-            return NotFound();
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return Forbid();
-
-        if (await _buildService.GetActiveAsync(id) is not null)
-            return Conflict();
-
-        Build build;
-        try
-        {
-            build = Map(engine, buildConfig);
-        }
-        catch (InvalidOperationException ioe)
-        {
-            return BadRequest(ioe.Message);
-        }
-        catch (ArgumentException ae)
-        {
-            return BadRequest(ae.Message);
-        }
-        if (!await _engineService.StartBuildAsync(build, cancellationToken))
-            return NotFound();
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
+        Build build = Map(engine, buildConfig);
+        await _engineService.StartBuildAsync(build, cancellationToken);
 
         var dto = Map(build);
         return Created(dto.Url, dto);
@@ -804,13 +811,13 @@ public class TranslationEnginesController(
     /// <param name="minRevision">The minimum revision</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The build job</response>
-    /// <response code="204">There is no build currently running</response>
+    /// <response code="204">There is no build currently running.</response>
     /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client does not own the translation engine</response>
-    /// <response code="404">The engine does not exist</response>
-    /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/current-build")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -827,9 +834,7 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
+        await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
             EntityChange<Build> change = await TaskEx.Timeout(
@@ -861,15 +866,17 @@ public class TranslationEnginesController(
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The build job was cancelled successfully</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client does not own the translation engine</response>
-    /// <response code="404">The engine does not exist or there is no active build </response>
-    /// <response code="405">The translation engine does not support cancelling builds</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    /// <response code="200">The build job was cancelled successfully.</response>
+    /// <response code="204">There is no active build job.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="405">The translation engine does not support cancelling builds.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/current-build/cancel")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
@@ -877,24 +884,16 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> CancelBuildAsync([NotNull] string id, CancellationToken cancellationToken)
     {
-        if (!(await AuthorizeAsync(id, cancellationToken)).IsSuccess(out ActionResult? errorResult))
-            return errorResult;
-
-        if (await _buildService.GetActiveAsync(id) == null)
-            return NotFound();
-
-        await _engineService.CancelBuildAsync(id, cancellationToken);
+        await AuthorizeAsync(id, cancellationToken);
+        if (!await _engineService.CancelBuildAsync(id, cancellationToken))
+            return NoContent();
         return Ok();
     }
 
-    private async Task<(bool, ActionResult?)> AuthorizeAsync(string id, CancellationToken cancellationToken)
+    private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
     {
-        Engine? engine = await _engineService.GetAsync(id, cancellationToken);
-        if (engine == null)
-            return (false, NotFound());
-        if (!await AuthorizeIsOwnerAsync(engine))
-            return (false, Forbid());
-        return (true, null);
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
     }
 
     private async Task<Corpus> MapAsync(
@@ -1001,7 +1000,7 @@ public class TranslationEnginesController(
         }
         catch (Exception e)
         {
-            throw new ArgumentException($"Unable to parse field 'options' : {e.Message}");
+            throw new InvalidOperationException($"Unable to parse field 'options' : {e.Message}", e);
         }
         return build;
     }

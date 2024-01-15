@@ -9,4 +9,12 @@ public interface IPretranslationService
         string? textId = null,
         CancellationToken cancellationToken = default
     );
+
+    Task<string> GetUsfmAsync(
+        string engineId,
+        int modelRevision,
+        string corpusId,
+        string textId,
+        CancellationToken cancellationToken = default
+    );
 }
