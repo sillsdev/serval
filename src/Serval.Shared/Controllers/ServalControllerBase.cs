@@ -7,6 +7,9 @@
 [TypeFilter(typeof(ServiceUnavailableExceptionFilter))]
 [TypeFilter(typeof(ErrorResultFilter))]
 [TypeFilter(typeof(AbortedRpcExceptionFilter))]
+[TypeFilter(typeof(NotFoundExceptionFilter))]
+[TypeFilter(typeof(ForbiddenExceptionFilter))]
+[TypeFilter(typeof(BadRequestExceptionFilter))]
 public abstract class ServalControllerBase : Controller
 {
     private readonly IAuthorizationService _authService;
@@ -18,9 +21,10 @@ public abstract class ServalControllerBase : Controller
 
     protected string Owner => User.Identity!.Name!;
 
-    protected async Task<bool> AuthorizeIsOwnerAsync(IOwnedEntity ownedEntity)
+    protected async Task AuthorizeAsync(IOwnedEntity ownedEntity)
     {
         AuthorizationResult result = await _authService.AuthorizeAsync(User, ownedEntity, "IsOwner");
-        return result.Succeeded;
+        if (!result.Succeeded)
+            throw new ForbiddenException();
     }
 }
