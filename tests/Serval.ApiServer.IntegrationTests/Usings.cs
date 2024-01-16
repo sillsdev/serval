@@ -17,7 +17,6 @@ global using NSubstitute;
 global using NUnit.Framework;
 global using Serval.Client;
 global using Serval.Shared.Controllers;
-global using Serval.Shared.Contracts;
 global using Serval.Translation.Models;
 global using SIL.DataAccess;
 global using SIL.ObjectModel;

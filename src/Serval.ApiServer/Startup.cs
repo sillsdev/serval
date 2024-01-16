@@ -15,7 +15,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddRouting(o => o.LowercaseUrls = true);
-
+        services.AddOutputCache(options =>
+        {
+            options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
+        });
         services
             .AddControllers()
             .AddJsonOptions(o =>
@@ -42,6 +45,22 @@ public class Startup
             });
         services.AddHealthChecks().AddIdentityServer(new Uri(authority), name: "Auth0");
 
+        var dataFileOptions = new DataFileOptions();
+        Configuration.GetSection(DataFileOptions.Key).Bind(dataFileOptions);
+        // find drive letter for DataFilesDir
+        string? driveLetter = Path.GetPathRoot(dataFileOptions.FilesDirectory)?[..1];
+        if (driveLetter == null)
+            throw new InvalidOperationException("Cannot find drive letter for DataFilesDir");
+
+        // add health check for disk storage capacity
+        services
+            .AddHealthChecks()
+            .AddDiskStorageHealthCheck(
+                x => x.AddDrive(driveLetter, 1_000), // 1GB
+                "Data File Storage Capacity",
+                HealthStatus.Degraded
+            );
+
         services.AddAuthorization(o =>
         {
             foreach (string scope in Scopes.All)
@@ -66,24 +85,23 @@ public class Startup
             .AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
 
-        services.AddHangfire(
-            c =>
-                c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                    .UseSimpleAssemblyNameTypeSerializer()
-                    .UseRecommendedSerializerSettings()
-                    .UseMongoStorage(
-                        Configuration.GetConnectionString("Hangfire"),
-                        new MongoStorageOptions
+        services.AddHangfire(c =>
+            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseMongoStorage(
+                    Configuration.GetConnectionString("Hangfire"),
+                    new MongoStorageOptions
+                    {
+                        MigrationOptions = new MongoMigrationOptions
                         {
-                            MigrationOptions = new MongoMigrationOptions
-                            {
-                                MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                                BackupStrategy = new CollectionMongoBackupStrategy()
-                            },
-                            CheckConnection = true,
-                            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
-                        }
-                    )
+                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                            BackupStrategy = new CollectionMongoBackupStrategy()
+                        },
+                        CheckConnection = true,
+                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+                    }
+                )
         );
         services.AddHangfireServer();
 
@@ -187,13 +205,13 @@ public class Startup
         app.UseAuthentication();
 
         app.UseRouting();
+        app.UseOutputCache();
         app.UseAuthorization();
         app.UseEndpoints(x =>
         {
             x.MapControllers();
             x.MapServalTranslationServices();
             x.MapHangfireDashboard();
-            x.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = WriteHealthCheckResponse });
         });
 
         app.UseOpenApi(o =>
@@ -223,48 +241,5 @@ public class Startup
 
         if (!Environment.IsDevelopment())
             app.UseOpenTelemetryPrometheusScrapingEndpoint();
-    }
-
-    private static Task WriteHealthCheckResponse(HttpContext context, HealthReport healthReport)
-    {
-        context.Response.ContentType = "application/json; charset=utf-8";
-
-        var options = new JsonWriterOptions { Indented = true };
-
-        using var memoryStream = new MemoryStream();
-        using (var jsonWriter = new Utf8JsonWriter(memoryStream, options))
-        {
-            jsonWriter.WriteStartObject();
-            jsonWriter.WriteString("status", healthReport.Status.ToString());
-            jsonWriter.WriteStartObject("results");
-
-            foreach (KeyValuePair<string, HealthReportEntry> healthReportEntry in healthReport.Entries)
-            {
-                jsonWriter.WriteStartObject(healthReportEntry.Key);
-                jsonWriter.WriteString("status", healthReportEntry.Value.Status.ToString());
-                if (healthReportEntry.Value.Description is not null || healthReportEntry.Value.Exception is not null)
-                    jsonWriter.WriteString(
-                        "description",
-                        healthReportEntry.Value.Description ?? healthReportEntry.Value.Exception?.Message
-                    );
-                if (healthReportEntry.Value.Data.Count > 0)
-                {
-                    jsonWriter.WriteStartObject("data");
-                    foreach (var item in healthReportEntry.Value.Data)
-                    {
-                        jsonWriter.WritePropertyName(item.Key);
-
-                        JsonSerializer.Serialize(jsonWriter, item.Value, item.Value?.GetType() ?? typeof(object));
-                    }
-                    jsonWriter.WriteEndObject();
-                }
-                jsonWriter.WriteEndObject();
-            }
-
-            jsonWriter.WriteEndObject();
-            jsonWriter.WriteEndObject();
-        }
-
-        return context.Response.WriteAsync(Encoding.UTF8.GetString(memoryStream.ToArray()));
     }
 }

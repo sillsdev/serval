@@ -20,12 +20,11 @@ public static class IMongoDataAccessConfiguratorExtensions
             });
         }
 
-        configurator.Services.AddScoped<IRepository<T>>(
-            sp =>
-                CreateRepository(
-                    sp.GetRequiredService<IMongoDataAccessContext>(),
-                    sp.GetRequiredService<IMongoDatabase>().GetCollection<T>(collectionName)
-                )
+        configurator.Services.AddScoped<IRepository<T>>(sp =>
+            CreateRepository(
+                sp.GetRequiredService<IMongoDataAccessContext>(),
+                sp.GetRequiredService<IMongoDatabase>().GetCollection<T>(collectionName)
+            )
         );
         return configurator;
     }

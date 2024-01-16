@@ -3,25 +3,17 @@ namespace Serval.ApiServer.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/status")]
 [OpenApiTag("Status")]
-public class StatusController : ServalControllerBase
+public class StatusController(
+    HealthCheckService healthCheckService,
+    IAuthorizationService authService,
+    IWebHostEnvironment env,
+    IConfiguration configuration
+) : ServalControllerBase(authService)
 {
-    private readonly HealthCheckService _healthCheckService;
-    private readonly IWebHostEnvironment _env;
+    private readonly HealthCheckService _healthCheckService = healthCheckService;
+    private readonly IWebHostEnvironment _env = env;
 
-    private readonly IConfiguration _configuration;
-
-    public StatusController(
-        HealthCheckService healthCheckService,
-        IAuthorizationService authService,
-        IWebHostEnvironment env,
-        IConfiguration configuration
-    )
-        : base(authService)
-    {
-        _healthCheckService = healthCheckService;
-        _env = env;
-        _configuration = configuration;
-    }
+    private readonly IConfiguration _configuration = configuration;
 
     /// <summary>
     /// Get Health
@@ -39,6 +31,25 @@ public class StatusController : ServalControllerBase
     {
         var report = await _healthCheckService.CheckHealthAsync();
         return Ok(Map(report));
+    }
+
+    /// <summary>
+    /// Get Summary of Health on Publically available endpoint, cached for 10 seconds (if not authenticated).
+    /// </summary>
+    /// <remarks>Provides an indication about the health of the API</remarks>
+    /// <response code="200">The API health status</response>
+    [HttpGet("ping")]
+    [OutputCache]
+    [ProducesResponseType(typeof(HealthReportDto), (int)HttpStatusCode.OK)]
+    public async Task<ActionResult<HealthReportDto>> GetPingAsync()
+    {
+        var report = await _healthCheckService.CheckHealthAsync();
+        HealthReportDto reportDto = Map(report);
+
+        // remove results as this is a public endpoint
+        reportDto.Results = new Dictionary<string, HealthReportEntryDto>();
+
+        return Ok(reportDto);
     }
 
     /// <summary>

@@ -26,8 +26,7 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IEngineService, EngineService>();
 
         var translationOptions = new TranslationOptions();
-        if (builder.Configuration is not null)
-            builder.Configuration.GetSection(TranslationOptions.Key).Bind(translationOptions);
+        builder.Configuration?.GetSection(TranslationOptions.Key).Bind(translationOptions);
         if (configure is not null)
             configure(translationOptions);
 
@@ -35,10 +34,6 @@ public static class IServalBuilderExtensions
         {
             builder.Services.AddGrpcClient<TranslationEngineApi.TranslationEngineApiClient>(
                 engine.Type,
-                o => o.Address = new Uri(engine.Address)
-            );
-            builder.Services.AddGrpcClient<Health.HealthClient>(
-                engine.Type + "_Health",
                 o => o.Address = new Uri(engine.Address)
             );
             builder.Services.AddHealthChecks().AddCheck<GrpcServiceHealthCheck>(engine.Type);

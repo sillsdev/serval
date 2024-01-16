@@ -43,10 +43,11 @@ public static class IServalBuilderExtensions
         Action<IMongoDataAccessConfigurator> configure
     )
     {
-        builder.Services.AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"), "Serval", configure);
-        builder.Services
-            .AddHealthChecks()
-            .AddMongoDb(builder.Configuration.GetConnectionString("Mongo"), name: "Mongo");
+        var mongoConnectionString = builder.Configuration?.GetConnectionString("Mongo");
+        if (mongoConnectionString is null)
+            throw new InvalidOperationException("Mongo connection string not configured");
+        builder.Services.AddMongoDataAccess(mongoConnectionString, "Serval", configure);
+        builder.Services.AddHealthChecks().AddMongoDb(mongoConnectionString, name: "Mongo");
         return builder;
     }
 }

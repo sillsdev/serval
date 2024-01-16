@@ -330,8 +330,8 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
     {
         return Entities.UpdateAllAsync(
             e =>
-                e.Corpora.Any(
-                    c => c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
+                e.Corpora.Any(c =>
+                    c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
                 ),
             u =>
                 u.RemoveAll(e => e.Corpora[ArrayPosition.All].SourceFiles, f => f.Id == dataFileId)

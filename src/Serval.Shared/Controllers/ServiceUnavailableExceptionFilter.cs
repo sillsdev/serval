@@ -16,11 +16,7 @@ public class ServiceUnavailableExceptionFilter : ExceptionFilterAttribute
             || (context.Exception is RpcException rpcEx && rpcEx.StatusCode == StatusCode.Unavailable)
         )
         {
-            _logger.Log(
-                LogLevel.Error,
-                "A user tried to access an unavailable service. See health-check logs for more details.",
-                context.Exception
-            );
+            _logger.Log(LogLevel.Error, context.Exception, "A user tried to access an unavailable service.");
             context.Result = new StatusCodeResult(StatusCodes.Status503ServiceUnavailable);
             context.ExceptionHandled = true;
         }
