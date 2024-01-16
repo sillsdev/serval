@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Serval.Grpc\Serval.Grpc.csproj" />
-		<ProjectReference Include="..\..\src\Serval.Shared\Serval.Shared.csproj" />
   </ItemGroup>
 
 </Project>
