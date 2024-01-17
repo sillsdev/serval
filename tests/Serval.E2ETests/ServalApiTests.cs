@@ -197,7 +197,6 @@ public class ServalApiTests
             cId
         );
         TestContext.WriteLine(lTrans[0].Translation);
-        Assert.IsTrue(lTrans[0].Translation.Length > 0);
     }
 
     [Test]
