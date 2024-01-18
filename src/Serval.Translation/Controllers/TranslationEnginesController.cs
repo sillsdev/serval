@@ -204,7 +204,39 @@ public class TranslationEnginesController : ServalControllerBase
     {
         try
         {
-            return Map(await _engineService.GetQueueAsync(engineType, cancellationToken));
+            return Map(await _engineService.GetQueueAsync(engineType, cancellationToken: cancellationToken));
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return BadRequest(ioe.Message);
+        }
+    }
+
+    /// <summary>
+    /// Get queue information for a given engine type on a specific queue
+    /// </summary>
+    /// <param name="queueName">The name of the Nmt queue.  For the default queue, use the other endpoint.</param>
+    /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">Queue information for the specified engine type</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    [Authorize(Scopes.ReadTranslationEngines)]
+    [HttpPost("queues/{queueName}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<QueueDto>> GetQueueAsync(
+        [NotNull] string queueName,
+        [FromBody] string engineType,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            return Map(await _engineService.GetQueueAsync(engineType, queueName, cancellationToken));
         }
         catch (InvalidOperationException ioe)
         {

@@ -47,5 +47,5 @@ public interface IEngineService
 
     Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default);
 
-    Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default);
+    Task<Queue> GetQueueAsync(string engineType, string? queue = null, CancellationToken cancellationToken = default);
 }

@@ -340,11 +340,15 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
         );
     }
 
-    public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
+    public async Task<Queue> GetQueueAsync(
+        string engineType,
+        string? queueName = null,
+        CancellationToken cancellationToken = default
+    )
     {
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
         GetQueueSizeResponse response = await client.GetQueueSizeAsync(
-            new GetQueueSizeRequest { EngineType = engineType },
+            new GetQueueSizeRequest { EngineType = engineType, QueueName = queueName },
             cancellationToken: cancellationToken
         );
         return new Queue { Size = response.Size, EngineType = engineType };

@@ -73,6 +73,7 @@ message CancelBuildRequest {
 
 message GetQueueSizeRequest {
     string engine_type = 1;
+    optional string queue_name = 2;
 }
 
 message GetQueueSizeResponse {
