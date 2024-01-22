@@ -1168,9 +1168,9 @@ public class TranslationEngineTests
         Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync("Nmt", "Alphabet");
         Assert.Multiple(() =>
         {
-            Assert.That(languageInfo.CommonLanguageName, Is.EqualTo("abc"));
+            Assert.That(languageInfo.Name, Is.EqualTo("abc"));
             Assert.That(languageInfo.InternalCode, Is.EqualTo("abc_123"));
-            Assert.That(languageInfo.IsSupportedNatively, Is.EqualTo(true));
+            Assert.That(languageInfo.IsNative, Is.EqualTo(true));
         });
     }
 
@@ -1456,8 +1456,8 @@ public class TranslationEngineTests
                         new GetLanguageInfoResponse()
                         {
                             InternalCode = "abc_123",
-                            CommonLanguageName = "abc",
-                            IsSupportedNatively = true
+                            Name = "abc",
+                            IsNative = true
                         }
                     )
                 );

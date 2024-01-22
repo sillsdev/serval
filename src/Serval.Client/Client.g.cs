@@ -5365,12 +5365,12 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string InternalCode { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("isSupportedNatively", Required = Newtonsoft.Json.Required.Always)]
-        public bool IsSupportedNatively { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("isNative", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsNative { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("commonLanguageName", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string CommonLanguageName { get; set; } = default!;
+        public string Name { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("engineType", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]

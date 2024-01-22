@@ -353,8 +353,8 @@ public class EngineService(
         return new LanguageInfo
         {
             InternalCode = response.InternalCode,
-            IsSupportedNatively = response.IsSupportedNatively,
-            CommonLanguageName = response.CommonLanguageName,
+            IsNative = response.IsNative,
+            Name = response.Name,
             EngineType = engineType
         };
     }

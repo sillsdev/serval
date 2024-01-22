@@ -83,8 +83,8 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
         new()
         {
             EngineType = source.EngineType,
-            CommonLanguageName = source.CommonLanguageName,
-            IsSupportedNatively = source.IsSupportedNatively,
+            Name = source.Name,
+            IsNative = source.IsNative,
             InternalCode = source.InternalCode
         };
 }
