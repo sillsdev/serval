@@ -51,7 +51,7 @@ public interface IEngineService
 
     Task<LanguageInfo> GetLanguageInfoAsync(
         string engineType,
-        string languageCode,
+        string language,
         CancellationToken cancellationToken = default
     );
 }

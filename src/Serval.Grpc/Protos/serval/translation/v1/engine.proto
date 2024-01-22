@@ -82,11 +82,11 @@ message GetQueueSizeResponse {
 
 message GetLanguageInfoRequest {
     string engine_type = 1;
-    string language_code = 2;
+    string language = 2;
 }
 
 message GetLanguageInfoResponse {
-    string resolved_language_code = 1;
+    string iso_language_code = 1;
     string common_language_name = 2;
     bool native_language_support = 3;
 }

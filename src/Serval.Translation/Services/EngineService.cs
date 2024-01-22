@@ -341,18 +341,18 @@ public class EngineService(
 
     public async Task<LanguageInfo> GetLanguageInfoAsync(
         string engineType,
-        string languageCode,
+        string language,
         CancellationToken cancellationToken = default
     )
     {
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
         GetLanguageInfoResponse response = await client.GetLanguageInfoAsync(
-            new GetLanguageInfoRequest { EngineType = engineType, LanguageCode = languageCode },
+            new GetLanguageInfoRequest { EngineType = engineType, Language = language },
             cancellationToken: cancellationToken
         );
         return new LanguageInfo
         {
-            ResolvedLanguageCode = response.ResolvedLanguageCode,
+            ISOLanguageCode = response.IsoLanguageCode,
             NativeLanguageSupport = response.NativeLanguageSupport,
             CommonLanguageName = response.CommonLanguageName,
             EngineType = engineType

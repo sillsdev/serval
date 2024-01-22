@@ -1,7 +1,7 @@
 ﻿namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
-[Route("api/v{version:apiVersion}/translation")]
+[Route("api/v{version:apiVersion}/translation/engine-types")]
 [OpenApiTag("Translation Engines")]
 public class TranslationController(IAuthorizationService authService, IEngineService engineService)
     : ServalControllerBase(authService)
@@ -47,32 +47,28 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
     ///   Will say if the language is supported by the NLLB model natively and the resolved NLLB language code.
     /// </remarks>
     /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
-    /// <param name="languageCode">A language code to be mapped </param>
+    /// <param name="language">A language code to be mapped </param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">Language information for the specified engine type</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{engineType}/language-info/{languageCode}")]
+    [HttpGet("{engineType}/language-info/{language}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<LanguageInfoDto>> GetLanguageInfoAsync(
         [NotNull] string engineType,
-        [NotNull] string languageCode,
+        [NotNull] string language,
         CancellationToken cancellationToken
     )
     {
         try
         {
             return Map(
-                await _engineService.GetLanguageInfoAsync(
-                    engineType,
-                    languageCode,
-                    cancellationToken: cancellationToken
-                )
+                await _engineService.GetLanguageInfoAsync(engineType, language, cancellationToken: cancellationToken)
             );
         }
         catch (InvalidOperationException ioe)
@@ -89,6 +85,6 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
             EngineType = source.EngineType,
             CommonLanguageName = source.CommonLanguageName,
             NativeLanguageSupport = source.NativeLanguageSupport,
-            ResolvedLanguageCode = source.ResolvedLanguageCode
+            ISOLanguageCode = source.ISOLanguageCode
         };
 }
