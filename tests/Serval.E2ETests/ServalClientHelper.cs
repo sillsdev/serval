@@ -5,8 +5,9 @@ public class ServalClientHelper
 {
     public readonly DataFilesClient dataFilesClient;
     public readonly TranslationEnginesClient translationEnginesClient;
+    public readonly TranslationClient translationClient;
     private readonly HttpClient _httpClient;
-    readonly Dictionary<string, string> EnginePerUser = new Dictionary<string, string>();
+    readonly Dictionary<string, string> EnginePerUser = [];
     private string _prefix;
 
     public ServalClientHelper(string audience, string prefix = "SCE_", bool ignoreSSLErrors = false)
@@ -24,6 +25,7 @@ public class ServalClientHelper
         _httpClient.Timeout = TimeSpan.FromSeconds(60);
         dataFilesClient = new DataFilesClient(_httpClient);
         translationEnginesClient = new TranslationEnginesClient(_httpClient);
+        translationClient = new TranslationClient(_httpClient);
         _httpClient.DefaultRequestHeaders.Add(
             "authorization",
             $"Bearer {GetAuth0Authentication(env["authUrl"], audience, env["clientId"], env["clientSecret"]).Result}"

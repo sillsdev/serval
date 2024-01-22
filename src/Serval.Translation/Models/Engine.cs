@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Models;
 
-public class Engine : IOwnedEntity
+public partial class Engine : IOwnedEntity
 {
     public string Id { get; set; } = default!;
     public int Revision { get; set; } = 1;

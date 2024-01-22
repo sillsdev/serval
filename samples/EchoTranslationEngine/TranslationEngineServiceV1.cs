@@ -292,6 +292,16 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
         return Task.FromResult(new GetQueueSizeResponse { Size = 0 });
     }
 
+    public override Task<GetLanguageInfoResponse> GetLanguageInfo(
+        GetLanguageInfoRequest request,
+        ServerCallContext context
+    )
+    {
+        return Task.FromResult(
+            new GetLanguageInfoResponse { InternalCode = request.Language + "_echo", IsNative = false, }
+        );
+    }
+
     public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
     {
         HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
