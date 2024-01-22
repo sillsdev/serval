@@ -1,6 +1,6 @@
 externalHost: prod.serval-api.org
 environment: Production
-deploymentVersion: '1.1.0'
+deploymentVersion: '1.1.1'
 alertEmail: prod-serval-alerts@languagetechnology.org
 emailsToAlert: 'john_lambert@sil.org, eli_lowry@sil.org'
 enableTls: true
@@ -8,9 +8,9 @@ namespace: serval
 auth0Domain: languagetechnology.auth0.com
 lokiTenent: nlp-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
-servalImage: ghcr.io/sillsdev/serval:0.11.1
-machineImage: ghcr.io/sillsdev/machine:3.5.1
-ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.1.0
+servalImage: ghcr.io/sillsdev/serval:1.1.1
+machineImage: ghcr.io/sillsdev/machine:3.6.3
+ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.1.3
 ClearMLQueue: production
 SharedFileLocation: s3://aqua-ml-data/production/
 enableEcho: true
