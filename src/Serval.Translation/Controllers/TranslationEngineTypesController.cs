@@ -47,28 +47,32 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
     ///   Will say if the language is supported by the NLLB model natively and the resolved NLLB language code.
     /// </remarks>
     /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
-    /// <param name="language">A language code to be mapped </param>
+    /// <param name="languageCode">A language code to be mapped </param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">Language information for the specified engine type</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{engineType}/language-info/{language}")]
+    [HttpGet("{engineType}/languages/{languageCode}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<LanguageInfoDto>> GetLanguageInfoAsync(
         [NotNull] string engineType,
-        [NotNull] string language,
+        [NotNull] string languageCode,
         CancellationToken cancellationToken
     )
     {
         try
         {
             return Map(
-                await _engineService.GetLanguageInfoAsync(engineType, language, cancellationToken: cancellationToken)
+                await _engineService.GetLanguageInfoAsync(
+                    engineType: engineType,
+                    language: languageCode,
+                    cancellationToken: cancellationToken
+                )
             );
         }
         catch (InvalidOperationException ioe)
