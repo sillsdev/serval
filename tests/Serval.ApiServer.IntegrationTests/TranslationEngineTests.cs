@@ -1169,7 +1169,7 @@ public class TranslationEngineTests
         Assert.Multiple(() =>
         {
             Assert.That(languageInfo.CommonLanguageName, Is.EqualTo("abc"));
-            Assert.That(languageInfo.IsoLanguageCode, Is.EqualTo("abc_123"));
+            Assert.That(languageInfo.InternalCode, Is.EqualTo("abc_123"));
             Assert.That(languageInfo.IsSupportedNatively, Is.EqualTo(true));
         });
     }
@@ -1455,7 +1455,7 @@ public class TranslationEngineTests
                     CreateAsyncUnaryCall(
                         new GetLanguageInfoResponse()
                         {
-                            IsoLanguageCode = "abc_123",
+                            InternalCode = "abc_123",
                             CommonLanguageName = "abc",
                             IsSupportedNatively = true
                         }

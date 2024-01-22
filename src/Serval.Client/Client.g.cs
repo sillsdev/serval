@@ -5361,9 +5361,9 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v10.9.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class LanguageInfo
     {
-        [Newtonsoft.Json.JsonProperty("isoLanguageCode", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("internalCode", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string IsoLanguageCode { get; set; } = default!;
+        public string InternalCode { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("isSupportedNatively", Required = Newtonsoft.Json.Required.Always)]
         public bool IsSupportedNatively { get; set; } = default!;

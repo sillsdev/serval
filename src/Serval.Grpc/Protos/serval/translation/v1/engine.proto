@@ -86,7 +86,7 @@ message GetLanguageInfoRequest {
 }
 
 message GetLanguageInfoResponse {
-    string iso_language_code = 1;
+    string internal_code = 1;
     string common_language_name = 2;
     bool is_supported_natively = 3;
 }

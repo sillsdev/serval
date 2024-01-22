@@ -300,7 +300,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
         return Task.FromResult(
             new GetLanguageInfoResponse
             {
-                IsoLanguageCode = request.Language + "_echo",
+                InternalCode = request.Language + "_echo",
                 CommonLanguageName = request.Language + "_commonEcho",
                 IsSupportedNatively = false,
             }
