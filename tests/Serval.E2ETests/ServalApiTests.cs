@@ -157,7 +157,7 @@ public class ServalApiTests
             builds += $"{JsonSerializer.Serialize(build)}\n";
         }
 
-        builds += "Depth = " + (await _helperClient.translationEnginesClient.GetQueueAsync("Nmt")).Size.ToString();
+        builds += "Depth = " + (await _helperClient.translationClient.GetQueueAsync("Nmt")).Size.ToString();
 
         //Status message of last started build says that there is at least one job ahead of it in the queue
         // (this variable due to how many jobs may already exist in the production queue from other Serval instances)
@@ -165,7 +165,7 @@ public class ServalApiTests
             engineIds[NUM_ENGINES - 1]
         );
         int? queueDepth = newestEngineCurrentBuild.QueueDepth;
-        Queue queue = await _helperClient.translationEnginesClient.GetQueueAsync("Nmt");
+        Queue queue = await _helperClient.translationClient.GetQueueAsync("Nmt");
         for (int i = 0; i < NUM_ENGINES; i++)
         {
             try

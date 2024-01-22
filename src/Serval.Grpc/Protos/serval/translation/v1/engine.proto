@@ -13,6 +13,7 @@ service TranslationEngineApi {
     rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
     rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
     rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
+    rpc GetLanguageInfo(GetLanguageInfoRequest) returns (GetLanguageInfoResponse);
     rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse);
 }
 
@@ -78,6 +79,18 @@ message GetQueueSizeRequest {
 message GetQueueSizeResponse {
     int32 size = 1;
 }
+
+message GetLanguageInfoRequest {
+    string engine_type = 1;
+    string language_code = 2;
+}
+
+message GetLanguageInfoResponse {
+    string resolved_language_code = 1;
+    string common_language_name = 2;
+    bool native_language_support = 3;
+}
+
 
 message AlignedWordPair {
     int32 source_index = 1;
