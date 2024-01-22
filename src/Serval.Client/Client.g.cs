@@ -5365,8 +5365,8 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string IsoLanguageCode { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("nativeLanguageSupport", Required = Newtonsoft.Json.Required.Always)]
-        public bool NativeLanguageSupport { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("isSupportedNatively", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsSupportedNatively { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("commonLanguageName", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]

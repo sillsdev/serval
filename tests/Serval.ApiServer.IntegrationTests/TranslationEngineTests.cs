@@ -1170,7 +1170,7 @@ public class TranslationEngineTests
         {
             Assert.That(languageInfo.CommonLanguageName, Is.EqualTo("abc"));
             Assert.That(languageInfo.IsoLanguageCode, Is.EqualTo("abc_123"));
-            Assert.That(languageInfo.NativeLanguageSupport, Is.EqualTo(true));
+            Assert.That(languageInfo.IsSupportedNatively, Is.EqualTo(true));
         });
     }
 
@@ -1457,7 +1457,7 @@ public class TranslationEngineTests
                         {
                             IsoLanguageCode = "abc_123",
                             CommonLanguageName = "abc",
-                            NativeLanguageSupport = true
+                            IsSupportedNatively = true
                         }
                     )
                 );

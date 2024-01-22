@@ -302,7 +302,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
             {
                 IsoLanguageCode = request.Language + "_echo",
                 CommonLanguageName = request.Language + "_commonEcho",
-                NativeLanguageSupport = false,
+                IsSupportedNatively = false,
             }
         );
     }

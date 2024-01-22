@@ -353,7 +353,7 @@ public class EngineService(
         return new LanguageInfo
         {
             ISOLanguageCode = response.IsoLanguageCode,
-            NativeLanguageSupport = response.NativeLanguageSupport,
+            IsSupportedNatively = response.IsSupportedNatively,
             CommonLanguageName = response.CommonLanguageName,
             EngineType = engineType
         };
