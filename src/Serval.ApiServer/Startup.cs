@@ -136,14 +136,14 @@ public class Startup
         {
             services.AddSwaggerDocument(o =>
             {
-                o.SchemaType = SchemaType.Swagger2;
+                o.SchemaSettings.SchemaType = SchemaType.Swagger2;
                 o.Title = "Serval API";
                 o.Description = "Natural language processing services for minority language Bible translation.";
                 o.DocumentName = "v" + version.Major;
                 o.ApiGroupNames = new[] { "v" + version.Major };
                 o.Version = version.Major + "." + version.Minor;
 
-                o.SchemaNameGenerator = new ServalSchemaNameGenerator();
+                o.SchemaSettings.SchemaNameGenerator = new ServalSchemaNameGenerator();
                 o.UseControllerSummaryAsTagDescription = true;
                 o.AddSecurity(
                     "bearer",
@@ -165,7 +165,7 @@ public class Startup
                 );
                 o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
 
-                o.AllowReferencesWithProperties = true;
+                o.SchemaSettings.AllowReferencesWithProperties = true;
                 o.PostProcess = document =>
                 {
                     var prefix = "/api/v" + version.Major;
@@ -223,7 +223,7 @@ public class Startup
                 document.Servers.First().Url += prefix;
             };
         });
-        app.UseSwaggerUi3(settings =>
+        app.UseSwaggerUi(settings =>
         {
             settings.OAuth2Client = new OAuth2ClientSettings
             {
