@@ -21,9 +21,15 @@ public class TranslationEngineConfigDto
     [JsonProperty(Required = Required.Always)]
     public string TargetLanguage { get; set; } = default!;
 
+    private string _type = default!;
+
     /// <summary>
     /// The translation engine type.
     /// </summary>
     [JsonProperty(Required = Required.Always)]
-    public string Type { get; set; } = default!;
+    public string Type
+    {
+        get => _type;
+        set { _type = Engine.ToPascalCase(value); }
+    }
 }

@@ -1291,24 +1291,24 @@ namespace Serval.Client
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
-        /// <br/>### SmtTransfer
+        /// <br/>* **type**: **smt-transfer** or **nmt** or **echo**
+        /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-        /// <br/>### Nmt
+        /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
         /// <br/>Typical endpoints: pretranslate
-        /// <br/>### Echo
-        /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        /// <br/>### echo
+        /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
         /// <br/>      "name": "myTeam:myProject:myEngine",
         /// <br/>      "sourceLanguage": "el",
         /// <br/>      "targetLanguage": "en",
-        /// <br/>      "type": "Nmt"
+        /// <br/>      "type": "nmt"
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
@@ -1688,24 +1688,24 @@ namespace Serval.Client
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **type**: **SmtTransfer** or **Nmt** or **Echo**
-        /// <br/>### SmtTransfer
+        /// <br/>* **type**: **smt-transfer** or **nmt** or **echo**
+        /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-        /// <br/>### Nmt
+        /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
         /// <br/>Typical endpoints: pretranslate
-        /// <br/>### Echo
-        /// <br/>The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        /// <br/>### echo
+        /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
         /// <br/>      "name": "myTeam:myProject:myEngine",
         /// <br/>      "sourceLanguage": "el",
         /// <br/>      "targetLanguage": "en",
-        /// <br/>      "type": "Nmt"
+        /// <br/>      "type": "nmt"
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
@@ -3899,7 +3899,7 @@ namespace Serval.Client
         /// <summary>
         /// Get queue information for a given engine type
         /// </summary>
-        /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
+        /// <param name="engineType">A valid engine type: smt-transfer, nmt, or echo</param>
         /// <returns>Queue information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<Queue> GetQueueAsync(string engineType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
@@ -3909,12 +3909,18 @@ namespace Serval.Client
         /// Get infromation regarding a language for a given engine type
         /// </summary>
         /// <remarks>
-        /// SmtTransfer: supports all languages equally.  Language information is not needed.
-        /// <br/>Nmt: Maps language codes to NLLB language codes according to [this](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
-        /// <br/>  Will say if the language is supported by the NLLB model natively and the resolved NLLB language code.
+        /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
+        /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
+        /// <br/>language is an appropriate candidate for a source language or if two languages can be translated between
+        /// <br/>without training.
+        /// <br/>Response format:
+        /// <br/>* **EngineType**: See above
+        /// <br/>* **IsNative**: Whether language is in the base NLLB-200 model as per [this list](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
+        /// <br/>* **InternalCode**: The ISO 639-3 code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine)
+        /// <br/>* **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base NLLB-200 model
         /// </remarks>
-        /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
-        /// <param name="language">A language code to be mapped</param>
+        /// <param name="engineType">A valid engine type: nmt or echo</param>
+        /// <param name="language">The language to retrieve information on.</param>
         /// <returns>Language information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<LanguageInfo> GetLanguageInfoAsync(string engineType, string language, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
@@ -3959,7 +3965,7 @@ namespace Serval.Client
         /// <summary>
         /// Get queue information for a given engine type
         /// </summary>
-        /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
+        /// <param name="engineType">A valid engine type: smt-transfer, nmt, or echo</param>
         /// <returns>Queue information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<Queue> GetQueueAsync(string engineType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
@@ -4053,12 +4059,18 @@ namespace Serval.Client
         /// Get infromation regarding a language for a given engine type
         /// </summary>
         /// <remarks>
-        /// SmtTransfer: supports all languages equally.  Language information is not needed.
-        /// <br/>Nmt: Maps language codes to NLLB language codes according to [this](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
-        /// <br/>  Will say if the language is supported by the NLLB model natively and the resolved NLLB language code.
+        /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
+        /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
+        /// <br/>language is an appropriate candidate for a source language or if two languages can be translated between
+        /// <br/>without training.
+        /// <br/>Response format:
+        /// <br/>* **EngineType**: See above
+        /// <br/>* **IsNative**: Whether language is in the base NLLB-200 model as per [this list](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
+        /// <br/>* **InternalCode**: The ISO 639-3 code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine)
+        /// <br/>* **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base NLLB-200 model
         /// </remarks>
-        /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
-        /// <param name="language">A language code to be mapped</param>
+        /// <param name="engineType">A valid engine type: nmt or echo</param>
+        /// <param name="language">The language to retrieve information on.</param>
         /// <returns>Language information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<LanguageInfo> GetLanguageInfoAsync(string engineType, string language, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
@@ -4070,7 +4082,7 @@ namespace Serval.Client
                 throw new System.ArgumentNullException("language");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/translation/engine-types/{engineType}/language-info/{language}");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/translation/engine-types/{engineType}/languages/{language}");
             urlBuilder_.Replace("{engineType}", System.Uri.EscapeDataString(ConvertToString(engineType, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{language}", System.Uri.EscapeDataString(ConvertToString(language, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -4126,10 +4138,10 @@ namespace Serval.Client
                             throw new ServalApiException("The authenticated client cannot perform the operation", status_, responseText_, headers_, null);
                         }
                         else
-                        if (status_ == 503)
+                        if (status_ == 405)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The method is not supported", status_, responseText_, headers_, null);
                         }
                         else
                         {

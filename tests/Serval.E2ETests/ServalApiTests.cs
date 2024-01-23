@@ -58,7 +58,7 @@ public class ServalApiTests
     public async Task GetSmtAddSegment()
     {
         await _helperClient!.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
+        string engineId = await _helperClient.CreateNewEngine("smt-transfer", "es", "en", "SMT3");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
@@ -270,7 +270,7 @@ public class ServalApiTests
         const int N = 3;
 
         //Create engine
-        string engineId = await _helperClient!.CreateNewEngine("SmtTransfer", "en", "fa", "SMT6");
+        string engineId = await _helperClient!.CreateNewEngine("smt-transfer", "en", "fa", "SMT6");
 
         //Retrieve engine
         TranslationEngine? engine = await _helperClient.translationEnginesClient.GetAsync(engineId);
@@ -313,7 +313,7 @@ public class ServalApiTests
     public async Task GetSmtCancelAndRestartBuild()
     {
         await _helperClient!.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT7");
+        string engineId = await _helperClient.CreateNewEngine("smt-transfer", "es", "en", "SMT7");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
 

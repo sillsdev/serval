@@ -91,24 +91,24 @@ public class TranslationEnginesController : ServalControllerBase
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
     /// * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-    /// * **type**: **SmtTransfer** or **Nmt** or **Echo**
-    /// ### SmtTransfer
+    /// * **type**: **smt-transfer** or **nmt** or **echo**
+    /// ### smt-transfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-    /// ### Nmt
+    /// ### nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
     ///
     /// If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
     ///
     /// Typical endpoints: pretranslate
-    /// ### Echo
-    /// The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+    /// ### echo
+    /// The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
     /// ## Sample request:
     ///
     ///     {
     ///       "name": "myTeam:myProject:myEngine",
     ///       "sourceLanguage": "el",
     ///       "targetLanguage": "en",
-    ///       "type": "Nmt"
+    ///       "type": "nmt"
     ///     }
     ///
     /// </remarks>
