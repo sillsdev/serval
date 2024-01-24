@@ -3912,12 +3912,15 @@ namespace Serval.Client
         /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
         /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
         /// <br/>language is an appropriate candidate for a source language or if two languages can be translated between
+        /// <br/>**Base Models available**
+        /// <br/>* **NLLB-200**: This is the only current base transaltion model available.
+        /// <br/>  * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
         /// <br/>without training.
         /// <br/>Response format:
         /// <br/>* **EngineType**: See above
-        /// <br/>* **IsNative**: Whether language is in the base NLLB-200 model as per [this list](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
-        /// <br/>* **InternalCode**: The ISO 639-3 code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine)
-        /// <br/>* **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base NLLB-200 model
+        /// <br/>* **IsNative**: Whether the base translation model supports this language without fine-tuning.
+        /// <br/>* **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+        /// <br/>* **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base model.
         /// </remarks>
         /// <param name="engineType">A valid engine type: nmt or echo</param>
         /// <param name="language">The language to retrieve information on.</param>
@@ -4062,12 +4065,15 @@ namespace Serval.Client
         /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
         /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
         /// <br/>language is an appropriate candidate for a source language or if two languages can be translated between
+        /// <br/>**Base Models available**
+        /// <br/>* **NLLB-200**: This is the only current base transaltion model available.
+        /// <br/>  * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
         /// <br/>without training.
         /// <br/>Response format:
         /// <br/>* **EngineType**: See above
-        /// <br/>* **IsNative**: Whether language is in the base NLLB-200 model as per [this list](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
-        /// <br/>* **InternalCode**: The ISO 639-3 code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine)
-        /// <br/>* **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base NLLB-200 model
+        /// <br/>* **IsNative**: Whether the base translation model supports this language without fine-tuning.
+        /// <br/>* **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+        /// <br/>* **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base model.
         /// </remarks>
         /// <param name="engineType">A valid engine type: nmt or echo</param>
         /// <param name="language">The language to retrieve information on.</param>

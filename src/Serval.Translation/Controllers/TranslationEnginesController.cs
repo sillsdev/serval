@@ -1,34 +1,22 @@
-﻿using System.Net.Sockets;
-
-namespace Serval.Translation.Controllers;
+﻿namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
 [OpenApiTag("Translation Engines")]
-public class TranslationEnginesController : ServalControllerBase
+public class TranslationEnginesController(
+    IAuthorizationService authService,
+    IEngineService engineService,
+    IBuildService buildService,
+    IPretranslationService pretranslationService,
+    IOptionsMonitor<ApiOptions> apiOptions,
+    IUrlService urlService
+) : ServalControllerBase(authService)
 {
-    private readonly IEngineService _engineService;
-    private readonly IBuildService _buildService;
-    private readonly IPretranslationService _pretranslationService;
-    private readonly IOptionsMonitor<ApiOptions> _apiOptions;
-    private readonly IUrlService _urlService;
-
-    public TranslationEnginesController(
-        IAuthorizationService authService,
-        IEngineService engineService,
-        IBuildService buildService,
-        IPretranslationService pretranslationService,
-        IOptionsMonitor<ApiOptions> apiOptions,
-        IUrlService urlService
-    )
-        : base(authService)
-    {
-        _engineService = engineService;
-        _buildService = buildService;
-        _pretranslationService = pretranslationService;
-        _apiOptions = apiOptions;
-        _urlService = urlService;
-    }
+    private readonly IEngineService _engineService = engineService;
+    private readonly IBuildService _buildService = buildService;
+    private readonly IPretranslationService _pretranslationService = pretranslationService;
+    private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
+    private readonly IUrlService _urlService = urlService;
 
     /// <summary>
     /// Get all translation engines
@@ -967,9 +955,9 @@ public class TranslationEnginesController : ServalControllerBase
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
-            Type = source.Type,
+            Type = source.Type.ToPascalCase(),
             Owner = Owner,
-            Corpora = new List<Corpus>()
+            Corpora = []
         };
     }
 
@@ -1027,7 +1015,7 @@ public class TranslationEnginesController : ServalControllerBase
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
-            Type = source.Type,
+            Type = source.Type.ToKebabCase(),
             IsBuilding = source.IsBuilding,
             ModelRevision = source.ModelRevision,
             Confidence = Math.Round(source.Confidence, 8),

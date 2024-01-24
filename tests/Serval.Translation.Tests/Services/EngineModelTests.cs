@@ -11,6 +11,6 @@ public class EngineModelTests
     [TestCase("underscore_case", "UnderscoreCase")]
     public void PascalCaseTests(string input, string output)
     {
-        Assert.That(Engine.ToPascalCase(input), Is.EqualTo(output));
+        Assert.That(input.ToPascalCase(), Is.EqualTo(output));
     }
 }

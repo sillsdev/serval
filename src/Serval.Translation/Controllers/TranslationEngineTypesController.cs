@@ -31,10 +31,7 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
         try
         {
             return Map(
-                await _engineService.GetQueueAsync(
-                    Engine.ToPascalCase(engineType),
-                    cancellationToken: cancellationToken
-                )
+                await _engineService.GetQueueAsync(engineType.ToPascalCase(), cancellationToken: cancellationToken)
             );
         }
         catch (InvalidOperationException ioe)
@@ -50,12 +47,15 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
     /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
     /// and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
     /// language is an appropriate candidate for a source language or if two languages can be translated between
+    /// **Base Models available**
+    /// * **NLLB-200**: This is the only current base transaltion model available.
+    ///   * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
     /// without training.
     /// Response format:
     /// * **EngineType**: See above
-    /// * **IsNative**: Whether language is in the base NLLB-200 model as per [this list](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
-    /// * **InternalCode**: The ISO 639-3 code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine)
-    /// * **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base NLLB-200 model
+    /// * **IsNative**: Whether the base translation model supports this language without fine-tuning.
+    /// * **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+    /// * **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base model.
     /// </remarks>
     /// <param name="engineType">A valid engine type: nmt or echo</param>
     /// <param name="language">The language to retrieve information on.</param>
@@ -80,7 +80,7 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
         {
             return Map(
                 await _engineService.GetLanguageInfoAsync(
-                    engineType: Engine.ToPascalCase(engineType),
+                    engineType: engineType.ToPascalCase(),
                     language: language,
                     cancellationToken: cancellationToken
                 )
@@ -92,12 +92,13 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
         }
     }
 
-    private static QueueDto Map(Queue source) => new() { Size = source.Size, EngineType = source.EngineType };
+    private static QueueDto Map(Queue source) =>
+        new() { Size = source.Size, EngineType = source.EngineType.ToKebabCase() };
 
     private static LanguageInfoDto Map(LanguageInfo source) =>
         new()
         {
-            EngineType = source.EngineType,
+            EngineType = source.EngineType.ToKebabCase(),
             Name = source.Name,
             IsNative = source.IsNative,
             InternalCode = source.InternalCode

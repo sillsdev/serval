@@ -1,3 +1,4 @@
+global using CaseExtensions;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
 global using Microsoft.Extensions.Options;
