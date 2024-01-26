@@ -55,7 +55,6 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
     /// * **EngineType**: See above
     /// * **IsNative**: Whether the base translation model supports this language without fine-tuning.
     /// * **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-    /// * **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base model.
     /// </remarks>
     /// <param name="engineType">A valid engine type: nmt or echo</param>
     /// <param name="language">The language to retrieve information on.</param>
@@ -99,7 +98,6 @@ public class TranslationController(IAuthorizationService authService, IEngineSer
         new()
         {
             EngineType = source.EngineType.ToKebabCase(),
-            Name = source.Name,
             IsNative = source.IsNative,
             InternalCode = source.InternalCode
         };

@@ -354,7 +354,6 @@ public class EngineService(
         {
             InternalCode = response.InternalCode,
             IsNative = response.IsNative,
-            Name = response.Name,
             EngineType = engineType
         };
     }

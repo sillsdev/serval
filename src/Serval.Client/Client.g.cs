@@ -3920,7 +3920,6 @@ namespace Serval.Client
         /// <br/>* **EngineType**: See above
         /// <br/>* **IsNative**: Whether the base translation model supports this language without fine-tuning.
         /// <br/>* **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base model.
         /// </remarks>
         /// <param name="engineType">A valid engine type: nmt or echo</param>
         /// <param name="language">The language to retrieve information on.</param>
@@ -4073,7 +4072,6 @@ namespace Serval.Client
         /// <br/>* **EngineType**: See above
         /// <br/>* **IsNative**: Whether the base translation model supports this language without fine-tuning.
         /// <br/>* **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **Name**: The common name for the language, such as "English" or "Spanish" if it is in the base model.
         /// </remarks>
         /// <param name="engineType">A valid engine type: nmt or echo</param>
         /// <param name="language">The language to retrieve information on.</param>
@@ -5388,9 +5386,6 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("internalCode", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? InternalCode { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Name { get; set; } = default!;
 
     }
 

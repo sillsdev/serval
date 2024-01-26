@@ -1168,7 +1168,6 @@ public class TranslationEngineTests
         Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync("Nmt", "Alphabet");
         Assert.Multiple(() =>
         {
-            Assert.That(languageInfo.Name, Is.EqualTo("abc"));
             Assert.That(languageInfo.InternalCode, Is.EqualTo("abc_123"));
             Assert.That(languageInfo.IsNative, Is.EqualTo(true));
         });
