@@ -9,5 +9,5 @@ public class PretranslateCorpusConfigDto
 
     public IList<string>? TextIds { get; set; }
 
-    public string? BiblicalRange {get; set;}
+    public string? BiblicalRange { get; set; }
 }
