@@ -1451,14 +1451,7 @@ public class TranslationEngineTests
             NmtClient
                 .GetLanguageInfoAsync(Arg.Any<GetLanguageInfoRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(
-                    CreateAsyncUnaryCall(
-                        new GetLanguageInfoResponse()
-                        {
-                            InternalCode = "abc_123",
-                            Name = "abc",
-                            IsNative = true
-                        }
-                    )
+                    CreateAsyncUnaryCall(new GetLanguageInfoResponse() { InternalCode = "abc_123", IsNative = true })
                 );
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new TranslationClient(httpClient);

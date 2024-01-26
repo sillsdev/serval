@@ -88,7 +88,6 @@ message GetLanguageInfoRequest {
 message GetLanguageInfoResponse {
     bool is_native = 3;
     optional string internal_code = 1;
-    optional string name = 2;
 }
 
 
