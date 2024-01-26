@@ -31,7 +31,7 @@ public class ServalApiTests
         string engineId = await _helperClient.CreateNewEngine("Echo", "es", "es", "Echo2");
         var books = new string[] { "1JN.txt", "2JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "es", false);
-        books = new string[] { "3JN.txt" };
+        books = ["3JN.txt"];
         var corpusId = await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "es", true);
         await _helperClient.BuildEngine(engineId);
         var corpora = _helperClient.translationEnginesClient.GetAllCorporaAsync(engineId);
@@ -88,14 +88,14 @@ public class ServalApiTests
     {
         await _helperClient!.ClearEngines();
         string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT4");
-        await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, ["3JN.txt"], "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult = await _helperClient.translationEnginesClient.TranslateAsync(
             engineId,
             "verdad mundo"
         );
         Assert.AreEqual(tResult.Translation, "truth mundo");
-        await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "1JN.txt", "2JN.txt" }, "es", "en", false);
+        await _helperClient.AddTextCorpusToEngine(engineId, ["1JN.txt", "2JN.txt"], "es", "en", false);
         await _helperClient.BuildEngine(engineId);
         TranslationResult tResult2 = await _helperClient.translationEnginesClient.TranslateAsync(
             engineId,
@@ -113,9 +113,9 @@ public class ServalApiTests
         var cId1 = await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         _helperClient.TranslationBuildConfig.TrainOn = new List<TrainingCorpusConfig>
         {
-            new TrainingCorpusConfig { CorpusId = cId1, TextIds = new string[] { "1JN.txt" } }
+            new TrainingCorpusConfig { CorpusId = cId1, TextIds = ["1JN.txt"] }
         };
-        var cId2 = await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
+        var cId2 = await _helperClient.AddTextCorpusToEngine(engineId, ["3JN.txt"], "es", "en", true);
         await _helperClient.BuildEngine(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
@@ -143,7 +143,7 @@ public class ServalApiTests
             string engineId = engineIds[i];
             var books = new string[] { "MAT.txt", "1JN.txt", "2JN.txt" };
             await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
-            await _helperClient.AddTextCorpusToEngine(engineId, new string[] { "3JN.txt" }, "es", "en", true);
+            await _helperClient.AddTextCorpusToEngine(engineId, ["3JN.txt"], "es", "en", true);
             await _helperClient.StartBuildAsync(engineId);
             //Ensure that tasks are enqueued roughly in order
             await Task.Delay(1_000);
@@ -226,13 +226,7 @@ public class ServalApiTests
         Assert.That(ex!.StatusCode, Is.EqualTo(409));
 
         //Add corpus
-        var cId = await _helperClient.AddTextCorpusToEngine(
-            smtEngineId,
-            new string[] { "2JN.txt", "3JN.txt" },
-            "es",
-            "en",
-            false
-        );
+        var cId = await _helperClient.AddTextCorpusToEngine(smtEngineId, ["2JN.txt", "3JN.txt"], "es", "en", false);
 
         //Build the new engine
         await _helperClient.BuildEngine(smtEngineId);
@@ -241,13 +235,7 @@ public class ServalApiTests
         await _helperClient.translationEnginesClient.DeleteCorpusAsync(smtEngineId, cId);
 
         //Add corpus
-        await _helperClient.AddTextCorpusToEngine(
-            smtEngineId,
-            new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
-            "es",
-            "en",
-            false
-        );
+        await _helperClient.AddTextCorpusToEngine(smtEngineId, ["1JN.txt", "2JN.txt", "3JN.txt"], "es", "en", false);
 
         //Build the new engine
         await _helperClient.BuildEngine(smtEngineId);
@@ -280,7 +268,7 @@ public class ServalApiTests
         //Add corpus
         string cId = await _helperClient.AddTextCorpusToEngine(
             engineId,
-            new string[] { "1JN.txt", "2JN.txt", "3JN.txt" },
+            ["1JN.txt", "2JN.txt", "3JN.txt"],
             "en",
             "fa",
             false
@@ -391,25 +379,20 @@ public class ServalApiTests
             {
                 SourceLanguage = "en",
                 TargetLanguage = "sbp",
-                SourceFiles = new TranslationCorpusFileConfig[]
-                {
-                    new TranslationCorpusFileConfig { FileId = file1.Id }
-                },
-                TargetFiles = new TranslationCorpusFileConfig[]
-                {
-                    new TranslationCorpusFileConfig { FileId = file2.Id }
-                }
+                SourceFiles = [new TranslationCorpusFileConfig { FileId = file1.Id }],
+                TargetFiles = [new TranslationCorpusFileConfig { FileId = file2.Id }]
             }
         );
         _helperClient.TranslationBuildConfig.Pretranslate!.Add(
-            new PretranslateCorpusConfig { CorpusId = corpus.Id, TextIds = new string[] { "JHN", "REV" } }
+            new PretranslateCorpusConfig { CorpusId = corpus.Id, BiblicalRange = "JHN" }
         );
         _helperClient.TranslationBuildConfig.Options = "{\"max_steps\":10, \"use_key_terms\":true}";
 
         await _helperClient.BuildEngine(engineId);
         Assert.That(
             (await _helperClient.translationEnginesClient.GetAllBuildsAsync(engineId)).First().State
-                == JobState.Completed
+                == JobState.Completed,
+            JsonSerializer.Serialize((await _helperClient.translationEnginesClient.GetAllBuildsAsync(engineId)).First())
         );
         IList<Pretranslation> lTrans = await _helperClient.translationEnginesClient.GetAllPretranslationsAsync(
             engineId,

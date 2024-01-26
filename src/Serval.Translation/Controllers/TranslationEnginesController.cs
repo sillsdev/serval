@@ -1013,10 +1013,20 @@ public class TranslationEnginesController : ServalControllerBase
             foreach (PretranslateCorpusConfigDto ptcc in source.Pretranslate)
             {
                 if (!corpusIds.Contains(ptcc.CorpusId))
-                    throw new InvalidOperationException($"The corpus {ptcc.CorpusId} is not valid.");
-
+                    throw new InvalidOperationException(
+                        $"The corpus {ptcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                    );
+                if (ptcc.TextIds != null && ptcc.BiblicalRange != null)
+                    throw new InvalidOperationException(
+                        $"The corpus {ptcc.CorpusId} is not valid: Set exactly one of TextIds and BiblicalRange."
+                    );
                 pretranslateCorpora.Add(
-                    new PretranslateCorpus { CorpusRef = ptcc.CorpusId, TextIds = ptcc.TextIds?.ToList() }
+                    new PretranslateCorpus
+                    {
+                        CorpusRef = ptcc.CorpusId,
+                        TextIds = ptcc.TextIds?.ToList(),
+                        BiblicalRange = ptcc.BiblicalRange
+                    }
                 );
             }
             build.Pretranslate = pretranslateCorpora;
@@ -1027,8 +1037,21 @@ public class TranslationEnginesController : ServalControllerBase
             foreach (TrainingCorpusConfigDto tcc in source.TrainOn)
             {
                 if (!corpusIds.Contains(tcc.CorpusId))
-                    throw new InvalidOperationException($"The corpus {tcc.CorpusId} is not valid.");
-                trainOnCorpora.Add(new TrainingCorpus { CorpusRef = tcc.CorpusId, TextIds = tcc.TextIds?.ToList() });
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                    );
+                if (tcc.TextIds != null && tcc.BiblicalRange != null)
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: Set exactly one of TextIds and BiblicalRange."
+                    );
+                trainOnCorpora.Add(
+                    new TrainingCorpus
+                    {
+                        CorpusRef = tcc.CorpusId,
+                        TextIds = tcc.TextIds?.ToList(),
+                        BiblicalRange = tcc.BiblicalRange
+                    }
+                );
             }
             build.TrainOn = trainOnCorpora;
         }
@@ -1101,7 +1124,8 @@ public class TranslationEnginesController : ServalControllerBase
                 Id = source.CorpusRef,
                 Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
             },
-            TextIds = source.TextIds
+            TextIds = source.TextIds,
+            BiblicalRange = source.BiblicalRange
         };
     }
 
@@ -1114,7 +1138,8 @@ public class TranslationEnginesController : ServalControllerBase
                 Id = source.CorpusRef,
                 Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
             },
-            TextIds = source.TextIds
+            TextIds = source.TextIds,
+            BiblicalRange = source.BiblicalRange
         };
     }
 

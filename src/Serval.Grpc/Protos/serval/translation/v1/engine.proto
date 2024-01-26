@@ -135,10 +135,12 @@ message Corpus {
     string target_language = 3;
     bool train_on_all = 4;
     bool pretranslate_all = 5;
-    repeated string train_on_text_ids = 6;
-    repeated string pretranslate_text_ids = 7;
-    repeated CorpusFile source_files = 8;
-    repeated CorpusFile target_files = 9;
+    string train_on_biblical_range = 6;
+    string pretranslate_biblical_range = 7;
+    repeated string train_on_text_ids = 8;
+    repeated string pretranslate_text_ids = 9;
+    repeated CorpusFile source_files = 10;
+    repeated CorpusFile target_files = 11;
 }
 
 message CorpusFile {
