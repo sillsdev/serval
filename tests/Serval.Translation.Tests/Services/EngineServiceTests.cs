@@ -76,7 +76,7 @@ public class EngineServiceTests
             Id = "engine1",
             SourceLanguage = "es",
             TargetLanguage = "en",
-            Type = "smt"
+            Type = "Smt"
         };
         await env.Service.CreateAsync(engine);
 
@@ -273,7 +273,7 @@ public class EngineServiceTests
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             var grpcClientFactory = Substitute.For<GrpcClientFactory>();
             grpcClientFactory
-                .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("smt")
+                .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Smt")
                 .Returns(translationServiceClient);
             var dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
@@ -299,7 +299,7 @@ public class EngineServiceTests
                 Id = "engine1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                Type = "smt",
+                Type = "Smt",
                 Corpora = new List<Models.Corpus>
                 {
                     new Models.Corpus
