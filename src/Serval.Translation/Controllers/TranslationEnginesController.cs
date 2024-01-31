@@ -737,7 +737,7 @@ public class TranslationEnginesController(
     /// To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-    /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Job-Settings) about configuring job parameters.
+    /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
     /// See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
