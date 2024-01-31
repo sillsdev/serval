@@ -33,7 +33,9 @@ public class GrpcServiceHealthCheck : IHealthCheck
             new(
                 status: (HealthStatus)healthCheckResponse.Status,
                 description: context.Registration.Name,
-                exception: healthCheckResponse.Error is null ? null : new Exception(healthCheckResponse.Error),
+                exception: string.IsNullOrEmpty(healthCheckResponse.Error)
+                    ? null
+                    : new Exception(healthCheckResponse.Error),
                 data: healthCheckResponse.Data.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value)
             );
         return healthCheckResult;
