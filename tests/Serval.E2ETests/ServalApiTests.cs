@@ -275,7 +275,7 @@ public class ServalApiTests
         //Retrieve engine
         TranslationEngine? engine = await _helperClient.translationEnginesClient.GetAsync(engineId);
         Assert.NotNull(engine);
-        Assert.That(engine.Type, Is.EqualTo("SmtTransfer"));
+        Assert.That(engine.Type, Is.EqualTo("smt-transfer"));
 
         //Add corpus
         string cId = await _helperClient.AddTextCorpusToEngine(
