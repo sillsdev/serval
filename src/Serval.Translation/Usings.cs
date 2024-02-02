@@ -3,6 +3,7 @@ global using System.Linq.Expressions;
 global using System.Text.Json;
 global using System.Text.Json.Nodes;
 global using Asp.Versioning;
+global using CaseExtensions;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
 global using MassTransit;

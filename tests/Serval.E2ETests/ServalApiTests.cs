@@ -58,7 +58,7 @@ public class ServalApiTests
     public async Task GetSmtAddSegment()
     {
         await _helperClient!.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT3");
+        string engineId = await _helperClient.CreateNewEngine("smt-transfer", "es", "en", "SMT3");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
         await _helperClient.BuildEngine(engineId);
@@ -157,7 +157,7 @@ public class ServalApiTests
             builds += $"{JsonSerializer.Serialize(build)}\n";
         }
 
-        builds += "Depth = " + (await _helperClient.translationEnginesClient.GetQueueAsync("Nmt")).Size.ToString();
+        builds += "Depth = " + (await _helperClient.translationClient.GetQueueAsync("Nmt")).Size.ToString();
 
         //Status message of last started build says that there is at least one job ahead of it in the queue
         // (this variable due to how many jobs may already exist in the production queue from other Serval instances)
@@ -165,7 +165,7 @@ public class ServalApiTests
             engineIds[NUM_ENGINES - 1]
         );
         int? queueDepth = newestEngineCurrentBuild.QueueDepth;
-        Queue queue = await _helperClient.translationEnginesClient.GetQueueAsync("Nmt");
+        Queue queue = await _helperClient.translationClient.GetQueueAsync("Nmt");
         for (int i = 0; i < NUM_ENGINES; i++)
         {
             try
@@ -258,12 +258,12 @@ public class ServalApiTests
         const int N = 3;
 
         //Create engine
-        string engineId = await _helperClient!.CreateNewEngine("SmtTransfer", "en", "fa", "SMT6");
+        string engineId = await _helperClient!.CreateNewEngine("smt-transfer", "en", "fa", "SMT6");
 
         //Retrieve engine
         TranslationEngine? engine = await _helperClient.translationEnginesClient.GetAsync(engineId);
         Assert.NotNull(engine);
-        Assert.That(engine.Type, Is.EqualTo("SmtTransfer"));
+        Assert.That(engine.Type, Is.EqualTo("smt-transfer"));
 
         //Add corpus
         string cId = await _helperClient.AddTextCorpusToEngine(
@@ -301,7 +301,7 @@ public class ServalApiTests
     public async Task GetSmtCancelAndRestartBuild()
     {
         await _helperClient!.ClearEngines();
-        string engineId = await _helperClient.CreateNewEngine("SmtTransfer", "es", "en", "SMT7");
+        string engineId = await _helperClient.CreateNewEngine("smt-transfer", "es", "en", "SMT7");
         var books = new string[] { "1JN.txt", "2JN.txt", "3JN.txt" };
         await _helperClient.AddTextCorpusToEngine(engineId, books, "es", "en", false);
 

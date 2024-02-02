@@ -1144,7 +1144,7 @@ public class TranslationEngineTests
     [TestCase("Echo")]
     public async Task GetQueueAsync(string engineType)
     {
-        ITranslationEnginesClient client = _env!.CreateClient();
+        TranslationClient client = _env!.CreateTranslationClient();
         Client.Queue queue = await client.GetQueueAsync(engineType);
         Assert.That(queue.Size, Is.EqualTo(0));
     }
@@ -1152,10 +1152,34 @@ public class TranslationEngineTests
     [Test]
     public void GetQueueAsync_NotAuthorized()
     {
-        ITranslationEnginesClient client = _env!.CreateClient(new string[] { Scopes.ReadFiles });
+        TranslationClient client = _env!.CreateTranslationClient([Scopes.ReadFiles]);
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             Client.Queue queue = await client.GetQueueAsync("Echo");
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(403));
+    }
+
+    [Test]
+    public async Task GetLanguageInfoAsync()
+    {
+        TranslationClient client = _env!.CreateTranslationClient();
+        Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync("Nmt", "Alphabet");
+        Assert.Multiple(() =>
+        {
+            Assert.That(languageInfo.InternalCode, Is.EqualTo("abc_123"));
+            Assert.That(languageInfo.IsNative, Is.EqualTo(true));
+        });
+    }
+
+    [Test]
+    public void GetLanguageInfo_Error()
+    {
+        TranslationClient client = _env!.CreateTranslationClient([Scopes.ReadFiles]);
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync("Nmt", "abc");
         });
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(403));
@@ -1357,9 +1381,6 @@ public class TranslationEngineTests
             NmtClient
                 .TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.Unimplemented));
-            NmtClient
-                .GetQueueSizeAsync(Arg.Any<GetQueueSizeRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new GetQueueSizeResponse() { Size = 0 }));
         }
 
         ServalWebApplicationFactory Factory { get; }
@@ -1397,6 +1418,43 @@ public class TranslationEngineTests
                 .CreateClient();
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new TranslationEnginesClient(httpClient);
+        }
+
+        public TranslationClient CreateTranslationClient(IEnumerable<string>? scope = null)
+        {
+            scope ??= new[]
+            {
+                Scopes.CreateTranslationEngines,
+                Scopes.ReadTranslationEngines,
+                Scopes.UpdateTranslationEngines,
+                Scopes.DeleteTranslationEngines
+            };
+            HttpClient httpClient = Factory
+                .WithWebHostBuilder(builder =>
+                {
+                    builder.ConfigureTestServices(services =>
+                    {
+                        var grpcClientFactory = Substitute.For<GrpcClientFactory>();
+                        grpcClientFactory
+                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Echo")
+                            .Returns(EchoClient);
+                        grpcClientFactory
+                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
+                            .Returns(NmtClient);
+                        services.AddSingleton(grpcClientFactory);
+                    });
+                })
+                .CreateClient();
+            NmtClient
+                .GetQueueSizeAsync(Arg.Any<GetQueueSizeRequest>(), null, null, Arg.Any<CancellationToken>())
+                .Returns(CreateAsyncUnaryCall(new GetQueueSizeResponse() { Size = 0 }));
+            NmtClient
+                .GetLanguageInfoAsync(Arg.Any<GetLanguageInfoRequest>(), null, null, Arg.Any<CancellationToken>())
+                .Returns(
+                    CreateAsyncUnaryCall(new GetLanguageInfoResponse() { InternalCode = "abc_123", IsNative = true })
+                );
+            httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
+            return new TranslationClient(httpClient);
         }
 
         public void ResetDatabases()

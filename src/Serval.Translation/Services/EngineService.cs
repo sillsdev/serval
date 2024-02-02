@@ -2,33 +2,22 @@
 
 namespace Serval.Translation.Services;
 
-public class EngineService : EntityServiceBase<Engine>, IEngineService
+public class EngineService(
+    IRepository<Engine> engines,
+    IRepository<Build> builds,
+    IRepository<Pretranslation> pretranslations,
+    GrpcClientFactory grpcClientFactory,
+    IOptionsMonitor<DataFileOptions> dataFileOptions,
+    IDataAccessContext dataAccessContext,
+    ILoggerFactory loggerFactory
+) : EntityServiceBase<Engine>(engines), IEngineService
 {
-    private readonly IRepository<Build> _builds;
-    private readonly IRepository<Pretranslation> _pretranslations;
-    private readonly GrpcClientFactory _grpcClientFactory;
-    private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions;
-    private readonly IDataAccessContext _dataAccessContext;
-    private readonly ILogger<EngineService> _logger;
-
-    public EngineService(
-        IRepository<Engine> engines,
-        IRepository<Build> builds,
-        IRepository<Pretranslation> pretranslations,
-        GrpcClientFactory grpcClientFactory,
-        IOptionsMonitor<DataFileOptions> dataFileOptions,
-        IDataAccessContext dataAccessContext,
-        ILoggerFactory loggerFactory
-    )
-        : base(engines)
-    {
-        _builds = builds;
-        _pretranslations = pretranslations;
-        _grpcClientFactory = grpcClientFactory;
-        _dataFileOptions = dataFileOptions;
-        _dataAccessContext = dataAccessContext;
-        _logger = loggerFactory.CreateLogger<EngineService>();
-    }
+    private readonly IRepository<Build> _builds = builds;
+    private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
+    private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
+    private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
+    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
+    private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
 
     public async Task<Models.TranslationResult?> TranslateAsync(
         string engineId,
@@ -350,6 +339,25 @@ public class EngineService : EntityServiceBase<Engine>, IEngineService
             cancellationToken: cancellationToken
         );
         return new Queue { Size = response.Size, EngineType = engineType };
+    }
+
+    public async Task<LanguageInfo> GetLanguageInfoAsync(
+        string engineType,
+        string language,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
+        GetLanguageInfoResponse response = await client.GetLanguageInfoAsync(
+            new GetLanguageInfoRequest { EngineType = engineType, Language = language },
+            cancellationToken: cancellationToken
+        );
+        return new LanguageInfo
+        {
+            InternalCode = response.InternalCode,
+            IsNative = response.IsNative,
+            EngineType = engineType
+        };
     }
 
     private Models.TranslationResult Map(V1.TranslationResult source)

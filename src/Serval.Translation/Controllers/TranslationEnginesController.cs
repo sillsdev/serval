@@ -1,34 +1,22 @@
-﻿using System.Net.Sockets;
-
-namespace Serval.Translation.Controllers;
+﻿namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
 [OpenApiTag("Translation Engines")]
-public class TranslationEnginesController : ServalControllerBase
+public class TranslationEnginesController(
+    IAuthorizationService authService,
+    IEngineService engineService,
+    IBuildService buildService,
+    IPretranslationService pretranslationService,
+    IOptionsMonitor<ApiOptions> apiOptions,
+    IUrlService urlService
+) : ServalControllerBase(authService)
 {
-    private readonly IEngineService _engineService;
-    private readonly IBuildService _buildService;
-    private readonly IPretranslationService _pretranslationService;
-    private readonly IOptionsMonitor<ApiOptions> _apiOptions;
-    private readonly IUrlService _urlService;
-
-    public TranslationEnginesController(
-        IAuthorizationService authService,
-        IEngineService engineService,
-        IBuildService buildService,
-        IPretranslationService pretranslationService,
-        IOptionsMonitor<ApiOptions> apiOptions,
-        IUrlService urlService
-    )
-        : base(authService)
-    {
-        _engineService = engineService;
-        _buildService = buildService;
-        _pretranslationService = pretranslationService;
-        _apiOptions = apiOptions;
-        _urlService = urlService;
-    }
+    private readonly IEngineService _engineService = engineService;
+    private readonly IBuildService _buildService = buildService;
+    private readonly IPretranslationService _pretranslationService = pretranslationService;
+    private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
+    private readonly IUrlService _urlService = urlService;
 
     /// <summary>
     /// Get all translation engines
@@ -91,24 +79,24 @@ public class TranslationEnginesController : ServalControllerBase
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
     /// * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-    /// * **type**: **SmtTransfer** or **Nmt** or **Echo**
-    /// ### SmtTransfer
+    /// * **type**: **smt-transfer** or **nmt** or **echo**
+    /// ### smt-transfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-    /// ### Nmt
-    /// The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
+    /// ### nmt
+    /// The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
     ///
     /// If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
     ///
     /// Typical endpoints: pretranslate
-    /// ### Echo
-    /// The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+    /// ### echo
+    /// The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
     /// ## Sample request:
     ///
     ///     {
     ///       "name": "myTeam:myProject:myEngine",
     ///       "sourceLanguage": "el",
     ///       "targetLanguage": "en",
-    ///       "type": "Nmt"
+    ///       "type": "nmt"
     ///     }
     ///
     /// </remarks>
@@ -180,36 +168,6 @@ public class TranslationEnginesController : ServalControllerBase
         if (!await _engineService.DeleteAsync(id, cancellationToken))
             return NotFound();
         return Ok();
-    }
-
-    /// <summary>
-    /// Get queue information for a given engine type
-    /// </summary>
-    /// <param name="engineType">A valid engine type: SmtTransfer, Nmt, or Echo</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">Queue information for the specified engine type</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpPost("queues")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<QueueDto>> GetQueueAsync(
-        [FromBody] string engineType,
-        CancellationToken cancellationToken
-    )
-    {
-        try
-        {
-            return Map(await _engineService.GetQueueAsync(engineType, cancellationToken));
-        }
-        catch (InvalidOperationException ioe)
-        {
-            return BadRequest(ioe.Message);
-        }
     }
 
     /// <summary>
@@ -779,7 +737,7 @@ public class TranslationEnginesController : ServalControllerBase
     /// To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-    /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Job-Settings) about configuring job parameters.
+    /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
     /// See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
@@ -997,9 +955,9 @@ public class TranslationEnginesController : ServalControllerBase
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
-            Type = source.Type,
+            Type = source.Type.ToPascalCase(),
             Owner = Owner,
-            Corpora = new List<Corpus>()
+            Corpora = []
         };
     }
 
@@ -1071,8 +1029,6 @@ public class TranslationEnginesController : ServalControllerBase
         return build;
     }
 
-    private QueueDto Map(Queue source) => new() { Size = source.Size, EngineType = source.EngineType };
-
     private TranslationEngineDto Map(Engine source)
     {
         return new TranslationEngineDto
@@ -1082,7 +1038,7 @@ public class TranslationEnginesController : ServalControllerBase
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
-            Type = source.Type,
+            Type = source.Type.ToKebabCase(),
             IsBuilding = source.IsBuilding,
             ModelRevision = source.ModelRevision,
             Confidence = Math.Round(source.Confidence, 8),
