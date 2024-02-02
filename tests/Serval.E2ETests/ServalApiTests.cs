@@ -384,7 +384,7 @@ public class ServalApiTests
             }
         );
         _helperClient.TranslationBuildConfig.Pretranslate!.Add(
-            new PretranslateCorpusConfig { CorpusId = corpus.Id, BiblicalRange = "JHN" }
+            new PretranslateCorpusConfig { CorpusId = corpus.Id, Chapters = "JHN" }
         );
         _helperClient.TranslationBuildConfig.Options = "{\"max_steps\":10, \"use_key_terms\":true}";
 

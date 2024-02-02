@@ -974,16 +974,17 @@ public class TranslationEnginesController(
                     throw new InvalidOperationException(
                         $"The corpus {ptcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
-                if (ptcc.TextIds != null && ptcc.BiblicalRange != null)
+                if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
                     throw new InvalidOperationException(
-                        $"The corpus {ptcc.CorpusId} is not valid: Set exactly one of TextIds and BiblicalRange."
+                        $"The corpus {ptcc.CorpusId} is not valid: Set exactly one of TextIds and Chapters."
                     );
+                ScriptureRangeParser parser = new();
                 pretranslateCorpora.Add(
                     new PretranslateCorpus
                     {
                         CorpusRef = ptcc.CorpusId,
                         TextIds = ptcc.TextIds?.ToList(),
-                        BiblicalRange = ptcc.BiblicalRange
+                        Chapters = ptcc.Chapters
                     }
                 );
             }
@@ -998,16 +999,16 @@ public class TranslationEnginesController(
                     throw new InvalidOperationException(
                         $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
-                if (tcc.TextIds != null && tcc.BiblicalRange != null)
+                if (tcc.TextIds != null && tcc.Chapters != null)
                     throw new InvalidOperationException(
-                        $"The corpus {tcc.CorpusId} is not valid: Set exactly one of TextIds and BiblicalRange."
+                        $"The corpus {tcc.CorpusId} is not valid: Set exactly one of TextIds and Chapters."
                     );
                 trainOnCorpora.Add(
                     new TrainingCorpus
                     {
                         CorpusRef = tcc.CorpusId,
                         TextIds = tcc.TextIds?.ToList(),
-                        BiblicalRange = tcc.BiblicalRange
+                        Chapters = tcc.Chapters
                     }
                 );
             }
@@ -1081,7 +1082,7 @@ public class TranslationEnginesController(
                 Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
             },
             TextIds = source.TextIds,
-            BiblicalRange = source.BiblicalRange
+            Chapters = source.Chapters
         };
     }
 
@@ -1095,7 +1096,7 @@ public class TranslationEnginesController(
                 Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
             },
             TextIds = source.TextIds,
-            BiblicalRange = source.BiblicalRange
+            Chapters = source.Chapters
         };
     }
 

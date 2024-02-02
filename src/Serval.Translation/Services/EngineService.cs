@@ -202,14 +202,38 @@ public class EngineService(
                                 pretranslateCorpus.TextIds is null || pretranslateCorpus.TextIds.Count == 0;
                             if (pretranslateCorpus.TextIds is not null)
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
-                            corpus.PretranslateBiblicalRange = pretranslateCorpus.BiblicalRange;
+                            if (pretranslateCorpus.Chapters is not null)
+                                corpus.PretranslateChapters.Add(
+                                    pretranslateCorpus
+                                        .Chapters.Select(
+                                            (kvp) =>
+                                            {
+                                                var scriptureChapters = new ScriptureChapters();
+                                                scriptureChapters.Chapters.Add(kvp.Value);
+                                                return (kvp.Key, scriptureChapters);
+                                            }
+                                        )
+                                        .ToDictionary()
+                                );
                         }
                         if (trainOn?.TryGetValue(c.Id, out TrainingCorpus? trainingCorpus) ?? false)
                         {
                             corpus.TrainOnAll = trainingCorpus.TextIds is null || trainingCorpus.TextIds.Count == 0;
                             if (trainingCorpus.TextIds is not null)
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
-                            corpus.TrainOnBiblicalRange = trainingCorpus.BiblicalRange;
+                            if (trainingCorpus.Chapters is not null)
+                                corpus.TrainOnChapters.Add(
+                                    trainingCorpus
+                                        .Chapters.Select(
+                                            (kvp) =>
+                                            {
+                                                var scriptureChapters = new ScriptureChapters();
+                                                scriptureChapters.Chapters.Add(kvp.Value);
+                                                return (kvp.Key, scriptureChapters);
+                                            }
+                                        )
+                                        .ToDictionary()
+                                );
                         }
                         else if (trainOn is null)
                         {
