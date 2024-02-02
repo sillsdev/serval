@@ -7,7 +7,7 @@ public class WebhooksTests
     const string ID = "000000000000000000000000";
     const string DOES_NOT_EXIST_ID = "000000000000000000000001";
 
-    TestEnvironment? _env;
+    TestEnvironment _env;
 
     [SetUp]
     public async Task Setup()
@@ -19,10 +19,7 @@ public class WebhooksTests
             Owner = "client1",
             Url = "/a/url",
             Secret = "s3CreT#",
-            Events = new List<Webhooks.Contracts.WebhookEvent>
-            {
-                Webhooks.Contracts.WebhookEvent.TranslationBuildStarted
-            }
+            Events = [Webhooks.Contracts.WebhookEvent.TranslationBuildStarted]
         };
         await _env.Webhooks.InsertAsync(webhook);
     }
@@ -32,7 +29,7 @@ public class WebhooksTests
     [TestCase(new string[] { Scopes.ReadFiles }, 403)] //Arbitrary unrelated privilege
     public async Task GetAllWebhooksAsync(IEnumerable<string>? scope, int expectedStatusCode)
     {
-        WebhooksClient client = _env!.CreateClient(scope);
+        WebhooksClient client = _env.CreateClient(scope);
         switch (expectedStatusCode)
         {
             case 200:
@@ -40,12 +37,11 @@ public class WebhooksTests
                 Assert.That(result.Id, Is.EqualTo(ID));
                 break;
             case 403:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAllAsync();
                 });
-                Assert.That(ex, Is.Not.Null);
-                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -59,7 +55,7 @@ public class WebhooksTests
     [TestCase(new string[] { Scopes.ReadFiles }, 403, ID)] //Arbitrary unrelated privilege
     public async Task GetWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
     {
-        WebhooksClient client = _env!.CreateClient(scope);
+        WebhooksClient client = _env.CreateClient(scope);
         switch (expectedStatusCode)
         {
             case 200:
@@ -72,7 +68,7 @@ public class WebhooksTests
                 {
                     await client.GetAsync(webhookId);
                 });
-                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -86,26 +82,29 @@ public class WebhooksTests
     [TestCase(new string[] { Scopes.ReadFiles }, 403, ID)] //Arbitrary unrelated privilege
     public async Task DeleteWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
     {
-        WebhooksClient client = _env!.CreateClient(scope);
-        ServalApiException ex;
+        WebhooksClient client = _env.CreateClient(scope);
         switch (expectedStatusCode)
         {
             case 200:
+            {
                 await client.DeleteAsync(webhookId);
-                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAsync(webhookId);
                 });
-                Assert.That(ex!.StatusCode, Is.EqualTo(404));
+                Assert.That(ex?.StatusCode, Is.EqualTo(404));
                 break;
+            }
             case 403:
             case 404:
-                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+            {
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.DeleteAsync(webhookId);
                 });
-                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
+            }
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
                 break;
@@ -115,9 +114,9 @@ public class WebhooksTests
     [Test]
     [TestCase(null, 201)]
     [TestCase(new string[] { Scopes.ReadFiles }, 403)] //Arbitrary unrelated privilege
-    public async Task CreateWebhookAsync(IEnumerable<string> scope, int expectedStatusCode)
+    public async Task CreateWebhookAsync(IEnumerable<string>? scope, int expectedStatusCode)
     {
-        WebhooksClient client = _env!.CreateClient(scope);
+        WebhooksClient client = _env.CreateClient(scope);
         switch (expectedStatusCode)
         {
             case 201:
@@ -134,7 +133,7 @@ public class WebhooksTests
 
                 break;
             case 403:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     Webhook result = await client.CreateAsync(
                         new WebhookConfig
@@ -145,8 +144,7 @@ public class WebhooksTests
                         }
                     );
                 });
-                Assert.That(ex, Is.Not.Null);
-                Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -157,7 +155,7 @@ public class WebhooksTests
     [TearDown]
     public void TearDown()
     {
-        _env!.Dispose();
+        _env.Dispose();
     }
 
     private class TestEnvironment : DisposableBase
@@ -167,8 +165,7 @@ public class WebhooksTests
 
         public TestEnvironment()
         {
-            var clientSettings = new MongoClientSettings();
-            clientSettings.LinqProvider = LinqProvider.V2;
+            MongoClientSettings clientSettings = new() { LinqProvider = LinqProvider.V2 };
             _mongoClient = new MongoClient(clientSettings);
             ResetDatabases();
 
@@ -182,10 +179,7 @@ public class WebhooksTests
 
         public WebhooksClient CreateClient(IEnumerable<string>? scope)
         {
-            if (scope is null)
-            {
-                scope = new[] { Scopes.ReadHooks, Scopes.CreateHooks, Scopes.DeleteHooks };
-            }
+            scope ??= new[] { Scopes.ReadHooks, Scopes.CreateHooks, Scopes.DeleteHooks };
 
             var httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));

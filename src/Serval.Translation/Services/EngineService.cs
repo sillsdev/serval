@@ -19,15 +19,13 @@ public class EngineService(
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
 
-    public async Task<Models.TranslationResult?> TranslateAsync(
+    public async Task<Models.TranslationResult> TranslateAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine == null)
-            return null;
+        Engine engine = await GetAsync(engineId, cancellationToken);
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         TranslateResponse response = await client.TranslateAsync(
@@ -43,16 +41,14 @@ public class EngineService(
         return Map(response.Results[0]);
     }
 
-    public async Task<IEnumerable<Models.TranslationResult>?> TranslateAsync(
+    public async Task<IEnumerable<Models.TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine == null)
-            return null;
+        Engine engine = await GetAsync(engineId, cancellationToken);
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         TranslateResponse response = await client.TranslateAsync(
@@ -68,15 +64,13 @@ public class EngineService(
         return response.Results.Select(Map);
     }
 
-    public async Task<Models.WordGraph?> GetWordGraphAsync(
+    public async Task<Models.WordGraph> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine == null)
-            return null;
+        Engine engine = await GetAsync(engineId, cancellationToken);
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         GetWordGraphResponse response = await client.GetWordGraphAsync(
@@ -91,7 +85,7 @@ public class EngineService(
         return Map(response.WordGraph);
     }
 
-    public async Task<bool> TrainSegmentPairAsync(
+    public async Task TrainSegmentPairAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -99,9 +93,7 @@ public class EngineService(
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine == null)
-            return false;
+        Engine engine = await GetAsync(engineId, cancellationToken);
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         await client.TrainSegmentPairAsync(
@@ -115,7 +107,6 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
-        return true;
     }
 
     public async Task<IEnumerable<Engine>> GetAllAsync(string owner, CancellationToken cancellationToken = default)
@@ -123,7 +114,7 @@ public class EngineService(
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public override async Task<bool> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
+    public override async Task CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
         await Entities.InsertAsync(engine, cancellationToken);
         try
@@ -131,7 +122,7 @@ public class EngineService(
             TranslationEngineApi.TranslationEngineApiClient? client =
                 _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
             if (client is null)
-                return false;
+                throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
             var request = new CreateRequest
             {
                 EngineType = engine.Type,
@@ -142,7 +133,6 @@ public class EngineService(
             if (engine.Name is not null)
                 request.EngineName = engine.Name;
             await client.CreateAsync(request, cancellationToken: cancellationToken);
-            return true;
         }
         catch
         {
@@ -151,11 +141,11 @@ public class EngineService(
         }
     }
 
-    public override async Task<bool> DeleteAsync(string engineId, CancellationToken cancellationToken = default)
+    public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
         Engine? engine = await Entities.GetAsync(engineId, cancellationToken);
-        if (engine == null)
-            return false;
+        if (engine is null)
+            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         await client.DeleteAsync(
@@ -168,16 +158,11 @@ public class EngineService(
         await _builds.DeleteAllAsync(b => b.EngineRef == engineId, CancellationToken.None);
         await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, CancellationToken.None);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
-
-        return true;
     }
 
-    public async Task<bool> StartBuildAsync(Build build, CancellationToken cancellationToken = default)
+    public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
-        Engine? engine = await GetAsync(build.EngineRef, cancellationToken);
-        if (engine == null)
-            return false;
-
+        Engine engine = await GetAsync(build.EngineRef, cancellationToken);
         await _builds.InsertAsync(build, cancellationToken);
 
         try
@@ -279,21 +264,29 @@ public class EngineService(
             await _builds.DeleteAsync(build, CancellationToken.None);
             throw;
         }
-
-        return true;
     }
 
-    public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<bool> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
         Engine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine == null)
-            return;
+        if (engine is null)
+            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.CancelBuildAsync(
-            new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id },
-            cancellationToken: cancellationToken
-        );
+        try
+        {
+            await client.CancelBuildAsync(
+                new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id },
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (RpcException re)
+        {
+            if (re.StatusCode is StatusCode.Aborted)
+                return false;
+            throw;
+        }
+        return true;
     }
 
     public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
@@ -301,7 +294,7 @@ public class EngineService(
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
     }
 
-    public async Task<Models.Corpus?> UpdateCorpusAsync(
+    public async Task<Models.Corpus> UpdateCorpusAsync(
         string engineId,
         string corpusId,
         IList<Models.CorpusFile>? sourceFiles,
@@ -320,14 +313,12 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
-        return engine?.Corpora.FirstOrDefault(c => c.Id == corpusId);
+        if (engine is null)
+            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
+        return engine.Corpora.First(c => c.Id == corpusId);
     }
 
-    public async Task<bool> DeleteCorpusAsync(
-        string engineId,
-        string corpusId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task DeleteCorpusAsync(string engineId, string corpusId, CancellationToken cancellationToken = default)
     {
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         Engine? originalEngine = await Entities.UpdateAsync(
@@ -336,9 +327,10 @@ public class EngineService(
             returnOriginal: true,
             cancellationToken: cancellationToken
         );
+        if (originalEngine is null || !originalEngine.Corpora.Any(c => c.Id == corpusId))
+            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
         await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(cancellationToken);
-        return originalEngine is not null && originalEngine.Corpora.Any(c => c.Id == corpusId);
     }
 
     public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)

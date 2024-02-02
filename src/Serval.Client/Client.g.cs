@@ -1382,7 +1382,7 @@ namespace Serval.Client
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
-        /// <returns>The translation engine was created successfully</returns>
+        /// <returns>The new translation engine</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TranslationEngine> CreateAsync(TranslationEngineConfig engineConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -1400,7 +1400,7 @@ namespace Serval.Client
         /// Delete a translation engine
         /// </summary>
         /// <param name="id">The translation engine id</param>
-        /// <returns>The engine was successfully deleted</returns>
+        /// <returns>The engine was successfully deleted.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -1446,7 +1446,7 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="segmentPair">The segment pair</param>
-        /// <returns>The engine was trained successfully</returns>
+        /// <returns>The engine was trained successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task TrainSegmentAsync(string id, SegmentPair segmentPair, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -1473,7 +1473,7 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
-        /// <returns>The corpus was added successfully</returns>
+        /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -1491,8 +1491,8 @@ namespace Serval.Client
         /// Update a corpus with a new set of files
         /// </summary>
         /// <remarks>
-        /// See posting a new corpus for details of use.  Will completely replace corpus' file associations.
-        /// <br/>Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
+        /// See posting a new corpus for details of use. Will completely replace corpus' file associations.
+        /// <br/>Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -1520,7 +1520,7 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
-        /// <returns>The data file was deleted successfully</returns>
+        /// <returns>The data file was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -1544,6 +1544,41 @@ namespace Serval.Client
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get all pretranslations for the specified text in a corpus of a translation engine
+        /// </summary>
+        /// <remarks>
+        /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+        /// <br/>* **TextId**: The TextId of the SourceFile defined when the corpus was created.
+        /// <br/>* **Refs** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the SourceFile per line, if any.
+        /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **Translation**: the text of the pretranslation
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id</param>
+        /// <param name="textId">The text id</param>
+        /// <returns>The pretranslations</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetPretranslationsByTextIdAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get a pretranslated Scripture book in USFM format.
+        /// </summary>
+        /// <remarks>
+        /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
+        /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
+        /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id</param>
+        /// <param name="textId">The text id</param>
+        /// <returns>The book in USFM format</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -1576,7 +1611,7 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
-        /// <returns>The build job was started successfully</returns>
+        /// <returns>The new build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, TranslationBuildConfig buildConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -1619,7 +1654,7 @@ namespace Serval.Client
         /// Cancel the current build job (whether pending or active) for a translation engine
         /// </summary>
         /// <param name="id">The translation engine id</param>
-        /// <returns>The build job was cancelled successfully</returns>
+        /// <returns>The build job was cancelled successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -1724,19 +1759,19 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -1790,7 +1825,7 @@ namespace Serval.Client
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
-        /// <returns>The translation engine was created successfully</returns>
+        /// <returns>The new translation engine</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<TranslationEngine> CreateAsync(TranslationEngineConfig engineConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -1851,31 +1886,25 @@ namespace Serval.Client
                         if (status_ == 400)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("Bad request.  Is the engine type correct?", status_, responseText_, headers_, null);
+                            throw new ServalApiException("Bad request. Is the engine type correct?", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 422)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine was specified incorrectly.  Did you use the same language for the source and target?", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -1960,25 +1989,25 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -2005,7 +2034,7 @@ namespace Serval.Client
         /// Delete a translation engine
         /// </summary>
         /// <param name="id">The translation engine id</param>
-        /// <returns>The engine was successfully deleted</returns>
+        /// <returns>The engine was successfully deleted.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -2057,25 +2086,25 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist and therefore cannot be deleted", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist and therefore cannot be deleted.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -2175,37 +2204,37 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The method is not supported", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The method is not supported.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine needs to be built before it can translate segments", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine needs to be built before it can translate segments.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -2310,37 +2339,37 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The method is not supported", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The method is not supported.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine needs to be built before it can translate segments", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine needs to be built before it can translate segments.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -2440,37 +2469,37 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The method is not supported", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The method is not supported.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine needs to be built first", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -2503,7 +2532,7 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="segmentPair">The segment pair</param>
-        /// <returns>The engine was trained successfully</returns>
+        /// <returns>The engine was trained successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task TrainSegmentAsync(string id, SegmentPair segmentPair, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -2569,37 +2598,37 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The method is not supported", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The method is not supported.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine needs to be built first", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -2644,7 +2673,7 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
-        /// <returns>The corpus was added successfully</returns>
+        /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -2716,31 +2745,25 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 422)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine was specified incorrectly.  Did you use the same language for the source and target?", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -2871,8 +2894,8 @@ namespace Serval.Client
         /// Update a corpus with a new set of files
         /// </summary>
         /// <remarks>
-        /// See posting a new corpus for details of use.  Will completely replace corpus' file associations.
-        /// <br/>Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
+        /// See posting a new corpus for details of use. Will completely replace corpus' file associations.
+        /// <br/>Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -2953,25 +2976,25 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -3062,25 +3085,25 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -3111,7 +3134,7 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
-        /// <returns>The data file was deleted successfully</returns>
+        /// <returns>The data file was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -3168,25 +3191,25 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -3295,31 +3318,296 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 409)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get all pretranslations for the specified text in a corpus of a translation engine
+        /// </summary>
+        /// <remarks>
+        /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+        /// <br/>* **TextId**: The TextId of the SourceFile defined when the corpus was created.
+        /// <br/>* **Refs** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the SourceFile per line, if any.
+        /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **Translation**: the text of the pretranslation
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id</param>
+        /// <param name="textId">The text id</param>
+        /// <returns>The pretranslations</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetPretranslationsByTextIdAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (corpusId == null)
+                throw new System.ArgumentNullException("corpusId");
+
+            if (textId == null)
+                throw new System.ArgumentNullException("textId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(BaseUrl)) urlBuilder_.Append(BaseUrl);
+                    // Operation Path: "translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}"
+                    urlBuilder_.Append("translation/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pretranslations/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<Pretranslation>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 409)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get a pretranslated Scripture book in USFM format.
+        /// </summary>
+        /// <remarks>
+        /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
+        /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
+        /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id</param>
+        /// <param name="textId">The text id</param>
+        /// <returns>The book in USFM format</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (corpusId == null)
+                throw new System.ArgumentNullException("corpusId");
+
+            if (textId == null)
+                throw new System.ArgumentNullException("textId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(BaseUrl)) urlBuilder_.Append(BaseUrl);
+                    // Operation Path: "translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}/usfm"
+                    urlBuilder_.Append("translation/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pretranslations/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/usfm");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            var result_ = (string)System.Convert.ChangeType(responseData_, typeof(string));
+                            return result_;
+                        }
+                        else
+                        if (status_ == 204)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The specified book does not exist in the source or target corpus.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The corpus is not a valid Scripture corpus.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                             throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine needs to be built first", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -3405,25 +3693,25 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -3467,7 +3755,7 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
-        /// <returns>The build job was started successfully</returns>
+        /// <returns>The new build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<TranslationBuild> StartBuildAsync(string id, TranslationBuildConfig buildConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -3533,31 +3821,31 @@ namespace Serval.Client
                         if (status_ == 400)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A corpus id is invalid", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A corpus id is invalid.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("There is already an active or pending build or a build in the process of being canceled", status_, responseText_, headers_, null);
+                            throw new ServalApiException("There is already an active or pending build or a build in the process of being canceled.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -3668,40 +3956,34 @@ namespace Serval.Client
                             return objectResponse_.Object;
                         }
                         else
-                        if (status_ == 400)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("Bad request", status_, responseText_, headers_, null);
-                        }
-                        else
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or build does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or build does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 408)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The long polling request timed out. This is expected behavior if you\'re using long-polling with the minRevision strategy specified in the docs", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The long polling request timed out. This is expected behavior if you\'re using long-polling with the minRevision strategy specified in the docs.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -3797,7 +4079,7 @@ namespace Serval.Client
                         if (status_ == 204)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("There is no build currently running", status_, responseText_, headers_, null);
+                            throw new ServalApiException("There is no build currently running.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 400)
@@ -3809,31 +4091,31 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 408)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The long polling request timed out. This is expected behavior if you\'re using long-polling with the minRevision strategy specified in the docs", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The long polling request timed out. This is expected behavior if you\'re using long-polling with the minRevision strategy specified in the docs.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -3860,7 +4142,7 @@ namespace Serval.Client
         /// Cancel the current build job (whether pending or active) for a translation engine
         /// </summary>
         /// <param name="id">The translation engine id</param>
-        /// <returns>The build job was cancelled successfully</returns>
+        /// <returns>The build job was cancelled successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -3911,34 +4193,39 @@ namespace Serval.Client
                             return;
                         }
                         else
+                        if (status_ == 204)
+                        {
+                            return;
+                        }
+                        else
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the translation engine", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client does not own the translation engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist or there is no active build ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The translation engine does not support cancelling builds", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The translation engine does not support cancelling builds.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -4073,7 +4360,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial interface ITranslationClient
+    public partial interface ITranslationEngineTypesClient
     {
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -4111,7 +4398,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationClient : ITranslationClient
+    public partial class TranslationEngineTypesClient : ITranslationEngineTypesClient
     {
     #pragma warning disable 8618 // Set by constructor via BaseUrl property
         private string _baseUrl;
@@ -4119,7 +4406,7 @@ namespace Serval.Client
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<Newtonsoft.Json.JsonSerializerSettings> _settings = new System.Lazy<Newtonsoft.Json.JsonSerializerSettings>(CreateSerializerSettings, true);
 
-        public TranslationClient(System.Net.Http.HttpClient httpClient)
+        public TranslationEngineTypesClient(System.Net.Http.HttpClient httpClient)
         {
             BaseUrl = "/api/v1";
             _httpClient = httpClient;
