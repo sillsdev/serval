@@ -964,6 +964,7 @@ public class TranslationEnginesController(
     {
         var build = new Build { EngineRef = engine.Id, Name = source.Name };
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
+        ScriptureRangeParser parser = new();
         if (source.Pretranslate != null)
         {
             var pretranslateCorpora = new List<PretranslateCorpus>();
@@ -977,15 +978,23 @@ public class TranslationEnginesController(
                     throw new InvalidOperationException(
                         $"The corpus {ptcc.CorpusId} is not valid: Set exactly one of TextIds and Chapters."
                     );
-                ScriptureRangeParser parser = new();
-                pretranslateCorpora.Add(
-                    new PretranslateCorpus
-                    {
-                        CorpusRef = ptcc.CorpusId,
-                        TextIds = ptcc.TextIds?.ToList(),
-                        Chapters = ptcc.Chapters
-                    }
-                );
+                try
+                {
+                    pretranslateCorpora.Add(
+                        new PretranslateCorpus
+                        {
+                            CorpusRef = ptcc.CorpusId,
+                            TextIds = ptcc.TextIds?.ToList(),
+                            Chapters = ptcc.ScriptureRange is not null ? parser.GetChapters(ptcc.ScriptureRange) : null
+                        }
+                    );
+                }
+                catch (ArgumentException ae)
+                {
+                    throw new InvalidOperationException(
+                        $"The scripture range {ptcc.ScriptureRange} is not valid: {ae.Message}"
+                    );
+                }
             }
             build.Pretranslate = pretranslateCorpora;
         }
@@ -998,18 +1007,27 @@ public class TranslationEnginesController(
                     throw new InvalidOperationException(
                         $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
-                if (tcc.TextIds != null && tcc.Chapters != null)
+                if (tcc.TextIds != null && tcc.ScriptureRange != null)
                     throw new InvalidOperationException(
                         $"The corpus {tcc.CorpusId} is not valid: Set exactly one of TextIds and Chapters."
                     );
-                trainOnCorpora.Add(
-                    new TrainingCorpus
-                    {
-                        CorpusRef = tcc.CorpusId,
-                        TextIds = tcc.TextIds?.ToList(),
-                        Chapters = tcc.Chapters
-                    }
-                );
+                try
+                {
+                    trainOnCorpora.Add(
+                        new TrainingCorpus
+                        {
+                            CorpusRef = tcc.CorpusId,
+                            TextIds = tcc.TextIds?.ToList(),
+                            Chapters = tcc.ScriptureRange is not null ? parser.GetChapters(tcc.ScriptureRange) : null
+                        }
+                    );
+                }
+                catch (ArgumentException ae)
+                {
+                    throw new InvalidOperationException(
+                        $"The scripture range {tcc.ScriptureRange} is not valid: {ae.Message}"
+                    );
+                }
             }
             build.TrainOn = trainOnCorpora;
         }
