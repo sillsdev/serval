@@ -1672,7 +1672,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id</param>
         /// <returns>The build job was cancelled successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ModelInfo> DownloadModelAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<ModelPresignedUrl> DownloadModelAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
     }
 
@@ -4277,7 +4277,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id</param>
         /// <returns>The build job was cancelled successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<ModelInfo> DownloadModelAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<ModelPresignedUrl> DownloadModelAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -4324,7 +4324,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<ModelInfo>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<ModelPresignedUrl>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -4347,7 +4347,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist or there is no saved model.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
@@ -6023,23 +6023,15 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ModelInfo
+    public partial class ModelPresignedUrl
     {
         [Newtonsoft.Json.JsonProperty("presignedUrl", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string PresignedUrl { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("buildId", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("buildRevision", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string BuildId { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("createdOn", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string CreatedOn { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("toBeDeletedOn", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string ToBeDeletedOn { get; set; } = default!;
+        public string BuildRevision { get; set; } = default!;
 
     }
 

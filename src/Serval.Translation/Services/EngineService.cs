@@ -263,7 +263,7 @@ public class EngineService(
         return true;
     }
 
-    public Task<ModelInfoDto> GetModelUrlAsync(string engineId, CancellationToken cancellationToken = default)
+    public Task<ModelPresignedUrlDto> GetModelUrlAsync(string engineId, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

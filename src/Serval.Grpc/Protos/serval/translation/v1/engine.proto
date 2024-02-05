@@ -12,7 +12,7 @@ service TranslationEngineApi {
     rpc TrainSegmentPair(TrainSegmentPairRequest) returns (google.protobuf.Empty);
     rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
     rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
-    rpc GetModelInfo(GetModelInfoRequest) returns (GetModelInfoResponse);
+    rpc GetModelPresignedUrl(GetModelPresignedUrlRequest) returns (GetModelPresignedUrlResponse);
     rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
     rpc GetLanguageInfo(GetLanguageInfoRequest) returns (GetLanguageInfoResponse);
     rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse);
@@ -74,16 +74,14 @@ message CancelBuildRequest {
 }
 
 
-message GetModelInfoRequest {
+message GetModelPresignedUrlRequest {
     string engine_type = 1;
     string engine_id = 2;
 }
 
-message GetModelInfoResponse {
+message GetModelPresignedUrlResponse {
     string PresignedUrl = 1;
-    string BuildId = 2;
-    string CreatedOn = 3;
-    string ToBeDeletedOn = 4;
+    string BuildRevision = 2;
 }
 
 message GetQueueSizeRequest {

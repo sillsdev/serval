@@ -905,7 +905,7 @@ public class TranslationEnginesController(
     /// <response code="200">The build job was cancelled successfully.</response>
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
-    /// <response code="404">The engine does not exist.</response>
+    /// <response code="404">The engine does not exist or there is no saved model.</response>
     /// <response code="405">The translation engine does not support cancelling builds.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
@@ -916,13 +916,13 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<ModelInfoDto>> DownloadModelAsync(
+    public async Task<ActionResult<ModelPresignedUrlDto>> DownloadModelAsync(
         [NotNull] string id,
         CancellationToken cancellationToken
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        ModelInfoDto modelInfo = await _engineService.GetModelUrlAsync(id, cancellationToken);
+        ModelPresignedUrlDto modelInfo = await _engineService.GetModelUrlAsync(id, cancellationToken);
         return Ok(modelInfo);
     }
 
