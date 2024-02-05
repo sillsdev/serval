@@ -1018,22 +1018,19 @@ public class TranslationEngineTests
         {
             case 201:
                 TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfig);
-                ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = addedCorpus.Id,
-                    TextIds = new List<string> { "all" }
-                };
-                tcc = new()
-                {
-                    CorpusId = addedCorpus.Id,
-                    TextIds = new List<string> { "all" }
-                };
+                ptcc = new PretranslateCorpusConfig { CorpusId = addedCorpus.Id, TextIds = ["all"] };
+                tcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
                 tbc = new TranslationBuildConfig
                 {
-                    Pretranslate = new List<PretranslateCorpusConfig> { ptcc },
-                    TrainOn = new List<TrainingCorpusConfig> { tcc },
-                    Options =
-                        "{\"max_steps\":10, \"use_key_terms\":false, \"some_double\":10.5, \"some_string\":\"string\"}"
+                    Pretranslate = [ptcc],
+                    TrainOn = [tcc],
+                    Options = """
+                        {"max_steps":10,
+                        "use_key_terms":false,
+                        "some_double":10.5,
+                        "some_nested": {"more_nested": {"other_double":10.5}},
+                        "some_string":"string"}
+                        """
                 };
                 TranslationBuild resultAfterStart;
                 Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -1050,12 +1047,8 @@ public class TranslationEngineTests
             case 400:
             case 403:
             case 404:
-                ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = "cccccccccccccccccccccccc",
-                    TextIds = new List<string> { "all" }
-                };
-                tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
+                ptcc = new PretranslateCorpusConfig { CorpusId = "cccccccccccccccccccccccc", TextIds = ["all"] };
+                tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
                 var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.StartBuildAsync(engineId, tbc);
@@ -1172,12 +1165,8 @@ public class TranslationEngineTests
         var engineId = NMT_ENGINE1_ID;
         var expectedStatusCode = 409;
         TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfigNonEcho);
-        var ptcc = new PretranslateCorpusConfig
-        {
-            CorpusId = addedCorpus.Id,
-            TextIds = new List<string> { "all" }
-        };
-        var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
+        var ptcc = new PretranslateCorpusConfig { CorpusId = addedCorpus.Id, TextIds = ["all"] };
+        var tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
         TranslationBuild build = await client.StartBuildAsync(engineId, tbc);
         _env.NmtClient.StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
             .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
@@ -1295,7 +1284,7 @@ public class TranslationEngineTests
             Task.FromException<TResponse>(new RpcException(status)),
             Task.FromResult(new Metadata()),
             () => status,
-            () => new Metadata(),
+            () => [],
             () => { }
         );
     }
@@ -1306,7 +1295,7 @@ public class TranslationEngineTests
             Task.FromResult(response),
             Task.FromResult(new Metadata()),
             () => Status.DefaultSuccess,
-            () => new Metadata(),
+            () => [],
             () => { }
         );
     }

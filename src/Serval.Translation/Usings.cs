@@ -26,5 +26,6 @@ global using Serval.Translation.Consumers;
 global using Serval.Translation.Contracts;
 global using Serval.Translation.Models;
 global using Serval.Translation.Services;
+global using Serval.Translation.Utils;
 global using SIL.DataAccess;
 global using SIL.Scripture;
