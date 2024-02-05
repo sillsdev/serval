@@ -80,6 +80,7 @@ public class TranslationEnginesController(
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
     /// ### nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+    /// * **isModelRetrievable**: Whether the model can be downloaded by the client after it has been sucessfully built.
     ///
     /// If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
     ///
@@ -93,6 +94,7 @@ public class TranslationEnginesController(
     ///       "sourceLanguage": "el",
     ///       "targetLanguage": "en",
     ///       "type": "nmt"
+    ///       "isModelRetrievable": true
     ///     }
     ///
     /// </remarks>
@@ -894,9 +896,8 @@ public class TranslationEnginesController(
     /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
     /// </summary>
     /// <remarks>
-    /// If a Nmt build was successful and included the build param `train_params: { save_strategy: yes} }`,
-    /// then the model will be available to download within 30 days of being created.  After that, the model
-    /// will be deleted to not clutter the system.
+    /// If a Nmt build was successful and isModelRetrievable is `true` for the engine,
+    /// then the model from the most recent successful build can be downloaded.
     /// The endpoint will return a presigned URL that can be used to download the model for up to 1 hour
     /// after the request is made.  If the URL is not used within that time, a new request will need to be made.
     /// </remarks>
@@ -992,7 +993,8 @@ public class TranslationEnginesController(
             TargetLanguage = source.TargetLanguage,
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
-            Corpora = []
+            Corpora = [],
+            IsModelRetrievable = source.IsModelRetrievable
         };
     }
 
@@ -1049,6 +1051,7 @@ public class TranslationEnginesController(
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
             Type = source.Type.ToKebabCase(),
+            IsModelRetrievable = source.IsModelRetrievable,
             IsBuilding = source.IsBuilding,
             ModelRevision = source.ModelRevision,
             Confidence = Math.Round(source.Confidence, 8),

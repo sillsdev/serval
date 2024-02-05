@@ -1366,6 +1366,7 @@ namespace Serval.Client
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+        /// <br/>* **isModelRetrievable**: Whether the model can be downloaded by the client after it has been sucessfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
@@ -1379,6 +1380,7 @@ namespace Serval.Client
         /// <br/>      "sourceLanguage": "el",
         /// <br/>      "targetLanguage": "en",
         /// <br/>      "type": "nmt"
+        /// <br/>      "isModelRetrievable": true
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
@@ -1663,9 +1665,8 @@ namespace Serval.Client
         /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
         /// </summary>
         /// <remarks>
-        /// If a Nmt build was successful and included the build param `train_params: { save_strategy: yes} }`,
-        /// <br/>then the model will be available to download within 30 days of being created.  After that, the model
-        /// <br/>will be deleted to not clutter the system.
+        /// If a Nmt build was successful and isModelRetrievable is `true` for the engine,
+        /// <br/>then the model from the most recent successful build can be downloaded.
         /// <br/>The endpoint will return a presigned URL that can be used to download the model for up to 1 hour
         /// <br/>after the request is made.  If the URL is not used within that time, a new request will need to be made.
         /// </remarks>
@@ -1825,6 +1826,7 @@ namespace Serval.Client
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+        /// <br/>* **isModelRetrievable**: Whether the model can be downloaded by the client after it has been sucessfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
@@ -1838,6 +1840,7 @@ namespace Serval.Client
         /// <br/>      "sourceLanguage": "el",
         /// <br/>      "targetLanguage": "en",
         /// <br/>      "type": "nmt"
+        /// <br/>      "isModelRetrievable": true
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
@@ -4268,9 +4271,8 @@ namespace Serval.Client
         /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
         /// </summary>
         /// <remarks>
-        /// If a Nmt build was successful and included the build param `train_params: { save_strategy: yes} }`,
-        /// <br/>then the model will be available to download within 30 days of being created.  After that, the model
-        /// <br/>will be deleted to not clutter the system.
+        /// If a Nmt build was successful and isModelRetrievable is `true` for the engine,
+        /// <br/>then the model from the most recent successful build can be downloaded.
         /// <br/>The endpoint will return a presigned URL that can be used to download the model for up to 1 hour
         /// <br/>after the request is made.  If the URL is not used within that time, a new request will need to be made.
         /// </remarks>
@@ -5562,6 +5564,9 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Type { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("isModelRetrievable", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsModelRetrievable { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("isBuilding", Required = Newtonsoft.Json.Required.Always)]
         public bool IsBuilding { get; set; } = default!;
 
@@ -5605,6 +5610,12 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Type { get; set; } = default!;
+
+        /// <summary>
+        /// The model is saved when built and can be retrieved.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("isModelRetrievable", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsModelRetrievable { get; set; } = default!;
 
     }
 
@@ -6032,6 +6043,10 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("buildRevision", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string BuildRevision { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("urlExpirationTime", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string UrlExpirationTime { get; set; } = default!;
 
     }
 

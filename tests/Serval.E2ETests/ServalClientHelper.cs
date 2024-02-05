@@ -77,7 +77,8 @@ public class ServalClientHelper : IAsyncDisposable
         string engineTypeString,
         string source_language,
         string target_language,
-        string name = ""
+        string name = "",
+        bool isModelRetrievable = false
     )
     {
         var engine = await TranslationEnginesClient.CreateAsync(
@@ -86,7 +87,8 @@ public class ServalClientHelper : IAsyncDisposable
                 Name = _prefix + name,
                 SourceLanguage = source_language,
                 TargetLanguage = target_language,
-                Type = engineTypeString
+                Type = engineTypeString,
+                IsModelRetrievable = isModelRetrievable
             }
         );
         _enginePerUser.Add(name, engine.Id);
@@ -299,11 +301,10 @@ public class ServalClientHelper : IAsyncDisposable
         return handler;
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        await ClearEnginesAsync();
-
         _httpClient.Dispose();
         GC.SuppressFinalize(this);
+        return new ValueTask();
     }
 }

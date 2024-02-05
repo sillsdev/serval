@@ -24,6 +24,7 @@ message CreateRequest {
     optional string engine_name = 3;
     string source_language = 4;
     string target_language = 5;
+    bool is_model_retrievable = 6;
 }
 
 message DeleteRequest {
@@ -81,7 +82,8 @@ message GetModelPresignedUrlRequest {
 
 message GetModelPresignedUrlResponse {
     string PresignedUrl = 1;
-    string BuildRevision = 2;
+    int32 BuildRevision = 2;
+    string UrlExpirationTime = 3;
 }
 
 message GetQueueSizeRequest {

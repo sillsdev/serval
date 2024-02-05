@@ -180,9 +180,9 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task NmtLargeBatch()
+    public async Task NmtLargeBatchAndDownload()
     {
-        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT3");
+        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT3", isModelRetrievable: true);
         string[] books = ["bible_LARGEFILE.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
         var cId = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
@@ -193,6 +193,12 @@ public class ServalApiTests
             cId
         );
         TestContext.WriteLine(lTrans[0].Translation);
+        // Download the model from the s3 bucket
+        var url = await _helperClient.TranslationEnginesClient.DownloadModelAsync(engineId);
+        using var s = new HttpClient().GetStreamAsync(url.PresignedUrl);
+        using var ms = new MemoryStream();
+        s.Result.CopyTo(ms);
+        Assert.That(ms.Length, Is.GreaterThan(1_000_000));
     }
 
     [Test]
