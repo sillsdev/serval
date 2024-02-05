@@ -263,6 +263,11 @@ public class EngineService(
         return true;
     }
 
+    public Task<ModelInfoDto> GetModelUrlAsync(string engineId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
     {
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);

@@ -890,6 +890,42 @@ public class TranslationEnginesController(
         return Ok();
     }
 
+    /// <summary>
+    /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
+    /// </summary>
+    /// <remarks>
+    /// If a Nmt build was successful and included the build param `train_params: { save_strategy: yes} }`,
+    /// then the model will be available to download within 30 days of being created.  After that, the model
+    /// will be deleted to not clutter the system.
+    /// The endpoint will return a presigned URL that can be used to download the model for up to 1 hour
+    /// after the request is made.  If the URL is not used within that time, a new request will need to be made.
+    /// </remarks>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The build job was cancelled successfully.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="405">The translation engine does not support cancelling builds.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.UpdateTranslationEngines)]
+    [HttpPost("{id}/download-model")]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<ModelInfoDto>> DownloadModelAsync(
+        [NotNull] string id,
+        CancellationToken cancellationToken
+    )
+    {
+        await AuthorizeAsync(id, cancellationToken);
+        ModelInfoDto modelInfo = await _engineService.GetModelUrlAsync(id, cancellationToken);
+        return Ok(modelInfo);
+    }
+
     private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
