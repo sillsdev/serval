@@ -6,6 +6,4 @@ public class TrainingCorpus
     public IList<string>? TextIds { get; set; }
 
     public string? ScriptureRange { get; set; }
-
-    public Dictionary<string, List<int>>? Chapters { get; set; }
 }

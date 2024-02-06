@@ -9,8 +9,7 @@ public class TranslationEnginesController(
     IBuildService buildService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
-    IUrlService urlService,
-    IScriptureDataFileService scriptureDataFileService
+    IUrlService urlService
 ) : ServalControllerBase(authService)
 {
     private readonly IEngineService _engineService = engineService;
@@ -18,7 +17,6 @@ public class TranslationEnginesController(
     private readonly IPretranslationService _pretranslationService = pretranslationService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
-    private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
     /// <summary>
     /// Get all translation engines
@@ -962,7 +960,7 @@ public class TranslationEnginesController(
         };
     }
 
-    private Build Map(Engine engine, TranslationBuildConfigDto source)
+    private static Build Map(Engine engine, TranslationBuildConfigDto source)
     {
         var build = new Build { EngineRef = engine.Id, Name = source.Name };
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
@@ -977,9 +975,8 @@ public class TranslationEnginesController(
                     );
                 if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
                     throw new InvalidOperationException(
-                        $"The corpus {ptcc.CorpusId} is not valid: Set exactly one of TextIds and Chapters."
+                        $"The corpus {ptcc.CorpusId} is not valid: Set exactly one of TextIds and ScriptureRange."
                     );
-                Dictionary<string, List<int>>? chapters = null;
                 if (ptcc.ScriptureRange is not null)
                 {
                     Corpus corpus = engine.Corpora.Where(c => c.Id == ptcc.CorpusId).First();
@@ -989,31 +986,12 @@ public class TranslationEnginesController(
                             $"The corpus {ptcc.CorpusId} is not compatible with using a scripture range"
                         );
                     }
-                    ScriptureRangeParser parser =
-                        new(
-                            _scriptureDataFileService
-                                .GetParatextProjectSettings(corpus.SourceFiles.First().Filename)
-                                .Versification
-                        );
-                    try
-                    {
-                        chapters = parser.GetChapters(ptcc.ScriptureRange);
-                        if (chapters is null)
-                            throw new ArgumentException("Chapters was null");
-                    }
-                    catch (ArgumentException ae)
-                    {
-                        throw new InvalidOperationException(
-                            $"The scripture range {ptcc.ScriptureRange} is not valid: {ae.Message}"
-                        );
-                    }
                 }
                 pretranslateCorpora.Add(
                     new PretranslateCorpus
                     {
                         CorpusRef = ptcc.CorpusId,
                         TextIds = ptcc.TextIds?.ToList(),
-                        Chapters = chapters,
                         ScriptureRange = ptcc.ScriptureRange
                     }
                 );
@@ -1033,7 +1011,6 @@ public class TranslationEnginesController(
                     throw new InvalidOperationException(
                         $"The corpus {tcc.CorpusId} is not valid: Set exactly one of TextIds and Chapters."
                     );
-                Dictionary<string, List<int>>? chapters = null;
                 if (tcc.ScriptureRange is not null)
                 {
                     Corpus corpus = engine.Corpora.Where(c => c.Id == tcc.CorpusId).First();
@@ -1043,29 +1020,12 @@ public class TranslationEnginesController(
                             $"The corpus {tcc.CorpusId} is not compatible with using a scripture range"
                         );
                     }
-                    ScriptureRangeParser parser =
-                        new(
-                            _scriptureDataFileService
-                                .GetParatextProjectSettings(corpus.SourceFiles.First().Filename)
-                                .Versification
-                        );
-                    try
-                    {
-                        chapters = parser.GetChapters(tcc.ScriptureRange);
-                    }
-                    catch (ArgumentException ae)
-                    {
-                        throw new InvalidOperationException(
-                            $"The scripture range {tcc.ScriptureRange} is not valid: {ae.Message}"
-                        );
-                    }
                 }
                 trainOnCorpora.Add(
                     new TrainingCorpus
                     {
                         CorpusRef = tcc.CorpusId,
                         TextIds = tcc.TextIds?.ToList(),
-                        Chapters = chapters,
                         ScriptureRange = tcc.ScriptureRange
                     }
                 );

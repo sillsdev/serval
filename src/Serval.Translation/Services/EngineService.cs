@@ -9,7 +9,8 @@ public class EngineService(
     GrpcClientFactory grpcClientFactory,
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
-    ILoggerFactory loggerFactory
+    ILoggerFactory loggerFactory,
+    IScriptureDataFileService scriptureDataFileService
 ) : EntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Build> _builds = builds;
@@ -18,6 +19,7 @@ public class EngineService(
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
+    private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
     public async Task<Models.TranslationResult> TranslateAsync(
         string engineId,
@@ -187,10 +189,28 @@ public class EngineService(
                                 pretranslateCorpus.TextIds is null || pretranslateCorpus.TextIds.Count == 0;
                             if (pretranslateCorpus.TextIds is not null)
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
-                            if (pretranslateCorpus.Chapters is not null)
+                            if (pretranslateCorpus.ScriptureRange is not null)
+                            {
+                                Dictionary<string, List<int>>? chapters = null;
+                                ScriptureRangeParser parser =
+                                    new(
+                                        _scriptureDataFileService
+                                            .GetParatextProjectSettings(corpus.SourceFiles.First().Location)
+                                            .Versification
+                                    );
+                                try
+                                {
+                                    chapters = parser.GetChapters(pretranslateCorpus.ScriptureRange);
+                                }
+                                catch (ArgumentException ae)
+                                {
+                                    throw new InvalidOperationException(
+                                        $"The scripture range {pretranslateCorpus.ScriptureRange} is not valid: {ae.Message}"
+                                    );
+                                }
                                 corpus.PretranslateChapters.Add(
-                                    pretranslateCorpus
-                                        .Chapters.Select(
+                                    chapters
+                                        .Select(
                                             (kvp) =>
                                             {
                                                 var scriptureChapters = new ScriptureChapters();
@@ -200,16 +220,35 @@ public class EngineService(
                                         )
                                         .ToDictionary()
                                 );
+                            }
                         }
                         if (trainOn?.TryGetValue(c.Id, out TrainingCorpus? trainingCorpus) ?? false)
                         {
                             corpus.TrainOnAll = trainingCorpus.TextIds is null || trainingCorpus.TextIds.Count == 0;
                             if (trainingCorpus.TextIds is not null)
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
-                            if (trainingCorpus.Chapters is not null)
+                            if (trainingCorpus.ScriptureRange is not null)
+                            {
+                                Dictionary<string, List<int>>? chapters = null;
+                                ScriptureRangeParser parser =
+                                    new(
+                                        _scriptureDataFileService
+                                            .GetParatextProjectSettings(corpus.SourceFiles.First().Location)
+                                            .Versification
+                                    );
+                                try
+                                {
+                                    chapters = parser.GetChapters(trainingCorpus.ScriptureRange);
+                                }
+                                catch (ArgumentException ae)
+                                {
+                                    throw new InvalidOperationException(
+                                        $"The scripture range {trainingCorpus.ScriptureRange} is not valid: {ae.Message}"
+                                    );
+                                }
                                 corpus.TrainOnChapters.Add(
-                                    trainingCorpus
-                                        .Chapters.Select(
+                                    chapters
+                                        .Select(
                                             (kvp) =>
                                             {
                                                 var scriptureChapters = new ScriptureChapters();
@@ -219,6 +258,7 @@ public class EngineService(
                                         )
                                         .ToDictionary()
                                 );
+                            }
                         }
                         else if (trainOn is null)
                         {

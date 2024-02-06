@@ -280,7 +280,8 @@ public class EngineServiceTests
                 grpcClientFactory,
                 dataFileOptions,
                 new MemoryDataAccessContext(),
-                new LoggerFactory()
+                new LoggerFactory(),
+                new ScriptureDataFileService(new FileSystem(), dataFileOptions)
             );
         }
 
