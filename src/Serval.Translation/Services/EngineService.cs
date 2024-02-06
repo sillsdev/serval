@@ -281,7 +281,7 @@ public class EngineService(
         return new ModelDownloadUrl
         {
             Url = result.Url,
-            ModelRevision = result.ModelRevision.ToString(),
+            ModelRevision = result.ModelRevision,
             ExpiresAt = result.ExpiresAt.ToDateTime()
         };
     }

@@ -6040,8 +6040,7 @@ namespace Serval.Client
         public string Url { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("modelRevision", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string ModelRevision { get; set; } = default!;
+        public int ModelRevision { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("expiresAt", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
