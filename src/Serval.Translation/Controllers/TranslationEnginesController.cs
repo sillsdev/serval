@@ -762,6 +762,8 @@ public class TranslationEnginesController(
     /// Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
     /// Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
     /// To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+    /// Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+    /// for more details.
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
     /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
