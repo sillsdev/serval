@@ -980,7 +980,7 @@ public class TranslationEnginesController(
                 if (ptcc.ScriptureRange is not null)
                 {
                     Corpus corpus = engine.Corpora.Where(c => c.Id == ptcc.CorpusId).First();
-                    if (corpus.SourceFiles.Count() > 1 || corpus.SourceFiles.First().Format != FileFormat.Paratext)
+                    if (corpus.TargetFiles.Count() > 1 || corpus.TargetFiles.First().Format != FileFormat.Paratext)
                     {
                         throw new InvalidOperationException(
                             $"The corpus {ptcc.CorpusId} is not compatible with using a scripture range"
@@ -1014,7 +1014,7 @@ public class TranslationEnginesController(
                 if (tcc.ScriptureRange is not null)
                 {
                     Corpus corpus = engine.Corpora.Where(c => c.Id == tcc.CorpusId).First();
-                    if (corpus.SourceFiles.Count() > 1 || corpus.SourceFiles.First().Format != FileFormat.Paratext)
+                    if (corpus.TargetFiles.Count() > 1 || corpus.TargetFiles.First().Format != FileFormat.Paratext)
                     {
                         throw new InvalidOperationException(
                             $"The corpus {tcc.CorpusId} is not compatible with using a scripture range"

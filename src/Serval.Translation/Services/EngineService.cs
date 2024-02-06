@@ -172,6 +172,25 @@ public class EngineService(
             Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
             Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
             var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            Dictionary<string, List<int>> GetChapters(V1.Corpus corpus, string scriptureRange)
+            {
+                ScriptureRangeParser parser =
+                    new(
+                        _scriptureDataFileService
+                            .GetParatextProjectSettings(corpus.TargetFiles.First().Location)
+                            .Versification
+                    );
+                try
+                {
+                    return parser.GetChapters(scriptureRange);
+                }
+                catch (ArgumentException ae)
+                {
+                    throw new InvalidOperationException(
+                        $"The scripture range {scriptureRange} is not valid: {ae.Message}"
+                    );
+                }
+            }
             var request = new StartBuildRequest
             {
                 EngineType = engine.Type,
@@ -191,25 +210,8 @@ public class EngineService(
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
                             if (pretranslateCorpus.ScriptureRange is not null)
                             {
-                                Dictionary<string, List<int>>? chapters = null;
-                                ScriptureRangeParser parser =
-                                    new(
-                                        _scriptureDataFileService
-                                            .GetParatextProjectSettings(corpus.SourceFiles.First().Location)
-                                            .Versification
-                                    );
-                                try
-                                {
-                                    chapters = parser.GetChapters(pretranslateCorpus.ScriptureRange);
-                                }
-                                catch (ArgumentException ae)
-                                {
-                                    throw new InvalidOperationException(
-                                        $"The scripture range {pretranslateCorpus.ScriptureRange} is not valid: {ae.Message}"
-                                    );
-                                }
                                 corpus.PretranslateChapters.Add(
-                                    chapters
+                                    GetChapters(corpus, pretranslateCorpus.ScriptureRange)
                                         .Select(
                                             (kvp) =>
                                             {
@@ -229,25 +231,8 @@ public class EngineService(
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
                             if (trainingCorpus.ScriptureRange is not null)
                             {
-                                Dictionary<string, List<int>>? chapters = null;
-                                ScriptureRangeParser parser =
-                                    new(
-                                        _scriptureDataFileService
-                                            .GetParatextProjectSettings(corpus.SourceFiles.First().Location)
-                                            .Versification
-                                    );
-                                try
-                                {
-                                    chapters = parser.GetChapters(trainingCorpus.ScriptureRange);
-                                }
-                                catch (ArgumentException ae)
-                                {
-                                    throw new InvalidOperationException(
-                                        $"The scripture range {trainingCorpus.ScriptureRange} is not valid: {ae.Message}"
-                                    );
-                                }
                                 corpus.TrainOnChapters.Add(
-                                    chapters
+                                    GetChapters(corpus, trainingCorpus.ScriptureRange)
                                         .Select(
                                             (kvp) =>
                                             {
