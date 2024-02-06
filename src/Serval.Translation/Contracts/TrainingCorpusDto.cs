@@ -6,5 +6,5 @@ public class TrainingCorpusDto
 
     public IList<string>? TextIds { get; set; }
 
-    public Dictionary<string, List<int>>? Chapters { get; set; }
+    public string? ScriptureRange { get; set; }
 }

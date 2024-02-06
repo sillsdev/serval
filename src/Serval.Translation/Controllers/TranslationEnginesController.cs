@@ -1013,7 +1013,8 @@ public class TranslationEnginesController(
                     {
                         CorpusRef = ptcc.CorpusId,
                         TextIds = ptcc.TextIds?.ToList(),
-                        Chapters = chapters
+                        Chapters = chapters,
+                        ScriptureRange = ptcc.ScriptureRange
                     }
                 );
             }
@@ -1064,7 +1065,8 @@ public class TranslationEnginesController(
                     {
                         CorpusRef = tcc.CorpusId,
                         TextIds = tcc.TextIds?.ToList(),
-                        Chapters = chapters
+                        Chapters = chapters,
+                        ScriptureRange = tcc.ScriptureRange
                     }
                 );
             }
@@ -1138,7 +1140,7 @@ public class TranslationEnginesController(
                 Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
             },
             TextIds = source.TextIds,
-            Chapters = source.Chapters
+            ScriptureRange = source.ScriptureRange
         };
     }
 
@@ -1152,7 +1154,7 @@ public class TranslationEnginesController(
                 Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
             },
             TextIds = source.TextIds,
-            Chapters = source.Chapters
+            ScriptureRange = source.ScriptureRange
         };
     }
 
