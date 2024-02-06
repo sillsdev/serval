@@ -129,7 +129,7 @@ public class EngineService(
                 EngineId = engine.Id,
                 SourceLanguage = engine.SourceLanguage,
                 TargetLanguage = engine.TargetLanguage,
-                IsModelRetrievable = engine.IsModelRetrievable
+                IsModelPersisted = engine.IsModelPersisted
             };
             if (engine.Name is not null)
                 request.EngineName = engine.Name;
@@ -264,7 +264,7 @@ public class EngineService(
         return true;
     }
 
-    public async Task<ModelPresignedUrlDto> GetModelUrlAsync(
+    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
@@ -274,15 +274,15 @@ public class EngineService(
             throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
         var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        var result = await client.GetModelPresignedUrlAsync(
-            new GetModelPresignedUrlRequest { EngineType = engine.Type, EngineId = engine.Id },
+        var result = await client.GetModelDownloadUrlAsync(
+            new GetModelDownloadUrlRequest { EngineType = engine.Type, EngineId = engine.Id },
             cancellationToken: cancellationToken
         );
-        return new ModelPresignedUrlDto
+        return new ModelDownloadUrl
         {
-            PresignedUrl = result.PresignedUrl,
-            BuildRevision = result.BuildRevision.ToString(),
-            UrlExpirationTime = result.UrlExpirationTime
+            Url = result.Url,
+            ModelRevision = result.ModelRevision.ToString(),
+            ExpiresAt = result.ExpiresAt.ToDateTime()
         };
     }
 

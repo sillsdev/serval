@@ -10,7 +10,7 @@ public partial class Engine : IOwnedEntity
     public string Type { get; set; } = default!;
     public string Owner { get; set; } = default!;
     public List<Corpus> Corpora { get; set; } = default!;
-    public bool IsModelRetrievable { get; set; } = false;
+    public bool IsModelPersisted { get; set; } = false;
     public bool IsBuilding { get; set; }
     public int ModelRevision { get; set; }
     public double Confidence { get; set; }

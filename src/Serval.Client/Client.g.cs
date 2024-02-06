@@ -1366,7 +1366,7 @@ namespace Serval.Client
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **isModelRetrievable**: Whether the model can be downloaded by the client after it has been sucessfully built.
+        /// <br/>* **IsModelPersisted**: Whether the model can be downloaded by the client after it has been sucessfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
@@ -1380,7 +1380,7 @@ namespace Serval.Client
         /// <br/>      "sourceLanguage": "el",
         /// <br/>      "targetLanguage": "en",
         /// <br/>      "type": "nmt"
-        /// <br/>      "isModelRetrievable": true
+        /// <br/>      "IsModelPersisted": true
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
@@ -1665,15 +1665,15 @@ namespace Serval.Client
         /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
         /// </summary>
         /// <remarks>
-        /// If a Nmt build was successful and isModelRetrievable is `true` for the engine,
+        /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
         /// <br/>then the model from the most recent successful build can be downloaded.
-        /// <br/>The endpoint will return a presigned URL that can be used to download the model for up to 1 hour
+        /// <br/>The endpoint will return a URL that can be used to download the model for up to 1 hour
         /// <br/>after the request is made.  If the URL is not used within that time, a new request will need to be made.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <returns>The build job was cancelled successfully.</returns>
+        /// <returns>The url to download the model.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ModelPresignedUrl> DownloadModelAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
     }
 
@@ -1826,7 +1826,7 @@ namespace Serval.Client
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **isModelRetrievable**: Whether the model can be downloaded by the client after it has been sucessfully built.
+        /// <br/>* **IsModelPersisted**: Whether the model can be downloaded by the client after it has been sucessfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
@@ -1840,7 +1840,7 @@ namespace Serval.Client
         /// <br/>      "sourceLanguage": "el",
         /// <br/>      "targetLanguage": "en",
         /// <br/>      "type": "nmt"
-        /// <br/>      "isModelRetrievable": true
+        /// <br/>      "IsModelPersisted": true
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
@@ -4271,15 +4271,15 @@ namespace Serval.Client
         /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
         /// </summary>
         /// <remarks>
-        /// If a Nmt build was successful and isModelRetrievable is `true` for the engine,
+        /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
         /// <br/>then the model from the most recent successful build can be downloaded.
-        /// <br/>The endpoint will return a presigned URL that can be used to download the model for up to 1 hour
+        /// <br/>The endpoint will return a URL that can be used to download the model for up to 1 hour
         /// <br/>after the request is made.  If the URL is not used within that time, a new request will need to be made.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <returns>The build job was cancelled successfully.</returns>
+        /// <returns>The url to download the model.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<ModelPresignedUrl> DownloadModelAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -4290,16 +4290,15 @@ namespace Serval.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
-                    request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(BaseUrl)) urlBuilder_.Append(BaseUrl);
-                    // Operation Path: "translation/engines/{id}/download-model"
+                    // Operation Path: "translation/engines/{id}/model-download-url"
                     urlBuilder_.Append("translation/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/download-model");
+                    urlBuilder_.Append("/model-download-url");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -4326,7 +4325,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<ModelPresignedUrl>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<ModelDownloadUrl>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -5564,8 +5563,8 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Type { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("isModelRetrievable", Required = Newtonsoft.Json.Required.Always)]
-        public bool IsModelRetrievable { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("isModelPersisted", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsModelPersisted { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("isBuilding", Required = Newtonsoft.Json.Required.Always)]
         public bool IsBuilding { get; set; } = default!;
@@ -5614,8 +5613,8 @@ namespace Serval.Client
         /// <summary>
         /// The model is saved when built and can be retrieved.
         /// </summary>
-        [Newtonsoft.Json.JsonProperty("isModelRetrievable", Required = Newtonsoft.Json.Required.Always)]
-        public bool IsModelRetrievable { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("isModelPersisted", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsModelPersisted { get; set; } = default!;
 
     }
 
@@ -6034,19 +6033,19 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ModelPresignedUrl
+    public partial class ModelDownloadUrl
     {
-        [Newtonsoft.Json.JsonProperty("presignedUrl", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string PresignedUrl { get; set; } = default!;
+        public string Url { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("buildRevision", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("modelRevision", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string BuildRevision { get; set; } = default!;
+        public string ModelRevision { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("urlExpirationTime", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("expiresAt", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string UrlExpirationTime { get; set; } = default!;
+        public System.DateTimeOffset ExpiresAt { get; set; } = default!;
 
     }
 

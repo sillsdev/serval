@@ -78,7 +78,7 @@ public class ServalClientHelper : IAsyncDisposable
         string source_language,
         string target_language,
         string name = "",
-        bool isModelRetrievable = false
+        bool IsModelPersisted = false
     )
     {
         var engine = await TranslationEnginesClient.CreateAsync(
@@ -88,7 +88,7 @@ public class ServalClientHelper : IAsyncDisposable
                 SourceLanguage = source_language,
                 TargetLanguage = target_language,
                 Type = engineTypeString,
-                IsModelRetrievable = isModelRetrievable
+                IsModelPersisted = IsModelPersisted
             }
         );
         _enginePerUser.Add(name, engine.Id);

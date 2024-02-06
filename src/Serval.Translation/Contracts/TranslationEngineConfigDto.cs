@@ -31,5 +31,5 @@ public class TranslationEngineConfigDto
     /// The model is saved when built and can be retrieved.
     /// </summary>
     [JsonProperty(Required = Required.Always)]
-    public bool IsModelRetrievable { get; set; } = false;
+    public bool IsModelPersisted { get; set; } = false;
 }
