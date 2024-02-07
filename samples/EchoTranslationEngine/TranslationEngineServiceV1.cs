@@ -287,6 +287,20 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
         );
     }
 
+    public override Task<GetModelDownloadUrlResponse> GetModelDownloadUrl(
+        GetModelDownloadUrlRequest request,
+        ServerCallContext context
+    )
+    {
+        var response = new GetModelDownloadUrlResponse
+        {
+            Url = "https://example.com/model",
+            ModelRevision = 1,
+            ExpiresAt = DateTime.UtcNow.AddHours(1).ToTimestamp()
+        };
+        return Task.FromResult(response);
+    }
+
     public override Task<GetQueueSizeResponse> GetQueueSize(GetQueueSizeRequest request, ServerCallContext context)
     {
         return Task.FromResult(new GetQueueSizeResponse { Size = 0 });

@@ -3844,7 +3844,7 @@ namespace Serval.Client
                         if (status_ == 400)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A corpus id is invalid.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The build configuration was invalid.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 401)
@@ -6060,7 +6060,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("expiresAt", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.DateTimeOffset ExpiresAt { get; set; } = default!;
+        public string ExpiresAt { get; set; } = default!;
 
     }
 

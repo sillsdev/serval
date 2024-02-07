@@ -775,7 +775,7 @@ public class TranslationEnginesController(
     /// <param name="buildConfig">The build config (see remarks)</param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The new build job</response>
-    /// <response code="400">A corpus id is invalid.</response>
+    /// <response code="400">The build configuration was invalid.</response>
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
     /// <response code="404">The engine does not exist.</response>
@@ -911,7 +911,7 @@ public class TranslationEnginesController(
     /// <response code="404">The engine does not exist or there is no saved model.</response>
     /// <response code="405">The translation engine does not support cancelling builds.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.UpdateTranslationEngines)]
+    [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/model-download-url")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -1241,7 +1241,7 @@ public class TranslationEnginesController(
         {
             Url = source.Url,
             ModelRevision = source.ModelRevision,
-            ExpiresAt = source.ExpiresAt
+            ExpiresAt = source.ExpiresAt.ToString("o") // standard format "o": 2008-06-15T21:15:07.0000000
         };
     }
 }

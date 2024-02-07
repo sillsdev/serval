@@ -1061,6 +1061,66 @@ public class TranslationEngineTests
         }
     }
 
+    [TestCase]
+    public async Task StartBuildForEngineAsync_UnparseableOptions()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        PretranslateCorpusConfig ptcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
+        TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
+        TranslationBuildConfig tbc =
+            new()
+            {
+                Pretranslate = [ptcc],
+                TrainOn = [tcc],
+                Options = "unparsable json"
+            };
+        TranslationBuild resultAfterStart;
+        Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            resultAfterStart = await client.GetCurrentBuildAsync(ECHO_ENGINE1_ID);
+        });
+
+        Assert.That(
+            () => client.StartBuildAsync(ECHO_ENGINE1_ID, tbc),
+            Throws.TypeOf<ServalApiException>().With.Message.Contains("Unable to parse field 'options'")
+        );
+    }
+
+    [Test]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    public async Task GetDownloadableUrl(IEnumerable<string> scope, int expectedStatusCode, string engineId)
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+
+        switch (expectedStatusCode)
+        {
+            case 200:
+            {
+                Client.ModelDownloadUrl result = await client.GetModelDownloadUrlAsync(engineId);
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.ExpiresAt, Is.GreaterThan(DateTime.UtcNow.ToString("o")));
+                    Assert.That(result.ModelRevision, Is.EqualTo(1));
+                    Assert.That(result.Url, Is.Not.Null);
+                });
+                break;
+            }
+            case 403:
+            case 404:
+            {
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    Client.ModelDownloadUrl result = await client.GetModelDownloadUrlAsync(engineId);
+                });
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+            }
+        }
+    }
+
     [Test]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 408, ECHO_ENGINE1_ID)]
@@ -1333,6 +1393,23 @@ public class TranslationEngineTests
             EchoClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
+            EchoClient
+                .GetModelDownloadUrlAsync(
+                    Arg.Any<GetModelDownloadUrlRequest>(),
+                    null,
+                    null,
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(
+                    CreateAsyncUnaryCall(
+                        new GetModelDownloadUrlResponse
+                        {
+                            Url = "http://example.com",
+                            ModelRevision = 1,
+                            ExpiresAt = DateTime.UtcNow.AddHours(1).ToTimestamp()
+                        }
+                    )
+                );
             var wg = new Translation.V1.WordGraph
             {
                 SourceTokens = { "This is a test .".Split() },
