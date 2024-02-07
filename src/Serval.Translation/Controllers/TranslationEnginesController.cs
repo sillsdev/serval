@@ -977,7 +977,7 @@ public class TranslationEnginesController(
                     );
                 if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
                     throw new InvalidOperationException(
-                        $"The corpus {ptcc.CorpusId} is not valid: Set exactly one of TextIds and ScriptureRange."
+                        $"The corpus {ptcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
                     );
                 pretranslateCorpora.Add(
                     new PretranslateCorpus
