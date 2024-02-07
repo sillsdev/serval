@@ -200,15 +200,6 @@ public class EngineService(
                 {
                     engine.Corpora.Select(c =>
                     {
-                        if (
-                            c.TargetFiles.Count > 1
-                            || c.TargetFiles.First().Format != Shared.Contracts.FileFormat.Paratext
-                        )
-                        {
-                            throw new InvalidOperationException(
-                                $"The corpus {c.Id} is not compatible with using a scripture range"
-                            );
-                        }
                         V1.Corpus corpus = Map(c);
                         if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
                         {
@@ -218,6 +209,15 @@ public class EngineService(
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
                             if (pretranslateCorpus.ScriptureRange is not null)
                             {
+                                if (
+                                    c.TargetFiles.Count > 1
+                                    || c.TargetFiles.First().Format != Shared.Contracts.FileFormat.Paratext
+                                )
+                                {
+                                    throw new InvalidOperationException(
+                                        $"The corpus {c.Id} is not compatible with using a scripture range"
+                                    );
+                                }
                                 corpus.PretranslateChapters.Add(
                                     GetChapters(corpus, pretranslateCorpus.ScriptureRange)
                                         .Select(
@@ -239,6 +239,15 @@ public class EngineService(
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
                             if (trainingCorpus.ScriptureRange is not null)
                             {
+                                if (
+                                    c.TargetFiles.Count > 1
+                                    || c.TargetFiles.First().Format != Shared.Contracts.FileFormat.Paratext
+                                )
+                                {
+                                    throw new InvalidOperationException(
+                                        $"The corpus {c.Id} is not compatible with using a scripture range"
+                                    );
+                                }
                                 corpus.TrainOnChapters.Add(
                                     GetChapters(corpus, trainingCorpus.ScriptureRange)
                                         .Select(
