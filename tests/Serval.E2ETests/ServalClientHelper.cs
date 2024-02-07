@@ -77,7 +77,8 @@ public class ServalClientHelper : IAsyncDisposable
         string engineTypeString,
         string source_language,
         string target_language,
-        string name = ""
+        string name = "",
+        bool IsModelPersisted = false
     )
     {
         var engine = await TranslationEnginesClient.CreateAsync(
@@ -86,7 +87,8 @@ public class ServalClientHelper : IAsyncDisposable
                 Name = _prefix + name,
                 SourceLanguage = source_language,
                 TargetLanguage = target_language,
-                Type = engineTypeString
+                Type = engineTypeString,
+                IsModelPersisted = IsModelPersisted
             }
         );
         _enginePerUser.Add(name, engine.Id);
@@ -301,9 +303,11 @@ public class ServalClientHelper : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await ClearEnginesAsync();
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
+            await ClearEnginesAsync();
 
         _httpClient.Dispose();
         GC.SuppressFinalize(this);
+        return;
     }
 }

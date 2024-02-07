@@ -180,12 +180,13 @@ public class ServalApiTests
     }
 
     [Test]
-    public async Task NmtLargeBatch()
+    public async Task NmtLargeBatchAndDownload()
     {
-        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT3");
+        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT3", IsModelPersisted: true);
         string[] books = ["bible_LARGEFILE.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
         var cId = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+        _helperClient.TranslationBuildConfig.Options = "{\"max_steps\":10, \"nested_options\": {\"max_steps\":10}}";
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
@@ -193,6 +194,12 @@ public class ServalApiTests
             cId
         );
         TestContext.WriteLine(lTrans[0].Translation);
+        // Download the model from the s3 bucket
+        var url = await _helperClient.TranslationEnginesClient.GetModelDownloadUrlAsync(engineId);
+        using var s = new HttpClient().GetStreamAsync(url.Url);
+        using var ms = new MemoryStream();
+        s.Result.CopyTo(ms);
+        Assert.That(ms.Length, Is.GreaterThan(1_000_000));
     }
 
     [Test]
