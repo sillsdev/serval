@@ -80,6 +80,7 @@ public class TranslationEnginesController(
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
     /// ### nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+    /// * **IsModelPersisted**: Whether the model can be downloaded by the client after it has been sucessfully built.
     ///
     /// If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
     ///
@@ -93,6 +94,7 @@ public class TranslationEnginesController(
     ///       "sourceLanguage": "el",
     ///       "targetLanguage": "en",
     ///       "type": "nmt"
+    ///       "IsModelPersisted": true
     ///     }
     ///
     /// </remarks>
@@ -892,6 +894,41 @@ public class TranslationEnginesController(
         return Ok();
     }
 
+    /// <summary>
+    /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
+    /// </summary>
+    /// <remarks>
+    /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
+    /// then the model from the most recent successful build can be downloaded.
+    /// The endpoint will return a URL that can be used to download the model for up to 1 hour
+    /// after the request is made.  If the URL is not used within that time, a new request will need to be made.
+    /// </remarks>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The url to download the model.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist or there is no saved model.</response>
+    /// <response code="405">The translation engine does not support cancelling builds.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.UpdateTranslationEngines)]
+    [HttpGet("{id}/model-download-url")]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<ModelDownloadUrlDto>> GetModelDownloadUrlAsync(
+        [NotNull] string id,
+        CancellationToken cancellationToken
+    )
+    {
+        await AuthorizeAsync(id, cancellationToken);
+        ModelDownloadUrl modelInfo = await _engineService.GetModelDownloadUrlAsync(id, cancellationToken);
+        return Ok(Map(modelInfo));
+    }
+
     private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
@@ -958,7 +995,8 @@ public class TranslationEnginesController(
             TargetLanguage = source.TargetLanguage,
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
-            Corpora = []
+            Corpora = [],
+            IsModelPersisted = source.IsModelPersisted
         };
     }
 
@@ -1016,11 +1054,9 @@ public class TranslationEnginesController(
         }
         try
         {
-            var jsonSerializerOptions = new JsonSerializerOptions();
-            jsonSerializerOptions.Converters.Add(new ObjectToInferredTypesConverter());
-            build.Options = JsonSerializer.Deserialize<IDictionary<string, object>>(
+            build.Options = Newtonsoft.Json.JsonConvert.DeserializeObject<IDictionary<string, object>>(
                 source.Options?.ToString() ?? "{}",
-                jsonSerializerOptions
+                new DictionaryJsonConverter()
             );
         }
         catch (Exception e)
@@ -1040,6 +1076,7 @@ public class TranslationEnginesController(
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
             Type = source.Type.ToKebabCase(),
+            IsModelPersisted = source.IsModelPersisted,
             IsBuilding = source.IsBuilding,
             ModelRevision = source.ModelRevision,
             Confidence = Math.Round(source.Confidence, 8),
@@ -1195,6 +1232,16 @@ public class TranslationEnginesController(
                 Url = _urlService.GetUrl("GetDataFile", new { id = source.Id })
             },
             TextId = source.TextId
+        };
+    }
+
+    private static ModelDownloadUrlDto Map(ModelDownloadUrl source)
+    {
+        return new ModelDownloadUrlDto
+        {
+            Url = source.Url,
+            ModelRevision = source.ModelRevision,
+            ExpiresAt = source.ExpiresAt
         };
     }
 }

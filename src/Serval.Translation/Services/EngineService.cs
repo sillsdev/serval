@@ -130,7 +130,8 @@ public class EngineService(
                 EngineType = engine.Type,
                 EngineId = engine.Id,
                 SourceLanguage = engine.SourceLanguage,
-                TargetLanguage = engine.TargetLanguage
+                TargetLanguage = engine.TargetLanguage,
+                IsModelPersisted = engine.IsModelPersisted
             };
             if (engine.Name is not null)
                 request.EngineName = engine.Name;
@@ -329,6 +330,28 @@ public class EngineService(
             throw;
         }
         return true;
+    }
+
+    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+        string engineId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Engine? engine = await GetAsync(engineId, cancellationToken);
+        if (engine is null)
+            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
+
+        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        var result = await client.GetModelDownloadUrlAsync(
+            new GetModelDownloadUrlRequest { EngineType = engine.Type, EngineId = engine.Id },
+            cancellationToken: cancellationToken
+        );
+        return new ModelDownloadUrl
+        {
+            Url = result.Url,
+            ModelRevision = result.ModelRevision,
+            ExpiresAt = result.ExpiresAt.ToDateTime()
+        };
     }
 
     public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
