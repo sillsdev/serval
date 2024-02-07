@@ -35,6 +35,8 @@ public interface IEngineService
 
     Task<bool> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
+    Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
+
     Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default);
     Task<Corpus> UpdateCorpusAsync(
         string engineId,
