@@ -1029,9 +1029,9 @@ public class TranslationEnginesController(
         }
         try
         {
-            build.Options = Newtonsoft.Json.JsonConvert.DeserializeObject<IDictionary<string, object>>(
+            build.Options = JsonSerializer.Deserialize<IDictionary<string, object>>(
                 source.Options?.ToString() ?? "{}",
-                new DictionaryJsonConverter()
+                new JsonSerializerOptions { Converters = { new ObjectToInferredTypesConverter() } }
             );
         }
         catch (Exception e)
