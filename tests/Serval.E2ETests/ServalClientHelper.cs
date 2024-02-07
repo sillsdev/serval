@@ -23,6 +23,7 @@ public class ServalClientHelper : IAsyncDisposable
             throw new InvalidOperationException("The environment variable SERVAL_HOST_URL is not set.");
         _httpClient.BaseAddress = new Uri(hostUrl);
         _httpClient.Timeout = TimeSpan.FromSeconds(60);
+        StatusClient = new StatusClient(_httpClient);
         DataFilesClient = new DataFilesClient(_httpClient);
         TranslationEnginesClient = new TranslationEnginesClient(_httpClient);
         TranslationEngineTypesClient = new TranslationEngineTypesClient(_httpClient);
@@ -53,6 +54,7 @@ public class ServalClientHelper : IAsyncDisposable
         await ClearEnginesAsync();
     }
 
+    public StatusClient StatusClient { get; }
     public DataFilesClient DataFilesClient { get; }
     public TranslationEnginesClient TranslationEnginesClient { get; }
     public TranslationEngineTypesClient TranslationEngineTypesClient { get; }
@@ -301,10 +303,14 @@ public class ServalClientHelper : IAsyncDisposable
         return handler;
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
+        DeploymentInfo? result = await StatusClient.GetDeploymentInfoAsync();
+        if (result.AspNetCoreEnvironment == "Production")
+            await ClearEnginesAsync();
+
         _httpClient.Dispose();
         GC.SuppressFinalize(this);
-        return new ValueTask();
+        return;
     }
 }
