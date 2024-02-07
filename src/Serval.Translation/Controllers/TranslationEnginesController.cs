@@ -1001,7 +1001,7 @@ public class TranslationEnginesController(
                     );
                 if (tcc.TextIds != null && tcc.ScriptureRange != null)
                     throw new InvalidOperationException(
-                        $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and Chapters."
+                        $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
                     );
                 trainOnCorpora.Add(
                     new TrainingCorpus
