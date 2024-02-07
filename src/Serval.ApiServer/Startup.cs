@@ -1,16 +1,10 @@
 ﻿namespace Serval.ApiServer;
 
-public class Startup
+public class Startup(IConfiguration configuration, IWebHostEnvironment environment)
 {
-    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
-    {
-        Configuration = configuration;
-        Environment = environment;
-    }
+    public IConfiguration Configuration { get; } = configuration;
 
-    public IConfiguration Configuration { get; }
-
-    public IWebHostEnvironment Environment { get; }
+    public IWebHostEnvironment Environment { get; } = environment;
 
     public void ConfigureServices(IServiceCollection services)
     {
