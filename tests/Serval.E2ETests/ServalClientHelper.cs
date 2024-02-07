@@ -280,8 +280,8 @@ public class ServalClientHelper : IAsyncDisposable
         var response = authHttpClient.SendAsync(request).Result;
         if (response.Content is null)
             throw new HttpRequestException("Error getting auth0 Authentication.");
-        var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(await response.Content.ReadAsStringAsync());
-        return dict?["access_token"].ToString() ?? "";
+        var dict = JsonSerializer.Deserialize<Dictionary<string, object?>>(await response.Content.ReadAsStringAsync());
+        return dict?["access_token"]?.ToString() ?? "";
     }
 
     private static HttpClientHandler GetHttHandlerToIgnoreSslErrors()
