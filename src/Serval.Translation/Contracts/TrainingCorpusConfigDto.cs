@@ -4,4 +4,5 @@ public class TrainingCorpusConfigDto
 {
     public string CorpusId { get; set; } = default!;
     public IList<string>? TextIds { get; set; }
+    public string? ScriptureRange { get; set; }
 }

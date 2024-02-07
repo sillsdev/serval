@@ -9,7 +9,8 @@ public class EngineService(
     GrpcClientFactory grpcClientFactory,
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
-    ILoggerFactory loggerFactory
+    ILoggerFactory loggerFactory,
+    IScriptureDataFileService scriptureDataFileService
 ) : EntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Build> _builds = builds;
@@ -18,6 +19,7 @@ public class EngineService(
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
+    private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
     public async Task<Models.TranslationResult> TranslateAsync(
         string engineId,
@@ -170,6 +172,24 @@ public class EngineService(
             Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
             Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
             var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            Dictionary<string, List<int>> GetChapters(V1.Corpus corpus, string scriptureRange)
+            {
+                try
+                {
+                    return ScriptureRangeParser.GetChapters(
+                        scriptureRange,
+                        _scriptureDataFileService
+                            .GetParatextProjectSettings(corpus.TargetFiles.First().Location)
+                            .Versification
+                    );
+                }
+                catch (ArgumentException ae)
+                {
+                    throw new InvalidOperationException(
+                        $"The scripture range {scriptureRange} is not valid: {ae.Message}"
+                    );
+                }
+            }
             var request = new StartBuildRequest
             {
                 EngineType = engine.Type,
@@ -180,6 +200,15 @@ public class EngineService(
                 {
                     engine.Corpora.Select(c =>
                     {
+                        if (
+                            c.TargetFiles.Count > 1
+                            || c.TargetFiles.First().Format != Shared.Contracts.FileFormat.Paratext
+                        )
+                        {
+                            throw new InvalidOperationException(
+                                $"The corpus {c.Id} is not compatible with using a scripture range"
+                            );
+                        }
                         V1.Corpus corpus = Map(c);
                         if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
                         {
@@ -187,12 +216,42 @@ public class EngineService(
                                 pretranslateCorpus.TextIds is null || pretranslateCorpus.TextIds.Count == 0;
                             if (pretranslateCorpus.TextIds is not null)
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
+                            if (pretranslateCorpus.ScriptureRange is not null)
+                            {
+                                corpus.PretranslateChapters.Add(
+                                    GetChapters(corpus, pretranslateCorpus.ScriptureRange)
+                                        .Select(
+                                            (kvp) =>
+                                            {
+                                                var scriptureChapters = new ScriptureChapters();
+                                                scriptureChapters.Chapters.Add(kvp.Value);
+                                                return (kvp.Key, scriptureChapters);
+                                            }
+                                        )
+                                        .ToDictionary()
+                                );
+                            }
                         }
                         if (trainOn?.TryGetValue(c.Id, out TrainingCorpus? trainingCorpus) ?? false)
                         {
                             corpus.TrainOnAll = trainingCorpus.TextIds is null || trainingCorpus.TextIds.Count == 0;
                             if (trainingCorpus.TextIds is not null)
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
+                            if (trainingCorpus.ScriptureRange is not null)
+                            {
+                                corpus.TrainOnChapters.Add(
+                                    GetChapters(corpus, trainingCorpus.ScriptureRange)
+                                        .Select(
+                                            (kvp) =>
+                                            {
+                                                var scriptureChapters = new ScriptureChapters();
+                                                scriptureChapters.Chapters.Add(kvp.Value);
+                                                return (kvp.Key, scriptureChapters);
+                                            }
+                                        )
+                                        .ToDictionary()
+                                );
+                            }
                         }
                         else if (trainOn is null)
                         {

@@ -762,6 +762,8 @@ public class TranslationEnginesController(
     /// Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
     /// Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
     /// To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+    /// Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+    /// for more details.
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
     /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
@@ -970,10 +972,20 @@ public class TranslationEnginesController(
             foreach (PretranslateCorpusConfigDto ptcc in source.Pretranslate)
             {
                 if (!corpusIds.Contains(ptcc.CorpusId))
-                    throw new InvalidOperationException($"The corpus {ptcc.CorpusId} is not valid.");
-
+                    throw new InvalidOperationException(
+                        $"The corpus {ptcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                    );
+                if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
+                    throw new InvalidOperationException(
+                        $"The corpus {ptcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
+                    );
                 pretranslateCorpora.Add(
-                    new PretranslateCorpus { CorpusRef = ptcc.CorpusId, TextIds = ptcc.TextIds?.ToList() }
+                    new PretranslateCorpus
+                    {
+                        CorpusRef = ptcc.CorpusId,
+                        TextIds = ptcc.TextIds?.ToList(),
+                        ScriptureRange = ptcc.ScriptureRange
+                    }
                 );
             }
             build.Pretranslate = pretranslateCorpora;
@@ -984,8 +996,21 @@ public class TranslationEnginesController(
             foreach (TrainingCorpusConfigDto tcc in source.TrainOn)
             {
                 if (!corpusIds.Contains(tcc.CorpusId))
-                    throw new InvalidOperationException($"The corpus {tcc.CorpusId} is not valid.");
-                trainOnCorpora.Add(new TrainingCorpus { CorpusRef = tcc.CorpusId, TextIds = tcc.TextIds?.ToList() });
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                    );
+                if (tcc.TextIds != null && tcc.ScriptureRange != null)
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
+                    );
+                trainOnCorpora.Add(
+                    new TrainingCorpus
+                    {
+                        CorpusRef = tcc.CorpusId,
+                        TextIds = tcc.TextIds?.ToList(),
+                        ScriptureRange = tcc.ScriptureRange
+                    }
+                );
             }
             build.TrainOn = trainOnCorpora;
         }
@@ -1056,7 +1081,8 @@ public class TranslationEnginesController(
                 Id = source.CorpusRef,
                 Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
             },
-            TextIds = source.TextIds
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange
         };
     }
 
@@ -1069,7 +1095,8 @@ public class TranslationEnginesController(
                 Id = source.CorpusRef,
                 Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
             },
-            TextIds = source.TextIds
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange
         };
     }
 

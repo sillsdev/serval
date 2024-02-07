@@ -1604,6 +1604,8 @@ namespace Serval.Client
         /// <br/>Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
         /// <br/>Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
         /// <br/>To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// <br/>for more details.
         /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
@@ -3748,6 +3750,8 @@ namespace Serval.Client
         /// <br/>Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
         /// <br/>Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
         /// <br/>To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// <br/>for more details.
         /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
@@ -5812,6 +5816,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ScriptureRange { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -5823,6 +5830,9 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ScriptureRange { get; set; } = default!;
 
     }
 
@@ -5874,6 +5884,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ScriptureRange { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -5885,6 +5898,9 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ScriptureRange { get; set; } = default!;
 
     }
 

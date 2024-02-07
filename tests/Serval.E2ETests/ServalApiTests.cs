@@ -382,7 +382,7 @@ public class ServalApiTests
             }
         );
         _helperClient.TranslationBuildConfig.Pretranslate!.Add(
-            new PretranslateCorpusConfig { CorpusId = corpus.Id, TextIds = ["JHN", "REV"] }
+            new PretranslateCorpusConfig { CorpusId = corpus.Id, ScriptureRange = "JHN" }
         );
         _helperClient.TranslationBuildConfig.Options = "{\"max_steps\":10, \"use_key_terms\":true}";
 
