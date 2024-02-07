@@ -174,15 +174,14 @@ public class EngineService(
             var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
             Dictionary<string, List<int>> GetChapters(V1.Corpus corpus, string scriptureRange)
             {
-                ScriptureRangeParser parser =
-                    new(
+                try
+                {
+                    return ScriptureRangeParser.GetChapters(
+                        scriptureRange,
                         _scriptureDataFileService
                             .GetParatextProjectSettings(corpus.TargetFiles.First().Location)
                             .Versification
                     );
-                try
-                {
-                    return parser.GetChapters(scriptureRange);
                 }
                 catch (ArgumentException ae)
                 {
@@ -201,6 +200,15 @@ public class EngineService(
                 {
                     engine.Corpora.Select(c =>
                     {
+                        if (
+                            c.TargetFiles.Count > 1
+                            || c.TargetFiles.First().Format != Shared.Contracts.FileFormat.Paratext
+                        )
+                        {
+                            throw new InvalidOperationException(
+                                $"The corpus {c.Id} is not compatible with using a scripture range"
+                            );
+                        }
                         V1.Corpus corpus = Map(c);
                         if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
                         {

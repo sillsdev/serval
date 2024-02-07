@@ -979,16 +979,6 @@ public class TranslationEnginesController(
                     throw new InvalidOperationException(
                         $"The corpus {ptcc.CorpusId} is not valid: Set exactly one of TextIds and ScriptureRange."
                     );
-                if (ptcc.ScriptureRange is not null)
-                {
-                    Corpus corpus = engine.Corpora.Where(c => c.Id == ptcc.CorpusId).First();
-                    if (corpus.TargetFiles.Count() > 1 || corpus.TargetFiles.First().Format != FileFormat.Paratext)
-                    {
-                        throw new InvalidOperationException(
-                            $"The corpus {ptcc.CorpusId} is not compatible with using a scripture range"
-                        );
-                    }
-                }
                 pretranslateCorpora.Add(
                     new PretranslateCorpus
                     {
@@ -1013,16 +1003,6 @@ public class TranslationEnginesController(
                     throw new InvalidOperationException(
                         $"The corpus {tcc.CorpusId} is not valid: Set exactly one of TextIds and Chapters."
                     );
-                if (tcc.ScriptureRange is not null)
-                {
-                    Corpus corpus = engine.Corpora.Where(c => c.Id == tcc.CorpusId).First();
-                    if (corpus.TargetFiles.Count() > 1 || corpus.TargetFiles.First().Format != FileFormat.Paratext)
-                    {
-                        throw new InvalidOperationException(
-                            $"The corpus {tcc.CorpusId} is not compatible with using a scripture range"
-                        );
-                    }
-                }
                 trainOnCorpora.Add(
                     new TrainingCorpus
                     {
