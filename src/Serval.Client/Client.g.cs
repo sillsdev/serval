@@ -1356,12 +1356,14 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **name**: A name to help identify and distinguish the file.
+        /// <br/>* **name**: (optional) A name to help identify and distinguish the file.
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         /// <br/>* **type**: **smt-transfer** or **nmt** or **echo**
+        /// <br/>* **isModelPersisted**: (optional) Whether an Nmt model can be downloaded by the client after it has been sucessfully built.
+        /// <br/>  * This is only relevant for Nmt engines.
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### nmt
@@ -1818,12 +1820,14 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **name**: A name to help identify and distinguish the file.
+        /// <br/>* **name**: (optional) A name to help identify and distinguish the file.
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         /// <br/>* **type**: **smt-transfer** or **nmt** or **echo**
+        /// <br/>* **isModelPersisted**: (optional) Whether an Nmt model can be downloaded by the client after it has been sucessfully built.
+        /// <br/>  * This is only relevant for Nmt engines.
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
         /// <br/>### nmt

@@ -70,12 +70,14 @@ public class TranslationEnginesController(
     /// </summary>
     /// <remarks>
     /// ## Parameters
-    /// * **name**: A name to help identify and distinguish the file.
+    /// * **name**: (optional) A name to help identify and distinguish the file.
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
     /// * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
     /// * **type**: **smt-transfer** or **nmt** or **echo**
+    /// * **isModelPersisted**: (optional) Whether an Nmt model can be downloaded by the client after it has been sucessfully built.
+    ///   * This is only relevant for Nmt engines.
     /// ### smt-transfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
     /// ### nmt

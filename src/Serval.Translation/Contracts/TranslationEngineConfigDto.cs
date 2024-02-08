@@ -30,6 +30,5 @@ public class TranslationEngineConfigDto
     /// <summary>
     /// The model is saved when built and can be retrieved.
     /// </summary>
-    [JsonProperty(Required = Required.Always)]
-    public bool? IsModelPersisted { get; set; } = default!;
+    public bool? IsModelPersisted { get; set; }
 }
