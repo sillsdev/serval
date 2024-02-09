@@ -1,4 +1,6 @@
-﻿namespace Serval.Translation.Services;
+﻿using System.Buffers;
+
+namespace Serval.Translation.Services;
 
 [TestFixture]
 public class PretranslationServiceTests
@@ -59,6 +61,7 @@ public class PretranslationServiceTests
                     new()
                     {
                         Id = "engine1",
+                        Owner = "owner1",
                         SourceLanguage = "en",
                         TargetLanguage = "en",
                         Type = "nmt",

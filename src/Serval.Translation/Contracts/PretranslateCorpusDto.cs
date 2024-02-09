@@ -1,10 +1,10 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class PretranslateCorpusDto
+public record PretranslateCorpusDto
 {
-    public ResourceLinkDto Corpus { get; set; } = default!;
+    public required ResourceLinkDto Corpus { get; init; }
 
-    public IList<string>? TextIds { get; set; }
+    public IReadOnlyList<string>? TextIds { get; init; }
 
-    public string? ScriptureRange { get; set; }
+    public string? ScriptureRange { get; init; }
 }

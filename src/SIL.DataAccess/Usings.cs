@@ -14,6 +14,8 @@ global using MongoDB.Bson.Serialization.Serializers;
 global using MongoDB.Driver;
 global using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 global using MongoDB.Driver.Linq;
+global using Newtonsoft.Json;
+global using Newtonsoft.Json.Serialization;
 global using Nito.AsyncEx;
 global using SIL.DataAccess;
 global using SIL.ObjectModel;

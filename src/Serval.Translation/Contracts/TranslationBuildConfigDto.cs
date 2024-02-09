@@ -1,15 +1,15 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class TranslationBuildConfigDto
+public record TranslationBuildConfigDto
 {
-    public string? Name { get; set; }
-    public IList<TrainingCorpusConfigDto>? TrainOn { get; set; }
-    public IList<PretranslateCorpusConfigDto>? Pretranslate { get; set; }
+    public string? Name { get; init; }
+    public IReadOnlyList<TrainingCorpusConfigDto>? TrainOn { get; init; }
+    public IReadOnlyList<PretranslateCorpusConfigDto>? Pretranslate { get; init; }
 
     /// <example>
     /// {
     ///   "property" : "value"
     /// }
     /// </example>
-    public object? Options { get; set; }
+    public object? Options { get; init; }
 }

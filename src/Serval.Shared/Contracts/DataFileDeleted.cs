@@ -2,5 +2,5 @@
 
 public record DataFileDeleted
 {
-    public string DataFileId { get; init; } = default!;
+    public required string DataFileId { get; init; }
 }

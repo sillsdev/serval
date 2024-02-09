@@ -1,11 +1,11 @@
 ﻿namespace Serval.Translation.Models;
 
-public class Corpus
+public record Corpus
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = "";
     public string? Name { get; set; }
-    public string SourceLanguage { get; set; } = default!;
-    public string TargetLanguage { get; set; } = default!;
-    public IList<CorpusFile> SourceFiles { get; set; } = default!;
-    public IList<CorpusFile> TargetFiles { get; set; } = default!;
+    public required string SourceLanguage { get; set; }
+    public required string TargetLanguage { get; set; }
+    public required IReadOnlyList<CorpusFile> SourceFiles { get; set; }
+    public required IReadOnlyList<CorpusFile> TargetFiles { get; set; }
 }

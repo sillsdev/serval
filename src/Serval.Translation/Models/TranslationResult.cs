@@ -1,12 +1,12 @@
 ﻿namespace Serval.Translation.Models;
 
-public class TranslationResult
+public record TranslationResult
 {
-    public string Translation { get; set; } = default!;
-    public List<string> SourceTokens { get; set; } = default!;
-    public List<string> TargetTokens { get; set; } = default!;
-    public List<double> Confidences { get; set; } = default!;
-    public List<IReadOnlySet<TranslationSource>> Sources { get; set; } = default!;
-    public List<AlignedWordPair> Alignment { get; set; } = default!;
-    public List<Phrase> Phrases { get; set; } = default!;
+    public required string Translation { get; set; }
+    public required IReadOnlyList<string> SourceTokens { get; set; }
+    public required IReadOnlyList<string> TargetTokens { get; set; }
+    public required IReadOnlyList<double> Confidences { get; set; }
+    public required IReadOnlyList<IReadOnlySet<TranslationSource>> Sources { get; set; }
+    public required IReadOnlyList<AlignedWordPair> Alignment { get; set; }
+    public required IReadOnlyList<Phrase> Phrases { get; set; }
 }

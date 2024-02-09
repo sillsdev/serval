@@ -2,8 +2,8 @@
 
 public record DataFileResult
 {
-    public string DataFileId { get; init; } = default!;
-    public string Name { get; init; } = default!;
-    public string Filename { get; init; } = default!;
-    public FileFormat Format { get; init; } = default!;
+    public required string DataFileId { get; init; }
+    public required string Name { get; init; }
+    public required string Filename { get; init; }
+    public required FileFormat Format { get; init; }
 }

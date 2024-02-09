@@ -1,9 +1,9 @@
 ﻿namespace Serval.Shared.Contracts;
 
-public class TranslationBuildFinishedDto
+public record TranslationBuildFinishedDto
 {
-    public ResourceLinkDto Build { get; set; } = default!;
-    public ResourceLinkDto Engine { get; set; } = default!;
-    public JobState BuildState { get; set; }
-    public DateTime DateFinished { get; set; }
+    public required ResourceLinkDto Build { get; init; }
+    public required ResourceLinkDto Engine { get; init; }
+    public required JobState BuildState { get; init; }
+    public required DateTime DateFinished { get; init; }
 }

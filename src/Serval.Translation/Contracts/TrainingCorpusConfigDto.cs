@@ -1,8 +1,8 @@
 namespace Serval.Translation.Contracts;
 
-public class TrainingCorpusConfigDto
+public record TrainingCorpusConfigDto
 {
-    public string CorpusId { get; set; } = default!;
-    public IList<string>? TextIds { get; set; }
-    public string? ScriptureRange { get; set; }
+    public required string CorpusId { get; init; }
+    public IReadOnlyList<string>? TextIds { get; init; }
+    public string? ScriptureRange { get; init; }
 }

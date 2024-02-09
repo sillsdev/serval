@@ -1,13 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿namespace Serval.Translation.Contracts;
 
-namespace Serval.Translation.Contracts;
-
-public class PretranslateCorpusConfigDto
+public record PretranslateCorpusConfigDto
 {
-    [JsonProperty(Required = Required.Always)]
-    public string CorpusId { get; set; } = default!;
+    public required string CorpusId { get; init; }
 
-    public IList<string>? TextIds { get; set; }
+    public IReadOnlyList<string>? TextIds { get; init; }
 
-    public string? ScriptureRange { get; set; }
+    public string? ScriptureRange { get; init; }
 }

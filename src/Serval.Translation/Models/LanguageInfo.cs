@@ -1,8 +1,8 @@
 namespace Serval.Translation.Models;
 
-public class LanguageInfo
+public record LanguageInfo
 {
-    public string EngineType { get; set; } = default!;
-    public bool IsNative { get; set; } = default!;
-    public string? InternalCode { get; set; } = default!;
+    public required string EngineType { get; set; }
+    public required bool IsNative { get; set; }
+    public string? InternalCode { get; set; }
 }

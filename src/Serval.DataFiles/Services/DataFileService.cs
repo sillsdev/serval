@@ -41,13 +41,13 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
 
     public async Task CreateAsync(DataFile dataFile, Stream stream, CancellationToken cancellationToken = default)
     {
-        dataFile.Filename = Path.GetRandomFileName();
-        string path = GetDataFilePath(dataFile.Filename);
+        string filename = Path.GetRandomFileName();
+        string path = GetDataFilePath(filename);
         try
         {
             using Stream fileStream = _fileSystem.OpenWrite(path);
             await stream.CopyToAsync(fileStream, cancellationToken);
-            await Entities.InsertAsync(dataFile, cancellationToken);
+            await Entities.InsertAsync(dataFile with { Filename = filename }, cancellationToken);
         }
         catch
         {

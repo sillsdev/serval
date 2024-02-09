@@ -1,4 +1,3 @@
-using MassTransit;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -10,54 +9,74 @@ public class PlatformServiceTests
     public async Task TestBuildStateTransitionsAsync()
     {
         var env = new TestEnvironment();
-        await env.Engines.InsertAsync(new Engine() { Id = "e0" });
+        await env.Engines.InsertAsync(
+            new Engine()
+            {
+                Id = "e0",
+                Owner = "owner1",
+                Type = "nmt",
+                SourceLanguage = "en",
+                TargetLanguage = "es",
+                Corpora = []
+            }
+        );
         await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
         await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That((await env.Builds.GetAsync("b0"))!.State, Is.EqualTo(Shared.Contracts.JobState.Active));
-        Assert.That((await env.Engines.GetAsync("e0"))!.IsBuilding);
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Active));
+        Assert.That(env.Engines.Get("e0").IsBuilding, Is.True);
 
         await env.PlatformService.BuildCanceled(new BuildCanceledRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That((await env.Builds.GetAsync("b0"))!.State, Is.EqualTo(Shared.Contracts.JobState.Canceled));
-        Assert.That(!(await env.Engines.GetAsync("e0"))!.IsBuilding);
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Canceled));
+        Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         await env.PlatformService.BuildRestarting(
             new BuildRestartingRequest() { BuildId = "b0" },
             env.ServerCallContext
         );
-        Assert.That((await env.Builds.GetAsync("b0"))!.State, Is.EqualTo(Shared.Contracts.JobState.Pending));
-        Assert.That(!(await env.Engines.GetAsync("e0"))!.IsBuilding);
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Pending));
+        Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        Assert.That(await env.Pretranslations.GetAllAsync(), Is.Empty);
+        Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
-        Assert.That(await env.Pretranslations.GetAllAsync(), Has.Count.EqualTo(1));
+        Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
 
         await env.PlatformService.BuildFaulted(new BuildFaultedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That(await env.Pretranslations.GetAllAsync(), Is.Empty);
-        Assert.That((await env.Builds.GetAsync("b0"))!.State, Is.EqualTo(Shared.Contracts.JobState.Faulted));
-        Assert.That(!(await env.Engines.GetAsync("e0"))!.IsBuilding);
+        Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Faulted));
+        Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         await env.PlatformService.BuildRestarting(
             new BuildRestartingRequest() { BuildId = "b0" },
             env.ServerCallContext
         );
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
-        Assert.That(await env.Pretranslations.GetAllAsync(), Has.Count.EqualTo(1));
+        Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That(await env.Pretranslations.GetAllAsync(), Has.Count.EqualTo(1));
+        Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That(await env.Pretranslations.GetAllAsync(), Has.Count.EqualTo(1));
+        Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
     }
 
     [Test]
     public async Task UpdateBuildStatusAsync()
     {
         var env = new TestEnvironment();
-        await env.Engines.InsertAsync(new Engine() { Id = "e0" });
+        await env.Engines.InsertAsync(
+            new Engine()
+            {
+                Id = "e0",
+                Owner = "owner1",
+                Type = "nmt",
+                SourceLanguage = "en",
+                TargetLanguage = "es",
+                Corpora = []
+            }
+        );
         await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
-        Assert.That((await env.Builds.GetAsync("b0"))!.QueueDepth, Is.EqualTo(null));
-        Assert.That((await env.Builds.GetAsync("b0"))!.PercentCompleted, Is.EqualTo(null));
+        Assert.That(env.Builds.Get("b0").QueueDepth, Is.Null);
+        Assert.That(env.Builds.Get("b0").PercentCompleted, Is.Null);
         await env.PlatformService.UpdateBuildStatus(
             new UpdateBuildStatusRequest()
             {
@@ -67,21 +86,31 @@ public class PlatformServiceTests
             },
             env.ServerCallContext
         );
-        Assert.That((await env.Builds.GetAsync("b0"))!.QueueDepth, Is.EqualTo(1));
-        Assert.That((await env.Builds.GetAsync("b0"))!.PercentCompleted, Is.EqualTo(0.5));
+        Assert.That(env.Builds.Get("b0").QueueDepth, Is.EqualTo(1));
+        Assert.That(env.Builds.Get("b0").PercentCompleted, Is.EqualTo(0.5));
     }
 
     [Test]
     public async Task IncrementCorpusSizeAsync()
     {
         var env = new TestEnvironment();
-        await env.Engines.InsertAsync(new Engine() { Id = "e0" });
-        Assert.That((await env.Engines.GetAsync("e0"))!.CorpusSize, Is.EqualTo(0));
+        await env.Engines.InsertAsync(
+            new Engine()
+            {
+                Id = "e0",
+                Owner = "owner1",
+                Type = "nmt",
+                SourceLanguage = "en",
+                TargetLanguage = "es",
+                Corpora = []
+            }
+        );
+        Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(0));
         await env.PlatformService.IncrementTranslationEngineCorpusSize(
             new IncrementTranslationEngineCorpusSizeRequest() { EngineId = "e0", Count = 1 },
             env.ServerCallContext
         );
-        Assert.That((await env.Engines.GetAsync("e0"))!.CorpusSize, Is.EqualTo(1));
+        Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(1));
     }
 
     private class TestEnvironment
@@ -103,9 +132,9 @@ public class PlatformServiceTests
             );
         }
 
-        public IRepository<Build> Builds { get; }
-        public IRepository<Engine> Engines { get; }
-        public IRepository<Pretranslation> Pretranslations { get; }
+        public MemoryRepository<Build> Builds { get; }
+        public MemoryRepository<Engine> Engines { get; }
+        public MemoryRepository<Pretranslation> Pretranslations { get; }
         public IDataAccessContext DataAccessContext { get; }
         public IPublishEndpoint PublishEndpoint { get; }
         public ServerCallContext ServerCallContext { get; }

@@ -12,6 +12,9 @@ public class TranslationEnginesController(
     IUrlService urlService
 ) : ServalControllerBase(authService)
 {
+    private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
+        new() { Converters = { new ObjectToInferredTypesConverter() } };
+
     private readonly IEngineService _engineService = engineService;
     private readonly IBuildService _buildService = buildService;
     private readonly IPretranslationService _pretranslationService = pretranslationService;
@@ -101,7 +104,6 @@ public class TranslationEnginesController(
     ///
     /// </remarks>
     /// <param name="engineConfig">The translation engine configuration (see above)</param>
-    /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The new translation engine</response>
     /// <response code="400">Bad request. Is the engine type correct?</response>
@@ -118,12 +120,10 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationEngineDto>> CreateAsync(
         [FromBody] TranslationEngineConfigDto engineConfig,
-        [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
     {
         Engine engine = Map(engineConfig);
-        engine.Id = idGenerator.GenerateId();
         Engine updatedEngine = await _engineService.CreateAsync(engine, cancellationToken);
         TranslationEngineDto dto = Map(updatedEngine);
         return Created(dto.Url, dto);
@@ -955,7 +955,7 @@ public class TranslationEnginesController(
         };
     }
 
-    private async Task<IList<CorpusFile>> MapAsync(
+    private async Task<List<CorpusFile>> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
         IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
         CancellationToken cancellationToken
@@ -1004,76 +1004,98 @@ public class TranslationEnginesController(
 
     private static Build Map(Engine engine, TranslationBuildConfigDto source)
     {
-        var build = new Build { EngineRef = engine.Id, Name = source.Name };
+        return new Build
+        {
+            EngineRef = engine.Id,
+            Name = source.Name,
+            Pretranslate = Map(engine, source.Pretranslate),
+            TrainOn = Map(engine, source.TrainOn),
+            Options = Map(source.Options)
+        };
+    }
+
+    private static List<PretranslateCorpus>? Map(Engine engine, IReadOnlyList<PretranslateCorpusConfigDto>? source)
+    {
+        if (source is null)
+            return null;
+
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
-        if (source.Pretranslate != null)
+        var pretranslateCorpora = new List<PretranslateCorpus>();
+        foreach (PretranslateCorpusConfigDto ptcc in source)
         {
-            var pretranslateCorpora = new List<PretranslateCorpus>();
-            foreach (PretranslateCorpusConfigDto ptcc in source.Pretranslate)
+            if (!corpusIds.Contains(ptcc.CorpusId))
             {
-                if (!corpusIds.Contains(ptcc.CorpusId))
-                {
-                    throw new InvalidOperationException(
-                        $"The corpus {ptcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
-                    );
-                }
-                if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
-                {
-                    throw new InvalidOperationException(
-                        $"The corpus {ptcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
-                    );
-                }
-                pretranslateCorpora.Add(
-                    new PretranslateCorpus
-                    {
-                        CorpusRef = ptcc.CorpusId,
-                        TextIds = ptcc.TextIds?.ToList(),
-                        ScriptureRange = ptcc.ScriptureRange
-                    }
+                throw new InvalidOperationException(
+                    $"The corpus {ptcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                 );
             }
-            build.Pretranslate = pretranslateCorpora;
-        }
-        if (source.TrainOn != null)
-        {
-            var trainOnCorpora = new List<TrainingCorpus>();
-            foreach (TrainingCorpusConfigDto tcc in source.TrainOn)
+            if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
             {
-                if (!corpusIds.Contains(tcc.CorpusId))
-                {
-                    throw new InvalidOperationException(
-                        $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
-                    );
-                }
-                if (tcc.TextIds != null && tcc.ScriptureRange != null)
-                {
-                    throw new InvalidOperationException(
-                        $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
-                    );
-                }
-                trainOnCorpora.Add(
-                    new TrainingCorpus
-                    {
-                        CorpusRef = tcc.CorpusId,
-                        TextIds = tcc.TextIds?.ToList(),
-                        ScriptureRange = tcc.ScriptureRange
-                    }
+                throw new InvalidOperationException(
+                    $"The corpus {ptcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
                 );
             }
-            build.TrainOn = trainOnCorpora;
+            pretranslateCorpora.Add(
+                new PretranslateCorpus
+                {
+                    CorpusRef = ptcc.CorpusId,
+                    TextIds = ptcc.TextIds?.ToList(),
+                    ScriptureRange = ptcc.ScriptureRange
+                }
+            );
         }
+        return pretranslateCorpora;
+    }
+
+    private static List<TrainingCorpus>? Map(Engine engine, IReadOnlyList<TrainingCorpusConfigDto>? source)
+    {
+        if (source is null)
+            return null;
+
+        var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
+        var trainOnCorpora = new List<TrainingCorpus>();
+        foreach (TrainingCorpusConfigDto tcc in source)
+        {
+            if (!corpusIds.Contains(tcc.CorpusId))
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                );
+            }
+            if (tcc.TextIds != null && tcc.ScriptureRange != null)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
+                );
+            }
+            trainOnCorpora.Add(
+                new TrainingCorpus
+                {
+                    CorpusRef = tcc.CorpusId,
+                    TextIds = tcc.TextIds?.ToList(),
+                    ScriptureRange = tcc.ScriptureRange
+                }
+            );
+        }
+        return trainOnCorpora;
+    }
+
+    private static Dictionary<string, object>? Map(object? source)
+    {
+        if (source is null)
+            return null;
+
         try
         {
-            build.Options = JsonSerializer.Deserialize<IDictionary<string, object>>(
-                source.Options?.ToString() ?? "{}",
-                new JsonSerializerOptions { Converters = { new ObjectToInferredTypesConverter() } }
+            return JsonSerializer.Deserialize<Dictionary<string, object>>(
+                source.ToString() ?? "{}",
+                ObjectJsonSerializerOptions
             );
         }
         catch (Exception e)
         {
             throw new InvalidOperationException($"Unable to parse field 'options' : {e.Message}", e);
         }
-        return build;
     }
 
     private TranslationEngineDto Map(Engine source)

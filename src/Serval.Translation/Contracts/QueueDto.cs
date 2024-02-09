@@ -1,7 +1,7 @@
 namespace Serval.Translation.Contracts;
 
-public class QueueDto
+public record QueueDto
 {
-    public int Size { get; set; }
-    public string EngineType { get; set; } = default!;
+    public required int Size { get; init; }
+    public required string EngineType { get; init; }
 }

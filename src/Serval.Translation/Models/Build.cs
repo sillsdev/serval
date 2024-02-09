@@ -1,18 +1,18 @@
 ﻿namespace Serval.Translation.Models;
 
-public class Build : IEntity
+public record Build : IEntity
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
-    public string? Name { get; set; }
-    public string EngineRef { get; set; } = default!;
-    public IList<TrainingCorpus>? TrainOn { get; set; }
-    public List<PretranslateCorpus>? Pretranslate { get; set; }
-    public int Step { get; set; }
-    public double? PercentCompleted { get; set; }
-    public string? Message { get; set; }
-    public int? QueueDepth { get; set; }
-    public JobState State { get; set; } = JobState.Pending;
-    public DateTime? DateFinished { get; set; }
-    public IDictionary<string, object>? Options { get; set; }
+    public string? Name { get; init; }
+    public required string EngineRef { get; init; }
+    public IReadOnlyList<TrainingCorpus>? TrainOn { get; init; }
+    public IReadOnlyList<PretranslateCorpus>? Pretranslate { get; init; }
+    public int Step { get; init; }
+    public double? PercentCompleted { get; init; }
+    public string? Message { get; init; }
+    public int? QueueDepth { get; init; }
+    public JobState State { get; init; } = JobState.Pending;
+    public DateTime? DateFinished { get; init; }
+    public IReadOnlyDictionary<string, object>? Options { get; init; }
 }

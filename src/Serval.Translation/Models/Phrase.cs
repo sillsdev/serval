@@ -1,8 +1,8 @@
 ﻿namespace Serval.Translation.Models;
 
-public class Phrase
+public record Phrase
 {
-    public int SourceSegmentStart { get; set; }
-    public int SourceSegmentEnd { get; set; }
-    public int TargetSegmentCut { get; set; }
+    public required int SourceSegmentStart { get; set; }
+    public required int SourceSegmentEnd { get; set; }
+    public required int TargetSegmentCut { get; set; }
 }
