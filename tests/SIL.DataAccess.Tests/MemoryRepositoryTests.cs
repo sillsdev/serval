@@ -4,73 +4,135 @@ namespace SIL.DataAccess;
 public class MemoryRepositoryTests
 {
     [Test]
-    public async Task AddAndRemove()
+    public async Task InsertAsync_DoesNotExist()
     {
-        var mr = new MemoryRepository<IntegerEntity>();
-        mr.Init();
-        mr.Add(new IntegerEntity(1) { Id = "1" });
-        var entityToRemove = new IntegerEntity(2) { Id = "2" };
-        mr.Add(entityToRemove);
-        mr.Remove(entityToRemove);
-        Assert.That(await mr.GetAllAsync(_ => true), Has.Count.EqualTo(1));
-        IntegerEntity entity = mr.Get("1");
-        Assert.That(entity.Value, Is.EqualTo(1));
-        mr.Add(
-            new IntegerEntity[]
+        MemoryRepository<TestEntity> repo = new();
+
+        await repo.InsertAsync(
+            new TestEntity()
             {
-                new(1) { Id = "3" },
-                new(2) { Id = "4" }
+                Id = "1",
+                Value = 1,
+                List = new List<int> { 1 }
             }
         );
-        Assert.That(await mr.GetAllAsync(_ => true), Has.Count.EqualTo(3));
-        Assert.That(await mr.ExistsAsync(entity => entity.Value == 2));
+
+        Assert.That(repo.Count, Is.EqualTo(1));
+        TestEntity entity = repo.Get("1");
+        Assert.That(entity.Value, Is.EqualTo(1));
+        Assert.That(entity.List, Is.EqualTo(new int[] { 1 }));
     }
 
     [Test]
-    public async Task InsertAndUpdate()
+    public void InsertAsync_Exists()
     {
-        var mr = new MemoryRepository<IntegerEntity>();
-        mr.Init();
-        await mr.InsertAllAsync(
-            new IntegerEntity[]
-            {
-                new(1) { Id = "1" },
-                new(2) { Id = "2" }
-            }
-        );
-        Assert.ThrowsAsync<DuplicateKeyException>(async () =>
-        {
-            await mr.InsertAllAsync(
-                new IntegerEntity[]
-                {
-                    new(1) { Id = "1" },
-                    new(2) { Id = "2" }
-                }
-            );
-        });
-        Assert.That(await mr.GetAllAsync(_ => true), Has.Count.EqualTo(2));
-        await mr.UpdateAsync(e => e.Id == "0", e => e.Set(r => r.Value, 0), upsert: true);
-        Assert.That(await mr.GetAllAsync(_ => true), Has.Count.EqualTo(3));
-        await mr.UpdateAsync(e => e.Id == "0", e => e.Set(r => r.Value, 100));
-        Assert.That(await mr.GetAllAsync(_ => true), Has.Count.EqualTo(3));
-        Assert.That(mr.Get("0").Value, Is.EqualTo(100));
-        await mr.UpdateAsync(e => e.Id == "1", e => e.Set(r => r.Value, 100));
-        await mr.UpdateAllAsync(e => e.Value == 100, e => e.Set(r => r.Value, -100));
-        Assert.That(mr.Get("0").Value, Is.EqualTo(-100));
-        Assert.That(mr.Get("1").Value, Is.EqualTo(-100));
+        MemoryRepository<TestEntity> repo = new();
+        repo.Add(new TestEntity() { Id = "1", Value = 1 });
+
+        Assert.ThrowsAsync<DuplicateKeyException>(() => repo.InsertAsync(new TestEntity() { Id = "1", Value = 1 }));
     }
 
-    private class IntegerEntity : IEntity
+    [Test]
+    public async Task InsertAsync_ReadOnlyCollectionExpression()
     {
-        public string Id { get; set; } = default!;
+        MemoryRepository<TestEntity> repo = new();
+
+        await repo.InsertAsync(new TestEntity() { Id = "1", List = [1] });
+
+        Assert.That(repo.Count, Is.EqualTo(1));
+        TestEntity entity = repo.Get("1");
+        Assert.That(entity.List, Is.EqualTo(new int[] { 1 }));
+    }
+
+    [Test]
+    public async Task UpdateAsync_DoesNotExist()
+    {
+        MemoryRepository<TestEntity> repo = new();
+
+        TestEntity? entity = await repo.UpdateAsync("1", u => u.Set(e => e.Value, 2));
+
+        Assert.That(entity, Is.Null);
+    }
+
+    [Test]
+    public async Task UpdateAsync_DoesNotExistUpsert()
+    {
+        MemoryRepository<TestEntity> repo = new();
+
+        TestEntity? entity = await repo.UpdateAsync("1", u => u.Set(e => e.Value, 2), upsert: true);
+
+        Assert.That(entity, Is.Not.Null);
+        Assert.That(entity.Value, Is.EqualTo(2));
+        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Get("1").Value, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task UpdateAsync_Exists()
+    {
+        MemoryRepository<TestEntity> repo = new();
+        repo.Add(new TestEntity() { Id = "1", Value = 1 });
+
+        TestEntity? entity = await repo.UpdateAsync("1", u => u.Set(e => e.Value, 2));
+
+        Assert.That(entity, Is.Not.Null);
+        Assert.That(entity.Value, Is.EqualTo(2));
+        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Get("1").Value, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task DeleteAsync_DoesNotExist()
+    {
+        MemoryRepository<TestEntity> repo = new();
+
+        TestEntity? entity = await repo.DeleteAsync("1");
+
+        Assert.That(entity, Is.Null);
+    }
+
+    [Test]
+    public async Task DeleteAsync_Exists()
+    {
+        MemoryRepository<TestEntity> repo = new();
+        repo.Add(new TestEntity() { Id = "1", Value = 1 });
+        Assert.That(repo.Count, Is.EqualTo(1));
+
+        TestEntity? entity = await repo.DeleteAsync("1");
+
+        Assert.That(entity, Is.Not.Null);
+        Assert.That(entity.Id, Is.EqualTo("1"));
+        Assert.That(repo.Count, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task GetAsync_DoesNotExist()
+    {
+        MemoryRepository<TestEntity> repo = new();
+
+        TestEntity? entity = await repo.GetAsync("1");
+
+        Assert.That(entity, Is.Null);
+    }
+
+    [Test]
+    public async Task GetAsync_Exists()
+    {
+        MemoryRepository<TestEntity> repo = new();
+        repo.Add(new TestEntity() { Id = "1", Value = 1 });
+        Assert.That(repo.Count, Is.EqualTo(1));
+
+        TestEntity? entity = await repo.GetAsync("1");
+
+        Assert.That(entity, Is.Not.Null);
+        Assert.That(entity.Id, Is.EqualTo("1"));
+    }
+
+    private record TestEntity : IEntity
+    {
+        public string Id { get; set; } = "";
         public int Revision { get; set; } = 1;
-        public int Value { get; set; }
-
-        public IntegerEntity(int value)
-        {
-            Value = value;
-        }
-
-        public IntegerEntity() { }
+        public int? Value { get; init; }
+        public IReadOnlyList<int>? List { get; init; }
     }
 }

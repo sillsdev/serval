@@ -2,10 +2,10 @@
 
 public record TranslationBuildFinished
 {
-    public string BuildId { get; init; } = default!;
-    public string EngineId { get; init; } = default!;
-    public string Owner { get; init; } = default!;
-    public JobState BuildState { get; init; }
-    public string Message { get; init; } = default!;
-    public DateTime DateFinished { get; init; }
+    public required string BuildId { get; init; }
+    public required string EngineId { get; init; }
+    public required string Owner { get; init; }
+    public required JobState BuildState { get; init; }
+    public required string Message { get; init; }
+    public required DateTime DateFinished { get; init; }
 }

@@ -1,8 +1,8 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class PhraseDto
+public record PhraseDto
 {
-    public int SourceSegmentStart { get; set; }
-    public int SourceSegmentEnd { get; set; }
-    public int TargetSegmentCut { get; set; }
+    public required int SourceSegmentStart { get; init; }
+    public required int SourceSegmentEnd { get; init; }
+    public required int TargetSegmentCut { get; init; }
 }

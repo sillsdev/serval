@@ -1,9 +1,9 @@
 ﻿namespace Serval.Webhooks.Contracts;
 
-public class WebhookDto
+public record WebhookDto
 {
-    public string Id { get; set; } = default!;
-    public string Url { get; set; } = default!;
-    public string PayloadUrl { get; set; } = default!;
-    public IList<WebhookEvent> Events { get; set; } = default!;
+    public required string Id { get; init; }
+    public required string Url { get; init; }
+    public required string PayloadUrl { get; init; }
+    public required IList<WebhookEvent> Events { get; init; }
 }

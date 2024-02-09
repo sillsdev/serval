@@ -59,6 +59,7 @@ public class PretranslationServiceTests
                     new()
                     {
                         Id = "engine1",
+                        Owner = "owner1",
                         SourceLanguage = "en",
                         TargetLanguage = "en",
                         Type = "nmt",

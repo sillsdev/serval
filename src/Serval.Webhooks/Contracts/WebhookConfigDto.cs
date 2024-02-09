@@ -1,24 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿namespace Serval.Webhooks.Contracts;
 
-namespace Serval.Webhooks.Contracts;
-
-public class WebhookConfigDto
+public record WebhookConfigDto
 {
     /// <summary>
     /// The payload URL.
     /// </summary>
-    [JsonProperty(Required = Required.Always)]
-    public string PayloadUrl { get; set; } = default!;
+    public required string PayloadUrl { get; init; }
 
     /// <summary>
     /// The shared secret.
     /// </summary>
-    [JsonProperty(Required = Required.Always)]
-    public string Secret { get; set; } = default!;
+    public required string Secret { get; init; }
 
     /// <summary>
     /// The webhook events.
     /// </summary>
-    [JsonProperty(Required = Required.Always)]
-    public IList<WebhookEvent> Events { get; set; } = default!;
+    public required IList<WebhookEvent> Events { get; init; }
 }

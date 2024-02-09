@@ -1,16 +1,16 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class TranslationEngineDto
+public record TranslationEngineDto
 {
-    public string Id { get; set; } = default!;
-    public string Url { get; set; } = default!;
-    public string? Name { get; set; }
-    public string SourceLanguage { get; set; } = default!;
-    public string TargetLanguage { get; set; } = default!;
-    public string Type { get; set; } = default!;
-    public bool? IsModelPersisted { get; set; } = default!;
-    public bool IsBuilding { get; set; }
-    public int ModelRevision { get; set; }
-    public double Confidence { get; set; }
-    public int CorpusSize { get; set; }
+    public required string Id { get; init; }
+    public required string Url { get; init; }
+    public string? Name { get; init; }
+    public required string SourceLanguage { get; init; }
+    public required string TargetLanguage { get; init; }
+    public required string Type { get; init; }
+    public bool? IsModelPersisted { get; init; }
+    public required bool IsBuilding { get; init; }
+    public required int ModelRevision { get; init; }
+    public required double Confidence { get; init; }
+    public required int CorpusSize { get; init; }
 }

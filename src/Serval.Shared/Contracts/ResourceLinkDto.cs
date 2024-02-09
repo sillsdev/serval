@@ -2,6 +2,6 @@
 
 public class ResourceLinkDto
 {
-    public string Id { get; set; } = default!;
-    public string Url { get; set; } = default!;
+    public required string Id { get; init; }
+    public required string Url { get; init; }
 }

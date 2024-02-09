@@ -1,10 +1,10 @@
 ﻿namespace Serval.DataFiles.Contracts;
 
-public class DataFileDto
+public record DataFileDto
 {
-    public string Id { get; set; } = default!;
-    public string Url { get; set; } = default!;
-    public string? Name { get; set; }
-    public FileFormat Format { get; set; }
-    public int Revision { get; set; }
+    public required string Id { get; init; }
+    public required string Url { get; init; }
+    public string? Name { get; init; }
+    public required FileFormat Format { get; init; }
+    public required int Revision { get; init; }
 }

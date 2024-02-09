@@ -1,7 +1,7 @@
 ﻿namespace Serval.Translation.Models;
 
-public class AlignedWordPair
+public record AlignedWordPair
 {
-    public int SourceIndex { get; set; }
-    public int TargetIndex { get; set; }
+    public required int SourceIndex { get; set; }
+    public required int TargetIndex { get; set; }
 }

@@ -42,8 +42,8 @@ public class PretranslationService(
         if (corpus is null)
             throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
 
-        CorpusFile sourceFile = corpus.SourceFiles.First();
-        CorpusFile targetFile = corpus.TargetFiles.First();
+        CorpusFile sourceFile = corpus.SourceFiles[0];
+        CorpusFile targetFile = corpus.TargetFiles[0];
         if (sourceFile.Format is not FileFormat.Paratext || targetFile.Format is not FileFormat.Paratext)
             throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
 

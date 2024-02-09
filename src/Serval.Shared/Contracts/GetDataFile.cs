@@ -2,6 +2,6 @@
 
 public record GetDataFile
 {
-    public string DataFileId { get; init; } = default!;
-    public string Owner { get; init; } = default!;
+    public required string DataFileId { get; init; }
+    public required string Owner { get; init; }
 }

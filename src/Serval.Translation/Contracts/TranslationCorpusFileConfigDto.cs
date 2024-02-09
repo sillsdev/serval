@@ -1,11 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿namespace Serval.Translation.Contracts;
 
-namespace Serval.Translation.Contracts;
-
-public class TranslationCorpusFileConfigDto
+public record TranslationCorpusFileConfigDto
 {
-    [JsonProperty(Required = Required.Always)]
-    public string FileId { get; set; } = default!;
+    public required string FileId { get; init; }
 
-    public string? TextId { get; set; }
+    public string? TextId { get; init; }
 }

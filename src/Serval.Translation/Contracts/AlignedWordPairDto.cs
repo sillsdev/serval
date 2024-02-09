@@ -1,7 +1,7 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class AlignedWordPairDto
+public record AlignedWordPairDto
 {
-    public int SourceIndex { get; set; }
-    public int TargetIndex { get; set; }
+    public required int SourceIndex { get; init; }
+    public required int TargetIndex { get; init; }
 }

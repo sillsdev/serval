@@ -1,11 +1,11 @@
 ﻿namespace Serval.DataFiles.Models;
 
-public class DataFile : IOwnedEntity
+public record DataFile : IOwnedEntity
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
-    public string Owner { get; set; } = default!;
-    public string Name { get; set; } = default!;
-    public string Filename { get; set; } = default!;
-    public FileFormat Format { get; set; }
+    public required string Owner { get; init; }
+    public required string Name { get; init; }
+    public string Filename { get; init; } = "";
+    public required FileFormat Format { get; init; }
 }

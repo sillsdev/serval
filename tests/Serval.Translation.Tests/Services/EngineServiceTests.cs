@@ -1,6 +1,4 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using Microsoft.Extensions.Logging;
-using Serval.Shared.Utils;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -69,13 +67,16 @@ public class EngineServiceTests
     public async Task CreateAsync()
     {
         var env = new TestEnvironment();
-        var engine = new Engine
-        {
-            Id = "engine1",
-            SourceLanguage = "es",
-            TargetLanguage = "en",
-            Type = "Smt"
-        };
+        Engine engine =
+            new()
+            {
+                Id = "engine1",
+                Owner = "owner1",
+                SourceLanguage = "es",
+                TargetLanguage = "en",
+                Type = "Smt",
+                Corpora = []
+            };
         await env.Service.CreateAsync(engine);
 
         engine = (await env.Engines.GetAsync("engine1"))!;
@@ -122,33 +123,33 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         Engine engine = await env.CreateEngineAsync();
-        string corpusId = engine.Corpora.First().Id;
+        string corpusId = engine.Corpora[0].Id;
 
         Models.Corpus? corpus = await env.Service.UpdateCorpusAsync(
             engine.Id,
             corpusId,
-            sourceFiles: new[]
-            {
-                new Models.CorpusFile
+            sourceFiles:
+            [
+                new()
                 {
                     Id = "file1",
                     Filename = "file1.txt",
                     Format = Shared.Contracts.FileFormat.Text,
                     TextId = "text1"
                 },
-                new Models.CorpusFile
+                new()
                 {
                     Id = "file3",
                     Filename = "file3.txt",
                     Format = Shared.Contracts.FileFormat.Text,
                     TextId = "text2"
                 },
-            },
+            ],
             null
         );
 
         Assert.That(corpus, Is.Not.Null);
-        Assert.That(corpus!.SourceFiles, Has.Count.EqualTo(2));
+        Assert.That(corpus.SourceFiles, Has.Count.EqualTo(2));
         Assert.That(corpus.SourceFiles[0].Id, Is.EqualTo("file1"));
         Assert.That(corpus.SourceFiles[1].Id, Is.EqualTo("file3"));
         Assert.That(corpus.TargetFiles, Has.Count.EqualTo(1));
@@ -296,18 +297,19 @@ public class EngineServiceTests
             var engine = new Engine
             {
                 Id = "engine1",
+                Owner = "owner1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "Smt",
-                Corpora = new List<Models.Corpus>
+                Corpora = new Models.Corpus[]
                 {
                     new()
                     {
                         Id = "corpus1",
                         SourceLanguage = "es",
                         TargetLanguage = "en",
-                        SourceFiles = new List<Models.CorpusFile>
-                        {
+                        SourceFiles =
+                        [
                             new()
                             {
                                 Id = "file1",
@@ -315,9 +317,9 @@ public class EngineServiceTests
                                 Format = Shared.Contracts.FileFormat.Text,
                                 TextId = "text1"
                             }
-                        },
-                        TargetFiles = new List<Models.CorpusFile>
-                        {
+                        ],
+                        TargetFiles =
+                        [
                             new()
                             {
                                 Id = "file2",
@@ -325,7 +327,7 @@ public class EngineServiceTests
                                 Format = Shared.Contracts.FileFormat.Text,
                                 TextId = "text1"
                             }
-                        },
+                        ],
                     }
                 }
             };
@@ -333,7 +335,7 @@ public class EngineServiceTests
             return engine;
         }
 
-        private static IEnumerable<TranslationSources> GetSources(int count, bool isUnknown)
+        private static TranslationSources[] GetSources(int count, bool isUnknown)
         {
             var sources = new TranslationSources[count];
             for (int i = 0; i < count; i++)

@@ -1,34 +1,29 @@
-﻿using Newtonsoft.Json;
+﻿namespace Serval.Translation.Contracts;
 
-namespace Serval.Translation.Contracts;
-
-public class TranslationEngineConfigDto
+public record TranslationEngineConfigDto
 {
     /// <summary>
     /// The translation engine name.
     /// </summary>
-    public string? Name { get; set; }
+    public string? Name { get; init; }
 
     /// <summary>
     /// The source language tag.
     /// </summary>
-    [JsonProperty(Required = Required.Always)]
-    public string SourceLanguage { get; set; } = default!;
+    public required string SourceLanguage { get; init; }
 
     /// <summary>
     /// The target language tag.
     /// </summary>
-    [JsonProperty(Required = Required.Always)]
-    public string TargetLanguage { get; set; } = default!;
+    public required string TargetLanguage { get; init; }
 
     /// <summary>
     /// The translation engine type.
     /// </summary>
-    [JsonProperty(Required = Required.Always)]
-    public string Type { get; set; } = default!;
+    public required string Type { get; init; }
 
     /// <summary>
     /// The model is saved when built and can be retrieved.
     /// </summary>
-    public bool? IsModelPersisted { get; set; }
+    public bool? IsModelPersisted { get; init; }
 }

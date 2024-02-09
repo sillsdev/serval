@@ -1,12 +1,12 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class TranslationResultDto
+public record TranslationResultDto
 {
-    public string Translation { get; set; } = default!;
-    public IList<string> SourceTokens { get; set; } = default!;
-    public IList<string> TargetTokens { get; set; } = default!;
-    public IList<double> Confidences { get; set; } = default!;
-    public IList<IReadOnlySet<TranslationSource>> Sources { get; set; } = default!;
-    public IList<AlignedWordPairDto> Alignment { get; set; } = default!;
-    public IList<PhraseDto> Phrases { get; set; } = default!;
+    public required string Translation { get; init; }
+    public required IReadOnlyList<string> SourceTokens { get; init; }
+    public required IReadOnlyList<string> TargetTokens { get; init; }
+    public required IReadOnlyList<double> Confidences { get; init; }
+    public required IReadOnlyList<IReadOnlySet<TranslationSource>> Sources { get; init; }
+    public required IReadOnlyList<AlignedWordPairDto> Alignment { get; init; }
+    public required IReadOnlyList<PhraseDto> Phrases { get; init; }
 }
