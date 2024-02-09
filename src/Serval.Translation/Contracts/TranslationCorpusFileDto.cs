@@ -1,7 +1,7 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class TranslationCorpusFileDto
+public record TranslationCorpusFileDto
 {
-    public ResourceLinkDto File { get; set; } = default!;
-    public string? TextId { get; set; }
+    public required ResourceLinkDto File { get; init; }
+    public string? TextId { get; init; }
 }

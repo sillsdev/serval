@@ -1,14 +1,14 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class WordGraphArcDto
+public record WordGraphArcDto
 {
-    public int PrevState { get; set; }
-    public int NextState { get; set; }
-    public double Score { get; set; }
-    public IList<string> TargetTokens { get; set; } = default!;
-    public IList<double> Confidences { get; set; } = default!;
-    public int SourceSegmentStart { get; set; }
-    public int SourceSegmentEnd { get; set; }
-    public IList<AlignedWordPairDto> Alignment { get; set; } = default!;
-    public IList<IReadOnlySet<TranslationSource>> Sources { get; set; } = default!;
+    public required int PrevState { get; init; }
+    public required int NextState { get; init; }
+    public required double Score { get; init; }
+    public required IReadOnlyList<string> TargetTokens { get; init; }
+    public required IReadOnlyList<double> Confidences { get; init; }
+    public required int SourceSegmentStart { get; init; }
+    public required int SourceSegmentEnd { get; init; }
+    public required IReadOnlyList<AlignedWordPairDto> Alignment { get; init; }
+    public required IReadOnlyList<IReadOnlySet<TranslationSource>> Sources { get; init; }
 }

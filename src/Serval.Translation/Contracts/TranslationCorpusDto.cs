@@ -1,13 +1,13 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class TranslationCorpusDto
+public record TranslationCorpusDto
 {
-    public string Id { get; set; } = default!;
-    public string Url { get; set; } = default!;
-    public ResourceLinkDto Engine { get; set; } = default!;
-    public string? Name { get; set; }
-    public string SourceLanguage { get; set; } = default!;
-    public string TargetLanguage { get; set; } = default!;
-    public IList<TranslationCorpusFileDto> SourceFiles { get; set; } = default!;
-    public IList<TranslationCorpusFileDto> TargetFiles { get; set; } = default!;
+    public required string Id { get; init; }
+    public required string Url { get; init; }
+    public required ResourceLinkDto Engine { get; init; }
+    public string? Name { get; init; }
+    public required string SourceLanguage { get; init; }
+    public required string TargetLanguage { get; init; }
+    public required IReadOnlyList<TranslationCorpusFileDto> SourceFiles { get; init; }
+    public required IReadOnlyList<TranslationCorpusFileDto> TargetFiles { get; init; }
 }

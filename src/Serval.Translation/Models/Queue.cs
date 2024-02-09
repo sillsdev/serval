@@ -1,7 +1,7 @@
 namespace Serval.Translation.Models;
 
-public class Queue
+public record Queue
 {
-    public int Size { get; set; }
-    public string EngineType { get; set; } = default!;
+    public required int Size { get; init; }
+    public required string EngineType { get; init; }
 }

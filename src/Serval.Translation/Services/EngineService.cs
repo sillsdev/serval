@@ -144,7 +144,10 @@ public class EngineService(
                 request.EngineName = engine.Name;
             CreateResponse createResponse = await client.CreateAsync(request, cancellationToken: cancellationToken);
             // IsModelPersisted may be updated by the engine with the respective default.
-            engine.IsModelPersisted = createResponse.IsModelPersisted;
+            engine = engine with
+            {
+                IsModelPersisted = createResponse.IsModelPersisted
+            };
         }
         catch
         {
@@ -232,7 +235,7 @@ public class EngineService(
                             {
                                 if (
                                     c.TargetFiles.Count > 1
-                                    || c.TargetFiles.First().Format != Shared.Contracts.FileFormat.Paratext
+                                    || c.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext
                                 )
                                 {
                                     throw new InvalidOperationException(
@@ -262,7 +265,7 @@ public class EngineService(
                             {
                                 if (
                                     c.TargetFiles.Count > 1
-                                    || c.TargetFiles.First().Format != Shared.Contracts.FileFormat.Paratext
+                                    || c.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext
                                 )
                                 {
                                     throw new InvalidOperationException(
@@ -384,8 +387,8 @@ public class EngineService(
     public async Task<Models.Corpus> UpdateCorpusAsync(
         string engineId,
         string corpusId,
-        IList<Models.CorpusFile>? sourceFiles,
-        IList<Models.CorpusFile>? targetFiles,
+        IReadOnlyList<Models.CorpusFile>? sourceFiles,
+        IReadOnlyList<Models.CorpusFile>? targetFiles,
         CancellationToken cancellationToken = default
     )
     {

@@ -2,12 +2,12 @@
 
 public class Pretranslation : IEntity
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
-    public string EngineRef { get; set; } = default!;
-    public int ModelRevision { get; set; }
-    public string CorpusRef { get; set; } = default!;
-    public string TextId { get; set; } = default!;
-    public List<string> Refs { get; set; } = default!;
-    public string Translation { get; set; } = default!;
+    public required string EngineRef { get; init; }
+    public int ModelRevision { get; init; }
+    public required string CorpusRef { get; init; }
+    public required string TextId { get; init; }
+    public required IReadOnlyList<string> Refs { get; init; }
+    public required string Translation { get; init; }
 }

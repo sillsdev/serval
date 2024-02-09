@@ -2,11 +2,11 @@
 
 namespace Serval.Translation.Contracts;
 
-public class TranslationCorpusUpdateConfigDto : IValidatableObject
+public record TranslationCorpusUpdateConfigDto : IValidatableObject
 {
-    public IList<TranslationCorpusFileConfigDto>? SourceFiles { get; set; }
+    public IReadOnlyList<TranslationCorpusFileConfigDto>? SourceFiles { get; init; }
 
-    public IList<TranslationCorpusFileConfigDto>? TargetFiles { get; set; }
+    public IReadOnlyList<TranslationCorpusFileConfigDto>? TargetFiles { get; init; }
 
     public IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(
         ValidationContext validationContext

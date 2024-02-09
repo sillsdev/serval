@@ -1,8 +1,8 @@
 ﻿namespace Serval.Translation.Models;
 
-public class PretranslateCorpus
+public record PretranslateCorpus
 {
-    public string CorpusRef { get; set; } = default!;
-    public List<string>? TextIds { get; set; }
+    public required string CorpusRef { get; set; }
+    public IReadOnlyList<string>? TextIds { get; set; }
     public string? ScriptureRange { get; set; }
 }

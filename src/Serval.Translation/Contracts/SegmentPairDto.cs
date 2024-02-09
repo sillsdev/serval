@@ -1,8 +1,8 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class SegmentPairDto
+public record SegmentPairDto
 {
-    public string SourceSegment { get; set; } = default!;
-    public string TargetSegment { get; set; } = default!;
-    public bool SentenceStart { get; set; }
+    public required string SourceSegment { get; init; }
+    public required string TargetSegment { get; init; }
+    public required bool SentenceStart { get; init; }
 }

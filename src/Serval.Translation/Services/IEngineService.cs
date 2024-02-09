@@ -41,8 +41,8 @@ public interface IEngineService
     Task<Corpus> UpdateCorpusAsync(
         string engineId,
         string corpusId,
-        IList<CorpusFile>? sourceFiles,
-        IList<CorpusFile>? targetFiles,
+        IReadOnlyList<CorpusFile>? sourceFiles,
+        IReadOnlyList<CorpusFile>? targetFiles,
         CancellationToken cancellationToken = default
     );
     Task DeleteCorpusAsync(string engineId, string corpusId, CancellationToken cancellationToken = default);

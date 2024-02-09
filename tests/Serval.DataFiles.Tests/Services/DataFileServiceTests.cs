@@ -3,7 +3,16 @@
 [TestFixture]
 public class DataFileServiceTests
 {
-    const string DATA_FILE_ID = "df0000000000000000000001";
+    private const string DataFileId = "df0000000000000000000001";
+    private static readonly DataFile DefaultDataFile =
+        new()
+        {
+            Id = DataFileId,
+            Owner = "owner1",
+            Name = "file1",
+            Filename = "file1.txt",
+            Format = FileFormat.Text
+        };
 
     [Test]
     public async Task CreateAsync_NoError()
@@ -11,12 +20,11 @@ public class DataFileServiceTests
         var env = new TestEnvironment();
         using var fileStream = new MemoryStream();
         env.FileSystem.OpenWrite(Arg.Any<string>()).Returns(fileStream);
-        var dataFile = new DataFile { Id = DATA_FILE_ID, Name = "file2" };
         string content = "This is a file.";
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            await env.Service.CreateAsync(dataFile, stream);
+            await env.Service.CreateAsync(DefaultDataFile with { }, stream);
 
-        Assert.That(env.DataFiles.Contains(dataFile.Id), Is.True);
+        Assert.That(env.DataFiles.Contains(DataFileId), Is.True);
         Assert.That(Encoding.UTF8.GetString(fileStream.ToArray()), Is.EqualTo(content));
     }
 
@@ -24,20 +32,12 @@ public class DataFileServiceTests
     public void CreateAsync_Error()
     {
         var env = new TestEnvironment();
-        env.DataFiles.Add(
-            new DataFile
-            {
-                Id = DATA_FILE_ID,
-                Name = "file1",
-                Filename = "file1.txt"
-            }
-        );
+        env.DataFiles.Add(DefaultDataFile with { });
         using var fileStream = new MemoryStream();
         env.FileSystem.OpenWrite(Arg.Any<string>()).Returns(fileStream);
-        var dataFile = new DataFile { Id = DATA_FILE_ID, Name = "file1" };
         string content = "This is a file.";
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            Assert.ThrowsAsync<DuplicateKeyException>(() => env.Service.CreateAsync(dataFile, stream));
+            Assert.ThrowsAsync<DuplicateKeyException>(() => env.Service.CreateAsync(DefaultDataFile with { }, stream));
 
         env.FileSystem.Received().DeleteFile(Arg.Any<string>());
     }
@@ -46,18 +46,11 @@ public class DataFileServiceTests
     public async Task DownloadAsync_Exists()
     {
         var env = new TestEnvironment();
-        env.DataFiles.Add(
-            new DataFile
-            {
-                Id = DATA_FILE_ID,
-                Name = "file1",
-                Filename = "file1.txt"
-            }
-        );
+        env.DataFiles.Add(DefaultDataFile with { });
         byte[] content = Encoding.UTF8.GetBytes("This is a file.");
         using var fileStream = new MemoryStream(content);
         env.FileSystem.OpenRead(Arg.Any<string>()).Returns(fileStream);
-        Stream downloadedStream = await env.Service.ReadAsync(DATA_FILE_ID);
+        Stream downloadedStream = await env.Service.ReadAsync(DataFileId);
         Assert.That(new StreamReader(downloadedStream).ReadToEnd(), Is.EqualTo(content));
     }
 
@@ -68,27 +61,20 @@ public class DataFileServiceTests
         byte[] content = Encoding.UTF8.GetBytes("This is a file.");
         using var fileStream = new MemoryStream(content);
         env.FileSystem.OpenRead(Arg.Any<string>()).Returns(fileStream);
-        Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.ReadAsync(DATA_FILE_ID));
+        Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.ReadAsync(DataFileId));
     }
 
     [Test]
     public async Task UpdateAsync_Exists()
     {
         var env = new TestEnvironment();
-        env.DataFiles.Add(
-            new DataFile
-            {
-                Id = DATA_FILE_ID,
-                Name = "file1",
-                Filename = "file1.txt"
-            }
-        );
+        env.DataFiles.Add(DefaultDataFile with { });
         using var fileStream = new MemoryStream();
         env.FileSystem.OpenWrite(Arg.Any<string>()).Returns(fileStream);
         string content = "This is a file.";
         DataFile dataFile;
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            dataFile = await env.Service.UpdateAsync(DATA_FILE_ID, stream);
+            dataFile = await env.Service.UpdateAsync(DataFileId, stream);
 
         Assert.That(dataFile.Revision, Is.EqualTo(2));
         Assert.That(Encoding.UTF8.GetString(fileStream.ToArray()), Is.EqualTo(content));
@@ -104,7 +90,7 @@ public class DataFileServiceTests
         env.FileSystem.OpenWrite(Arg.Any<string>()).Returns(fileStream);
         string content = "This is a file.";
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.UpdateAsync(DATA_FILE_ID, stream));
+            Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.UpdateAsync(DataFileId, stream));
 
         env.FileSystem.Received().DeleteFile(Arg.Any<string>());
     }
@@ -113,17 +99,10 @@ public class DataFileServiceTests
     public async Task DeleteAsync_Exists()
     {
         var env = new TestEnvironment();
-        env.DataFiles.Add(
-            new DataFile
-            {
-                Id = DATA_FILE_ID,
-                Name = "file1",
-                Filename = "file1.txt"
-            }
-        );
-        await env.Service.DeleteAsync(DATA_FILE_ID);
+        env.DataFiles.Add(DefaultDataFile with { });
+        await env.Service.DeleteAsync(DataFileId);
 
-        Assert.That(env.DataFiles.Contains(DATA_FILE_ID), Is.False);
+        Assert.That(env.DataFiles.Contains(DataFileId), Is.False);
         DeletedFile deletedFile = env.DeletedFiles.Entities.Single();
         Assert.That(deletedFile.Filename, Is.EqualTo("file1.txt"));
         await env.Mediator.Received().Publish(Arg.Any<DataFileDeleted>(), Arg.Any<CancellationToken>());
@@ -133,7 +112,7 @@ public class DataFileServiceTests
     public void DeleteAsync_DoesNotExist()
     {
         var env = new TestEnvironment();
-        Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.DeleteAsync(DATA_FILE_ID));
+        Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.DeleteAsync(DataFileId));
     }
 
     private class TestEnvironment

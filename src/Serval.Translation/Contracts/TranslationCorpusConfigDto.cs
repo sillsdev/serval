@@ -1,23 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿namespace Serval.Translation.Contracts;
 
-namespace Serval.Translation.Contracts;
-
-public class TranslationCorpusConfigDto
+public record TranslationCorpusConfigDto
 {
     /// <summary>
     /// The corpus name.
     /// </summary>
-    public string? Name { get; set; }
+    public string? Name { get; init; }
 
-    [JsonProperty(Required = Required.Always)]
-    public string SourceLanguage { get; set; } = default!;
+    public required string SourceLanguage { get; init; }
 
-    [JsonProperty(Required = Required.Always)]
-    public string TargetLanguage { get; set; } = default!;
+    public required string TargetLanguage { get; init; }
 
-    [JsonProperty(Required = Required.Always)]
-    public IList<TranslationCorpusFileConfigDto> SourceFiles { get; set; } = default!;
+    public required IReadOnlyList<TranslationCorpusFileConfigDto> SourceFiles { get; init; }
 
-    [JsonProperty(Required = Required.Always)]
-    public IList<TranslationCorpusFileConfigDto> TargetFiles { get; set; } = default!;
+    public required IReadOnlyList<TranslationCorpusFileConfigDto> TargetFiles { get; init; }
 }

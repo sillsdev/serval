@@ -1,18 +1,18 @@
 ﻿namespace Serval.Translation.Models;
 
-public partial class Engine : IOwnedEntity
+public record Engine : IOwnedEntity
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
-    public string? Name { get; set; }
-    public string SourceLanguage { get; set; } = default!;
-    public string TargetLanguage { get; set; } = default!;
-    public string Type { get; set; } = default!;
-    public string Owner { get; set; } = default!;
-    public List<Corpus> Corpora { get; set; } = default!;
-    public bool? IsModelPersisted { get; set; } = default!;
-    public bool IsBuilding { get; set; }
-    public int ModelRevision { get; set; }
-    public double Confidence { get; set; }
-    public int CorpusSize { get; set; }
+    public string? Name { get; init; }
+    public required string SourceLanguage { get; init; }
+    public required string TargetLanguage { get; init; }
+    public required string Type { get; init; }
+    public required string Owner { get; init; }
+    public required IReadOnlyList<Corpus> Corpora { get; init; }
+    public bool? IsModelPersisted { get; init; }
+    public bool IsBuilding { get; init; }
+    public int ModelRevision { get; init; }
+    public double Confidence { get; init; }
+    public int CorpusSize { get; init; }
 }

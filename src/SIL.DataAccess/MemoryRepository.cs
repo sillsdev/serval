@@ -1,12 +1,16 @@
-using Newtonsoft.Json;
-
 namespace SIL.DataAccess;
 
 public class MemoryRepository<T> : IRepository<T>
     where T : IEntity
 {
     private static readonly JsonSerializerSettings Settings =
-        new() { TypeNameHandling = TypeNameHandling.Auto, ContractResolver = new WritableContractResolver() };
+        new()
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            ContractResolver = new WritableContractResolver(),
+            // add converter to support IReadOnlyList properties that were initialized using collection expressions
+            Converters = { new ReadOnlyCollectionConverter() }
+        };
 
     private readonly Dictionary<string, string> _entities;
     private readonly Func<T, object>[] _uniqueKeySelectors;
@@ -20,15 +24,15 @@ public class MemoryRepository<T> : IRepository<T>
     public MemoryRepository(IEnumerable<Func<T, object>>? uniqueKeySelectors = null, IEnumerable<T>? entities = null)
     {
         _lock = new AsyncLock();
-        _uniqueKeySelectors = uniqueKeySelectors?.ToArray() ?? Array.Empty<Func<T, object>>();
+        _uniqueKeySelectors = uniqueKeySelectors?.ToArray() ?? [];
         _uniqueKeys = new HashSet<object>[_uniqueKeySelectors.Length];
         for (int i = 0; i < _uniqueKeys.Length; i++)
-            _uniqueKeys[i] = new HashSet<object>();
+            _uniqueKeys[i] = [];
 
-        _entities = new Dictionary<string, string>();
+        _entities = [];
         if (entities != null)
             Add(entities);
-        _subscriptions = new Dictionary<MemorySubscription<T>, Func<T, bool>>();
+        _subscriptions = [];
     }
 
     public void Init() { }
@@ -85,6 +89,8 @@ public class MemoryRepository<T> : IRepository<T>
     }
 
     public IEnumerable<T> Entities => _entities.Select(kvp => DeserializeEntity(kvp.Key, kvp.Value));
+
+    public int Count => _entities.Count;
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
@@ -304,7 +310,7 @@ public class MemoryRepository<T> : IRepository<T>
         }
     }
 
-    private void GetSubscriptions(T entity, IList<MemorySubscription<T>> allSubscriptions)
+    private void GetSubscriptions(T entity, List<MemorySubscription<T>> allSubscriptions)
     {
         foreach (KeyValuePair<MemorySubscription<T>, Func<T, bool>> kvp in _subscriptions)
         {
