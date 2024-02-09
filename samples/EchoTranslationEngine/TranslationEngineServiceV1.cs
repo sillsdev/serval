@@ -8,14 +8,14 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
 
     private readonly HealthCheckService _healthCheckService = healthCheckService;
 
-    public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
+    public override Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
         if (request.SourceLanguage != request.TargetLanguage)
         {
             Status status = new Status(StatusCode.InvalidArgument, "Source and target languages must be the same");
             throw new RpcException(status);
         }
-        return Task.FromResult(Empty);
+        return Task.FromResult(new CreateResponse { IsModelPersisted = true });
     }
 
     public override Task<Empty> Delete(DeleteRequest request, ServerCallContext context)

@@ -183,6 +183,8 @@ public class ServalApiTests
     public async Task NmtLargeBatchAndDownload()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT3", IsModelPersisted: true);
+        var engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
+        Assert.That(engine.IsModelPersisted, Is.True);
         string[] books = ["bible_LARGEFILE.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
         var cId = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
@@ -206,6 +208,9 @@ public class ServalApiTests
     public async Task GetNmtCancelAndRestartBuild()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT2");
+        var engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
+        // NMT engines auto-fill IsModelPersisted as true
+        Assert.That(engine.IsModelPersisted, Is.False);
         string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
         await StartAndCancelTwice(engineId);
@@ -216,6 +221,8 @@ public class ServalApiTests
     {
         //Create smt engine
         string smtEngineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT5");
+        var engine = await _helperClient.TranslationEnginesClient.GetAsync(smtEngineId);
+        Assert.That(engine.IsModelPersisted, Is.True); // SMT engines auto-fill IsModelPersisted as true
 
         //Try to get word graph - should fail: unbuilt
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>

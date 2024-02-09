@@ -1362,13 +1362,13 @@ namespace Serval.Client
         /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         /// <br/>* **type**: **smt-transfer** or **nmt** or **echo**
-        /// <br/>* **isModelPersisted**: (optional) Whether an Nmt model can be downloaded by the client after it has been sucessfully built.
-        /// <br/>  * This is only relevant for Nmt engines.
+        /// <br/>* **isModelPersisted**: (optional) - see below
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
+        /// <br/>* **IsModelPersisted**: (default to true) All models are persistant and can be updated with train-segment.  False is not supported.
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **IsModelPersisted**: Whether the model can be downloaded by the client after it has been sucessfully built.
+        /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been sucessfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
@@ -1826,13 +1826,13 @@ namespace Serval.Client
         /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
         /// <br/>* **type**: **smt-transfer** or **nmt** or **echo**
-        /// <br/>* **isModelPersisted**: (optional) Whether an Nmt model can be downloaded by the client after it has been sucessfully built.
-        /// <br/>  * This is only relevant for Nmt engines.
+        /// <br/>* **isModelPersisted**: (optional) - see below
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
+        /// <br/>* **IsModelPersisted**: (default to true) All models are persistant and can be updated with train-segment.  False is not supported.
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **IsModelPersisted**: Whether the model can be downloaded by the client after it has been sucessfully built.
+        /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been sucessfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            

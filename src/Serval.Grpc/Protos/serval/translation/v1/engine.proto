@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service TranslationEngineApi {
-    rpc Create(CreateRequest) returns (google.protobuf.Empty);
+    rpc Create(CreateRequest) returns (CreateResponse);
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
     rpc Translate(TranslateRequest) returns (TranslateResponse);
     rpc GetWordGraph(GetWordGraphRequest) returns (GetWordGraphResponse);
@@ -28,6 +28,9 @@ message CreateRequest {
     optional bool is_model_persisted = 6;
 }
 
+message CreateResponse {
+    bool is_model_persisted = 1;
+}
 message DeleteRequest {
     string engine_type = 1;
     string engine_id = 2;

@@ -78,7 +78,7 @@ public class ServalClientHelper : IAsyncDisposable
         string source_language,
         string target_language,
         string name = "",
-        bool IsModelPersisted = false
+        bool? IsModelPersisted = null
     )
     {
         var engine = await TranslationEnginesClient.CreateAsync(
