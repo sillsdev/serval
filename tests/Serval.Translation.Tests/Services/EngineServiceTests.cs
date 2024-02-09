@@ -258,7 +258,9 @@ public class EngineServiceTests
             translationServiceClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
-            translationServiceClient.CreateAsync(Arg.Any<CreateRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
+            translationServiceClient
+                .CreateAsync(Arg.Any<CreateRequest>())
+                .Returns(CreateAsyncUnaryCall(new CreateResponse()));
             translationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
             translationServiceClient
                 .StartBuildAsync(Arg.Any<StartBuildRequest>())

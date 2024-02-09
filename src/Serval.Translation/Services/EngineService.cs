@@ -116,11 +116,12 @@ public class EngineService(
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public override async Task CreateAsync(Engine engine, CancellationToken cancellationToken = default)
+    public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
-        await Entities.InsertAsync(engine, cancellationToken);
+        bool updateIsModelPersisted = engine.IsModelPersisted is null;
         try
         {
+            await Entities.InsertAsync(engine, cancellationToken);
             TranslationEngineApi.TranslationEngineApiClient? client =
                 _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
             if (client is null)
@@ -132,15 +133,27 @@ public class EngineService(
                 SourceLanguage = engine.SourceLanguage,
                 TargetLanguage = engine.TargetLanguage
             };
+            if (engine.IsModelPersisted is not null)
+                request.IsModelPersisted = engine.IsModelPersisted.Value;
+
             if (engine.Name is not null)
                 request.EngineName = engine.Name;
-            await client.CreateAsync(request, cancellationToken: cancellationToken);
+            CreateResponse createResponse = await client.CreateAsync(request, cancellationToken: cancellationToken);
+            // IsModelPersisted may be updated by the engine with the respective default.
+            engine.IsModelPersisted = createResponse.IsModelPersisted;
         }
         catch
         {
             await Entities.DeleteAsync(engine, CancellationToken.None);
             throw;
         }
+        if (updateIsModelPersisted)
+            await Entities.UpdateAsync(
+                engine,
+                u => u.Set(e => e.IsModelPersisted, engine.IsModelPersisted),
+                cancellationToken: cancellationToken
+            );
+        return engine;
     }
 
     public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
@@ -329,6 +342,28 @@ public class EngineService(
             throw;
         }
         return true;
+    }
+
+    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+        string engineId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Engine? engine = await GetAsync(engineId, cancellationToken);
+        if (engine is null)
+            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
+
+        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        var result = await client.GetModelDownloadUrlAsync(
+            new GetModelDownloadUrlRequest { EngineType = engine.Type, EngineId = engine.Id },
+            cancellationToken: cancellationToken
+        );
+        return new ModelDownloadUrl
+        {
+            Url = result.Url,
+            ModelRevision = result.ModelRevision,
+            ExpiresAt = result.ExpiresAt.ToDateTime()
+        };
     }
 
     public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)

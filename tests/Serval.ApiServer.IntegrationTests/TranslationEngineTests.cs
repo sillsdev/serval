@@ -1018,22 +1018,19 @@ public class TranslationEngineTests
         {
             case 201:
                 TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfig);
-                ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = addedCorpus.Id,
-                    TextIds = new List<string> { "all" }
-                };
-                tcc = new()
-                {
-                    CorpusId = addedCorpus.Id,
-                    TextIds = new List<string> { "all" }
-                };
+                ptcc = new PretranslateCorpusConfig { CorpusId = addedCorpus.Id, TextIds = ["all"] };
+                tcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
                 tbc = new TranslationBuildConfig
                 {
-                    Pretranslate = new List<PretranslateCorpusConfig> { ptcc },
-                    TrainOn = new List<TrainingCorpusConfig> { tcc },
-                    Options =
-                        "{\"max_steps\":10, \"use_key_terms\":false, \"some_double\":10.5, \"some_string\":\"string\"}"
+                    Pretranslate = [ptcc],
+                    TrainOn = [tcc],
+                    Options = """
+                        {"max_steps":10,
+                        "use_key_terms":false,
+                        "some_double":10.5,
+                        "some_nested": {"more_nested": {"other_double":10.5}},
+                        "some_string":"string"}
+                        """
                 };
                 TranslationBuild resultAfterStart;
                 Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -1050,12 +1047,8 @@ public class TranslationEngineTests
             case 400:
             case 403:
             case 404:
-                ptcc = new PretranslateCorpusConfig
-                {
-                    CorpusId = "cccccccccccccccccccccccc",
-                    TextIds = new List<string> { "all" }
-                };
-                tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
+                ptcc = new PretranslateCorpusConfig { CorpusId = "cccccccccccccccccccccccc", TextIds = ["all"] };
+                tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
                 var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.StartBuildAsync(engineId, tbc);
@@ -1065,6 +1058,66 @@ public class TranslationEngineTests
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
                 break;
+        }
+    }
+
+    [TestCase]
+    public async Task StartBuildForEngineAsync_UnparseableOptions()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        PretranslateCorpusConfig ptcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
+        TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
+        TranslationBuildConfig tbc =
+            new()
+            {
+                Pretranslate = [ptcc],
+                TrainOn = [tcc],
+                Options = "unparsable json"
+            };
+        TranslationBuild resultAfterStart;
+        Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            resultAfterStart = await client.GetCurrentBuildAsync(ECHO_ENGINE1_ID);
+        });
+
+        Assert.That(
+            () => client.StartBuildAsync(ECHO_ENGINE1_ID, tbc),
+            Throws.TypeOf<ServalApiException>().With.Message.Contains("Unable to parse field 'options'")
+        );
+    }
+
+    [Test]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    public async Task GetDownloadableUrl(IEnumerable<string> scope, int expectedStatusCode, string engineId)
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+
+        switch (expectedStatusCode)
+        {
+            case 200:
+            {
+                Client.ModelDownloadUrl result = await client.GetModelDownloadUrlAsync(engineId);
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.ExpiresAt, Is.GreaterThan((DateTimeOffset)DateTime.UtcNow));
+                    Assert.That(result.ModelRevision, Is.EqualTo(1));
+                    Assert.That(result.Url, Is.Not.Null);
+                });
+                break;
+            }
+            case 403:
+            case 404:
+            {
+                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    Client.ModelDownloadUrl result = await client.GetModelDownloadUrlAsync(engineId);
+                });
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+            }
         }
     }
 
@@ -1172,12 +1225,8 @@ public class TranslationEngineTests
         var engineId = NMT_ENGINE1_ID;
         var expectedStatusCode = 409;
         TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfigNonEcho);
-        var ptcc = new PretranslateCorpusConfig
-        {
-            CorpusId = addedCorpus.Id,
-            TextIds = new List<string> { "all" }
-        };
-        var tbc = new TranslationBuildConfig { Pretranslate = new List<PretranslateCorpusConfig> { ptcc } };
+        var ptcc = new PretranslateCorpusConfig { CorpusId = addedCorpus.Id, TextIds = ["all"] };
+        var tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
         TranslationBuild build = await client.StartBuildAsync(engineId, tbc);
         _env.NmtClient.StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
             .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
@@ -1295,7 +1344,7 @@ public class TranslationEngineTests
             Task.FromException<TResponse>(new RpcException(status)),
             Task.FromResult(new Metadata()),
             () => status,
-            () => new Metadata(),
+            () => [],
             () => { }
         );
     }
@@ -1306,7 +1355,7 @@ public class TranslationEngineTests
             Task.FromResult(response),
             Task.FromResult(new Metadata()),
             () => Status.DefaultSuccess,
-            () => new Metadata(),
+            () => [],
             () => { }
         );
     }
@@ -1334,7 +1383,7 @@ public class TranslationEngineTests
             EchoClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             EchoClient
                 .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CreateResponse()));
             EchoClient
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
@@ -1344,6 +1393,23 @@ public class TranslationEngineTests
             EchoClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
+            EchoClient
+                .GetModelDownloadUrlAsync(
+                    Arg.Any<GetModelDownloadUrlRequest>(),
+                    null,
+                    null,
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(
+                    CreateAsyncUnaryCall(
+                        new GetModelDownloadUrlResponse
+                        {
+                            Url = "http://example.com",
+                            ModelRevision = 1,
+                            ExpiresAt = DateTime.UtcNow.AddHours(1).ToTimestamp()
+                        }
+                    )
+                );
             var wg = new Translation.V1.WordGraph
             {
                 SourceTokens = { "This is a test .".Split() },
@@ -1462,7 +1528,7 @@ public class TranslationEngineTests
             NmtClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             NmtClient
                 .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CreateResponse()));
             NmtClient
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));

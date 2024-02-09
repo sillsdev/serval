@@ -5,7 +5,7 @@ public interface IEngineService
     Task<IEnumerable<Engine>> GetAllAsync(string owner, CancellationToken cancellationToken = default);
     Task<Engine> GetAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task CreateAsync(Engine engine, CancellationToken cancellationToken = default);
+    Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default);
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<TranslationResult> TranslateAsync(
@@ -34,6 +34,8 @@ public interface IEngineService
     Task StartBuildAsync(Build build, CancellationToken cancellationToken = default);
 
     Task<bool> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
+
+    Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default);
     Task<Corpus> UpdateCorpusAsync(
