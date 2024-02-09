@@ -1383,7 +1383,7 @@ public class TranslationEngineTests
             EchoClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             EchoClient
                 .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CreateResponse()));
             EchoClient
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
@@ -1528,7 +1528,7 @@ public class TranslationEngineTests
             NmtClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             NmtClient
                 .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CreateResponse()));
             NmtClient
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));

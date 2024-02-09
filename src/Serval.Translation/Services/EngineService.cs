@@ -116,28 +116,44 @@ public class EngineService(
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public override async Task CreateAsync(Engine engine, CancellationToken cancellationToken = default)
+    public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
-        TranslationEngineApi.TranslationEngineApiClient? client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        if (client is null)
-            throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
-        var request = new CreateRequest
+        bool updateIsModelPersisted = engine.IsModelPersisted is null;
+        try
         {
-            EngineType = engine.Type,
-            EngineId = engine.Id,
-            SourceLanguage = engine.SourceLanguage,
-            TargetLanguage = engine.TargetLanguage
-        };
-        if (engine.IsModelPersisted is not null)
-            request.IsModelPersisted = engine.IsModelPersisted.Value;
+            await Entities.InsertAsync(engine, cancellationToken);
+            TranslationEngineApi.TranslationEngineApiClient? client =
+                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            if (client is null)
+                throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
+            var request = new CreateRequest
+            {
+                EngineType = engine.Type,
+                EngineId = engine.Id,
+                SourceLanguage = engine.SourceLanguage,
+                TargetLanguage = engine.TargetLanguage
+            };
+            if (engine.IsModelPersisted is not null)
+                request.IsModelPersisted = engine.IsModelPersisted.Value;
 
-        if (engine.Name is not null)
-            request.EngineName = engine.Name;
-        CreateResponse createResponse = await client.CreateAsync(request, cancellationToken: cancellationToken);
-        // IsModelPersisted may be updated by the engine with the respective default.
-        engine.IsModelPersisted = createResponse.IsModelPersisted;
-        await Entities.InsertAsync(engine, cancellationToken);
+            if (engine.Name is not null)
+                request.EngineName = engine.Name;
+            CreateResponse createResponse = await client.CreateAsync(request, cancellationToken: cancellationToken);
+            // IsModelPersisted may be updated by the engine with the respective default.
+            engine.IsModelPersisted = createResponse.IsModelPersisted;
+        }
+        catch
+        {
+            await Entities.DeleteAsync(engine, CancellationToken.None);
+            throw;
+        }
+        if (updateIsModelPersisted)
+            await Entities.UpdateAsync(
+                engine,
+                u => u.Set(e => e.IsModelPersisted, engine.IsModelPersisted),
+                cancellationToken: cancellationToken
+            );
+        return engine;
     }
 
     public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)

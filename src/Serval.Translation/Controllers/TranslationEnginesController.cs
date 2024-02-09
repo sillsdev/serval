@@ -124,8 +124,8 @@ public class TranslationEnginesController(
     {
         Engine engine = Map(engineConfig);
         engine.Id = idGenerator.GenerateId();
-        await _engineService.CreateAsync(engine, cancellationToken);
-        TranslationEngineDto dto = Map(engine);
+        Engine updatedEngine = await _engineService.CreateAsync(engine, cancellationToken);
+        TranslationEngineDto dto = Map(updatedEngine);
         return Created(dto.Url, dto);
     }
 
