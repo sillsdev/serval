@@ -9,7 +9,7 @@ public static class DataAccessExtensions
     )
         where T : IEntity
     {
-        Attempt<T> attempt = await repo.TryGetAsync(id, cancellationToken);
+        Attempt<T> attempt = await repo.TryGetAsync(id, cancellationToken).ConfigureAwait(false);
         if (attempt.Success)
             return attempt.Result;
         return default;
@@ -21,7 +21,7 @@ public static class DataAccessExtensions
     )
         where T : IEntity
     {
-        return await repo.GetAllAsync(e => true, cancellationToken);
+        return await repo.GetAllAsync(e => true, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<Attempt<T>> TryGetAsync<T>(
@@ -31,7 +31,7 @@ public static class DataAccessExtensions
     )
         where T : IEntity
     {
-        T? entity = await repo.GetAsync(e => e.Id == id, cancellationToken);
+        T? entity = await repo.GetAsync(e => e.Id == id, cancellationToken).ConfigureAwait(false);
         return new Attempt<T>(entity != null, entity);
     }
 
@@ -42,7 +42,7 @@ public static class DataAccessExtensions
     )
         where T : IEntity
     {
-        return await repo.ExistsAsync(e => e.Id == id, cancellationToken);
+        return await repo.ExistsAsync(e => e.Id == id, cancellationToken).ConfigureAwait(false);
     }
 
     public static Task<T?> UpdateAsync<T>(
@@ -88,22 +88,22 @@ public static class DataAccessExtensions
     )
         where T : class, IEntity
     {
-        return await repo.DeleteAsync(e => e.Id == entity.Id, cancellationToken) != null;
+        return await repo.DeleteAsync(e => e.Id == entity.Id, cancellationToken).ConfigureAwait(false) != null;
     }
 
     public static async Task CreateOrUpdateAsync<T>(this IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)
     {
         try
         {
-            await indexes.CreateOneAsync(indexModel);
+            await indexes.CreateOneAsync(indexModel).ConfigureAwait(false);
         }
         catch (MongoCommandException ex)
         {
             if (ex.CodeName == "IndexOptionsConflict")
             {
                 string name = ex.Command["indexes"][0]["name"].AsString;
-                await indexes.DropOneAsync(name);
-                await indexes.CreateOneAsync(indexModel);
+                await indexes.DropOneAsync(name).ConfigureAwait(false);
+                await indexes.CreateOneAsync(indexModel).ConfigureAwait(false);
             }
             else
             {

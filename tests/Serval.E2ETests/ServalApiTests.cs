@@ -31,13 +31,13 @@ public class ServalApiTests
         string[] books = ["1JN.txt", "2JN.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "es", false);
         books = ["3JN.txt"];
-        var corpusId = await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "es", true);
+        string corpusId = await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "es", true);
         await _helperClient.BuildEngineAsync(engineId);
-        var pretranslations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
+        IList<Pretranslation> pretranslations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
             corpusId
         );
-        Assert.That(pretranslations.Count, Is.GreaterThan(1));
+        Assert.That(pretranslations, Has.Count.GreaterThan(1));
     }
 
     [Test]
@@ -104,19 +104,19 @@ public class ServalApiTests
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT1");
         string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
-        var cId1 = await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
+        string cId1 = await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
         _helperClient.TranslationBuildConfig.TrainOn = new List<TrainingCorpusConfig>
         {
             new() { CorpusId = cId1, TextIds = ["1JN.txt"] }
         };
-        var cId2 = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+        string cId2 = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
             cId2
         );
-        Assert.That(lTrans.Count, Is.EqualTo(14));
+        Assert.That(lTrans, Has.Count.EqualTo(14));
     }
 
     [Test]
@@ -150,7 +150,11 @@ public class ServalApiTests
             builds += $"{JsonSerializer.Serialize(build)}\n";
         }
 
-        builds += "Depth = " + (await _helperClient.TranslationEngineTypesClient.GetQueueAsync("Nmt")).Size.ToString();
+        builds +=
+            "Depth = "
+            + (await _helperClient.TranslationEngineTypesClient.GetQueueAsync("Nmt")).Size.ToString(
+                provider: CultureInfo.InvariantCulture
+            );
 
         //Status message of last started build says that there is at least one job ahead of it in the queue
         // (this variable due to how many jobs may already exist in the production queue from other Serval instances)
@@ -182,12 +186,12 @@ public class ServalApiTests
     [Test]
     public async Task NmtLargeBatchAndDownload()
     {
-        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT3", IsModelPersisted: true);
-        var engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
+        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT3", isModelPersisted: true);
+        TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
         Assert.That(engine.IsModelPersisted, Is.True);
         string[] books = ["bible_LARGEFILE.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
-        var cId = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+        string cId = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
         _helperClient.TranslationBuildConfig.Options = "{\"max_steps\":10, \"nested_options\": {\"max_steps\":10}}";
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
@@ -197,8 +201,8 @@ public class ServalApiTests
         );
         TestContext.WriteLine(lTrans[0].Translation);
         // Download the model from the s3 bucket
-        var url = await _helperClient.TranslationEnginesClient.GetModelDownloadUrlAsync(engineId);
-        using var s = new HttpClient().GetStreamAsync(url.Url);
+        ModelDownloadUrl url = await _helperClient.TranslationEnginesClient.GetModelDownloadUrlAsync(engineId);
+        using Task<Stream> s = new HttpClient().GetStreamAsync(url.Url);
         using var ms = new MemoryStream();
         s.Result.CopyTo(ms);
         Assert.That(ms.Length, Is.GreaterThan(1_000_000));
@@ -208,7 +212,7 @@ public class ServalApiTests
     public async Task GetNmtCancelAndRestartBuild()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT2");
-        var engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
+        TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
         // NMT engines auto-fill IsModelPersisted as true
         Assert.That(engine.IsModelPersisted, Is.False);
         string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
@@ -221,10 +225,10 @@ public class ServalApiTests
     {
         //Create smt engine
         string smtEngineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT5");
-        var engine = await _helperClient.TranslationEnginesClient.GetAsync(smtEngineId);
+        TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(smtEngineId);
         Assert.That(engine.IsModelPersisted, Is.True); // SMT engines auto-fill IsModelPersisted as true
 
-        //Try to get word graph - should fail: unbuilt
+        //Try to get word graph - should fail: the engine is not built
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             await _helperClient.TranslationEnginesClient.GetWordGraphAsync(smtEngineId, "verdad");
@@ -233,7 +237,7 @@ public class ServalApiTests
         Assert.That(ex.StatusCode, Is.EqualTo(409));
 
         //Add corpus
-        var cId = await _helperClient.AddTextCorpusToEngineAsync(
+        string cId = await _helperClient.AddTextCorpusToEngineAsync(
             smtEngineId,
             ["2JN.txt", "3JN.txt"],
             "es",
@@ -329,7 +333,7 @@ public class ServalApiTests
     async Task StartAndCancelTwice(string engineId)
     {
         // start and first job
-        var build = await _helperClient.StartBuildAsync(engineId);
+        TranslationBuild build = await _helperClient.StartBuildAsync(engineId);
         await Task.Delay(1000);
         build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, build.Id);
         Assert.That(build.State == JobState.Active || build.State == JobState.Pending);

@@ -1,17 +1,10 @@
 ﻿namespace Serval.Webhooks.Services;
 
-public class WebhookJob
+public class WebhookJob(IRepository<Webhook> hooks, HttpClient httpClient, IOptions<JsonOptions> jsonOptions)
 {
-    private readonly IRepository<Webhook> _hooks;
-    private readonly HttpClient _httpClient;
-    private readonly JsonOptions _jsonOptions;
-
-    public WebhookJob(IRepository<Webhook> hooks, HttpClient httpClient, IOptions<JsonOptions> jsonOptions)
-    {
-        _hooks = hooks;
-        _httpClient = httpClient;
-        _jsonOptions = jsonOptions.Value;
-    }
+    private readonly IRepository<Webhook> _hooks = hooks;
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly JsonOptions _jsonOptions = jsonOptions.Value;
 
     public async Task RunAsync(
         WebhookEvent webhookEvent,

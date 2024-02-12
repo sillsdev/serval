@@ -6,6 +6,10 @@
 		<Nullable>enable</Nullable>
 		<Version>0.16.0</Version>
 		<Description>The Serval gRPC APIs.</Description>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />

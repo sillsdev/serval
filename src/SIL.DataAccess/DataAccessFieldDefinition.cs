@@ -1,13 +1,9 @@
 namespace SIL.DataAccess;
 
-public class DataAccessFieldDefinition<TDocument, TField> : FieldDefinition<TDocument, TField>
+public class DataAccessFieldDefinition<TDocument, TField>(Expression<Func<TDocument, TField>> expression)
+    : FieldDefinition<TDocument, TField>
 {
-    private readonly ExpressionFieldDefinition<TDocument, TField> _internalDef;
-
-    public DataAccessFieldDefinition(Expression<Func<TDocument, TField>> expression)
-    {
-        _internalDef = new ExpressionFieldDefinition<TDocument, TField>(expression);
-    }
+    private readonly ExpressionFieldDefinition<TDocument, TField> _internalDef = new(expression);
 
     public override RenderedFieldDefinition<TField> Render(
         IBsonSerializer<TDocument> documentSerializer,
@@ -20,8 +16,8 @@ public class DataAccessFieldDefinition<TDocument, TField> : FieldDefinition<TDoc
             serializerRegistry,
             linqProvider
         );
-        string fieldName = rendered.FieldName.Replace(ArrayPosition.All.ToString(), "$[]");
-        fieldName = fieldName.Replace(ArrayPosition.FirstMatching.ToString(), "$");
+        string fieldName = rendered.FieldName.Replace(ArrayPosition.All.ToString(CultureInfo.InvariantCulture), "$[]");
+        fieldName = fieldName.Replace(ArrayPosition.FirstMatching.ToString(CultureInfo.InvariantCulture), "$");
         if (fieldName != rendered.FieldName)
         {
             return new RenderedFieldDefinition<TField>(

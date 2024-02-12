@@ -1,13 +1,8 @@
 ﻿namespace Serval.DataFiles.Consumers;
 
-public class GetDataFileConsumer : IConsumer<GetDataFile>
+public class GetDataFileConsumer(IDataFileService dataFileService) : IConsumer<GetDataFile>
 {
-    private readonly IDataFileService _dataFileService;
-
-    public GetDataFileConsumer(IDataFileService dataFileService)
-    {
-        _dataFileService = dataFileService;
-    }
+    private readonly IDataFileService _dataFileService = dataFileService;
 
     public async Task Consume(ConsumeContext<GetDataFile> context)
     {

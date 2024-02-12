@@ -125,7 +125,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             });
 
         services.AddEndpointsApiExplorer();
-        var versions = new[] { new Version(1, 0) };
+        Version[] versions = [new Version(1, 0)];
         foreach (Version version in versions)
         {
             services.AddSwaggerDocument(o =>
@@ -162,9 +162,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 o.SchemaSettings.AllowReferencesWithProperties = true;
                 o.PostProcess = document =>
                 {
-                    var prefix = "/api/v" + version.Major;
+                    string prefix = "/api/v" + version.Major;
                     document.Servers.Add(new OpenApiServer { Url = prefix });
-                    foreach (var pair in document.Paths.ToArray())
+                    foreach (KeyValuePair<string, OpenApiPathItem> pair in document.Paths.ToArray())
                     {
                         document.Paths.Remove(pair.Key);
                         document.Paths[pair.Key[prefix.Length..]] = pair.Value;
@@ -173,6 +173,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             });
         }
         if (Environment.IsDevelopment())
+        {
             services
                 .AddOpenTelemetry()
                 .WithTracing(builder =>
@@ -184,6 +185,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                         .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
                         .AddConsoleExporter();
                 });
+        }
         else
         {
             services
@@ -213,7 +215,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             o.PostProcess = (document, request) =>
             {
                 // Patch server URL for Swagger UI
-                var prefix = "/api/v" + document.Info.Version.Split('.')[0];
+                string prefix = "/api/v" + document.Info.Version.Split('.')[0];
                 document.Servers.First().Url += prefix;
             };
         });

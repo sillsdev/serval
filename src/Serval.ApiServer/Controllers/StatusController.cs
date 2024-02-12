@@ -29,12 +29,12 @@ public class StatusController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<HealthReportDto>> GetHealthAsync()
     {
-        var report = await _healthCheckService.CheckHealthAsync();
+        HealthReport report = await _healthCheckService.CheckHealthAsync();
         return Ok(Map(report));
     }
 
     /// <summary>
-    /// Get Summary of Health on Publically available endpoint, cached for 10 seconds (if not authenticated).
+    /// Get Summary of Health on publicly available endpoint, cached for 10 seconds (if not authenticated).
     /// </summary>
     /// <remarks>Provides an indication about the health of the API</remarks>
     /// <response code="200">The API health status</response>
@@ -43,7 +43,7 @@ public class StatusController(
     [ProducesResponseType(typeof(HealthReportDto), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<HealthReportDto>> GetPingAsync()
     {
-        var report = await _healthCheckService.CheckHealthAsync();
+        HealthReport report = await _healthCheckService.CheckHealthAsync();
         HealthReportDto reportDto = Map(report);
 
         // remove results as this is a public endpoint

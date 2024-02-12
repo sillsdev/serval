@@ -37,7 +37,7 @@ public class WebhooksTests
                 Assert.That(result.Id, Is.EqualTo(ID));
                 break;
             case 403:
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAllAsync();
                 });
@@ -64,7 +64,7 @@ public class WebhooksTests
                 break;
             case 403:
             case 404:
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAsync(webhookId);
                 });
@@ -88,7 +88,7 @@ public class WebhooksTests
             case 200:
             {
                 await client.DeleteAsync(webhookId);
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAsync(webhookId);
                 });
@@ -98,7 +98,7 @@ public class WebhooksTests
             case 403:
             case 404:
             {
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.DeleteAsync(webhookId);
                 });
@@ -133,7 +133,7 @@ public class WebhooksTests
 
                 break;
             case 403:
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     Webhook result = await client.CreateAsync(
                         new WebhookConfig
@@ -181,7 +181,7 @@ public class WebhooksTests
         {
             scope ??= new[] { Scopes.ReadHooks, Scopes.CreateHooks, Scopes.DeleteHooks };
 
-            var httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
+            HttpClient httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new WebhooksClient(httpClient);
         }

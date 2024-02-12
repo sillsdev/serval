@@ -148,10 +148,10 @@ public class EngineServiceTests
         );
 
         Assert.That(corpus, Is.Not.Null);
-        Assert.That(corpus!.SourceFiles.Count, Is.EqualTo(2));
+        Assert.That(corpus!.SourceFiles, Has.Count.EqualTo(2));
         Assert.That(corpus.SourceFiles[0].Id, Is.EqualTo("file1"));
         Assert.That(corpus.SourceFiles[1].Id, Is.EqualTo("file3"));
-        Assert.That(corpus.TargetFiles.Count, Is.EqualTo(1));
+        Assert.That(corpus.TargetFiles, Has.Count.EqualTo(1));
     }
 
     private class TestEnvironment
@@ -159,7 +159,8 @@ public class EngineServiceTests
         public TestEnvironment()
         {
             Engines = new MemoryRepository<Engine>();
-            var translationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
+            TranslationEngineApi.TranslationEngineApiClient translationServiceClient =
+                Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             var translationResult = new V1.TranslationResult
             {
                 Translation = "this is a test.",
@@ -268,11 +269,11 @@ public class EngineServiceTests
             translationServiceClient
                 .TrainSegmentPairAsync(Arg.Any<TrainSegmentPairRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
-            var grpcClientFactory = Substitute.For<GrpcClientFactory>();
+            GrpcClientFactory grpcClientFactory = Substitute.For<GrpcClientFactory>();
             grpcClientFactory
                 .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Smt")
                 .Returns(translationServiceClient);
-            var dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
+            IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
 
             Service = new EngineService(
@@ -300,14 +301,14 @@ public class EngineServiceTests
                 Type = "Smt",
                 Corpora = new List<Models.Corpus>
                 {
-                    new Models.Corpus
+                    new()
                     {
                         Id = "corpus1",
                         SourceLanguage = "es",
                         TargetLanguage = "en",
                         SourceFiles = new List<Models.CorpusFile>
                         {
-                            new Models.CorpusFile
+                            new()
                             {
                                 Id = "file1",
                                 Filename = "file1.txt",
@@ -317,7 +318,7 @@ public class EngineServiceTests
                         },
                         TargetFiles = new List<Models.CorpusFile>
                         {
-                            new Models.CorpusFile
+                            new()
                             {
                                 Id = "file2",
                                 Filename = "file2.txt",

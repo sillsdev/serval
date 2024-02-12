@@ -1,16 +1,10 @@
 ﻿using System.IO.Compression;
-using SIL.ObjectModel;
 
 namespace Serval.Shared.Services;
 
-public class ZipContainer : DisposableBase, IZipContainer
+public class ZipContainer(string fileName) : DisposableBase, IZipContainer
 {
-    private readonly ZipArchive _archive;
-
-    public ZipContainer(string fileName)
-    {
-        _archive = ZipFile.OpenRead(fileName);
-    }
+    private readonly ZipArchive _archive = ZipFile.OpenRead(fileName);
 
     public IEnumerable<string> Entries => _archive.Entries.Select(e => e.FullName);
 

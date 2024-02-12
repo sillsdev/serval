@@ -13,7 +13,7 @@ public static class TaskEx
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<T?> task = action(cts.Token);
-        Task<T?> completedTask = await Task.WhenAny(task, Delay<T?>(timeout, cancellationToken));
+        var completedTask = await Task.WhenAny(task, Delay<T?>(timeout, cancellationToken));
         if (task != completedTask)
             cts.Cancel();
         return await completedTask;

@@ -14,18 +14,20 @@ public class WriteGrpcHealthCheckResponse
         {
             healthCheckResultData.Add(entry.Key, $"{entry.Value.Status}: {entry.Value.Description ?? ""}");
             if ((entry.Value.Exception?.ToString() ?? "") != "")
+            {
                 if (healthCheckResultException is null)
                     healthCheckResultException = $"{entry.Key}: {entry.Value.Exception}";
                 else
                     healthCheckResultException += $"\n{entry.Key}: {entry.Value.Exception}";
+            }
         }
         // Assemble response
-        HealthCheckResponse healthCheckReponse =
+        HealthCheckResponse healthCheckResponse =
             new() { Status = (HealthCheckStatus)healthReport.Status, Error = healthCheckResultException ?? "" };
         foreach (KeyValuePair<string, string> entry in healthCheckResultData)
         {
-            healthCheckReponse.Data.Add(entry.Key, entry.Value);
+            healthCheckResponse.Data.Add(entry.Key, entry.Value);
         }
-        return healthCheckReponse;
+        return healthCheckResponse;
     }
 }

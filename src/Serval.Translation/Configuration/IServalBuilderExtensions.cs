@@ -1,5 +1,4 @@
-﻿using Grpc.Health.V1;
-using Serval.Translation.V1;
+﻿using Serval.Translation.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

@@ -1,15 +1,10 @@
 ﻿namespace Serval.Webhooks.Consumers;
 
-public class TranslationBuildStartedConsumer : IConsumer<TranslationBuildStarted>
+public class TranslationBuildStartedConsumer(IWebhookService webhookService, IUrlService urlService)
+    : IConsumer<TranslationBuildStarted>
 {
-    private readonly IWebhookService _webhookService;
-    private readonly IUrlService _urlService;
-
-    public TranslationBuildStartedConsumer(IWebhookService webhookService, IUrlService urlService)
-    {
-        _webhookService = webhookService;
-        _urlService = urlService;
-    }
+    private readonly IWebhookService _webhookService = webhookService;
+    private readonly IUrlService _urlService = urlService;
 
     public async Task Consume(ConsumeContext<TranslationBuildStarted> context)
     {
