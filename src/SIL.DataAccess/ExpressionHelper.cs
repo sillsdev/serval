@@ -5,7 +5,7 @@ public static class ExpressionHelper
     public static Expression<Func<T, bool>> ChangePredicateType<T>(LambdaExpression predicate)
     {
         ParameterExpression param = Expression.Parameter(typeof(T), "x");
-        var body = RebindParameter(param, predicate);
+        Expression body = RebindParameter(param, predicate);
         return Expression.Lambda<Func<T, bool>>(body, param);
     }
 

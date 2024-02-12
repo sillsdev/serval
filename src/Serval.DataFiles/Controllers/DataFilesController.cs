@@ -3,21 +3,14 @@
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/files")]
 [OpenApiTag("Files")]
-public class DataFilesController : ServalControllerBase
+public class DataFilesController(
+    IAuthorizationService authService,
+    IDataFileService dataFileService,
+    IUrlService urlService
+) : ServalControllerBase(authService)
 {
-    private readonly IDataFileService _dataFileService;
-    private readonly IUrlService _urlService;
-
-    public DataFilesController(
-        IAuthorizationService authService,
-        IDataFileService dataFileService,
-        IUrlService urlService
-    )
-        : base(authService)
-    {
-        _dataFileService = dataFileService;
-        _urlService = urlService;
-    }
+    private readonly IDataFileService _dataFileService = dataFileService;
+    private readonly IUrlService _urlService = urlService;
 
     /// <summary>
     /// Get all files
@@ -127,7 +120,7 @@ public class DataFilesController : ServalControllerBase
         {
             await _dataFileService.CreateAsync(dataFile, stream, cancellationToken);
         }
-        var dto = Map(dataFile);
+        DataFileDto dto = Map(dataFile);
         return Created(dto.Url, dto);
     }
 
@@ -190,7 +183,7 @@ public class DataFilesController : ServalControllerBase
         using (Stream stream = file.OpenReadStream())
             dataFile = await _dataFileService.UpdateAsync(id, stream, cancellationToken);
 
-        var dto = Map(dataFile);
+        DataFileDto dto = Map(dataFile);
         return Ok(dto);
     }
 

@@ -16,6 +16,6 @@ public class ObjectToInferredTypesConverter : JsonConverter<object>
             _ => JsonDocument.ParseValue(ref reader).RootElement.Clone()
         };
 
-    public override void Write(Utf8JsonWriter writer, object objectToWrite, JsonSerializerOptions options) =>
-        JsonSerializer.Serialize(writer, objectToWrite, objectToWrite.GetType(), options);
+    public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options) =>
+        JsonSerializer.Serialize(writer, value, value.GetType(), options);
 }

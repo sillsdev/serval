@@ -13,21 +13,15 @@ public static class Attempt
     }
 }
 
-public struct Attempt<T>
+public readonly struct Attempt<T>(bool success, T? result = default)
 {
-    public static Attempt<T> Failure { get; } = new Attempt<T>();
+    public static Attempt<T> Failure { get; }
 
     public Attempt(T result)
         : this(true, result) { }
 
-    public Attempt(bool success, T? result = default)
-    {
-        Success = success;
-        Result = result;
-    }
-
-    public T? Result { get; }
-    public bool Success { get; }
+    public T? Result { get; } = result;
+    public bool Success { get; } = success;
 
     public bool TryResult([MaybeNullWhen(false)] out T result)
     {

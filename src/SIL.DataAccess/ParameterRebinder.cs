@@ -1,13 +1,8 @@
 namespace SIL.DataAccess;
 
-internal class ParameterRebinder : System.Linq.Expressions.ExpressionVisitor
+internal class ParameterRebinder(ParameterExpression parameter) : System.Linq.Expressions.ExpressionVisitor
 {
-    private readonly ParameterExpression _parameter;
-
-    public ParameterRebinder(ParameterExpression parameter)
-    {
-        _parameter = parameter;
-    }
+    private readonly ParameterExpression _parameter = parameter;
 
     protected override Expression VisitParameter(ParameterExpression p)
     {

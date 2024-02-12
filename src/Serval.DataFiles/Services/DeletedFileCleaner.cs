@@ -17,7 +17,7 @@ public class DeletedFileCleaner : BackgroundService
     {
         _serviceProvider = serviceProvider;
         _options = options;
-        var cronFormat = CronFormat.Standard;
+        CronFormat cronFormat = CronFormat.Standard;
         if (_options.CurrentValue.DeletedFileCleanerSchedule.Trim().Split().Length == 6)
             cronFormat = CronFormat.IncludeSeconds;
         _cronExpression = CronExpression.Parse(_options.CurrentValue.DeletedFileCleanerSchedule, cronFormat);
@@ -51,7 +51,7 @@ public class DeletedFileCleaner : BackgroundService
     {
         _logger.LogInformation("Cleaning deleted files.");
         using IServiceScope scope = _serviceProvider.CreateScope();
-        var deletedFiles = scope.ServiceProvider.GetRequiredService<IRepository<DeletedFile>>();
+        IRepository<DeletedFile> deletedFiles = scope.ServiceProvider.GetRequiredService<IRepository<DeletedFile>>();
         DateTime checkDateTime = DateTime.UtcNow - _options.CurrentValue.DeletedFileTimeout;
         IReadOnlyList<DeletedFile> deletedFilesToClean = await deletedFiles.GetAllAsync(
             f => f.DeletedAt <= checkDateTime,

@@ -1,28 +1,21 @@
 namespace SIL.DataAccess;
 
-public class MemorySubscription<T> : DisposableBase, ISubscription<T>
+public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T>> remove)
+    : DisposableBase,
+        ISubscription<T>
     where T : IEntity
 {
-    private readonly Action<MemorySubscription<T>> _remove;
-    private readonly AsyncAutoResetEvent _changeEvent;
+    private readonly Action<MemorySubscription<T>> _remove = remove;
+    private readonly AsyncAutoResetEvent _changeEvent = new();
 
-    public MemorySubscription(T? initialEntity, Action<MemorySubscription<T>> remove)
-    {
-        _remove = remove;
-        _changeEvent = new AsyncAutoResetEvent();
-        Change = new EntityChange<T>(
-            initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update,
-            initialEntity
-        );
-    }
-
-    public EntityChange<T> Change { get; private set; }
+    public EntityChange<T> Change { get; private set; } =
+        new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update, initialEntity);
 
     public async Task WaitForChangeAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
     {
         if (timeout is null)
             timeout = Timeout.InfiniteTimeSpan;
-        await TaskTimeout(ct => _changeEvent.WaitAsync(ct), timeout.Value, cancellationToken);
+        await TaskTimeout(_changeEvent.WaitAsync, timeout.Value, cancellationToken).ConfigureAwait(false);
     }
 
     internal void HandleChange(EntityChange<T> change)
@@ -44,16 +37,16 @@ public class MemorySubscription<T> : DisposableBase, ISubscription<T>
     {
         if (timeout == Timeout.InfiniteTimeSpan)
         {
-            await action(cancellationToken);
+            await action(cancellationToken).ConfigureAwait(false);
         }
         else
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task task = action(cts.Token);
-            Task completedTask = await Task.WhenAny(task, Task.Delay(timeout, cancellationToken));
+            Task completedTask = await Task.WhenAny(task, Task.Delay(timeout, cancellationToken)).ConfigureAwait(false);
             if (task != completedTask)
                 cts.Cancel();
-            await completedTask;
+            await completedTask.ConfigureAwait(false);
         }
     }
 }

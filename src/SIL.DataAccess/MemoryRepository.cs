@@ -5,7 +5,7 @@ namespace SIL.DataAccess;
 public class MemoryRepository<T> : IRepository<T>
     where T : IEntity
 {
-    private static readonly JsonSerializerSettings Settings =
+    private static readonly JsonSerializerSettings s_settings =
         new() { TypeNameHandling = TypeNameHandling.Auto, ContractResolver = new WritableContractResolver() };
 
     private readonly Dictionary<string, string> _entities;
@@ -41,7 +41,7 @@ public class MemoryRepository<T> : IRepository<T>
             if (key != null)
                 _uniqueKeys[i].Add(key);
         }
-        string serializedEntity = JsonConvert.SerializeObject(entity, Settings);
+        string serializedEntity = JsonConvert.SerializeObject(entity, s_settings);
         _entities[entity.Id] = serializedEntity;
         return serializedEntity;
     }
@@ -153,8 +153,12 @@ public class MemoryRepository<T> : IRepository<T>
                 serializedEntities.Add((entity.Id, serializedEntity, allSubscriptions));
             }
         }
-        foreach (var (id, serializedEntity, allSubscriptions) in serializedEntities)
+        foreach (
+            (string id, string serializedEntity, List<MemorySubscription<T>> allSubscriptions) in serializedEntities
+        )
+        {
             SendToSubscribers(allSubscriptions, EntityChangeType.Insert, id, serializedEntity);
+        }
     }
 
     public async Task<T?> UpdateAsync(
@@ -358,7 +362,7 @@ public class MemoryRepository<T> : IRepository<T>
 
     private static T DeserializeEntity(string id, string json)
     {
-        var entity = JsonConvert.DeserializeObject<T>(json, Settings)!;
+        T entity = JsonConvert.DeserializeObject<T>(json, s_settings)!;
         if (entity.Id == null)
             entity.Id = id;
         return entity;

@@ -2,17 +2,11 @@
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/hooks")]
-public class WebhooksController : ServalControllerBase
+public class WebhooksController(IAuthorizationService authService, IWebhookService hookService, IUrlService urlService)
+    : ServalControllerBase(authService)
 {
-    private readonly IWebhookService _hookService;
-    private readonly IUrlService _urlService;
-
-    public WebhooksController(IAuthorizationService authService, IWebhookService hookService, IUrlService urlService)
-        : base(authService)
-    {
-        _hookService = hookService;
-        _urlService = urlService;
-    }
+    private readonly IWebhookService _hookService = hookService;
+    private readonly IUrlService _urlService = urlService;
 
     /// <summary>
     /// Gets all webhooks.

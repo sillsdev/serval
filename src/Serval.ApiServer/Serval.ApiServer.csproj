@@ -6,6 +6,10 @@
 		<Version>1.0.0</Version>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>902e11fc-0dbf-439c-9fae-9550acfe5287</UserSecretsId>
+		<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />
@@ -44,10 +48,6 @@
 
 	<Target BeforeTargets="Build" Name="EnforceAppSettingsName">
 	</Target>
-
-	<PropertyGroup>
-		<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-	</PropertyGroup>
 
 	<Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' ">
 		<Exec WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;NSWAG=1" Command="$(NSwagExe_Net80) run nswag.json /variables:Configuration=$(Configuration)" />

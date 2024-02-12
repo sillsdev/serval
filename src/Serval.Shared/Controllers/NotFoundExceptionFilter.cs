@@ -1,6 +1,4 @@
-﻿using Serval.Shared.Utils;
-
-namespace Serval.Shared.Controllers;
+﻿namespace Serval.Shared.Controllers;
 
 public class NotFoundExceptionFilter : ExceptionFilterAttribute
 {

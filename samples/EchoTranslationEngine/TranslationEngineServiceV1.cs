@@ -3,7 +3,7 @@
 public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthCheckService healthCheckService)
     : TranslationEngineApi.TranslationEngineApiBase
 {
-    private static readonly Empty Empty = new();
+    private static readonly Empty s_empty = new();
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
 
     private readonly HealthCheckService _healthCheckService = healthCheckService;
@@ -20,7 +20,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
 
     public override Task<Empty> Delete(DeleteRequest request, ServerCallContext context)
     {
-        return Task.FromResult(Empty);
+        return Task.FromResult(s_empty);
     }
 
     public override Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
@@ -69,7 +69,8 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
         await _taskQueue.QueueBackgroundWorkItemAsync(
             async (services, cancellationToken) =>
             {
-                var client = services.GetRequiredService<TranslationPlatformApi.TranslationPlatformApiClient>();
+                TranslationPlatformApi.TranslationPlatformApiClient client =
+                    services.GetRequiredService<TranslationPlatformApi.TranslationPlatformApiClient>();
                 await client.BuildStartedAsync(
                     new BuildStartedRequest { BuildId = request.BuildId },
                     cancellationToken: cancellationToken
@@ -77,7 +78,10 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
 
                 try
                 {
-                    using (var call = client.InsertPretranslations(cancellationToken: cancellationToken))
+                    using (
+                        AsyncClientStreamingCall<InsertPretranslationRequest, Empty> call =
+                            client.InsertPretranslations(cancellationToken: cancellationToken)
+                    )
                     {
                         foreach (Corpus corpus in request.Corpora)
                         {
@@ -244,17 +248,17 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
             }
         );
 
-        return Empty;
+        return s_empty;
     }
 
-    public override Task<Empty> TrainSegmentPair(TrainSegmentPairRequest request, ServerCallContext _)
+    public override Task<Empty> TrainSegmentPair(TrainSegmentPairRequest request, ServerCallContext context)
     {
-        return Task.FromResult(Empty);
+        return Task.FromResult(s_empty);
     }
 
-    public override Task<GetWordGraphResponse> GetWordGraph(GetWordGraphRequest request, ServerCallContext _)
+    public override Task<GetWordGraphResponse> GetWordGraph(GetWordGraphRequest request, ServerCallContext context)
     {
-        var tokens = request.Segment.Split();
+        string[] tokens = request.Segment.Split();
         return Task.FromResult(
             new GetWordGraphResponse
             {

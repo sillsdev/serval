@@ -8,12 +8,30 @@
     "editor.defaultFormatter": "vscode.json-language-features"
   },
   "cSpell.words": [
+    "ASPNETCORE",
     "Bson",
+    "hmac",
+    "HMACSHA",
+    "inferencing",
+    "keyterms",
+    "MATSRC",
+    "MATTRG",
+    "Newtonsoft",
+    "NLLB",
     "Paratext",
     "pretranslate",
     "pretranslated",
+    "pretranslating",
     "Pretranslation",
-    "pretranslations"
+    "pretranslations",
+    "Protobuf",
+    "ptcc",
+    "Rebinder",
+    "upserted",
+    "USFM"
+  ],
+  "cSpell.includeRegExpList": [
+    "\b[a-zA-Z0-9.]+\b"
   ],
   "[helm]": {
     "editor.defaultFormatter": "redhat.vscode-yaml",

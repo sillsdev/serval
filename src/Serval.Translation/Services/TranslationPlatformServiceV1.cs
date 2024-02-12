@@ -3,31 +3,22 @@ using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
 
-public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPlatformApiBase
+public class TranslationPlatformServiceV1(
+    IRepository<Build> builds,
+    IRepository<Engine> engines,
+    IRepository<Pretranslation> pretranslations,
+    IDataAccessContext dataAccessContext,
+    IPublishEndpoint publishEndpoint
+) : TranslationPlatformApi.TranslationPlatformApiBase
 {
     private const int PretranslationInsertBatchSize = 128;
-    private static readonly Empty Empty = new();
+    private static readonly Empty s_empty = new();
 
-    private readonly IRepository<Build> _builds;
-    private readonly IRepository<Engine> _engines;
-    private readonly IRepository<Pretranslation> _pretranslations;
-    private readonly IDataAccessContext _dataAccessContext;
-    private readonly IPublishEndpoint _publishEndpoint;
-
-    public TranslationPlatformServiceV1(
-        IRepository<Build> builds,
-        IRepository<Engine> engines,
-        IRepository<Pretranslation> pretranslations,
-        IDataAccessContext dataAccessContext,
-        IPublishEndpoint publishEndpoint
-    )
-    {
-        _builds = builds;
-        _engines = engines;
-        _pretranslations = pretranslations;
-        _dataAccessContext = dataAccessContext;
-        _publishEndpoint = publishEndpoint;
-    }
+    private readonly IRepository<Build> _builds = builds;
+    private readonly IRepository<Engine> _engines = engines;
+    private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
+    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
+    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
     public override async Task<Empty> BuildStarted(BuildStartedRequest request, ServerCallContext context)
     {
@@ -59,7 +50,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         );
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
-        return Empty;
+        return s_empty;
     }
 
     public override async Task<Empty> BuildCompleted(BuildCompletedRequest request, ServerCallContext context)
@@ -108,7 +99,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         );
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
-        return Empty;
+        return s_empty;
     }
 
     public override async Task<Empty> BuildCanceled(BuildCanceledRequest request, ServerCallContext context)
@@ -153,7 +144,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         );
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
-        return Empty;
+        return s_empty;
     }
 
     public override async Task<Empty> BuildFaulted(BuildFaultedRequest request, ServerCallContext context)
@@ -198,7 +189,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         );
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
-        return Empty;
+        return s_empty;
     }
 
     public override async Task<Empty> BuildRestarting(BuildRestartingRequest request, ServerCallContext context)
@@ -227,7 +218,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         );
         await _dataAccessContext.CommitTransactionAsync(context.CancellationToken);
 
-        return Empty;
+        return s_empty;
     }
 
     public override async Task<Empty> UpdateBuildStatus(UpdateBuildStatusRequest request, ServerCallContext context)
@@ -252,7 +243,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
             cancellationToken: context.CancellationToken
         );
 
-        return Empty;
+        return s_empty;
     }
 
     public override async Task<Empty> IncrementTranslationEngineCorpusSize(
@@ -265,7 +256,7 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
             u => u.Inc(e => e.CorpusSize, request.Count),
             cancellationToken: context.CancellationToken
         );
-        return Empty;
+        return s_empty;
     }
 
     public override async Task<Empty> InsertPretranslations(
@@ -307,6 +298,6 @@ public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPl
         if (batch.Count > 0)
             await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
 
-        return Empty;
+        return s_empty;
     }
 }

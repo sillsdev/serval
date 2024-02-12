@@ -47,7 +47,7 @@ public class ScriptureDataFileServiceTests
     {
         public TestEnvironment()
         {
-            var fileSystem = Substitute.For<IFileSystem>();
+            IFileSystem fileSystem = Substitute.For<IFileSystem>();
             fileSystem
                 .OpenZipFile("file1.zip")
                 .Returns(ci =>
@@ -56,7 +56,7 @@ public class ScriptureDataFileServiceTests
                     AddBook(container, "MAT");
                     return container;
                 });
-            var dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
+            IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
 
             Service = new ScriptureDataFileService(fileSystem, dataFileOptions);
@@ -66,7 +66,7 @@ public class ScriptureDataFileServiceTests
 
         private static IZipContainer CreateZipContainer()
         {
-            var container = Substitute.For<IZipContainer>();
+            IZipContainer container = Substitute.For<IZipContainer>();
             container.EntryExists("Settings.xml").Returns(true);
             XElement settingsXml =
                 new(

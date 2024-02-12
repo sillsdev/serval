@@ -1,21 +1,14 @@
 ﻿namespace EchoTranslationEngine;
 
-public class BackgroundTaskService : BackgroundService
+public class BackgroundTaskService(
+    BackgroundTaskQueue taskQueue,
+    ILogger<BackgroundTaskService> logger,
+    IServiceProvider services
+) : BackgroundService
 {
-    private readonly ILogger<BackgroundTaskService> _logger;
-    private readonly BackgroundTaskQueue _taskQueue;
-    private readonly IServiceProvider _services;
-
-    public BackgroundTaskService(
-        BackgroundTaskQueue taskQueue,
-        ILogger<BackgroundTaskService> logger,
-        IServiceProvider services
-    )
-    {
-        _taskQueue = taskQueue;
-        _logger = logger;
-        _services = services;
-    }
+    private readonly ILogger<BackgroundTaskService> _logger = logger;
+    private readonly BackgroundTaskQueue _taskQueue = taskQueue;
+    private readonly IServiceProvider _services = services;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -27,10 +20,12 @@ public class BackgroundTaskService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var workItem = await _taskQueue.DequeueAsync(stoppingToken);
+            Func<IServiceProvider, CancellationToken, ValueTask> workItem = await _taskQueue.DequeueAsync(
+                stoppingToken
+            );
             try
             {
-                using var scope = _services.CreateScope();
+                using IServiceScope scope = _services.CreateScope();
                 await workItem(scope.ServiceProvider, stoppingToken);
             }
             catch (Exception ex)
@@ -40,9 +35,9 @@ public class BackgroundTaskService : BackgroundService
         }
     }
 
-    public override async Task StopAsync(CancellationToken stoppingToken)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Background Task Service is stopping.");
-        await base.StopAsync(stoppingToken);
+        await base.StopAsync(cancellationToken);
     }
 }

@@ -1,14 +1,10 @@
 ﻿namespace Serval.Webhooks.Services;
 
-public class WebhookService : EntityServiceBase<Webhook>, IWebhookService
+public class WebhookService(IRepository<Webhook> hooks, IBackgroundJobClient jobClient)
+    : EntityServiceBase<Webhook>(hooks),
+        IWebhookService
 {
-    private readonly IBackgroundJobClient _jobClient;
-
-    public WebhookService(IRepository<Webhook> hooks, IBackgroundJobClient jobClient)
-        : base(hooks)
-    {
-        _jobClient = jobClient;
-    }
+    private readonly IBackgroundJobClient _jobClient = jobClient;
 
     public async Task<IEnumerable<Webhook>> GetAllAsync(string owner, CancellationToken cancellationToken = default)
     {

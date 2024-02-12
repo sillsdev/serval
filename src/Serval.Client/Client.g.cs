@@ -27,14 +27,35 @@ namespace Serval.Client
     {
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get Health
+        /// </summary>
+        /// <remarks>
+        /// Provides an indication about the health of the API
+        /// </remarks>
+        /// <returns>The API health status</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<HealthReport> GetHealthAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get Summary of Health on Publically available endpoint, cached for 10 seconds (if not authenticated).
+        /// </summary>
+        /// <remarks>
+        /// Provides an indication about the health of the API
+        /// </remarks>
+        /// <returns>The API health status</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<HealthReport> GetPingAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Application Version
+        /// </summary>
+        /// <remarks>
+        /// Provides the version of the application
+        /// </remarks>
+        /// <returns>Application Version</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DeploymentInfo> GetDeploymentInfoAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -82,6 +103,13 @@ namespace Serval.Client
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get Health
+        /// </summary>
+        /// <remarks>
+        /// Provides an indication about the health of the API
+        /// </remarks>
+        /// <returns>The API health status</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<HealthReport> GetHealthAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -135,13 +163,13 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A server side error occurred.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A server side error occurred.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -164,6 +192,13 @@ namespace Serval.Client
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get Summary of Health on Publically available endpoint, cached for 10 seconds (if not authenticated).
+        /// </summary>
+        /// <remarks>
+        /// Provides an indication about the health of the API
+        /// </remarks>
+        /// <returns>The API health status</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<HealthReport> GetPingAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -234,6 +269,13 @@ namespace Serval.Client
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Application Version
+        /// </summary>
+        /// <remarks>
+        /// Provides the version of the application
+        /// </remarks>
+        /// <returns>Application Version</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<DeploymentInfo> GetDeploymentInfoAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -287,13 +329,13 @@ namespace Serval.Client
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A server side error occurred.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A server side error occurred.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation", status_, responseText_, headers_, null);
                         }
                         else
                         {
@@ -1365,10 +1407,10 @@ namespace Serval.Client
         /// <br/>* **isModelPersisted**: (optional) - see below
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-        /// <br/>* **IsModelPersisted**: (default to true) All models are persistant and can be updated with train-segment.  False is not supported.
+        /// <br/>* **IsModelPersisted**: (default to true) All models are persistent and can be updated with train-segment.  False is not supported.
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been sucessfully built.
+        /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
@@ -1666,7 +1708,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
+        /// Let a link to download the NMT translation model of the last build that was successfully saved.
         /// </summary>
         /// <remarks>
         /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
@@ -1829,10 +1871,10 @@ namespace Serval.Client
         /// <br/>* **isModelPersisted**: (optional) - see below
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-        /// <br/>* **IsModelPersisted**: (default to true) All models are persistant and can be updated with train-segment.  False is not supported.
+        /// <br/>* **IsModelPersisted**: (default to true) All models are persistent and can be updated with train-segment.  False is not supported.
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been sucessfully built.
+        /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
@@ -4276,7 +4318,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
+        /// Let a link to download the NMT translation model of the last build that was successfully saved.
         /// </summary>
         /// <remarks>
         /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,

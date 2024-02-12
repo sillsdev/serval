@@ -1,13 +1,8 @@
 ﻿namespace Serval.Shared.Controllers;
 
-public class OperationCancelledExceptionFilter : ExceptionFilterAttribute
+public class OperationCancelledExceptionFilter(ILoggerFactory loggerFactory) : ExceptionFilterAttribute
 {
-    private readonly ILogger _logger;
-
-    public OperationCancelledExceptionFilter(ILoggerFactory loggerFactory)
-    {
-        _logger = loggerFactory.CreateLogger<OperationCancelledExceptionFilter>();
-    }
+    private readonly ILogger _logger = loggerFactory.CreateLogger<OperationCancelledExceptionFilter>();
 
     public override void OnException(ExceptionContext context)
     {
