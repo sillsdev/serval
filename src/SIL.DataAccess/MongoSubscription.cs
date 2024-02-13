@@ -9,7 +9,9 @@ public class MongoSubscription<T>(
 ) : DisposableBase, ISubscription<T>
     where T : IEntity
 {
+#pragma warning disable CA2213 // Dispose in DisposeManagedResources
     private readonly IMongoDataAccessContext _context = context;
+#pragma warning restore CA2213
     private readonly IMongoCollection<T> _entities = entities;
     private BsonTimestamp _timestamp = timestamp;
     private readonly Func<T, bool> _filter = filter;
@@ -100,5 +102,10 @@ public class MongoSubscription<T>(
         {
             cursor.Dispose();
         }
+    }
+
+    protected override void DisposeManagedResources()
+    {
+        _context.Dispose();
     }
 }

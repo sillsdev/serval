@@ -83,7 +83,9 @@ public class StatusTests
     private class TestEnvironment : DisposableBase
     {
         private readonly IMongoClient _mongoClient;
+#pragma warning disable CA2213 // Dispose in DisposeManagedResources
         private readonly IServiceScope _scope;
+#pragma warning restore CA2213
 
         public TestEnvironment()
         {

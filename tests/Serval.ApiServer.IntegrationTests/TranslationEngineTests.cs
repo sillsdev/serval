@@ -1360,7 +1360,9 @@ public class TranslationEngineTests
 
     private class TestEnvironment : DisposableBase
     {
+#pragma warning disable CA2213 // Dispose in DisposeManagedResources
         private readonly IServiceScope _scope;
+#pragma warning restore CA2213
         private readonly MongoClient _mongoClient;
 
         public TestEnvironment()

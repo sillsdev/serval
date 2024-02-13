@@ -155,8 +155,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
                                 default:
                                     if (index == null)
                                         break;
-                                    var dict = owner as IDictionary;
-                                    if (dict != null)
+                                    if (owner is IDictionary dict)
                                     {
                                         newOwner = dict[index];
                                         if (newOwner != null)
