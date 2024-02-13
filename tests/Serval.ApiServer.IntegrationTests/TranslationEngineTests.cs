@@ -709,9 +709,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
         TranslationCorpus? result = null;
         if (addCorpus)
-        {
             result = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
-        }
         switch (expectedStatusCode)
         {
             case 200:

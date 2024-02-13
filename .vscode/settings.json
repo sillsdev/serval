@@ -30,9 +30,6 @@
     "upserted",
     "USFM"
   ],
-  "cSpell.includeRegExpList": [
-    "\b[a-zA-Z0-9.]+\b"
-  ],
   "[helm]": {
     "editor.defaultFormatter": "redhat.vscode-yaml",
   },

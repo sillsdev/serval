@@ -229,12 +229,10 @@ public class TranslationPlatformServiceV1(
             {
                 u.Set(b => b.Step, request.Step);
                 if (request.HasPercentCompleted)
-                {
                     u.Set(
                         b => b.PercentCompleted,
                         Math.Round(request.PercentCompleted, 4, MidpointRounding.AwayFromZero)
                     );
-                }
                 if (request.HasMessage)
                     u.Set(b => b.Message, request.Message);
                 if (request.HasQueueDepth)

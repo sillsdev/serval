@@ -160,9 +160,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
                                     {
                                         newOwner = dict[index];
                                         if (newOwner != null)
-                                        {
                                             newOwners.Add(newOwner);
-                                        }
                                         else
                                         {
                                             Type valueType = owner.GetType().GenericTypeArguments[1];

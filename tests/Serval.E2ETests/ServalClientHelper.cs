@@ -17,9 +17,7 @@ public class ServalClientHelper : IAsyncDisposable
             _httpClient = new HttpClient(handler);
         }
         else
-        {
             _httpClient = new HttpClient();
-        }
         string? hostUrl = Environment.GetEnvironmentVariable("SERVAL_HOST_URL");
         if (hostUrl is null)
             throw new InvalidOperationException("The environment variable SERVAL_HOST_URL is not set.");
@@ -67,9 +65,7 @@ public class ServalClientHelper : IAsyncDisposable
         foreach (TranslationEngine translationEngine in existingTranslationEngines)
         {
             if (translationEngine.Name?.Contains(_prefix + name) ?? false)
-            {
                 await TranslationEnginesClient.DeleteAsync(translationEngine.Id);
-            }
         }
         TranslationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
         _enginePerUser.Clear();
@@ -117,10 +113,8 @@ public class ServalClientHelper : IAsyncDisposable
                     revision + 1
                 );
                 if (!(result.State == JobState.Active || result.State == JobState.Pending))
-                {
                     // build completed
                     break;
-                }
                 revision = result.Revision;
             }
             catch (ServalApiException e)
@@ -143,9 +137,7 @@ public class ServalClientHelper : IAsyncDisposable
         {
             TranslationBuild build = await TranslationEnginesClient.GetBuildAsync(engineId, buildId);
             if (build.State != JobState.Pending && build.State != JobState.Active)
-            {
                 break;
-            }
             if (tries++ > timeoutSeconds)
             {
                 throw new TimeoutException($"The job did not fully cancel in {timeoutSeconds}");
