@@ -34,7 +34,7 @@ public class StatusController(
     }
 
     /// <summary>
-    /// Get Summary of Health on Publically available endpoint, cached for 10 seconds (if not authenticated).
+    /// Get Summary of Health on publicly available endpoint, cached for 10 seconds (if not authenticated).
     /// </summary>
     /// <remarks>Provides an indication about the health of the API</remarks>
     /// <response code="200">The API health status</response>
