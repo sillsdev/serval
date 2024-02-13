@@ -39,7 +39,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get Summary of Health on Publically available endpoint, cached for 10 seconds (if not authenticated).
+        /// Get Summary of Health on publicly available endpoint, cached for 10 seconds (if not authenticated).
         /// </summary>
         /// <remarks>
         /// Provides an indication about the health of the API
@@ -193,7 +193,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get Summary of Health on Publically available endpoint, cached for 10 seconds (if not authenticated).
+        /// Get Summary of Health on publicly available endpoint, cached for 10 seconds (if not authenticated).
         /// </summary>
         /// <remarks>
         /// Provides an indication about the health of the API
@@ -4559,14 +4559,14 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get infromation regarding a language for a given engine type
+        /// Get information regarding a language for a given engine type
         /// </summary>
         /// <remarks>
         /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
         /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
         /// <br/>language is an appropriate candidate for a source language or if two languages can be translated between
         /// <br/>**Base Models available**
-        /// <br/>* **NLLB-200**: This is the only current base transaltion model available.
+        /// <br/>* **NLLB-200**: This is the only current base translation model available.
         /// <br/>  * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
         /// <br/>without training.
         /// <br/>Response format:
@@ -4723,14 +4723,14 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get infromation regarding a language for a given engine type
+        /// Get information regarding a language for a given engine type
         /// </summary>
         /// <remarks>
         /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
         /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
         /// <br/>language is an appropriate candidate for a source language or if two languages can be translated between
         /// <br/>**Base Models available**
-        /// <br/>* **NLLB-200**: This is the only current base transaltion model available.
+        /// <br/>* **NLLB-200**: This is the only current base translation model available.
         /// <br/>  * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
         /// <br/>without training.
         /// <br/>Response format:

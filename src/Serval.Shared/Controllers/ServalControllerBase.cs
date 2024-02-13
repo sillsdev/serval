@@ -10,14 +10,9 @@
 [TypeFilter(typeof(NotFoundExceptionFilter))]
 [TypeFilter(typeof(ForbiddenExceptionFilter))]
 [TypeFilter(typeof(BadRequestExceptionFilter))]
-public abstract class ServalControllerBase : Controller
+public abstract class ServalControllerBase(IAuthorizationService authService) : Controller
 {
-    private readonly IAuthorizationService _authService;
-
-    protected ServalControllerBase(IAuthorizationService authService)
-    {
-        _authService = authService;
-    }
+    private readonly IAuthorizationService _authService = authService;
 
     protected string Owner => User.Identity!.Name!;
 
