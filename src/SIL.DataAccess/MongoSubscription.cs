@@ -103,9 +103,4 @@ public class MongoSubscription<T>(
             cursor.Dispose();
         }
     }
-
-    protected override void DisposeManagedResources()
-    {
-        _context.Dispose();
-    }
 }
