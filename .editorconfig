@@ -195,7 +195,7 @@ dotnet_diagnostic.CA1823.severity = warning
 dotnet_diagnostic.CA1825.severity = warning
 
 # CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
-dotnet_diagnostic.CA1826.severity = warning
+dotnet_diagnostic.CA1826.severity = suggestion
 
 # CA1827: Do not use Count() or LongCount() when Any() can be used
 dotnet_diagnostic.CA1827.severity = warning
@@ -385,10 +385,10 @@ dotnet_diagnostic.IDE0270.severity = none
 dotnet_diagnostic.CA2254.severity = warning
 
 # IDE0007: Use implicit type
-dotnet_diagnostic.IDE0007.severity = warning
+dotnet_diagnostic.IDE0007.severity = suggestion
 
 # IDE0008: Use explicit type
-dotnet_diagnostic.IDE0008.severity = warning
+dotnet_diagnostic.IDE0008.severity = suggestion
 
 # IDE0290: Use primary constructor
 dotnet_diagnostic.IDE0290.severity = warning
@@ -397,7 +397,7 @@ dotnet_diagnostic.IDE0290.severity = warning
 dotnet_diagnostic.IDE0090.severity = warning
 
 # IDE0063: Use simple using statement
-dotnet_diagnostic.IDE0063.severity = warning
+dotnet_diagnostic.IDE0063.severity = suggestion
 
 # IDE0034: Simplify 'default' expression
 dotnet_diagnostic.IDE0034.severity = warning
@@ -442,7 +442,7 @@ dotnet_diagnostic.CA2218.severity = warning
 dotnet_diagnostic.CA2219.severity = warning
 
 # NUnit2046 Use Has.Length/Has.Count/Is.Empty instead of testing property directly
-dotnet_diagnostic.NUnit2046.severity = warning
+dotnet_diagnostic.NUnit2046.severity = suggestion
 
 [src/SIL.DataAccess/**.cs]
 # CA2007: Consider calling ConfigureAwait on the awaited task
