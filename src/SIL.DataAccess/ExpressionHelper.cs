@@ -29,9 +29,12 @@ public static class ExpressionHelper
         return finder.Value;
     }
 
-    public static TV? FindEqualsConstantValue<T, TV>(Expression<Func<T, TV>> field, Expression expression)
+    public static TConstant? FindEqualsConstantValue<T, TConstant>(
+        Expression<Func<T, TConstant>> field,
+        Expression expression
+    )
     {
-        var finder = new EqualsConstantFinder<T, TV>(field);
+        var finder = new EqualsConstantFinder<T, TConstant>(field);
         finder.Visit(expression);
         return finder.Value;
     }

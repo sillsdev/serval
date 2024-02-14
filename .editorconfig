@@ -195,7 +195,7 @@ dotnet_diagnostic.CA1823.severity = warning
 dotnet_diagnostic.CA1825.severity = warning
 
 # CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
-dotnet_diagnostic.CA1826.severity = suggestion
+dotnet_diagnostic.CA1826.severity = warning
 
 # CA1827: Do not use Count() or LongCount() when Any() can be used
 dotnet_diagnostic.CA1827.severity = warning
@@ -394,7 +394,7 @@ dotnet_diagnostic.IDE0008.severity = suggestion
 dotnet_diagnostic.IDE0290.severity = warning
 
 # IDE0090: Use 'new()' instead of 'new object()'
-dotnet_diagnostic.IDE0090.severity = warning
+dotnet_diagnostic.IDE0090.severity = suggestion
 
 # IDE0063: Use simple using statement
 dotnet_diagnostic.IDE0063.severity = suggestion
