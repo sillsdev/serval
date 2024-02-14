@@ -12,7 +12,7 @@ public class TranslationPlatformServiceV1(
 ) : TranslationPlatformApi.TranslationPlatformApiBase
 {
     private const int PretranslationInsertBatchSize = 128;
-    private static readonly Empty s_empty = new();
+    private static readonly Empty Empty = new();
 
     private readonly IRepository<Build> _builds = builds;
     private readonly IRepository<Engine> _engines = engines;
@@ -50,7 +50,7 @@ public class TranslationPlatformServiceV1(
         );
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> BuildCompleted(BuildCompletedRequest request, ServerCallContext context)
@@ -99,7 +99,7 @@ public class TranslationPlatformServiceV1(
         );
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> BuildCanceled(BuildCanceledRequest request, ServerCallContext context)
@@ -144,7 +144,7 @@ public class TranslationPlatformServiceV1(
         );
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> BuildFaulted(BuildFaultedRequest request, ServerCallContext context)
@@ -189,7 +189,7 @@ public class TranslationPlatformServiceV1(
         );
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> BuildRestarting(BuildRestartingRequest request, ServerCallContext context)
@@ -218,7 +218,7 @@ public class TranslationPlatformServiceV1(
         );
         await _dataAccessContext.CommitTransactionAsync(context.CancellationToken);
 
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> UpdateBuildStatus(UpdateBuildStatusRequest request, ServerCallContext context)
@@ -241,7 +241,7 @@ public class TranslationPlatformServiceV1(
             cancellationToken: context.CancellationToken
         );
 
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> IncrementTranslationEngineCorpusSize(
@@ -254,7 +254,7 @@ public class TranslationPlatformServiceV1(
             u => u.Inc(e => e.CorpusSize, request.Count),
             cancellationToken: context.CancellationToken
         );
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> InsertPretranslations(
@@ -296,6 +296,6 @@ public class TranslationPlatformServiceV1(
         if (batch.Count > 0)
             await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
 
-        return s_empty;
+        return Empty;
     }
 }

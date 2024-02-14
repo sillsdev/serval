@@ -23,10 +23,6 @@ dotnet_style_predefined_type_for_member_access = true:suggestion
 
 dotnet_sort_system_directives_first = true:warning
 
-# Don't use this. qualifier
-dotnet_style_qualification_for_field = false:suggestion
-dotnet_style_qualification_for_property = false:suggestion
-
 # use int x = .. over Int32
 dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
 
@@ -79,7 +75,7 @@ dotnet_naming_symbols.constants.required_modifiers = const
 
 dotnet_naming_style.constant_style.capitalization = pascal_case
 
-# Static fields are camelCase and start with s_
+# Private Static fields are PascalCase
 dotnet_naming_rule.static_fields_should_be_camel_case.severity = warning
 dotnet_naming_rule.static_fields_should_be_camel_case.symbols = static_fields
 dotnet_naming_rule.static_fields_should_be_camel_case.style = static_field_style
@@ -87,8 +83,7 @@ dotnet_naming_rule.static_fields_should_be_camel_case.style = static_field_style
 dotnet_naming_symbols.static_fields.applicable_kinds = field
 dotnet_naming_symbols.static_fields.required_modifiers = static
 
-dotnet_naming_style.static_field_style.capitalization = camel_case
-dotnet_naming_style.static_field_style.required_prefix = s_
+dotnet_naming_style.static_field_style.capitalization = pascal_case
 
 # Instance fields are camelCase and start with _
 dotnet_naming_rule.instance_fields_should_be_camel_case.severity = warning
@@ -170,7 +165,7 @@ dotnet_diagnostic.CA1720.severity = warning
 dotnet_diagnostic.CA1724.severity = warning
 
 # CA1725: Parameter names should match base declaration
-dotnet_diagnostic.CA1725.severity = warning
+dotnet_diagnostic.CA1725.severity = suggestion
 
 # CA1802: Use literals where appropriate
 dotnet_diagnostic.CA1802.severity = warning

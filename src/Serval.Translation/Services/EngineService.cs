@@ -2,7 +2,6 @@
 
 namespace Serval.Translation.Services;
 
-[SuppressMessage("Usage", "CA1725", Justification = "Entities are engines - easier to understand.")]
 public class EngineService(
     IRepository<Engine> engines,
     IRepository<Build> builds,

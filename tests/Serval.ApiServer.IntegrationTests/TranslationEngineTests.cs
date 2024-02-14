@@ -7,7 +7,7 @@ namespace Serval.ApiServer;
 [Category("Integration")]
 public class TranslationEngineTests
 {
-    private static readonly TranslationCorpusConfig s_testCorpusConfig =
+    private static readonly TranslationCorpusConfig TestCorpusConfig =
         new()
         {
             Name = "TestCorpus",
@@ -22,7 +22,7 @@ public class TranslationEngineTests
                 new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
             }
         };
-    private static readonly TranslationCorpusConfig s_testCorpusConfigNonEcho =
+    private static readonly TranslationCorpusConfig TestCorpusConfigNonEcho =
         new()
         {
             Name = "TestCorpus",
@@ -38,7 +38,7 @@ public class TranslationEngineTests
             }
         };
 
-    private static readonly TranslationCorpusConfig s_testCorpusConfigScripture =
+    private static readonly TranslationCorpusConfig TestCorpusConfigScripture =
         new()
         {
             Name = "TestCorpus",
@@ -432,7 +432,7 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+                TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 await _env.Builds.InsertAsync(
                     new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
                 );
@@ -496,7 +496,7 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+                TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 await _env.Builds.InsertAsync(
                     new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
                 );
@@ -545,7 +545,7 @@ public class TranslationEngineTests
         {
             case 201:
             {
-                TranslationCorpus result = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+                TranslationCorpus result = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 Assert.Multiple(() =>
                 {
                     Assert.That(result.Name, Is.EqualTo("TestCorpus"));
@@ -565,7 +565,7 @@ public class TranslationEngineTests
             case 404:
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+                    await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 });
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -603,7 +603,7 @@ public class TranslationEngineTests
         {
             case 200:
             {
-                TranslationCorpus result = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+                TranslationCorpus result = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 TranslationCorpusFileConfig[] src = new[]
                 {
                     new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
@@ -669,7 +669,7 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus result = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+                TranslationCorpus result = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 TranslationCorpus resultAfterAdd = (await client.GetAllCorporaAsync(engineId)).First();
                 Assert.Multiple(() =>
                 {
@@ -709,7 +709,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
         TranslationCorpus? result = null;
         if (addCorpus)
-            result = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+            result = await client.AddCorpusAsync(engineId, TestCorpusConfig);
         switch (expectedStatusCode)
         {
             case 200:
@@ -754,7 +754,7 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationCorpus result = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+                TranslationCorpus result = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 await client.DeleteCorpusAsync(engineId, result.Id);
                 ICollection<TranslationCorpus> resultsAfterDelete = await client.GetAllCorporaAsync(engineId);
                 Assert.That(resultsAfterDelete, Has.Count.EqualTo(0));
@@ -778,7 +778,7 @@ public class TranslationEngineTests
     public async Task GetAllPretranslationsAsync_Exists()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, s_testCorpusConfig);
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         var pret = new Translation.Models.Pretranslation
@@ -825,7 +825,7 @@ public class TranslationEngineTests
     public async Task GetAllPretranslationsAsync_EngineNotBuilt()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, s_testCorpusConfig);
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
 
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(
             () => client.GetAllPretranslationsAsync(ECHO_ENGINE1_ID, addedCorpus.Id)
@@ -837,7 +837,7 @@ public class TranslationEngineTests
     public async Task GetAllPretranslationsAsync_TextIdExists()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, s_testCorpusConfig);
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         var pret = new Translation.Models.Pretranslation
@@ -863,7 +863,7 @@ public class TranslationEngineTests
     public async Task GetAllPretranslationsAsync_TextIdDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, s_testCorpusConfig);
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         var pret = new Translation.Models.Pretranslation
@@ -1015,7 +1015,7 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 201:
-                TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, s_testCorpusConfig);
+                TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 ptcc = new PretranslateCorpusConfig { CorpusId = addedCorpus.Id, TextIds = ["all"] };
                 tcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
                 tbc = new TranslationBuildConfig
@@ -1063,7 +1063,7 @@ public class TranslationEngineTests
     public async Task StartBuildForEngineAsync_UnparsableOptions()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, s_testCorpusConfig);
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
         PretranslateCorpusConfig ptcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
         TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
         TranslationBuildConfig tbc =
@@ -1222,7 +1222,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         string engineId = NMT_ENGINE1_ID;
         int expectedStatusCode = 409;
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, s_testCorpusConfigNonEcho);
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfigNonEcho);
         var ptcc = new PretranslateCorpusConfig { CorpusId = addedCorpus.Id, TextIds = ["all"] };
         var tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
         TranslationBuild build = await client.StartBuildAsync(engineId, tbc);
@@ -1240,7 +1240,7 @@ public class TranslationEngineTests
     public async Task GetPretranslatedUsfmAsync_BookExists()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, s_testCorpusConfigScripture);
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         var pret = new Translation.Models.Pretranslation
@@ -1273,7 +1273,7 @@ public class TranslationEngineTests
     public async Task GetPretranslatedUsfmAsync_BookDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, s_testCorpusConfigScripture);
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
 

@@ -5,7 +5,7 @@ namespace SIL.DataAccess;
 public class MemoryRepository<T> : IRepository<T>
     where T : IEntity
 {
-    private static readonly JsonSerializerSettings s_settings =
+    private static readonly JsonSerializerSettings Settings =
         new() { TypeNameHandling = TypeNameHandling.Auto, ContractResolver = new WritableContractResolver() };
 
     private readonly Dictionary<string, string> _entities;
@@ -41,7 +41,7 @@ public class MemoryRepository<T> : IRepository<T>
             if (key != null)
                 _uniqueKeys[i].Add(key);
         }
-        string serializedEntity = JsonConvert.SerializeObject(entity, s_settings);
+        string serializedEntity = JsonConvert.SerializeObject(entity, Settings);
         _entities[entity.Id] = serializedEntity;
         return serializedEntity;
     }
@@ -353,7 +353,7 @@ public class MemoryRepository<T> : IRepository<T>
 
     private static T DeserializeEntity(string id, string json)
     {
-        T entity = JsonConvert.DeserializeObject<T>(json, s_settings)!;
+        T entity = JsonConvert.DeserializeObject<T>(json, Settings)!;
         if (entity.Id == null)
             entity.Id = id;
         return entity;
