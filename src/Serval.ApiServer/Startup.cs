@@ -187,9 +187,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 });
         }
         else
+        {
             services
                 .AddOpenTelemetry()
                 .WithMetrics(opts => opts.AddAspNetCoreInstrumentation().AddPrometheusExporter());
+        }
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -23,14 +23,18 @@ public class MongoSubscription<T>(
     {
         Expression<Func<ChangeStreamDocument<T>, bool>> changeEventFilter;
         if (Change.Entity is null)
+        {
             changeEventFilter = ce => ce.OperationType == ChangeStreamOperationType.Insert;
+        }
         else
+        {
             changeEventFilter = ce =>
                 ce.DocumentKey["_id"] == new ObjectId(Change.Entity.Id)
                 && (
                     ce.OperationType == ChangeStreamOperationType.Delete
                     || ce.FullDocument.Revision > Change.Entity.Revision
                 );
+        }
         var options = new ChangeStreamOptions
         {
             FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
@@ -42,11 +46,15 @@ public class MongoSubscription<T>(
             .Match(changeEventFilter);
         IChangeStreamCursor<ChangeStreamDocument<T>> cursor;
         if (_context.Session is not null)
+        {
             cursor = await _entities
                 .WatchAsync(_context.Session, pipelineDef, options, cancellationToken)
                 .ConfigureAwait(false);
+        }
         else
+        {
             cursor = await _entities.WatchAsync(pipelineDef, options, cancellationToken).ConfigureAwait(false);
+        }
         try
         {
             DateTime started = DateTime.UtcNow;

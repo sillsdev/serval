@@ -36,7 +36,9 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
     )
     {
         if (timeout == Timeout.InfiniteTimeSpan)
+        {
             await action(cancellationToken).ConfigureAwait(false);
+        }
         else
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

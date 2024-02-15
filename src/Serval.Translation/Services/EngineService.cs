@@ -152,11 +152,13 @@ public class EngineService(
             throw;
         }
         if (updateIsModelPersisted)
+        {
             await Entities.UpdateAsync(
                 engine,
                 u => u.Set(e => e.IsModelPersisted, engine.IsModelPersisted),
                 cancellationToken: cancellationToken
             );
+        }
         return engine;
     }
 
@@ -282,7 +284,9 @@ public class EngineService(
                             }
                         }
                         else if (trainOn is null)
+                        {
                             corpus.TrainOnAll = true;
+                        }
                         return corpus;
                     })
                 }

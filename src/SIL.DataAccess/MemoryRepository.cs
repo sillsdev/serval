@@ -198,7 +198,9 @@ public class MemoryRepository<T> : IRepository<T>
                     entity.Revision = 0;
                 }
                 else
+                {
                     original = Entities.AsQueryable().FirstOrDefault(filter);
+                }
                 Debug.Assert(entity != null);
                 var builder = new MemoryUpdateBuilder<T>(filter, entity, isInsert);
                 update(builder);
@@ -312,7 +314,9 @@ public class MemoryRepository<T> : IRepository<T>
                     allSubscriptions.Add(kvp.Key);
             }
             else if (kvp.Key.Change.Entity.Id == entity.Id)
+            {
                 allSubscriptions.Add(kvp.Key);
+            }
         }
     }
 
@@ -344,9 +348,13 @@ public class MemoryRepository<T> : IRepository<T>
         {
             object key = _uniqueKeySelectors[i](entity);
             if (key != null)
+            {
                 if (_uniqueKeys[i].Contains(key))
+                {
                     if (original == null || !key.Equals(_uniqueKeySelectors[i](original)))
                         return true;
+                }
+            }
         }
         return false;
     }

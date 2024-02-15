@@ -17,7 +17,9 @@ public class ServalClientHelper : IAsyncDisposable
             _httpClient = new HttpClient(handler);
         }
         else
+        {
             _httpClient = new HttpClient();
+        }
         string? hostUrl = Environment.GetEnvironmentVariable("SERVAL_HOST_URL");
         if (hostUrl is null)
             throw new InvalidOperationException("The environment variable SERVAL_HOST_URL is not set.");

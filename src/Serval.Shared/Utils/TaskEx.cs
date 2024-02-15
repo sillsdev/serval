@@ -26,7 +26,9 @@ public static class TaskEx
     )
     {
         if (timeout == System.Threading.Timeout.InfiniteTimeSpan)
+        {
             await action(cancellationToken);
+        }
         else
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

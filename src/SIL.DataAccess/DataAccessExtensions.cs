@@ -106,7 +106,9 @@ public static class DataAccessExtensions
                 await indexes.CreateOneAsync(indexModel).ConfigureAwait(false);
             }
             else
+            {
                 throw;
+            }
         }
     }
 }
