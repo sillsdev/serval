@@ -2,7 +2,7 @@
 
 namespace Serval.Shared.Services;
 
-public class ZipContainer(string fileName) : IZipContainer
+public class ZipContainer(string fileName) : DisposableBase, IZipContainer
 {
     private readonly ZipArchive _archive = ZipFile.OpenRead(fileName);
 
@@ -21,9 +21,8 @@ public class ZipContainer(string fileName) : IZipContainer
         return entry.Open();
     }
 
-    void IDisposable.Dispose()
+    protected override void DisposeManagedResources()
     {
         _archive.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

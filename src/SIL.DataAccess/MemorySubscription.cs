@@ -13,8 +13,7 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
 
     public async Task WaitForChangeAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
     {
-        if (timeout is null)
-            timeout = Timeout.InfiniteTimeSpan;
+        timeout ??= Timeout.InfiniteTimeSpan;
         await TaskTimeout(_changeEvent.WaitAsync, timeout.Value, cancellationToken).ConfigureAwait(false);
     }
 

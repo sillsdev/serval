@@ -362,8 +362,7 @@ public class MemoryRepository<T> : IRepository<T>
     private static T DeserializeEntity(string id, string json)
     {
         T entity = JsonConvert.DeserializeObject<T>(json, Settings)!;
-        if (entity.Id == null)
-            entity.Id = id;
+        entity.Id ??= id;
         return entity;
     }
 }

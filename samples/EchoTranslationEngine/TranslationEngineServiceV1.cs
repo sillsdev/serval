@@ -3,7 +3,7 @@
 public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthCheckService healthCheckService)
     : TranslationEngineApi.TranslationEngineApiBase
 {
-    private static readonly Empty s_empty = new();
+    private static readonly Empty Empty = new();
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
 
     private readonly HealthCheckService _healthCheckService = healthCheckService;
@@ -20,7 +20,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
 
     public override Task<Empty> Delete(DeleteRequest request, ServerCallContext context)
     {
-        return Task.FromResult(s_empty);
+        return Task.FromResult(Empty);
     }
 
     public override Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
@@ -248,12 +248,12 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
             }
         );
 
-        return s_empty;
+        return Empty;
     }
 
     public override Task<Empty> TrainSegmentPair(TrainSegmentPairRequest request, ServerCallContext context)
     {
-        return Task.FromResult(s_empty);
+        return Task.FromResult(Empty);
     }
 
     public override Task<GetWordGraphResponse> GetWordGraph(GetWordGraphRequest request, ServerCallContext context)

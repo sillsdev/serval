@@ -162,7 +162,7 @@ dotnet_diagnostic.CA1715.severity = warning
 dotnet_diagnostic.CA1720.severity = warning
 
 # CA1724: Type Names Should Not Match Namespaces
-dotnet_diagnostic.CA1724.severity = warning
+dotnet_diagnostic.CA1724.severity = suggestion
 
 # CA1725: Parameter names should match base declaration
 dotnet_diagnostic.CA1725.severity = suggestion
@@ -332,7 +332,7 @@ dotnet_diagnostic.IDE0031.severity = warning
 dotnet_diagnostic.IDE0035.severity = warning
 
 # IDE0036: Order modifiers
-csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:warning
 dotnet_diagnostic.IDE0036.severity = warning
 
 # IDE0038: Use pattern matching to avoid is check followed by a cast (without variable)
@@ -359,6 +359,9 @@ dotnet_diagnostic.IDE0060.severity = warning
 
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = warning
+
+# IDE0074: Use compound assignment
+dotnet_diagnostic.IDE0074.severity = warning
 
 # IDE0161: Convert to file-scoped namespace
 dotnet_diagnostic.IDE0161.severity = warning
@@ -419,7 +422,7 @@ dotnet_diagnostic.CA2200.severity = warning
 dotnet_diagnostic.CA2211.severity = warning
 
 # CA2213: Disposable fields should be disposed
-dotnet_diagnostic.CA2213.severity = warning
+dotnet_diagnostic.CA2213.severity = suggestion
 
 # CA2214: Do not call overridable methods in constructors
 dotnet_diagnostic.CA2214.severity = warning
