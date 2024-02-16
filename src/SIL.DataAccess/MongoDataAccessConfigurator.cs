@@ -1,11 +1,6 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-public class MongoDataAccessConfigurator : IMongoDataAccessConfigurator
+public class MongoDataAccessConfigurator(IServiceCollection services) : IMongoDataAccessConfigurator
 {
-    public MongoDataAccessConfigurator(IServiceCollection services)
-    {
-        Services = services;
-    }
-
-    public IServiceCollection Services { get; }
+    public IServiceCollection Services { get; } = services;
 }

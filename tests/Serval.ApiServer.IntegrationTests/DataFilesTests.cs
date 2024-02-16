@@ -63,11 +63,11 @@ public class DataFilesTests
                 Assert.That(results.All(dataFile => dataFile.Revision == 1));
                 break;
             case 401:
-                //TODO setup unauthorized client (verfiy possibility of 401 - see DFController)
+                //TODO setup unauthorized client (verify possibility of 401 - see DFController)
                 expectedStatusCode = 403;
                 goto case 403;
             case 403:
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAllAsync();
                 });
@@ -101,7 +101,7 @@ public class DataFilesTests
                 goto case 403;
             case 403:
             case 404:
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetAsync(fileId);
                 });
@@ -140,7 +140,7 @@ public class DataFilesTests
                 {
                     var fp = new FileParameter(fs);
                     fp = new FileParameter(fs);
-                    var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                    ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                     {
                         await client.CreateAsync(fp, FileFormat.Text);
                     });
@@ -151,7 +151,7 @@ public class DataFilesTests
                 using (var fs = new MemoryStream())
                 {
                     var fp = new FileParameter(fs);
-                    var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                    ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                     {
                         await client.CreateAsync(fp, Client.FileFormat.Text);
                     });
@@ -173,7 +173,7 @@ public class DataFilesTests
     {
         DataFilesClient client = _env.CreateClient(scope);
         string content = "This is a file.";
-        var contentBytes = Encoding.UTF8.GetBytes(content);
+        byte[] contentBytes = Encoding.UTF8.GetBytes(content);
 
         DataFile file;
         using (var fs = new MemoryStream(contentBytes))
@@ -205,7 +205,7 @@ public class DataFilesTests
                 break;
             case 400:
             {
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.DownloadAsync(fileId);
                 });
@@ -215,7 +215,7 @@ public class DataFilesTests
             case 403:
             case 404:
             {
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.DownloadAsync(fileId);
                 });
@@ -251,7 +251,7 @@ public class DataFilesTests
                 break;
             case 400:
             {
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.UpdateAsync(fileId, new FileParameter(new MemoryStream(new byte[2_000_000_000])));
                 });
@@ -261,7 +261,7 @@ public class DataFilesTests
             case 403:
             case 404:
             {
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.UpdateAsync(fileId, new FileParameter(new MemoryStream()));
                 });
@@ -298,7 +298,7 @@ public class DataFilesTests
                 goto case 403;
             case 403:
             case 404:
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.DeleteAsync(fileId);
                 });
@@ -339,7 +339,7 @@ public class DataFilesTests
 
         public DataFilesClient CreateClient(IEnumerable<string> scope)
         {
-            var httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
+            HttpClient httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
             if (scope is not null)
                 httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new DataFilesClient(httpClient);

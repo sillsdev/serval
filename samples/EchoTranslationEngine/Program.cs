@@ -1,4 +1,4 @@
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
@@ -12,7 +12,7 @@ builder.Services.AddSingleton<BackgroundTaskQueue>();
 
 builder.Services.AddHealthChecks().AddCheck("Live", () => HealthCheckResult.Healthy());
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();

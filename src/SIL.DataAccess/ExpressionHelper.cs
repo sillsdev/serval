@@ -5,7 +5,7 @@ public static class ExpressionHelper
     public static Expression<Func<T, bool>> ChangePredicateType<T>(LambdaExpression predicate)
     {
         ParameterExpression param = Expression.Parameter(typeof(T), "x");
-        var body = RebindParameter(param, predicate);
+        Expression body = RebindParameter(param, predicate);
         return Expression.Lambda<Func<T, bool>>(body, param);
     }
 
@@ -29,9 +29,12 @@ public static class ExpressionHelper
         return finder.Value;
     }
 
-    public static V? FindEqualsConstantValue<T, V>(Expression<Func<T, V>> field, Expression expression)
+    public static TConstant? FindEqualsConstantValue<T, TConstant>(
+        Expression<Func<T, TConstant>> field,
+        Expression expression
+    )
     {
-        var finder = new EqualsConstantFinder<T, V>(field);
+        var finder = new EqualsConstantFinder<T, TConstant>(field);
         finder.Visit(expression);
         return finder.Value;
     }

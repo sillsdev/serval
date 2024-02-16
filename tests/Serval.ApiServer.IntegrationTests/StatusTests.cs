@@ -60,7 +60,7 @@ public class StatusTests
                 Assert.That(result.AspNetCoreEnvironment, Is.Not.EqualTo("Unknown"));
                 break;
             case 403:
-                var ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetHealthAsync();
                 });
@@ -99,7 +99,7 @@ public class StatusTests
 
         public StatusClient CreateClient(IEnumerable<string> scope)
         {
-            var httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
+            HttpClient httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
             if (scope is not null)
                 httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new StatusClient(httpClient);

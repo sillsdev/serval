@@ -1,13 +1,8 @@
 ﻿namespace Serval.Translation.Consumers;
 
-public class DataFileDeletedConsumer : IConsumer<DataFileDeleted>
+public class DataFileDeletedConsumer(IEngineService engineService) : IConsumer<DataFileDeleted>
 {
-    private readonly IEngineService _engineService;
-
-    public DataFileDeletedConsumer(IEngineService engineService)
-    {
-        _engineService = engineService;
-    }
+    private readonly IEngineService _engineService = engineService;
 
     public async Task Consume(ConsumeContext<DataFileDeleted> context)
     {

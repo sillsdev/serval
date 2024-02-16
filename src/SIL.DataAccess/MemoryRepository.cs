@@ -153,8 +153,12 @@ public class MemoryRepository<T> : IRepository<T>
                 serializedEntities.Add((entity.Id, serializedEntity, allSubscriptions));
             }
         }
-        foreach (var (id, serializedEntity, allSubscriptions) in serializedEntities)
+        foreach (
+            (string id, string serializedEntity, List<MemorySubscription<T>> allSubscriptions) in serializedEntities
+        )
+        {
             SendToSubscribers(allSubscriptions, EntityChangeType.Insert, id, serializedEntity);
+        }
     }
 
     public async Task<T?> UpdateAsync(
@@ -309,10 +313,9 @@ public class MemoryRepository<T> : IRepository<T>
                 if (kvp.Value(entity))
                     allSubscriptions.Add(kvp.Key);
             }
-            else
+            else if (kvp.Key.Change.Entity.Id == entity.Id)
             {
-                if (kvp.Key.Change.Entity.Id == entity.Id)
-                    allSubscriptions.Add(kvp.Key);
+                allSubscriptions.Add(kvp.Key);
             }
         }
     }
@@ -358,9 +361,8 @@ public class MemoryRepository<T> : IRepository<T>
 
     private static T DeserializeEntity(string id, string json)
     {
-        var entity = JsonConvert.DeserializeObject<T>(json, Settings)!;
-        if (entity.Id == null)
-            entity.Id = id;
+        T entity = JsonConvert.DeserializeObject<T>(json, Settings)!;
+        entity.Id ??= id;
         return entity;
     }
 }

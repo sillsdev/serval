@@ -29,7 +29,8 @@ public class EngineService(
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         TranslateResponse response = await client.TranslateAsync(
             new TranslateRequest
             {
@@ -52,7 +53,8 @@ public class EngineService(
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         TranslateResponse response = await client.TranslateAsync(
             new TranslateRequest
             {
@@ -74,7 +76,8 @@ public class EngineService(
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         GetWordGraphResponse response = await client.GetWordGraphAsync(
             new GetWordGraphRequest
             {
@@ -97,7 +100,8 @@ public class EngineService(
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         await client.TrainSegmentPairAsync(
             new TrainSegmentPairRequest
             {
@@ -148,11 +152,13 @@ public class EngineService(
             throw;
         }
         if (updateIsModelPersisted)
+        {
             await Entities.UpdateAsync(
                 engine,
                 u => u.Set(e => e.IsModelPersisted, engine.IsModelPersisted),
                 cancellationToken: cancellationToken
             );
+        }
         return engine;
     }
 
@@ -162,7 +168,8 @@ public class EngineService(
         if (engine is null)
             throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         await client.DeleteAsync(
             new DeleteRequest { EngineType = engine.Type, EngineId = engine.Id },
             cancellationToken: cancellationToken
@@ -182,9 +189,10 @@ public class EngineService(
 
         try
         {
-            Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
-            Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
-            var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            var pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
+            var trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
+            TranslationEngineApi.TranslationEngineApiClient client =
+                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
             Dictionary<string, List<int>> GetChapters(V1.Corpus corpus, string scriptureRange)
             {
                 try
@@ -287,7 +295,7 @@ public class EngineService(
             // Log the build request summary
             try
             {
-                JsonObject buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
+                var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
                 // correct build options parsing
                 buildRequestSummary.Remove("Options");
                 try
@@ -327,7 +335,8 @@ public class EngineService(
         if (engine is null)
             throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         try
         {
             await client.CancelBuildAsync(
@@ -353,8 +362,9 @@ public class EngineService(
         if (engine is null)
             throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        var result = await client.GetModelDownloadUrlAsync(
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        GetModelDownloadUrlResponse result = await client.GetModelDownloadUrlAsync(
             new GetModelDownloadUrlRequest { EngineType = engine.Type, EngineId = engine.Id },
             cancellationToken: cancellationToken
         );
@@ -426,7 +436,8 @@ public class EngineService(
 
     public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
     {
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
         GetQueueSizeResponse response = await client.GetQueueSizeAsync(
             new GetQueueSizeRequest { EngineType = engineType },
             cancellationToken: cancellationToken
@@ -440,7 +451,8 @@ public class EngineService(
         CancellationToken cancellationToken = default
     )
     {
-        var client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
         GetLanguageInfoResponse response = await client.GetLanguageInfoAsync(
             new GetLanguageInfoRequest { EngineType = engineType, Language = language },
             cancellationToken: cancellationToken

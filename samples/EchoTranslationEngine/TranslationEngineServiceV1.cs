@@ -69,7 +69,8 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
         await _taskQueue.QueueBackgroundWorkItemAsync(
             async (services, cancellationToken) =>
             {
-                var client = services.GetRequiredService<TranslationPlatformApi.TranslationPlatformApiClient>();
+                TranslationPlatformApi.TranslationPlatformApiClient client =
+                    services.GetRequiredService<TranslationPlatformApi.TranslationPlatformApiClient>();
                 await client.BuildStartedAsync(
                     new BuildStartedRequest { BuildId = request.BuildId },
                     cancellationToken: cancellationToken
@@ -77,7 +78,10 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
 
                 try
                 {
-                    using (var call = client.InsertPretranslations(cancellationToken: cancellationToken))
+                    using (
+                        AsyncClientStreamingCall<InsertPretranslationRequest, Empty> call =
+                            client.InsertPretranslations(cancellationToken: cancellationToken)
+                    )
                     {
                         foreach (Corpus corpus in request.Corpora)
                         {
@@ -247,14 +251,14 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
         return Empty;
     }
 
-    public override Task<Empty> TrainSegmentPair(TrainSegmentPairRequest request, ServerCallContext _)
+    public override Task<Empty> TrainSegmentPair(TrainSegmentPairRequest request, ServerCallContext context)
     {
         return Task.FromResult(Empty);
     }
 
-    public override Task<GetWordGraphResponse> GetWordGraph(GetWordGraphRequest request, ServerCallContext _)
+    public override Task<GetWordGraphResponse> GetWordGraph(GetWordGraphRequest request, ServerCallContext context)
     {
-        var tokens = request.Segment.Split();
+        string[] tokens = request.Segment.Split();
         return Task.FromResult(
             new GetWordGraphResponse
             {

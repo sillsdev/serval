@@ -1,16 +1,10 @@
 ﻿namespace SIL.DataAccess;
 
-public class MongoDataAccessContext : DisposableBase, IMongoDataAccessContext
+public class MongoDataAccessContext(IMongoClient client) : DisposableBase, IMongoDataAccessContext
 {
-    private readonly IMongoClient _client;
-    private readonly object _lock;
+    private readonly IMongoClient _client = client;
+    private readonly object _lock = new();
     private Task<IClientSessionHandle>? _startSession;
-
-    public MongoDataAccessContext(IMongoClient client)
-    {
-        _client = client;
-        _lock = new object();
-    }
 
     public IClientSessionHandle? Session { get; private set; }
 

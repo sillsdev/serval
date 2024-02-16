@@ -1,18 +1,11 @@
 namespace SIL.DataAccess;
 
-public class MemoryUpdateBuilder<T> : IUpdateBuilder<T>
+public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, bool isInsert) : IUpdateBuilder<T>
     where T : IEntity
 {
-    private readonly Expression<Func<T, bool>> _filter;
-    private readonly T _entity;
-    private readonly bool _isInsert;
-
-    public MemoryUpdateBuilder(Expression<Func<T, bool>> filter, T entity, bool isInsert)
-    {
-        _filter = filter;
-        _entity = entity;
-        _isInsert = isInsert;
-    }
+    private readonly Expression<Func<T, bool>> _filter = filter;
+    private readonly T _entity = entity;
+    private readonly bool _isInsert = isInsert;
 
     public IUpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> field, TField value)
     {
@@ -60,7 +53,7 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T>
         object[]? indices = index == null ? null : new[] { index };
         foreach (object owner in owners)
         {
-            var curValue = (int)prop.GetValue(owner, indices)!;
+            int curValue = (int)prop.GetValue(owner, indices)!;
             curValue += value;
             prop.SetValue(owner, curValue, indices);
         }
@@ -162,8 +155,7 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T>
                                 default:
                                     if (index == null)
                                         break;
-                                    var dict = owner as IDictionary;
-                                    if (dict != null)
+                                    if (owner is IDictionary dict)
                                     {
                                         newOwner = dict[index];
                                         if (newOwner != null)
@@ -215,7 +207,7 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T>
             }
         }
 
-        PropertyInfo? property = member as PropertyInfo;
+        var property = member as PropertyInfo;
         if (property == null && member != null && index != null)
             property = member.DeclaringType!.GetProperty("Item");
         return (owners!, property!, index);

@@ -1,10 +1,7 @@
 ﻿namespace Serval.Translation.Services;
 
-public class BuildService : EntityServiceBase<Build>, IBuildService
+public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(builds), IBuildService
 {
-    public BuildService(IRepository<Build> builds)
-        : base(builds) { }
-
     public async Task<IEnumerable<Build>> GetAllAsync(string parentId, CancellationToken cancellationToken = default)
     {
         return await Entities.GetAllAsync(e => e.EngineRef == parentId, cancellationToken);
@@ -53,8 +50,10 @@ public class BuildService : EntityServiceBase<Build>, IBuildService
         while (true)
         {
             if (curChange.Entity is not null)
+            {
                 if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity.Revision)
                     return curChange;
+            }
             await subscription.WaitForChangeAsync(cancellationToken: cancellationToken);
             curChange = subscription.Change;
             if (curChange.Type == EntityChangeType.Delete)

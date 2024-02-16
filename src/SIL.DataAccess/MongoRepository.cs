@@ -1,16 +1,10 @@
 namespace SIL.DataAccess;
 
-public class MongoRepository<T> : IRepository<T>
+public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollection<T> collection) : IRepository<T>
     where T : IEntity
 {
-    private readonly IMongoDataAccessContext _context;
-    private readonly IMongoCollection<T> _collection;
-
-    public MongoRepository(IMongoDataAccessContext context, IMongoCollection<T> collection)
-    {
-        _context = context;
-        _collection = collection;
-    }
+    private readonly IMongoDataAccessContext _context = context;
+    private readonly IMongoCollection<T> _collection = collection;
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
@@ -56,18 +50,21 @@ public class MongoRepository<T> : IRepository<T>
     {
         entity.Revision = 1;
         await TryCatchDuplicate(async () =>
-        {
-            if (_context.Session is not null)
             {
-                await _collection
-                    .InsertOneAsync(_context.Session, entity, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken).ConfigureAwait(false);
-            }
-        });
+                if (_context.Session is not null)
+                {
+                    await _collection
+                        .InsertOneAsync(_context.Session, entity, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await _collection
+                        .InsertOneAsync(entity, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            })
+            .ConfigureAwait(false);
     }
 
     public async Task InsertAllAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default)
@@ -76,18 +73,21 @@ public class MongoRepository<T> : IRepository<T>
             entity.Revision = 1;
 
         await TryCatchDuplicate(async () =>
-        {
-            if (_context.Session is not null)
             {
-                await _collection
-                    .InsertManyAsync(_context.Session, entities, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                await _collection.InsertManyAsync(entities, cancellationToken: cancellationToken).ConfigureAwait(false);
-            }
-        });
+                if (_context.Session is not null)
+                {
+                    await _collection
+                        .InsertManyAsync(_context.Session, entities, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await _collection
+                        .InsertManyAsync(entities, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            })
+            .ConfigureAwait(false);
     }
 
     public async Task<T?> UpdateAsync(
@@ -189,7 +189,7 @@ public class MongoRepository<T> : IRepository<T>
     )
     {
         var filterDef = new ExpressionFilterDefinition<T>(filter);
-        var renderedFilter = filterDef.Render(
+        BsonDocument renderedFilter = filterDef.Render(
             _collection.DocumentSerializer,
             _collection.Settings.SerializerRegistry,
             LinqProvider.V2
@@ -225,11 +225,11 @@ public class MongoRepository<T> : IRepository<T>
         return subscription;
     }
 
-    private async Task TryCatchDuplicate(Func<Task> action)
+    private static async Task TryCatchDuplicate(Func<Task> action)
     {
         try
         {
-            await action();
+            await action().ConfigureAwait(false);
         }
         catch (MongoCommandException e)
         {

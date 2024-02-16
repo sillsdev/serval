@@ -13,11 +13,13 @@ public class ServalClientHelper : IAsyncDisposable
         //setup http client
         if (ignoreSSLErrors)
         {
-            var handler = GetHttHandlerToIgnoreSslErrors();
+            HttpClientHandler handler = GetHttHandlerToIgnoreSslErrors();
             _httpClient = new HttpClient(handler);
         }
         else
+        {
             _httpClient = new HttpClient();
+        }
         string? hostUrl = Environment.GetEnvironmentVariable("SERVAL_HOST_URL");
         if (hostUrl is null)
             throw new InvalidOperationException("The environment variable SERVAL_HOST_URL is not set.");
@@ -62,12 +64,10 @@ public class ServalClientHelper : IAsyncDisposable
     public async Task ClearEnginesAsync(string name = "")
     {
         IList<TranslationEngine> existingTranslationEngines = await TranslationEnginesClient.GetAllAsync();
-        foreach (var translationEngine in existingTranslationEngines)
+        foreach (TranslationEngine translationEngine in existingTranslationEngines)
         {
             if (translationEngine.Name?.Contains(_prefix + name) ?? false)
-            {
                 await TranslationEnginesClient.DeleteAsync(translationEngine.Id);
-            }
         }
         TranslationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
         _enginePerUser.Clear();
@@ -78,17 +78,17 @@ public class ServalClientHelper : IAsyncDisposable
         string source_language,
         string target_language,
         string name = "",
-        bool? IsModelPersisted = null
+        bool? isModelPersisted = null
     )
     {
-        var engine = await TranslationEnginesClient.CreateAsync(
+        TranslationEngine engine = await TranslationEnginesClient.CreateAsync(
             new TranslationEngineConfig
             {
                 Name = _prefix + name,
                 SourceLanguage = source_language,
                 TargetLanguage = target_language,
                 Type = engineTypeString,
-                IsModelPersisted = IsModelPersisted
+                IsModelPersisted = isModelPersisted
             }
         );
         _enginePerUser.Add(name, engine.Id);
@@ -102,19 +102,21 @@ public class ServalClientHelper : IAsyncDisposable
 
     public async Task BuildEngineAsync(string engineId)
     {
-        var newJob = await StartBuildAsync(engineId);
+        TranslationBuild newJob = await StartBuildAsync(engineId);
         int revision = newJob.Revision;
         await TranslationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
         while (true)
         {
             try
             {
-                var result = await TranslationEnginesClient.GetBuildAsync(engineId, newJob.Id, revision + 1);
+                TranslationBuild result = await TranslationEnginesClient.GetBuildAsync(
+                    engineId,
+                    newJob.Id,
+                    revision + 1
+                );
                 if (!(result.State == JobState.Active || result.State == JobState.Pending))
-                {
                     // build completed
                     break;
-                }
                 revision = result.Revision;
             }
             catch (ServalApiException e)
@@ -135,11 +137,9 @@ public class ServalClientHelper : IAsyncDisposable
         int tries = 1;
         while (true)
         {
-            var build = await TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+            TranslationBuild build = await TranslationEnginesClient.GetBuildAsync(engineId, buildId);
             if (build.State != JobState.Pending && build.State != JobState.Active)
-            {
                 break;
-            }
             if (tries++ > timeoutSeconds)
             {
                 throw new TimeoutException($"The job did not fully cancel in {timeoutSeconds}");
@@ -161,7 +161,7 @@ public class ServalClientHelper : IAsyncDisposable
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
         if (!pretranslate)
         {
-            var targetFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, targetLanguage);
+            List<DataFile> targetFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, targetLanguage);
             foreach (var item in targetFiles.Select((file, i) => new { i, file }))
             {
                 targetFileConfig.Add(
@@ -174,13 +174,13 @@ public class ServalClientHelper : IAsyncDisposable
 
         if (sourceLanguage == targetLanguage && !pretranslate)
         {
-            // if it's the same langague, and we are not pretranslating, do nothing (echo for suggestions)
+            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
             // if pretranslating, we need to upload the source separately
             // if different languages, we are not echoing.
         }
         else
         {
-            for (var i = 0; i < sourceFiles.Count; i++)
+            for (int i = 0; i < sourceFiles.Count; i++)
             {
                 sourceFileConfig.Add(
                     new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
@@ -188,7 +188,7 @@ public class ServalClientHelper : IAsyncDisposable
             }
         }
 
-        var response = await TranslationEnginesClient.AddCorpusAsync(
+        TranslationCorpus response = await TranslationEnginesClient.AddCorpusAsync(
             id: engineId,
             new TranslationCorpusConfig
             {
@@ -222,24 +222,24 @@ public class ServalClientHelper : IAsyncDisposable
         if (!Directory.Exists(languageFolder))
             throw new ArgumentException($"The language data directory {languageFolder} does not exist!");
         // Collect files for the corpus
-        var files = Directory.GetFiles(languageFolder);
+        string[] files = Directory.GetFiles(languageFolder);
         if (files.Length == 0)
             throw new ArgumentException($"The language data directory {languageFolder} contains no files!");
         var fileList = new List<DataFile>();
-        var allFiles = await DataFilesClient.GetAllAsync();
+        IList<DataFile> allFiles = await DataFilesClient.GetAllAsync();
         ILookup<string, string> filenameToId = allFiles
             .Where(f => f.Name is not null)
             .ToLookup(file => file.Name!, file => file.Id);
 
-        foreach (var fileName in filesToAdd)
+        foreach (string fileName in filesToAdd)
         {
-            var fullName = _prefix + language + "_" + fileName;
+            string fullName = _prefix + language + "_" + fileName;
 
             //delete files that have the name name
             if (filenameToId.Contains(fullName))
             {
-                var matchedFiles = filenameToId[fullName];
-                foreach (var fileId in matchedFiles)
+                IEnumerable<string> matchedFiles = filenameToId[fullName];
+                foreach (string fileId in matchedFiles)
                 {
                     await DataFilesClient.DeleteAsync(fileId);
                 }
@@ -249,7 +249,7 @@ public class ServalClientHelper : IAsyncDisposable
             string filePath = Path.GetFullPath(Path.Combine(languageFolder, fileName));
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"The corpus file {filePath} does not exist!");
-            var response = await DataFilesClient.CreateAsync(
+            DataFile response = await DataFilesClient.CreateAsync(
                 file: new FileParameter(data: File.OpenRead(filePath), fileName: fileName),
                 format: fileFormat,
                 name: fullName
@@ -279,10 +279,12 @@ public class ServalClientHelper : IAsyncDisposable
                 }
             )
         };
-        var response = authHttpClient.SendAsync(request).Result;
+        HttpResponseMessage response = authHttpClient.SendAsync(request).Result;
         if (response.Content is null)
             throw new HttpRequestException("Error getting auth0 Authentication.");
-        var dict = JsonSerializer.Deserialize<Dictionary<string, object?>>(await response.Content.ReadAsStringAsync());
+        Dictionary<string, object?>? dict = JsonSerializer.Deserialize<Dictionary<string, object?>>(
+            await response.Content.ReadAsStringAsync()
+        );
         return dict?["access_token"]?.ToString() ?? "";
     }
 

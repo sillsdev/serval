@@ -2,14 +2,9 @@
 
 namespace Serval.ApiServer;
 
-public class UrlService : IUrlService
+public class UrlService(LinkGenerator linkGenerator) : IUrlService
 {
-    private readonly LinkGenerator _linkGenerator;
-
-    public UrlService(LinkGenerator linkGenerator)
-    {
-        _linkGenerator = linkGenerator;
-    }
+    private readonly LinkGenerator _linkGenerator = linkGenerator;
 
     public string GetUrl(string endpointName, object ids, string? version = null)
     {

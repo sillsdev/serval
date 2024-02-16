@@ -79,10 +79,10 @@ public class TranslationEnginesController(
     /// * **isModelPersisted**: (optional) - see below
     /// ### smt-transfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-    /// * **IsModelPersisted**: (default to true) All models are persistant and can be updated with train-segment.  False is not supported.
+    /// * **IsModelPersisted**: (default to true) All models are persistent and can be updated with train-segment.  False is not supported.
     /// ### nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-    /// * **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been sucessfully built.
+    /// * **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
     ///
     /// If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
     ///
@@ -803,7 +803,7 @@ public class TranslationEnginesController(
         Build build = Map(engine, buildConfig);
         await _engineService.StartBuildAsync(build, cancellationToken);
 
-        var dto = Map(build);
+        TranslationBuildDto dto = Map(build);
         return Created(dto.Url, dto);
     }
 
@@ -897,7 +897,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Let a link to download the NMT translation model of the last build that was sucessfully saved.
+    /// Let a link to download the NMT translation model of the last build that was successfully saved.
     /// </summary>
     /// <remarks>
     /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
@@ -964,10 +964,10 @@ public class TranslationEnginesController(
         var files = new List<CorpusFile>();
         foreach (TranslationCorpusFileConfigDto fileConfig in fileConfigs)
         {
-            var response = await getDataFileClient.GetResponse<DataFileResult, DataFileNotFound>(
-                new GetDataFile { DataFileId = fileConfig.FileId, Owner = Owner },
-                cancellationToken
-            );
+            Response<DataFileResult, DataFileNotFound> response = await getDataFileClient.GetResponse<
+                DataFileResult,
+                DataFileNotFound
+            >(new GetDataFile { DataFileId = fileConfig.FileId, Owner = Owner }, cancellationToken);
             if (response.Is(out Response<DataFileResult>? result))
             {
                 files.Add(
@@ -1012,13 +1012,17 @@ public class TranslationEnginesController(
             foreach (PretranslateCorpusConfigDto ptcc in source.Pretranslate)
             {
                 if (!corpusIds.Contains(ptcc.CorpusId))
+                {
                     throw new InvalidOperationException(
                         $"The corpus {ptcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
+                }
                 if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
+                {
                     throw new InvalidOperationException(
                         $"The corpus {ptcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
                     );
+                }
                 pretranslateCorpora.Add(
                     new PretranslateCorpus
                     {
@@ -1036,13 +1040,17 @@ public class TranslationEnginesController(
             foreach (TrainingCorpusConfigDto tcc in source.TrainOn)
             {
                 if (!corpusIds.Contains(tcc.CorpusId))
+                {
                     throw new InvalidOperationException(
                         $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
+                }
                 if (tcc.TextIds != null && tcc.ScriptureRange != null)
+                {
                     throw new InvalidOperationException(
                         $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
                     );
+                }
                 trainOnCorpora.Add(
                     new TrainingCorpus
                     {

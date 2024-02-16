@@ -3,31 +3,22 @@ using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
 
-public class TranslationPlatformServiceV1 : TranslationPlatformApi.TranslationPlatformApiBase
+public class TranslationPlatformServiceV1(
+    IRepository<Build> builds,
+    IRepository<Engine> engines,
+    IRepository<Pretranslation> pretranslations,
+    IDataAccessContext dataAccessContext,
+    IPublishEndpoint publishEndpoint
+) : TranslationPlatformApi.TranslationPlatformApiBase
 {
     private const int PretranslationInsertBatchSize = 128;
     private static readonly Empty Empty = new();
 
-    private readonly IRepository<Build> _builds;
-    private readonly IRepository<Engine> _engines;
-    private readonly IRepository<Pretranslation> _pretranslations;
-    private readonly IDataAccessContext _dataAccessContext;
-    private readonly IPublishEndpoint _publishEndpoint;
-
-    public TranslationPlatformServiceV1(
-        IRepository<Build> builds,
-        IRepository<Engine> engines,
-        IRepository<Pretranslation> pretranslations,
-        IDataAccessContext dataAccessContext,
-        IPublishEndpoint publishEndpoint
-    )
-    {
-        _builds = builds;
-        _engines = engines;
-        _pretranslations = pretranslations;
-        _dataAccessContext = dataAccessContext;
-        _publishEndpoint = publishEndpoint;
-    }
+    private readonly IRepository<Build> _builds = builds;
+    private readonly IRepository<Engine> _engines = engines;
+    private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
+    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
+    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
     public override async Task<Empty> BuildStarted(BuildStartedRequest request, ServerCallContext context)
     {

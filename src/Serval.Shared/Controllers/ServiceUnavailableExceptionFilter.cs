@@ -1,13 +1,9 @@
 namespace Serval.Shared.Controllers;
 
-public class ServiceUnavailableExceptionFilter : ExceptionFilterAttribute
+public class ServiceUnavailableExceptionFilter(ILoggerFactory loggerFactory) : ExceptionFilterAttribute
 {
-    private readonly ILogger<ServiceUnavailableExceptionFilter> _logger;
-
-    public ServiceUnavailableExceptionFilter(ILoggerFactory loggerFactory)
-    {
-        _logger = loggerFactory.CreateLogger<ServiceUnavailableExceptionFilter>();
-    }
+    private readonly ILogger<ServiceUnavailableExceptionFilter> _logger =
+        loggerFactory.CreateLogger<ServiceUnavailableExceptionFilter>();
 
     public override void OnException(ExceptionContext context)
     {

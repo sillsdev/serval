@@ -7,7 +7,7 @@ public class HasScopeHandler : AuthorizationHandler<HasScopeRequirement>
         Claim? scopeClaim = context.User.FindFirst(c => c.Type == "scope" && c.Issuer == requirement.Issuer);
         if (scopeClaim is not null)
         {
-            HashSet<string> scopes = scopeClaim.Value.Split(' ').ToHashSet();
+            var scopes = scopeClaim.Value.Split(' ').ToHashSet();
             if (scopes.Contains(requirement.Scope))
                 context.Succeed(requirement);
         }

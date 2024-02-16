@@ -39,7 +39,7 @@ public class DeletedFileCleanerTests
     {
         public TestEnvironment()
         {
-            var options = Substitute.For<IOptionsMonitor<DataFileOptions>>();
+            IOptionsMonitor<DataFileOptions> options = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             options.CurrentValue.Returns(
                 new DataFileOptions
                 {
