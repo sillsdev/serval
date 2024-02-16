@@ -11,6 +11,7 @@
 
 		<UserSecretsId>af61dab1-9882-4f04-a12c-6700340f650a</UserSecretsId>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 	</PropertyGroup>
