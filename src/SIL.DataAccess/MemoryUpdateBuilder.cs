@@ -9,10 +9,10 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
 
     public IUpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> field, TField value)
     {
-        (IEnumerable<object> owners, PropertyInfo? propInfo, object? index) = GetFieldOwners(field);
-        object[]? indices = index == null ? null : new[] { index };
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(field);
+        object[]? indices = index == null ? null : [index];
         foreach (object owner in owners)
-            propInfo.SetValue(owner, value, indices);
+            prop.SetValue(owner, value, indices);
         return this;
     }
 
@@ -31,7 +31,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
             // remove value from a dictionary
             Type dictionaryType = prop.DeclaringType!;
             Type keyType = dictionaryType.GetGenericArguments()[0];
-            MethodInfo removeMethod = dictionaryType.GetMethod("Remove", new[] { keyType })!;
+            MethodInfo removeMethod = dictionaryType.GetMethod("Remove", [keyType])!;
             foreach (object owner in owners)
                 removeMethod.Invoke(owner, new[] { index });
         }
@@ -50,7 +50,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
     public IUpdateBuilder<T> Inc(Expression<Func<T, int>> field, int value = 1)
     {
         (IEnumerable<object> owners, PropertyInfo prop, object? index) = GetFieldOwners(field);
-        object[]? indices = index == null ? null : new[] { index };
+        object[]? indices = index == null ? null : [index];
         foreach (object owner in owners)
         {
             int curValue = (int)prop.GetValue(owner, indices)!;
@@ -61,34 +61,108 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
     }
 
     public IUpdateBuilder<T> RemoveAll<TItem>(
-        Expression<Func<T, IEnumerable<TItem>>> field,
+        Expression<Func<T, IEnumerable<TItem>?>> field,
         Expression<Func<TItem, bool>> predicate
     )
     {
-        Func<T, IEnumerable<TItem>> getCollection = field.Compile();
-        IEnumerable<TItem> collection = getCollection(_entity);
-        TItem[] toRemove = collection.Where(predicate.Compile()).ToArray();
-        MethodInfo? removeMethod = collection.GetType().GetMethod("Remove")!;
-        foreach (TItem item in toRemove)
-            removeMethod.Invoke(collection, new object?[] { item });
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(field);
+        object[]? indices = index == null ? null : [index];
+        Func<TItem, bool> predicateFunc = predicate.Compile();
+        foreach (object owner in owners)
+        {
+            var collection = (IEnumerable<TItem>?)prop.GetValue(owner, indices);
+            MethodInfo? removeMethod = collection?.GetType().GetMethod("Remove");
+            if (collection is not null && removeMethod is not null)
+            {
+                // the collection is mutable, so use Remove method to remove item
+                TItem[] toRemove = collection.Where(predicateFunc).ToArray();
+                foreach (TItem item in toRemove)
+                    removeMethod.Invoke(collection, [item]);
+            }
+            else if (collection is not null)
+            {
+                if (prop.PropertyType.IsArray || prop.PropertyType.IsInterface)
+                {
+                    // the collection type is an array or interface, so construct a new array and set property
+                    TItem[] newValue = collection.Where(i => !predicateFunc(i)).ToArray();
+                    prop.SetValue(owner, newValue, indices);
+                }
+                else
+                {
+                    // the collection type is a collection class, so construct a new collection and set property
+                    var newValue = (IEnumerable<TItem>?)
+                        Activator.CreateInstance(prop.PropertyType, collection.Where(i => !predicateFunc(i)).ToArray());
+                    prop.SetValue(owner, newValue, indices);
+                }
+            }
+        }
         return this;
     }
 
-    public IUpdateBuilder<T> Remove<TItem>(Expression<Func<T, IEnumerable<TItem>>> field, TItem value)
+    public IUpdateBuilder<T> Remove<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value)
     {
-        Func<T, IEnumerable<TItem>> getCollection = field.Compile();
-        IEnumerable<TItem> collection = getCollection(_entity);
-        MethodInfo addMethod = collection.GetType().GetMethod("Remove")!;
-        addMethod.Invoke(collection, new object?[] { value });
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(field);
+        object[]? indices = index == null ? null : [index];
+        foreach (object owner in owners)
+        {
+            var collection = (IEnumerable<TItem>?)prop.GetValue(owner, indices);
+            MethodInfo? removeMethod = collection?.GetType().GetMethod("Remove");
+            if (removeMethod is not null)
+            {
+                // the collection is mutable, so use Remove method to remove item
+                removeMethod.Invoke(collection, [value]);
+            }
+            else if (collection is not null)
+            {
+                if (prop.PropertyType.IsArray || prop.PropertyType.IsInterface)
+                {
+                    // the collection type is an array or interface, so construct a new array and set property
+                    TItem[] newValue = collection.Except([value]).ToArray();
+                    prop.SetValue(owner, newValue, indices);
+                }
+                else
+                {
+                    // the collection type is a collection class, so construct a new collection and set property
+                    var newValue = (IEnumerable<TItem>?)
+                        Activator.CreateInstance(prop.PropertyType, collection.Except([value]).ToArray());
+                    prop.SetValue(owner, newValue, indices);
+                }
+            }
+        }
         return this;
     }
 
-    public IUpdateBuilder<T> Add<TItem>(Expression<Func<T, IEnumerable<TItem>>> field, TItem value)
+    public IUpdateBuilder<T> Add<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value)
     {
-        Func<T, IEnumerable<TItem>> getCollection = field.Compile();
-        IEnumerable<TItem> collection = getCollection(_entity);
-        MethodInfo addMethod = collection.GetType().GetMethod("Add")!;
-        addMethod.Invoke(collection, new object?[] { value });
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(field);
+        object[]? indices = index == null ? null : [index];
+        foreach (object owner in owners)
+        {
+            var collection = (IEnumerable<TItem>?)prop.GetValue(owner, indices);
+            MethodInfo? addMethod = collection?.GetType().GetMethod("Add");
+            if (addMethod is not null)
+            {
+                // the collection is mutable, so use Add method to insert item
+                addMethod.Invoke(collection, [value]);
+            }
+            else
+            {
+                collection ??= Array.Empty<TItem>();
+                if (prop.PropertyType.IsArray || prop.PropertyType.IsInterface)
+                {
+                    // the collection type is an array or interface, so construct a new array and set property
+                    TItem[] newValue = collection.Concat([value]).ToArray();
+                    prop.SetValue(owner, newValue, indices);
+                }
+                else
+                {
+                    // the collection type is a collection class, so construct a new collection and set property
+                    var newValue = (IEnumerable<TItem>?)
+                        Activator.CreateInstance(prop.PropertyType, collection.Concat([value]).ToArray());
+                    prop.SetValue(owner, newValue, indices);
+                }
+            }
+        }
         return this;
     }
 
