@@ -37,7 +37,7 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
     }
 
     public IUpdateBuilder<T> RemoveAll<TItem>(
-        Expression<Func<T, IEnumerable<TItem>>> field,
+        Expression<Func<T, IEnumerable<TItem>?>> field,
         Expression<Func<TItem, bool>> predicate
     )
     {
@@ -45,13 +45,13 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
         return this;
     }
 
-    public IUpdateBuilder<T> Remove<TItem>(Expression<Func<T, IEnumerable<TItem>>> field, TItem value)
+    public IUpdateBuilder<T> Remove<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value)
     {
         _defs.Add(_builder.Pull(ToFieldDefinition(field), value));
         return this;
     }
 
-    public IUpdateBuilder<T> Add<TItem>(Expression<Func<T, IEnumerable<TItem>>> field, TItem value)
+    public IUpdateBuilder<T> Add<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value)
     {
         _defs.Add(_builder.Push(ToFieldDefinition(field), value));
         return this;

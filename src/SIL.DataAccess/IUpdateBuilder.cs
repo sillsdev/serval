@@ -12,11 +12,11 @@ public interface IUpdateBuilder<T>
     IUpdateBuilder<T> Inc(Expression<Func<T, int>> field, int value = 1);
 
     IUpdateBuilder<T> RemoveAll<TItem>(
-        Expression<Func<T, IEnumerable<TItem>>> field,
+        Expression<Func<T, IEnumerable<TItem>?>> field,
         Expression<Func<TItem, bool>> predicate
     );
 
-    IUpdateBuilder<T> Remove<TItem>(Expression<Func<T, IEnumerable<TItem>>> field, TItem value);
+    IUpdateBuilder<T> Remove<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value);
 
-    IUpdateBuilder<T> Add<TItem>(Expression<Func<T, IEnumerable<TItem>>> field, TItem value);
+    IUpdateBuilder<T> Add<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value);
 }
