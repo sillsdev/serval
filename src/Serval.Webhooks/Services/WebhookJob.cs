@@ -62,7 +62,6 @@ public class WebhookJob(IRepository<Webhook> hooks, HttpClient httpClient, IOpti
     {
         public WebhookEvent Event { get; init; }
 
-        [JsonExtensionData]
         public JsonObject? Payload { get; init; }
     }
 }
