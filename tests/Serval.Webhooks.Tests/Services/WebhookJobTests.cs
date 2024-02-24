@@ -85,7 +85,7 @@ public class WebhookJobTests
         env.MockHttp.Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
-                "sha256=8EC2360A34811845884D8FCE03866EA8FAD9429AAA9E6247D7A817AD2E170B8F"
+                "sha256=B9FE9CD72B68B88D8C3B644ACD5E2A7A5D3DF1A4E5553C13605C67E47D89AB8B"
             )
             .Respond(HttpStatusCode.RequestTimeout);
 
@@ -114,7 +114,7 @@ public class WebhookJobTests
         env.MockHttp.Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
-                "sha256=8EC2360A34811845884D8FCE03866EA8FAD9429AAA9E6247D7A817AD2E170B8F"
+                "sha256=B9FE9CD72B68B88D8C3B644ACD5E2A7A5D3DF1A4E5553C13605C67E47D89AB8B"
             )
             .Throw(new HttpRequestException());
 
