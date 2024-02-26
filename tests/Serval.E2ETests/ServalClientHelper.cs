@@ -2,6 +2,7 @@ namespace Serval.E2ETests;
 
 public class ServalClientHelper : IAsyncDisposable
 {
+    private string _authToken = "";
     private readonly HttpClient _httpClient;
     private readonly Dictionary<string, string> _enginePerUser = [];
     private readonly string _prefix;
@@ -48,10 +49,10 @@ public class ServalClientHelper : IAsyncDisposable
         if (clientSecret is null)
             throw new InvalidOperationException("The environment variable SERVAL_CLIENT_SECRET is not set.");
 
-        string authToken = await GetAuth0AuthenticationAsync(authUrl, _audience, clientId, clientSecret);
+        if (string.IsNullOrEmpty(_authToken))
+            _authToken = await GetAuth0AuthenticationAsync(authUrl, _audience, clientId, clientSecret);
 
-        _httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {authToken}");
-
+        _httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {_authToken}");
         await ClearEnginesAsync();
     }
 
@@ -303,13 +304,16 @@ public class ServalClientHelper : IAsyncDisposable
         return handler;
     }
 
-    public async ValueTask DisposeAsync()
+    public async ValueTask TearDown()
     {
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
             await ClearEnginesAsync();
+    }
 
+    public ValueTask DisposeAsync()
+    {
         _httpClient.Dispose();
         GC.SuppressFinalize(this);
-        return;
+        return new ValueTask(Task.CompletedTask);
     }
 }
