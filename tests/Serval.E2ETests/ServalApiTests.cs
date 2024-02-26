@@ -6,11 +6,16 @@ public class ServalApiTests
 {
     private ServalClientHelper _helperClient;
 
+    // save between calls to not overuse Auth0
+    private string _authToken = "";
+
     [SetUp]
     public async Task SetUp()
     {
-        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true);
+        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true, authToken: _authToken);
         await _helperClient.InitAsync();
+        _authToken = _helperClient.AuthToken;
+        await _helperClient.SetupAsync();
     }
 
     [Test]
