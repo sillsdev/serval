@@ -902,8 +902,13 @@ public class TranslationEnginesController(
     /// <remarks>
     /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
     /// then the model from the most recent successful build can be downloaded.
+    ///
     /// The endpoint will return a URL that can be used to download the model for up to 1 hour
     /// after the request is made.  If the URL is not used within that time, a new request will need to be made.
+    ///
+    /// The download itself is created by g-zipping together the folder containing the fine tuned model
+    /// with all necessary supporting files.  This zipped folder is then named by the pattern:
+    ///  * &lt;engine_id&gt;_&lt;build_revision&gt;.tar.gz
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
