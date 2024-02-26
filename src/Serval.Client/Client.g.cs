@@ -1723,7 +1723,7 @@ namespace Serval.Client
         /// <br/>            
         /// <br/>The download itself is created by g-zipping together the folder containing the fine tuned model
         /// <br/>with all necessary supporting files.  This zipped folder is then named by the pattern:
-        /// <br/> * &lt;engine_id&gt;_&lt;build_revision&gt;.tar.gz
+        /// <br/> * &lt;engine_id&gt;_&lt;model_revision&gt;.tar.gz
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <returns>The url to download the model.</returns>
@@ -4342,7 +4342,7 @@ namespace Serval.Client
         /// <br/>            
         /// <br/>The download itself is created by g-zipping together the folder containing the fine tuned model
         /// <br/>with all necessary supporting files.  This zipped folder is then named by the pattern:
-        /// <br/> * &lt;engine_id&gt;_&lt;build_revision&gt;.tar.gz
+        /// <br/> * &lt;engine_id&gt;_&lt;model_revision&gt;.tar.gz
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <returns>The url to download the model.</returns>

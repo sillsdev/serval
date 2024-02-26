@@ -912,7 +912,7 @@ public class TranslationEnginesController(
     ///
     /// The download itself is created by g-zipping together the folder containing the fine tuned model
     /// with all necessary supporting files.  This zipped folder is then named by the pattern:
-    ///  * &lt;engine_id&gt;_&lt;build_revision&gt;.tar.gz
+    ///  * &lt;engine_id&gt;_&lt;model_revision&gt;.tar.gz
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
