@@ -513,6 +513,7 @@ public class TranslationEnginesController(
     /// * **Translation**: the text of the pretranslation
     ///
     /// Pretranslations can be filtered by text id if provided.
+    /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -566,6 +567,8 @@ public class TranslationEnginesController(
     ///   * The references defined in the SourceFile per line, if any.
     ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
     /// * **Translation**: the text of the pretranslation
+    ///
+    /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -616,6 +619,7 @@ public class TranslationEnginesController(
     /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
     /// segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
     /// pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+    /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>

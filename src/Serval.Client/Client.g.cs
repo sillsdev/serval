@@ -1583,6 +1583,7 @@ namespace Serval.Client
         /// <br/>* **Translation**: the text of the pretranslation
         /// <br/>            
         /// <br/>Pretranslations can be filtered by text id if provided.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -1602,6 +1603,8 @@ namespace Serval.Client
         /// <br/>  * The references defined in the SourceFile per line, if any.
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **Translation**: the text of the pretranslation
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -1618,6 +1621,7 @@ namespace Serval.Client
         /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
         /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -3316,6 +3320,7 @@ namespace Serval.Client
         /// <br/>* **Translation**: the text of the pretranslation
         /// <br/>            
         /// <br/>Pretranslations can be filtered by text id if provided.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -3447,6 +3452,8 @@ namespace Serval.Client
         /// <br/>  * The references defined in the SourceFile per line, if any.
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **Translation**: the text of the pretranslation
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -3573,6 +3580,7 @@ namespace Serval.Client
         /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
         /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
