@@ -513,6 +513,7 @@ public class TranslationEnginesController(
     /// * **Translation**: the text of the pretranslation
     ///
     /// Pretranslations can be filtered by text id if provided.
+    /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -566,6 +567,8 @@ public class TranslationEnginesController(
     ///   * The references defined in the SourceFile per line, if any.
     ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
     /// * **Translation**: the text of the pretranslation
+    ///
+    /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -616,6 +619,7 @@ public class TranslationEnginesController(
     /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
     /// segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
     /// pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+    /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -902,8 +906,13 @@ public class TranslationEnginesController(
     /// <remarks>
     /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
     /// then the model from the most recent successful build can be downloaded.
+    ///
     /// The endpoint will return a URL that can be used to download the model for up to 1 hour
     /// after the request is made.  If the URL is not used within that time, a new request will need to be made.
+    ///
+    /// The download itself is created by g-zipping together the folder containing the fine tuned model
+    /// with all necessary supporting files.  This zipped folder is then named by the pattern:
+    ///  * &lt;engine_id&gt;_&lt;build_revision&gt;.tar.gz
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>

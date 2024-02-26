@@ -1583,6 +1583,7 @@ namespace Serval.Client
         /// <br/>* **Translation**: the text of the pretranslation
         /// <br/>            
         /// <br/>Pretranslations can be filtered by text id if provided.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -1602,6 +1603,8 @@ namespace Serval.Client
         /// <br/>  * The references defined in the SourceFile per line, if any.
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **Translation**: the text of the pretranslation
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -1618,6 +1621,7 @@ namespace Serval.Client
         /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
         /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -1713,8 +1717,13 @@ namespace Serval.Client
         /// <remarks>
         /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
         /// <br/>then the model from the most recent successful build can be downloaded.
+        /// <br/>            
         /// <br/>The endpoint will return a URL that can be used to download the model for up to 1 hour
         /// <br/>after the request is made.  If the URL is not used within that time, a new request will need to be made.
+        /// <br/>            
+        /// <br/>The download itself is created by g-zipping together the folder containing the fine tuned model
+        /// <br/>with all necessary supporting files.  This zipped folder is then named by the pattern:
+        /// <br/> * &lt;engine_id&gt;_&lt;build_revision&gt;.tar.gz
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <returns>The url to download the model.</returns>
@@ -3311,6 +3320,7 @@ namespace Serval.Client
         /// <br/>* **Translation**: the text of the pretranslation
         /// <br/>            
         /// <br/>Pretranslations can be filtered by text id if provided.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -3442,6 +3452,8 @@ namespace Serval.Client
         /// <br/>  * The references defined in the SourceFile per line, if any.
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **Translation**: the text of the pretranslation
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -3568,6 +3580,7 @@ namespace Serval.Client
         /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
         /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -4323,8 +4336,13 @@ namespace Serval.Client
         /// <remarks>
         /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
         /// <br/>then the model from the most recent successful build can be downloaded.
+        /// <br/>            
         /// <br/>The endpoint will return a URL that can be used to download the model for up to 1 hour
         /// <br/>after the request is made.  If the URL is not used within that time, a new request will need to be made.
+        /// <br/>            
+        /// <br/>The download itself is created by g-zipping together the folder containing the fine tuned model
+        /// <br/>with all necessary supporting files.  This zipped folder is then named by the pattern:
+        /// <br/> * &lt;engine_id&gt;_&lt;build_revision&gt;.tar.gz
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <returns>The url to download the model.</returns>
