@@ -2,18 +2,13 @@ namespace Serval.E2ETests;
 
 public class ServalClientHelper : IAsyncDisposable
 {
-    public string AuthToken { set; get; }
+    private string _authToken = "";
     private readonly HttpClient _httpClient;
     private readonly Dictionary<string, string> _enginePerUser = [];
     private readonly string _prefix;
     private readonly string _audience;
 
-    public ServalClientHelper(
-        string audience,
-        string prefix = "SCE_",
-        bool ignoreSSLErrors = false,
-        string authToken = ""
-    )
+    public ServalClientHelper(string audience, string prefix = "SCE_", bool ignoreSSLErrors = false)
     {
         _audience = audience;
         //setup http client
@@ -40,7 +35,6 @@ public class ServalClientHelper : IAsyncDisposable
             Pretranslate = new List<PretranslateCorpusConfig>(),
             Options = "{\"max_steps\":10}"
         };
-        AuthToken = authToken;
     }
 
     public async Task InitAsync()
@@ -55,14 +49,10 @@ public class ServalClientHelper : IAsyncDisposable
         if (clientSecret is null)
             throw new InvalidOperationException("The environment variable SERVAL_CLIENT_SECRET is not set.");
 
-        if (string.IsNullOrEmpty(AuthToken))
-            AuthToken = await GetAuth0AuthenticationAsync(authUrl, _audience, clientId, clientSecret);
+        if (string.IsNullOrEmpty(_authToken))
+            _authToken = await GetAuth0AuthenticationAsync(authUrl, _audience, clientId, clientSecret);
 
-        _httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {AuthToken}");
-    }
-
-    public async Task SetupAsync()
-    {
+        _httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {_authToken}");
         await ClearEnginesAsync();
     }
 

@@ -6,16 +6,11 @@ public class ServalApiTests
 {
     private ServalClientHelper _helperClient;
 
-    // save between calls to not overuse Auth0
-    private string _authToken = "";
-
-    [SetUp]
-    public async Task SetUp()
+    [OneTimeSetUp]
+    public async Task OneTimeSetup()
     {
-        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true, authToken: _authToken);
+        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true);
         await _helperClient.InitAsync();
-        _authToken = _helperClient.AuthToken;
-        await _helperClient.SetupAsync();
     }
 
     [Test]
@@ -422,8 +417,8 @@ public class ServalApiTests
         Assert.That(lTrans, Is.Not.Empty);
     }
 
-    [TearDown]
-    public async Task TearDown()
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown()
     {
         await _helperClient.DisposeAsync();
     }
