@@ -4422,7 +4422,7 @@ namespace Serval.Client
                         if (status_ == 405)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The translation engine does not support cancelling builds.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The translation engine does not support downloading builds.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)

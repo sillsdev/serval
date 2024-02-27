@@ -920,7 +920,7 @@ public class TranslationEnginesController(
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
     /// <response code="404">The engine does not exist or there is no saved model.</response>
-    /// <response code="405">The translation engine does not support cancelling builds.</response>
+    /// <response code="405">The translation engine does not support downloading builds.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/model-download-url")]
