@@ -304,13 +304,16 @@ public class ServalClientHelper : IAsyncDisposable
         return handler;
     }
 
-    public async ValueTask DisposeAsync()
+    public async ValueTask TearDown()
     {
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
             await ClearEnginesAsync();
+    }
 
+    public ValueTask DisposeAsync()
+    {
         _httpClient.Dispose();
         GC.SuppressFinalize(this);
-        return;
+        return new ValueTask(Task.CompletedTask);
     }
 }

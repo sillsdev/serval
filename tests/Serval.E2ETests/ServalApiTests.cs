@@ -417,6 +417,12 @@ public class ServalApiTests
         Assert.That(lTrans, Is.Not.Empty);
     }
 
+    [TearDown]
+    public async Task TearDown()
+    {
+        await _helperClient.TearDown();
+    }
+
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
     {
