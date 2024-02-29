@@ -42,7 +42,7 @@ spec:
               memory: "100Mi"
               cpu: "100m"
             requests:
-              memory: "50Mi"
+              memory: "100Mi"
               cpu: "100m"
           volumeMounts:
             - mountPath: /var/lib/serval
