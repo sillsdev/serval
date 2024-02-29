@@ -50,7 +50,7 @@ def _wrap_response(resp: requests.Response) -> HTTPResponse:
     return cast(HTTPResponse, _WrappedResponse(resp))
 
 
-def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
+def from_obj(obj: Any, expected: List[type], path: str = "") -> Any:
     """
     Checks and converts the given obj along the expected types.
 
@@ -60,7 +60,9 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
     :return: the converted object
     """
     if not expected:
-        raise ValueError("`expected` is empty, but at least one type needs to be specified.")
+        raise ValueError(
+            "`expected` is empty, but at least one type needs to be specified."
+        )
 
     exp = expected[0]
 
@@ -72,12 +74,18 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
             return obj
 
         raise ValueError(
-            'Expected object of type int or float at {!r}, but got {}.'.format(path, type(obj)))
+            "Expected object of type int or float at {!r}, but got {}.".format(
+                path, type(obj)
+            )
+        )
 
     if exp in [bool, int, str, list, dict]:
         if not isinstance(obj, exp):
             raise ValueError(
-                'Expected object of type {} at {!r}, but got {}.'.format(exp, path, type(obj)))
+                "Expected object of type {} at {!r}, but got {}.".format(
+                    exp, path, type(obj)
+                )
+            )
 
     if exp in [bool, int, float, str]:
         return obj
@@ -86,7 +94,8 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
         lst = []  # type: List[Any]
         for i, value in enumerate(obj):
             lst.append(
-                from_obj(value, expected=expected[1:], path='{}[{}]'.format(path, i)))
+                from_obj(value, expected=expected[1:], path="{}[{}]".format(path, i))
+            )
 
         return lst
 
@@ -95,9 +104,14 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
         for key, value in obj.items():
             if not isinstance(key, str):
                 raise ValueError(
-                    'Expected a key of type str at path {!r}, got: {}'.format(path, type(key)))
+                    "Expected a key of type str at path {!r}, got: {}".format(
+                        path, type(key)
+                    )
+                )
 
-            adict[key] = from_obj(value, expected=expected[1:], path='{}[{!r}]'.format(path, key))
+            adict[key] = from_obj(
+                value, expected=expected[1:], path="{}[{!r}]".format(path, key)
+            )
 
         return adict
 
@@ -118,9 +132,6 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
 
     if exp == TranslationEngineConfig:
         return translation_engine_config_from_obj(obj, path=path)
-
-    if exp == Queue:
-        return queue_from_obj(obj, path=path)
 
     if exp == TranslationResult:
         return translation_result_from_obj(obj, path=path)
@@ -179,6 +190,15 @@ def from_obj(obj: Any, expected: List[type], path: str = '') -> Any:
     if exp == PretranslateCorpusConfig:
         return pretranslate_corpus_config_from_obj(obj, path=path)
 
+    if exp == ModelDownloadURL:
+        return model_download_url_from_obj(obj, path=path)
+
+    if exp == Queue:
+        return queue_from_obj(obj, path=path)
+
+    if exp == LanguageInfo:
+        return language_info_from_obj(obj, path=path)
+
     if exp == Webhook:
         return webhook_from_obj(obj, path=path)
 
@@ -198,12 +218,17 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
     :return: JSON-able representation of the object
     """
     if not expected:
-        raise ValueError("`expected` is empty, but at least one type needs to be specified.")
+        raise ValueError(
+            "`expected` is empty, but at least one type needs to be specified."
+        )
 
     exp = expected[0]
     if not isinstance(obj, exp):
-        raise ValueError('Expected object of type {} at path {!r}, but got {}.'.format(
-            exp, path, type(obj)))
+        raise ValueError(
+            "Expected object of type {} at path {!r}, but got {}.".format(
+                exp, path, type(obj)
+            )
+        )
 
     # Assert on primitive types to help type-hinting.
     if exp == bool:
@@ -228,7 +253,8 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         lst = []  # type: List[Any]
         for i, value in enumerate(obj):
             lst.append(
-                to_jsonable(value, expected=expected[1:], path='{}[{}]'.format(path, i)))
+                to_jsonable(value, expected=expected[1:], path="{}[{}]".format(path, i))
+            )
 
         return lst
 
@@ -239,12 +265,14 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         for key, value in obj.items():
             if not isinstance(key, str):
                 raise ValueError(
-                    'Expected a key of type str at path {!r}, got: {}'.format(path, type(key)))
+                    "Expected a key of type str at path {!r}, got: {}".format(
+                        path, type(key)
+                    )
+                )
 
             adict[key] = to_jsonable(
-                value,
-                expected=expected[1:],
-                path='{}[{!r}]'.format(path, key))
+                value, expected=expected[1:], path="{}[{!r}]".format(path, key)
+            )
 
         return adict
 
@@ -271,10 +299,6 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
     if exp == TranslationEngineConfig:
         assert isinstance(obj, TranslationEngineConfig)
         return translation_engine_config_to_jsonable(obj, path=path)
-
-    if exp == Queue:
-        assert isinstance(obj, Queue)
-        return queue_to_jsonable(obj, path=path)
 
     if exp == TranslationResult:
         assert isinstance(obj, TranslationResult)
@@ -352,6 +376,18 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         assert isinstance(obj, PretranslateCorpusConfig)
         return pretranslate_corpus_config_to_jsonable(obj, path=path)
 
+    if exp == ModelDownloadURL:
+        assert isinstance(obj, ModelDownloadURL)
+        return model_download_url_to_jsonable(obj, path=path)
+
+    if exp == Queue:
+        assert isinstance(obj, Queue)
+        return queue_to_jsonable(obj, path=path)
+
+    if exp == LanguageInfo:
+        assert isinstance(obj, LanguageInfo)
+        return language_info_to_jsonable(obj, path=path)
+
     if exp == Webhook:
         assert isinstance(obj, Webhook)
         return webhook_to_jsonable(obj, path=path)
@@ -365,10 +401,8 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
 
 class HealthReport:
     def __init__(
-            self,
-            status: str,
-            total_duration: str,
-            results: Dict[str, 'HealthReportEntry']) -> None:
+        self, status: str, total_duration: str, results: Dict[str, "HealthReportEntry"]
+    ) -> None:
         """Initializes with the given values."""
         self.status = status
 
@@ -387,10 +421,7 @@ class HealthReport:
 
 def new_health_report() -> HealthReport:
     """Generates an instance of HealthReport with default values."""
-    return HealthReport(
-        status='',
-        total_duration='',
-        results=dict())
+    return HealthReport(status="", total_duration="", results=dict())
 
 
 def health_report_from_obj(obj: Any, path: str = "") -> HealthReport:
@@ -402,37 +433,40 @@ def health_report_from_obj(obj: Any, path: str = "") -> HealthReport:
     :return: parsed instance of HealthReport
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     status_from_obj = from_obj(
-        obj['status'],
-        expected=[str],
-        path=path + '.status')  # type: str
+        obj["status"], expected=[str], path=path + ".status"
+    )  # type: str
 
     total_duration_from_obj = from_obj(
-        obj['totalDuration'],
-        expected=[str],
-        path=path + '.totalDuration')  # type: str
+        obj["totalDuration"], expected=[str], path=path + ".totalDuration"
+    )  # type: str
 
     results_from_obj = from_obj(
-        obj['results'],
-        expected=[dict, HealthReportEntry],
-        path=path + '.results')  # type: Dict[str, 'HealthReportEntry']
+        obj["results"], expected=[dict, HealthReportEntry], path=path + ".results"
+    )  # type: Dict[str, 'HealthReportEntry']
 
     return HealthReport(
         status=status_from_obj,
         total_duration=total_duration_from_obj,
-        results=results_from_obj)
+        results=results_from_obj,
+    )
 
 
 def health_report_to_jsonable(
-        health_report: HealthReport,
-        path: str = "") -> MutableMapping[str, Any]:
+    health_report: HealthReport, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of HealthReport.
 
@@ -442,26 +476,28 @@ def health_report_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['status'] = health_report.status
+    res["status"] = health_report.status
 
-    res['totalDuration'] = health_report.total_duration
+    res["totalDuration"] = health_report.total_duration
 
-    res['results'] = to_jsonable(
+    res["results"] = to_jsonable(
         health_report.results,
         expected=[dict, HealthReportEntry],
-        path='{}.results'.format(path))
+        path="{}.results".format(path),
+    )
 
     return res
 
 
 class HealthReportEntry:
     def __init__(
-            self,
-            status: str,
-            duration: str,
-            description: Optional[str] = None,
-            exception: Optional[str] = None,
-            data: Optional[Dict[str, str]] = None) -> None:
+        self,
+        status: str,
+        duration: str,
+        description: Optional[str] = None,
+        exception: Optional[str] = None,
+        data: Optional[Dict[str, str]] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.status = status
 
@@ -484,9 +520,7 @@ class HealthReportEntry:
 
 def new_health_report_entry() -> HealthReportEntry:
     """Generates an instance of HealthReportEntry with default values."""
-    return HealthReportEntry(
-        status='',
-        duration='')
+    return HealthReportEntry(status="", duration="")
 
 
 def health_report_entry_from_obj(obj: Any, path: str = "") -> HealthReportEntry:
@@ -498,47 +532,47 @@ def health_report_entry_from_obj(obj: Any, path: str = "") -> HealthReportEntry:
     :return: parsed instance of HealthReportEntry
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     status_from_obj = from_obj(
-        obj['status'],
-        expected=[str],
-        path=path + '.status')  # type: str
+        obj["status"], expected=[str], path=path + ".status"
+    )  # type: str
 
     duration_from_obj = from_obj(
-        obj['duration'],
-        expected=[str],
-        path=path + '.duration')  # type: str
+        obj["duration"], expected=[str], path=path + ".duration"
+    )  # type: str
 
-    obj_description = obj.get('description', None)
+    obj_description = obj.get("description", None)
     if obj_description is not None:
         description_from_obj = from_obj(
-            obj_description,
-            expected=[str],
-            path=path + '.description')  # type: Optional[str]
+            obj_description, expected=[str], path=path + ".description"
+        )  # type: Optional[str]
     else:
         description_from_obj = None
 
-    obj_exception = obj.get('exception', None)
+    obj_exception = obj.get("exception", None)
     if obj_exception is not None:
         exception_from_obj = from_obj(
-            obj_exception,
-            expected=[str],
-            path=path + '.exception')  # type: Optional[str]
+            obj_exception, expected=[str], path=path + ".exception"
+        )  # type: Optional[str]
     else:
         exception_from_obj = None
 
-    obj_data = obj.get('data', None)
+    obj_data = obj.get("data", None)
     if obj_data is not None:
         data_from_obj = from_obj(
-            obj_data,
-            expected=[dict, str],
-            path=path + '.data')  # type: Optional[Dict[str, str]]
+            obj_data, expected=[dict, str], path=path + ".data"
+        )  # type: Optional[Dict[str, str]]
     else:
         data_from_obj = None
 
@@ -547,12 +581,13 @@ def health_report_entry_from_obj(obj: Any, path: str = "") -> HealthReportEntry:
         duration=duration_from_obj,
         description=description_from_obj,
         exception=exception_from_obj,
-        data=data_from_obj)
+        data=data_from_obj,
+    )
 
 
 def health_report_entry_to_jsonable(
-        health_report_entry: HealthReportEntry,
-        path: str = "") -> MutableMapping[str, Any]:
+    health_report_entry: HealthReportEntry, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of HealthReportEntry.
 
@@ -562,30 +597,26 @@ def health_report_entry_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['status'] = health_report_entry.status
+    res["status"] = health_report_entry.status
 
-    res['duration'] = health_report_entry.duration
+    res["duration"] = health_report_entry.duration
 
     if health_report_entry.description is not None:
-        res['description'] = health_report_entry.description
+        res["description"] = health_report_entry.description
 
     if health_report_entry.exception is not None:
-        res['exception'] = health_report_entry.exception
+        res["exception"] = health_report_entry.exception
 
     if health_report_entry.data is not None:
-        res['data'] = to_jsonable(
-        health_report_entry.data,
-        expected=[dict, str],
-        path='{}.data'.format(path))
+        res["data"] = to_jsonable(
+            health_report_entry.data, expected=[dict, str], path="{}.data".format(path)
+        )
 
     return res
 
 
 class DeploymentInfo:
-    def __init__(
-            self,
-            deployment_version: str,
-            asp_net_core_environment: str) -> None:
+    def __init__(self, deployment_version: str, asp_net_core_environment: str) -> None:
         """Initializes with the given values."""
         self.deployment_version = deployment_version
 
@@ -602,9 +633,7 @@ class DeploymentInfo:
 
 def new_deployment_info() -> DeploymentInfo:
     """Generates an instance of DeploymentInfo with default values."""
-    return DeploymentInfo(
-        deployment_version='',
-        asp_net_core_environment='')
+    return DeploymentInfo(deployment_version="", asp_net_core_environment="")
 
 
 def deployment_info_from_obj(obj: Any, path: str = "") -> DeploymentInfo:
@@ -616,31 +645,37 @@ def deployment_info_from_obj(obj: Any, path: str = "") -> DeploymentInfo:
     :return: parsed instance of DeploymentInfo
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     deployment_version_from_obj = from_obj(
-        obj['deploymentVersion'],
-        expected=[str],
-        path=path + '.deploymentVersion')  # type: str
+        obj["deploymentVersion"], expected=[str], path=path + ".deploymentVersion"
+    )  # type: str
 
     asp_net_core_environment_from_obj = from_obj(
-        obj['aspNetCoreEnvironment'],
+        obj["aspNetCoreEnvironment"],
         expected=[str],
-        path=path + '.aspNetCoreEnvironment')  # type: str
+        path=path + ".aspNetCoreEnvironment",
+    )  # type: str
 
     return DeploymentInfo(
         deployment_version=deployment_version_from_obj,
-        asp_net_core_environment=asp_net_core_environment_from_obj)
+        asp_net_core_environment=asp_net_core_environment_from_obj,
+    )
 
 
 def deployment_info_to_jsonable(
-        deployment_info: DeploymentInfo,
-        path: str = "") -> MutableMapping[str, Any]:
+    deployment_info: DeploymentInfo, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of DeploymentInfo.
 
@@ -650,21 +685,17 @@ def deployment_info_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['deploymentVersion'] = deployment_info.deployment_version
+    res["deploymentVersion"] = deployment_info.deployment_version
 
-    res['aspNetCoreEnvironment'] = deployment_info.asp_net_core_environment
+    res["aspNetCoreEnvironment"] = deployment_info.asp_net_core_environment
 
     return res
 
 
 class DataFile:
     def __init__(
-            self,
-            id: str,
-            url: str,
-            format: str,
-            revision: int,
-            name: Optional[str] = None) -> None:
+        self, id: str, url: str, format: str, revision: int, name: Optional[str] = None
+    ) -> None:
         """Initializes with the given values."""
         self.id = id
 
@@ -687,11 +718,7 @@ class DataFile:
 
 def new_data_file() -> DataFile:
     """Generates an instance of DataFile with default values."""
-    return DataFile(
-        id='',
-        url='',
-        format='',
-        revision=0)
+    return DataFile(id="", url="", format="", revision=0)
 
 
 def data_file_from_obj(obj: Any, path: str = "") -> DataFile:
@@ -703,39 +730,35 @@ def data_file_from_obj(obj: Any, path: str = "") -> DataFile:
     :return: parsed instance of DataFile
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
-    id_from_obj = from_obj(
-        obj['id'],
-        expected=[str],
-        path=path + '.id')  # type: str
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
 
-    url_from_obj = from_obj(
-        obj['url'],
-        expected=[str],
-        path=path + '.url')  # type: str
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
 
     format_from_obj = from_obj(
-        obj['format'],
-        expected=[str],
-        path=path + '.format')  # type: str
+        obj["format"], expected=[str], path=path + ".format"
+    )  # type: str
 
     revision_from_obj = from_obj(
-        obj['revision'],
-        expected=[int],
-        path=path + '.revision')  # type: int
+        obj["revision"], expected=[int], path=path + ".revision"
+    )  # type: int
 
-    obj_name = obj.get('name', None)
+    obj_name = obj.get("name", None)
     if obj_name is not None:
         name_from_obj = from_obj(
-            obj_name,
-            expected=[str],
-            path=path + '.name')  # type: Optional[str]
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
     else:
         name_from_obj = None
 
@@ -744,12 +767,13 @@ def data_file_from_obj(obj: Any, path: str = "") -> DataFile:
         url=url_from_obj,
         format=format_from_obj,
         revision=revision_from_obj,
-        name=name_from_obj)
+        name=name_from_obj,
+    )
 
 
 def data_file_to_jsonable(
-        data_file: DataFile,
-        path: str = "") -> MutableMapping[str, Any]:
+    data_file: DataFile, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of DataFile.
 
@@ -759,33 +783,35 @@ def data_file_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['id'] = data_file.id
+    res["id"] = data_file.id
 
-    res['url'] = data_file.url
+    res["url"] = data_file.url
 
-    res['format'] = data_file.format
+    res["format"] = data_file.format
 
-    res['revision'] = data_file.revision
+    res["revision"] = data_file.revision
 
     if data_file.name is not None:
-        res['name'] = data_file.name
+        res["name"] = data_file.name
 
     return res
 
 
 class TranslationEngine:
     def __init__(
-            self,
-            id: str,
-            url: str,
-            source_language: str,
-            target_language: str,
-            type: str,
-            is_building: bool,
-            model_revision: int,
-            confidence: float,
-            corpus_size: int,
-            name: Optional[str] = None) -> None:
+        self,
+        id: str,
+        url: str,
+        source_language: str,
+        target_language: str,
+        type: str,
+        is_building: bool,
+        model_revision: int,
+        confidence: float,
+        corpus_size: int,
+        name: Optional[str] = None,
+        is_model_persisted: Optional[bool] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.id = id
 
@@ -807,6 +833,8 @@ class TranslationEngine:
 
         self.name = name
 
+        self.is_model_persisted = is_model_persisted
+
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
         Dispatches the conversion to translation_engine_to_jsonable.
@@ -819,15 +847,16 @@ class TranslationEngine:
 def new_translation_engine() -> TranslationEngine:
     """Generates an instance of TranslationEngine with default values."""
     return TranslationEngine(
-        id='',
-        url='',
-        source_language='',
-        target_language='',
-        type='',
+        id="",
+        url="",
+        source_language="",
+        target_language="",
+        type="",
         is_building=False,
         model_revision=0,
         confidence=0.0,
-        corpus_size=0)
+        corpus_size=0,
+    )
 
 
 def translation_engine_from_obj(obj: Any, path: str = "") -> TranslationEngine:
@@ -839,66 +868,65 @@ def translation_engine_from_obj(obj: Any, path: str = "") -> TranslationEngine:
     :return: parsed instance of TranslationEngine
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
-    id_from_obj = from_obj(
-        obj['id'],
-        expected=[str],
-        path=path + '.id')  # type: str
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
 
-    url_from_obj = from_obj(
-        obj['url'],
-        expected=[str],
-        path=path + '.url')  # type: str
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
 
     source_language_from_obj = from_obj(
-        obj['sourceLanguage'],
-        expected=[str],
-        path=path + '.sourceLanguage')  # type: str
+        obj["sourceLanguage"], expected=[str], path=path + ".sourceLanguage"
+    )  # type: str
 
     target_language_from_obj = from_obj(
-        obj['targetLanguage'],
-        expected=[str],
-        path=path + '.targetLanguage')  # type: str
+        obj["targetLanguage"], expected=[str], path=path + ".targetLanguage"
+    )  # type: str
 
     type_from_obj = from_obj(
-        obj['type'],
-        expected=[str],
-        path=path + '.type')  # type: str
+        obj["type"], expected=[str], path=path + ".type"
+    )  # type: str
 
     is_building_from_obj = from_obj(
-        obj['isBuilding'],
-        expected=[bool],
-        path=path + '.isBuilding')  # type: bool
+        obj["isBuilding"], expected=[bool], path=path + ".isBuilding"
+    )  # type: bool
 
     model_revision_from_obj = from_obj(
-        obj['modelRevision'],
-        expected=[int],
-        path=path + '.modelRevision')  # type: int
+        obj["modelRevision"], expected=[int], path=path + ".modelRevision"
+    )  # type: int
 
     confidence_from_obj = from_obj(
-        obj['confidence'],
-        expected=[float],
-        path=path + '.confidence')  # type: float
+        obj["confidence"], expected=[float], path=path + ".confidence"
+    )  # type: float
 
     corpus_size_from_obj = from_obj(
-        obj['corpusSize'],
-        expected=[int],
-        path=path + '.corpusSize')  # type: int
+        obj["corpusSize"], expected=[int], path=path + ".corpusSize"
+    )  # type: int
 
-    obj_name = obj.get('name', None)
+    obj_name = obj.get("name", None)
     if obj_name is not None:
         name_from_obj = from_obj(
-            obj_name,
-            expected=[str],
-            path=path + '.name')  # type: Optional[str]
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
     else:
         name_from_obj = None
+
+    obj_is_model_persisted = obj.get("isModelPersisted", None)
+    if obj_is_model_persisted is not None:
+        is_model_persisted_from_obj = from_obj(
+            obj_is_model_persisted, expected=[bool], path=path + ".isModelPersisted"
+        )  # type: Optional[bool]
+    else:
+        is_model_persisted_from_obj = None
 
     return TranslationEngine(
         id=id_from_obj,
@@ -910,12 +938,14 @@ def translation_engine_from_obj(obj: Any, path: str = "") -> TranslationEngine:
         model_revision=model_revision_from_obj,
         confidence=confidence_from_obj,
         corpus_size=corpus_size_from_obj,
-        name=name_from_obj)
+        name=name_from_obj,
+        is_model_persisted=is_model_persisted_from_obj,
+    )
 
 
 def translation_engine_to_jsonable(
-        translation_engine: TranslationEngine,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_engine: TranslationEngine, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationEngine.
 
@@ -925,37 +955,42 @@ def translation_engine_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['id'] = translation_engine.id
+    res["id"] = translation_engine.id
 
-    res['url'] = translation_engine.url
+    res["url"] = translation_engine.url
 
-    res['sourceLanguage'] = translation_engine.source_language
+    res["sourceLanguage"] = translation_engine.source_language
 
-    res['targetLanguage'] = translation_engine.target_language
+    res["targetLanguage"] = translation_engine.target_language
 
-    res['type'] = translation_engine.type
+    res["type"] = translation_engine.type
 
-    res['isBuilding'] = translation_engine.is_building
+    res["isBuilding"] = translation_engine.is_building
 
-    res['modelRevision'] = translation_engine.model_revision
+    res["modelRevision"] = translation_engine.model_revision
 
-    res['confidence'] = translation_engine.confidence
+    res["confidence"] = translation_engine.confidence
 
-    res['corpusSize'] = translation_engine.corpus_size
+    res["corpusSize"] = translation_engine.corpus_size
 
     if translation_engine.name is not None:
-        res['name'] = translation_engine.name
+        res["name"] = translation_engine.name
+
+    if translation_engine.is_model_persisted is not None:
+        res["isModelPersisted"] = translation_engine.is_model_persisted
 
     return res
 
 
 class TranslationEngineConfig:
     def __init__(
-            self,
-            source_language: str,
-            target_language: str,
-            type: str,
-            name: Optional[str] = None) -> None:
+        self,
+        source_language: str,
+        target_language: str,
+        type: str,
+        name: Optional[str] = None,
+        is_model_persisted: Optional[bool] = None,
+    ) -> None:
         """Initializes with the given values."""
         # The source language tag.
         self.source_language = source_language
@@ -969,6 +1004,9 @@ class TranslationEngineConfig:
         # The translation engine name.
         self.name = name
 
+        # The model is saved when built and can be retrieved.
+        self.is_model_persisted = is_model_persisted
+
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
         Dispatches the conversion to translation_engine_config_to_jsonable.
@@ -980,13 +1018,12 @@ class TranslationEngineConfig:
 
 def new_translation_engine_config() -> TranslationEngineConfig:
     """Generates an instance of TranslationEngineConfig with default values."""
-    return TranslationEngineConfig(
-        source_language='',
-        target_language='',
-        type='')
+    return TranslationEngineConfig(source_language="", target_language="", type="")
 
 
-def translation_engine_config_from_obj(obj: Any, path: str = "") -> TranslationEngineConfig:
+def translation_engine_config_from_obj(
+    obj: Any, path: str = ""
+) -> TranslationEngineConfig:
     """
     Generates an instance of TranslationEngineConfig from a dictionary object.
 
@@ -995,47 +1032,58 @@ def translation_engine_config_from_obj(obj: Any, path: str = "") -> TranslationE
     :return: parsed instance of TranslationEngineConfig
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     source_language_from_obj = from_obj(
-        obj['sourceLanguage'],
-        expected=[str],
-        path=path + '.sourceLanguage')  # type: str
+        obj["sourceLanguage"], expected=[str], path=path + ".sourceLanguage"
+    )  # type: str
 
     target_language_from_obj = from_obj(
-        obj['targetLanguage'],
-        expected=[str],
-        path=path + '.targetLanguage')  # type: str
+        obj["targetLanguage"], expected=[str], path=path + ".targetLanguage"
+    )  # type: str
 
     type_from_obj = from_obj(
-        obj['type'],
-        expected=[str],
-        path=path + '.type')  # type: str
+        obj["type"], expected=[str], path=path + ".type"
+    )  # type: str
 
-    obj_name = obj.get('name', None)
+    obj_name = obj.get("name", None)
     if obj_name is not None:
         name_from_obj = from_obj(
-            obj_name,
-            expected=[str],
-            path=path + '.name')  # type: Optional[str]
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
     else:
         name_from_obj = None
+
+    obj_is_model_persisted = obj.get("isModelPersisted", None)
+    if obj_is_model_persisted is not None:
+        is_model_persisted_from_obj = from_obj(
+            obj_is_model_persisted, expected=[bool], path=path + ".isModelPersisted"
+        )  # type: Optional[bool]
+    else:
+        is_model_persisted_from_obj = None
 
     return TranslationEngineConfig(
         source_language=source_language_from_obj,
         target_language=target_language_from_obj,
         type=type_from_obj,
-        name=name_from_obj)
+        name=name_from_obj,
+        is_model_persisted=is_model_persisted_from_obj,
+    )
 
 
 def translation_engine_config_to_jsonable(
-        translation_engine_config: TranslationEngineConfig,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_engine_config: TranslationEngineConfig, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationEngineConfig.
 
@@ -1045,104 +1093,32 @@ def translation_engine_config_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['sourceLanguage'] = translation_engine_config.source_language
+    res["sourceLanguage"] = translation_engine_config.source_language
 
-    res['targetLanguage'] = translation_engine_config.target_language
+    res["targetLanguage"] = translation_engine_config.target_language
 
-    res['type'] = translation_engine_config.type
+    res["type"] = translation_engine_config.type
 
     if translation_engine_config.name is not None:
-        res['name'] = translation_engine_config.name
+        res["name"] = translation_engine_config.name
 
-    return res
-
-
-class Queue:
-    def __init__(
-            self,
-            size: int,
-            engine_type: str) -> None:
-        """Initializes with the given values."""
-        self.size = size
-
-        self.engine_type = engine_type
-
-    def to_jsonable(self) -> MutableMapping[str, Any]:
-        """
-        Dispatches the conversion to queue_to_jsonable.
-
-        :return: JSON-able representation
-        """
-        return queue_to_jsonable(self)
-
-
-def new_queue() -> Queue:
-    """Generates an instance of Queue with default values."""
-    return Queue(
-        size=0,
-        engine_type='')
-
-
-def queue_from_obj(obj: Any, path: str = "") -> Queue:
-    """
-    Generates an instance of Queue from a dictionary object.
-
-    :param obj: a JSON-ed dictionary object representing an instance of Queue
-    :param path: path to the object used for debugging
-    :return: parsed instance of Queue
-    """
-    if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
-
-    for key in obj:
-        if not isinstance(key, str):
-            raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
-
-    size_from_obj = from_obj(
-        obj['size'],
-        expected=[int],
-        path=path + '.size')  # type: int
-
-    engine_type_from_obj = from_obj(
-        obj['engineType'],
-        expected=[str],
-        path=path + '.engineType')  # type: str
-
-    return Queue(
-        size=size_from_obj,
-        engine_type=engine_type_from_obj)
-
-
-def queue_to_jsonable(
-        queue: Queue,
-        path: str = "") -> MutableMapping[str, Any]:
-    """
-    Generates a JSON-able mapping from an instance of Queue.
-
-    :param queue: instance of Queue to be JSON-ized
-    :param path: path to the queue used for debugging
-    :return: a JSON-able representation
-    """
-    res = dict()  # type: Dict[str, Any]
-
-    res['size'] = queue.size
-
-    res['engineType'] = queue.engine_type
+    if translation_engine_config.is_model_persisted is not None:
+        res["isModelPersisted"] = translation_engine_config.is_model_persisted
 
     return res
 
 
 class TranslationResult:
     def __init__(
-            self,
-            translation: str,
-            source_tokens: List[str],
-            target_tokens: List[str],
-            confidences: List[float],
-            sources: List[List[str]],
-            alignment: List['AlignedWordPair'],
-            phrases: List['Phrase']) -> None:
+        self,
+        translation: str,
+        source_tokens: List[str],
+        target_tokens: List[str],
+        confidences: List[float],
+        sources: List[List[str]],
+        alignment: List["AlignedWordPair"],
+        phrases: List["Phrase"],
+    ) -> None:
         """Initializes with the given values."""
         self.translation = translation
 
@@ -1170,13 +1146,14 @@ class TranslationResult:
 def new_translation_result() -> TranslationResult:
     """Generates an instance of TranslationResult with default values."""
     return TranslationResult(
-        translation='',
+        translation="",
         source_tokens=[],
         target_tokens=[],
         confidences=[],
         sources=[],
         alignment=[],
-        phrases=[])
+        phrases=[],
+    )
 
 
 def translation_result_from_obj(obj: Any, path: str = "") -> TranslationResult:
@@ -1188,47 +1165,45 @@ def translation_result_from_obj(obj: Any, path: str = "") -> TranslationResult:
     :return: parsed instance of TranslationResult
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     translation_from_obj = from_obj(
-        obj['translation'],
-        expected=[str],
-        path=path + '.translation')  # type: str
+        obj["translation"], expected=[str], path=path + ".translation"
+    )  # type: str
 
     source_tokens_from_obj = from_obj(
-        obj['sourceTokens'],
-        expected=[list, str],
-        path=path + '.sourceTokens')  # type: List[str]
+        obj["sourceTokens"], expected=[list, str], path=path + ".sourceTokens"
+    )  # type: List[str]
 
     target_tokens_from_obj = from_obj(
-        obj['targetTokens'],
-        expected=[list, str],
-        path=path + '.targetTokens')  # type: List[str]
+        obj["targetTokens"], expected=[list, str], path=path + ".targetTokens"
+    )  # type: List[str]
 
     confidences_from_obj = from_obj(
-        obj['confidences'],
-        expected=[list, float],
-        path=path + '.confidences')  # type: List[float]
+        obj["confidences"], expected=[list, float], path=path + ".confidences"
+    )  # type: List[float]
 
     sources_from_obj = from_obj(
-        obj['sources'],
-        expected=[list, list, str],
-        path=path + '.sources')  # type: List[List[str]]
+        obj["sources"], expected=[list, list, str], path=path + ".sources"
+    )  # type: List[List[str]]
 
     alignment_from_obj = from_obj(
-        obj['alignment'],
-        expected=[list, AlignedWordPair],
-        path=path + '.alignment')  # type: List['AlignedWordPair']
+        obj["alignment"], expected=[list, AlignedWordPair], path=path + ".alignment"
+    )  # type: List['AlignedWordPair']
 
     phrases_from_obj = from_obj(
-        obj['phrases'],
-        expected=[list, Phrase],
-        path=path + '.phrases')  # type: List['Phrase']
+        obj["phrases"], expected=[list, Phrase], path=path + ".phrases"
+    )  # type: List['Phrase']
 
     return TranslationResult(
         translation=translation_from_obj,
@@ -1237,12 +1212,13 @@ def translation_result_from_obj(obj: Any, path: str = "") -> TranslationResult:
         confidences=confidences_from_obj,
         sources=sources_from_obj,
         alignment=alignment_from_obj,
-        phrases=phrases_from_obj)
+        phrases=phrases_from_obj,
+    )
 
 
 def translation_result_to_jsonable(
-        translation_result: TranslationResult,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_result: TranslationResult, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationResult.
 
@@ -1252,46 +1228,49 @@ def translation_result_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['translation'] = translation_result.translation
+    res["translation"] = translation_result.translation
 
-    res['sourceTokens'] = to_jsonable(
+    res["sourceTokens"] = to_jsonable(
         translation_result.source_tokens,
         expected=[list, str],
-        path='{}.sourceTokens'.format(path))
+        path="{}.sourceTokens".format(path),
+    )
 
-    res['targetTokens'] = to_jsonable(
+    res["targetTokens"] = to_jsonable(
         translation_result.target_tokens,
         expected=[list, str],
-        path='{}.targetTokens'.format(path))
+        path="{}.targetTokens".format(path),
+    )
 
-    res['confidences'] = to_jsonable(
+    res["confidences"] = to_jsonable(
         translation_result.confidences,
         expected=[list, float],
-        path='{}.confidences'.format(path))
+        path="{}.confidences".format(path),
+    )
 
-    res['sources'] = to_jsonable(
+    res["sources"] = to_jsonable(
         translation_result.sources,
         expected=[list, list, str],
-        path='{}.sources'.format(path))
+        path="{}.sources".format(path),
+    )
 
-    res['alignment'] = to_jsonable(
+    res["alignment"] = to_jsonable(
         translation_result.alignment,
         expected=[list, AlignedWordPair],
-        path='{}.alignment'.format(path))
+        path="{}.alignment".format(path),
+    )
 
-    res['phrases'] = to_jsonable(
+    res["phrases"] = to_jsonable(
         translation_result.phrases,
         expected=[list, Phrase],
-        path='{}.phrases'.format(path))
+        path="{}.phrases".format(path),
+    )
 
     return res
 
 
 class AlignedWordPair:
-    def __init__(
-            self,
-            source_index: int,
-            target_index: int) -> None:
+    def __init__(self, source_index: int, target_index: int) -> None:
         """Initializes with the given values."""
         self.source_index = source_index
 
@@ -1308,9 +1287,7 @@ class AlignedWordPair:
 
 def new_aligned_word_pair() -> AlignedWordPair:
     """Generates an instance of AlignedWordPair with default values."""
-    return AlignedWordPair(
-        source_index=0,
-        target_index=0)
+    return AlignedWordPair(source_index=0, target_index=0)
 
 
 def aligned_word_pair_from_obj(obj: Any, path: str = "") -> AlignedWordPair:
@@ -1322,31 +1299,34 @@ def aligned_word_pair_from_obj(obj: Any, path: str = "") -> AlignedWordPair:
     :return: parsed instance of AlignedWordPair
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     source_index_from_obj = from_obj(
-        obj['sourceIndex'],
-        expected=[int],
-        path=path + '.sourceIndex')  # type: int
+        obj["sourceIndex"], expected=[int], path=path + ".sourceIndex"
+    )  # type: int
 
     target_index_from_obj = from_obj(
-        obj['targetIndex'],
-        expected=[int],
-        path=path + '.targetIndex')  # type: int
+        obj["targetIndex"], expected=[int], path=path + ".targetIndex"
+    )  # type: int
 
     return AlignedWordPair(
-        source_index=source_index_from_obj,
-        target_index=target_index_from_obj)
+        source_index=source_index_from_obj, target_index=target_index_from_obj
+    )
 
 
 def aligned_word_pair_to_jsonable(
-        aligned_word_pair: AlignedWordPair,
-        path: str = "") -> MutableMapping[str, Any]:
+    aligned_word_pair: AlignedWordPair, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of AlignedWordPair.
 
@@ -1356,19 +1336,20 @@ def aligned_word_pair_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['sourceIndex'] = aligned_word_pair.source_index
+    res["sourceIndex"] = aligned_word_pair.source_index
 
-    res['targetIndex'] = aligned_word_pair.target_index
+    res["targetIndex"] = aligned_word_pair.target_index
 
     return res
 
 
 class Phrase:
     def __init__(
-            self,
-            source_segment_start: int,
-            source_segment_end: int,
-            target_segment_cut: int) -> None:
+        self,
+        source_segment_start: int,
+        source_segment_end: int,
+        target_segment_cut: int,
+    ) -> None:
         """Initializes with the given values."""
         self.source_segment_start = source_segment_start
 
@@ -1387,10 +1368,7 @@ class Phrase:
 
 def new_phrase() -> Phrase:
     """Generates an instance of Phrase with default values."""
-    return Phrase(
-        source_segment_start=0,
-        source_segment_end=0,
-        target_segment_cut=0)
+    return Phrase(source_segment_start=0, source_segment_end=0, target_segment_cut=0)
 
 
 def phrase_from_obj(obj: Any, path: str = "") -> Phrase:
@@ -1402,37 +1380,38 @@ def phrase_from_obj(obj: Any, path: str = "") -> Phrase:
     :return: parsed instance of Phrase
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     source_segment_start_from_obj = from_obj(
-        obj['sourceSegmentStart'],
-        expected=[int],
-        path=path + '.sourceSegmentStart')  # type: int
+        obj["sourceSegmentStart"], expected=[int], path=path + ".sourceSegmentStart"
+    )  # type: int
 
     source_segment_end_from_obj = from_obj(
-        obj['sourceSegmentEnd'],
-        expected=[int],
-        path=path + '.sourceSegmentEnd')  # type: int
+        obj["sourceSegmentEnd"], expected=[int], path=path + ".sourceSegmentEnd"
+    )  # type: int
 
     target_segment_cut_from_obj = from_obj(
-        obj['targetSegmentCut'],
-        expected=[int],
-        path=path + '.targetSegmentCut')  # type: int
+        obj["targetSegmentCut"], expected=[int], path=path + ".targetSegmentCut"
+    )  # type: int
 
     return Phrase(
         source_segment_start=source_segment_start_from_obj,
         source_segment_end=source_segment_end_from_obj,
-        target_segment_cut=target_segment_cut_from_obj)
+        target_segment_cut=target_segment_cut_from_obj,
+    )
 
 
-def phrase_to_jsonable(
-        phrase: Phrase,
-        path: str = "") -> MutableMapping[str, Any]:
+def phrase_to_jsonable(phrase: Phrase, path: str = "") -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of Phrase.
 
@@ -1442,22 +1421,23 @@ def phrase_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['sourceSegmentStart'] = phrase.source_segment_start
+    res["sourceSegmentStart"] = phrase.source_segment_start
 
-    res['sourceSegmentEnd'] = phrase.source_segment_end
+    res["sourceSegmentEnd"] = phrase.source_segment_end
 
-    res['targetSegmentCut'] = phrase.target_segment_cut
+    res["targetSegmentCut"] = phrase.target_segment_cut
 
     return res
 
 
 class WordGraph:
     def __init__(
-            self,
-            source_tokens: List[str],
-            initial_state_score: float,
-            final_states: List[int],
-            arcs: List['WordGraphArc']) -> None:
+        self,
+        source_tokens: List[str],
+        initial_state_score: float,
+        final_states: List[int],
+        arcs: List["WordGraphArc"],
+    ) -> None:
         """Initializes with the given values."""
         self.source_tokens = source_tokens
 
@@ -1479,10 +1459,8 @@ class WordGraph:
 def new_word_graph() -> WordGraph:
     """Generates an instance of WordGraph with default values."""
     return WordGraph(
-        source_tokens=[],
-        initial_state_score=0.0,
-        final_states=[],
-        arcs=[])
+        source_tokens=[], initial_state_score=0.0, final_states=[], arcs=[]
+    )
 
 
 def word_graph_from_obj(obj: Any, path: str = "") -> WordGraph:
@@ -1494,43 +1472,45 @@ def word_graph_from_obj(obj: Any, path: str = "") -> WordGraph:
     :return: parsed instance of WordGraph
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     source_tokens_from_obj = from_obj(
-        obj['sourceTokens'],
-        expected=[list, str],
-        path=path + '.sourceTokens')  # type: List[str]
+        obj["sourceTokens"], expected=[list, str], path=path + ".sourceTokens"
+    )  # type: List[str]
 
     initial_state_score_from_obj = from_obj(
-        obj['initialStateScore'],
-        expected=[float],
-        path=path + '.initialStateScore')  # type: float
+        obj["initialStateScore"], expected=[float], path=path + ".initialStateScore"
+    )  # type: float
 
     final_states_from_obj = from_obj(
-        obj['finalStates'],
-        expected=[list, int],
-        path=path + '.finalStates')  # type: List[int]
+        obj["finalStates"], expected=[list, int], path=path + ".finalStates"
+    )  # type: List[int]
 
     arcs_from_obj = from_obj(
-        obj['arcs'],
-        expected=[list, WordGraphArc],
-        path=path + '.arcs')  # type: List['WordGraphArc']
+        obj["arcs"], expected=[list, WordGraphArc], path=path + ".arcs"
+    )  # type: List['WordGraphArc']
 
     return WordGraph(
         source_tokens=source_tokens_from_obj,
         initial_state_score=initial_state_score_from_obj,
         final_states=final_states_from_obj,
-        arcs=arcs_from_obj)
+        arcs=arcs_from_obj,
+    )
 
 
 def word_graph_to_jsonable(
-        word_graph: WordGraph,
-        path: str = "") -> MutableMapping[str, Any]:
+    word_graph: WordGraph, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of WordGraph.
 
@@ -1540,38 +1520,40 @@ def word_graph_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['sourceTokens'] = to_jsonable(
+    res["sourceTokens"] = to_jsonable(
         word_graph.source_tokens,
         expected=[list, str],
-        path='{}.sourceTokens'.format(path))
+        path="{}.sourceTokens".format(path),
+    )
 
-    res['initialStateScore'] = word_graph.initial_state_score
+    res["initialStateScore"] = word_graph.initial_state_score
 
-    res['finalStates'] = to_jsonable(
+    res["finalStates"] = to_jsonable(
         word_graph.final_states,
         expected=[list, int],
-        path='{}.finalStates'.format(path))
+        path="{}.finalStates".format(path),
+    )
 
-    res['arcs'] = to_jsonable(
-        word_graph.arcs,
-        expected=[list, WordGraphArc],
-        path='{}.arcs'.format(path))
+    res["arcs"] = to_jsonable(
+        word_graph.arcs, expected=[list, WordGraphArc], path="{}.arcs".format(path)
+    )
 
     return res
 
 
 class WordGraphArc:
     def __init__(
-            self,
-            prev_state: int,
-            next_state: int,
-            score: float,
-            target_tokens: List[str],
-            confidences: List[float],
-            source_segment_start: int,
-            source_segment_end: int,
-            alignment: List['AlignedWordPair'],
-            sources: List[List[str]]) -> None:
+        self,
+        prev_state: int,
+        next_state: int,
+        score: float,
+        target_tokens: List[str],
+        confidences: List[float],
+        source_segment_start: int,
+        source_segment_end: int,
+        alignment: List["AlignedWordPair"],
+        sources: List[List[str]],
+    ) -> None:
         """Initializes with the given values."""
         self.prev_state = prev_state
 
@@ -1611,7 +1593,8 @@ def new_word_graph_arc() -> WordGraphArc:
         source_segment_start=0,
         source_segment_end=0,
         alignment=[],
-        sources=[])
+        sources=[],
+    )
 
 
 def word_graph_arc_from_obj(obj: Any, path: str = "") -> WordGraphArc:
@@ -1623,57 +1606,53 @@ def word_graph_arc_from_obj(obj: Any, path: str = "") -> WordGraphArc:
     :return: parsed instance of WordGraphArc
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     prev_state_from_obj = from_obj(
-        obj['prevState'],
-        expected=[int],
-        path=path + '.prevState')  # type: int
+        obj["prevState"], expected=[int], path=path + ".prevState"
+    )  # type: int
 
     next_state_from_obj = from_obj(
-        obj['nextState'],
-        expected=[int],
-        path=path + '.nextState')  # type: int
+        obj["nextState"], expected=[int], path=path + ".nextState"
+    )  # type: int
 
     score_from_obj = from_obj(
-        obj['score'],
-        expected=[float],
-        path=path + '.score')  # type: float
+        obj["score"], expected=[float], path=path + ".score"
+    )  # type: float
 
     target_tokens_from_obj = from_obj(
-        obj['targetTokens'],
-        expected=[list, str],
-        path=path + '.targetTokens')  # type: List[str]
+        obj["targetTokens"], expected=[list, str], path=path + ".targetTokens"
+    )  # type: List[str]
 
     confidences_from_obj = from_obj(
-        obj['confidences'],
-        expected=[list, float],
-        path=path + '.confidences')  # type: List[float]
+        obj["confidences"], expected=[list, float], path=path + ".confidences"
+    )  # type: List[float]
 
     source_segment_start_from_obj = from_obj(
-        obj['sourceSegmentStart'],
-        expected=[int],
-        path=path + '.sourceSegmentStart')  # type: int
+        obj["sourceSegmentStart"], expected=[int], path=path + ".sourceSegmentStart"
+    )  # type: int
 
     source_segment_end_from_obj = from_obj(
-        obj['sourceSegmentEnd'],
-        expected=[int],
-        path=path + '.sourceSegmentEnd')  # type: int
+        obj["sourceSegmentEnd"], expected=[int], path=path + ".sourceSegmentEnd"
+    )  # type: int
 
     alignment_from_obj = from_obj(
-        obj['alignment'],
-        expected=[list, AlignedWordPair],
-        path=path + '.alignment')  # type: List['AlignedWordPair']
+        obj["alignment"], expected=[list, AlignedWordPair], path=path + ".alignment"
+    )  # type: List['AlignedWordPair']
 
     sources_from_obj = from_obj(
-        obj['sources'],
-        expected=[list, list, str],
-        path=path + '.sources')  # type: List[List[str]]
+        obj["sources"], expected=[list, list, str], path=path + ".sources"
+    )  # type: List[List[str]]
 
     return WordGraphArc(
         prev_state=prev_state_from_obj,
@@ -1684,12 +1663,13 @@ def word_graph_arc_from_obj(obj: Any, path: str = "") -> WordGraphArc:
         source_segment_start=source_segment_start_from_obj,
         source_segment_end=source_segment_end_from_obj,
         alignment=alignment_from_obj,
-        sources=sources_from_obj)
+        sources=sources_from_obj,
+    )
 
 
 def word_graph_arc_to_jsonable(
-        word_graph_arc: WordGraphArc,
-        path: str = "") -> MutableMapping[str, Any]:
+    word_graph_arc: WordGraphArc, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of WordGraphArc.
 
@@ -1699,45 +1679,47 @@ def word_graph_arc_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['prevState'] = word_graph_arc.prev_state
+    res["prevState"] = word_graph_arc.prev_state
 
-    res['nextState'] = word_graph_arc.next_state
+    res["nextState"] = word_graph_arc.next_state
 
-    res['score'] = word_graph_arc.score
+    res["score"] = word_graph_arc.score
 
-    res['targetTokens'] = to_jsonable(
+    res["targetTokens"] = to_jsonable(
         word_graph_arc.target_tokens,
         expected=[list, str],
-        path='{}.targetTokens'.format(path))
+        path="{}.targetTokens".format(path),
+    )
 
-    res['confidences'] = to_jsonable(
+    res["confidences"] = to_jsonable(
         word_graph_arc.confidences,
         expected=[list, float],
-        path='{}.confidences'.format(path))
+        path="{}.confidences".format(path),
+    )
 
-    res['sourceSegmentStart'] = word_graph_arc.source_segment_start
+    res["sourceSegmentStart"] = word_graph_arc.source_segment_start
 
-    res['sourceSegmentEnd'] = word_graph_arc.source_segment_end
+    res["sourceSegmentEnd"] = word_graph_arc.source_segment_end
 
-    res['alignment'] = to_jsonable(
+    res["alignment"] = to_jsonable(
         word_graph_arc.alignment,
         expected=[list, AlignedWordPair],
-        path='{}.alignment'.format(path))
+        path="{}.alignment".format(path),
+    )
 
-    res['sources'] = to_jsonable(
+    res["sources"] = to_jsonable(
         word_graph_arc.sources,
         expected=[list, list, str],
-        path='{}.sources'.format(path))
+        path="{}.sources".format(path),
+    )
 
     return res
 
 
 class SegmentPair:
     def __init__(
-            self,
-            source_segment: str,
-            target_segment: str,
-            sentence_start: bool) -> None:
+        self, source_segment: str, target_segment: str, sentence_start: bool
+    ) -> None:
         """Initializes with the given values."""
         self.source_segment = source_segment
 
@@ -1756,10 +1738,7 @@ class SegmentPair:
 
 def new_segment_pair() -> SegmentPair:
     """Generates an instance of SegmentPair with default values."""
-    return SegmentPair(
-        source_segment='',
-        target_segment='',
-        sentence_start=False)
+    return SegmentPair(source_segment="", target_segment="", sentence_start=False)
 
 
 def segment_pair_from_obj(obj: Any, path: str = "") -> SegmentPair:
@@ -1771,37 +1750,40 @@ def segment_pair_from_obj(obj: Any, path: str = "") -> SegmentPair:
     :return: parsed instance of SegmentPair
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     source_segment_from_obj = from_obj(
-        obj['sourceSegment'],
-        expected=[str],
-        path=path + '.sourceSegment')  # type: str
+        obj["sourceSegment"], expected=[str], path=path + ".sourceSegment"
+    )  # type: str
 
     target_segment_from_obj = from_obj(
-        obj['targetSegment'],
-        expected=[str],
-        path=path + '.targetSegment')  # type: str
+        obj["targetSegment"], expected=[str], path=path + ".targetSegment"
+    )  # type: str
 
     sentence_start_from_obj = from_obj(
-        obj['sentenceStart'],
-        expected=[bool],
-        path=path + '.sentenceStart')  # type: bool
+        obj["sentenceStart"], expected=[bool], path=path + ".sentenceStart"
+    )  # type: bool
 
     return SegmentPair(
         source_segment=source_segment_from_obj,
         target_segment=target_segment_from_obj,
-        sentence_start=sentence_start_from_obj)
+        sentence_start=sentence_start_from_obj,
+    )
 
 
 def segment_pair_to_jsonable(
-        segment_pair: SegmentPair,
-        path: str = "") -> MutableMapping[str, Any]:
+    segment_pair: SegmentPair, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of SegmentPair.
 
@@ -1811,26 +1793,27 @@ def segment_pair_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['sourceSegment'] = segment_pair.source_segment
+    res["sourceSegment"] = segment_pair.source_segment
 
-    res['targetSegment'] = segment_pair.target_segment
+    res["targetSegment"] = segment_pair.target_segment
 
-    res['sentenceStart'] = segment_pair.sentence_start
+    res["sentenceStart"] = segment_pair.sentence_start
 
     return res
 
 
 class TranslationCorpus:
     def __init__(
-            self,
-            id: str,
-            url: str,
-            engine: 'ResourceLink',
-            source_language: str,
-            target_language: str,
-            source_files: List['TranslationCorpusFile'],
-            target_files: List['TranslationCorpusFile'],
-            name: Optional[str] = None) -> None:
+        self,
+        id: str,
+        url: str,
+        engine: "ResourceLink",
+        source_language: str,
+        target_language: str,
+        source_files: List["TranslationCorpusFile"],
+        target_files: List["TranslationCorpusFile"],
+        name: Optional[str] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.id = id
 
@@ -1860,13 +1843,14 @@ class TranslationCorpus:
 def new_translation_corpus() -> TranslationCorpus:
     """Generates an instance of TranslationCorpus with default values."""
     return TranslationCorpus(
-        id='',
-        url='',
+        id="",
+        url="",
         engine=new_resource_link__,
-        source_language='',
-        target_language='',
+        source_language="",
+        target_language="",
         source_files=[],
-        target_files=[])
+        target_files=[],
+    )
 
 
 def translation_corpus_from_obj(obj: Any, path: str = "") -> TranslationCorpus:
@@ -1878,54 +1862,51 @@ def translation_corpus_from_obj(obj: Any, path: str = "") -> TranslationCorpus:
     :return: parsed instance of TranslationCorpus
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
-    id_from_obj = from_obj(
-        obj['id'],
-        expected=[str],
-        path=path + '.id')  # type: str
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
 
-    url_from_obj = from_obj(
-        obj['url'],
-        expected=[str],
-        path=path + '.url')  # type: str
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
 
     engine_from_obj = from_obj(
-        obj['engine'],
-        expected=[ResourceLink],
-        path=path + '.engine')  # type: 'ResourceLink'
+        obj["engine"], expected=[ResourceLink], path=path + ".engine"
+    )  # type: 'ResourceLink'
 
     source_language_from_obj = from_obj(
-        obj['sourceLanguage'],
-        expected=[str],
-        path=path + '.sourceLanguage')  # type: str
+        obj["sourceLanguage"], expected=[str], path=path + ".sourceLanguage"
+    )  # type: str
 
     target_language_from_obj = from_obj(
-        obj['targetLanguage'],
-        expected=[str],
-        path=path + '.targetLanguage')  # type: str
+        obj["targetLanguage"], expected=[str], path=path + ".targetLanguage"
+    )  # type: str
 
     source_files_from_obj = from_obj(
-        obj['sourceFiles'],
+        obj["sourceFiles"],
         expected=[list, TranslationCorpusFile],
-        path=path + '.sourceFiles')  # type: List['TranslationCorpusFile']
+        path=path + ".sourceFiles",
+    )  # type: List['TranslationCorpusFile']
 
     target_files_from_obj = from_obj(
-        obj['targetFiles'],
+        obj["targetFiles"],
         expected=[list, TranslationCorpusFile],
-        path=path + '.targetFiles')  # type: List['TranslationCorpusFile']
+        path=path + ".targetFiles",
+    )  # type: List['TranslationCorpusFile']
 
-    obj_name = obj.get('name', None)
+    obj_name = obj.get("name", None)
     if obj_name is not None:
         name_from_obj = from_obj(
-            obj_name,
-            expected=[str],
-            path=path + '.name')  # type: Optional[str]
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
     else:
         name_from_obj = None
 
@@ -1937,12 +1918,13 @@ def translation_corpus_from_obj(obj: Any, path: str = "") -> TranslationCorpus:
         target_language=target_language_from_obj,
         source_files=source_files_from_obj,
         target_files=target_files_from_obj,
-        name=name_from_obj)
+        name=name_from_obj,
+    )
 
 
 def translation_corpus_to_jsonable(
-        translation_corpus: TranslationCorpus,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_corpus: TranslationCorpus, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationCorpus.
 
@@ -1952,40 +1934,40 @@ def translation_corpus_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['id'] = translation_corpus.id
+    res["id"] = translation_corpus.id
 
-    res['url'] = translation_corpus.url
+    res["url"] = translation_corpus.url
 
-    res['engine'] = to_jsonable(
+    res["engine"] = to_jsonable(
         translation_corpus.engine,
         expected=[ResourceLink],
-        path='{}.engine'.format(path))
+        path="{}.engine".format(path),
+    )
 
-    res['sourceLanguage'] = translation_corpus.source_language
+    res["sourceLanguage"] = translation_corpus.source_language
 
-    res['targetLanguage'] = translation_corpus.target_language
+    res["targetLanguage"] = translation_corpus.target_language
 
-    res['sourceFiles'] = to_jsonable(
+    res["sourceFiles"] = to_jsonable(
         translation_corpus.source_files,
         expected=[list, TranslationCorpusFile],
-        path='{}.sourceFiles'.format(path))
+        path="{}.sourceFiles".format(path),
+    )
 
-    res['targetFiles'] = to_jsonable(
+    res["targetFiles"] = to_jsonable(
         translation_corpus.target_files,
         expected=[list, TranslationCorpusFile],
-        path='{}.targetFiles'.format(path))
+        path="{}.targetFiles".format(path),
+    )
 
     if translation_corpus.name is not None:
-        res['name'] = translation_corpus.name
+        res["name"] = translation_corpus.name
 
     return res
 
 
 class ResourceLink:
-    def __init__(
-            self,
-            id: str,
-            url: str) -> None:
+    def __init__(self, id: str, url: str) -> None:
         """Initializes with the given values."""
         self.id = id
 
@@ -2002,9 +1984,7 @@ class ResourceLink:
 
 def new_resource_link() -> ResourceLink:
     """Generates an instance of ResourceLink with default values."""
-    return ResourceLink(
-        id='',
-        url='')
+    return ResourceLink(id="", url="")
 
 
 def resource_link_from_obj(obj: Any, path: str = "") -> ResourceLink:
@@ -2016,31 +1996,28 @@ def resource_link_from_obj(obj: Any, path: str = "") -> ResourceLink:
     :return: parsed instance of ResourceLink
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
-    id_from_obj = from_obj(
-        obj['id'],
-        expected=[str],
-        path=path + '.id')  # type: str
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
 
-    url_from_obj = from_obj(
-        obj['url'],
-        expected=[str],
-        path=path + '.url')  # type: str
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
 
-    return ResourceLink(
-        id=id_from_obj,
-        url=url_from_obj)
+    return ResourceLink(id=id_from_obj, url=url_from_obj)
 
 
 def resource_link_to_jsonable(
-        resource_link: ResourceLink,
-        path: str = "") -> MutableMapping[str, Any]:
+    resource_link: ResourceLink, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of ResourceLink.
 
@@ -2050,18 +2027,15 @@ def resource_link_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['id'] = resource_link.id
+    res["id"] = resource_link.id
 
-    res['url'] = resource_link.url
+    res["url"] = resource_link.url
 
     return res
 
 
 class TranslationCorpusFile:
-    def __init__(
-            self,
-            file: 'ResourceLink',
-            text_id: Optional[str] = None) -> None:
+    def __init__(self, file: "ResourceLink", text_id: Optional[str] = None) -> None:
         """Initializes with the given values."""
         self.file = file
 
@@ -2078,8 +2052,7 @@ class TranslationCorpusFile:
 
 def new_translation_corpus_file() -> TranslationCorpusFile:
     """Generates an instance of TranslationCorpusFile with default values."""
-    return TranslationCorpusFile(
-        file=new_resource_link__)
+    return TranslationCorpusFile(file=new_resource_link__)
 
 
 def translation_corpus_file_from_obj(obj: Any, path: str = "") -> TranslationCorpusFile:
@@ -2091,35 +2064,36 @@ def translation_corpus_file_from_obj(obj: Any, path: str = "") -> TranslationCor
     :return: parsed instance of TranslationCorpusFile
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     file_from_obj = from_obj(
-        obj['file'],
-        expected=[ResourceLink],
-        path=path + '.file')  # type: 'ResourceLink'
+        obj["file"], expected=[ResourceLink], path=path + ".file"
+    )  # type: 'ResourceLink'
 
-    obj_text_id = obj.get('textId', None)
+    obj_text_id = obj.get("textId", None)
     if obj_text_id is not None:
         text_id_from_obj = from_obj(
-            obj_text_id,
-            expected=[str],
-            path=path + '.textId')  # type: Optional[str]
+            obj_text_id, expected=[str], path=path + ".textId"
+        )  # type: Optional[str]
     else:
         text_id_from_obj = None
 
-    return TranslationCorpusFile(
-        file=file_from_obj,
-        text_id=text_id_from_obj)
+    return TranslationCorpusFile(file=file_from_obj, text_id=text_id_from_obj)
 
 
 def translation_corpus_file_to_jsonable(
-        translation_corpus_file: TranslationCorpusFile,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_corpus_file: TranslationCorpusFile, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationCorpusFile.
 
@@ -2129,25 +2103,27 @@ def translation_corpus_file_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['file'] = to_jsonable(
+    res["file"] = to_jsonable(
         translation_corpus_file.file,
         expected=[ResourceLink],
-        path='{}.file'.format(path))
+        path="{}.file".format(path),
+    )
 
     if translation_corpus_file.text_id is not None:
-        res['textId'] = translation_corpus_file.text_id
+        res["textId"] = translation_corpus_file.text_id
 
     return res
 
 
 class TranslationCorpusConfig:
     def __init__(
-            self,
-            source_language: str,
-            target_language: str,
-            source_files: List['TranslationCorpusFileConfig'],
-            target_files: List['TranslationCorpusFileConfig'],
-            name: Optional[str] = None) -> None:
+        self,
+        source_language: str,
+        target_language: str,
+        source_files: List["TranslationCorpusFileConfig"],
+        target_files: List["TranslationCorpusFileConfig"],
+        name: Optional[str] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.source_language = source_language
 
@@ -2172,13 +2148,13 @@ class TranslationCorpusConfig:
 def new_translation_corpus_config() -> TranslationCorpusConfig:
     """Generates an instance of TranslationCorpusConfig with default values."""
     return TranslationCorpusConfig(
-        source_language='',
-        target_language='',
-        source_files=[],
-        target_files=[])
+        source_language="", target_language="", source_files=[], target_files=[]
+    )
 
 
-def translation_corpus_config_from_obj(obj: Any, path: str = "") -> TranslationCorpusConfig:
+def translation_corpus_config_from_obj(
+    obj: Any, path: str = ""
+) -> TranslationCorpusConfig:
     """
     Generates an instance of TranslationCorpusConfig from a dictionary object.
 
@@ -2187,39 +2163,43 @@ def translation_corpus_config_from_obj(obj: Any, path: str = "") -> TranslationC
     :return: parsed instance of TranslationCorpusConfig
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     source_language_from_obj = from_obj(
-        obj['sourceLanguage'],
-        expected=[str],
-        path=path + '.sourceLanguage')  # type: str
+        obj["sourceLanguage"], expected=[str], path=path + ".sourceLanguage"
+    )  # type: str
 
     target_language_from_obj = from_obj(
-        obj['targetLanguage'],
-        expected=[str],
-        path=path + '.targetLanguage')  # type: str
+        obj["targetLanguage"], expected=[str], path=path + ".targetLanguage"
+    )  # type: str
 
     source_files_from_obj = from_obj(
-        obj['sourceFiles'],
+        obj["sourceFiles"],
         expected=[list, TranslationCorpusFileConfig],
-        path=path + '.sourceFiles')  # type: List['TranslationCorpusFileConfig']
+        path=path + ".sourceFiles",
+    )  # type: List['TranslationCorpusFileConfig']
 
     target_files_from_obj = from_obj(
-        obj['targetFiles'],
+        obj["targetFiles"],
         expected=[list, TranslationCorpusFileConfig],
-        path=path + '.targetFiles')  # type: List['TranslationCorpusFileConfig']
+        path=path + ".targetFiles",
+    )  # type: List['TranslationCorpusFileConfig']
 
-    obj_name = obj.get('name', None)
+    obj_name = obj.get("name", None)
     if obj_name is not None:
         name_from_obj = from_obj(
-            obj_name,
-            expected=[str],
-            path=path + '.name')  # type: Optional[str]
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
     else:
         name_from_obj = None
 
@@ -2228,12 +2208,13 @@ def translation_corpus_config_from_obj(obj: Any, path: str = "") -> TranslationC
         target_language=target_language_from_obj,
         source_files=source_files_from_obj,
         target_files=target_files_from_obj,
-        name=name_from_obj)
+        name=name_from_obj,
+    )
 
 
 def translation_corpus_config_to_jsonable(
-        translation_corpus_config: TranslationCorpusConfig,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_corpus_config: TranslationCorpusConfig, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationCorpusConfig.
 
@@ -2243,31 +2224,30 @@ def translation_corpus_config_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['sourceLanguage'] = translation_corpus_config.source_language
+    res["sourceLanguage"] = translation_corpus_config.source_language
 
-    res['targetLanguage'] = translation_corpus_config.target_language
+    res["targetLanguage"] = translation_corpus_config.target_language
 
-    res['sourceFiles'] = to_jsonable(
+    res["sourceFiles"] = to_jsonable(
         translation_corpus_config.source_files,
         expected=[list, TranslationCorpusFileConfig],
-        path='{}.sourceFiles'.format(path))
+        path="{}.sourceFiles".format(path),
+    )
 
-    res['targetFiles'] = to_jsonable(
+    res["targetFiles"] = to_jsonable(
         translation_corpus_config.target_files,
         expected=[list, TranslationCorpusFileConfig],
-        path='{}.targetFiles'.format(path))
+        path="{}.targetFiles".format(path),
+    )
 
     if translation_corpus_config.name is not None:
-        res['name'] = translation_corpus_config.name
+        res["name"] = translation_corpus_config.name
 
     return res
 
 
 class TranslationCorpusFileConfig:
-    def __init__(
-            self,
-            file_id: str,
-            text_id: Optional[str] = None) -> None:
+    def __init__(self, file_id: str, text_id: Optional[str] = None) -> None:
         """Initializes with the given values."""
         self.file_id = file_id
 
@@ -2284,11 +2264,12 @@ class TranslationCorpusFileConfig:
 
 def new_translation_corpus_file_config() -> TranslationCorpusFileConfig:
     """Generates an instance of TranslationCorpusFileConfig with default values."""
-    return TranslationCorpusFileConfig(
-        file_id='')
+    return TranslationCorpusFileConfig(file_id="")
 
 
-def translation_corpus_file_config_from_obj(obj: Any, path: str = "") -> TranslationCorpusFileConfig:
+def translation_corpus_file_config_from_obj(
+    obj: Any, path: str = ""
+) -> TranslationCorpusFileConfig:
     """
     Generates an instance of TranslationCorpusFileConfig from a dictionary object.
 
@@ -2297,35 +2278,38 @@ def translation_corpus_file_config_from_obj(obj: Any, path: str = "") -> Transla
     :return: parsed instance of TranslationCorpusFileConfig
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     file_id_from_obj = from_obj(
-        obj['fileId'],
-        expected=[str],
-        path=path + '.fileId')  # type: str
+        obj["fileId"], expected=[str], path=path + ".fileId"
+    )  # type: str
 
-    obj_text_id = obj.get('textId', None)
+    obj_text_id = obj.get("textId", None)
     if obj_text_id is not None:
         text_id_from_obj = from_obj(
-            obj_text_id,
-            expected=[str],
-            path=path + '.textId')  # type: Optional[str]
+            obj_text_id, expected=[str], path=path + ".textId"
+        )  # type: Optional[str]
     else:
         text_id_from_obj = None
 
     return TranslationCorpusFileConfig(
-        file_id=file_id_from_obj,
-        text_id=text_id_from_obj)
+        file_id=file_id_from_obj, text_id=text_id_from_obj
+    )
 
 
 def translation_corpus_file_config_to_jsonable(
-        translation_corpus_file_config: TranslationCorpusFileConfig,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_corpus_file_config: TranslationCorpusFileConfig, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationCorpusFileConfig.
 
@@ -2335,19 +2319,20 @@ def translation_corpus_file_config_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['fileId'] = translation_corpus_file_config.file_id
+    res["fileId"] = translation_corpus_file_config.file_id
 
     if translation_corpus_file_config.text_id is not None:
-        res['textId'] = translation_corpus_file_config.text_id
+        res["textId"] = translation_corpus_file_config.text_id
 
     return res
 
 
 class TranslationCorpusUpdateConfig:
     def __init__(
-            self,
-            source_files: Optional[List['TranslationCorpusFileConfig']] = None,
-            target_files: Optional[List['TranslationCorpusFileConfig']] = None) -> None:
+        self,
+        source_files: Optional[List["TranslationCorpusFileConfig"]] = None,
+        target_files: Optional[List["TranslationCorpusFileConfig"]] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.source_files = source_files
 
@@ -2367,7 +2352,9 @@ def new_translation_corpus_update_config() -> TranslationCorpusUpdateConfig:
     return TranslationCorpusUpdateConfig()
 
 
-def translation_corpus_update_config_from_obj(obj: Any, path: str = "") -> TranslationCorpusUpdateConfig:
+def translation_corpus_update_config_from_obj(
+    obj: Any, path: str = ""
+) -> TranslationCorpusUpdateConfig:
     """
     Generates an instance of TranslationCorpusUpdateConfig from a dictionary object.
 
@@ -2376,39 +2363,46 @@ def translation_corpus_update_config_from_obj(obj: Any, path: str = "") -> Trans
     :return: parsed instance of TranslationCorpusUpdateConfig
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
-    obj_source_files = obj.get('sourceFiles', None)
+    obj_source_files = obj.get("sourceFiles", None)
     if obj_source_files is not None:
         source_files_from_obj = from_obj(
             obj_source_files,
             expected=[list, TranslationCorpusFileConfig],
-            path=path + '.sourceFiles')  # type: Optional[List['TranslationCorpusFileConfig']]
+            path=path + ".sourceFiles",
+        )  # type: Optional[List['TranslationCorpusFileConfig']]
     else:
         source_files_from_obj = None
 
-    obj_target_files = obj.get('targetFiles', None)
+    obj_target_files = obj.get("targetFiles", None)
     if obj_target_files is not None:
         target_files_from_obj = from_obj(
             obj_target_files,
             expected=[list, TranslationCorpusFileConfig],
-            path=path + '.targetFiles')  # type: Optional[List['TranslationCorpusFileConfig']]
+            path=path + ".targetFiles",
+        )  # type: Optional[List['TranslationCorpusFileConfig']]
     else:
         target_files_from_obj = None
 
     return TranslationCorpusUpdateConfig(
-        source_files=source_files_from_obj,
-        target_files=target_files_from_obj)
+        source_files=source_files_from_obj, target_files=target_files_from_obj
+    )
 
 
 def translation_corpus_update_config_to_jsonable(
-        translation_corpus_update_config: TranslationCorpusUpdateConfig,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_corpus_update_config: TranslationCorpusUpdateConfig, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationCorpusUpdateConfig.
 
@@ -2419,26 +2413,24 @@ def translation_corpus_update_config_to_jsonable(
     res = dict()  # type: Dict[str, Any]
 
     if translation_corpus_update_config.source_files is not None:
-        res['sourceFiles'] = to_jsonable(
-        translation_corpus_update_config.source_files,
-        expected=[list, TranslationCorpusFileConfig],
-        path='{}.sourceFiles'.format(path))
+        res["sourceFiles"] = to_jsonable(
+            translation_corpus_update_config.source_files,
+            expected=[list, TranslationCorpusFileConfig],
+            path="{}.sourceFiles".format(path),
+        )
 
     if translation_corpus_update_config.target_files is not None:
-        res['targetFiles'] = to_jsonable(
-        translation_corpus_update_config.target_files,
-        expected=[list, TranslationCorpusFileConfig],
-        path='{}.targetFiles'.format(path))
+        res["targetFiles"] = to_jsonable(
+            translation_corpus_update_config.target_files,
+            expected=[list, TranslationCorpusFileConfig],
+            path="{}.targetFiles".format(path),
+        )
 
     return res
 
 
 class Pretranslation:
-    def __init__(
-            self,
-            text_id: str,
-            refs: List[str],
-            translation: str) -> None:
+    def __init__(self, text_id: str, refs: List[str], translation: str) -> None:
         """Initializes with the given values."""
         self.text_id = text_id
 
@@ -2457,10 +2449,7 @@ class Pretranslation:
 
 def new_pretranslation() -> Pretranslation:
     """Generates an instance of Pretranslation with default values."""
-    return Pretranslation(
-        text_id='',
-        refs=[],
-        translation='')
+    return Pretranslation(text_id="", refs=[], translation="")
 
 
 def pretranslation_from_obj(obj: Any, path: str = "") -> Pretranslation:
@@ -2472,37 +2461,38 @@ def pretranslation_from_obj(obj: Any, path: str = "") -> Pretranslation:
     :return: parsed instance of Pretranslation
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     text_id_from_obj = from_obj(
-        obj['textId'],
-        expected=[str],
-        path=path + '.textId')  # type: str
+        obj["textId"], expected=[str], path=path + ".textId"
+    )  # type: str
 
     refs_from_obj = from_obj(
-        obj['refs'],
-        expected=[list, str],
-        path=path + '.refs')  # type: List[str]
+        obj["refs"], expected=[list, str], path=path + ".refs"
+    )  # type: List[str]
 
     translation_from_obj = from_obj(
-        obj['translation'],
-        expected=[str],
-        path=path + '.translation')  # type: str
+        obj["translation"], expected=[str], path=path + ".translation"
+    )  # type: str
 
     return Pretranslation(
-        text_id=text_id_from_obj,
-        refs=refs_from_obj,
-        translation=translation_from_obj)
+        text_id=text_id_from_obj, refs=refs_from_obj, translation=translation_from_obj
+    )
 
 
 def pretranslation_to_jsonable(
-        pretranslation: Pretranslation,
-        path: str = "") -> MutableMapping[str, Any]:
+    pretranslation: Pretranslation, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of Pretranslation.
 
@@ -2512,35 +2502,35 @@ def pretranslation_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['textId'] = pretranslation.text_id
+    res["textId"] = pretranslation.text_id
 
-    res['refs'] = to_jsonable(
-        pretranslation.refs,
-        expected=[list, str],
-        path='{}.refs'.format(path))
+    res["refs"] = to_jsonable(
+        pretranslation.refs, expected=[list, str], path="{}.refs".format(path)
+    )
 
-    res['translation'] = pretranslation.translation
+    res["translation"] = pretranslation.translation
 
     return res
 
 
 class TranslationBuild:
     def __init__(
-            self,
-            id: str,
-            url: str,
-            revision: int,
-            engine: 'ResourceLink',
-            step: int,
-            state: str,
-            name: Optional[str] = None,
-            train_on: Optional[List['TrainingCorpus']] = None,
-            pretranslate: Optional[List['PretranslateCorpus']] = None,
-            percent_completed: Optional[float] = None,
-            message: Optional[str] = None,
-            queue_depth: Optional[int] = None,
-            date_finished: Optional[str] = None,
-            options: Optional[Any] = None) -> None:
+        self,
+        id: str,
+        url: str,
+        revision: int,
+        engine: "ResourceLink",
+        step: int,
+        state: str,
+        name: Optional[str] = None,
+        train_on: Optional[List["TrainingCorpus"]] = None,
+        pretranslate: Optional[List["PretranslateCorpus"]] = None,
+        percent_completed: Optional[float] = None,
+        message: Optional[str] = None,
+        queue_depth: Optional[int] = None,
+        date_finished: Optional[str] = None,
+        options: Optional[Any] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.id = id
 
@@ -2583,12 +2573,8 @@ class TranslationBuild:
 def new_translation_build() -> TranslationBuild:
     """Generates an instance of TranslationBuild with default values."""
     return TranslationBuild(
-        id='',
-        url='',
-        revision=0,
-        engine=new_resource_link__,
-        step=0,
-        state='')
+        id="", url="", revision=0, engine=new_resource_link__, step=0, state=""
+    )
 
 
 def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
@@ -2600,107 +2586,97 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
     :return: parsed instance of TranslationBuild
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
-    id_from_obj = from_obj(
-        obj['id'],
-        expected=[str],
-        path=path + '.id')  # type: str
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
 
-    url_from_obj = from_obj(
-        obj['url'],
-        expected=[str],
-        path=path + '.url')  # type: str
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
 
     revision_from_obj = from_obj(
-        obj['revision'],
-        expected=[int],
-        path=path + '.revision')  # type: int
+        obj["revision"], expected=[int], path=path + ".revision"
+    )  # type: int
 
     engine_from_obj = from_obj(
-        obj['engine'],
-        expected=[ResourceLink],
-        path=path + '.engine')  # type: 'ResourceLink'
+        obj["engine"], expected=[ResourceLink], path=path + ".engine"
+    )  # type: 'ResourceLink'
 
     step_from_obj = from_obj(
-        obj['step'],
-        expected=[int],
-        path=path + '.step')  # type: int
+        obj["step"], expected=[int], path=path + ".step"
+    )  # type: int
 
     state_from_obj = from_obj(
-        obj['state'],
-        expected=[str],
-        path=path + '.state')  # type: str
+        obj["state"], expected=[str], path=path + ".state"
+    )  # type: str
 
-    obj_name = obj.get('name', None)
+    obj_name = obj.get("name", None)
     if obj_name is not None:
         name_from_obj = from_obj(
-            obj_name,
-            expected=[str],
-            path=path + '.name')  # type: Optional[str]
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
     else:
         name_from_obj = None
 
-    obj_train_on = obj.get('trainOn', None)
+    obj_train_on = obj.get("trainOn", None)
     if obj_train_on is not None:
         train_on_from_obj = from_obj(
-            obj_train_on,
-            expected=[list, TrainingCorpus],
-            path=path + '.trainOn')  # type: Optional[List['TrainingCorpus']]
+            obj_train_on, expected=[list, TrainingCorpus], path=path + ".trainOn"
+        )  # type: Optional[List['TrainingCorpus']]
     else:
         train_on_from_obj = None
 
-    obj_pretranslate = obj.get('pretranslate', None)
+    obj_pretranslate = obj.get("pretranslate", None)
     if obj_pretranslate is not None:
         pretranslate_from_obj = from_obj(
             obj_pretranslate,
             expected=[list, PretranslateCorpus],
-            path=path + '.pretranslate')  # type: Optional[List['PretranslateCorpus']]
+            path=path + ".pretranslate",
+        )  # type: Optional[List['PretranslateCorpus']]
     else:
         pretranslate_from_obj = None
 
-    obj_percent_completed = obj.get('percentCompleted', None)
+    obj_percent_completed = obj.get("percentCompleted", None)
     if obj_percent_completed is not None:
         percent_completed_from_obj = from_obj(
-            obj_percent_completed,
-            expected=[float],
-            path=path + '.percentCompleted')  # type: Optional[float]
+            obj_percent_completed, expected=[float], path=path + ".percentCompleted"
+        )  # type: Optional[float]
     else:
         percent_completed_from_obj = None
 
-    obj_message = obj.get('message', None)
+    obj_message = obj.get("message", None)
     if obj_message is not None:
         message_from_obj = from_obj(
-            obj_message,
-            expected=[str],
-            path=path + '.message')  # type: Optional[str]
+            obj_message, expected=[str], path=path + ".message"
+        )  # type: Optional[str]
     else:
         message_from_obj = None
 
-    obj_queue_depth = obj.get('queueDepth', None)
+    obj_queue_depth = obj.get("queueDepth", None)
     if obj_queue_depth is not None:
         queue_depth_from_obj = from_obj(
-            obj_queue_depth,
-            expected=[int],
-            path=path + '.queueDepth')  # type: Optional[int]
+            obj_queue_depth, expected=[int], path=path + ".queueDepth"
+        )  # type: Optional[int]
     else:
         queue_depth_from_obj = None
 
-    obj_date_finished = obj.get('dateFinished', None)
+    obj_date_finished = obj.get("dateFinished", None)
     if obj_date_finished is not None:
         date_finished_from_obj = from_obj(
-            obj_date_finished,
-            expected=[str],
-            path=path + '.dateFinished')  # type: Optional[str]
+            obj_date_finished, expected=[str], path=path + ".dateFinished"
+        )  # type: Optional[str]
     else:
         date_finished_from_obj = None
 
-    options_from_obj = obj.get('options', None)
+    options_from_obj = obj.get("options", None)
 
     return TranslationBuild(
         id=id_from_obj,
@@ -2716,12 +2692,13 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
         message=message_from_obj,
         queue_depth=queue_depth_from_obj,
         date_finished=date_finished_from_obj,
-        options=options_from_obj)
+        options=options_from_obj,
+    )
 
 
 def translation_build_to_jsonable(
-        translation_build: TranslationBuild,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_build: TranslationBuild, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationBuild.
 
@@ -2731,63 +2708,68 @@ def translation_build_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['id'] = translation_build.id
+    res["id"] = translation_build.id
 
-    res['url'] = translation_build.url
+    res["url"] = translation_build.url
 
-    res['revision'] = translation_build.revision
+    res["revision"] = translation_build.revision
 
-    res['engine'] = to_jsonable(
-        translation_build.engine,
-        expected=[ResourceLink],
-        path='{}.engine'.format(path))
+    res["engine"] = to_jsonable(
+        translation_build.engine, expected=[ResourceLink], path="{}.engine".format(path)
+    )
 
-    res['step'] = translation_build.step
+    res["step"] = translation_build.step
 
-    res['state'] = translation_build.state
+    res["state"] = translation_build.state
 
     if translation_build.name is not None:
-        res['name'] = translation_build.name
+        res["name"] = translation_build.name
 
     if translation_build.train_on is not None:
-        res['trainOn'] = to_jsonable(
-        translation_build.train_on,
-        expected=[list, TrainingCorpus],
-        path='{}.trainOn'.format(path))
+        res["trainOn"] = to_jsonable(
+            translation_build.train_on,
+            expected=[list, TrainingCorpus],
+            path="{}.trainOn".format(path),
+        )
 
     if translation_build.pretranslate is not None:
-        res['pretranslate'] = to_jsonable(
-        translation_build.pretranslate,
-        expected=[list, PretranslateCorpus],
-        path='{}.pretranslate'.format(path))
+        res["pretranslate"] = to_jsonable(
+            translation_build.pretranslate,
+            expected=[list, PretranslateCorpus],
+            path="{}.pretranslate".format(path),
+        )
 
     if translation_build.percent_completed is not None:
-        res['percentCompleted'] = translation_build.percent_completed
+        res["percentCompleted"] = translation_build.percent_completed
 
     if translation_build.message is not None:
-        res['message'] = translation_build.message
+        res["message"] = translation_build.message
 
     if translation_build.queue_depth is not None:
-        res['queueDepth'] = translation_build.queue_depth
+        res["queueDepth"] = translation_build.queue_depth
 
     if translation_build.date_finished is not None:
-        res['dateFinished'] = translation_build.date_finished
+        res["dateFinished"] = translation_build.date_finished
 
     if translation_build.options is not None:
-        res['options'] = translation_build.options
+        res["options"] = translation_build.options
 
     return res
 
 
 class TrainingCorpus:
     def __init__(
-            self,
-            corpus: 'ResourceLink',
-            text_ids: Optional[List[str]] = None) -> None:
+        self,
+        corpus: "ResourceLink",
+        text_ids: Optional[List[str]] = None,
+        scripture_range: Optional[str] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.corpus = corpus
 
         self.text_ids = text_ids
+
+        self.scripture_range = scripture_range
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -2800,8 +2782,7 @@ class TrainingCorpus:
 
 def new_training_corpus() -> TrainingCorpus:
     """Generates an instance of TrainingCorpus with default values."""
-    return TrainingCorpus(
-        corpus=new_resource_link__)
+    return TrainingCorpus(corpus=new_resource_link__)
 
 
 def training_corpus_from_obj(obj: Any, path: str = "") -> TrainingCorpus:
@@ -2813,35 +2794,48 @@ def training_corpus_from_obj(obj: Any, path: str = "") -> TrainingCorpus:
     :return: parsed instance of TrainingCorpus
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     corpus_from_obj = from_obj(
-        obj['corpus'],
-        expected=[ResourceLink],
-        path=path + '.corpus')  # type: 'ResourceLink'
+        obj["corpus"], expected=[ResourceLink], path=path + ".corpus"
+    )  # type: 'ResourceLink'
 
-    obj_text_ids = obj.get('textIds', None)
+    obj_text_ids = obj.get("textIds", None)
     if obj_text_ids is not None:
         text_ids_from_obj = from_obj(
-            obj_text_ids,
-            expected=[list, str],
-            path=path + '.textIds')  # type: Optional[List[str]]
+            obj_text_ids, expected=[list, str], path=path + ".textIds"
+        )  # type: Optional[List[str]]
     else:
         text_ids_from_obj = None
 
+    obj_scripture_range = obj.get("scriptureRange", None)
+    if obj_scripture_range is not None:
+        scripture_range_from_obj = from_obj(
+            obj_scripture_range, expected=[str], path=path + ".scriptureRange"
+        )  # type: Optional[str]
+    else:
+        scripture_range_from_obj = None
+
     return TrainingCorpus(
         corpus=corpus_from_obj,
-        text_ids=text_ids_from_obj)
+        text_ids=text_ids_from_obj,
+        scripture_range=scripture_range_from_obj,
+    )
 
 
 def training_corpus_to_jsonable(
-        training_corpus: TrainingCorpus,
-        path: str = "") -> MutableMapping[str, Any]:
+    training_corpus: TrainingCorpus, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TrainingCorpus.
 
@@ -2851,29 +2845,36 @@ def training_corpus_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['corpus'] = to_jsonable(
-        training_corpus.corpus,
-        expected=[ResourceLink],
-        path='{}.corpus'.format(path))
+    res["corpus"] = to_jsonable(
+        training_corpus.corpus, expected=[ResourceLink], path="{}.corpus".format(path)
+    )
 
     if training_corpus.text_ids is not None:
-        res['textIds'] = to_jsonable(
-        training_corpus.text_ids,
-        expected=[list, str],
-        path='{}.textIds'.format(path))
+        res["textIds"] = to_jsonable(
+            training_corpus.text_ids,
+            expected=[list, str],
+            path="{}.textIds".format(path),
+        )
+
+    if training_corpus.scripture_range is not None:
+        res["scriptureRange"] = training_corpus.scripture_range
 
     return res
 
 
 class PretranslateCorpus:
     def __init__(
-            self,
-            corpus: 'ResourceLink',
-            text_ids: Optional[List[str]] = None) -> None:
+        self,
+        corpus: "ResourceLink",
+        text_ids: Optional[List[str]] = None,
+        scripture_range: Optional[str] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.corpus = corpus
 
         self.text_ids = text_ids
+
+        self.scripture_range = scripture_range
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -2886,8 +2887,7 @@ class PretranslateCorpus:
 
 def new_pretranslate_corpus() -> PretranslateCorpus:
     """Generates an instance of PretranslateCorpus with default values."""
-    return PretranslateCorpus(
-        corpus=new_resource_link__)
+    return PretranslateCorpus(corpus=new_resource_link__)
 
 
 def pretranslate_corpus_from_obj(obj: Any, path: str = "") -> PretranslateCorpus:
@@ -2899,35 +2899,48 @@ def pretranslate_corpus_from_obj(obj: Any, path: str = "") -> PretranslateCorpus
     :return: parsed instance of PretranslateCorpus
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     corpus_from_obj = from_obj(
-        obj['corpus'],
-        expected=[ResourceLink],
-        path=path + '.corpus')  # type: 'ResourceLink'
+        obj["corpus"], expected=[ResourceLink], path=path + ".corpus"
+    )  # type: 'ResourceLink'
 
-    obj_text_ids = obj.get('textIds', None)
+    obj_text_ids = obj.get("textIds", None)
     if obj_text_ids is not None:
         text_ids_from_obj = from_obj(
-            obj_text_ids,
-            expected=[list, str],
-            path=path + '.textIds')  # type: Optional[List[str]]
+            obj_text_ids, expected=[list, str], path=path + ".textIds"
+        )  # type: Optional[List[str]]
     else:
         text_ids_from_obj = None
 
+    obj_scripture_range = obj.get("scriptureRange", None)
+    if obj_scripture_range is not None:
+        scripture_range_from_obj = from_obj(
+            obj_scripture_range, expected=[str], path=path + ".scriptureRange"
+        )  # type: Optional[str]
+    else:
+        scripture_range_from_obj = None
+
     return PretranslateCorpus(
         corpus=corpus_from_obj,
-        text_ids=text_ids_from_obj)
+        text_ids=text_ids_from_obj,
+        scripture_range=scripture_range_from_obj,
+    )
 
 
 def pretranslate_corpus_to_jsonable(
-        pretranslate_corpus: PretranslateCorpus,
-        path: str = "") -> MutableMapping[str, Any]:
+    pretranslate_corpus: PretranslateCorpus, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of PretranslateCorpus.
 
@@ -2937,27 +2950,33 @@ def pretranslate_corpus_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['corpus'] = to_jsonable(
+    res["corpus"] = to_jsonable(
         pretranslate_corpus.corpus,
         expected=[ResourceLink],
-        path='{}.corpus'.format(path))
+        path="{}.corpus".format(path),
+    )
 
     if pretranslate_corpus.text_ids is not None:
-        res['textIds'] = to_jsonable(
-        pretranslate_corpus.text_ids,
-        expected=[list, str],
-        path='{}.textIds'.format(path))
+        res["textIds"] = to_jsonable(
+            pretranslate_corpus.text_ids,
+            expected=[list, str],
+            path="{}.textIds".format(path),
+        )
+
+    if pretranslate_corpus.scripture_range is not None:
+        res["scriptureRange"] = pretranslate_corpus.scripture_range
 
     return res
 
 
 class TranslationBuildConfig:
     def __init__(
-            self,
-            name: Optional[str] = None,
-            train_on: Optional[List['TrainingCorpusConfig']] = None,
-            pretranslate: Optional[List['PretranslateCorpusConfig']] = None,
-            options: Optional[Any] = None) -> None:
+        self,
+        name: Optional[str] = None,
+        train_on: Optional[List["TrainingCorpusConfig"]] = None,
+        pretranslate: Optional[List["PretranslateCorpusConfig"]] = None,
+        options: Optional[Any] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.name = name
 
@@ -2981,7 +3000,9 @@ def new_translation_build_config() -> TranslationBuildConfig:
     return TranslationBuildConfig()
 
 
-def translation_build_config_from_obj(obj: Any, path: str = "") -> TranslationBuildConfig:
+def translation_build_config_from_obj(
+    obj: Any, path: str = ""
+) -> TranslationBuildConfig:
     """
     Generates an instance of TranslationBuildConfig from a dictionary object.
 
@@ -2990,52 +3011,57 @@ def translation_build_config_from_obj(obj: Any, path: str = "") -> TranslationBu
     :return: parsed instance of TranslationBuildConfig
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
-    obj_name = obj.get('name', None)
+    obj_name = obj.get("name", None)
     if obj_name is not None:
         name_from_obj = from_obj(
-            obj_name,
-            expected=[str],
-            path=path + '.name')  # type: Optional[str]
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
     else:
         name_from_obj = None
 
-    obj_train_on = obj.get('trainOn', None)
+    obj_train_on = obj.get("trainOn", None)
     if obj_train_on is not None:
         train_on_from_obj = from_obj(
-            obj_train_on,
-            expected=[list, TrainingCorpusConfig],
-            path=path + '.trainOn')  # type: Optional[List['TrainingCorpusConfig']]
+            obj_train_on, expected=[list, TrainingCorpusConfig], path=path + ".trainOn"
+        )  # type: Optional[List['TrainingCorpusConfig']]
     else:
         train_on_from_obj = None
 
-    obj_pretranslate = obj.get('pretranslate', None)
+    obj_pretranslate = obj.get("pretranslate", None)
     if obj_pretranslate is not None:
         pretranslate_from_obj = from_obj(
             obj_pretranslate,
             expected=[list, PretranslateCorpusConfig],
-            path=path + '.pretranslate')  # type: Optional[List['PretranslateCorpusConfig']]
+            path=path + ".pretranslate",
+        )  # type: Optional[List['PretranslateCorpusConfig']]
     else:
         pretranslate_from_obj = None
 
-    options_from_obj = obj.get('options', None)
+    options_from_obj = obj.get("options", None)
 
     return TranslationBuildConfig(
         name=name_from_obj,
         train_on=train_on_from_obj,
         pretranslate=pretranslate_from_obj,
-        options=options_from_obj)
+        options=options_from_obj,
+    )
 
 
 def translation_build_config_to_jsonable(
-        translation_build_config: TranslationBuildConfig,
-        path: str = "") -> MutableMapping[str, Any]:
+    translation_build_config: TranslationBuildConfig, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TranslationBuildConfig.
 
@@ -3046,35 +3072,41 @@ def translation_build_config_to_jsonable(
     res = dict()  # type: Dict[str, Any]
 
     if translation_build_config.name is not None:
-        res['name'] = translation_build_config.name
+        res["name"] = translation_build_config.name
 
     if translation_build_config.train_on is not None:
-        res['trainOn'] = to_jsonable(
-        translation_build_config.train_on,
-        expected=[list, TrainingCorpusConfig],
-        path='{}.trainOn'.format(path))
+        res["trainOn"] = to_jsonable(
+            translation_build_config.train_on,
+            expected=[list, TrainingCorpusConfig],
+            path="{}.trainOn".format(path),
+        )
 
     if translation_build_config.pretranslate is not None:
-        res['pretranslate'] = to_jsonable(
-        translation_build_config.pretranslate,
-        expected=[list, PretranslateCorpusConfig],
-        path='{}.pretranslate'.format(path))
+        res["pretranslate"] = to_jsonable(
+            translation_build_config.pretranslate,
+            expected=[list, PretranslateCorpusConfig],
+            path="{}.pretranslate".format(path),
+        )
 
     if translation_build_config.options is not None:
-        res['options'] = translation_build_config.options
+        res["options"] = translation_build_config.options
 
     return res
 
 
 class TrainingCorpusConfig:
     def __init__(
-            self,
-            corpus_id: str,
-            text_ids: Optional[List[str]] = None) -> None:
+        self,
+        corpus_id: str,
+        text_ids: Optional[List[str]] = None,
+        scripture_range: Optional[str] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.corpus_id = corpus_id
 
         self.text_ids = text_ids
+
+        self.scripture_range = scripture_range
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -3087,8 +3119,7 @@ class TrainingCorpusConfig:
 
 def new_training_corpus_config() -> TrainingCorpusConfig:
     """Generates an instance of TrainingCorpusConfig with default values."""
-    return TrainingCorpusConfig(
-        corpus_id='')
+    return TrainingCorpusConfig(corpus_id="")
 
 
 def training_corpus_config_from_obj(obj: Any, path: str = "") -> TrainingCorpusConfig:
@@ -3100,35 +3131,48 @@ def training_corpus_config_from_obj(obj: Any, path: str = "") -> TrainingCorpusC
     :return: parsed instance of TrainingCorpusConfig
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     corpus_id_from_obj = from_obj(
-        obj['corpusId'],
-        expected=[str],
-        path=path + '.corpusId')  # type: str
+        obj["corpusId"], expected=[str], path=path + ".corpusId"
+    )  # type: str
 
-    obj_text_ids = obj.get('textIds', None)
+    obj_text_ids = obj.get("textIds", None)
     if obj_text_ids is not None:
         text_ids_from_obj = from_obj(
-            obj_text_ids,
-            expected=[list, str],
-            path=path + '.textIds')  # type: Optional[List[str]]
+            obj_text_ids, expected=[list, str], path=path + ".textIds"
+        )  # type: Optional[List[str]]
     else:
         text_ids_from_obj = None
 
+    obj_scripture_range = obj.get("scriptureRange", None)
+    if obj_scripture_range is not None:
+        scripture_range_from_obj = from_obj(
+            obj_scripture_range, expected=[str], path=path + ".scriptureRange"
+        )  # type: Optional[str]
+    else:
+        scripture_range_from_obj = None
+
     return TrainingCorpusConfig(
         corpus_id=corpus_id_from_obj,
-        text_ids=text_ids_from_obj)
+        text_ids=text_ids_from_obj,
+        scripture_range=scripture_range_from_obj,
+    )
 
 
 def training_corpus_config_to_jsonable(
-        training_corpus_config: TrainingCorpusConfig,
-        path: str = "") -> MutableMapping[str, Any]:
+    training_corpus_config: TrainingCorpusConfig, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of TrainingCorpusConfig.
 
@@ -3138,26 +3182,34 @@ def training_corpus_config_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['corpusId'] = training_corpus_config.corpus_id
+    res["corpusId"] = training_corpus_config.corpus_id
 
     if training_corpus_config.text_ids is not None:
-        res['textIds'] = to_jsonable(
-        training_corpus_config.text_ids,
-        expected=[list, str],
-        path='{}.textIds'.format(path))
+        res["textIds"] = to_jsonable(
+            training_corpus_config.text_ids,
+            expected=[list, str],
+            path="{}.textIds".format(path),
+        )
+
+    if training_corpus_config.scripture_range is not None:
+        res["scriptureRange"] = training_corpus_config.scripture_range
 
     return res
 
 
 class PretranslateCorpusConfig:
     def __init__(
-            self,
-            corpus_id: str,
-            text_ids: Optional[List[str]] = None) -> None:
+        self,
+        corpus_id: str,
+        text_ids: Optional[List[str]] = None,
+        scripture_range: Optional[str] = None,
+    ) -> None:
         """Initializes with the given values."""
         self.corpus_id = corpus_id
 
         self.text_ids = text_ids
+
+        self.scripture_range = scripture_range
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -3170,11 +3222,12 @@ class PretranslateCorpusConfig:
 
 def new_pretranslate_corpus_config() -> PretranslateCorpusConfig:
     """Generates an instance of PretranslateCorpusConfig with default values."""
-    return PretranslateCorpusConfig(
-        corpus_id='')
+    return PretranslateCorpusConfig(corpus_id="")
 
 
-def pretranslate_corpus_config_from_obj(obj: Any, path: str = "") -> PretranslateCorpusConfig:
+def pretranslate_corpus_config_from_obj(
+    obj: Any, path: str = ""
+) -> PretranslateCorpusConfig:
     """
     Generates an instance of PretranslateCorpusConfig from a dictionary object.
 
@@ -3183,35 +3236,48 @@ def pretranslate_corpus_config_from_obj(obj: Any, path: str = "") -> Pretranslat
     :return: parsed instance of PretranslateCorpusConfig
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     corpus_id_from_obj = from_obj(
-        obj['corpusId'],
-        expected=[str],
-        path=path + '.corpusId')  # type: str
+        obj["corpusId"], expected=[str], path=path + ".corpusId"
+    )  # type: str
 
-    obj_text_ids = obj.get('textIds', None)
+    obj_text_ids = obj.get("textIds", None)
     if obj_text_ids is not None:
         text_ids_from_obj = from_obj(
-            obj_text_ids,
-            expected=[list, str],
-            path=path + '.textIds')  # type: Optional[List[str]]
+            obj_text_ids, expected=[list, str], path=path + ".textIds"
+        )  # type: Optional[List[str]]
     else:
         text_ids_from_obj = None
 
+    obj_scripture_range = obj.get("scriptureRange", None)
+    if obj_scripture_range is not None:
+        scripture_range_from_obj = from_obj(
+            obj_scripture_range, expected=[str], path=path + ".scriptureRange"
+        )  # type: Optional[str]
+    else:
+        scripture_range_from_obj = None
+
     return PretranslateCorpusConfig(
         corpus_id=corpus_id_from_obj,
-        text_ids=text_ids_from_obj)
+        text_ids=text_ids_from_obj,
+        scripture_range=scripture_range_from_obj,
+    )
 
 
 def pretranslate_corpus_config_to_jsonable(
-        pretranslate_corpus_config: PretranslateCorpusConfig,
-        path: str = "") -> MutableMapping[str, Any]:
+    pretranslate_corpus_config: PretranslateCorpusConfig, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of PretranslateCorpusConfig.
 
@@ -3221,24 +3287,266 @@ def pretranslate_corpus_config_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['corpusId'] = pretranslate_corpus_config.corpus_id
+    res["corpusId"] = pretranslate_corpus_config.corpus_id
 
     if pretranslate_corpus_config.text_ids is not None:
-        res['textIds'] = to_jsonable(
-        pretranslate_corpus_config.text_ids,
-        expected=[list, str],
-        path='{}.textIds'.format(path))
+        res["textIds"] = to_jsonable(
+            pretranslate_corpus_config.text_ids,
+            expected=[list, str],
+            path="{}.textIds".format(path),
+        )
+
+    if pretranslate_corpus_config.scripture_range is not None:
+        res["scriptureRange"] = pretranslate_corpus_config.scripture_range
+
+    return res
+
+
+class ModelDownloadURL:
+    def __init__(self, url: str, model_revision: int, expires_at: str) -> None:
+        """Initializes with the given values."""
+        self.url = url
+
+        self.model_revision = model_revision
+
+        self.expires_at = expires_at
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to model_download_url_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return model_download_url_to_jsonable(self)
+
+
+def new_model_download_url() -> ModelDownloadURL:
+    """Generates an instance of ModelDownloadURL with default values."""
+    return ModelDownloadURL(url="", model_revision=0, expires_at="")
+
+
+def model_download_url_from_obj(obj: Any, path: str = "") -> ModelDownloadURL:
+    """
+    Generates an instance of ModelDownloadURL from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of ModelDownloadURL
+    :param path: path to the object used for debugging
+    :return: parsed instance of ModelDownloadURL
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
+
+    model_revision_from_obj = from_obj(
+        obj["modelRevision"], expected=[int], path=path + ".modelRevision"
+    )  # type: int
+
+    expires_at_from_obj = from_obj(
+        obj["expiresAt"], expected=[str], path=path + ".expiresAt"
+    )  # type: str
+
+    return ModelDownloadURL(
+        url=url_from_obj,
+        model_revision=model_revision_from_obj,
+        expires_at=expires_at_from_obj,
+    )
+
+
+def model_download_url_to_jsonable(
+    model_download_url: ModelDownloadURL, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of ModelDownloadURL.
+
+    :param model_download_url: instance of ModelDownloadURL to be JSON-ized
+    :param path: path to the model_download_url used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["url"] = model_download_url.url
+
+    res["modelRevision"] = model_download_url.model_revision
+
+    res["expiresAt"] = model_download_url.expires_at
+
+    return res
+
+
+class Queue:
+    def __init__(self, size: int, engine_type: str) -> None:
+        """Initializes with the given values."""
+        self.size = size
+
+        self.engine_type = engine_type
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to queue_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return queue_to_jsonable(self)
+
+
+def new_queue() -> Queue:
+    """Generates an instance of Queue with default values."""
+    return Queue(size=0, engine_type="")
+
+
+def queue_from_obj(obj: Any, path: str = "") -> Queue:
+    """
+    Generates an instance of Queue from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of Queue
+    :param path: path to the object used for debugging
+    :return: parsed instance of Queue
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    size_from_obj = from_obj(
+        obj["size"], expected=[int], path=path + ".size"
+    )  # type: int
+
+    engine_type_from_obj = from_obj(
+        obj["engineType"], expected=[str], path=path + ".engineType"
+    )  # type: str
+
+    return Queue(size=size_from_obj, engine_type=engine_type_from_obj)
+
+
+def queue_to_jsonable(queue: Queue, path: str = "") -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of Queue.
+
+    :param queue: instance of Queue to be JSON-ized
+    :param path: path to the queue used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["size"] = queue.size
+
+    res["engineType"] = queue.engine_type
+
+    return res
+
+
+class LanguageInfo:
+    def __init__(
+        self, engine_type: str, is_native: bool, internal_code: Optional[str] = None
+    ) -> None:
+        """Initializes with the given values."""
+        self.engine_type = engine_type
+
+        self.is_native = is_native
+
+        self.internal_code = internal_code
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to language_info_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return language_info_to_jsonable(self)
+
+
+def new_language_info() -> LanguageInfo:
+    """Generates an instance of LanguageInfo with default values."""
+    return LanguageInfo(engine_type="", is_native=False)
+
+
+def language_info_from_obj(obj: Any, path: str = "") -> LanguageInfo:
+    """
+    Generates an instance of LanguageInfo from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of LanguageInfo
+    :param path: path to the object used for debugging
+    :return: parsed instance of LanguageInfo
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    engine_type_from_obj = from_obj(
+        obj["engineType"], expected=[str], path=path + ".engineType"
+    )  # type: str
+
+    is_native_from_obj = from_obj(
+        obj["isNative"], expected=[bool], path=path + ".isNative"
+    )  # type: bool
+
+    obj_internal_code = obj.get("internalCode", None)
+    if obj_internal_code is not None:
+        internal_code_from_obj = from_obj(
+            obj_internal_code, expected=[str], path=path + ".internalCode"
+        )  # type: Optional[str]
+    else:
+        internal_code_from_obj = None
+
+    return LanguageInfo(
+        engine_type=engine_type_from_obj,
+        is_native=is_native_from_obj,
+        internal_code=internal_code_from_obj,
+    )
+
+
+def language_info_to_jsonable(
+    language_info: LanguageInfo, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of LanguageInfo.
+
+    :param language_info: instance of LanguageInfo to be JSON-ized
+    :param path: path to the language_info used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["engineType"] = language_info.engine_type
+
+    res["isNative"] = language_info.is_native
+
+    if language_info.internal_code is not None:
+        res["internalCode"] = language_info.internal_code
 
     return res
 
 
 class Webhook:
-    def __init__(
-            self,
-            id: str,
-            url: str,
-            payload_url: str,
-            events: List[str]) -> None:
+    def __init__(self, id: str, url: str, payload_url: str, events: List[str]) -> None:
         """Initializes with the given values."""
         self.id = id
 
@@ -3259,11 +3567,7 @@ class Webhook:
 
 def new_webhook() -> Webhook:
     """Generates an instance of Webhook with default values."""
-    return Webhook(
-        id='',
-        url='',
-        payload_url='',
-        events=[])
+    return Webhook(id="", url="", payload_url="", events=[])
 
 
 def webhook_from_obj(obj: Any, path: str = "") -> Webhook:
@@ -3275,43 +3579,39 @@ def webhook_from_obj(obj: Any, path: str = "") -> Webhook:
     :return: parsed instance of Webhook
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
-    id_from_obj = from_obj(
-        obj['id'],
-        expected=[str],
-        path=path + '.id')  # type: str
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
 
-    url_from_obj = from_obj(
-        obj['url'],
-        expected=[str],
-        path=path + '.url')  # type: str
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
 
     payload_url_from_obj = from_obj(
-        obj['payloadUrl'],
-        expected=[str],
-        path=path + '.payloadUrl')  # type: str
+        obj["payloadUrl"], expected=[str], path=path + ".payloadUrl"
+    )  # type: str
 
     events_from_obj = from_obj(
-        obj['events'],
-        expected=[list, str],
-        path=path + '.events')  # type: List[str]
+        obj["events"], expected=[list, str], path=path + ".events"
+    )  # type: List[str]
 
     return Webhook(
         id=id_from_obj,
         url=url_from_obj,
         payload_url=payload_url_from_obj,
-        events=events_from_obj)
+        events=events_from_obj,
+    )
 
 
-def webhook_to_jsonable(
-        webhook: Webhook,
-        path: str = "") -> MutableMapping[str, Any]:
+def webhook_to_jsonable(webhook: Webhook, path: str = "") -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of Webhook.
 
@@ -3321,26 +3621,21 @@ def webhook_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['id'] = webhook.id
+    res["id"] = webhook.id
 
-    res['url'] = webhook.url
+    res["url"] = webhook.url
 
-    res['payloadUrl'] = webhook.payload_url
+    res["payloadUrl"] = webhook.payload_url
 
-    res['events'] = to_jsonable(
-        webhook.events,
-        expected=[list, str],
-        path='{}.events'.format(path))
+    res["events"] = to_jsonable(
+        webhook.events, expected=[list, str], path="{}.events".format(path)
+    )
 
     return res
 
 
 class WebhookConfig:
-    def __init__(
-            self,
-            payload_url: str,
-            secret: str,
-            events: List[str]) -> None:
+    def __init__(self, payload_url: str, secret: str, events: List[str]) -> None:
         """Initializes with the given values."""
         # The payload URL.
         self.payload_url = payload_url
@@ -3362,10 +3657,7 @@ class WebhookConfig:
 
 def new_webhook_config() -> WebhookConfig:
     """Generates an instance of WebhookConfig with default values."""
-    return WebhookConfig(
-        payload_url='',
-        secret='',
-        events=[])
+    return WebhookConfig(payload_url="", secret="", events=[])
 
 
 def webhook_config_from_obj(obj: Any, path: str = "") -> WebhookConfig:
@@ -3377,37 +3669,38 @@ def webhook_config_from_obj(obj: Any, path: str = "") -> WebhookConfig:
     :return: parsed instance of WebhookConfig
     """
     if not isinstance(obj, dict):
-        raise ValueError('Expected a dict at path {}, but got: {}'.format(path, type(obj)))
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
 
     for key in obj:
         if not isinstance(key, str):
             raise ValueError(
-                'Expected a key of type str at path {}, but got: {}'.format(path, type(key)))
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
 
     payload_url_from_obj = from_obj(
-        obj['payloadUrl'],
-        expected=[str],
-        path=path + '.payloadUrl')  # type: str
+        obj["payloadUrl"], expected=[str], path=path + ".payloadUrl"
+    )  # type: str
 
     secret_from_obj = from_obj(
-        obj['secret'],
-        expected=[str],
-        path=path + '.secret')  # type: str
+        obj["secret"], expected=[str], path=path + ".secret"
+    )  # type: str
 
     events_from_obj = from_obj(
-        obj['events'],
-        expected=[list, str],
-        path=path + '.events')  # type: List[str]
+        obj["events"], expected=[list, str], path=path + ".events"
+    )  # type: List[str]
 
     return WebhookConfig(
-        payload_url=payload_url_from_obj,
-        secret=secret_from_obj,
-        events=events_from_obj)
+        payload_url=payload_url_from_obj, secret=secret_from_obj, events=events_from_obj
+    )
 
 
 def webhook_config_to_jsonable(
-        webhook_config: WebhookConfig,
-        path: str = "") -> MutableMapping[str, Any]:
+    webhook_config: WebhookConfig, path: str = ""
+) -> MutableMapping[str, Any]:
     """
     Generates a JSON-able mapping from an instance of WebhookConfig.
 
@@ -3417,14 +3710,13 @@ def webhook_config_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res['payloadUrl'] = webhook_config.payload_url
+    res["payloadUrl"] = webhook_config.payload_url
 
-    res['secret'] = webhook_config.secret
+    res["secret"] = webhook_config.secret
 
-    res['events'] = to_jsonable(
-        webhook_config.events,
-        expected=[list, str],
-        path='{}.events'.format(path))
+    res["events"] = to_jsonable(
+        webhook_config.events, expected=[list, str], path="{}.events".format(path)
+    )
 
     return res
 
@@ -3436,7 +3728,8 @@ class RemoteCaller:
         self,
         url_prefix: str,
         auth: Optional[requests.auth.AuthBase] = None,
-        session: Optional[requests.Session] = None) -> None:
+        session: Optional[requests.Session] = None,
+    ) -> None:
         self.url_prefix = url_prefix
         self.auth = auth
         self.session = session
@@ -3445,62 +3738,68 @@ class RemoteCaller:
             self.session = requests.Session()
             self.session.auth = self.auth
 
-    def status_get_health(self) -> 'HealthReport':
+    def status_get_health(self) -> "HealthReport":
         """
         Send a get request to /api/v1/status/health.
 
         :return:
         """
-        url = self.url_prefix + '/api/v1/status/health'
+        url = self.url_prefix + "/api/v1/status/health"
 
-        resp = self.session.request(method='get', url=url)
+        resp = self.session.request(method="get", url=url)
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[HealthReport])
+            return from_obj(obj=resp.json(), expected=[HealthReport])
 
-    def status_get_deployment_info(self) -> 'DeploymentInfo':
+    def status_get_ping(self) -> "HealthReport":
+        """
+        Send a get request to /api/v1/status/ping.
+
+        :return:
+        """
+        url = self.url_prefix + "/api/v1/status/ping"
+
+        resp = self.session.request(method="get", url=url)
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[HealthReport])
+
+    def status_get_deployment_info(self) -> "DeploymentInfo":
         """
         Send a get request to /api/v1/status/deployment-info.
 
         :return:
         """
-        url = self.url_prefix + '/api/v1/status/deployment-info'
+        url = self.url_prefix + "/api/v1/status/deployment-info"
 
-        resp = self.session.request(method='get', url=url)
+        resp = self.session.request(method="get", url=url)
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[DeploymentInfo])
+            return from_obj(obj=resp.json(), expected=[DeploymentInfo])
 
-    def data_files_get_all(self) -> List['DataFile']:
+    def data_files_get_all(self) -> List["DataFile"]:
         """
         Send a get request to /api/v1/files.
 
         :return: A list of all files owned by the client
         """
-        url = self.url_prefix + '/api/v1/files'
+        url = self.url_prefix + "/api/v1/files"
 
-        resp = self.session.request(method='get', url=url)
+        resp = self.session.request(method="get", url=url)
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[list, DataFile])
+            return from_obj(obj=resp.json(), expected=[list, DataFile])
 
     def data_files_create(
-            self,
-            file: BinaryIO,
-            format: str,
-            name: Optional[str] = None) -> bytes:
+        self, file: BinaryIO, format: str, name: Optional[str] = None
+    ) -> bytes:
         """
         Sample request:
-                    
+
             POST /files
             {
                "format": "text",
@@ -3525,21 +3824,21 @@ class RemoteCaller:
 
         :return:
         """
-        url = self.url_prefix + '/api/v1/files'
+        url = self.url_prefix + "/api/v1/files"
 
         data = {}  # type: Dict[str, str]
 
-        data['format'] = format
+        data["format"] = format
 
         if name is not None:
-            data['name'] = name
+            data["name"] = name
 
         files = {}  # type: Dict[str, BinaryIO]
 
-        files['file'] = file
+        files["file"] = file
 
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             data=data,
             files=files,
@@ -3549,9 +3848,7 @@ class RemoteCaller:
             resp.raise_for_status()
             return resp.content
 
-    def data_files_get(
-            self,
-            id: str) -> 'DataFile':
+    def data_files_get(self, id: str) -> "DataFile":
         """
         Send a get request to /api/v1/files/{id}.
 
@@ -3559,26 +3856,18 @@ class RemoteCaller:
 
         :return: The file exists
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/files/',
-            str(id)])
+        url = "".join([self.url_prefix, "/api/v1/files/", str(id)])
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[DataFile])
+            return from_obj(obj=resp.json(), expected=[DataFile])
 
-    def data_files_update(
-            self,
-            id: str,
-            file: BinaryIO) -> 'DataFile':
+    def data_files_update(self, id: str, file: BinaryIO) -> "DataFile":
         """
         Send a patch request to /api/v1/files/{id}.
 
@@ -3587,30 +3876,23 @@ class RemoteCaller:
 
         :return: The file was updated successfully
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/files/',
-            str(id)])
+        url = "".join([self.url_prefix, "/api/v1/files/", str(id)])
 
         files = {}  # type: Dict[str, BinaryIO]
 
-        files['file'] = file
+        files["file"] = file
 
         resp = self.session.request(
-            method='patch',
+            method="patch",
             url=url,
             files=files,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[DataFile])
+            return from_obj(obj=resp.json(), expected=[DataFile])
 
-    def data_files_delete(
-            self,
-            id: str) -> bytes:
+    def data_files_delete(self, id: str) -> bytes:
         """
         If a file is in a corpora and the file is deleted, it will be automatically removed from the corpora.
         If a build job has started before the file was deleted, the file will be used for the build job, even
@@ -3620,13 +3902,10 @@ class RemoteCaller:
 
         :return: The file was deleted successfully
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/files/',
-            str(id)])
+        url = "".join([self.url_prefix, "/api/v1/files/", str(id)])
 
         resp = self.session.request(
-            method='delete',
+            method="delete",
             url=url,
         )
 
@@ -3634,9 +3913,7 @@ class RemoteCaller:
             resp.raise_for_status()
             return resp.content
 
-    def data_files_download(
-            self,
-            id: str) -> BinaryIO:
+    def data_files_download(self, id: str) -> BinaryIO:
         """
         Send a post request to /api/v1/files/{id}/contents.
 
@@ -3644,14 +3921,10 @@ class RemoteCaller:
 
         :return: The file exists
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/files/',
-            str(id),
-            '/contents'])
+        url = "".join([self.url_prefix, "/api/v1/files/", str(id), "/contents"])
 
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             stream=True,
         )
@@ -3659,65 +3932,64 @@ class RemoteCaller:
         resp.raise_for_status()
         return _wrap_response(resp)
 
-    def translation_engines_get_all(self) -> List['TranslationEngine']:
+    def translation_engines_get_all(self) -> List["TranslationEngine"]:
         """
         Send a get request to /api/v1/translation/engines.
 
         :return: The engines
         """
-        url = self.url_prefix + '/api/v1/translation/engines'
+        url = self.url_prefix + "/api/v1/translation/engines"
 
-        resp = self.session.request(method='get', url=url)
+        resp = self.session.request(method="get", url=url)
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[list, TranslationEngine])
+            return from_obj(obj=resp.json(), expected=[list, TranslationEngine])
 
     def translation_engines_create(
-            self,
-            engine_config: 'TranslationEngineConfig') -> bytes:
+        self, engine_config: "TranslationEngineConfig"
+    ) -> bytes:
         """
         ## Parameters
-        * **name**: A name to help identify and distinguish the file.
+        * **name**: (optional) A name to help identify and distinguish the file.
           * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
           * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-        * **type**: **SmtTransfer** or **Nmt** or **Echo**
-        ### SmtTransfer
+        * **type**: **smt-transfer** or **nmt** or **echo**
+        * **isModelPersisted**: (optional) - see below
+        ### smt-transfer
         The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-        ### Nmt
-        The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/Language-Tag-Resolution-for-NLLB%E2%80%90200).
-                    
+        * **IsModelPersisted**: (default to true) All models are persistant and can be updated with train-segment.  False is not supported.
+        ### nmt
+        The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+        * **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been sucessfully built.
+
         If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
-                    
+
         Typical endpoints: pretranslate
-        ### Echo
-        The Echo engine has full coverage of all Nmt and SmtTransfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks Nmt or Smt. For example, translating a segment "test" with the Echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        ### echo
+        The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         ## Sample request:
-                    
+
             {
               "name": "myTeam:myProject:myEngine",
               "sourceLanguage": "el",
               "targetLanguage": "en",
-              "type": "Nmt"
+              "type": "nmt"
+              "IsModelPersisted": true
             }
 
         :param engine_config: The translation engine configuration (see above)
 
         :return:
         """
-        url = self.url_prefix + '/api/v1/translation/engines'
+        url = self.url_prefix + "/api/v1/translation/engines"
 
-        data = to_jsonable(
-            engine_config,
-            expected=[TranslationEngineConfig])
-
+        data = to_jsonable(engine_config, expected=[TranslationEngineConfig])
 
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             json=data,
         )
@@ -3726,9 +3998,7 @@ class RemoteCaller:
             resp.raise_for_status()
             return resp.content
 
-    def translation_engines_get(
-            self,
-            id: str) -> 'TranslationEngine':
+    def translation_engines_get(self, id: str) -> "TranslationEngine":
         """
         Send a get request to /api/v1/translation/engines/{id}.
 
@@ -3736,39 +4006,29 @@ class RemoteCaller:
 
         :return: The translation engine
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id)])
+        url = "".join([self.url_prefix, "/api/v1/translation/engines/", str(id)])
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[TranslationEngine])
+            return from_obj(obj=resp.json(), expected=[TranslationEngine])
 
-    def translation_engines_delete(
-            self,
-            id: str) -> bytes:
+    def translation_engines_delete(self, id: str) -> bytes:
         """
         Send a delete request to /api/v1/translation/engines/{id}.
 
         :param id: The translation engine id
 
-        :return: The engine was successfully deleted
+        :return: The engine was successfully deleted.
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id)])
+        url = "".join([self.url_prefix, "/api/v1/translation/engines/", str(id)])
 
         resp = self.session.request(
-            method='delete',
+            method="delete",
             url=url,
         )
 
@@ -3776,37 +4036,9 @@ class RemoteCaller:
             resp.raise_for_status()
             return resp.content
 
-    def translation_engines_get_queue(
-            self,
-            engine_type: str) -> 'Queue':
-        """
-        Send a post request to /api/v1/translation/engines/queues.
-
-        :param engine_type: A valid engine type: SmtTransfer, Nmt, or Echo
-
-        :return: Queue information for the specified engine type
-        """
-        url = self.url_prefix + '/api/v1/translation/engines/queues'
-
-        data = engine_type
-
-
-        resp = self.session.request(
-            method='post',
-            url=url,
-            json=data,
-        )
-
-        with contextlib.closing(resp):
-            resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[Queue])
-
     def translation_engines_translate(
-            self,
-            id: str,
-            segment: str) -> 'TranslationResult':
+        self, id: str, segment: str
+    ) -> "TranslationResult":
         """
         Send a post request to /api/v1/translation/engines/{id}/translate.
 
@@ -3815,32 +4047,25 @@ class RemoteCaller:
 
         :return: The translation result
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/translate'])
+        url = "".join(
+            [self.url_prefix, "/api/v1/translation/engines/", str(id), "/translate"]
+        )
 
         data = segment
 
-
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             json=data,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[TranslationResult])
+            return from_obj(obj=resp.json(), expected=[TranslationResult])
 
     def translation_engines_translate_n(
-            self,
-            id: str,
-            n: int,
-            segment: str) -> List['TranslationResult']:
+        self, id: str, n: int, segment: str
+    ) -> List["TranslationResult"]:
         """
         Send a post request to /api/v1/translation/engines/{id}/translate/{n}.
 
@@ -3850,32 +4075,29 @@ class RemoteCaller:
 
         :return: The translation results
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/translate/',
-            str(n)])
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/translate/",
+                str(n),
+            ]
+        )
 
         data = segment
 
-
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             json=data,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[list, TranslationResult])
+            return from_obj(obj=resp.json(), expected=[list, TranslationResult])
 
-    def translation_engines_get_word_graph(
-            self,
-            id: str,
-            segment: str) -> 'WordGraph':
+    def translation_engines_get_word_graph(self, id: str, segment: str) -> "WordGraph":
         """
         Send a post request to /api/v1/translation/engines/{id}/get-word-graph.
 
@@ -3884,31 +4106,30 @@ class RemoteCaller:
 
         :return: The word graph result
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/get-word-graph'])
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/get-word-graph",
+            ]
+        )
 
         data = segment
 
-
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             json=data,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[WordGraph])
+            return from_obj(obj=resp.json(), expected=[WordGraph])
 
     def translation_engines_train_segment(
-            self,
-            id: str,
-            segment_pair: 'SegmentPair') -> bytes:
+        self, id: str, segment_pair: "SegmentPair"
+    ) -> bytes:
         """
         A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
         that should be set to true if this segment pair forms the beginning of a sentence. (This information
@@ -3917,21 +4138,16 @@ class RemoteCaller:
         :param id: The translation engine id
         :param segment_pair: The segment pair
 
-        :return: The engine was trained successfully
+        :return: The engine was trained successfully.
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/train-segment'])
+        url = "".join(
+            [self.url_prefix, "/api/v1/translation/engines/", str(id), "/train-segment"]
+        )
 
-        data = to_jsonable(
-            segment_pair,
-            expected=[SegmentPair])
-
+        data = to_jsonable(segment_pair, expected=[SegmentPair])
 
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             json=data,
         )
@@ -3941,9 +4157,8 @@ class RemoteCaller:
             return resp.content
 
     def translation_engines_add_corpus(
-            self,
-            id: str,
-            corpus_config: 'TranslationCorpusConfig') -> bytes:
+        self, id: str, corpus_config: "TranslationCorpusConfig"
+    ) -> bytes:
         """
         ## Parameters
         * **name**: A name to help identify and distinguish the corpus from other corpora
@@ -3966,19 +4181,14 @@ class RemoteCaller:
 
         :return:
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/corpora'])
+        url = "".join(
+            [self.url_prefix, "/api/v1/translation/engines/", str(id), "/corpora"]
+        )
 
-        data = to_jsonable(
-            corpus_config,
-            expected=[TranslationCorpusConfig])
-
+        data = to_jsonable(corpus_config, expected=[TranslationCorpusConfig])
 
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             json=data,
         )
@@ -3987,9 +4197,7 @@ class RemoteCaller:
             resp.raise_for_status()
             return resp.content
 
-    def translation_engines_get_all_corpora(
-            self,
-            id: str) -> List['TranslationCorpus']:
+    def translation_engines_get_all_corpora(self, id: str) -> List["TranslationCorpus"]:
         """
         Send a get request to /api/v1/translation/engines/{id}/corpora.
 
@@ -3997,31 +4205,25 @@ class RemoteCaller:
 
         :return: The files
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/corpora'])
+        url = "".join(
+            [self.url_prefix, "/api/v1/translation/engines/", str(id), "/corpora"]
+        )
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[list, TranslationCorpus])
+            return from_obj(obj=resp.json(), expected=[list, TranslationCorpus])
 
     def translation_engines_update_corpus(
-            self,
-            id: str,
-            corpus_id: str,
-            corpus_config: 'TranslationCorpusUpdateConfig') -> 'TranslationCorpus':
+        self, id: str, corpus_id: str, corpus_config: "TranslationCorpusUpdateConfig"
+    ) -> "TranslationCorpus":
         """
-        See posting a new corpus for details of use.  Will completely replace corpus' file associations.
-        Will not affect jobs already queued or running.  Will not affect existing pretranslations until new build is complete.
+        See posting a new corpus for details of use. Will completely replace corpus' file associations.
+        Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
 
         :param id: The translation engine id
         :param corpus_id: The corpus id
@@ -4029,34 +4231,31 @@ class RemoteCaller:
 
         :return: The corpus was updated successfully
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/corpora/',
-            str(corpus_id)])
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/corpora/",
+                str(corpus_id),
+            ]
+        )
 
-        data = to_jsonable(
-            corpus_config,
-            expected=[TranslationCorpusUpdateConfig])
-
+        data = to_jsonable(corpus_config, expected=[TranslationCorpusUpdateConfig])
 
         resp = self.session.request(
-            method='patch',
+            method="patch",
             url=url,
             json=data,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[TranslationCorpus])
+            return from_obj(obj=resp.json(), expected=[TranslationCorpus])
 
     def translation_engines_get_corpus(
-            self,
-            id: str,
-            corpus_id: str) -> 'TranslationCorpus':
+        self, id: str, corpus_id: str
+    ) -> "TranslationCorpus":
         """
         Send a get request to /api/v1/translation/engines/{id}/corpora/{corpusId}.
 
@@ -4065,45 +4264,46 @@ class RemoteCaller:
 
         :return: The corpus configuration
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/corpora/',
-            str(corpus_id)])
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/corpora/",
+                str(corpus_id),
+            ]
+        )
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[TranslationCorpus])
+            return from_obj(obj=resp.json(), expected=[TranslationCorpus])
 
-    def translation_engines_delete_corpus(
-            self,
-            id: str,
-            corpus_id: str) -> bytes:
+    def translation_engines_delete_corpus(self, id: str, corpus_id: str) -> bytes:
         """
         Removing a corpus will remove all pretranslations associated with that corpus.
 
         :param id: The translation engine id
         :param corpus_id: The corpus id
 
-        :return: The data file was deleted successfully
+        :return: The data file was deleted successfully.
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/corpora/',
-            str(corpus_id)])
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/corpora/",
+                str(corpus_id),
+            ]
+        )
 
         resp = self.session.request(
-            method='delete',
+            method="delete",
             url=url,
         )
 
@@ -4112,10 +4312,8 @@ class RemoteCaller:
             return resp.content
 
     def translation_engines_get_all_pretranslations(
-            self,
-            id: str,
-            corpus_id: str,
-            text_id: Optional[str] = None) -> List['Pretranslation']:
+        self, id: str, corpus_id: str, text_id: Optional[str] = None
+    ) -> List["Pretranslation"]:
         """
         Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
         * **TextId**: The TextId of the SourceFile defined when the corpus was created.
@@ -4123,7 +4321,7 @@ class RemoteCaller:
           * The references defined in the SourceFile per line, if any.
           * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         * **Translation**: the text of the pretranslation
-                    
+
         Pretranslations can be filtered by text id if provided.
 
         :param id: The translation engine id
@@ -4132,34 +4330,107 @@ class RemoteCaller:
 
         :return: The pretranslations
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/corpora/',
-            str(corpus_id),
-            '/pretranslations'])
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/corpora/",
+                str(corpus_id),
+                "/pretranslations",
+            ]
+        )
 
         params = {}  # type: Dict[str, str]
 
         if text_id is not None:
-            params['textId'] = text_id
+            params["textId"] = text_id
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
             params=params,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[list, Pretranslation])
+            return from_obj(obj=resp.json(), expected=[list, Pretranslation])
 
-    def translation_engines_get_all_builds(
-            self,
-            id: str) -> List['TranslationBuild']:
+    def translation_engines_get_pretranslations_by_text_id(
+        self, id: str, corpus_id: str, text_id: str
+    ) -> List["Pretranslation"]:
+        """
+        Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+        * **TextId**: The TextId of the SourceFile defined when the corpus was created.
+        * **Refs** (a list of strings): A list of references including:
+          * The references defined in the SourceFile per line, if any.
+          * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
+        * **Translation**: the text of the pretranslation
+
+        :param id: The translation engine id
+        :param corpus_id: The corpus id
+        :param text_id: The text id
+
+        :return: The pretranslations
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/corpora/",
+                str(corpus_id),
+                "/pretranslations/",
+                str(text_id),
+            ]
+        )
+
+        resp = self.session.request(
+            method="get",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[list, Pretranslation])
+
+    def translation_engines_get_pretranslated_usfm(
+        self, id: str, corpus_id: str, text_id: str
+    ) -> str:
+        """
+        If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
+        segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
+        pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+
+        :param id: The translation engine id
+        :param corpus_id: The corpus id
+        :param text_id: The text id
+
+        :return: The book in USFM format
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/corpora/",
+                str(corpus_id),
+                "/pretranslations/",
+                str(text_id),
+                "/usfm",
+            ]
+        )
+
+        resp = self.session.request(
+            method="get",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[str])
+
+    def translation_engines_get_all_builds(self, id: str) -> List["TranslationBuild"]:
         """
         Send a get request to /api/v1/translation/engines/{id}/builds.
 
@@ -4167,27 +4438,22 @@ class RemoteCaller:
 
         :return: The build jobs
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/builds'])
+        url = "".join(
+            [self.url_prefix, "/api/v1/translation/engines/", str(id), "/builds"]
+        )
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[list, TranslationBuild])
+            return from_obj(obj=resp.json(), expected=[list, TranslationBuild])
 
     def translation_engines_start_build(
-            self,
-            id: str,
-            build_config: 'TranslationBuildConfig') -> bytes:
+        self, id: str, build_config: "TranslationBuildConfig"
+    ) -> bytes:
         """
         Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
         is selected for pretranslation, only "untranslated" text will be pretranslated:
@@ -4195,13 +4461,15 @@ class RemoteCaller:
         untranslated text but no translated text. If a corpus is a Paratext project,
         you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
         in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
-                    
+
         Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
         Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
         To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
-                    
+        Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        for more details.
+
         The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-        See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Job-Settings) about configuring job parameters.
+        See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
         See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
 
         :param id: The translation engine id
@@ -4209,19 +4477,14 @@ class RemoteCaller:
 
         :return:
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/builds'])
+        url = "".join(
+            [self.url_prefix, "/api/v1/translation/engines/", str(id), "/builds"]
+        )
 
-        data = to_jsonable(
-            build_config,
-            expected=[TranslationBuildConfig])
-
+        data = to_jsonable(build_config, expected=[TranslationBuildConfig])
 
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             json=data,
         )
@@ -4231,10 +4494,8 @@ class RemoteCaller:
             return resp.content
 
     def translation_engines_get_build(
-            self,
-            id: str,
-            build_id: str,
-            min_revision: Optional[int] = None) -> 'TranslationBuild':
+        self, id: str, build_id: str, min_revision: Optional[int] = None
+    ) -> "TranslationBuild":
         """
         If the `minRevision` is not defined, the current build, at whatever state it is,
         will be immediately returned.  If `minRevision` is defined, Serval will wait for
@@ -4251,34 +4512,34 @@ class RemoteCaller:
 
         :return: The build job
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/builds/',
-            str(build_id)])
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/builds/",
+                str(build_id),
+            ]
+        )
 
         params = {}  # type: Dict[str, str]
 
         if min_revision is not None:
-            params['minRevision'] = json.dumps(min_revision)
+            params["minRevision"] = json.dumps(min_revision)
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
             params=params,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[TranslationBuild])
+            return from_obj(obj=resp.json(), expected=[TranslationBuild])
 
     def translation_engines_get_current_build(
-            self,
-            id: str,
-            min_revision: Optional[int] = None) -> 'TranslationBuild':
+        self, id: str, min_revision: Optional[int] = None
+    ) -> "TranslationBuild":
         """
         See documentation on endpoint /translation/engines/{id}/builds/{id} - "Get a Build Job" for details on using `minRevision`.
 
@@ -4287,47 +4548,44 @@ class RemoteCaller:
 
         :return: The build job
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/current-build'])
+        url = "".join(
+            [self.url_prefix, "/api/v1/translation/engines/", str(id), "/current-build"]
+        )
 
         params = {}  # type: Dict[str, str]
 
         if min_revision is not None:
-            params['minRevision'] = json.dumps(min_revision)
+            params["minRevision"] = json.dumps(min_revision)
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
             params=params,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[TranslationBuild])
+            return from_obj(obj=resp.json(), expected=[TranslationBuild])
 
-    def translation_engines_cancel_build(
-            self,
-            id: str) -> bytes:
+    def translation_engines_cancel_build(self, id: str) -> bytes:
         """
         Send a post request to /api/v1/translation/engines/{id}/current-build/cancel.
 
         :param id: The translation engine id
 
-        :return: The build job was cancelled successfully
+        :return: The build job was cancelled successfully.
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/translation/engines/',
-            str(id),
-            '/current-build/cancel'])
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/current-build/cancel",
+            ]
+        )
 
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
         )
 
@@ -4335,25 +4593,116 @@ class RemoteCaller:
             resp.raise_for_status()
             return resp.content
 
-    def webhooks_get_all(self) -> List['Webhook']:
+    def translation_engines_get_model_download_url(self, id: str) -> "ModelDownloadURL":
+        """
+        If a Nmt build was successful and IsModelPersisted is `true` for the engine,
+        then the model from the most recent successful build can be downloaded.
+        The endpoint will return a URL that can be used to download the model for up to 1 hour
+        after the request is made.  If the URL is not used within that time, a new request will need to be made.
+
+        :param id: The translation engine id
+
+        :return: The url to download the model.
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/model-download-url",
+            ]
+        )
+
+        resp = self.session.request(
+            method="get",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[ModelDownloadURL])
+
+    def translation_engine_types_get_queue(self, engine_type: str) -> "Queue":
+        """
+        Send a get request to /api/v1/translation/engine-types/{engineType}/queues.
+
+        :param engine_type: A valid engine type: smt-transfer, nmt, or echo
+
+        :return: Queue information for the specified engine type
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engine-types/",
+                str(engine_type),
+                "/queues",
+            ]
+        )
+
+        resp = self.session.request(
+            method="get",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[Queue])
+
+    def translation_engine_types_get_language_info(
+        self, engine_type: str, language: str
+    ) -> "LanguageInfo":
+        """
+        This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
+        and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
+        language is an appropriate candidate for a source language or if two languages can be translated between
+        **Base Models available**
+        * **NLLB-200**: This is the only current base transaltion model available.
+          * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
+        without training.
+        Response format:
+        * **EngineType**: See above
+        * **IsNative**: Whether the base translation model supports this language without fine-tuning.
+        * **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+
+        :param engine_type: A valid engine type: nmt or echo
+        :param language: The language to retrieve information on.
+
+        :return: Language information for the specified engine type
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engine-types/",
+                str(engine_type),
+                "/languages/",
+                str(language),
+            ]
+        )
+
+        resp = self.session.request(
+            method="get",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[LanguageInfo])
+
+    def webhooks_get_all(self) -> List["Webhook"]:
         """
         Send a get request to /api/v1/hooks.
 
         :return: The webhooks.
         """
-        url = self.url_prefix + '/api/v1/hooks'
+        url = self.url_prefix + "/api/v1/hooks"
 
-        resp = self.session.request(method='get', url=url)
+        resp = self.session.request(method="get", url=url)
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[list, Webhook])
+            return from_obj(obj=resp.json(), expected=[list, Webhook])
 
-    def webhooks_create(
-            self,
-            hook_config: 'WebhookConfig') -> bytes:
+    def webhooks_create(self, hook_config: "WebhookConfig") -> bytes:
         """
         Send a post request to /api/v1/hooks.
 
@@ -4361,15 +4710,12 @@ class RemoteCaller:
 
         :return:
         """
-        url = self.url_prefix + '/api/v1/hooks'
+        url = self.url_prefix + "/api/v1/hooks"
 
-        data = to_jsonable(
-            hook_config,
-            expected=[WebhookConfig])
-
+        data = to_jsonable(hook_config, expected=[WebhookConfig])
 
         resp = self.session.request(
-            method='post',
+            method="post",
             url=url,
             json=data,
         )
@@ -4378,9 +4724,7 @@ class RemoteCaller:
             resp.raise_for_status()
             return resp.content
 
-    def webhooks_get(
-            self,
-            id: str) -> 'Webhook':
+    def webhooks_get(self, id: str) -> "Webhook":
         """
         Send a get request to /api/v1/hooks/{id}.
 
@@ -4388,25 +4732,18 @@ class RemoteCaller:
 
         :return: The webhook.
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/hooks/',
-            str(id)])
+        url = "".join([self.url_prefix, "/api/v1/hooks/", str(id)])
 
         resp = self.session.request(
-            method='get',
+            method="get",
             url=url,
         )
 
         with contextlib.closing(resp):
             resp.raise_for_status()
-            return from_obj(
-                obj=resp.json(),
-                expected=[Webhook])
+            return from_obj(obj=resp.json(), expected=[Webhook])
 
-    def webhooks_delete(
-            self,
-            id: str) -> bytes:
+    def webhooks_delete(self, id: str) -> bytes:
         """
         Send a delete request to /api/v1/hooks/{id}.
 
@@ -4414,13 +4751,10 @@ class RemoteCaller:
 
         :return: The webhook was successfully deleted.
         """
-        url = "".join([
-            self.url_prefix,
-            '/api/v1/hooks/',
-            str(id)])
+        url = "".join([self.url_prefix, "/api/v1/hooks/", str(id)])
 
         resp = self.session.request(
-            method='delete',
+            method="delete",
             url=url,
         )
 

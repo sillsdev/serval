@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Column, Enum, MetaData, String, create_engine
+from sqlalchemy import Column, Enum, MetaData, String, DateTime, Boolean, create_engine
 from sqlalchemy.orm import declarative_base
 
 
@@ -23,24 +23,26 @@ class Build(Base):
     build_id = Column("build_id", String, primary_key=True)
     engine_id = Column("engine_id", String, primary_key=True)
     name = Column("name", String)
-    email = Column("email", String, nullable=False)
     state = Column("state", Enum(State), nullable=False)
     corpus_id = Column("corpus_id", String, nullable=False)
     client_id = Column("client_id", String, nullable=False)
     source_files = Column("source_files", String)
     target_files = Column("target_files", String)
+    is_model_persisted = Column("is_model_persisted", Boolean)
 
     def __str__(self):
-        return f"Build name: {self.name}\nBuild id: {self.build_id}\nClient ID: {self.client_id}\nSource files: \
-{self.source_files}\nTarget files: {self.target_files}"
+        return f"Build name: {self.name}\nBuild id: {self.build_id}\nState: {self.state.name}\nClient ID: {self.client_id}\nSource files: \
+{self.source_files}\nTarget files: {self.target_files}\nModelIsPersisted: {self.is_model_persisted}"
 
     def __repr__(self):
         return self.__str__()
 
 
-class Param(Base):
-    __tablename__ = "params"
-    param_name = Column("param_name", String, primary_key=True)
+class AuthToken(Base):
+    __tablename__ = "auth_tokens"
+    client_id = Column("client_id", String, primary_key=True)
+    token = Column("token", String)
+    exp_date = Column("exp_date", DateTime)
 
 
 def create_db_if_not_exists():
