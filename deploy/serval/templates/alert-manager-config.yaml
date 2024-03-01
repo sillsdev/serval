@@ -26,5 +26,7 @@ spec:
     repeatInterval: 4h
     routes:
     - matchers:
-        - alertname =~ "KubeQuotaAlmostFull|KubeQuotaFullyUsed|InfoInhibitor|Watchdog"
+        - name: alertname
+          value: "CPUThrottlingHigh|KubeQuotaAlmostFull|KubeQuotaFullyUsed|InfoInhibitor|Watchdog"
+          matchType: =~
       receiver: 'null'
