@@ -2,9 +2,14 @@ namespace Serval.E2ETests;
 
 public class ServalClientHelper : IAsyncDisposable
 {
+    public DataFilesClient DataFilesClient { get; }
+    public TranslationEnginesClient TranslationEnginesClient { get; }
+    public TranslationEngineTypesClient TranslationEngineTypesClient { get; }
+
+    public TranslationBuildConfig TranslationBuildConfig { get; set; }
+
     private string _authToken = "";
     private readonly HttpClient _httpClient;
-    private readonly Dictionary<string, string> _enginePerUser = [];
     private readonly string _prefix;
     private readonly string _audience;
 
@@ -30,18 +35,14 @@ public class ServalClientHelper : IAsyncDisposable
         TranslationEnginesClient = new TranslationEnginesClient(_httpClient);
         TranslationEngineTypesClient = new TranslationEngineTypesClient(_httpClient);
         _prefix = prefix;
-        TranslationBuildConfig = new TranslationBuildConfig
-        {
-            Pretranslate = new List<PretranslateCorpusConfig>(),
-            Options = "{\"max_steps\":10}"
-        };
+        TranslationBuildConfig = InitTranslationBuildConfig();
     }
 
     public async Task InitAsync()
     {
         string? authUrl = Environment.GetEnvironmentVariable("SERVAL_AUTH_URL");
         if (authUrl is null)
-            throw new InvalidOperationException("The environment variable SERVAL_HOST_URL is not set.");
+            throw new InvalidOperationException("The environment variable SERVAL_AUTH_URL is not set.");
         string? clientId = Environment.GetEnvironmentVariable("SERVAL_CLIENT_ID");
         if (clientId is null)
             throw new InvalidOperationException("The environment variable SERVAL_CLIENT_ID is not set.");
@@ -50,28 +51,37 @@ public class ServalClientHelper : IAsyncDisposable
             throw new InvalidOperationException("The environment variable SERVAL_CLIENT_SECRET is not set.");
 
         if (string.IsNullOrEmpty(_authToken))
+        {
             _authToken = await GetAuth0AuthenticationAsync(authUrl, _audience, clientId, clientSecret);
-
-        _httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {_authToken}");
+            _httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {_authToken}");
+        }
         await ClearEnginesAsync();
     }
 
-    public DataFilesClient DataFilesClient { get; }
-    public TranslationEnginesClient TranslationEnginesClient { get; }
-    public TranslationEngineTypesClient TranslationEngineTypesClient { get; }
+    public void Setup()
+    {
+        InitTranslationBuildConfig();
+    }
 
-    public TranslationBuildConfig TranslationBuildConfig { get; set; }
+    public TranslationBuildConfig InitTranslationBuildConfig()
+    {
+        TranslationBuildConfig = new TranslationBuildConfig
+        {
+            Pretranslate = [],
+            TrainOn = null,
+            Options = "{\"max_steps\":10, \"train_params\": {\"per_device_train_batch_size\":4}}"
+        };
+        return TranslationBuildConfig;
+    }
 
-    public async Task ClearEnginesAsync(string name = "")
+    public async Task ClearEnginesAsync()
     {
         IList<TranslationEngine> existingTranslationEngines = await TranslationEnginesClient.GetAllAsync();
         foreach (TranslationEngine translationEngine in existingTranslationEngines)
         {
-            if (translationEngine.Name?.Contains(_prefix + name) ?? false)
+            if (translationEngine.Name?.Contains(_prefix) ?? false)
                 await TranslationEnginesClient.DeleteAsync(translationEngine.Id);
         }
-        TranslationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
-        _enginePerUser.Clear();
     }
 
     public async Task<string> CreateNewEngineAsync(
@@ -92,7 +102,6 @@ public class ServalClientHelper : IAsyncDisposable
                 IsModelPersisted = isModelPersisted
             }
         );
-        _enginePerUser.Add(name, engine.Id);
         return engine.Id;
     }
 

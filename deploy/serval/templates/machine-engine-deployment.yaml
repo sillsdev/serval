@@ -29,10 +29,11 @@ spec:
               value: http://*:80
             - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
               value: Http2
+              {{- template "secrets.mongodb" . }}
             - name: ASPNETCORE_ConnectionStrings__Hangfire
-              value: mongodb://mongo:27017/machine_jobs?replicaSet=myRS
+              value: $(mongodb_connection)machine_jobs
             - name: ASPNETCORE_ConnectionStrings__Mongo
-              value: mongodb://mongo:27017/machine?replicaSet=myRS
+              value: $(mongodb_connection)machine
             - name: ASPNETCORE_ConnectionStrings__Serval
               value: http://serval-api:81
               {{- template "secrets.clearml" . }}
@@ -58,6 +59,10 @@ spec:
             - mountPath: /root/.aspnet/DataProtection-Keys
               name: server-keys
       hostname: machine-engine
+      dnsConfig:
+        nameservers:
+          - 8.8.8.8
+          - 208.67.222.222
       restartPolicy: Always
       volumes:
         - name: machine-mount

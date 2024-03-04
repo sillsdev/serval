@@ -1,0 +1,157 @@
+version: "3"
+services:
+  serval-api:
+    hostname: serval-api
+    container_name: serval_cntr
+    build:
+      context: .
+      dockerfile: dockerfile.development
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_DeploymentVersion=docker-compose
+      - Auth__Domain=sil-appbuilder.auth0.com
+      - Auth__Audience=https://serval-api.org/
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
+      - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}serval_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING:?connection string needed}serval
+      - ASPNETCORE_Translation__Engines__0__Type=Echo
+      - ASPNETCORE_Translation__Engines__0__Address=http://echo
+      - ASPNETCORE_Translation__Engines__1__Type=SmtTransfer
+      - ASPNETCORE_Translation__Engines__1__Address=http://machine-engine
+      - ASPNETCORE_Translation__Engines__2__Type=Nmt
+      - ASPNETCORE_Translation__Engines__2__Address=http://machine-engine
+    expose:
+      - 80
+      - 81
+    ports:
+      - 80:80
+    volumes:
+      - .:/app:ro
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/serval:/var/lib/serval
+    working_dir: '/app/src/Serval.ApiServer'
+    entrypoint:
+      - dotnet
+      - run
+      - --no-build
+      - --no-launch-profile
+      - --additionalProbingPath
+      - /root/.nuget/packages
+
+  echo:
+    hostname: echo
+    container_name: echo_cntr
+    build:
+      context: .
+      dockerfile: dockerfile.development
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval-api:81
+    expose:
+      - 80
+    ports:
+      - 81:80
+    depends_on:
+      - serval-api
+    volumes:
+      - .:/app:ro
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/serval:/var/lib/serval
+    working_dir: '/app/samples/EchoTranslationEngine'
+    entrypoint:
+      - dotnet
+      - run
+      - --no-build
+      - --no-launch-profile
+      - --additionalProbingPath
+      - /root/.nuget/packages
+
+  machine-engine:
+    hostname: machine-engine
+    container_name: machine-engine-cntr
+    build:
+      context: ${MACHINE_TESTING_DIR:-../machine}
+      dockerfile: ../machine/dockerfile.development
+
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}machine_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING:?connection string needed}machine
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
+      - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
+      - ClearML__Queue=lambert_24gb
+      - ClearML__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
+      - ClearML__Project=docker-compose
+      - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
+      - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
+      - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
+      - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+    expose:
+      - 80
+    ports:
+      - 82:80
+    depends_on:
+      - serval-api
+    volumes:
+      - ${MACHINE_TESTING_DIR:-../machine}:/app:ro
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/machine:/var/lib/machine
+      - /var/lib/serval:/var/lib/serval
+    working_dir: '/app/src/SIL.Machine.Serval.EngineServer'
+    entrypoint:
+      - dotnet
+      - run
+      - --no-build
+      - --no-launch-profile
+      - --additionalProbingPath
+      - /root/.nuget/packages
+
+  machine-job-server:
+    hostname: machine-job-server
+    container_name: machine-job-cntr
+    build:
+      context: ${MACHINE_TESTING_DIR:-../machine}
+      dockerfile: ../machine/dockerfile.development
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}machine_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING:?connection string needed}machine
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
+      - ClearML__Queue=lambert_24gb
+      - ClearML__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
+      - ClearML__Project=docker-compose
+      - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
+      - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
+      - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
+      - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+    expose:
+      - 80
+    ports:
+      - 83:80
+    depends_on:
+      - machine-engine
+      - serval-api
+    volumes:
+      - ${MACHINE_TESTING_DIR:-../machine}:/app:ro
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - /var/lib/machine:/var/lib/machine
+      - /var/lib/serval:/var/lib/serval
+    working_dir: '/app/src/SIL.Machine.Serval.JobServer'
+    entrypoint:
+      - dotnet
+      - run
+      - --no-build
+      - --no-launch-profile
+      - --additionalProbingPath
+      - /root/.nuget/packages
