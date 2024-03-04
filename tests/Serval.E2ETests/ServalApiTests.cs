@@ -13,6 +13,12 @@ public class ServalApiTests
         await _helperClient.InitAsync();
     }
 
+    [SetUp]
+    public void Setup()
+    {
+        _helperClient.Setup();
+    }
+
     [Test]
     public async Task GetEchoSuggestion()
     {
@@ -127,11 +133,7 @@ public class ServalApiTests
         string[] engineIds = new string[NUM_ENGINES];
         for (int i = 0; i < NUM_ENGINES; i++)
         {
-            _helperClient.TranslationBuildConfig = new()
-            {
-                Pretranslate = new List<PretranslateCorpusConfig>(),
-                Options = "{\"max_steps\":10}"
-            };
+            _helperClient.InitTranslationBuildConfig();
             engineIds[i] = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", $"NMT1_{i}");
             string engineId = engineIds[i];
             string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
@@ -192,8 +194,6 @@ public class ServalApiTests
         string[] books = ["bible_LARGEFILE.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
         string cId = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
-        _helperClient.TranslationBuildConfig.Options =
-            "{\"max_steps\":10, \"train_params\": {\"per_device_train_batch_size\":4}}";
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
@@ -403,7 +403,8 @@ public class ServalApiTests
         _helperClient.TranslationBuildConfig.Pretranslate!.Add(
             new PretranslateCorpusConfig { CorpusId = corpus.Id, ScriptureRange = "JHN" }
         );
-        _helperClient.TranslationBuildConfig.Options = "{\"max_steps\":10, \"use_key_terms\":true}";
+        _helperClient.TranslationBuildConfig.Options =
+            "{\"max_steps\":10, \"use_key_terms\":true, \"train_params\": {\"per_device_train_batch_size\":4}}";
 
         await _helperClient.BuildEngineAsync(engineId);
         Assert.That(

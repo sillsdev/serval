@@ -1,5 +1,4 @@
 {
-  "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
   "editor.formatOnSave": true,
   "[csharp]": {
     "editor.defaultFormatter": "csharpier.csharpier-vscode",
