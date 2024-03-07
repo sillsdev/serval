@@ -6,8 +6,8 @@ public class ServalApiTests
 {
     private ServalClientHelper _helperClient;
 
-    [SetUp]
-    public async Task SetUp()
+    [OneTimeSetUp]
+    public async Task OneTimeSetup()
     {
         _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true);
         await _helperClient.InitAsync();
@@ -419,6 +419,12 @@ public class ServalApiTests
 
     [TearDown]
     public async Task TearDown()
+    {
+        await _helperClient.TearDown();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown()
     {
         await _helperClient.DisposeAsync();
     }

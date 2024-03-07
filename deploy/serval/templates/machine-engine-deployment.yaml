@@ -47,8 +47,8 @@ spec:
               memory: "2500Mi"
               cpu: "500m"
             requests:
-              memory: "500Mi"
-              cpu: "100m"
+              memory: "2500Mi"
+              cpu: "500m"
           volumeMounts:
             - mountPath: /var/lib/machine
               name: machine-mount

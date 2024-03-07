@@ -12,10 +12,10 @@ spec:
             description: >-
               '{{ "{{ $labels.container }}" }} has high CPU for over 3 minutes.'
           expr: >-
-            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container!~"POD|machine-job" } [3m])) 
-            by (container) / on (container) 
-            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container!~"POD|machine-job"}) 
-            by (container) * 100 >= 80
+            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container!~"POD|machine-job" } [3m]))
+            by (container, namespace) / on (container, namespace)
+            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container!~"POD|machine-job"})
+            by (container, namespace) * 100 >= 80
           for: 0s
           labels:
             severity: warning
@@ -26,10 +26,10 @@ spec:
             description: >-
               '{{ "{{ $labels.container }}" }} has a job running over 3 hours.'
           expr: >-
-            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container="machine-job" } [3h])) 
-            by (container) / on (container) 
-            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container="machine-job"}) 
-            by (container) * 100 >= 80
+            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container="machine-job" } [3h]))
+            by (container, namespace) / on (container, namespace)
+            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container="machine-job"})
+            by (container, namespace) * 100 >= 80
           for: 0s
           labels:
             severity: warning
@@ -41,9 +41,9 @@ spec:
               '{{ "{{ $labels.container }}" }} is over 80% memory.'
           expr: >-
             min (container_memory_working_set_bytes{image!="", namespace="{{ .Values.namespace }}", container!="POD" })
-            by (container) / on (container)
+            by (container, namespace) / on (container, namespace)
             min (kube_pod_container_resource_limits{resource="memory", namespace="{{ .Values.namespace }}", container!="POD"})
-            by (container) * 100 >= 80
+            by (container, namespace) * 100 >= 80
           for: 0s
           labels:
             severity: warning
@@ -55,9 +55,9 @@ spec:
               '{{ "{{ $labels.container }}" }} is over 80% disk space utilization.'
           expr: >-
             min (kubelet_volume_stats_used_bytes{namespace="{{ .Values.namespace }}"})
-            by (persistentvolumeclaim) / on (persistentvolumeclaim)
+            by (persistentvolumeclaim, namespace) / on (persistentvolumeclaim, namespace)
             min (kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace="{{ .Values.namespace }}"})
-            by (persistentvolumeclaim) * 100 > 80
+            by (persistentvolumeclaim, namespace) * 100 > 80
           for: 0s
           labels:
             severity: warning
