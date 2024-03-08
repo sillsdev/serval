@@ -71,6 +71,7 @@ public class ServalClientHelper : IAsyncDisposable
                 await TranslationEnginesClient.DeleteAsync(translationEngine.Id);
         }
         TranslationBuildConfig.Pretranslate = new List<PretranslateCorpusConfig>();
+        TranslationBuildConfig.TrainOn = null;
         _enginePerUser.Clear();
     }
 
