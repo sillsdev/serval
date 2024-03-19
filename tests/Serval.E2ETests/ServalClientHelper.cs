@@ -68,7 +68,7 @@ public class ServalClientHelper : IAsyncDisposable
         TranslationBuildConfig = new TranslationBuildConfig
         {
             Pretranslate = [],
-            TrainOn = [],
+            TrainOn = null,
             Options = "{\"max_steps\":10, \"train_params\": {\"per_device_train_batch_size\":4}}"
         };
         return TranslationBuildConfig;

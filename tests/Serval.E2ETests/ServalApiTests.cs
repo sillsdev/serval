@@ -111,10 +111,7 @@ public class ServalApiTests
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT1");
         string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
         string cId1 = await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
-        _helperClient.TranslationBuildConfig.TrainOn = new List<TrainingCorpusConfig>
-        {
-            new() { CorpusId = cId1, TextIds = ["1JN.txt"] }
-        };
+        _helperClient.TranslationBuildConfig.TrainOn = [new() { CorpusId = cId1, TextIds = ["1JN.txt"] }];
         string cId2 = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
