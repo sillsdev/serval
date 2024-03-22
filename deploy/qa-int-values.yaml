@@ -12,6 +12,7 @@ servalImage: ghcr.io/sillsdev/serval:1.2.0
 machineImage: ghcr.io/sillsdev/machine:3.7.0
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.2.0
 ClearMLQueue: lambert_24gb
+MongoConnectionPrefix: qa_int_
 SharedFileLocation: s3://aqua-ml-data/int-qa/
 servalClaimSize: 1Gi
 machineClaimSize: 2Gi
