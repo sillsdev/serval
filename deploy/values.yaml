@@ -13,6 +13,6 @@ machineImage: ghcr.io/sillsdev/machine:3.7.0
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.2.0
 ClearMLQueue: production
 SharedFileLocation: s3://aqua-ml-data/production/
-servalClaimSize: 5Gi
-machineClaimSize: 40Gi
+servalClaimSize: 10Gi
+machineClaimSize: 41Gi
 enableEcho: true
