@@ -1092,13 +1092,10 @@ public class TranslationEnginesController(
 
     private static Dictionary<string, object>? Map(object? source)
     {
-        if (source is null)
-            return null;
-
         try
         {
             return JsonSerializer.Deserialize<Dictionary<string, object>>(
-                source.ToString() ?? "{}",
+                source?.ToString() ?? "{}",
                 ObjectJsonSerializerOptions
             );
         }
