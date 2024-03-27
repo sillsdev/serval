@@ -276,7 +276,7 @@ public class ServalClientHelper : IAsyncDisposable
         string clientSecret
     )
     {
-        var authHttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+        var authHttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
         var request = new HttpRequestMessage(HttpMethod.Post, authUrl + "/oauth/token")
         {
             Content = new FormUrlEncodedContent(
@@ -289,7 +289,7 @@ public class ServalClientHelper : IAsyncDisposable
                 }
             )
         };
-        HttpResponseMessage response = authHttpClient.SendAsync(request).Result;
+        HttpResponseMessage response = await authHttpClient.SendAsync(request);
         if (response.Content is null)
             throw new HttpRequestException("Error getting auth0 Authentication.");
         Dictionary<string, object?>? dict = JsonSerializer.Deserialize<Dictionary<string, object?>>(
