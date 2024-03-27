@@ -60,10 +60,10 @@ spec:
             - containerPort: 81
           resources:
             limits:
-              memory: "400Mi"
+              memory: "800Mi"
               cpu: "500m"
             requests:
-              memory: "400Mi"
+              memory: "800Mi"
               cpu: "500m"
           volumeMounts:
             - mountPath: /var/lib/serval

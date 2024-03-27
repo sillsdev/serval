@@ -45,10 +45,10 @@ spec:
             - containerPort: 80
           resources:
             limits:
-              memory: "2500Mi"
+              memory: "3500Mi"
               cpu: "500m"
             requests:
-              memory: "2500Mi"
+              memory: "3500Mi"
               cpu: "500m"
           volumeMounts:
             - mountPath: /var/lib/machine
