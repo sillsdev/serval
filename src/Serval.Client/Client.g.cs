@@ -1512,10 +1512,11 @@ namespace Serval.Client
         /// <br/>  * **TextId**: The client-defined name to associate source and target files.
         /// <br/>    * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
         /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
-        /// <br/>    * A TextId should only be used at most once in SourceFiles and in TargetFiles.
-        /// <br/>    * If the file is a Paratext project, this field should be left blank. Any TextId provided will be ignored.
-        /// <br/>* **TargetFiles**: The source files associated with the corpus
-        /// <br/>  * Same as SourceFiles.  Parallel texts must have a matching TextId.
+        /// <br/>    * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
+        /// <br/>    * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
+        /// <br/>    * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
+        /// <br/>* **TargetFiles**: The target files associated with the corpus
+        /// <br/>  * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -2742,10 +2743,11 @@ namespace Serval.Client
         /// <br/>  * **TextId**: The client-defined name to associate source and target files.
         /// <br/>    * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
         /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
-        /// <br/>    * A TextId should only be used at most once in SourceFiles and in TargetFiles.
-        /// <br/>    * If the file is a Paratext project, this field should be left blank. Any TextId provided will be ignored.
-        /// <br/>* **TargetFiles**: The source files associated with the corpus
-        /// <br/>  * Same as SourceFiles.  Parallel texts must have a matching TextId.
+        /// <br/>    * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
+        /// <br/>    * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
+        /// <br/>    * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
+        /// <br/>* **TargetFiles**: The target files associated with the corpus
+        /// <br/>  * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
