@@ -8,7 +8,7 @@ namespace: serval
 auth0Domain: dev-sillsdev.auth0.com
 lokiTenent: serval-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
-servalImage: ghcr.io/sillsdev/serval:1.3.1
+servalImage: ghcr.io/sillsdev/serval:1.3.2
 machineImage: ghcr.io/sillsdev/machine:3.8.1
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.3.0
 ClearMLQueue: production
