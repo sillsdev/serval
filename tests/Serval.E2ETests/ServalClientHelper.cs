@@ -69,7 +69,16 @@ public class ServalClientHelper : IAsyncDisposable
         {
             Pretranslate = [],
             TrainOn = null,
-            Options = "{\"max_steps\":10, \"train_params\": {\"per_device_train_batch_size\":4}}"
+            Options = """
+                {
+                    "max_steps": 10,
+                    "parent_model_name": "hf-internal-testing/tiny-random-nllb",
+                    "train_params":
+                    {
+                        "per_device_train_batch_size": 4
+                    }
+                }
+                """
         };
         return TranslationBuildConfig;
     }

@@ -125,8 +125,8 @@ public class ServalApiTests
     [Test]
     public async Task NmtQueueMultiple()
     {
-        const int NUM_ENGINES = 9;
-        const int NUM_WORKERS = 1;
+        const int NUM_ENGINES = 10;
+        const int NUM_WORKERS = 8;
         string[] engineIds = new string[NUM_ENGINES];
         for (int i = 0; i < NUM_ENGINES; i++)
         {
