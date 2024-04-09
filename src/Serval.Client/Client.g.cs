@@ -502,7 +502,8 @@ namespace Serval.Client
         /// <br/>    &gt; verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
         /// <br/>    &gt; verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
         /// <br/>  * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
-        /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.</param>
+        /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.
+        /// <br/>  * USFM files in paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)</param>
         /// <param name="name">A name to help identify and distinguish the file.
         /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
         /// <br/>The name does not have to be unique.
@@ -709,7 +710,8 @@ namespace Serval.Client
         /// <br/>    &gt; verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
         /// <br/>    &gt; verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
         /// <br/>  * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
-        /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.</param>
+        /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.
+        /// <br/>  * USFM files in paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)</param>
         /// <param name="name">A name to help identify and distinguish the file.
         /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
         /// <br/>The name does not have to be unique.
@@ -1623,6 +1625,7 @@ namespace Serval.Client
         /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// <br/>Both scripture and non-scripture text is pretranslated according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -3583,6 +3586,7 @@ namespace Serval.Client
         /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// <br/>Both scripture and non-scripture text is pretranslated according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
