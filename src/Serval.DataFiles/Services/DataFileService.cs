@@ -74,26 +74,29 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         {
             using (Stream fileStream = _fileSystem.OpenWrite(path))
                 await stream.CopyToAsync(fileStream, cancellationToken);
-
-            await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-            DataFile? originalDataFile = await Entities.UpdateAsync(
-                id,
-                u => u.Set(f => f.Filename, filename),
-                returnOriginal: true,
+            await _dataAccessContext.WithTransactionAsync(
+                async (ct) =>
+                {
+                    DataFile? originalDataFile = await Entities.UpdateAsync(
+                        id,
+                        u => u.Set(f => f.Filename, filename),
+                        returnOriginal: true,
+                        cancellationToken: ct
+                    );
+                    if (originalDataFile is null)
+                    {
+                        throw new EntityNotFoundException($"Could not find the DataFile '{id}'.");
+                    }
+                    else
+                    {
+                        await _deletedFiles.InsertAsync(
+                            new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
+                            ct
+                        );
+                    }
+                },
                 cancellationToken: cancellationToken
             );
-            if (originalDataFile is null)
-            {
-                throw new EntityNotFoundException($"Could not find the DataFile '{id}'.");
-            }
-            else
-            {
-                await _deletedFiles.InsertAsync(
-                    new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
-                    cancellationToken
-                );
-            }
-            await _dataAccessContext.CommitTransactionAsync(cancellationToken);
             return await GetAsync(id, cancellationToken);
         }
         catch
@@ -110,16 +113,20 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
 
     public override async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        DataFile? dataFile = await Entities.DeleteAsync(id, cancellationToken);
-        if (dataFile is null)
-            throw new EntityNotFoundException($"Could not find the DataFile '{id}'.");
-        await _deletedFiles.InsertAsync(
-            new DeletedFile { Filename = dataFile.Filename, DeletedAt = DateTime.UtcNow },
-            cancellationToken
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                DataFile? dataFile = await Entities.DeleteAsync(id, cancellationToken);
+                if (dataFile is null)
+                    throw new EntityNotFoundException($"Could not find the DataFile '{id}'.");
+                await _deletedFiles.InsertAsync(
+                    new DeletedFile { Filename = dataFile.Filename, DeletedAt = DateTime.UtcNow },
+                    cancellationToken
+                );
+                await _mediator.Publish(new DataFileDeleted { DataFileId = id }, cancellationToken);
+            },
+            cancellationToken: cancellationToken
         );
-        await _mediator.Publish(new DataFileDeleted { DataFileId = id }, cancellationToken);
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
     }
 
     private string GetDataFilePath(string filename)

@@ -178,11 +178,15 @@ public class EngineService(
             cancellationToken: cancellationToken
         );
 
-        await _dataAccessContext.BeginTransactionAsync(CancellationToken.None);
-        await Entities.DeleteAsync(engineId, CancellationToken.None);
-        await _builds.DeleteAllAsync(b => b.EngineRef == engineId, CancellationToken.None);
-        await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, CancellationToken.None);
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                await Entities.DeleteAsync(engineId, CancellationToken.None);
+                await _builds.DeleteAllAsync(b => b.EngineRef == engineId, CancellationToken.None);
+                await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, CancellationToken.None);
+            },
+            cancellationToken
+        );
     }
 
     public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
@@ -410,17 +414,25 @@ public class EngineService(
 
     public async Task DeleteCorpusAsync(string engineId, string corpusId, CancellationToken cancellationToken = default)
     {
-        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        Engine? originalEngine = await Entities.UpdateAsync(
-            engineId,
-            u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
-            returnOriginal: true,
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                Engine? originalEngine = await Entities.UpdateAsync(
+                    engineId,
+                    u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
+                    returnOriginal: true,
+                    cancellationToken: cancellationToken
+                );
+                if (originalEngine is null || !originalEngine.Corpora.Any(c => c.Id == corpusId))
+                {
+                    throw new EntityNotFoundException(
+                        $"Could not find the Corpus '{corpusId}' in Engine '{engineId}'."
+                    );
+                }
+                await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken);
+            },
             cancellationToken: cancellationToken
         );
-        if (originalEngine is null || !originalEngine.Corpora.Any(c => c.Id == corpusId))
-            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
-        await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken);
-        await _dataAccessContext.CommitTransactionAsync(cancellationToken);
     }
 
     public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)

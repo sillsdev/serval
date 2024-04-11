@@ -2,18 +2,19 @@
 
 public class MemoryDataAccessContext : DisposableBase, IDataAccessContext
 {
-    public Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task<TResult> WithTransactionAsync<TResult>(
+        Func<CancellationToken, Task<TResult>> callbackAsync,
+        CancellationToken cancellationToken = default
+    )
     {
-        return Task.CompletedTask;
+        return await callbackAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task WithTransactionAsync(
+        Func<CancellationToken, Task> callbackAsync,
+        CancellationToken cancellationToken = default
+    )
     {
-        return Task.CompletedTask;
-    }
-
-    public Task AbortTransactionAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
+        await callbackAsync(cancellationToken).ConfigureAwait(false);
     }
 }

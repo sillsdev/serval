@@ -59,7 +59,8 @@ public class PretranslationService(
         )
             .Select(p =>
                 (
-                    (IReadOnlyList<VerseRef>)p.Refs.Select(r => new VerseRef(r, targetSettings.Versification)).ToList(),
+                    (IReadOnlyList<ScriptureRef>)
+                        p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToList(),
                     p.Translation
                 )
             )
@@ -90,7 +91,8 @@ public class PretranslationService(
         var updater = new UsfmVerseTextUpdater(
             pretranslations,
             fullName is null ? null : $"- {fullName}",
-            stripAllText
+            stripAllText,
+            strictComparison: false
         );
         UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
         return updater.GetUsfm(settings.Stylesheet);
