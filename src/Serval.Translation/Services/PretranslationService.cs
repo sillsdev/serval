@@ -90,7 +90,8 @@ public class PretranslationService(
         var updater = new UsfmVerseTextUpdater(
             pretranslations,
             fullName is null ? null : $"- {fullName}",
-            stripAllText
+            stripAllText,
+            strictComparison: false
         );
         UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
         return updater.GetUsfm(settings.Stylesheet);
