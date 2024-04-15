@@ -27,6 +27,10 @@ services:
       - 81
     ports:
       - 80:80
+    deploy:
+      resources:
+        limits:
+          memory: 800M
     depends_on:
       - mongo
     volumes:
@@ -57,6 +61,10 @@ services:
       - 80
     ports:
       - 81:80
+    deploy:
+      resources:
+        limits:
+          memory: 100M
     depends_on:
       - serval-api
     volumes:
@@ -99,6 +107,10 @@ services:
       - 80
     ports:
       - 82:80
+    deploy:
+      resources:
+        limits:
+          memory: 3500M
     depends_on:
       - mongo
       - serval-api
@@ -142,6 +154,10 @@ services:
       - 80
     ports:
       - 83:80
+    deploy:
+      resources:
+        limits:
+          memory: 3000M
     depends_on:
       - mongo
       - machine-engine
