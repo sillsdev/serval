@@ -431,7 +431,7 @@ public class EngineService(
                 }
                 await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, ct);
             },
-            cancellationToken: CancellationToken.None
+            cancellationToken: cancellationToken
         );
     }
 
