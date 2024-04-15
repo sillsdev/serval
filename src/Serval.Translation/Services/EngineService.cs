@@ -181,11 +181,11 @@ public class EngineService(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                await Entities.DeleteAsync(engineId, CancellationToken.None);
-                await _builds.DeleteAllAsync(b => b.EngineRef == engineId, CancellationToken.None);
-                await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, CancellationToken.None);
+                await Entities.DeleteAsync(engineId, ct);
+                await _builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
+                await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
             },
-            cancellationToken
+            CancellationToken.None
         );
     }
 
@@ -421,7 +421,7 @@ public class EngineService(
                     engineId,
                     u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
                     returnOriginal: true,
-                    cancellationToken: cancellationToken
+                    cancellationToken: ct
                 );
                 if (originalEngine is null || !originalEngine.Corpora.Any(c => c.Id == corpusId))
                 {
@@ -429,9 +429,9 @@ public class EngineService(
                         $"Could not find the Corpus '{corpusId}' in Engine '{engineId}'."
                     );
                 }
-                await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken);
+                await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, ct);
             },
-            cancellationToken: cancellationToken
+            cancellationToken: CancellationToken.None
         );
     }
 

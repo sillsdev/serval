@@ -22,21 +22,20 @@ public class MongoDataAccessContext(IMongoClient client) : DisposableBase, IMong
             .ConfigureAwait(false);
     }
 
-    public async Task WithTransactionAsync(
+    public Task WithTransactionAsync(
         Func<CancellationToken, Task> callbackAsync,
         CancellationToken cancellationToken = default
     )
     {
-        _ = await WithTransactionAsync(
-                async (ct) =>
-                {
-                    await callbackAsync(ct).ConfigureAwait(false);
-                    // Assign dummy value to avoid warning about not returning a value
-                    return new object();
-                },
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
+        return WithTransactionAsync(
+            async (ct) =>
+            {
+                await callbackAsync(ct).ConfigureAwait(false);
+                // Assign dummy value to avoid warning about not returning a value
+                return true;
+            },
+            cancellationToken: cancellationToken
+        );
     }
 
     private Task<IClientSessionHandle> StartSession(CancellationToken cancellationToken)

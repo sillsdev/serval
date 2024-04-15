@@ -28,7 +28,7 @@ public class TranslationPlatformServiceV1(
                 Build? build = await _builds.UpdateAsync(
                     request.BuildId,
                     u => u.Set(b => b.State, JobState.Active),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
@@ -36,7 +36,7 @@ public class TranslationPlatformServiceV1(
                 Engine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
                     u => u.Set(e => e.IsBuilding, true),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
@@ -48,9 +48,10 @@ public class TranslationPlatformServiceV1(
                         EngineId = engine.Id,
                         Owner = engine.Owner
                     },
-                    context.CancellationToken
+                    ct
                 );
-            }
+            },
+            cancellationToken: context.CancellationToken
         );
         return Empty;
     }
@@ -66,7 +67,7 @@ public class TranslationPlatformServiceV1(
                         u.Set(b => b.State, JobState.Completed)
                             .Set(b => b.Message, "Completed")
                             .Set(b => b.DateFinished, DateTime.UtcNow),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
@@ -78,7 +79,7 @@ public class TranslationPlatformServiceV1(
                             .Set(e => e.CorpusSize, request.CorpusSize)
                             .Set(e => e.IsBuilding, false)
                             .Inc(e => e.ModelRevision),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
@@ -86,7 +87,7 @@ public class TranslationPlatformServiceV1(
                 // delete pretranslations created by the previous build
                 await _pretranslations.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision < engine.ModelRevision,
-                    context.CancellationToken
+                    ct
                 );
 
                 await _publishEndpoint.Publish(
@@ -99,9 +100,10 @@ public class TranslationPlatformServiceV1(
                         Message = build.Message!,
                         DateFinished = build.DateFinished!.Value
                     },
-                    context.CancellationToken
+                    ct
                 );
-            }
+            },
+            cancellationToken: context.CancellationToken
         );
 
         return Empty;
@@ -118,7 +120,7 @@ public class TranslationPlatformServiceV1(
                         u.Set(b => b.Message, "Canceled")
                             .Set(b => b.DateFinished, DateTime.UtcNow)
                             .Set(b => b.State, JobState.Canceled),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
@@ -126,7 +128,7 @@ public class TranslationPlatformServiceV1(
                 Engine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
                     u => u.Set(e => e.IsBuilding, false),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
@@ -134,7 +136,7 @@ public class TranslationPlatformServiceV1(
                 // delete pretranslations that might have been created during the build
                 await _pretranslations.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    context.CancellationToken
+                    ct
                 );
 
                 await _publishEndpoint.Publish(
@@ -147,9 +149,10 @@ public class TranslationPlatformServiceV1(
                         Message = build.Message!,
                         DateFinished = build.DateFinished!.Value
                     },
-                    context.CancellationToken
+                    ct
                 );
-            }
+            },
+            cancellationToken: context.CancellationToken
         );
 
         return Empty;
@@ -166,7 +169,7 @@ public class TranslationPlatformServiceV1(
                         u.Set(b => b.State, JobState.Faulted)
                             .Set(b => b.Message, request.Message)
                             .Set(b => b.DateFinished, DateTime.UtcNow),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
@@ -174,7 +177,7 @@ public class TranslationPlatformServiceV1(
                 Engine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
                     u => u.Set(e => e.IsBuilding, false),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
@@ -182,7 +185,7 @@ public class TranslationPlatformServiceV1(
                 // delete pretranslations that might have been created during the build
                 await _pretranslations.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    context.CancellationToken
+                    ct
                 );
 
                 await _publishEndpoint.Publish(
@@ -195,9 +198,10 @@ public class TranslationPlatformServiceV1(
                         Message = build.Message!,
                         DateFinished = build.DateFinished!.Value
                     },
-                    context.CancellationToken
+                    ct
                 );
-            }
+            },
+            cancellationToken: context.CancellationToken
         );
 
         return Empty;
@@ -215,21 +219,22 @@ public class TranslationPlatformServiceV1(
                             .Set(b => b.Step, 0)
                             .Set(b => b.PercentCompleted, 0)
                             .Set(b => b.State, JobState.Pending),
-                    cancellationToken: context.CancellationToken
+                    cancellationToken: ct
                 );
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-                Engine? engine = await _engines.GetAsync(build.EngineRef, context.CancellationToken);
+                Engine? engine = await _engines.GetAsync(build.EngineRef, ct);
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
                 // delete pretranslations that might have been created during the build
                 await _pretranslations.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    context.CancellationToken
+                    ct
                 );
-            }
+            },
+            cancellationToken: context.CancellationToken
         );
 
         return Empty;

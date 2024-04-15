@@ -91,7 +91,7 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
                     {
                         await _deletedFiles.InsertAsync(
                             new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
-                            ct
+                            cancellationToken: ct
                         );
                     }
                 },
@@ -116,14 +116,14 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                DataFile? dataFile = await Entities.DeleteAsync(id, cancellationToken);
+                DataFile? dataFile = await Entities.DeleteAsync(id, ct);
                 if (dataFile is null)
                     throw new EntityNotFoundException($"Could not find the DataFile '{id}'.");
                 await _deletedFiles.InsertAsync(
                     new DeletedFile { Filename = dataFile.Filename, DeletedAt = DateTime.UtcNow },
-                    cancellationToken
+                    ct
                 );
-                await _mediator.Publish(new DataFileDeleted { DataFileId = id }, cancellationToken);
+                await _mediator.Publish(new DataFileDeleted { DataFileId = id }, ct);
             },
             cancellationToken: cancellationToken
         );
