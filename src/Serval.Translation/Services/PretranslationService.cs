@@ -54,12 +54,13 @@ public class PretranslationService(
             targetFile.Filename
         );
 
-        IReadOnlyList<(IReadOnlyList<VerseRef>, string)> pretranslations = (
+        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations = (
             await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
         )
             .Select(p =>
                 (
-                    (IReadOnlyList<VerseRef>)p.Refs.Select(r => new VerseRef(r, targetSettings.Versification)).ToList(),
+                    (IReadOnlyList<ScriptureRef>)
+                        p.Refs.Select(r => new ScriptureRef(new VerseRef(r, targetSettings.Versification))).ToList(),
                     p.Translation
                 )
             )
@@ -82,16 +83,13 @@ public class PretranslationService(
     private static string UpdateUsfm(
         ParatextProjectSettings settings,
         string usfm,
-        IReadOnlyList<(IReadOnlyList<VerseRef>, string)> pretranslations,
+        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations,
         string? fullName = null,
         bool stripAllText = false
     )
     {
-        var updater = new UsfmVerseTextUpdater(
-            pretranslations,
-            fullName is null ? null : $"- {fullName}",
-            stripAllText
-        );
+        // TODO: Update to most recent SIL.Machine version
+        var updater = new UsfmTextUpdater(pretranslations, fullName is null ? null : $"- {fullName}", stripAllText);
         UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
         return updater.GetUsfm(settings.Stylesheet);
     }

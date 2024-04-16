@@ -621,6 +621,7 @@ public class TranslationEnginesController(
     /// segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
     /// pretranslated text will be inserted into an empty template created from the source USFM book and returned.
     /// Only pretranslations for the most recent successful build of the engine are returned.
+    /// Both scripture and non-scripture text is pretranslated according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
