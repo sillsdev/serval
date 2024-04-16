@@ -38,12 +38,12 @@ spec:
         - alert: memory-near-limit
           annotations:
             description: >-
-              '{{ "{{ $labels.container }}" }} is over 80% memory.'
+              '{{ "{{ $labels.container }}" }} is over 95% memory.'
           expr: >-
             min (container_memory_working_set_bytes{image!="", namespace="{{ .Values.namespace }}", container!="POD" })
             by (container, namespace) / on (container, namespace)
             min (kube_pod_container_resource_limits{resource="memory", namespace="{{ .Values.namespace }}", container!="POD"})
-            by (container, namespace) * 100 >= 80
+            by (container, namespace) * 100 >= 95
           for: 0s
           labels:
             severity: warning
