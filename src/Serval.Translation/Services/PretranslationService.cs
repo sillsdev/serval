@@ -60,7 +60,7 @@ public class PretranslationService(
             .Select(p =>
                 (
                     (IReadOnlyList<ScriptureRef>)
-                        p.Refs.Select(r => new ScriptureRef(new VerseRef(r, targetSettings.Versification))).ToList(),
+                        p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToList(),
                     p.Translation
                 )
             )
@@ -88,7 +88,6 @@ public class PretranslationService(
         bool stripAllText = false
     )
     {
-        // TODO: Update to most recent SIL.Machine version
         var updater = new UsfmTextUpdater(
             pretranslations,
             fullName is null ? null : $"- {fullName}",
