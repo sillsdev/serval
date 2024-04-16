@@ -22,201 +22,220 @@ public class TranslationPlatformServiceV1(
 
     public override async Task<Empty> BuildStarted(BuildStartedRequest request, ServerCallContext context)
     {
-        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
-        Build? build = await _builds.UpdateAsync(
-            request.BuildId,
-            u => u.Set(b => b.State, JobState.Active),
-            cancellationToken: context.CancellationToken
-        );
-        if (build is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
-
-        Engine? engine = await _engines.UpdateAsync(
-            build.EngineRef,
-            u => u.Set(e => e.IsBuilding, true),
-            cancellationToken: context.CancellationToken
-        );
-        if (engine is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
-
-        await _publishEndpoint.Publish(
-            new TranslationBuildStarted
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
             {
-                BuildId = build.Id,
-                EngineId = engine.Id,
-                Owner = engine.Owner
-            },
-            context.CancellationToken
-        );
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+                Build? build = await _builds.UpdateAsync(
+                    request.BuildId,
+                    u => u.Set(b => b.State, JobState.Active),
+                    cancellationToken: ct
+                );
+                if (build is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
+                Engine? engine = await _engines.UpdateAsync(
+                    build.EngineRef,
+                    u => u.Set(e => e.IsBuilding, true),
+                    cancellationToken: ct
+                );
+                if (engine is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
+
+                await _publishEndpoint.Publish(
+                    new TranslationBuildStarted
+                    {
+                        BuildId = build.Id,
+                        EngineId = engine.Id,
+                        Owner = engine.Owner
+                    },
+                    ct
+                );
+            },
+            cancellationToken: context.CancellationToken
+        );
         return Empty;
     }
 
     public override async Task<Empty> BuildCompleted(BuildCompletedRequest request, ServerCallContext context)
     {
-        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
-        Build? build = await _builds.UpdateAsync(
-            request.BuildId,
-            u =>
-                u.Set(b => b.State, JobState.Completed)
-                    .Set(b => b.Message, "Completed")
-                    .Set(b => b.DateFinished, DateTime.UtcNow),
-            cancellationToken: context.CancellationToken
-        );
-        if (build is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
-
-        Engine? engine = await _engines.UpdateAsync(
-            build.EngineRef,
-            u =>
-                u.Set(e => e.Confidence, request.Confidence)
-                    .Set(e => e.CorpusSize, request.CorpusSize)
-                    .Set(e => e.IsBuilding, false)
-                    .Inc(e => e.ModelRevision),
-            cancellationToken: context.CancellationToken
-        );
-        if (engine is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
-
-        // delete pretranslations created by the previous build
-        await _pretranslations.DeleteAllAsync(
-            p => p.EngineRef == engine.Id && p.ModelRevision < engine.ModelRevision,
-            context.CancellationToken
-        );
-
-        await _publishEndpoint.Publish(
-            new TranslationBuildFinished
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
             {
-                BuildId = build.Id,
-                EngineId = engine.Id,
-                Owner = engine.Owner,
-                BuildState = build.State,
-                Message = build.Message!,
-                DateFinished = build.DateFinished!.Value
+                Build? build = await _builds.UpdateAsync(
+                    request.BuildId,
+                    u =>
+                        u.Set(b => b.State, JobState.Completed)
+                            .Set(b => b.Message, "Completed")
+                            .Set(b => b.DateFinished, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
+                if (build is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
+
+                Engine? engine = await _engines.UpdateAsync(
+                    build.EngineRef,
+                    u =>
+                        u.Set(e => e.Confidence, request.Confidence)
+                            .Set(e => e.CorpusSize, request.CorpusSize)
+                            .Set(e => e.IsBuilding, false)
+                            .Inc(e => e.ModelRevision),
+                    cancellationToken: ct
+                );
+                if (engine is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
+
+                // delete pretranslations created by the previous build
+                await _pretranslations.DeleteAllAsync(
+                    p => p.EngineRef == engine.Id && p.ModelRevision < engine.ModelRevision,
+                    ct
+                );
+
+                await _publishEndpoint.Publish(
+                    new TranslationBuildFinished
+                    {
+                        BuildId = build.Id,
+                        EngineId = engine.Id,
+                        Owner = engine.Owner,
+                        BuildState = build.State,
+                        Message = build.Message!,
+                        DateFinished = build.DateFinished!.Value
+                    },
+                    ct
+                );
             },
-            context.CancellationToken
+            cancellationToken: context.CancellationToken
         );
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return Empty;
     }
 
     public override async Task<Empty> BuildCanceled(BuildCanceledRequest request, ServerCallContext context)
     {
-        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
-        Build? build = await _builds.UpdateAsync(
-            request.BuildId,
-            u =>
-                u.Set(b => b.Message, "Canceled")
-                    .Set(b => b.DateFinished, DateTime.UtcNow)
-                    .Set(b => b.State, JobState.Canceled),
-            cancellationToken: context.CancellationToken
-        );
-        if (build is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
-
-        Engine? engine = await _engines.UpdateAsync(
-            build.EngineRef,
-            u => u.Set(e => e.IsBuilding, false),
-            cancellationToken: context.CancellationToken
-        );
-        if (engine is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
-
-        // delete pretranslations that might have been created during the build
-        await _pretranslations.DeleteAllAsync(
-            p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-            context.CancellationToken
-        );
-
-        await _publishEndpoint.Publish(
-            new TranslationBuildFinished
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
             {
-                BuildId = build.Id,
-                EngineId = engine.Id,
-                Owner = engine.Owner,
-                BuildState = build.State,
-                Message = build.Message!,
-                DateFinished = build.DateFinished!.Value
+                Build? build = await _builds.UpdateAsync(
+                    request.BuildId,
+                    u =>
+                        u.Set(b => b.Message, "Canceled")
+                            .Set(b => b.DateFinished, DateTime.UtcNow)
+                            .Set(b => b.State, JobState.Canceled),
+                    cancellationToken: ct
+                );
+                if (build is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
+
+                Engine? engine = await _engines.UpdateAsync(
+                    build.EngineRef,
+                    u => u.Set(e => e.IsBuilding, false),
+                    cancellationToken: ct
+                );
+                if (engine is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
+
+                // delete pretranslations that might have been created during the build
+                await _pretranslations.DeleteAllAsync(
+                    p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+                    ct
+                );
+
+                await _publishEndpoint.Publish(
+                    new TranslationBuildFinished
+                    {
+                        BuildId = build.Id,
+                        EngineId = engine.Id,
+                        Owner = engine.Owner,
+                        BuildState = build.State,
+                        Message = build.Message!,
+                        DateFinished = build.DateFinished!.Value
+                    },
+                    ct
+                );
             },
-            context.CancellationToken
+            cancellationToken: context.CancellationToken
         );
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return Empty;
     }
 
     public override async Task<Empty> BuildFaulted(BuildFaultedRequest request, ServerCallContext context)
     {
-        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
-        Build? build = await _builds.UpdateAsync(
-            request.BuildId,
-            u =>
-                u.Set(b => b.State, JobState.Faulted)
-                    .Set(b => b.Message, request.Message)
-                    .Set(b => b.DateFinished, DateTime.UtcNow),
-            cancellationToken: context.CancellationToken
-        );
-        if (build is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
-
-        Engine? engine = await _engines.UpdateAsync(
-            build.EngineRef,
-            u => u.Set(e => e.IsBuilding, false),
-            cancellationToken: context.CancellationToken
-        );
-        if (engine is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
-
-        // delete pretranslations that might have been created during the build
-        await _pretranslations.DeleteAllAsync(
-            p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-            context.CancellationToken
-        );
-
-        await _publishEndpoint.Publish(
-            new TranslationBuildFinished
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
             {
-                BuildId = build.Id,
-                EngineId = engine.Id,
-                Owner = engine.Owner,
-                BuildState = build.State,
-                Message = build.Message!,
-                DateFinished = build.DateFinished!.Value
+                Build? build = await _builds.UpdateAsync(
+                    request.BuildId,
+                    u =>
+                        u.Set(b => b.State, JobState.Faulted)
+                            .Set(b => b.Message, request.Message)
+                            .Set(b => b.DateFinished, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
+                if (build is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
+
+                Engine? engine = await _engines.UpdateAsync(
+                    build.EngineRef,
+                    u => u.Set(e => e.IsBuilding, false),
+                    cancellationToken: ct
+                );
+                if (engine is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
+
+                // delete pretranslations that might have been created during the build
+                await _pretranslations.DeleteAllAsync(
+                    p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+                    ct
+                );
+
+                await _publishEndpoint.Publish(
+                    new TranslationBuildFinished
+                    {
+                        BuildId = build.Id,
+                        EngineId = engine.Id,
+                        Owner = engine.Owner,
+                        BuildState = build.State,
+                        Message = build.Message!,
+                        DateFinished = build.DateFinished!.Value
+                    },
+                    ct
+                );
             },
-            context.CancellationToken
+            cancellationToken: context.CancellationToken
         );
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         return Empty;
     }
 
     public override async Task<Empty> BuildRestarting(BuildRestartingRequest request, ServerCallContext context)
     {
-        await _dataAccessContext.BeginTransactionAsync(context.CancellationToken);
-        Build? build = await _builds.UpdateAsync(
-            request.BuildId,
-            u =>
-                u.Set(b => b.Message, "Restarting")
-                    .Set(b => b.Step, 0)
-                    .Set(b => b.PercentCompleted, 0)
-                    .Set(b => b.State, JobState.Pending),
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                Build? build = await _builds.UpdateAsync(
+                    request.BuildId,
+                    u =>
+                        u.Set(b => b.Message, "Restarting")
+                            .Set(b => b.Step, 0)
+                            .Set(b => b.PercentCompleted, 0)
+                            .Set(b => b.State, JobState.Pending),
+                    cancellationToken: ct
+                );
+                if (build is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
+
+                Engine? engine = await _engines.GetAsync(build.EngineRef, ct);
+                if (engine is null)
+                    throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
+
+                // delete pretranslations that might have been created during the build
+                await _pretranslations.DeleteAllAsync(
+                    p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+                    ct
+                );
+            },
             cancellationToken: context.CancellationToken
         );
-        if (build is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
-
-        Engine? engine = await _engines.GetAsync(build.EngineRef, context.CancellationToken);
-        if (engine is null)
-            throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
-
-        // delete pretranslations that might have been created during the build
-        await _pretranslations.DeleteAllAsync(
-            p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-            context.CancellationToken
-        );
-        await _dataAccessContext.CommitTransactionAsync(context.CancellationToken);
 
         return Empty;
     }

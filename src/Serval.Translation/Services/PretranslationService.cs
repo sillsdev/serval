@@ -89,7 +89,12 @@ public class PretranslationService(
     )
     {
         // TODO: Update to most recent SIL.Machine version
-        var updater = new UsfmTextUpdater(pretranslations, fullName is null ? null : $"- {fullName}", stripAllText);
+        var updater = new UsfmTextUpdater(
+            pretranslations,
+            fullName is null ? null : $"- {fullName}",
+            stripAllText,
+            strictComparison: false
+        );
         UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
         return updater.GetUsfm(settings.Stylesheet);
     }
