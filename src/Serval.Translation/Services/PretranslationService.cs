@@ -70,12 +70,21 @@ public class PretranslationService(
         // Update the target book if it exists
         string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
         if (usfm is not null)
-            return UpdateUsfm(targetSettings, usfm, pretranslations);
+            return UpdateUsfm(targetSettings, usfm, pretranslations, strictComparison: false);
 
         // Copy and update the source book if it exists
         usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
         if (usfm is not null)
-            return UpdateUsfm(sourceSettings, usfm, pretranslations, targetSettings.FullName, stripAllText: true);
+        {
+            return UpdateUsfm(
+                sourceSettings,
+                usfm,
+                pretranslations,
+                targetSettings.FullName,
+                stripAllText: true,
+                strictComparison: true
+            );
+        }
 
         return "";
     }
@@ -85,14 +94,15 @@ public class PretranslationService(
         string usfm,
         IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations,
         string? fullName = null,
-        bool stripAllText = false
+        bool stripAllText = false,
+        bool strictComparison = false
     )
     {
         var updater = new UsfmTextUpdater(
             pretranslations,
             fullName is null ? null : $"- {fullName}",
             stripAllText,
-            strictComparison: false
+            strictComparison: strictComparison
         );
         UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
         return updater.GetUsfm(settings.Stylesheet);
