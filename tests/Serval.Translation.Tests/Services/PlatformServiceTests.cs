@@ -123,6 +123,20 @@ public class PlatformServiceTests
             DataAccessContext = Substitute.For<IDataAccessContext>();
             PublishEndpoint = Substitute.For<IPublishEndpoint>();
             ServerCallContext = Substitute.For<ServerCallContext>();
+
+            DataAccessContext
+                .WithTransactionAsync(Arg.Any<Func<CancellationToken, Task>>(), Arg.Any<CancellationToken>())
+                .Returns(x =>
+                {
+                    return ((Func<CancellationToken, Task>)x[0])((CancellationToken)x[1]);
+                });
+            DataAccessContext
+                .WithTransactionAsync(Arg.Any<Func<CancellationToken, Task<bool>>>(), Arg.Any<CancellationToken>())
+                .Returns(x =>
+                {
+                    return ((Func<CancellationToken, Task>)x[0])((CancellationToken)x[1]);
+                });
+
             PlatformService = new TranslationPlatformServiceV1(
                 Builds,
                 Engines,
