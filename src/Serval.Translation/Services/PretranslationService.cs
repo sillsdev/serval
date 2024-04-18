@@ -34,6 +34,7 @@ public class PretranslationService(
         int modelRevision,
         string corpusId,
         string textId,
+        PretranslationUSFMTextOrigin textOrigin = PretranslationUSFMTextOrigin.PreferExisting,
         CancellationToken cancellationToken = default
     )
     {
@@ -70,20 +71,68 @@ public class PretranslationService(
         // Update the target book if it exists
         string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
         if (usfm is not null)
-            return UpdateUsfm(targetSettings, usfm, pretranslations, strictComparison: false);
+        {
+            switch (textOrigin)
+            {
+                case PretranslationUSFMTextOrigin.PreferExisting:
+                    return UpdateUsfm(
+                        targetSettings,
+                        usfm,
+                        pretranslations,
+                        strictComparison: false,
+                        preferExistingText: true
+                    );
+                case PretranslationUSFMTextOrigin.PreferPretranslated:
+                    return UpdateUsfm(
+                        targetSettings,
+                        usfm,
+                        pretranslations,
+                        strictComparison: false,
+                        preferExistingText: false
+                    );
+                case PretranslationUSFMTextOrigin.OnlyExisting:
+                    return usfm;
+                case PretranslationUSFMTextOrigin.OnlyPretranslated:
+                    return UpdateUsfm(
+                        targetSettings,
+                        usfm,
+                        pretranslations,
+                        strictComparison: false,
+                        stripAllText: true,
+                        preferExistingText: false
+                    );
+            }
+        }
 
         // Copy and update the source book if it exists
         usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
         if (usfm is not null)
         {
-            return UpdateUsfm(
-                sourceSettings,
-                usfm,
-                pretranslations,
-                targetSettings.FullName,
-                stripAllText: true,
-                strictComparison: true
-            );
+            switch (textOrigin)
+            {
+                case PretranslationUSFMTextOrigin.PreferExisting:
+                case PretranslationUSFMTextOrigin.PreferPretranslated:
+                case PretranslationUSFMTextOrigin.OnlyPretranslated:
+                    return UpdateUsfm(
+                        sourceSettings,
+                        usfm,
+                        pretranslations,
+                        targetSettings.FullName,
+                        stripAllText: true,
+                        strictComparison: true,
+                        preferExistingText: true
+                    );
+                case PretranslationUSFMTextOrigin.OnlyExisting:
+                    return UpdateUsfm(
+                        sourceSettings,
+                        usfm,
+                        [], // don't pass the pretranslations, we only want the existing text.
+                        targetSettings.FullName,
+                        stripAllText: true,
+                        strictComparison: true,
+                        preferExistingText: true
+                    );
+            }
         }
 
         return "";
@@ -95,14 +144,16 @@ public class PretranslationService(
         IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations,
         string? fullName = null,
         bool stripAllText = false,
-        bool strictComparison = false
+        bool strictComparison = false,
+        bool preferExistingText = true
     )
     {
         var updater = new UsfmTextUpdater(
             pretranslations,
             fullName is null ? null : $"- {fullName}",
             stripAllText,
-            strictComparison: strictComparison
+            strictComparison: strictComparison,
+            preferExistingText: preferExistingText
         );
         UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
         return updater.GetUsfm(settings.Stylesheet);
