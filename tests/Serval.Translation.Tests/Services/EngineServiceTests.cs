@@ -342,7 +342,7 @@ public class EngineServiceTests
             {
                 sources[i] = new TranslationSources();
                 if (!isUnknown)
-                    sources[i].Values.Add(TranslationSource.Primary);
+                    sources[i].Values.Add(V1.TranslationSource.Primary);
             }
             return sources;
         }
