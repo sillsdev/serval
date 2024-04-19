@@ -632,7 +632,7 @@ public class TranslationEnginesController(
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
     /// <param name="textId">The text id</param>
-    /// <param name="textOrigin">The text id</param>
+    /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The book in USFM format</response>
     /// <response code="204">The specified book does not exist in the source or target corpus.</response>
@@ -657,7 +657,7 @@ public class TranslationEnginesController(
         [NotNull] string id,
         [NotNull] string corpusId,
         [NotNull] string textId,
-        [FromBody] PretranslationUSFMTextOrigin? textOrigin,
+        [FromQuery(Name = "text-origin")] PretranslationUsfmTextOrigin? textOrigin,
         CancellationToken cancellationToken
     )
     {
@@ -673,7 +673,7 @@ public class TranslationEnginesController(
             engine.ModelRevision,
             corpusId,
             textId,
-            textOrigin ??= PretranslationUSFMTextOrigin.PreferExisting,
+            textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
             cancellationToken
         );
         if (usfm == "")
@@ -771,7 +771,7 @@ public class TranslationEnginesController(
     /// Starts a build job for a translation engine.
     /// </summary>
     /// <remarks>
-    /// Specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
+    /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
     /// Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
     /// Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
     /// Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)

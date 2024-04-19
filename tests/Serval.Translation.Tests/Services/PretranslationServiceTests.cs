@@ -7,7 +7,13 @@ public class PretranslationServiceTests
     public async Task GetUsfmAsync_SourceBook()
     {
         TestEnvironment env = new();
-        string usfm = await env.Service.GetUsfmAsync("engine1", 1, "corpus1", "MAT");
+        string usfm = await env.Service.GetUsfmAsync(
+            "engine1",
+            1,
+            "corpus1",
+            "MAT",
+            textOrigin: Contracts.PretranslationUsfmTextOrigin.PreferPretranslated
+        );
         Assert.That(
             usfm.Replace("\r\n", "\n"),
             Is.EqualTo(
@@ -31,7 +37,13 @@ public class PretranslationServiceTests
     {
         TestEnvironment env = new();
         env.AddMatthewToTarget();
-        string usfm = await env.Service.GetUsfmAsync("engine1", 1, "corpus1", "MAT");
+        string usfm = await env.Service.GetUsfmAsync(
+            "engine1",
+            1,
+            "corpus1",
+            "MAT",
+            textOrigin: Contracts.PretranslationUsfmTextOrigin.PreferPretranslated
+        );
         Assert.That(
             usfm.Replace("\r\n", "\n"),
             Is.EqualTo(

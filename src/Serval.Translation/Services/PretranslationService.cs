@@ -34,7 +34,7 @@ public class PretranslationService(
         int modelRevision,
         string corpusId,
         string textId,
-        PretranslationUSFMTextOrigin textOrigin = PretranslationUSFMTextOrigin.PreferExisting,
+        PretranslationUsfmTextOrigin textOrigin,
         CancellationToken cancellationToken = default
     )
     {
@@ -74,7 +74,7 @@ public class PretranslationService(
         {
             switch (textOrigin)
             {
-                case PretranslationUSFMTextOrigin.PreferExisting:
+                case PretranslationUsfmTextOrigin.PreferExisting:
                     return UpdateUsfm(
                         targetSettings,
                         usfm,
@@ -82,7 +82,7 @@ public class PretranslationService(
                         strictComparison: false,
                         preferExistingText: true
                     );
-                case PretranslationUSFMTextOrigin.PreferPretranslated:
+                case PretranslationUsfmTextOrigin.PreferPretranslated:
                     return UpdateUsfm(
                         targetSettings,
                         usfm,
@@ -90,9 +90,9 @@ public class PretranslationService(
                         strictComparison: false,
                         preferExistingText: false
                     );
-                case PretranslationUSFMTextOrigin.OnlyExisting:
+                case PretranslationUsfmTextOrigin.OnlyExisting:
                     return usfm;
-                case PretranslationUSFMTextOrigin.OnlyPretranslated:
+                case PretranslationUsfmTextOrigin.OnlyPretranslated:
                     return UpdateUsfm(
                         targetSettings,
                         usfm,
@@ -110,9 +110,9 @@ public class PretranslationService(
         {
             switch (textOrigin)
             {
-                case PretranslationUSFMTextOrigin.PreferExisting:
-                case PretranslationUSFMTextOrigin.PreferPretranslated:
-                case PretranslationUSFMTextOrigin.OnlyPretranslated:
+                case PretranslationUsfmTextOrigin.PreferExisting:
+                case PretranslationUsfmTextOrigin.PreferPretranslated:
+                case PretranslationUsfmTextOrigin.OnlyPretranslated:
                     return UpdateUsfm(
                         sourceSettings,
                         usfm,
@@ -122,11 +122,11 @@ public class PretranslationService(
                         strictComparison: true,
                         preferExistingText: true
                     );
-                case PretranslationUSFMTextOrigin.OnlyExisting:
+                case PretranslationUsfmTextOrigin.OnlyExisting:
                     return UpdateUsfm(
                         sourceSettings,
                         usfm,
-                        [], // don't pass the pretranslations, we only want the existing text.
+                        pretranslations: [], // don't pass the pretranslations, we only want the existing text.
                         targetSettings.FullName,
                         stripAllText: true,
                         strictComparison: true,

@@ -15,7 +15,7 @@ public interface IPretranslationService
         int modelRevision,
         string corpusId,
         string textId,
-        PretranslationUSFMTextOrigin textOrigin,
+        PretranslationUsfmTextOrigin textOrigin,
         CancellationToken cancellationToken = default
     );
 }

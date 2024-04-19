@@ -1636,10 +1636,10 @@ namespace Serval.Client
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
         /// <param name="textId">The text id</param>
-        /// <param name="textOrigin">The text id</param>
+        /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, string? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -1655,7 +1655,7 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
+        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
         /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
         /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
@@ -3604,10 +3604,10 @@ namespace Serval.Client
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
         /// <param name="textId">The text id</param>
-        /// <param name="textOrigin">The text id</param>
+        /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, string? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -3624,10 +3624,6 @@ namespace Serval.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(textOrigin, _settings.Value);
-                    var content_ = new System.Net.Http.StringContent(json_);
-                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
-                    request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("GET");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
 
@@ -3641,6 +3637,12 @@ namespace Serval.Client
                     urlBuilder_.Append("/pretranslations/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/usfm");
+            urlBuilder_.Append('?');
+            if (textOrigin != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("text-origin")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textOrigin, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+            }
+            urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3842,7 +3844,7 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
+        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
         /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
         /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
@@ -5980,6 +5982,24 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Translation { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum PretranslationUsfmTextOrigin
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PreferExisting")]
+        PreferExisting = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PreferPretranslated")]
+        PreferPretranslated = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OnlyExisting")]
+        OnlyExisting = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OnlyPretranslated")]
+        OnlyPretranslated = 3,
 
     }
 

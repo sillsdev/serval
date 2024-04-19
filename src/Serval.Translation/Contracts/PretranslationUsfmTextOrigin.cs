@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public enum PretranslationUSFMTextOrigin
+public enum PretranslationUsfmTextOrigin
 {
     PreferExisting,
     PreferPretranslated,
