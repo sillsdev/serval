@@ -1625,14 +1625,21 @@ namespace Serval.Client
         /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
-        /// <br/>Both scripture and non-scripture text is pretranslated according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
+        /// <br/>            
+        /// <br/>The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
+        /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text.  **This is the default**.
+        /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
+        /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
+        /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
+        /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
         /// <param name="textId">The text id</param>
+        /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -1648,18 +1655,18 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
-        /// <br/>is selected for pretranslation, only "untranslated" text will be pretranslated:
-        /// <br/>that is, segments (lines of text) in the specified corpora or textId's that have
-        /// <br/>untranslated text but no translated text. If a corpus is a Paratext project,
-        /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
-        /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
-        /// <br/>            
-        /// <br/>Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
-        /// <br/>Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
-        /// <br/>To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
+        /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
+        /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
-        /// <br/>for more details.
+        /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// <br/>            
+        /// <br/>Specify the corpora or textIds to pretranslate.  When a corpus or textId is selected for pretranslation,
+        /// <br/>the following text will be pretranslated:
+        /// <br/>* Text segments that are in the source and not the target (untranslated)
+        /// <br/>* Text segments that are in the source and the target, but where that target segment is not trained on.
+        /// <br/>If the engine does not support pretranslation, these fields have no effect.
+        /// <br/>Pretranslating has the same filtering as training.
         /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
@@ -3586,14 +3593,21 @@ namespace Serval.Client
         /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
-        /// <br/>Both scripture and non-scripture text is pretranslated according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
+        /// <br/>            
+        /// <br/>The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
+        /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text.  **This is the default**.
+        /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
+        /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
+        /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
+        /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
         /// <param name="textId">The text id</param>
+        /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -3623,6 +3637,12 @@ namespace Serval.Client
                     urlBuilder_.Append("/pretranslations/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/usfm");
+            urlBuilder_.Append('?');
+            if (textOrigin != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("text-origin")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textOrigin, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+            }
+            urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3824,18 +3844,18 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
-        /// <br/>is selected for pretranslation, only "untranslated" text will be pretranslated:
-        /// <br/>that is, segments (lines of text) in the specified corpora or textId's that have
-        /// <br/>untranslated text but no translated text. If a corpus is a Paratext project,
-        /// <br/>you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
-        /// <br/>in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
-        /// <br/>            
-        /// <br/>Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
-        /// <br/>Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
-        /// <br/>To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
+        /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
+        /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
-        /// <br/>for more details.
+        /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// <br/>            
+        /// <br/>Specify the corpora or textIds to pretranslate.  When a corpus or textId is selected for pretranslation,
+        /// <br/>the following text will be pretranslated:
+        /// <br/>* Text segments that are in the source and not the target (untranslated)
+        /// <br/>* Text segments that are in the source and the target, but where that target segment is not trained on.
+        /// <br/>If the engine does not support pretranslation, these fields have no effect.
+        /// <br/>Pretranslating has the same filtering as training.
         /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
@@ -5962,6 +5982,24 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Translation { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum PretranslationUsfmTextOrigin
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PreferExisting")]
+        PreferExisting = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PreferPretranslated")]
+        PreferPretranslated = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OnlyExisting")]
+        OnlyExisting = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OnlyPretranslated")]
+        OnlyPretranslated = 3,
 
     }
 

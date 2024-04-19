@@ -34,6 +34,7 @@ public class PretranslationService(
         int modelRevision,
         string corpusId,
         string textId,
+        PretranslationUsfmTextOrigin textOrigin,
         CancellationToken cancellationToken = default
     )
     {
@@ -70,20 +71,81 @@ public class PretranslationService(
         // Update the target book if it exists
         string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
         if (usfm is not null)
-            return UpdateUsfm(targetSettings, usfm, pretranslations, strictComparison: false);
+        {
+            switch (textOrigin)
+            {
+                case PretranslationUsfmTextOrigin.PreferExisting:
+                    return UpdateUsfm(
+                        targetSettings,
+                        usfm,
+                        pretranslations,
+                        fullName: targetSettings.FullName,
+                        stripAllText: false,
+                        strictComparison: false,
+                        preferExistingText: true
+                    );
+                case PretranslationUsfmTextOrigin.PreferPretranslated:
+                    return UpdateUsfm(
+                        targetSettings,
+                        usfm,
+                        pretranslations,
+                        fullName: targetSettings.FullName,
+                        stripAllText: false,
+                        strictComparison: false,
+                        preferExistingText: false
+                    );
+                case PretranslationUsfmTextOrigin.OnlyExisting:
+                    return UpdateUsfm(
+                        targetSettings,
+                        usfm,
+                        pretranslations: [], // don't put any pretranslations, we only want the existing text.
+                        fullName: targetSettings.FullName,
+                        strictComparison: false,
+                        stripAllText: false,
+                        preferExistingText: false
+                    );
+                case PretranslationUsfmTextOrigin.OnlyPretranslated:
+                    return UpdateUsfm(
+                        targetSettings,
+                        usfm,
+                        pretranslations,
+                        fullName: targetSettings.FullName,
+                        strictComparison: false,
+                        stripAllText: true,
+                        preferExistingText: false
+                    );
+            }
+        }
 
         // Copy and update the source book if it exists
         usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
         if (usfm is not null)
         {
-            return UpdateUsfm(
-                sourceSettings,
-                usfm,
-                pretranslations,
-                targetSettings.FullName,
-                stripAllText: true,
-                strictComparison: true
-            );
+            switch (textOrigin)
+            {
+                case PretranslationUsfmTextOrigin.PreferExisting:
+                case PretranslationUsfmTextOrigin.PreferPretranslated:
+                case PretranslationUsfmTextOrigin.OnlyPretranslated:
+                    return UpdateUsfm(
+                        sourceSettings,
+                        usfm,
+                        pretranslations,
+                        fullName: targetSettings.FullName,
+                        stripAllText: true,
+                        strictComparison: true,
+                        preferExistingText: true
+                    );
+                case PretranslationUsfmTextOrigin.OnlyExisting:
+                    return UpdateUsfm(
+                        sourceSettings,
+                        usfm,
+                        pretranslations: [], // don't pass the pretranslations, we only want the existing text.
+                        fullName: targetSettings.FullName,
+                        stripAllText: true,
+                        strictComparison: true,
+                        preferExistingText: true
+                    );
+            }
         }
 
         return "";
@@ -95,14 +157,16 @@ public class PretranslationService(
         IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations,
         string? fullName = null,
         bool stripAllText = false,
-        bool strictComparison = false
+        bool strictComparison = false,
+        bool preferExistingText = true
     )
     {
         var updater = new UsfmTextUpdater(
             pretranslations,
             fullName is null ? null : $"- {fullName}",
             stripAllText,
-            strictComparison: strictComparison
+            strictComparison: strictComparison,
+            preferExistingText: preferExistingText
         );
         UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
         return updater.GetUsfm(settings.Stylesheet);
