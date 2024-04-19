@@ -12,7 +12,7 @@ public class PretranslationServiceTests
             1,
             "corpus1",
             "MAT",
-            textOrigin: Contracts.PretranslationUsfmTextOrigin.PreferPretranslated
+            textOrigin: PretranslationUsfmTextOrigin.PreferPretranslated
         );
         Assert.That(
             usfm.Replace("\r\n", "\n"),
@@ -42,7 +42,7 @@ public class PretranslationServiceTests
             1,
             "corpus1",
             "MAT",
-            textOrigin: Contracts.PretranslationUsfmTextOrigin.PreferPretranslated
+            textOrigin: PretranslationUsfmTextOrigin.PreferPretranslated
         );
         Assert.That(
             usfm.Replace("\r\n", "\n"),
