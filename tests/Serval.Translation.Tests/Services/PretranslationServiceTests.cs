@@ -227,7 +227,7 @@ public class PretranslationServiceTests
 
         public static string GetUsfm(string type, string book = "MAT", string id = "MAT - TRG")
         {
-            return type switch
+            string usfm = type switch
             {
                 "OnlyPretranslated" => CreatePretranslationsOnly(id),
                 "PreferPretranslated" => CreatePreferPretranslations(book, id),
@@ -236,6 +236,7 @@ public class PretranslationServiceTests
                 "Blank" => CreateBlank(id),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
+            return usfm.Replace("\r\n", "\n");
         }
     }
 }

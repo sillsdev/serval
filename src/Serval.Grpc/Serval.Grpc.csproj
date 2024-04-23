@@ -28,4 +28,14 @@
 		<Protobuf Include="Protos\**\*.proto" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="Protos\serval\assessment\v1\engine.proto" />
+	  <None Remove="Protos\serval\assessment\v1\platform.proto" />
+	  <None Remove="protos\serval\health\v1\health.proto" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Protos\serval\health\v1\" />
+	</ItemGroup>
+
 </Project>

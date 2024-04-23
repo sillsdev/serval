@@ -2,7 +2,7 @@
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
-[OpenApiTag("Translation Engines")]
+[OpenApiTag("Translation")]
 public class TranslationEnginesController(
     IAuthorizationService authService,
     IEngineService engineService,

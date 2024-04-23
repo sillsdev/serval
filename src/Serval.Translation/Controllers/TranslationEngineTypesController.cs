@@ -2,7 +2,7 @@
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engine-types")]
-[OpenApiTag("Translation Engines")]
+[OpenApiTag("Translation")]
 public class TranslationEngineTypesController(IAuthorizationService authService, IEngineService engineService)
     : ServalControllerBase(authService)
 {

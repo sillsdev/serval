@@ -11,7 +11,7 @@ public class EngineService(
     IDataAccessContext dataAccessContext,
     ILoggerFactory loggerFactory,
     IScriptureDataFileService scriptureDataFileService
-) : EntityServiceBase<Engine>(engines), IEngineService
+) : OwnedEntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Build> _builds = builds;
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
@@ -113,11 +113,6 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
-    }
-
-    public async Task<IEnumerable<Engine>> GetAllAsync(string owner, CancellationToken cancellationToken = default)
-    {
-        return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
