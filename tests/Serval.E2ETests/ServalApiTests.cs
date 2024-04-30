@@ -58,6 +58,19 @@ public class ServalApiTests
     }
 
     [Test]
+    public async Task GetParatextSmtTranslation()
+    {
+        string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "sbp", "SMT1");
+        await AddParatextCorpusToEngine(engineId);
+        await _helperClient.BuildEngineAsync(engineId);
+        TranslationResult tResult = await _helperClient.TranslationEnginesClient.TranslateAsync(
+            engineId,
+            "Hello World"
+        );
+        Assert.That(tResult.Translation, Is.Not.Empty);
+    }
+
+    [Test]
     public async Task GetSmtAddSegment()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("smt-transfer", "es", "en", "SMT3");
@@ -356,6 +369,26 @@ public class ServalApiTests
     [Test]
     public async Task ParatextProjectNmtJobAsync()
     {
+        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "en", "sbp", "NMT4");
+        TranslationCorpus corpus = await AddParatextCorpusToEngine(engineId);
+
+        _helperClient.TranslationBuildConfig.Options =
+            "{\"max_steps\":10, \"use_key_terms\":true, \"train_params\": {\"per_device_train_batch_size\":4}}";
+
+        await _helperClient.BuildEngineAsync(engineId);
+        Assert.That(
+            (await _helperClient.TranslationEnginesClient.GetAllBuildsAsync(engineId)).First().State,
+            Is.EqualTo(JobState.Completed)
+        );
+        IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            corpus.Id
+        );
+        Assert.That(lTrans, Is.Not.Empty);
+    }
+
+    private async Task<TranslationCorpus> AddParatextCorpusToEngine(string engineId)
+    {
         string tempDirectory = Path.GetTempPath();
         DataFile file1,
             file2;
@@ -385,8 +418,6 @@ public class ServalApiTests
             File.Delete(Path.Combine(tempDirectory, "TestProjectTarget.zip"));
         }
 
-        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "en", "sbp", "NMT4");
-
         TranslationCorpus corpus = await _helperClient.TranslationEnginesClient.AddCorpusAsync(
             engineId,
             new TranslationCorpusConfig
@@ -397,22 +428,8 @@ public class ServalApiTests
                 TargetFiles = [new() { FileId = file2.Id }]
             }
         );
-        _helperClient.TranslationBuildConfig.Pretranslate!.Add(
-            new PretranslateCorpusConfig { CorpusId = corpus.Id, ScriptureRange = "JHN" }
-        );
-        _helperClient.TranslationBuildConfig.Options =
-            "{\"max_steps\":10, \"use_key_terms\":true, \"train_params\": {\"per_device_train_batch_size\":4}}";
 
-        await _helperClient.BuildEngineAsync(engineId);
-        Assert.That(
-            (await _helperClient.TranslationEnginesClient.GetAllBuildsAsync(engineId)).First().State,
-            Is.EqualTo(JobState.Completed)
-        );
-        IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
-            engineId,
-            corpus.Id
-        );
-        Assert.That(lTrans, Is.Not.Empty);
+        return corpus;
     }
 
     [TearDown]
