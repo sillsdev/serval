@@ -1245,10 +1245,16 @@ namespace Serval.Client
                             throw new ServalApiException("The file does not exist", status_, responseText_, headers_, null);
                         }
                         else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("(Likely cause) File should be on the server but is not present due to internal server error.  Please re-upload file.", status_, responseText_, headers_, null);
+                        }
+                        else
                         if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details. ", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
                         }
                         else
                         {
