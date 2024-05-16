@@ -24,8 +24,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\Serval.Grpc\Serval.Grpc.csproj" />
-		<ProjectReference Include="..\..\..\SIL.DataAccess\SIL.DataAccess.csproj" />
+		<ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess\SIL.DataAccess.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.Grpc\Serval.Grpc.csproj" />
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 	</ItemGroup>
 

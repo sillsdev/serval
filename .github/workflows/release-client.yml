@@ -17,7 +17,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Pack
-        run: dotnet pack src/Serval.Client/Serval.Client.csproj -c Release -o artifacts
+        run: dotnet pack src/Serval/src/Serval.Client/Serval.Client.csproj -c Release -o artifacts
       - name: Upload package
         uses: actions/upload-artifact@v3
         with:

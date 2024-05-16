@@ -33,7 +33,7 @@ services:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/Serval.ApiServer'
+    working_dir: '/app/src/Serval/src/Serval.ApiServer'
     entrypoint:
       - dotnet
       - run
@@ -63,7 +63,7 @@ services:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/samples/EchoTranslationEngine'
+    working_dir: '/app/src/Echo/src/EchoTranslationEngine'
     entrypoint:
       - dotnet
       - run
@@ -107,7 +107,7 @@ services:
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/SIL.Machine.Serval.EngineServer'
+    working_dir: '/app/src/Serval/src/SIL.Machine.Serval.EngineServer'
     entrypoint:
       - dotnet
       - run
@@ -151,7 +151,7 @@ services:
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/SIL.Machine.Serval.JobServer'
+    working_dir: '/app/src/Serval/src/SIL.Machine.Serval.JobServer'
     entrypoint:
       - dotnet
       - run
