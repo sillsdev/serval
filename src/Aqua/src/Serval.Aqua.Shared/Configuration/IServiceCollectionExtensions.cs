@@ -7,7 +7,6 @@ public static class IServiceCollectionExtensions
         if (!Sldr.IsInitialized)
             Sldr.Initialize();
 
-        services.AddSingleton<ILanguageTagService, LanguageTagService>();
         services.AddScoped<ICorpusService, CorpusService>();
         services.AddScoped<IJobService, JobService>();
 

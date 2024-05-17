@@ -64,7 +64,7 @@ public static class IAquaBuilderExtensions
                 .UseMongoStorage(connectionString, mongoStorageOptions)
                 .UseFilter(new AutomaticRetryAttribute { Attempts = 0 })
         );
-        builder.Services.AddHealthChecks().AddCheck<HangfireHealthCheck>(name: "Hangfire");
+        builder.Services.AddHealthChecks().AddHangfire();
         return builder;
     }
 

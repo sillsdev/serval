@@ -1,6 +1,6 @@
-﻿namespace Serval.Aqua.Shared.Services;
+﻿namespace SIL.AspNetCore.Utils;
 
-public partial class LanguageTagService : ILanguageTagService
+public partial class LanguageTagParser
 {
     private static readonly Dictionary<string, string> StandardLanguages =
         new()
@@ -20,7 +20,7 @@ public partial class LanguageTagService : ILanguageTagService
     [GeneratedRegex("(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?", RegexOptions.ExplicitCapture)]
     private static partial Regex LangTagPattern();
 
-    public LanguageTagService()
+    public LanguageTagParser()
     {
         // initialize SLDR language tags to retrieve latest langtags.json file
         _defaultScripts = InitializeDefaultScripts();
@@ -28,14 +28,16 @@ public partial class LanguageTagService : ILanguageTagService
 
     private static Dictionary<string, string> InitializeDefaultScripts()
     {
-        var dict = new Dictionary<string, string>();
+        Dictionary<string, string> dict = [];
         Sldr.InitializeLanguageTags();
         string cachedAllTagsPath = Path.Combine(Sldr.SldrCachePath, "langtags.json");
-        using var stream = new FileStream(cachedAllTagsPath, FileMode.Open);
+        using FileStream stream = new(cachedAllTagsPath, FileMode.Open);
 
-        var json = JsonNode.Parse(stream);
-        var tempDefaultScripts = new Dictionary<string, string>();
-        foreach (JsonNode? entry in json!.AsArray())
+        JsonNode? json = JsonNode.Parse(stream);
+        if (json is null)
+            throw new InvalidOperationException("The langtags.json file is invalid.");
+        Dictionary<string, string> tempDefaultScripts = [];
+        foreach (JsonNode? entry in json.AsArray())
         {
             if (entry is null)
                 continue;

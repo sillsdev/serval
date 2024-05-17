@@ -1,6 +1,6 @@
 ﻿namespace Serval.Aqua.Shared.Services;
 
-public class AquaService(IHttpClientFactory httpClientFactory, ILanguageTagService languageTagService) : IAquaService
+public class AquaService(IHttpClientFactory httpClientFactory) : IAquaService
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new()
@@ -8,9 +8,9 @@ public class AquaService(IHttpClientFactory httpClientFactory, ILanguageTagServi
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             Converters = { new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower) }
         };
+    private static readonly LanguageTagParser LanguageTagParser = new();
 
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("Aqua");
-    private readonly ILanguageTagService _languageTagService = languageTagService;
 
     public async Task<VersionDto> CreateVersionAsync(
         string name,
@@ -19,7 +19,7 @@ public class AquaService(IHttpClientFactory httpClientFactory, ILanguageTagServi
         CancellationToken cancellationToken = default
     )
     {
-        if (!_languageTagService.TryParse(language, out string? languageCode, out string? scriptCode))
+        if (!LanguageTagParser.TryParse(language, out string? languageCode, out string? scriptCode))
             throw new InvalidOperationException($"Invalid language tag '{language}'.");
 
         var content = JsonContent.Create(

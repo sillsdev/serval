@@ -1,4 +1,4 @@
-namespace Serval.Aqua.Shared.Services;
+namespace SIL.AspNetCore.Services;
 
 public class CancellationInterceptor(ILogger<CancellationInterceptor> logger) : Interceptor
 {
