@@ -223,7 +223,6 @@ public class EngineService(
                 EngineType = engine.Type,
                 EngineId = engine.Id,
                 BuildId = build.Id,
-                Options = JsonSerializer.Serialize(build.Options),
                 Corpora =
                 {
                     engine.Corpora.Select(c =>
@@ -232,7 +231,7 @@ public class EngineService(
                         if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
                         {
                             corpus.PretranslateAll =
-                                pretranslateCorpus.TextIds is null || pretranslateCorpus.TextIds.Count == 0;
+                                pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null;
                             if (pretranslateCorpus.TextIds is not null)
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
                             if (pretranslateCorpus.ScriptureRange is not null)
@@ -262,7 +261,7 @@ public class EngineService(
                         }
                         if (trainOn?.TryGetValue(c.Id, out TrainingCorpus? trainingCorpus) ?? false)
                         {
-                            corpus.TrainOnAll = trainingCorpus.TextIds is null || trainingCorpus.TextIds.Count == 0;
+                            corpus.TrainOnAll = trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null;
                             if (trainingCorpus.TextIds is not null)
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
                             if (trainingCorpus.ScriptureRange is not null)
@@ -298,6 +297,8 @@ public class EngineService(
                     })
                 }
             };
+            if (build.Options is not null)
+                request.Options = JsonSerializer.Serialize(build.Options);
 
             // Log the build request summary
             try
