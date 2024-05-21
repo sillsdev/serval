@@ -134,7 +134,7 @@ public class DataFilesController(
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the file</response>
     /// <response code="404">The file does not exist</response>
-    /// <response code="500">(Likely cause) File should be on the server but is not present due to internal server error.  Please re-upload file.</response>
+    /// <response code="500">The data file is corrupted. Please try reuploading or recreating the file.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadFiles)]
     [HttpPost("{id}/contents")]

@@ -1248,7 +1248,7 @@ namespace Serval.Client
                         if (status_ == 500)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("(Likely cause) File should be on the server but is not present due to internal server error.  Please re-upload file.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The data file is corrupted. Please try reuploading or recreating the file.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
