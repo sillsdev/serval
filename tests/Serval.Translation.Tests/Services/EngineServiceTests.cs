@@ -19,7 +19,7 @@ public class EngineServiceTests
     public async Task TranslateAsync_EngineExists()
     {
         var env = new TestEnvironment();
-        string engineId = (await env.CreateEngineAsync()).Id;
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         Models.TranslationResult? result = await env.Service.TranslateAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Translation, Is.EqualTo("this is a test."));
@@ -38,7 +38,7 @@ public class EngineServiceTests
     public async Task GetWordGraphAsync_EngineExists()
     {
         var env = new TestEnvironment();
-        string engineId = (await env.CreateEngineAsync()).Id;
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         Models.WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Arcs.SelectMany(a => a.TargetTokens), Is.EqualTo("this is a test .".Split()));
@@ -57,7 +57,7 @@ public class EngineServiceTests
     public async Task TrainSegmentAsync_EngineExists()
     {
         var env = new TestEnvironment();
-        string engineId = (await env.CreateEngineAsync()).Id;
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         Assert.DoesNotThrowAsync(
             () => env.Service.TrainSegmentPairAsync(engineId, "esto es una prueba.", "this is a test.", true)
         );
@@ -88,7 +88,7 @@ public class EngineServiceTests
     public async Task DeleteAsync_EngineExists()
     {
         var env = new TestEnvironment();
-        string engineId = (await env.CreateEngineAsync()).Id;
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.DeleteAsync("engine1");
         Engine? engine = await env.Engines.GetAsync(engineId);
         Assert.That(engine, Is.Null);
@@ -98,23 +98,299 @@ public class EngineServiceTests
     public async Task DeleteAsync_ProjectDoesNotExist()
     {
         var env = new TestEnvironment();
-        await env.CreateEngineAsync();
+        await env.CreateEngineWithTextFilesAsync();
         Assert.ThrowsAsync<EntityNotFoundException>(() => env.Service.DeleteAsync("engine3"));
     }
 
     [Test]
-    public async Task StartBuildAsync_EngineExists()
+    public async Task StartBuildAsync_TrainOnNotSpecified()
     {
         var env = new TestEnvironment();
-        string engineId = (await env.CreateEngineAsync()).Id;
-        Assert.DoesNotThrowAsync(() => env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId }));
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = true,
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.txt",
+                                    Format = FileFormat.Text,
+                                    TextId = "text1"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.txt",
+                                    Format = FileFormat.Text,
+                                    TextId = "text1"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_TextIdsEmpty()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = [] }]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnTextIds = { },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.txt",
+                                    Format = FileFormat.Text,
+                                    TextId = "text1"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.txt",
+                                    Format = FileFormat.Text,
+                                    TextId = "text1"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_TextIdsPopulated()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnTextIds = { "text1" },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.txt",
+                                    Format = FileFormat.Text,
+                                    TextId = "text1"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.txt",
+                                    Format = FileFormat.Text,
+                                    TextId = "text1"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_TextIdsNotSpecified()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = true,
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.txt",
+                                    Format = FileFormat.Text,
+                                    TextId = "text1"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.txt",
+                                    Format = FileFormat.Text,
+                                    TextId = "text1"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_TextFilesScriptureRangeSpecified()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        Assert.ThrowsAsync<InvalidOperationException>(
+            () =>
+                env.Service.StartBuildAsync(
+                    new Build
+                    {
+                        Id = BUILD1_ID,
+                        EngineRef = engineId,
+                        TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }]
+                    }
+                )
+        );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_ScriptureRangeSpecified()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MAT",
+                                    new ScriptureChapters { Chapters = { 1 } }
+                                },
+                                {
+                                    "MRK",
+                                    new ScriptureChapters { Chapters = { } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
     }
 
     [Test]
     public async Task CancelBuildAsync_EngineExistsNotBuilding()
     {
         var env = new TestEnvironment();
-        string engineId = (await env.CreateEngineAsync()).Id;
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.CancelBuildAsync(engineId);
     }
 
@@ -122,7 +398,7 @@ public class EngineServiceTests
     public async Task UpdateCorpusAsync()
     {
         var env = new TestEnvironment();
-        Engine engine = await env.CreateEngineAsync();
+        Engine engine = await env.CreateEngineWithTextFilesAsync();
         string corpusId = engine.Corpora[0].Id;
 
         Models.Corpus? corpus = await env.Service.UpdateCorpusAsync(
@@ -160,8 +436,7 @@ public class EngineServiceTests
         public TestEnvironment()
         {
             Engines = new MemoryRepository<Engine>();
-            TranslationEngineApi.TranslationEngineApiClient translationServiceClient =
-                Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
+            TranslationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             var translationResult = new V1.TranslationResult
             {
                 Translation = "this is a test.",
@@ -195,7 +470,7 @@ public class EngineServiceTests
                 }
             };
             var translateResponse = new TranslateResponse { Results = { translationResult } };
-            translationServiceClient
+            TranslationServiceClient
                 .TranslateAsync(Arg.Any<TranslateRequest>())
                 .Returns(CreateAsyncUnaryCall(translateResponse));
             var wordGraph = new V1.WordGraph
@@ -254,28 +529,46 @@ public class EngineServiceTests
                 }
             };
             var getWordGraphResponse = new GetWordGraphResponse { WordGraph = wordGraph };
-            translationServiceClient
+            TranslationServiceClient
                 .GetWordGraphAsync(Arg.Any<GetWordGraphRequest>())
                 .Returns(CreateAsyncUnaryCall(getWordGraphResponse));
-            translationServiceClient
+            TranslationServiceClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
-            translationServiceClient
+            TranslationServiceClient
                 .CreateAsync(Arg.Any<CreateRequest>())
                 .Returns(CreateAsyncUnaryCall(new CreateResponse()));
-            translationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
-            translationServiceClient
+            TranslationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
+            TranslationServiceClient
                 .StartBuildAsync(Arg.Any<StartBuildRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
-            translationServiceClient
+            TranslationServiceClient
                 .TrainSegmentPairAsync(Arg.Any<TrainSegmentPairRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             GrpcClientFactory grpcClientFactory = Substitute.For<GrpcClientFactory>();
             grpcClientFactory
                 .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Smt")
-                .Returns(translationServiceClient);
+                .Returns(TranslationServiceClient);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
+            var scriptureDataFileService = Substitute.For<IScriptureDataFileService>();
+            scriptureDataFileService
+                .GetParatextProjectSettings(Arg.Any<string>())
+                .Returns(
+                    new ParatextProjectSettings(
+                        name: "Tst",
+                        fullName: "Test",
+                        encoding: Encoding.UTF8,
+                        versification: ScrVers.English,
+                        stylesheet: new UsfmStylesheet("usfm.sty"),
+                        fileNamePrefix: "TST",
+                        fileNameForm: "MAT",
+                        fileNameSuffix: ".USFM",
+                        biblicalTermsListType: "BiblicalTerms",
+                        biblicalTermsProjectName: "",
+                        biblicalTermsFileName: "BiblicalTerms.xml"
+                    )
+                );
 
             Service = new EngineService(
                 Engines,
@@ -285,14 +578,15 @@ public class EngineServiceTests
                 dataFileOptions,
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
-                new ScriptureDataFileService(new FileSystem(), dataFileOptions)
+                scriptureDataFileService
             );
         }
 
         public EngineService Service { get; }
         public IRepository<Engine> Engines { get; }
+        public TranslationEngineApi.TranslationEngineApiClient TranslationServiceClient { get; }
 
-        public async Task<Engine> CreateEngineAsync()
+        public async Task<Engine> CreateEngineWithTextFilesAsync()
         {
             var engine = new Engine
             {
@@ -326,6 +620,49 @@ public class EngineServiceTests
                                 Filename = "file2.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
                                 TextId = "text1"
+                            }
+                        ],
+                    }
+                }
+            };
+            await Engines.InsertAsync(engine);
+            return engine;
+        }
+
+        public async Task<Engine> CreateEngineWithParatextProjectAsync()
+        {
+            var engine = new Engine
+            {
+                Id = "engine1",
+                Owner = "owner1",
+                SourceLanguage = "es",
+                TargetLanguage = "en",
+                Type = "Smt",
+                Corpora = new Models.Corpus[]
+                {
+                    new()
+                    {
+                        Id = "corpus1",
+                        SourceLanguage = "es",
+                        TargetLanguage = "en",
+                        SourceFiles =
+                        [
+                            new()
+                            {
+                                Id = "file1",
+                                Filename = "file1.zip",
+                                Format = Shared.Contracts.FileFormat.Paratext,
+                                TextId = "file1.zip"
+                            }
+                        ],
+                        TargetFiles =
+                        [
+                            new()
+                            {
+                                Id = "file2",
+                                Filename = "file2.zip",
+                                Format = Shared.Contracts.FileFormat.Paratext,
+                                TextId = "file2.zip"
                             }
                         ],
                     }
