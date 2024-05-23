@@ -234,7 +234,7 @@ public class EngineService(
                                 pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null;
                             if (pretranslateCorpus.TextIds is not null)
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
-                            if (pretranslateCorpus.ScriptureRange is not null)
+                            if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
                             {
                                 if (
                                     c.TargetFiles.Count > 1
@@ -264,7 +264,7 @@ public class EngineService(
                             corpus.TrainOnAll = trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null;
                             if (trainingCorpus.TextIds is not null)
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
-                            if (trainingCorpus.ScriptureRange is not null)
+                            if (!string.IsNullOrEmpty(trainingCorpus.ScriptureRange))
                             {
                                 if (
                                     c.TargetFiles.Count > 1
