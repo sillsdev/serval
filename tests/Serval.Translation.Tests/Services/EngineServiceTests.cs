@@ -387,6 +387,57 @@ public class EngineServiceTests
     }
 
     [Test]
+    public async Task StartBuildAsync_ScriptureRangeEmptyString()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
     public async Task CancelBuildAsync_EngineExistsNotBuilding()
     {
         var env = new TestEnvironment();
