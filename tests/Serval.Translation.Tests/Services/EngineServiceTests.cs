@@ -413,6 +413,7 @@ public class EngineServiceTests
                             Id = "corpus1",
                             SourceLanguage = "es",
                             TargetLanguage = "en",
+                            TrainOnAll = false,
                             SourceFiles =
                             {
                                 new V1.CorpusFile
