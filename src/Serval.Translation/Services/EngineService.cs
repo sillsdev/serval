@@ -235,7 +235,7 @@ public class EngineService(
                             if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
                             {
                                 throw new InvalidOperationException(
-                                    $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for pretranslate"
+                                    $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
                                 );
                             }
                             if (pretranslateCorpus.TextIds is not null)
