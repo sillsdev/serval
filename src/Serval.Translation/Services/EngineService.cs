@@ -232,6 +232,12 @@ public class EngineService(
                         {
                             corpus.PretranslateAll =
                                 pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null;
+                            if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
+                            {
+                                throw new InvalidOperationException(
+                                    $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
+                                );
+                            }
                             if (pretranslateCorpus.TextIds is not null)
                                 corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
                             if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
@@ -262,6 +268,12 @@ public class EngineService(
                         if (trainOn?.TryGetValue(c.Id, out TrainingCorpus? trainingCorpus) ?? false)
                         {
                             corpus.TrainOnAll = trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null;
+                            if (trainingCorpus.TextIds is not null && trainingCorpus.ScriptureRange is not null)
+                            {
+                                throw new InvalidOperationException(
+                                    $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for trainOn"
+                                );
+                            }
                             if (trainingCorpus.TextIds is not null)
                                 corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
                             if (!string.IsNullOrEmpty(trainingCorpus.ScriptureRange))
