@@ -55,23 +55,27 @@ public class PretranslationService(
             targetFile.Filename
         );
 
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations = (
+        IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = (
             await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
         )
             .Select(p =>
                 (
-                    (IReadOnlyList<ScriptureRef>)
-                        p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToList(),
+                    Refs: (IReadOnlyList<ScriptureRef>)
+                        p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToArray(),
                     p.Translation
                 )
             )
-            .OrderBy(p => p.Item1[0])
-            .ToList();
+            .OrderBy(p => p.Refs[0]);
 
         // Update the target book if it exists
         string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
         if (usfm is not null)
         {
+            // the pretranslations are generated from the source book and inserted into the target book
+            // use relaxed references since the USFM structure may not be the same
+            pretranslations = pretranslations.Select(p =>
+                ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
+            );
             switch (textOrigin)
             {
                 case PretranslationUsfmTextOrigin.PreferExisting:
@@ -81,7 +85,6 @@ public class PretranslationService(
                         pretranslations,
                         fullName: targetSettings.FullName,
                         stripAllText: false,
-                        strictComparison: false,
                         preferExistingText: true
                     );
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -91,7 +94,6 @@ public class PretranslationService(
                         pretranslations,
                         fullName: targetSettings.FullName,
                         stripAllText: false,
-                        strictComparison: false,
                         preferExistingText: false
                     );
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -100,7 +102,6 @@ public class PretranslationService(
                         usfm,
                         pretranslations: [], // don't put any pretranslations, we only want the existing text.
                         fullName: targetSettings.FullName,
-                        strictComparison: false,
                         stripAllText: false,
                         preferExistingText: false
                     );
@@ -110,7 +111,6 @@ public class PretranslationService(
                         usfm,
                         pretranslations,
                         fullName: targetSettings.FullName,
-                        strictComparison: false,
                         stripAllText: true,
                         preferExistingText: false
                     );
@@ -132,7 +132,6 @@ public class PretranslationService(
                         pretranslations,
                         fullName: targetSettings.FullName,
                         stripAllText: true,
-                        strictComparison: true,
                         preferExistingText: true
                     );
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -142,7 +141,6 @@ public class PretranslationService(
                         pretranslations: [], // don't pass the pretranslations, we only want the existing text.
                         fullName: targetSettings.FullName,
                         stripAllText: true,
-                        strictComparison: true,
                         preferExistingText: true
                     );
             }
@@ -154,18 +152,16 @@ public class PretranslationService(
     private static string UpdateUsfm(
         ParatextProjectSettings settings,
         string usfm,
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations,
+        IEnumerable<(IReadOnlyList<ScriptureRef>, string)> pretranslations,
         string? fullName = null,
         bool stripAllText = false,
-        bool strictComparison = false,
         bool preferExistingText = true
     )
     {
         var updater = new UsfmTextUpdater(
-            pretranslations,
+            pretranslations.ToArray(),
             fullName is null ? null : $"- {fullName}",
             stripAllText,
-            strictComparison: strictComparison,
             preferExistingText: preferExistingText
         );
         UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);

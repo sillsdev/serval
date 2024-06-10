@@ -12,7 +12,7 @@ public class PretranslationServiceTests
     {
         TestEnvironment env = new();
         string usfm = await env.Service.GetUsfmAsync("engine1", 1, "corpus1", "MAT", textOrigin: textOrigin);
-        Assert.That(usfm.Replace("\r\n", "\n"), Is.EqualTo(TestEnvironment.GetUsfm(returnUsfmType, id: "MAT - TRG")));
+        Assert.That(usfm.Replace("\r\n", "\n"), Is.EqualTo(TestEnvironment.GetUsfm(returnUsfmType)));
     }
 
     [Test]
@@ -25,7 +25,7 @@ public class PretranslationServiceTests
         TestEnvironment env = new();
         env.AddMatthewToTarget();
         string usfm = await env.Service.GetUsfmAsync("engine1", 1, "corpus1", "MAT", textOrigin: textOrigin);
-        Assert.That(usfm.Replace("\r\n", "\n"), Is.EqualTo(TestEnvironment.GetUsfm(returnUsfmType, id: "MAT - TRG")));
+        Assert.That(usfm.Replace("\r\n", "\n"), Is.EqualTo(TestEnvironment.GetUsfm(returnUsfmType)));
     }
 
     private class TestEnvironment
@@ -227,7 +227,7 @@ public class PretranslationServiceTests
 
         public static string GetUsfm(string type, string book = "MAT", string id = "MAT - TRG")
         {
-            return type switch
+            string usfm = type switch
             {
                 "OnlyPretranslated" => CreatePretranslationsOnly(id),
                 "PreferPretranslated" => CreatePreferPretranslations(book, id),
@@ -236,6 +236,7 @@ public class PretranslationServiceTests
                 "Blank" => CreateBlank(id),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
+            return usfm.Replace("\r\n", "\n");
         }
     }
 }
