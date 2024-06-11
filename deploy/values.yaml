@@ -15,5 +15,5 @@ ClearMLQueue: production
 MongoConnectionPrefix: prod_
 SharedFileLocation: s3://aqua-ml-data/production/
 servalClaimSize: 10Gi
-machineClaimSize: 41Gi
+machineClaimSize: 60Gi
 enableEcho: true
