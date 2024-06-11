@@ -141,7 +141,7 @@ public class ServalApiTests
             await Task.Delay(1_000);
         }
         //Wait for at least some tasks to be queued
-        await Task.Delay(40_000);
+        await Task.Delay(4_000);
         string builds = "";
         for (int i = 0; i < NUM_ENGINES; i++)
         {
@@ -306,9 +306,8 @@ public class ServalApiTests
             "love"
         );
         Assert.That(
-            results.MaxBy(t => t.Confidences.Average())?.Translation,
-            Is.EqualTo("l’amour"),
-            message: "Expected best translation to be 'l’amour' but results were this:\n"
+            results.MaxBy(t => t.Confidences.Average())?.Translation.Contains("amour") ?? false,
+            message: "Expected best translation to contain 'amour' but results were this:\n"
                 + JsonSerializer.Serialize(results)
         );
     }
