@@ -55,6 +55,9 @@ public class ServalApiTests
         await _helperClient.BuildEngineAsync(engineId);
         TranslationResult tResult = await _helperClient.TranslationEnginesClient.TranslateAsync(engineId, "Espíritu");
         Assert.That(tResult.Translation.Contains("spirit"));
+        var engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
+        Assert.That(engine.Confidence, Is.GreaterThan(25));
+        Assert.That(engine.CorpusSize, Is.EqualTo(132));
     }
 
     [Test]
