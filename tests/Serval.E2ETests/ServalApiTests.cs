@@ -158,13 +158,32 @@ public class ServalApiTests
                 provider: CultureInfo.InvariantCulture
             );
 
-        //Status message of last started build says that there is at least one job ahead of it in the queue
-        // (this variable due to how many jobs may already exist in the production queue from other Serval instances)
-        TranslationBuild newestEngineCurrentBuild = await _helperClient.TranslationEnginesClient.GetCurrentBuildAsync(
-            engineIds[NUM_ENGINES - 1]
-        );
-        int? queueDepth = newestEngineCurrentBuild.QueueDepth;
-        Queue queue = await _helperClient.TranslationEngineTypesClient.GetQueueAsync("Nmt");
+        int tries = 5;
+        for (int i = 0; i < tries; i++)
+        {
+            //Status message of last started build says that there is at least one job ahead of it in the queue
+            // (this variable due to how many jobs may already exist in the production queue from other Serval instances)
+            TranslationBuild newestEngineCurrentBuild =
+                await _helperClient.TranslationEnginesClient.GetCurrentBuildAsync(engineIds[NUM_ENGINES - 1]);
+            int? queueDepth = newestEngineCurrentBuild.QueueDepth;
+            Queue queue = await _helperClient.TranslationEngineTypesClient.GetQueueAsync("Nmt");
+            if (queueDepth is null)
+            {
+                await Task.Delay(2_000);
+                continue;
+            }
+            Assert.That(
+                queueDepth,
+                Is.Not.Null,
+                message: JsonSerializer.Serialize(newestEngineCurrentBuild) + "|||" + builds
+            );
+            Assert.Multiple(() =>
+            {
+                Assert.That(queueDepth, Is.GreaterThan(0), message: builds);
+                Assert.That(queue.Size, Is.GreaterThanOrEqualTo(NUM_ENGINES - NUM_WORKERS));
+            });
+            break;
+        }
         for (int i = 0; i < NUM_ENGINES; i++)
         {
             try
@@ -173,16 +192,6 @@ public class ServalApiTests
             }
             catch { }
         }
-        Assert.That(
-            queueDepth,
-            Is.Not.Null,
-            message: JsonSerializer.Serialize(newestEngineCurrentBuild) + "|||" + builds
-        );
-        Assert.Multiple(() =>
-        {
-            Assert.That(queueDepth, Is.GreaterThan(0), message: builds);
-            Assert.That(queue.Size, Is.GreaterThanOrEqualTo(NUM_ENGINES - NUM_WORKERS));
-        });
     }
 
     [Test]
