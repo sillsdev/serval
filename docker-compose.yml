@@ -87,11 +87,13 @@ services:
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
-      - ClearML__Queue=lambert_24gb
-      - ClearML__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - BuildJob__ClearML__0__Queue=lambert_24gb
+      - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
+      - BuildJob__ClearML__1__Queue=lambert_24gb
+      - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
@@ -130,11 +132,13 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
-      - ClearML__Queue=lambert_24gb
-      - ClearML__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - BuildJob__ClearML__0__Queue=lambert_24gb
+      - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
+      - BuildJob__ClearML__1__Queue=lambert_24gb
+      - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
