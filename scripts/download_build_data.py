@@ -47,6 +47,7 @@ def main():
         builds = [client.translation_engines_get_build(args.engine_id, args.build_id)]
     corpora = client.translation_engines_get_all_corpora(args.engine_id)
     corpora_objs = []
+    pretranslation_objs = []
     with ZipFile(args.output, "w") as zip_obj:
         for corpus in corpora:
             obj = corpus.to_jsonable()
@@ -79,10 +80,31 @@ def main():
 
             corpora_objs.append(obj)
 
+            pretranslations = client.translation_engines_get_all_pretranslations(
+                args.engine_id, corpus.id
+            )
+            pretranslation_ids = set(map(lambda x: x.text_id, pretranslations))
+            for pretranslation_id in pretranslation_ids:
+                try:
+                    usfm_text = client.translation_engines_get_pretranslated_usfm(
+                        args.engine_id, corpus.id, pretranslation_id
+                    )
+                    zip_obj.writestr(
+                        f"{corpus.name}_{corpus.id}/pretranslated_usfm/{pretranslation_id}.usfm",
+                        usfm_text,
+                    )
+                except:
+                    print(
+                        f"Failed to get usfm for {pretranslation_id}: engine={args.engine_id}, corpus={corpus.id}"
+                    )
+
+            pretranslation_objs += list(map(lambda p: p.to_jsonable(), pretranslations))
+
         meta = {}
         meta["engineMeta"] = engine.to_jsonable()
         meta["builds"] = list(map(lambda b: b.to_jsonable(), builds))
         meta["corpora"] = corpora_objs
+        meta["pretranslations"] = pretranslation_objs
         zip_obj.writestr(f"engine_meta.json", json.dumps(meta, indent=1))
 
 
