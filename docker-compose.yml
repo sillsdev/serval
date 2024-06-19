@@ -91,7 +91,7 @@ services:
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - BuildJob__ClearML__0__Queue=lambert_24gb
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
-      - BuildJob__ClearML__1__Queue=lambert_cpu_24gb
+      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
@@ -136,7 +136,7 @@ services:
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - BuildJob__ClearML__0__Queue=lambert_24gb
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
-      - BuildJob__ClearML__1__Queue=lambert_cpu_24gb
+      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
