@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Version>1.4.1</Version>
+		<Description>Client classes for Serval.</Description>
+		<RootNamespace>Serval.Client</RootNamespace>
+		<NoWarn>8618</NoWarn>
+		<Product>Serval</Product>
+	</PropertyGroup>
+
+	<Import Project="../../../AssemblyInfo.props" />
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+	</ItemGroup>
+
+</Project>

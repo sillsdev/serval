@@ -44,3 +44,4 @@ appsettings.user.json
 artifacts
 
 .db
+*.zip

@@ -3,7 +3,7 @@ name: Release SIL.DataAccess package
 on:
   push:
     tags:
-      - 'data-access_*'
+      - "data-access_*"
 
 jobs:
   publish:
@@ -17,7 +17,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Pack
-        run: dotnet pack src/SIL.DataAccess/SIL.DataAccess.csproj -c Release -o artifacts
+        run: dotnet pack src/Serval/src/SIL.DataAccess/SIL.DataAccess.csproj -c Release -o artifacts
       - name: Upload package
         uses: actions/upload-artifact@v3
         with:
