@@ -40,6 +40,7 @@ serval_engines: dict = {
 for key in machine_engines.keys():
     if key in serval_engines:
         machine_engines[key]["type"] = serval_engines[key]["type"]
+        print(f"Engine {key} to be updated with type {serval_engines[key]['type']}")
     else:
         print(f"Engine {key} not found in serval database")
 
