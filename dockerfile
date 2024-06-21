@@ -8,8 +8,8 @@ COPY . ./
 # Restore as distinct layers
 RUN dotnet restore
 # Build and publish a release
-RUN dotnet publish ./src/Serval.ApiServer/Serval.ApiServer.csproj -c Release -o out_api_server
-RUN dotnet publish ./samples/EchoTranslationEngine/EchoTranslationEngine.csproj -c Release -o out_echo_server
+RUN dotnet publish ./src/Serval/src/Serval.ApiServer/Serval.ApiServer.csproj -c Release -o out_api_server
+RUN dotnet publish ./src/Echo/src/EchoTranslationEngine/EchoTranslationEngine.csproj -c Release -o out_echo_server
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy as production
