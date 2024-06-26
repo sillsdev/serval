@@ -1628,8 +1628,9 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
-        /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
-        /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, or
+        /// <br/>if `useSourceUsfm` is true, then the pretranslated text will be inserted into an empty template created from
+        /// <br/>the source USFM book and returned.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// <br/>            
         /// <br/>The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
@@ -1637,6 +1638,8 @@ namespace Serval.Client
         /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
         /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
         /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
+        /// <br/>            
+        /// <br/>To have the
         /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -1645,7 +1648,7 @@ namespace Serval.Client
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, bool? useSourceUsfm = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -3596,8 +3599,9 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
-        /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
-        /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, or
+        /// <br/>if `useSourceUsfm` is true, then the pretranslated text will be inserted into an empty template created from
+        /// <br/>the source USFM book and returned.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// <br/>            
         /// <br/>The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
@@ -3605,6 +3609,8 @@ namespace Serval.Client
         /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
         /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
         /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
+        /// <br/>            
+        /// <br/>To have the
         /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -3613,7 +3619,7 @@ namespace Serval.Client
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, bool? useSourceUsfm = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -3647,6 +3653,10 @@ namespace Serval.Client
             if (textOrigin != null)
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("text-origin")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textOrigin, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+            }
+            if (useSourceUsfm != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("useSourceUsfm")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(useSourceUsfm, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
             }
             urlBuilder_.Length--;
 

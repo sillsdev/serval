@@ -35,6 +35,7 @@ public class PretranslationService(
         string corpusId,
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
+        bool useSourceUsfm = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -68,8 +69,8 @@ public class PretranslationService(
             .OrderBy(p => p.Refs[0]);
 
         // Update the target book if it exists
-        string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
-        if (usfm is not null)
+        string? targetUsfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
+        if (targetUsfm is not null && useSourceUsfm is false)
         {
             // the pretranslations are generated from the source book and inserted into the target book
             // use relaxed references since the USFM structure may not be the same
@@ -81,7 +82,7 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.PreferExisting:
                     return UpdateUsfm(
                         targetSettings,
-                        usfm,
+                        targetUsfm,
                         pretranslations,
                         fullName: targetSettings.FullName,
                         stripAllText: false,
@@ -90,7 +91,7 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
                     return UpdateUsfm(
                         targetSettings,
-                        usfm,
+                        targetUsfm,
                         pretranslations,
                         fullName: targetSettings.FullName,
                         stripAllText: false,
@@ -99,7 +100,7 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return UpdateUsfm(
                         targetSettings,
-                        usfm,
+                        targetUsfm,
                         pretranslations: [], // don't put any pretranslations, we only want the existing text.
                         fullName: targetSettings.FullName,
                         stripAllText: false,
@@ -108,7 +109,7 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
                     return UpdateUsfm(
                         targetSettings,
-                        usfm,
+                        targetUsfm,
                         pretranslations,
                         fullName: targetSettings.FullName,
                         stripAllText: true,
@@ -118,17 +119,68 @@ public class PretranslationService(
         }
 
         // Copy and update the source book if it exists
-        usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
-        if (usfm is not null)
+        string? sourceUsfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
+        if (sourceUsfm is not null)
         {
+            IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> targetTextAsPretranslations = [];
+            if (useSourceUsfm && targetUsfm is not null && textOrigin != PretranslationUsfmTextOrigin.OnlyPretranslated)
+            {
+                // create parallel corpus from the USFM
+                UsfmFileTextCorpus sourceCorpus = new UsfmFileTextCorpus(
+                    new Dictionary<string, string> { { textId, sourceUsfm } },
+                    sourceSettings.Stylesheet,
+                    sourceSettings.Versification,
+                    includeMarkers: true,
+                    includeAllText: true
+                );
+                UsfmFileTextCorpus targetCorpus = new UsfmFileTextCorpus(
+                    new Dictionary<string, string> { { textId, targetUsfm } },
+                    sourceSettings.Stylesheet,
+                    sourceSettings.Versification,
+                    includeMarkers: true,
+                    includeAllText: true
+                );
+                ParallelTextCorpus pCorpus =
+                    new(sourceCorpus, targetCorpus, alignmentCorpus: null, rowRefComparer: null)
+                    {
+                        AllSourceRows = true,
+                        AllTargetRows = false
+                    };
+
+                // insert the target content the source USFM as pretranslations
+                targetTextAsPretranslations = pCorpus
+                    .GetRows()
+                    .ToList()
+                    .Select(r =>
+                        ((IReadOnlyList<ScriptureRef>)r.TargetRefs.Select(s => (ScriptureRef)s).ToList(), r.TargetText)
+                    )
+                    .ToList();
+            }
+            sourceUsfm = UpdateUsfm(
+                sourceSettings,
+                sourceUsfm,
+                pretranslations: targetTextAsPretranslations,
+                fullName: targetSettings.FullName,
+                stripAllText: true,
+                preferExistingText: true
+            );
+
             switch (textOrigin)
             {
                 case PretranslationUsfmTextOrigin.PreferExisting:
+                    return UpdateUsfm(
+                        sourceSettings,
+                        sourceUsfm,
+                        pretranslations,
+                        fullName: targetSettings.FullName,
+                        preferExistingText: true
+                    );
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
+                    return UpdateUsfm(sourceSettings, sourceUsfm, pretranslations, fullName: targetSettings.FullName);
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
                     return UpdateUsfm(
                         sourceSettings,
-                        usfm,
+                        sourceUsfm,
                         pretranslations,
                         fullName: targetSettings.FullName,
                         stripAllText: true,
@@ -137,10 +189,9 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return UpdateUsfm(
                         sourceSettings,
-                        usfm,
+                        sourceUsfm,
                         pretranslations: [], // don't pass the pretranslations, we only want the existing text.
                         fullName: targetSettings.FullName,
-                        stripAllText: true,
                         preferExistingText: true
                     );
             }
