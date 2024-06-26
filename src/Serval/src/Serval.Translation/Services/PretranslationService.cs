@@ -176,7 +176,13 @@ public class PretranslationService(
                         preferExistingText: true
                     );
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
-                    return UpdateUsfm(sourceSettings, sourceUsfm, pretranslations, fullName: targetSettings.FullName);
+                    return UpdateUsfm(
+                        sourceSettings,
+                        sourceUsfm,
+                        pretranslations,
+                        fullName: targetSettings.FullName,
+                        preferExistingText: false
+                    );
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
                     return UpdateUsfm(
                         sourceSettings,

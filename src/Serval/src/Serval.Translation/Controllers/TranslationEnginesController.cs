@@ -629,7 +629,6 @@ public class TranslationEnginesController(
     /// * `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
     /// * `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
     ///
-    /// To have the
     /// Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
     /// </remarks>
     /// <param name="id">The translation engine id</param>
