@@ -126,6 +126,7 @@ public class PretranslationService(
             if (useSourceUsfm && targetUsfm is not null && textOrigin != PretranslationUsfmTextOrigin.OnlyPretranslated)
             {
                 // create parallel corpus from the USFM
+
                 UsfmFileTextCorpus sourceCorpus = new UsfmFileTextCorpus(
                     new Dictionary<string, string> { { textId, sourceUsfm } },
                     sourceSettings.Stylesheet,
@@ -135,8 +136,8 @@ public class PretranslationService(
                 );
                 UsfmFileTextCorpus targetCorpus = new UsfmFileTextCorpus(
                     new Dictionary<string, string> { { textId, targetUsfm } },
-                    sourceSettings.Stylesheet,
-                    sourceSettings.Versification,
+                    targetSettings.Stylesheet,
+                    targetSettings.Versification,
                     includeMarkers: true,
                     includeAllText: true
                 );
