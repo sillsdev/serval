@@ -14,8 +14,8 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
       - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
-      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}serval_jobs
-      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING:?connection string needed}serval
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}/${MONGO_CONNECTION_PREFIX:?mongo prefix needed}serval_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}serval
       - ASPNETCORE_Translation__Engines__0__Type=Echo
       - ASPNETCORE_Translation__Engines__0__Address=http://echo
       - ASPNETCORE_Translation__Engines__1__Type=SmtTransfer
@@ -81,8 +81,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
-      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}machine_jobs
-      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING:?connection string needed}machine
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Queue=lambert_24gb
@@ -121,8 +121,8 @@ services:
       dockerfile: ../machine/dockerfile.development
     environment:
       - ASPNETCORE_ENVIRONMENT=Staging
-      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}machine_jobs
-      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING:?connection string needed}machine
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
