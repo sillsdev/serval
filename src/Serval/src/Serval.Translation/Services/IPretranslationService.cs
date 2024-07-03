@@ -16,6 +16,7 @@ public interface IPretranslationService
         string corpusId,
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
+        PretranslationUsfmTemplate template,
         CancellationToken cancellationToken = default
     );
 }

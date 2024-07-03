@@ -1627,18 +1627,19 @@ namespace Serval.Client
         /// Get a pretranslated Scripture book in USFM format.
         /// </summary>
         /// <remarks>
-        /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
-        /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
-        /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
-        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
-        /// <br/>            
-        /// <br/>The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
-        /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text.  **This is the default**.
+        /// The text that populates the USFM structure can be controlled by the `textOrigin` parameter:
+        /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
         /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
-        /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
-        /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
-        /// <br/>* `UseSourceUsfm`: The pretranslated text is inserted into the source USFM structure
-        /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
+        /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
+        /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
+        /// <br/>            
+        /// <br/>The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
+        /// <br/>* `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
+        /// <br/>* `Source`: The source book is used as the template.
+        /// <br/>* `Target`: The target book is used as the template.
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -1646,7 +1647,7 @@ namespace Serval.Client
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -3596,18 +3597,19 @@ namespace Serval.Client
         /// Get a pretranslated Scripture book in USFM format.
         /// </summary>
         /// <remarks>
-        /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
-        /// <br/>segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
-        /// <br/>pretranslated text will be inserted into an empty template created from the source USFM book and returned.
-        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
-        /// <br/>            
-        /// <br/>The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
-        /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text.  **This is the default**.
+        /// The text that populates the USFM structure can be controlled by the `textOrigin` parameter:
+        /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
         /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
-        /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
-        /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
-        /// <br/>* `UseSourceUsfm`: The pretranslated text is inserted into the source USFM structure
-        /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
+        /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
+        /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
+        /// <br/>            
+        /// <br/>The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
+        /// <br/>* `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
+        /// <br/>* `Source`: The source book is used as the template.
+        /// <br/>* `Target`: The target book is used as the template.
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
@@ -3615,7 +3617,7 @@ namespace Serval.Client
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -3649,6 +3651,10 @@ namespace Serval.Client
             if (textOrigin != null)
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("text-origin")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textOrigin, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+            }
+            if (template != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("template")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(template, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
             }
             urlBuilder_.Length--;
 
@@ -6009,8 +6015,20 @@ namespace Serval.Client
         [System.Runtime.Serialization.EnumMember(Value = @"OnlyPretranslated")]
         OnlyPretranslated = 3,
 
-        [System.Runtime.Serialization.EnumMember(Value = @"UseSourceUsfm")]
-        UseSourceUsfm = 4,
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum PretranslationUsfmTemplate
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Auto")]
+        Auto = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Source")]
+        Source = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Target")]
+        Target = 2,
 
     }
 
