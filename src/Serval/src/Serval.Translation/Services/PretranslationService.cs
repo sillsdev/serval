@@ -69,7 +69,7 @@ public class PretranslationService(
 
         // Update the target book if it exists
         string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
-        if (usfm is not null)
+        if (usfm is not null && textOrigin != PretranslationUsfmTextOrigin.UseSourceUsfm)
         {
             // the pretranslations are generated from the source book and inserted into the target book
             // use relaxed references since the USFM structure may not be the same
@@ -126,6 +126,7 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.PreferExisting:
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
+                case PretranslationUsfmTextOrigin.UseSourceUsfm:
                     return UpdateUsfm(
                         sourceSettings,
                         usfm,

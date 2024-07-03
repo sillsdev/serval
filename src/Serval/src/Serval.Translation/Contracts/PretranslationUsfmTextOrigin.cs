@@ -5,5 +5,6 @@ public enum PretranslationUsfmTextOrigin
     PreferExisting,
     PreferPretranslated,
     OnlyExisting,
-    OnlyPretranslated
+    OnlyPretranslated,
+    UseSourceUsfm
 }

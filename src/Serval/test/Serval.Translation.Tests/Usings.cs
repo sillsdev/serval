@@ -1,4 +1,5 @@
 global using System.Text;
+global using System.Text.RegularExpressions;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
 global using MassTransit;
