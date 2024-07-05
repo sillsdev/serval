@@ -32,13 +32,13 @@ public class S3HealthCheck(IOptions<SharedFileOptions> options) : IHealthCheck
                     }
                 )
             ).ListObjectsV2Async(request, cancellationToken);
-            using (await _lock.LockAsync())
+            using (await _lock.LockAsync(cancellationToken))
                 _numConsecutiveFailures = 0;
             return HealthCheckResult.Healthy("The S3 bucket is available");
         }
         catch (Exception e)
         {
-            using (await _lock.LockAsync())
+            using (await _lock.LockAsync(cancellationToken))
             {
                 _numConsecutiveFailures++;
                 if (

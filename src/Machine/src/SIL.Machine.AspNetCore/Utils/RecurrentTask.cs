@@ -21,7 +21,7 @@ public abstract class RecurrentTask(
 
         using PeriodicTimer timer = new(_period);
 
-        _logger.LogInformation($"{_serviceName} started.");
+        _logger.LogInformation("{ServiceName} started.", _serviceName);
 
         try
         {
@@ -33,7 +33,7 @@ public abstract class RecurrentTask(
         }
         catch (OperationCanceledException) { }
 
-        _logger.LogInformation($"{_serviceName} stopped.");
+        _logger.LogInformation("{ServiceName} stopped.", _serviceName);
     }
 
     protected abstract Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken);

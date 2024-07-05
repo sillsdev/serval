@@ -32,13 +32,13 @@ public class ClearMLHealthCheck(
                 );
             }
 
-            using (await _lock.LockAsync())
+            using (await _lock.LockAsync(cancellationToken))
                 _numConsecutiveFailures = 0;
             return HealthCheckResult.Healthy("ClearML is available");
         }
         catch (Exception e)
         {
-            using (await _lock.LockAsync())
+            using (await _lock.LockAsync(cancellationToken))
             {
                 _numConsecutiveFailures++;
                 return _numConsecutiveFailures > 3

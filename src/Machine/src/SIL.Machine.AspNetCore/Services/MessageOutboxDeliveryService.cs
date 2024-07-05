@@ -116,7 +116,7 @@ public class MessageOutboxDeliveryService(
                 contentStream,
                 cancellationToken
             );
-            await messages.DeleteAsync(message.Id);
+            await messages.DeleteAsync(message.Id, CancellationToken.None);
         }
         finally
         {

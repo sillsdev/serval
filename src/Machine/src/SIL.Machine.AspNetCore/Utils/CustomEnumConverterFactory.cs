@@ -104,7 +104,7 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
             if (_writeCache.Count == NameCacheLimit)
             {
                 Debug.Assert(_readCache.Count == NameCacheLimit);
-                throw new ArgumentOutOfRangeException();
+                throw new InvalidOperationException("The JSON value contains too many enumerations.");
             }
 
             formatted = FormatAndAddToCaches(value, options.Encoder);

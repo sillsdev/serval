@@ -77,7 +77,7 @@ public class S3WriteStream(
                         );
                     }
                 );
-                UploadPartResponse response = await _client.UploadPartAsync(request);
+                UploadPartResponse response = await _client.UploadPartAsync(request, cancellationToken);
                 if (response.HttpStatusCode != HttpStatusCode.OK)
                 {
                     throw new HttpRequestException(
@@ -104,11 +104,71 @@ public class S3WriteStream(
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        try
+        {
+            if (disposing)
+            {
+                if (_uploadResponses.Count == 0)
+                {
+                    AbortAsync().WaitAndUnwrapException();
+                    PutObjectRequest request =
+                        new()
+                        {
+                            BucketName = _bucketName,
+                            Key = _key,
+                            ContentBody = ""
+                        };
+                    PutObjectResponse response = _client.PutObjectAsync(request).WaitAndUnwrapException();
+                    if (response.HttpStatusCode != HttpStatusCode.OK)
+                    {
+                        throw new HttpRequestException(
+                            $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                        );
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        CompleteMultipartUploadRequest request =
+                            new()
+                            {
+                                BucketName = _bucketName,
+                                Key = _key,
+                                UploadId = _uploadId
+                            };
+                        request.AddPartETags(_uploadResponses);
+                        CompleteMultipartUploadResponse response = _client
+                            .CompleteMultipartUploadAsync(request)
+                            .WaitAndUnwrapException();
+                        if (response.HttpStatusCode != HttpStatusCode.OK)
+                        {
+                            throw new HttpRequestException(
+                                $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                            );
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        AbortAsync(e).WaitAndUnwrapException();
+                        throw;
+                    }
+                }
+            }
+        }
+        finally
+        {
+            base.Dispose(disposing);
+        }
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        try
         {
             if (_uploadResponses.Count == 0)
             {
-                AbortAsync().WaitAndUnwrapException();
+                await AbortAsync();
                 PutObjectRequest request =
                     new()
                     {
@@ -116,100 +176,50 @@ public class S3WriteStream(
                         Key = _key,
                         ContentBody = ""
                     };
-                PutObjectResponse response = _client.PutObjectAsync(request).WaitAndUnwrapException();
+                PutObjectResponse response = await _client.PutObjectAsync(request);
                 if (response.HttpStatusCode != HttpStatusCode.OK)
                 {
                     throw new HttpRequestException(
                         $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                     );
                 }
+
+                return;
             }
-            else
+            try
             {
-                try
-                {
-                    CompleteMultipartUploadRequest request =
-                        new()
-                        {
-                            BucketName = _bucketName,
-                            Key = _key,
-                            UploadId = _uploadId
-                        };
-                    request.AddPartETags(_uploadResponses);
-                    CompleteMultipartUploadResponse response = _client
-                        .CompleteMultipartUploadAsync(request)
-                        .WaitAndUnwrapException();
-                    Dispose(disposing: false);
-                    GC.SuppressFinalize(this);
-                    if (response.HttpStatusCode != HttpStatusCode.OK)
+                CompleteMultipartUploadRequest request =
+                    new()
                     {
-                        throw new HttpRequestException(
-                            $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
-                        );
-                    }
-                }
-                catch (Exception e)
+                        BucketName = _bucketName,
+                        Key = _key,
+                        UploadId = _uploadId
+                    };
+                request.AddPartETags(_uploadResponses);
+                CompleteMultipartUploadResponse response = await _client.CompleteMultipartUploadAsync(request);
+                if (response.HttpStatusCode != HttpStatusCode.OK)
                 {
-                    AbortAsync(e).WaitAndUnwrapException();
-                    throw;
+                    throw new HttpRequestException(
+                        $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                    );
                 }
             }
-        }
-        base.Dispose(disposing);
-    }
-
-    public override async ValueTask DisposeAsync()
-    {
-        if (_uploadResponses.Count == 0)
-        {
-            await AbortAsync();
-            PutObjectRequest request =
-                new()
-                {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    ContentBody = ""
-                };
-            PutObjectResponse response = await _client.PutObjectAsync(request);
-            if (response.HttpStatusCode != HttpStatusCode.OK)
+            catch (Exception e)
             {
-                throw new HttpRequestException(
-                    $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
-                );
+                await AbortAsync(e);
             }
-
-            return;
         }
-        try
+        finally
         {
-            CompleteMultipartUploadRequest request =
-                new()
-                {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    UploadId = _uploadId
-                };
-            request.AddPartETags(_uploadResponses);
-            CompleteMultipartUploadResponse response = await _client.CompleteMultipartUploadAsync(request);
-            Dispose(disposing: false);
+            await base.DisposeAsync();
             GC.SuppressFinalize(this);
-            if (response.HttpStatusCode != HttpStatusCode.OK)
-            {
-                throw new HttpRequestException(
-                    $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
-                );
-            }
-        }
-        catch (Exception e)
-        {
-            await AbortAsync(e);
         }
     }
 
     private async Task AbortAsync(Exception? e = null)
     {
         if (e is not null)
-            _logger.LogError(e, $"Aborted upload {_uploadId} to {_bucketName}/{_key}");
+            _logger.LogError(e, "Aborted upload {UploadId} to {BucketName}/{Key}", _uploadId, _bucketName, _key);
         AbortMultipartUploadRequest abortMPURequest =
             new()
             {

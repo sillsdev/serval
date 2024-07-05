@@ -89,8 +89,18 @@ public class SmtTransferBuildJob(
         var tokenizer = new LatinWordTokenizer();
         var detokenizer = new LatinWordDetokenizer();
 
-        using ITrainer smtModelTrainer = await _smtModelFactory.CreateTrainerAsync(engineId, tokenizer, parallelCorpus);
-        using ITrainer truecaseTrainer = await _truecaserFactory.CreateTrainerAsync(engineId, tokenizer, targetCorpus);
+        using ITrainer smtModelTrainer = await _smtModelFactory.CreateTrainerAsync(
+            engineId,
+            tokenizer,
+            parallelCorpus,
+            cancellationToken
+        );
+        using ITrainer truecaseTrainer = await _truecaserFactory.CreateTrainerAsync(
+            engineId,
+            tokenizer,
+            targetCorpus,
+            cancellationToken
+        );
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -107,7 +117,7 @@ public class SmtTransferBuildJob(
             cancellationToken.ThrowIfCancellationRequested();
             await smtModelTrainer.SaveAsync(CancellationToken.None);
             await truecaseTrainer.SaveAsync(CancellationToken.None);
-            ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
+            ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId, CancellationToken.None);
             IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
                 p => p.TranslationEngineRef == engine.Id,
                 CancellationToken.None
@@ -117,7 +127,8 @@ public class SmtTransferBuildJob(
                     engineId,
                     tokenizer,
                     detokenizer,
-                    truecaser
+                    truecaser,
+                    CancellationToken.None
                 )
             )
             {

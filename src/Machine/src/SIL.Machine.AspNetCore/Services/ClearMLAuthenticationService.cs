@@ -66,7 +66,11 @@ public class ClearMLAuthenticationService(
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
         string? refreshedToken = (string?)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"];
         if (refreshedToken is null || refreshedToken is "")
-            throw new Exception($"ClearML authentication failed - {response.StatusCode}: {response.ReasonPhrase}");
+        {
+            throw new InvalidOperationException(
+                $"ClearML authentication failed - {response.StatusCode}: {response.ReasonPhrase}"
+            );
+        }
         _authToken = refreshedToken;
         _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
     }

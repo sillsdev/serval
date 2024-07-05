@@ -20,6 +20,6 @@ public record RWLock : IEntity
         var now = DateTime.UtcNow;
         return (WriterLock is null || WriterLock.ExpiresAt is not null && WriterLock.ExpiresAt <= now)
             && !ReaderLocks.Any(l => l.ExpiresAt is null || l.ExpiresAt > now)
-            && (lockId is null || WriterQueue.FirstOrDefault()?.Id == lockId);
+            && (lockId is null || (WriterQueue.Count > 0 && WriterQueue[0].Id == lockId));
     }
 }
