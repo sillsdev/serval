@@ -3,29 +3,267 @@
 [TestFixture]
 public class PretranslationServiceTests
 {
+    private const string SourceUsfm =
+        $@"\id MAT - SRC
+\c 1
+\v 1 SRC - Chapter one, verse one.
+\v 2
+\v 3 SRC - Chapter one, verse three.
+";
+
+    private const string TargetUsfm =
+        @"\id MAT - TRG
+\c 1
+\v 1 TRG - Chapter one, verse one.
+\v 2
+\v 3 TRG - Chapter one, verse three.
+";
+
     [Test]
-    [TestCase(PretranslationUsfmTextOrigin.PreferPretranslated, "OnlyPretranslated")]
-    [TestCase(PretranslationUsfmTextOrigin.PreferExisting, "OnlyPretranslated")]
-    [TestCase(PretranslationUsfmTextOrigin.OnlyPretranslated, "OnlyPretranslated")]
-    [TestCase(PretranslationUsfmTextOrigin.OnlyExisting, "Blank")]
-    public async Task GetUsfmAsync_SourceBook(PretranslationUsfmTextOrigin textOrigin, string returnUsfmType)
+    public async Task GetUsfmAsync_Source_PreferExisting()
     {
         TestEnvironment env = new();
-        string usfm = await env.Service.GetUsfmAsync("engine1", 1, "corpus1", "MAT", textOrigin: textOrigin);
-        Assert.That(usfm.Replace("\r\n", "\n"), Is.EqualTo(TestEnvironment.GetUsfm(returnUsfmType)));
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferExisting,
+            PretranslationUsfmTemplate.Source
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1 Chapter 1, verse 1.
+\v 2 Chapter 1, verse 2.
+\v 3
+"
+                )
+                .IgnoreLineEndings()
+        );
     }
 
     [Test]
-    [TestCase(PretranslationUsfmTextOrigin.PreferPretranslated, "PreferPretranslated")]
-    [TestCase(PretranslationUsfmTextOrigin.PreferExisting, "PreferExisting")]
-    [TestCase(PretranslationUsfmTextOrigin.OnlyPretranslated, "OnlyPretranslated")]
-    [TestCase(PretranslationUsfmTextOrigin.OnlyExisting, "OnlyExisting")]
-    public async Task GetUsfmAsync_TargetBook(PretranslationUsfmTextOrigin textOrigin, string returnUsfmType)
+    public async Task GetUsfmAsync_Source_PreferPretranslated()
+    {
+        TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferPretranslated,
+            PretranslationUsfmTemplate.Source
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1 Chapter 1, verse 1.
+\v 2 Chapter 1, verse 2.
+\v 3
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Source_OnlyExisting()
+    {
+        TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.OnlyExisting,
+            PretranslationUsfmTemplate.Source
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1
+\v 2
+\v 3
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Source_OnlyPretranslated()
+    {
+        TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.OnlyPretranslated,
+            PretranslationUsfmTemplate.Source
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1 Chapter 1, verse 1.
+\v 2 Chapter 1, verse 2.
+\v 3
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Target_PreferExisting()
     {
         TestEnvironment env = new();
         env.AddMatthewToTarget();
-        string usfm = await env.Service.GetUsfmAsync("engine1", 1, "corpus1", "MAT", textOrigin: textOrigin);
-        Assert.That(usfm.Replace("\r\n", "\n"), Is.EqualTo(TestEnvironment.GetUsfm(returnUsfmType)));
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferExisting,
+            PretranslationUsfmTemplate.Target
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1 TRG - Chapter one, verse one.
+\v 2 Chapter 1, verse 2.
+\v 3 TRG - Chapter one, verse three.
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Target_PreferPretranslated()
+    {
+        TestEnvironment env = new();
+        env.AddMatthewToTarget();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferPretranslated,
+            PretranslationUsfmTemplate.Target
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1 Chapter 1, verse 1.
+\v 2 Chapter 1, verse 2.
+\v 3 TRG - Chapter one, verse three.
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Target_TargetBookDoesNotExist()
+    {
+        TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferPretranslated,
+            PretranslationUsfmTemplate.Target
+        );
+
+        Assert.That(usfm, Is.EqualTo(""));
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Auto_TargetBookDoesNotExist()
+    {
+        TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferPretranslated,
+            PretranslationUsfmTemplate.Auto
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1 Chapter 1, verse 1.
+\v 2 Chapter 1, verse 2.
+\v 3
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Auto_TargetBookExists()
+    {
+        TestEnvironment env = new();
+        env.AddMatthewToTarget();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferPretranslated,
+            PretranslationUsfmTemplate.Auto
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1 Chapter 1, verse 1.
+\v 2 Chapter 1, verse 2.
+\v 3 TRG - Chapter one, verse three.
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Target_OnlyExisting()
+    {
+        TestEnvironment env = new();
+        env.AddMatthewToTarget();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.OnlyExisting,
+            PretranslationUsfmTemplate.Target
+        );
+
+        Assert.That(usfm, Is.EqualTo(TargetUsfm).IgnoreLineEndings());
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Target_OnlyPretranslated()
+    {
+        TestEnvironment env = new();
+        env.AddMatthewToTarget();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.OnlyPretranslated,
+            PretranslationUsfmTemplate.Target
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\c 1
+\v 1 Chapter 1, verse 1.
+\v 2 Chapter 1, verse 2.
+\v 3
+"
+                )
+                .IgnoreLineEndings()
+        );
     }
 
     private class TestEnvironment
@@ -96,16 +334,6 @@ public class PretranslationServiceTests
                         TextId = "MAT",
                         Refs = ["MAT 1:2"],
                         Translation = "Chapter 1, verse 2."
-                    },
-                    new()
-                    {
-                        Id = "pt3",
-                        EngineRef = "engine1",
-                        ModelRevision = 1,
-                        CorpusRef = "corpus1",
-                        TextId = "MAT",
-                        Refs = ["MAT 2:1"],
-                        Translation = "Chapter 2, verse 1."
                     }
                 ]
             );
@@ -114,7 +342,7 @@ public class PretranslationServiceTests
             ScriptureDataFileService.GetParatextProjectSettings("file2.zip").Returns(CreateProjectSettings("TRG"));
             ScriptureDataFileService
                 .ReadParatextProjectBookAsync("file1.zip", "MAT")
-                .Returns(Task.FromResult<string?>(CreateExisting(book: "MAT", id: "MAT - SRC")));
+                .Returns(Task.FromResult<string?>(SourceUsfm));
             ScriptureDataFileService
                 .ReadParatextProjectBookAsync("file2.zip", "MAT")
                 .Returns(Task.FromResult<string?>(null));
@@ -126,11 +354,28 @@ public class PretranslationServiceTests
         public MemoryRepository<Engine> Engines { get; }
         public IScriptureDataFileService ScriptureDataFileService { get; }
 
+        public async Task<string> GetUsfmAsync(
+            PretranslationUsfmTextOrigin textOrigin,
+            PretranslationUsfmTemplate template
+        )
+        {
+            return (
+                await Service.GetUsfmAsync(
+                    engineId: "engine1",
+                    modelRevision: 1,
+                    corpusId: "corpus1",
+                    textId: "MAT",
+                    textOrigin: textOrigin,
+                    template: template
+                )
+            ).Replace("\r\n", "\n");
+        }
+
         public void AddMatthewToTarget()
         {
             ScriptureDataFileService
                 .ReadParatextProjectBookAsync("file2.zip", "MAT")
-                .Returns(Task.FromResult<string?>(CreateExisting(book: "MAT", id: "MAT - TRG")));
+                .Returns(Task.FromResult<string?>(TargetUsfm));
         }
 
         private static ParatextProjectSettings CreateProjectSettings(string name)
@@ -148,95 +393,6 @@ public class PretranslationServiceTests
                 biblicalTermsProjectName: "",
                 biblicalTermsFileName: "BiblicalTerms.xml"
             );
-        }
-
-        private static string CreateExisting(string book = "MAT", string id = "MAT - TRG")
-        {
-            return $@"\id {id}
-\h {Canon.BookIdToEnglishName(book)}
-\c 1
-\p
-\v 1 Chapter one, verse one.
-\v 2
-\c 2
-\p
-\v 1 Chapter two, verse one.
-\v 2 Chapter two, verse two.
-";
-        }
-
-        private static string CreatePretranslationsOnly(string id = "MAT - TRG")
-        {
-            return $@"\id {id}
-\h
-\c 1
-\p
-\v 1 Chapter 1, verse 1.
-\v 2 Chapter 1, verse 2.
-\c 2
-\p
-\v 1 Chapter 2, verse 1.
-\v 2
-";
-        }
-
-        private static string CreatePreferPretranslations(string book = "MAT", string id = "MAT - TRG")
-        {
-            return $@"\id {id}
-\h {Canon.BookIdToEnglishName(book)}
-\c 1
-\p
-\v 1 Chapter 1, verse 1.
-\v 2 Chapter 1, verse 2.
-\c 2
-\p
-\v 1 Chapter 2, verse 1.
-\v 2 Chapter two, verse two.
-";
-        }
-
-        private static string CreatePreferExisting(string book = "MAT", string id = "MAT - TRG")
-        {
-            return $@"\id {id}
-\h {Canon.BookIdToEnglishName(book)}
-\c 1
-\p
-\v 1 Chapter one, verse one.
-\v 2 Chapter 1, verse 2.
-\c 2
-\p
-\v 1 Chapter two, verse one.
-\v 2 Chapter two, verse two.
-";
-        }
-
-        private static string CreateBlank(string id = "MAT - TRG")
-        {
-            return $@"\id {id}
-\h
-\c 1
-\p
-\v 1
-\v 2
-\c 2
-\p
-\v 1
-\v 2
-";
-        }
-
-        public static string GetUsfm(string type, string book = "MAT", string id = "MAT - TRG")
-        {
-            string usfm = type switch
-            {
-                "OnlyPretranslated" => CreatePretranslationsOnly(id),
-                "PreferPretranslated" => CreatePreferPretranslations(book, id),
-                "PreferExisting" => CreatePreferExisting(book, id),
-                "OnlyExisting" => CreateExisting(book, id),
-                "Blank" => CreateBlank(id),
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-            };
-            return usfm.Replace("\r\n", "\n");
         }
     }
 }

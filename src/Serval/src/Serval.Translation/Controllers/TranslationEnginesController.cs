@@ -617,17 +617,19 @@ public class TranslationEnginesController(
     /// Get a pretranslated Scripture book in USFM format.
     /// </summary>
     /// <remarks>
-    /// If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
-    /// segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
-    /// pretranslated text will be inserted into an empty template created from the source USFM book and returned.
-    /// Only pretranslations for the most recent successful build of the engine are returned.
-    ///
-    /// The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
-    /// * `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text.  **This is the default**.
+    /// The text that populates the USFM structure can be controlled by the `textOrigin` parameter:
+    /// * `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
     /// * `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
-    /// * `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
-    /// * `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
-    /// Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
+    /// * `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
+    /// * `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
+    ///
+    /// The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
+    /// * `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
+    /// * `Source`: The source book is used as the template.
+    /// * `Target`: The target book is used as the template.
+    ///
+    /// Only pretranslations for the most recent successful build of the engine are returned.
+    /// Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -658,6 +660,7 @@ public class TranslationEnginesController(
         [NotNull] string corpusId,
         [NotNull] string textId,
         [FromQuery(Name = "text-origin")] PretranslationUsfmTextOrigin? textOrigin,
+        [FromQuery] PretranslationUsfmTemplate? template,
         CancellationToken cancellationToken
     )
     {
@@ -674,6 +677,7 @@ public class TranslationEnginesController(
             corpusId,
             textId,
             textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
+            template ?? PretranslationUsfmTemplate.Auto,
             cancellationToken
         );
         if (usfm == "")

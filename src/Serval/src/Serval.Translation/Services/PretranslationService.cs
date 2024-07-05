@@ -35,6 +35,7 @@ public class PretranslationService(
         string corpusId,
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
+        PretranslationUsfmTemplate template,
         CancellationToken cancellationToken = default
     )
     {
@@ -68,81 +69,87 @@ public class PretranslationService(
             .OrderBy(p => p.Refs[0]);
 
         // Update the target book if it exists
-        string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
-        if (usfm is not null)
+        if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
-            // the pretranslations are generated from the source book and inserted into the target book
-            // use relaxed references since the USFM structure may not be the same
-            pretranslations = pretranslations.Select(p =>
-                ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
-            );
-            switch (textOrigin)
+            string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
+            if (usfm is not null)
             {
-                case PretranslationUsfmTextOrigin.PreferExisting:
-                    return UpdateUsfm(
-                        targetSettings,
-                        usfm,
-                        pretranslations,
-                        fullName: targetSettings.FullName,
-                        stripAllText: false,
-                        preferExistingText: true
-                    );
-                case PretranslationUsfmTextOrigin.PreferPretranslated:
-                    return UpdateUsfm(
-                        targetSettings,
-                        usfm,
-                        pretranslations,
-                        fullName: targetSettings.FullName,
-                        stripAllText: false,
-                        preferExistingText: false
-                    );
-                case PretranslationUsfmTextOrigin.OnlyExisting:
-                    return UpdateUsfm(
-                        targetSettings,
-                        usfm,
-                        pretranslations: [], // don't put any pretranslations, we only want the existing text.
-                        fullName: targetSettings.FullName,
-                        stripAllText: false,
-                        preferExistingText: false
-                    );
-                case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                    return UpdateUsfm(
-                        targetSettings,
-                        usfm,
-                        pretranslations,
-                        fullName: targetSettings.FullName,
-                        stripAllText: true,
-                        preferExistingText: false
-                    );
+                // the pretranslations are generated from the source book and inserted into the target book
+                // use relaxed references since the USFM structure may not be the same
+                pretranslations = pretranslations.Select(p =>
+                    ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
+                );
+                switch (textOrigin)
+                {
+                    case PretranslationUsfmTextOrigin.PreferExisting:
+                        return UpdateUsfm(
+                            targetSettings,
+                            usfm,
+                            pretranslations,
+                            fullName: targetSettings.FullName,
+                            stripAllText: false,
+                            preferExistingText: true
+                        );
+                    case PretranslationUsfmTextOrigin.PreferPretranslated:
+                        return UpdateUsfm(
+                            targetSettings,
+                            usfm,
+                            pretranslations,
+                            fullName: targetSettings.FullName,
+                            stripAllText: false,
+                            preferExistingText: false
+                        );
+                    case PretranslationUsfmTextOrigin.OnlyExisting:
+                        return UpdateUsfm(
+                            targetSettings,
+                            usfm,
+                            pretranslations: [], // don't put any pretranslations, we only want the existing text.
+                            fullName: targetSettings.FullName,
+                            stripAllText: false,
+                            preferExistingText: false
+                        );
+                    case PretranslationUsfmTextOrigin.OnlyPretranslated:
+                        return UpdateUsfm(
+                            targetSettings,
+                            usfm,
+                            pretranslations,
+                            fullName: targetSettings.FullName,
+                            stripAllText: true,
+                            preferExistingText: false
+                        );
+                }
             }
         }
 
-        // Copy and update the source book if it exists
-        usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
-        if (usfm is not null)
+        if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
         {
-            switch (textOrigin)
+            // Copy and update the source book if it exists
+            string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
+            if (usfm is not null)
             {
-                case PretranslationUsfmTextOrigin.PreferExisting:
-                case PretranslationUsfmTextOrigin.PreferPretranslated:
-                case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                    return UpdateUsfm(
-                        sourceSettings,
-                        usfm,
-                        pretranslations,
-                        fullName: targetSettings.FullName,
-                        stripAllText: true,
-                        preferExistingText: true
-                    );
-                case PretranslationUsfmTextOrigin.OnlyExisting:
-                    return UpdateUsfm(
-                        sourceSettings,
-                        usfm,
-                        pretranslations: [], // don't pass the pretranslations, we only want the existing text.
-                        fullName: targetSettings.FullName,
-                        stripAllText: true,
-                        preferExistingText: true
-                    );
+                switch (textOrigin)
+                {
+                    case PretranslationUsfmTextOrigin.PreferExisting:
+                    case PretranslationUsfmTextOrigin.PreferPretranslated:
+                    case PretranslationUsfmTextOrigin.OnlyPretranslated:
+                        return UpdateUsfm(
+                            sourceSettings,
+                            usfm,
+                            pretranslations,
+                            fullName: targetSettings.FullName,
+                            stripAllText: true,
+                            preferExistingText: true
+                        );
+                    case PretranslationUsfmTextOrigin.OnlyExisting:
+                        return UpdateUsfm(
+                            sourceSettings,
+                            usfm,
+                            pretranslations: [], // don't pass the pretranslations, we only want the existing text.
+                            fullName: targetSettings.FullName,
+                            stripAllText: true,
+                            preferExistingText: true
+                        );
+                }
             }
         }
 
