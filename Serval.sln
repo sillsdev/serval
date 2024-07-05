@@ -70,13 +70,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D808D2BE-ED2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{40C225C2-1EEF-4D1D-9D14-1CBB86C8A1CB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.AspNetCore", "src\Machine\src\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj", "{090ECB69-464F-42C8-B92C-0808BE2802FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Machine.Shared", "src\Machine\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj", "{090ECB69-464F-42C8-B92C-0808BE2802FA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Serval.EngineServer", "src\Machine\src\SIL.Machine.Serval.EngineServer\SIL.Machine.Serval.EngineServer.csproj", "{C02494FB-663E-4430-9F2D-41F1A740B271}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Machine.EngineServer", "src\Machine\src\Serval.Machine.EngineServer\Serval.Machine.EngineServer.csproj", "{C02494FB-663E-4430-9F2D-41F1A740B271}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Serval.JobServer", "src\Machine\src\SIL.Machine.Serval.JobServer\SIL.Machine.Serval.JobServer.csproj", "{BC766753-E560-4ADF-9923-C7A96076EA47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Machine.JobServer", "src\Machine\src\Serval.Machine.JobServer\Serval.Machine.JobServer.csproj", "{BC766753-E560-4ADF-9923-C7A96076EA47}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.AspNetCore.Tests", "src\Machine\test\SIL.Machine.AspNetCore.Tests\SIL.Machine.AspNetCore.Tests.csproj", "{B0D23A55-AB09-4C2C-B309-F4BEB3BC968D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Machine.Shared.Tests", "src\Machine\test\Serval.Machine.Shared.Tests\Serval.Machine.Shared.Tests.csproj", "{B0D23A55-AB09-4C2C-B309-F4BEB3BC968D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
