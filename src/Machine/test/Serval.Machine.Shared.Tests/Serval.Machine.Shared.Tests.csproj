@@ -39,6 +39,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="RichardSzalay.MockHttp" Version="7.0.0" />
+		<PackageReference Include="icu.net" Version="2.9.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -47,6 +48,13 @@
 
 	<ItemGroup>
 		<Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+	</ItemGroup>
+
+	<!-- Include icu.net.dll.config - which is only available after the package is built -->
+	<ItemGroup>
+		<ResolvedFileToPublish Include=".\bin\Release\net8.0\icu.net.dll.config">
+			<RelativePath>icu.net.dll.config</RelativePath>
+		</ResolvedFileToPublish>
 	</ItemGroup>
 
 </Project>
