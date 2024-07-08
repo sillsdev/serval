@@ -5,6 +5,9 @@ on:
     branches:
       - "**"
 
+env:
+  LD_DEBUG: all
+
 jobs:
   build:
     name: Build
