@@ -314,7 +314,7 @@ else:
         except:
             return ""
 
-    def already_active_build_for(client: str):
+    def number_of_active_builds_for(client: str):
         active_builds = (
             session.query(Build)
             .where(Build.client_id == client)
@@ -322,7 +322,7 @@ else:
             .all()
         )
         logger.info(active_builds)
-        return len(active_builds) > 0
+        return len(active_builds)
 
     st.subheader("Neural Machine Translation")
     st.markdown("<h5>Start a new build</h5>", unsafe_allow_html=True)
@@ -374,7 +374,7 @@ else:
                 )
             )
         if st.form_submit_button("Generate translations"):
-            if already_active_build_for(st.session_state.client_id):
+            if number_of_active_builds_for(st.session_state.client_id) >= 3:
                 st.session_state.tried_to_submit = True
                 st.session_state.error = "There is already an a pending or active build associated with this client id. \
                         Please wait for the previous build to finish."
