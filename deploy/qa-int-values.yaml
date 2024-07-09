@@ -8,9 +8,9 @@ namespace: nlp
 auth0Domain: sil-appbuilder.auth0.com
 lokiTenent: nlp-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
-servalImage: ghcr.io/sillsdev/serval:1.4.1
-machineImage: ghcr.io/sillsdev/machine:3.9.1
-ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.4.0
+servalImage: ghcr.io/sillsdev/serval:1.5.0
+machineImage: ghcr.io/sillsdev/machine:3.10.0
+ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.5.4
 ClearMLQueue: lambert_24gb
 MongoConnectionPrefix: qa_int_
 SharedFileLocation: s3://aqua-ml-data/int-qa/

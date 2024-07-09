@@ -8,7 +8,7 @@ import pymongo.write_concern
 pymongo.write_concern.WriteConcern(w=0)
 
 MONGO_CONNECTION_STRING = os.environ["MONGO_CONNECTION_STRING"]
-MONGO_PREFIX = "qa_int_"
+MONGO_PREFIX = "qa_"
 client = pymongo.MongoClient(MONGO_CONNECTION_STRING)
 
 
