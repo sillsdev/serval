@@ -20,8 +20,8 @@ spec:
       containers:
         - command:
             - dotnet
-            - /app/job_server/SIL.Machine.Serval.JobServer.dll
-          workingDir: /app/job_server
+            - /app/machine_job_server/Serval.Machine.JobServer.dll
+          workingDir: /app/machine_job_server
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.environment}}
@@ -38,7 +38,7 @@ spec:
               value: http://serval-api:81
               {{- template "secrets.clearml" . }}
               {{- template "secrets.s3" . }}
-          image: {{ .Values.machineImage}}
+          image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: machine-job
           ports:

@@ -20,8 +20,8 @@ spec:
       containers:
         - command:
             - dotnet
-            - /app/engine_server/SIL.Machine.Serval.EngineServer.dll
-          workingDir: /app/engine_server
+            - /app/machine_engine_server/Serval.Machine.EngineServer.dll
+          workingDir: /app/machine_engine_server
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.environment }}
@@ -38,7 +38,7 @@ spec:
               value: http://serval-api:81
               {{- template "secrets.clearml" . }}
               {{- template "secrets.s3" . }}
-          image: {{ .Values.machineImage}}
+          image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: machine-engine
           ports:

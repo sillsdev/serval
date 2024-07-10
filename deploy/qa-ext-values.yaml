@@ -9,7 +9,6 @@ auth0Domain: dev-sillsdev.auth0.com
 lokiTenent: serval-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:1.5.0
-machineImage: ghcr.io/sillsdev/machine:3.10.0
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.5.4
 ClearMLQueue: production
 MongoConnectionPrefix: qa_
