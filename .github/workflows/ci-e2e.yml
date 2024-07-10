@@ -39,7 +39,7 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Start containers
-        run:  docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+        run:  dotnet build && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr

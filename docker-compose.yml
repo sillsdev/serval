@@ -75,7 +75,7 @@ services:
     hostname: machine-engine
     container_name: machine-engine-cntr
     build:
-      context: ${MACHINE_TESTING_DIR:-../machine}
+      context: .
       dockerfile: dockerfile.development
 
     environment:
@@ -121,7 +121,7 @@ services:
     hostname: machine-job-server
     container_name: machine-job-cntr
     build:
-      context: ${MACHINE_TESTING_DIR:-../machine}
+      context: .
       dockerfile: dockerfile.development
     environment:
       - ASPNETCORE_ENVIRONMENT=Staging
