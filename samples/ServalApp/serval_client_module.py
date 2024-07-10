@@ -3740,9 +3740,9 @@ class RemoteCaller:
 
     def status_get_health(self) -> "HealthReport":
         """
-        Send a get request to /api/v1/status/health.
+        Provides an indication about the health of the API
 
-        :return:
+        :return: The API health status
         """
         url = self.url_prefix + "/api/v1/status/health"
 
@@ -3754,9 +3754,9 @@ class RemoteCaller:
 
     def status_get_ping(self) -> "HealthReport":
         """
-        Send a get request to /api/v1/status/ping.
+        Provides an indication about the health of the API
 
-        :return:
+        :return: The API health status
         """
         url = self.url_prefix + "/api/v1/status/ping"
 
@@ -3768,9 +3768,9 @@ class RemoteCaller:
 
     def status_get_deployment_info(self) -> "DeploymentInfo":
         """
-        Send a get request to /api/v1/status/deployment-info.
+        Provides the version of the application
 
-        :return:
+        :return: Application Version
         """
         url = self.url_prefix + "/api/v1/status/deployment-info"
 
@@ -3816,6 +3816,7 @@ class RemoteCaller:
                 > verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
               * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
             * **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.
+              * USFM files in paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
         :param name:
             A name to help identify and distinguish the file.
             Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
@@ -3960,10 +3961,10 @@ class RemoteCaller:
         * **isModelPersisted**: (optional) - see below
         ### smt-transfer
         The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-        * **IsModelPersisted**: (default to true) All models are persistant and can be updated with train-segment.  False is not supported.
+        * **IsModelPersisted**: (default to true) All models are persistent and can be updated with train-segment.  False is not supported.
         ### nmt
         The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        * **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been sucessfully built.
+        * **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
 
         If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
 
@@ -4171,10 +4172,11 @@ class RemoteCaller:
           * **TextId**: The client-defined name to associate source and target files.
             * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
             * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
-            * A TextId should only be used at most once in SourceFiles and in TargetFiles.
-            * If the file is a Paratext project, this field should be left blank. Any TextId provided will be ignored.
-        * **TargetFiles**: The source files associated with the corpus
-          * Same as SourceFiles.  Parallel texts must have a matching TextId.
+            * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
+            * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
+            * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
+        * **TargetFiles**: The target files associated with the corpus
+          * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
 
         :param id: The translation engine id
         :param corpus_config: The corpus configuration (see remarks)
@@ -4323,6 +4325,7 @@ class RemoteCaller:
         * **Translation**: the text of the pretranslation
 
         Pretranslations can be filtered by text id if provided.
+        Only pretranslations for the most recent successful build of the engine are returned.
 
         :param id: The translation engine id
         :param corpus_id: The corpus id
@@ -4367,6 +4370,8 @@ class RemoteCaller:
           * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         * **Translation**: the text of the pretranslation
 
+        Only pretranslations for the most recent successful build of the engine are returned.
+
         :param id: The translation engine id
         :param corpus_id: The corpus id
         :param text_id: The text id
@@ -4395,16 +4400,25 @@ class RemoteCaller:
             return from_obj(obj=resp.json(), expected=[list, Pretranslation])
 
     def translation_engines_get_pretranslated_usfm(
-        self, id: str, corpus_id: str, text_id: str
+        self, id: str, corpus_id: str, text_id: str, text_origin: Optional[str] = None
     ) -> str:
         """
         If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
         segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
         pretranslated text will be inserted into an empty template created from the source USFM book and returned.
+        Only pretranslations for the most recent successful build of the engine are returned.
+
+        The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
+        * `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text.  **This is the default**.
+        * `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
+        * `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
+        * `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
+        Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
 
         :param id: The translation engine id
         :param corpus_id: The corpus id
         :param text_id: The text id
+        :param text_origin: The source[s] of the data to populate the USFM file with.
 
         :return: The book in USFM format
         """
@@ -4421,14 +4435,19 @@ class RemoteCaller:
             ]
         )
 
+        params = {}  # type: Dict[str, str]
+
+        if text_origin is not None:
+            params["text-origin"] = text_origin
+
         resp = self.session.request(
             method="get",
             url=url,
+            params=params,
         )
 
-        with contextlib.closing(resp):
-            resp.raise_for_status()
-            return from_obj(obj=resp.json(), expected=[str])
+        resp.raise_for_status()
+        return str(resp._content, encoding="utf-8")
 
     def translation_engines_get_all_builds(self, id: str) -> List["TranslationBuild"]:
         """
@@ -4455,18 +4474,18 @@ class RemoteCaller:
         self, id: str, build_config: "TranslationBuildConfig"
     ) -> bytes:
         """
-        Specify the corpora or textIds to pretranslate.  Even when a corpus or textId
-        is selected for pretranslation, only "untranslated" text will be pretranslated:
-        that is, segments (lines of text) in the specified corpora or textId's that have
-        untranslated text but no translated text. If a corpus is a Paratext project,
-        you may flag a subset of books for pretranslation by including their [abbreviations](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs)
-        in the textIds parameter. If the engine does not support pretranslation, these fields have no effect.
-
-        Similarly, specify the corpora and textIds to train on. If no train_on field is provided, all corpora will be used.
-        Paratext projects can be filtered by book for training and pretranslating. This filtering follows the original versification.
-        To filter, use the 3 character code for the book of the Bible in the textID while building. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
+        Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
+        Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
-        for more details.
+        All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+
+        Specify the corpora or textIds to pretranslate.  When a corpus or textId is selected for pretranslation,
+        the following text will be pretranslated:
+        * Text segments that are in the source and not the target (untranslated)
+        * Text segments that are in the source and the target, but where that target segment is not trained on.
+        If the engine does not support pretranslation, these fields have no effect.
+        Pretranslating has the same filtering as training.
 
         The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
@@ -4597,8 +4616,13 @@ class RemoteCaller:
         """
         If a Nmt build was successful and IsModelPersisted is `true` for the engine,
         then the model from the most recent successful build can be downloaded.
+
         The endpoint will return a URL that can be used to download the model for up to 1 hour
         after the request is made.  If the URL is not used within that time, a new request will need to be made.
+
+        The download itself is created by g-zipping together the folder containing the fine tuned model
+        with all necessary supporting files.  This zipped folder is then named by the pattern:
+         * <engine_id>_<model_revision>.tar.gz
 
         :param id: The translation engine id
 
@@ -4656,7 +4680,7 @@ class RemoteCaller:
         and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
         language is an appropriate candidate for a source language or if two languages can be translated between
         **Base Models available**
-        * **NLLB-200**: This is the only current base transaltion model available.
+        * **NLLB-200**: This is the only current base translation model available.
           * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
         without training.
         Response format:
