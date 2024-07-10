@@ -45,3 +45,5 @@ artifacts
 
 .db
 *.zip
+scripts/projects.pkl
+scripts/tasks.pkl
