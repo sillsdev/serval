@@ -376,8 +376,8 @@ else:
         if st.form_submit_button("Generate translations"):
             if number_of_active_builds_for(st.session_state.client_id) >= 3:
                 st.session_state.tried_to_submit = True
-                st.session_state.error = "There is already an a pending or active build associated with this client id. \
-                        Please wait for the previous build to finish."
+                st.session_state.error = "There are already 3 or more pending or active builds associated with this client id. \
+                        Please wait for a build to finish."
             elif (
                 st.session_state.source_language != ""
                 and st.session_state.target_language != ""
