@@ -9,7 +9,6 @@ auth0Domain: languagetechnology.auth0.com
 lokiTenent: nlp-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:1.4.5
-machineImage: ghcr.io/sillsdev/machine:3.9.5
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.4.0
 ClearMLQueue: production
 MongoConnectionPrefix: prod_

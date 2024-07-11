@@ -75,8 +75,8 @@ services:
     hostname: machine-engine
     container_name: machine-engine-cntr
     build:
-      context: ${MACHINE_TESTING_DIR:-../machine}
-      dockerfile: ../machine/dockerfile.development
+      context: .
+      dockerfile: dockerfile.development
 
     environment:
       - ASPNETCORE_ENVIRONMENT=Staging
@@ -104,11 +104,11 @@ services:
       - mongo
       - serval-api
     volumes:
-      - ${MACHINE_TESTING_DIR:-../machine}:/app:ro
+      - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/SIL.Machine.Serval.EngineServer'
+    working_dir: '/app/src/Machine/src/Serval.Machine.EngineServer'
     entrypoint:
       - dotnet
       - run
@@ -121,8 +121,8 @@ services:
     hostname: machine-job-server
     container_name: machine-job-cntr
     build:
-      context: ${MACHINE_TESTING_DIR:-../machine}
-      dockerfile: ../machine/dockerfile.development
+      context: .
+      dockerfile: dockerfile.development
     environment:
       - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
@@ -150,11 +150,11 @@ services:
       - machine-engine
       - serval-api
     volumes:
-      - ${MACHINE_TESTING_DIR:-../machine}:/app:ro
+      - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/SIL.Machine.Serval.JobServer'
+    working_dir: '/app/src/Machine/src/Serval.Machine.JobServer'
     entrypoint:
       - dotnet
       - run

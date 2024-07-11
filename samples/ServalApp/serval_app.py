@@ -322,7 +322,6 @@ else:
             .all()
         )
         logger.info(active_builds)
-        print("Number queued:", len(active_builds))
         return len(active_builds)
 
     st.subheader("Neural Machine Translation")
