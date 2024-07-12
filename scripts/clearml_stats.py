@@ -4,9 +4,11 @@ import os
 import pickle
 from datetime import datetime, timezone
 
+import numpy as np
 import pandas as pd
 from clearml import Task
 from clearml.backend_api.session.client import APIClient
+from matplotlib import pyplot as plt
 
 
 # %%
@@ -122,4 +124,63 @@ def get_projects(project_list, tasks):
     return projects
 
 
-# %%
+def plot_tasks_per_week(tasks_df: pd.DataFrame, short_run_time: int = 600):
+    mask = tasks_df["total_run_time"] > short_run_time
+    tasks_df["week"] = pd.to_datetime(tasks_df["started"]).dt.strftime("%Y-%U")
+    by_week = pd.crosstab(
+        index=tasks_df.loc[mask, "week"], columns=tasks_df.loc[mask, "status"]
+    )
+    by_week.plot(kind="bar", stacked=True, title="Tasks started per week", grid=True)
+
+
+def violin_task_run_time_per_week(
+    tasks_df: pd.DataFrame, num_of_weeks=10, short_run_time: int = 600
+):
+    fig, axes = plt.subplots()
+    by_week = {
+        week: tasks_df[tasks_df["week"] == week]["total_run_time"].to_numpy()
+        for week in tasks_df["week"].unique()
+    }
+    # filter out things under 10 minutes
+    by_week = {
+        week: times[times > short_run_time] / 60 / 60
+        for week, times in by_week.items()
+        if len(times[times > short_run_time]) > 1
+    }
+    # last x weeks only
+    by_week = {
+        week: by_week[week] for week in np.sort(list(by_week.keys()))[-num_of_weeks:]
+    }
+    axes.violinplot(dataset=list(by_week.values()), showmedians=True)
+    axes.set_title("Task run time for last 10 weeks")
+    axes.set_xticklabels(by_week.keys(), rotation=45)
+    axes.set_xticks(range(1, len(by_week) + 1))
+    axes.set_ylabel("hours")
+    axes.set_ylim(0, 16)
+    axes.grid(True)
+
+
+def violin_task_delay_time_per_week(tasks_df: pd.DataFrame, num_of_week=10):
+    tasks_df.loc[:, "delay_time"] = pd.to_timedelta(
+        tasks_df["started"] - tasks_df["created"]
+    ).dt.total_seconds()
+    fig, axes = plt.subplots()
+    by_week = {
+        week: tasks_df[tasks_df["week"] == week]["delay_time"].to_numpy()
+        for week in tasks_df["week"].unique()
+    }
+    # filter out things under 10 minutes
+    by_week = {
+        week: times / 60 / 60 for week, times in by_week.items() if len(times) > 1
+    }
+    # last 10 weeks only
+    by_week = {
+        week: by_week[week] for week in np.sort(list(by_week.keys()))[-num_of_week:]
+    }
+    axes.violinplot(dataset=list(by_week.values()), showmeans=True)
+    axes.set_title("Task delay time for last 10 weeks")
+    axes.set_xticklabels(by_week.keys(), rotation=45)
+    axes.set_xticks(range(1, len(by_week) + 1))
+    axes.set_ylim(0, 8)
+    axes.set_ylabel("hours")
+    axes.grid(True)
