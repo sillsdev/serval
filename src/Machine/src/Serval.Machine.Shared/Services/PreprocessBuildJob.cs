@@ -80,7 +80,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
         {
             throw new InvalidOperationException(
-                $"Neither language code in build {buildId} are known to the base model, and the data specified for training was empty. Build canceled."
+                $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
             );
         }
 
