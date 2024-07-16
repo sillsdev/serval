@@ -54,7 +54,7 @@ class clearml_stats:
         self._update_projects(project_list)
         return
 
-    def get_tasks(self, project_name_filter: str = "") -> pd.DataFrame:
+    def get_tasks_by_project(self, project_name_filter: str = "") -> pd.DataFrame:
         if project_name_filter == "":
             return self._get_tasks(self._tasks.keys())
         else:
@@ -69,6 +69,22 @@ class clearml_stats:
                 if self._tasks[task_id]["project"] in projects_chosen
             ]
             return self._get_tasks(tasks_chosen)
+
+    def get_tasks_by_queue_names(self, queue_names: list[str]) -> pd.DataFrame:
+        queue_ids = self._client.queues.get_all()
+        id_to_name = {queue.id: queue.name for queue in queue_ids}
+        queue_ids = [queue.id for queue in queue_ids if queue.name in queue_names]
+        tasks_chosen = [
+            task_id
+            for task_id in self._tasks.keys()
+            if "queue" in self._tasks[task_id]["execution"]
+            and self._tasks[task_id]["execution"]["queue"] in queue_ids
+        ]
+        task_df = self._get_tasks(tasks_chosen)
+        task_df.loc[:, "queue"] = task_df["execution"].apply(
+            lambda x: id_to_name[x["queue"]] if "queue" in x else "unknown"
+        )
+        return task_df
 
     def get_language_groups(self) -> pd.DataFrame:
         return self._language_projects_df
@@ -383,17 +399,25 @@ class clearml_stats:
             return pickle.load(f)
 
 
-def plot_tasks_per_week(tasks_df: pd.DataFrame, short_run_time: int = 600):
-    mask = tasks_df["total_run_time"] > short_run_time
-    tasks_df["week"] = pd.to_datetime(tasks_df["started"]).dt.strftime("%Y-%U")
+def plot_loading_per_week(tasks_df: pd.DataFrame, title_prefix="", group_by="status"):
+    tasks_df["week"] = pd.to_datetime(tasks_df.started).dt.strftime("%Y-%U")
+    seconds_per_week = 60 * 60 * 24 * 7
     by_week = pd.crosstab(
-        index=tasks_df.loc[mask, "week"], columns=tasks_df.loc[mask, "status"]
+        index=tasks_df.week,
+        columns=tasks_df[group_by],
+        values=tasks_df.total_run_time / seconds_per_week,
+        aggfunc="sum",
     )
-    by_week.plot(kind="bar", stacked=True, title="Tasks started per week", grid=True)
+    by_week.plot(
+        kind="bar",
+        stacked=True,
+        title=title_prefix + ": agent loading per week",
+        grid=True,
+    )
 
 
 def violin_task_run_time_per_week(
-    tasks_df: pd.DataFrame, num_of_weeks=10, short_run_time: int = 600
+    tasks_df: pd.DataFrame, title_prefix="", num_of_weeks=10, short_run_time: int = 600
 ):
     fig, axes = plt.subplots()
     by_week = {
@@ -411,7 +435,7 @@ def violin_task_run_time_per_week(
         week: by_week[week] for week in np.sort(list(by_week.keys()))[-num_of_weeks:]
     }
     axes.violinplot(dataset=list(by_week.values()), showmedians=True)
-    axes.set_title("Task run time for last 10 weeks")
+    axes.set_title(title_prefix + ": Task run time for last 10 weeks")
     axes.set_xticklabels(by_week.keys(), rotation=45)
     axes.set_xticks(range(1, len(by_week) + 1))
     axes.set_ylabel("hours")
@@ -419,7 +443,9 @@ def violin_task_run_time_per_week(
     axes.grid(True)
 
 
-def violin_task_delay_time_per_week(tasks_df: pd.DataFrame, num_of_week=10):
+def violin_task_delay_time_per_week(
+    tasks_df: pd.DataFrame, title_prefix="", num_of_week=10
+):
     tasks_df.loc[:, "delay_time"] = pd.to_timedelta(
         tasks_df["started"] - tasks_df["created"]
     ).dt.total_seconds()
@@ -437,7 +463,7 @@ def violin_task_delay_time_per_week(tasks_df: pd.DataFrame, num_of_week=10):
         week: by_week[week] for week in np.sort(list(by_week.keys()))[-num_of_week:]
     }
     axes.violinplot(dataset=list(by_week.values()), showmeans=True)
-    axes.set_title("Task delay time for last 10 weeks")
+    axes.set_title(title_prefix + ": Task delay time for last 10 weeks")
     axes.set_xticklabels(by_week.keys(), rotation=45)
     axes.set_xticks(range(1, len(by_week) + 1))
     axes.set_ylim(0, 8)

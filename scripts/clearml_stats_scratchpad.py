@@ -1,26 +1,35 @@
 # %%
 import clearml_stats
-import numpy as np
-import pandas as pd
 import plotly.express as px
-from clearml.backend_api.session.client import APIClient
-from matplotlib import pyplot as plt
-
-client = APIClient()
-
 
 # %%
 stats = clearml_stats.clearml_stats()
 stats.update_tasks_and_projects()
+lang_groups_df = stats.get_language_groups()
+
 
 # %%
-prod_name = "Machine/prod.serval-api.org"
-tasks_df = stats.get_tasks(prod_name)
-lang_groups_df = stats.get_language_groups()
+def plot_by_queue(queue_names: list[str], prefix: str = ""):
+    tasks_df = stats.get_tasks_by_queue_names(queue_names)
+    if prefix == "":
+        prefix = ", ".join(queue_names)
+    if len(queue_names) > 1:
+        clearml_stats.plot_loading_per_week(
+            tasks_df, group_by="queue", title_prefix=prefix
+        )
+    else:
+        clearml_stats.plot_loading_per_week(
+            tasks_df, group_by="status", title_prefix=prefix
+        )
+    clearml_stats.violin_task_run_time_per_week(tasks_df, title_prefix=prefix)
+    clearml_stats.violin_task_delay_time_per_week(tasks_df, title_prefix=prefix)
+
+
 # %%
-clearml_stats.plot_tasks_per_week(tasks_df)
-clearml_stats.violin_task_run_time_per_week(tasks_df)
-clearml_stats.violin_task_delay_time_per_week(tasks_df)
+# plot_by_queue(["production"])
+# plot_by_queue(["jobs_urgent"])
+# plot_by_queue(["jobs_backlog"])
+plot_by_queue(["production", "jobs_urgent", "jobs_backlog"], prefix="A100")
 
 # %%
 lang_groups_df = stats.get_language_groups()
