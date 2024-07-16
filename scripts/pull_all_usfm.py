@@ -37,7 +37,7 @@ def main():
     for file in tqdm(list(filter(lambda f: f.format == "Paratext", all_files))):
         try:
             file_data = client.data_files_download(file.id)
-            with open(output_dir / file.name, "wb") as f:
+            with open(output_dir / f"{file.name}_{file.id}", "wb") as f:
                 f.write(file_data.read())
         except Exception as e:
             print(f"Failed to download file {file.name} because of exception {e}")
