@@ -15,9 +15,6 @@ public static class IMongoDataAccessConfiguratorExtensions
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
                 );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending("corpora._id"))
-                );
             }
         );
         configurator.AddRepository<Build>(
@@ -33,11 +30,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             {
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.EngineRef)
-                    )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(
                         Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.ModelRevision)
                     )
                 );
@@ -48,6 +40,22 @@ public static class IMongoDataAccessConfiguratorExtensions
                 );
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Pretranslation>(Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId))
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>
+                            .IndexKeys.Ascending(pt => pt.EngineRef)
+                            .Ascending(pt => pt.ModelRevision)
+                    )
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>
+                            .IndexKeys.Ascending(pt => pt.EngineRef)
+                            .Ascending(pt => pt.CorpusRef)
+                            .Ascending(pt => pt.ModelRevision)
+                            .Ascending(pt => pt.TextId)
+                    )
                 );
             }
         );

@@ -14,8 +14,8 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
       - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
-      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}/${MONGO_CONNECTION_PREFIX:?mongo prefix needed}serval_jobs
-      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}serval
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}/${MONGO_CONNECTION_PREFIX:?mongo prefix needed}serval_jobs${MONGO_EXTENSIONS}
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}serval${MONGO_EXTENSIONS}
       - ASPNETCORE_Translation__Engines__0__Type=Echo
       - ASPNETCORE_Translation__Engines__0__Address=http://echo
       - ASPNETCORE_Translation__Engines__1__Type=SmtTransfer
@@ -74,22 +74,24 @@ services:
     hostname: machine-engine
     container_name: machine-engine-cntr
     build:
-      context: ${MACHINE_TESTING_DIR:-../machine}
-      dockerfile: ../machine/dockerfile.development
+      context: .
+      dockerfile: dockerfile.development
 
     environment:
       - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
-      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine_jobs
-      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine_jobs${MONGO_EXTENSIONS}
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine${MONGO_EXTENSIONS}
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
-      - ClearML__Queue=lambert_24gb
-      - ClearML__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - BuildJob__ClearML__0__Queue=lambert_24gb
+      - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
+      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
+      - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
@@ -100,11 +102,11 @@ services:
     depends_on:
       - serval-api
     volumes:
-      - ${MACHINE_TESTING_DIR:-../machine}:/app:ro
+      - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/SIL.Machine.Serval.EngineServer'
+    working_dir: '/app/src/Machine/src/Serval.Machine.EngineServer'
     entrypoint:
       - dotnet
       - run
@@ -117,21 +119,23 @@ services:
     hostname: machine-job-server
     container_name: machine-job-cntr
     build:
-      context: ${MACHINE_TESTING_DIR:-../machine}
-      dockerfile: ../machine/dockerfile.development
+      context: .
+      dockerfile: dockerfile.development
     environment:
       - ASPNETCORE_ENVIRONMENT=Staging
-      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine_jobs
-      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine
+      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine_jobs${MONGO_EXTENSIONS}
+      - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}machine${MONGO_EXTENSIONS}
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
-      - ClearML__Queue=lambert_24gb
-      - ClearML__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - BuildJob__ClearML__0__Queue=lambert_24gb
+      - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
+      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
+      - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://aqua-ml-data/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
@@ -143,11 +147,11 @@ services:
       - machine-engine
       - serval-api
     volumes:
-      - ${MACHINE_TESTING_DIR:-../machine}:/app:ro
+      - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/SIL.Machine.Serval.JobServer'
+    working_dir: '/app/src/Machine/src/Serval.Machine.JobServer'
     entrypoint:
       - dotnet
       - run

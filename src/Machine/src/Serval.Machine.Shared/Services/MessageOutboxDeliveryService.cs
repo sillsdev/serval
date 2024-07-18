@@ -8,8 +8,6 @@ public class MessageOutboxDeliveryService(
     ILogger<MessageOutboxDeliveryService> logger
 ) : BackgroundService
 {
-    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
-
     private readonly IServiceProvider _services = services;
     private readonly Dictionary<string, IOutboxMessageHandler> _outboxMessageHandlers =
         outboxMessageHandlers.ToDictionary(o => o.OutboxId);
@@ -25,7 +23,7 @@ public class MessageOutboxDeliveryService(
         using ISubscription<OutboxMessage> subscription = await messages.SubscribeAsync(e => true, stoppingToken);
         while (true)
         {
-            await subscription.WaitForChangeAsync(timeout: Timeout, cancellationToken: stoppingToken);
+            await subscription.WaitForChangeAsync(cancellationToken: stoppingToken);
             if (stoppingToken.IsCancellationRequested)
                 break;
             await ProcessMessagesAsync(messages, stoppingToken);

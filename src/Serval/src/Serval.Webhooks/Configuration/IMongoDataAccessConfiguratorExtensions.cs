@@ -11,9 +11,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Owner))
-                );
-                await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Events))
                 );
             }

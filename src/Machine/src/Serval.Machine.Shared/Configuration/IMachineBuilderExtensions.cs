@@ -258,9 +258,7 @@ public static class IMachineBuilderExtensions
                     {
                         await c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<TranslationEngine>(
-                                Builders<TranslationEngine>
-                                    .IndexKeys.Ascending(e => e.EngineId)
-                                    .Ascending("currentBuild._id")
+                                Builders<TranslationEngine>.IndexKeys.Ascending(e => e.EngineId)
                             )
                         );
                         await c.Indexes.CreateOrUpdateAsync(
