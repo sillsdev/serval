@@ -45,6 +45,13 @@ public static class IMongoDataAccessConfiguratorExtensions
                     new CreateIndexModel<Pretranslation>(
                         Builders<Pretranslation>
                             .IndexKeys.Ascending(pt => pt.EngineRef)
+                            .Ascending(pt => pt.ModelRevision)
+                    )
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>
+                            .IndexKeys.Ascending(pt => pt.EngineRef)
                             .Ascending(pt => pt.CorpusRef)
                             .Ascending(pt => pt.ModelRevision)
                             .Ascending(pt => pt.TextId)
