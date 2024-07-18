@@ -13,10 +13,9 @@ public static class IMongoDataAccessConfiguratorExtensions
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending("corpora._id"))
+                    new CreateIndexModel<Engine>(
+                        Builders<Engine>.IndexKeys.Ascending(e => e.Owner).Ascending("corpora._id")
+                    )
                 );
             }
         );
@@ -33,21 +32,12 @@ public static class IMongoDataAccessConfiguratorExtensions
             {
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.EngineRef)
+                        Builders<Pretranslation>
+                            .IndexKeys.Ascending(pt => pt.EngineRef)
+                            .Ascending(pt => pt.ModelRevision)
+                            .Ascending(pt => pt.CorpusRef)
+                            .Ascending(pt => pt.TextId)
                     )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.ModelRevision)
-                    )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.CorpusRef)
-                    )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId))
                 );
             }
         );
