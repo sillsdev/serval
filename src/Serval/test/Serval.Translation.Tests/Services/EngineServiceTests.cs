@@ -1,4 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using MassTransit.Mediator;
+using Serval.DataFiles.Models;
+using Serval.DataFiles.Services;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -626,6 +629,14 @@ public class EngineServiceTests
                 Engines,
                 new MemoryRepository<Build>(),
                 new MemoryRepository<Pretranslation>(),
+                new DataFileService(
+                    new MemoryRepository<DataFile>(),
+                    new MemoryDataAccessContext(),
+                    dataFileOptions,
+                    Substitute.For<IScopedMediator>(),
+                    new MemoryRepository<DeletedFile>(),
+                    Substitute.For<IFileSystem>()
+                ),
                 grpcClientFactory,
                 dataFileOptions,
                 new MemoryDataAccessContext(),

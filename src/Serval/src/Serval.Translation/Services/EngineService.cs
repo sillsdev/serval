@@ -6,6 +6,7 @@ public class EngineService(
     IRepository<Engine> engines,
     IRepository<Build> builds,
     IRepository<Pretranslation> pretranslations,
+    IDataFileService dataFileService,
     GrpcClientFactory grpcClientFactory,
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
@@ -15,6 +16,7 @@ public class EngineService(
 {
     private readonly IRepository<Build> _builds = builds;
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
+    private readonly IDataFileService _dataFileService = dataFileService;
     private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
@@ -425,12 +427,18 @@ public class EngineService(
         return engine.Corpora.First(c => c.Id == corpusId);
     }
 
-    public async Task DeleteCorpusAsync(string engineId, string corpusId, CancellationToken cancellationToken = default)
+    public async Task DeleteCorpusAsync(
+        string engineId,
+        string corpusId,
+        bool deleteFiles,
+        CancellationToken cancellationToken = default
+    )
     {
+        Engine? originalEngine = null;
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Engine? originalEngine = await Entities.UpdateAsync(
+                originalEngine = await Entities.UpdateAsync(
                     engineId,
                     u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
                     returnOriginal: true,
@@ -446,6 +454,17 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
+        if (deleteFiles && originalEngine != null)
+        {
+            foreach (
+                string id in originalEngine.Corpora.SelectMany(c =>
+                    c.TargetFiles.Select(f => f.Id).Concat(c.SourceFiles.Select(f => f.Id).Distinct())
+                )
+            )
+            {
+                await _dataFileService.DeleteAsync(id, cancellationToken: cancellationToken);
+            }
+        }
     }
 
     public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)

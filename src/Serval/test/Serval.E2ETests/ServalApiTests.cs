@@ -259,9 +259,9 @@ public class ServalApiTests
         await _helperClient.BuildEngineAsync(smtEngineId);
 
         //Remove added corpus (shouldn't affect translation)
-        await _helperClient.TranslationEnginesClient.DeleteCorpusAsync(smtEngineId, cId);
+        await _helperClient.TranslationEnginesClient.DeleteCorpusAsync(smtEngineId, cId, deleteFiles: false);
 
-        //Add corpus
+        // Add corpus
         await _helperClient.AddTextCorpusToEngineAsync(
             smtEngineId,
             ["1JN.txt", "2JN.txt", "3JN.txt"],

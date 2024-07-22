@@ -45,7 +45,12 @@ public interface IEngineService
         IReadOnlyList<CorpusFile>? targetFiles,
         CancellationToken cancellationToken = default
     );
-    Task DeleteCorpusAsync(string engineId, string corpusId, CancellationToken cancellationToken = default);
+    Task DeleteCorpusAsync(
+        string engineId,
+        string corpusId,
+        bool deleteFiles,
+        CancellationToken cancellationToken = default
+    );
 
     Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default);
 

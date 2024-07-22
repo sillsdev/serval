@@ -494,11 +494,12 @@ public class TranslationEnginesController(
     public async Task<ActionResult> DeleteCorpusAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
+        [FromQuery] bool? deleteFiles,
         CancellationToken cancellationToken
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        await _engineService.DeleteCorpusAsync(id, corpusId, cancellationToken);
+        await _engineService.DeleteCorpusAsync(id, corpusId, deleteFiles ?? false, cancellationToken);
         return Ok();
     }
 

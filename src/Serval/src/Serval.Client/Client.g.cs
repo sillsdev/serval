@@ -1577,7 +1577,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id</param>
         /// <returns>The data file was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, bool? deleteFiles = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -3232,7 +3232,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id</param>
         /// <returns>The data file was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, bool? deleteFiles = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -3255,6 +3255,12 @@ namespace Serval.Client
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/corpora/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Append('?');
+            if (deleteFiles != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("deleteFiles")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(deleteFiles, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+            }
+            urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
