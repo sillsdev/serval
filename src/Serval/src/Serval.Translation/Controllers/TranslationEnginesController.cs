@@ -478,8 +478,9 @@ public class TranslationEnginesController(
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
+    /// <param name="deleteFiles">If true, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The data file was deleted successfully.</response>
+    /// <response code="200">The corpus was deleted successfully.</response>
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>

@@ -1575,7 +1575,8 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
-        /// <returns>The data file was deleted successfully.</returns>
+        /// <param name="deleteFiles">If true, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
+        /// <returns>The corpus was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, bool? deleteFiles = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -3230,7 +3231,8 @@ namespace Serval.Client
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
-        /// <returns>The data file was deleted successfully.</returns>
+        /// <param name="deleteFiles">If true, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
+        /// <returns>The corpus was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, bool? deleteFiles = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {

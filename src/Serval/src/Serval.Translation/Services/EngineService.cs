@@ -463,7 +463,7 @@ public class EngineService(
                 )
             )
             {
-                await _mediator.Publish<DeleteDataFile>(new { DataFileId = id }, cancellationToken);
+                await _mediator.Send<DeleteDataFile>(new { DataFileId = id }, cancellationToken);
             }
         }
     }
