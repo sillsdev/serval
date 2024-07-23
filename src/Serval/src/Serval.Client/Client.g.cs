@@ -3258,7 +3258,7 @@ namespace Serval.Client
             urlBuilder_.Append('?');
             if (deleteFiles != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("deleteFiles")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(deleteFiles, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                urlBuilder_.Append(System.Uri.EscapeDataString("delete-files")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(deleteFiles, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
             }
             urlBuilder_.Length--;
 

@@ -1,4 +1,5 @@
-﻿using Serval.Translation.V1;
+﻿using MassTransit.Mediator;
+using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
 
@@ -6,7 +7,7 @@ public class EngineService(
     IRepository<Engine> engines,
     IRepository<Build> builds,
     IRepository<Pretranslation> pretranslations,
-    IDataFileService dataFileService,
+    IScopedMediator mediator,
     GrpcClientFactory grpcClientFactory,
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
@@ -16,7 +17,7 @@ public class EngineService(
 {
     private readonly IRepository<Build> _builds = builds;
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
-    private readonly IDataFileService _dataFileService = dataFileService;
+    private readonly IScopedMediator _mediator = mediator;
     private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
@@ -462,7 +463,7 @@ public class EngineService(
                 )
             )
             {
-                await _dataFileService.DeleteAsync(id, cancellationToken: cancellationToken);
+                await _mediator.Publish<DeleteDataFile>(new { DataFileId = id }, cancellationToken);
             }
         }
     }

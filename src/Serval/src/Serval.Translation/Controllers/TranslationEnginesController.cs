@@ -494,7 +494,7 @@ public class TranslationEnginesController(
     public async Task<ActionResult> DeleteCorpusAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
-        [FromQuery] bool? deleteFiles,
+        [FromQuery(Name = "delete-files")] bool? deleteFiles,
         CancellationToken cancellationToken
     )
     {
