@@ -47,3 +47,4 @@ artifacts
 *.zip
 scripts/projects.pkl
 scripts/tasks.pkl
+*.pyc
