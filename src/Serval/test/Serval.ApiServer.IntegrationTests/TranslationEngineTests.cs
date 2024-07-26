@@ -786,6 +786,17 @@ public class TranslationEngineTests
     }
 
     [Test]
+    public async Task DeleteCorpusButNotFilesAsync()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus result = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        await client.DeleteCorpusAsync(ECHO_ENGINE1_ID, result.Id, deleteFiles: false);
+        ICollection<TranslationCorpus> resultsAfterDelete = await client.GetAllCorporaAsync(ECHO_ENGINE1_ID);
+        Assert.That(resultsAfterDelete, Has.Count.EqualTo(0));
+        Assert.That(await _env.DataFiles.GetAllAsync(), Has.Count.EqualTo(4)); //Paratext & Text files still exist
+    }
+
+    [Test]
     public async Task GetAllPretranslationsAsync_Exists()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
