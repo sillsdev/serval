@@ -9,7 +9,7 @@ client = APIClient()
 
 
 # %%
-days_since_last_run = 2
+days_since_last_run = 1
 
 project_list = clearml_stats.get_project_list(client)
 project_names = [project.name for project in project_list]
@@ -20,74 +20,55 @@ projects = clearml_stats.get_projects(project_list, tasks)
 # %%
 prod_name = "Machine/prod.serval-api.org"
 # prod_name = "Machine"
-projects_chosen = [
-    project for project in projects if prod_name in projects[project]["name"]
-]
-tasks_chosen = [
-    tasks[task] for task in tasks if tasks[task]["project"] in projects_chosen
-]
-# tasks_chosen = [tasks[task] for task in tasks]
-# %%
+# projects_chosen = [
+#    project for project in projects if prod_name in projects[project]["name"]
+# ]
+# tasks_chosen = {
+#    task: tasks[task] for task in tasks if tasks[task]["project"] in projects_chosen
+# }
 
-# graph the tasks started per day using pandas
-tasks_df = pd.DataFrame.from_dict(tasks_chosen)
+# choose all
+projects_chosen = projects
+tasks_chosen = [tasks[task] for task in tasks]
+
+tasks_df = pd.DataFrame.from_dict(tasks_chosen).T
 tasks_df.loc[:, "total_run_time"] = pd.to_timedelta(
     tasks_df["completed"] - tasks_df["started"]
 ).dt.total_seconds()
-mask = tasks_df["total_run_time"] > 600
-# mask = tasks_df["total_run_time"] > -1
-tasks_df["week"] = pd.to_datetime(tasks_df["started"]).dt.strftime("%Y-%U")
-by_week = pd.crosstab(
-    index=tasks_df.loc[mask, "week"], columns=tasks_df.loc[mask, "status"]
-)
-by_week.plot(kind="bar", stacked=True, title="Tasks started per week", grid=True)
-# %%
-tasks_df.loc[:, "total_run_time"] = pd.to_timedelta(
-    tasks_df["completed"] - tasks_df["started"]
-).dt.total_seconds()
-tasks_df.hist(column="total_run_time", bins=100)
 
 # %%
-fig, axes = plt.subplots()
-by_week = {
-    week: tasks_df[tasks_df["week"] == week]["total_run_time"].to_numpy()
-    for week in tasks_df["week"].unique()
-}
-# filter out things under 10 minutes
-by_week = {
-    week: times[times > 600] / 60 / 60
-    for week, times in by_week.items()
-    if len(times[times > 600]) > 1
-}
-# last 10 weeks only
-by_week = {week: by_week[week] for week in np.sort(list(by_week.keys()))[-10:]}
-axes.violinplot(dataset=list(by_week.values()), showmedians=True)
-axes.set_title("Task run time for last 10 weeks")
-axes.set_xticklabels(by_week.keys(), rotation=45)
-axes.set_xticks(range(1, len(by_week) + 1))
-axes.set_ylabel("hours")
-axes.set_ylim(0, 16)
-axes.grid(True)
+clearml_stats.plot_tasks_per_week(tasks_df)
+clearml_stats.violin_task_run_time_per_week(tasks_df)
+clearml_stats.violin_task_delay_time_per_week(tasks_df)
 
 # %%
-tasks_df.loc[:, "delay_time"] = pd.to_timedelta(
-    tasks_df["started"] - tasks_df["created"]
-).dt.total_seconds()
-fig, axes = plt.subplots()
-by_week = {
-    week: tasks_df[tasks_df["week"] == week]["delay_time"].to_numpy()
-    for week in tasks_df["week"].unique()
-}
-# filter out things under 10 minutes
-by_week = {week: times / 60 / 60 for week, times in by_week.items() if len(times) > 1}
-# last 10 weeks only
-by_week = {week: by_week[week] for week in np.sort(list(by_week.keys()))[-10:]}
-axes.violinplot(dataset=list(by_week.values()), showmeans=True)
-axes.set_title("Task delay time for last 10 weeks")
-axes.set_xticklabels(by_week.keys(), rotation=45)
-axes.set_xticks(range(1, len(by_week) + 1))
-axes.set_ylim(0, 8)
-axes.set_ylabel("hours")
-axes.grid(True)
+langs_by_occurence = {}
+
+
+def add_lang(lang):
+    if lang in langs_by_occurence:
+        langs_by_occurence[lang] += 1
+    else:
+        langs_by_occurence[lang] = 1
+
+
+num_of_tasks_found = 0
+num_of_tasks_not_found = 0
+for project_id in projects:
+    project = projects[project_id]
+    if len(project["tasks"]) > 0:
+        task_not_found = True
+        for task_id in project["tasks"]:
+            if task_id in tasks_df.index:
+                task_not_found = False
+                break
+        if task_not_found:
+            num_of_tasks_not_found += 1
+            continue
+        num_of_tasks_found += 1
+        task = tasks_df.loc[project["tasks"][0]]
+        args = task.script_args
+        add_lang(args["src_lang"].split("_")[0])
+        add_lang(args["trg_lang"].split("_")[0])
 
 # %%
