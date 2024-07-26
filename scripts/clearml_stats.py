@@ -11,12 +11,14 @@ from clearml import Task
 from clearml.backend_api.session.client import APIClient
 from matplotlib import pyplot as plt
 
-project_pickle_filename = os.path.join(os.path.dirname(__file__), "projects.pkl")
-tasks_pickle_filename = os.path.join(os.path.dirname(__file__), "tasks.pkl")
-language_database_filename = os.path.join(os.path.dirname(__file__), "Language.xlsx")
+clearml_stats_path = os.path.join(os.path.dirname(__file__), "clearml_stats")
+project_pickle_filename = os.path.join(clearml_stats_path, "projects.pkl")
+tasks_pickle_filename = os.path.join(clearml_stats_path, "tasks.pkl")
+language_database_filename = os.path.join(clearml_stats_path, "Language.xlsx")
 language_project_output_filename = os.path.join(
-    os.path.dirname(__file__), "language_projects.csv"
+    clearml_stats_path, "language_projects.csv"
 )
+os.makedirs(clearml_stats_path, exist_ok=True)
 
 re_lang_code = re.compile(
     r"((?<=-)\p{Ll}{3}(?=_)|(?<=[/\\_ ])\p{Ll}{3}(?=[-_])|(?<=-)\p{Ll}{3}(?=\.)|(?<=\.)\p{Ll}{3}(?=-)|(?<=FT-)[\p{Lu}\p{Ll}]{3}(?=[-_/\\]))"

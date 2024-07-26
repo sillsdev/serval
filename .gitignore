@@ -45,8 +45,5 @@ artifacts
 
 .db
 *.zip
-scripts/projects.pkl
-scripts/tasks.pkl
 *.pyc
-scripts/language_projects.csv
-scripts/Language.xlsx
+scripts/clearml_stats/*
