@@ -56,18 +56,6 @@ public class PretranslationService(
             targetFile.Filename
         );
 
-        IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = (
-            await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
-        )
-            .Select(p =>
-                (
-                    Refs: (IReadOnlyList<ScriptureRef>)
-                        p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToArray(),
-                    p.Translation
-                )
-            )
-            .OrderBy(p => p.Refs[0]);
-
         // Update the target book if it exists
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
@@ -76,9 +64,18 @@ public class PretranslationService(
             {
                 // the pretranslations are generated from the source book and inserted into the target book
                 // use relaxed references since the USFM structure may not be the same
-                pretranslations = pretranslations.Select(p =>
-                    ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
-                );
+                IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = (
+                    await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
+                )
+                    .Select(p =>
+                        (
+                            Refs: (IReadOnlyList<ScriptureRef>)
+                                p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification).ToRelaxed())
+                                    .ToArray(),
+                            p.Translation
+                        )
+                    )
+                    .OrderBy(p => p.Refs[0]);
                 switch (textOrigin)
                 {
                     case PretranslationUsfmTextOrigin.PreferExisting:
@@ -127,6 +124,17 @@ public class PretranslationService(
             string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
             if (usfm is not null)
             {
+                IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = (
+                    await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
+                )
+                    .Select(p =>
+                        (
+                            Refs: (IReadOnlyList<ScriptureRef>)
+                                p.Refs.Select(r => ScriptureRef.Parse(r, sourceSettings.Versification)).ToArray(),
+                            p.Translation
+                        )
+                    )
+                    .OrderBy(p => p.Refs[0]);
                 switch (textOrigin)
                 {
                     case PretranslationUsfmTextOrigin.PreferExisting:
