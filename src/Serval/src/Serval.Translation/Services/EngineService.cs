@@ -149,6 +149,18 @@ public class EngineService(
                 IsModelPersisted = createResponse.IsModelPersisted
             };
         }
+        catch (RpcException rpcex)
+        {
+            await Entities.DeleteAsync(engine, CancellationToken.None);
+            if (rpcex.StatusCode == StatusCode.InvalidArgument)
+            {
+                throw new InvalidOperationException(
+                    $"Unable to create engine {engine.Id} because of an invalid argument: {rpcex.Status.Detail}",
+                    rpcex
+                );
+            }
+            throw;
+        }
         catch
         {
             await Entities.DeleteAsync(engine, CancellationToken.None);

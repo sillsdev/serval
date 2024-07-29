@@ -316,7 +316,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
     )
     {
         return Task.FromResult(
-            new GetLanguageInfoResponse { InternalCode = request.Language + "_echo", IsNative = false, }
+            new GetLanguageInfoResponse { InternalCode = request.Language + "_echo", IsNative = true, }
         );
     }
 
