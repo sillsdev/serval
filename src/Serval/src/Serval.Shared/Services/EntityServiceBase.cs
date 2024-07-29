@@ -1,14 +1,9 @@
 ﻿namespace Serval.Shared.Services;
 
-public class EntityServiceBase<T>
+public abstract class EntityServiceBase<T>(IRepository<T> entities)
     where T : IEntity
 {
-    protected EntityServiceBase(IRepository<T> entities)
-    {
-        Entities = entities;
-    }
-
-    protected IRepository<T> Entities { get; }
+    protected IRepository<T> Entities { get; } = entities;
 
     public async Task<T> GetAsync(string id, CancellationToken cancellationToken = default)
     {
@@ -18,9 +13,10 @@ public class EntityServiceBase<T>
         return entity;
     }
 
-    public virtual Task CreateAsync(T entity, CancellationToken cancellationToken = default)
+    public virtual async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
-        return Entities.InsertAsync(entity, cancellationToken);
+        await Entities.InsertAsync(entity, cancellationToken);
+        return entity;
     }
 
     public virtual async Task DeleteAsync(string id, CancellationToken cancellationToken = default)

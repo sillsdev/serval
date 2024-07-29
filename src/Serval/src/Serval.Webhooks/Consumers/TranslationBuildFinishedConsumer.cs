@@ -17,14 +17,14 @@ public class TranslationBuildFinishedConsumer(IWebhookService webhookService, IU
                 {
                     Id = context.Message.BuildId,
                     Url = _urlService.GetUrl(
-                        "GetTranslationBuild",
+                        Endpoints.GetTranslationBuild,
                         new { id = context.Message.EngineId, buildId = context.Message.BuildId }
                     )
                 },
                 Engine = new ResourceLinkDto
                 {
                     Id = context.Message.EngineId,
-                    Url = _urlService.GetUrl("GetTranslationEngine", new { id = context.Message.EngineId })!
+                    Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = context.Message.EngineId })!
                 },
                 BuildState = context.Message.BuildState,
                 DateFinished = context.Message.DateFinished

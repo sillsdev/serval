@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Serval.Translation.V1;
+namespace Serval.Health.V1;
 
 public class WriteGrpcHealthCheckResponse
 {

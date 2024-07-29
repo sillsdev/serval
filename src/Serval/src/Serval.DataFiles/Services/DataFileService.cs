@@ -1,6 +1,6 @@
 ﻿namespace Serval.DataFiles.Services;
 
-public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
+public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileService
 {
     private readonly IOptionsMonitor<DataFileOptions> _options;
     private readonly IDataAccessContext _dataAccessContext;
@@ -32,11 +32,6 @@ public class DataFileService : EntityServiceBase<DataFile>, IDataFileService
         if (dataFile is null)
             throw new EntityNotFoundException($"Could not find the DataFile '{id}' with owner '{owner}'.");
         return dataFile;
-    }
-
-    public async Task<IEnumerable<DataFile>> GetAllAsync(string owner, CancellationToken cancellationToken = default)
-    {
-        return await Entities.GetAllAsync(c => c.Owner == owner, cancellationToken);
     }
 
     public async Task CreateAsync(DataFile dataFile, Stream stream, CancellationToken cancellationToken = default)

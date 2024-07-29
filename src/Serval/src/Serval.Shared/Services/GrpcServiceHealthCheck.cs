@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Serval.Translation.V1;
+﻿using Serval.Health.V1;
 
 namespace Serval.Shared.Services;
 
@@ -12,8 +11,9 @@ public class GrpcServiceHealthCheck(GrpcClientFactory grpcClientFactory) : IHeal
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(context.Registration.Name);
+        HealthApi.HealthApiClient client = _grpcClientFactory.CreateClient<HealthApi.HealthApiClient>(
+            $"{context.Registration.Name}-Health"
+        );
         HealthCheckResponse? healthCheckResponse = await client.HealthCheckAsync(
             new Google.Protobuf.WellKnownTypes.Empty(),
             cancellationToken: cancellationToken

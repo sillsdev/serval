@@ -32,7 +32,7 @@ public class WebhooksController(IAuthorizationService authService, IWebhookServi
     /// <response code="404">The webhook does not exist</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadHooks)]
-    [HttpGet("{id}", Name = "GetWebhook")]
+    [HttpGet("{id}", Name = Endpoints.GetWebhook)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
@@ -99,7 +99,7 @@ public class WebhooksController(IAuthorizationService authService, IWebhookServi
         return new WebhookDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl("GetWebhook", new { id = source.Id }),
+            Url = _urlService.GetUrl(Endpoints.GetWebhook, new { id = source.Id }),
             PayloadUrl = source.Url,
             Events = source.Events.ToList()
         };

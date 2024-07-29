@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package serval.health.v1;
+
+import "google/protobuf/empty.proto";
+
+service HealthApi {
+    rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse);
+}
+
+message HealthCheckResponse {
+    HealthCheckStatus status = 1;
+    map<string, string> data = 2;
+    optional string error = 3;
+}
+
+enum HealthCheckStatus {
+    UNHEALTHY = 0;
+    DEGRADED = 1;
+    HEALTHY = 2;
+}

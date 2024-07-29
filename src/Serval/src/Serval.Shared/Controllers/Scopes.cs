@@ -7,6 +7,11 @@ public static class Scopes
     public const string UpdateTranslationEngines = "update:translation_engines";
     public const string DeleteTranslationEngines = "delete:translation_engines";
 
+    public const string CreateAssessmentEngines = "create:assessment_engines";
+    public const string ReadAssessmentEngines = "read:assessment_engines";
+    public const string UpdateAssessmentEngines = "update:assessment_engines";
+    public const string DeleteAssessmentEngines = "delete:assessment_engines";
+
     public const string CreateHooks = "create:hooks";
     public const string ReadHooks = "read:hooks";
     public const string DeleteHooks = "delete:hooks";

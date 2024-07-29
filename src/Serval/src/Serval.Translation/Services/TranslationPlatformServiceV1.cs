@@ -279,7 +279,7 @@ public class TranslationPlatformServiceV1(
     }
 
     public override async Task<Empty> InsertPretranslations(
-        IAsyncStreamReader<InsertPretranslationRequest> requestStream,
+        IAsyncStreamReader<InsertPretranslationsRequest> requestStream,
         ServerCallContext context
     )
     {
@@ -287,7 +287,7 @@ public class TranslationPlatformServiceV1(
         int nextModelRevision = 0;
 
         var batch = new List<Pretranslation>();
-        await foreach (InsertPretranslationRequest request in requestStream.ReadAllAsync(context.CancellationToken))
+        await foreach (InsertPretranslationsRequest request in requestStream.ReadAllAsync(context.CancellationToken))
         {
             if (request.EngineId != engineId)
             {

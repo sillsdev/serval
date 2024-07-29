@@ -1,4 +1,5 @@
-﻿using Serval.Translation.V1;
+﻿using Serval.Health.V1;
+using Serval.Translation.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,10 @@ public static class IServalBuilderExtensions
         {
             builder.Services.AddGrpcClient<TranslationEngineApi.TranslationEngineApiClient>(
                 engine.Type,
+                o => o.Address = new Uri(engine.Address)
+            );
+            builder.Services.AddGrpcClient<HealthApi.HealthApiClient>(
+                $"{engine.Type}-Health",
                 o => o.Address = new Uri(engine.Address)
             );
             builder.Services.AddHealthChecks().AddCheck<GrpcServiceHealthCheck>(engine.Type);

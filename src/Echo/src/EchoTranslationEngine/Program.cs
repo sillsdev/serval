@@ -18,5 +18,6 @@ WebApplication app = builder.Build();
 app.UseHttpsRedirection();
 
 app.MapGrpcService<TranslationEngineServiceV1>();
+app.MapGrpcService<HealthServiceV1>();
 
 app.Run();
