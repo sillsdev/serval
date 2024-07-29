@@ -8,6 +8,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddFeatureManagement();
         services.AddRouting(o => o.LowercaseUrls = true);
         services.AddOutputCache(options =>
         {
@@ -71,10 +72,12 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddMongoDataAccess(cfg =>
             {
                 cfg.AddTranslationRepositories();
+                cfg.AddAssessmentRepositories();
                 cfg.AddDataFilesRepositories();
                 cfg.AddWebhooksRepositories();
             })
             .AddTranslation()
+            .AddAssessment()
             .AddDataFiles()
             .AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
@@ -102,6 +105,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddMediator(cfg =>
         {
             cfg.AddTranslationConsumers();
+            cfg.AddAssessmentConsumers();
             cfg.AddDataFilesConsumers();
             cfg.AddWebhooksConsumers();
         });
@@ -128,49 +132,59 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         Version[] versions = [new Version(1, 0)];
         foreach (Version version in versions)
         {
-            services.AddSwaggerDocument(o =>
-            {
-                o.SchemaSettings.SchemaType = SchemaType.Swagger2;
-                o.Title = "Serval API";
-                o.Description = "Natural language processing services for minority language Bible translation.";
-                o.DocumentName = "v" + version.Major;
-                o.ApiGroupNames = new[] { "v" + version.Major };
-                o.Version = version.Major + "." + version.Minor;
-
-                o.SchemaSettings.SchemaNameGenerator = new ServalSchemaNameGenerator();
-                o.UseControllerSummaryAsTagDescription = true;
-                o.AddSecurity(
-                    "bearer",
-                    Enumerable.Empty<string>(),
-                    new OpenApiSecurityScheme
-                    {
-                        Type = OpenApiSecuritySchemeType.OAuth2,
-                        Description = "Auth0 Client Credentials Flow",
-                        Flow = OpenApiOAuth2Flow.Application,
-                        Flows = new OpenApiOAuthFlows
-                        {
-                            ClientCredentials = new OpenApiOAuthFlow
-                            {
-                                AuthorizationUrl = $"{authority}authorize",
-                                TokenUrl = $"{authority}oauth/token"
-                            }
-                        },
-                    }
-                );
-                o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
-
-                o.SchemaSettings.AllowReferencesWithProperties = true;
-                o.PostProcess = document =>
+            services.AddSwaggerDocument(
+                (o, sp) =>
                 {
-                    string prefix = "/api/v" + version.Major;
-                    document.Servers.Add(new OpenApiServer { Url = prefix });
-                    foreach (KeyValuePair<string, OpenApiPathItem> pair in document.Paths.ToArray())
+                    o.SchemaSettings.SchemaType = SchemaType.Swagger2;
+                    o.Title = "Serval API";
+                    o.Description = "Natural language processing services for minority language Bible translation.";
+                    o.DocumentName = "v" + version.Major;
+                    o.ApiGroupNames = ["v" + version.Major];
+                    o.Version = version.Major + "." + version.Minor;
+
+                    var featureManager = sp.GetRequiredService<IFeatureManager>();
+                    if (!featureManager.IsEnabledAsync("Assessment").WaitAndUnwrapException())
                     {
-                        document.Paths.Remove(pair.Key);
-                        document.Paths[pair.Key[prefix.Length..]] = pair.Value;
+                        o.AddOperationFilter(ctxt =>
+                            !(ctxt.ControllerType.Namespace?.StartsWith("Serval.Assessment") ?? true)
+                        );
                     }
-                };
-            });
+
+                    o.SchemaSettings.SchemaNameGenerator = new ServalSchemaNameGenerator();
+                    o.UseControllerSummaryAsTagDescription = true;
+                    o.AddSecurity(
+                        "bearer",
+                        Enumerable.Empty<string>(),
+                        new OpenApiSecurityScheme
+                        {
+                            Type = OpenApiSecuritySchemeType.OAuth2,
+                            Description = "Auth0 Client Credentials Flow",
+                            Flow = OpenApiOAuth2Flow.Application,
+                            Flows = new OpenApiOAuthFlows
+                            {
+                                ClientCredentials = new OpenApiOAuthFlow
+                                {
+                                    AuthorizationUrl = $"{authority}authorize",
+                                    TokenUrl = $"{authority}oauth/token"
+                                }
+                            },
+                        }
+                    );
+                    o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
+
+                    o.SchemaSettings.AllowReferencesWithProperties = true;
+                    o.PostProcess = document =>
+                    {
+                        string prefix = "/api/v" + version.Major;
+                        document.Servers.Add(new OpenApiServer { Url = prefix });
+                        foreach (KeyValuePair<string, OpenApiPathItem> pair in document.Paths.ToArray())
+                        {
+                            document.Paths.Remove(pair.Key);
+                            document.Paths[pair.Key[prefix.Length..]] = pair.Value;
+                        }
+                    };
+                }
+            );
         }
         if (Environment.IsDevelopment())
         {
@@ -207,6 +221,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         {
             x.MapControllers();
             x.MapServalTranslationServices();
+            x.MapServalAssessmentServices();
             x.MapHangfireDashboard();
         });
 

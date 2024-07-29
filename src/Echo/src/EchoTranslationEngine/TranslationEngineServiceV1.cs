@@ -1,12 +1,9 @@
 ﻿namespace EchoTranslationEngine;
 
-public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthCheckService healthCheckService)
-    : TranslationEngineApi.TranslationEngineApiBase
+public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
-
-    private readonly HealthCheckService _healthCheckService = healthCheckService;
 
     public override Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
@@ -79,7 +76,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
                 try
                 {
                     using (
-                        AsyncClientStreamingCall<InsertPretranslationRequest, Empty> call =
+                        AsyncClientStreamingCall<InsertPretranslationsRequest, Empty> call =
                             client.InsertPretranslations(cancellationToken: cancellationToken)
                     )
                     {
@@ -124,7 +121,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
                                             if (sourceLine.Length > 0 && targetLine.Length == 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationRequest
+                                                    new InsertPretranslationsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
@@ -157,7 +154,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
                                             if (sourceLine.Length > 0 && targetLine.Length == 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationRequest
+                                                    new InsertPretranslationsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
@@ -182,7 +179,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
                                             if (sourceLine.Length > 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationRequest
+                                                    new InsertPretranslationsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
@@ -203,7 +200,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
                                             if (sourceLine.Length > 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationRequest
+                                                    new InsertPretranslationsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
@@ -318,12 +315,5 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue, HealthChe
         return Task.FromResult(
             new GetLanguageInfoResponse { InternalCode = request.Language + "_echo", IsNative = true, }
         );
-    }
-
-    public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
-    {
-        HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
-        HealthCheckResponse healthCheckResponse = WriteGrpcHealthCheckResponse.Generate(healthReport);
-        return healthCheckResponse;
     }
 }

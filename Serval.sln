@@ -78,6 +78,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Machine.JobServer", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Machine.Shared.Tests", "src\Machine\test\Serval.Machine.Shared.Tests\Serval.Machine.Shared.Tests.csproj", "{B0D23A55-AB09-4C2C-B309-F4BEB3BC968D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Assessment", "src\Serval\src\Serval.Assessment\Serval.Assessment.csproj", "{10657805-48F1-4205-B8F5-79447F6EF620}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -164,6 +166,10 @@ Global
 		{B0D23A55-AB09-4C2C-B309-F4BEB3BC968D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0D23A55-AB09-4C2C-B309-F4BEB3BC968D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0D23A55-AB09-4C2C-B309-F4BEB3BC968D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10657805-48F1-4205-B8F5-79447F6EF620}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10657805-48F1-4205-B8F5-79447F6EF620}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10657805-48F1-4205-B8F5-79447F6EF620}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10657805-48F1-4205-B8F5-79447F6EF620}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -196,6 +202,7 @@ Global
 		{C02494FB-663E-4430-9F2D-41F1A740B271} = {D808D2BE-ED26-4E60-A409-AE58F7C1CB8F}
 		{BC766753-E560-4ADF-9923-C7A96076EA47} = {D808D2BE-ED26-4E60-A409-AE58F7C1CB8F}
 		{B0D23A55-AB09-4C2C-B309-F4BEB3BC968D} = {40C225C2-1EEF-4D1D-9D14-1CBB86C8A1CB}
+		{10657805-48F1-4205-B8F5-79447F6EF620} = {25CDB05B-4E24-4A6E-933E-1E0BEC97D74D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}
