@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using MassTransit.Mediator;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -626,6 +627,7 @@ public class EngineServiceTests
                 Engines,
                 new MemoryRepository<Build>(),
                 new MemoryRepository<Pretranslation>(),
+                Substitute.For<IScopedMediator>(),
                 grpcClientFactory,
                 dataFileOptions,
                 new MemoryDataAccessContext(),

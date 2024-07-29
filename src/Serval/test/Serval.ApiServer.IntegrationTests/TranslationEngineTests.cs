@@ -755,7 +755,7 @@ public class TranslationEngineTests
         {
             case 200:
                 TranslationCorpus result = await client.AddCorpusAsync(engineId, TestCorpusConfig);
-                await client.DeleteCorpusAsync(engineId, result.Id);
+                await client.DeleteCorpusAsync(engineId, result.Id, deleteFiles: false);
                 ICollection<TranslationCorpus> resultsAfterDelete = await client.GetAllCorporaAsync(engineId);
                 Assert.That(resultsAfterDelete, Has.Count.EqualTo(0));
                 break;
@@ -763,7 +763,7 @@ public class TranslationEngineTests
             case 404:
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.DeleteCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID);
+                    await client.DeleteCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, deleteFiles: false);
                 });
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -772,6 +772,28 @@ public class TranslationEngineTests
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
                 break;
         }
+    }
+
+    [Test]
+    public async Task DeleteCorpusAndFilesAsync()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus result = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        await client.DeleteCorpusAsync(ECHO_ENGINE1_ID, result.Id, deleteFiles: true);
+        ICollection<TranslationCorpus> resultsAfterDelete = await client.GetAllCorporaAsync(ECHO_ENGINE1_ID);
+        Assert.That(resultsAfterDelete, Has.Count.EqualTo(0));
+        Assert.That(await _env.DataFiles.GetAllAsync(), Has.Count.EqualTo(2)); //Paratext files still exist
+    }
+
+    [Test]
+    public async Task DeleteCorpusButNotFilesAsync()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus result = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        await client.DeleteCorpusAsync(ECHO_ENGINE1_ID, result.Id, deleteFiles: false);
+        ICollection<TranslationCorpus> resultsAfterDelete = await client.GetAllCorporaAsync(ECHO_ENGINE1_ID);
+        Assert.That(resultsAfterDelete, Has.Count.EqualTo(0));
+        Assert.That(await _env.DataFiles.GetAllAsync(), Has.Count.EqualTo(4)); //Paratext & Text files still exist
     }
 
     [Test]
