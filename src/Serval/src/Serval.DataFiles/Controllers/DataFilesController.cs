@@ -41,7 +41,7 @@ public class DataFilesController(
     /// <response code="404">The file does not exist</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadFiles)]
-    [HttpGet("{id}", Name = "GetDataFile")]
+    [HttpGet("{id}", Name = Endpoints.GetDataFile)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -230,7 +230,7 @@ public class DataFilesController(
         return new DataFileDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl("GetDataFile", new { id = source.Id }),
+            Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id }),
             Name = source.Name,
             Format = source.Format,
             Revision = source.Revision

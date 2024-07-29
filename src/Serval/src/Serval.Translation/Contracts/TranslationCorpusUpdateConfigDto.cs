@@ -16,7 +16,7 @@ public record TranslationCorpusUpdateConfigDto : IValidatableObject
         {
             yield return new System.ComponentModel.DataAnnotations.ValidationResult(
                 "At least one field must be specified.",
-                new[] { nameof(SourceFiles), nameof(TargetFiles) }
+                [nameof(SourceFiles), nameof(TargetFiles)]
             );
         }
     }

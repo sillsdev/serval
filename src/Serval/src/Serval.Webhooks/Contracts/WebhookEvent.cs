@@ -3,5 +3,8 @@
 public enum WebhookEvent
 {
     TranslationBuildStarted,
-    TranslationBuildFinished
+    TranslationBuildFinished,
+
+    AssessmentJobStarted,
+    AssessmentJobFinished
 }
