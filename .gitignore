@@ -45,3 +45,5 @@ artifacts
 
 .db
 *.zip
+*.pyc
+scripts/clearml_stats/*
