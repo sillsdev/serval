@@ -16,7 +16,7 @@ public class S3HealthCheck(IOptions<SharedFileOptions> options) : IHealthCheck
             var request = new ListObjectsV2Request
             {
                 BucketName = new Uri(_options.Value.Uri).Host,
-                Prefix = new Uri(_options.Value.Uri).AbsolutePath + "/models/",
+                Prefix = new Uri(_options.Value.Uri).AbsolutePath.TrimStart('/'),
                 MaxKeys = 1,
                 Delimiter = ""
             };

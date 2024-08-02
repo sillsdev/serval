@@ -31,6 +31,28 @@
             },
         },
         {
+            "name": "Machine Engine Docker",
+            "type": "docker",
+            "containerName": "machine-engine-cntr",
+            "request": "attach",
+            "platform": "netCore",
+            "processName": "Serval.Machine.EngineServer",
+            "sourceFileMap": {
+                "/app": "${workspaceFolder}"
+            },
+        },
+        {
+            "name": "Machine Job Docker",
+            "type": "docker",
+            "containerName": "machine-job-cntr",
+            "request": "attach",
+            "platform": "netCore",
+            "processName": "Serval.Machine.JobServer",
+            "sourceFileMap": {
+                "/app": "${workspaceFolder}"
+            },
+        },
+        {
             "name": "Launch Serval",
             "type": "coreclr",
             "request": "launch",
@@ -90,7 +112,9 @@
             "justMyCode": false,
             "configurations": [
                 "ServalApi Docker",
-                "Echo Docker"
+                "Echo Docker",
+                "Machine Engine Docker",
+                "Machine Job Docker"
             ]
         }
     ]
