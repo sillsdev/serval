@@ -71,107 +71,87 @@ public class PretranslationService(
         // Update the target book if it exists
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
-            string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(targetFile.Filename, textId);
-            if (usfm is not null)
+            // the pretranslations are generated from the source book and inserted into the target book
+            // use relaxed references since the USFM structure may not be the same
+            pretranslations = pretranslations.Select(p =>
+                ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
+            );
+            Shared.Services.ZipParatextProjectTextUpdater updater =
+                _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
+            string usfm = "";
+            switch (textOrigin)
             {
-                // the pretranslations are generated from the source book and inserted into the target book
-                // use relaxed references since the USFM structure may not be the same
-                pretranslations = pretranslations.Select(p =>
-                    ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
-                );
-                switch (textOrigin)
-                {
-                    case PretranslationUsfmTextOrigin.PreferExisting:
-                        return UpdateUsfm(
-                            targetSettings,
-                            usfm,
-                            pretranslations,
-                            fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: true
-                        );
-                    case PretranslationUsfmTextOrigin.PreferPretranslated:
-                        return UpdateUsfm(
-                            targetSettings,
-                            usfm,
-                            pretranslations,
-                            fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: false
-                        );
-                    case PretranslationUsfmTextOrigin.OnlyExisting:
-                        return UpdateUsfm(
-                            targetSettings,
-                            usfm,
-                            pretranslations: [], // don't put any pretranslations, we only want the existing text.
-                            fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: false
-                        );
-                    case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                        return UpdateUsfm(
-                            targetSettings,
-                            usfm,
-                            pretranslations,
-                            fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: false
-                        );
-                }
+                case PretranslationUsfmTextOrigin.PreferExisting:
+                    usfm = updater.UpdateUsfm(
+                        textId,
+                        pretranslations.ToList(),
+                        fullName: targetSettings.FullName,
+                        stripAllText: false,
+                        preferExistingText: true
+                    );
+                    break;
+                case PretranslationUsfmTextOrigin.PreferPretranslated:
+                    usfm = updater.UpdateUsfm(
+                        textId,
+                        pretranslations.ToList(),
+                        fullName: targetSettings.FullName,
+                        stripAllText: false,
+                        preferExistingText: false
+                    );
+                    break;
+                case PretranslationUsfmTextOrigin.OnlyExisting:
+                    usfm = updater.UpdateUsfm(
+                        textId,
+                        [], // don't put any pretranslations, we only want the existing text.
+                        fullName: targetSettings.FullName,
+                        stripAllText: false,
+                        preferExistingText: false
+                    );
+                    break;
+                case PretranslationUsfmTextOrigin.OnlyPretranslated:
+                    usfm = updater.UpdateUsfm(
+                        textId,
+                        pretranslations.ToList(),
+                        fullName: targetSettings.FullName,
+                        stripAllText: true,
+                        preferExistingText: false
+                    );
+                    break;
             }
+            // In order to support PretranslationUsfmTemplate.Auto
+            if (usfm != "")
+                return usfm;
         }
 
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
         {
+            Shared.Services.ZipParatextProjectTextUpdater updater =
+                _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename);
+
             // Copy and update the source book if it exists
-            string? usfm = await _scriptureDataFileService.ReadParatextProjectBookAsync(sourceFile.Filename, textId);
-            if (usfm is not null)
+            switch (textOrigin)
             {
-                switch (textOrigin)
-                {
-                    case PretranslationUsfmTextOrigin.PreferExisting:
-                    case PretranslationUsfmTextOrigin.PreferPretranslated:
-                    case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                        return UpdateUsfm(
-                            sourceSettings,
-                            usfm,
-                            pretranslations,
-                            fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: true
-                        );
-                    case PretranslationUsfmTextOrigin.OnlyExisting:
-                        return UpdateUsfm(
-                            sourceSettings,
-                            usfm,
-                            pretranslations: [], // don't pass the pretranslations, we only want the existing text.
-                            fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: true
-                        );
-                }
+                case PretranslationUsfmTextOrigin.PreferExisting:
+                case PretranslationUsfmTextOrigin.PreferPretranslated:
+                case PretranslationUsfmTextOrigin.OnlyPretranslated:
+                    return updater.UpdateUsfm(
+                        textId,
+                        pretranslations.ToList(),
+                        fullName: targetSettings.FullName,
+                        stripAllText: true,
+                        preferExistingText: true
+                    );
+                case PretranslationUsfmTextOrigin.OnlyExisting:
+                    return updater.UpdateUsfm(
+                        textId,
+                        [], // don't pass the pretranslations, we only want the existing text.
+                        fullName: targetSettings.FullName,
+                        stripAllText: true,
+                        preferExistingText: true
+                    );
             }
         }
 
         return "";
-    }
-
-    private static string UpdateUsfm(
-        ParatextProjectSettings settings,
-        string usfm,
-        IEnumerable<(IReadOnlyList<ScriptureRef>, string)> pretranslations,
-        string? fullName = null,
-        bool stripAllText = false,
-        bool preferExistingText = true
-    )
-    {
-        var updater = new UsfmTextUpdater(
-            pretranslations.ToArray(),
-            fullName is null ? null : $"- {fullName}",
-            stripAllText,
-            preferExistingText: preferExistingText
-        );
-        UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
-        return updater.GetUsfm(settings.Stylesheet);
     }
 }

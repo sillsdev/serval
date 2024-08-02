@@ -12,6 +12,12 @@ public class ScriptureDataFileService(IFileSystem fileSystem, IOptionsMonitor<Da
         return ParseProjectSettings(container);
     }
 
+    public ZipParatextProjectTextUpdater GetZipParatextProjectTextUpdater(string filename)
+    {
+        using IZipContainer container = _fileSystem.OpenZipFile(GetFilePath(filename));
+        return new ZipParatextProjectTextUpdater(container);
+    }
+
     public async Task<string?> ReadParatextProjectBookAsync(string filename, string book)
     {
         using IZipContainer container = _fileSystem.OpenZipFile(GetFilePath(filename));
