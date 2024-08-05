@@ -385,7 +385,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         {
             if (!row.IsTargetRangeStart && row.IsTargetInRange)
             {
-                refs.AddRange(row.Refs);
+                refs.AddRange(row.TargetRefs);
                 if (row.SourceText.Length > 0)
                 {
                     if (srcSegBuffer.Length > 0)
@@ -407,7 +407,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 }
 
                 textId = row.TextId;
-                refs.AddRange(row.Refs);
+                refs.AddRange(row.TargetRefs);
                 srcSegBuffer.Append(row.SourceText);
                 trgSegBuffer.Append(row.TargetText);
                 rowCount++;
