@@ -1,6 +1,6 @@
 namespace Serval.Shared.Services;
 
-public class ZipParatextProjectTextUpdater : ParatextProjectTextUpdaterBase
+public class ZipParatextProjectTextUpdater : ParatextProjectTextUpdaterBase, IDisposable
 {
     public ZipParatextProjectTextUpdater(IZipContainer container)
         : base(new ZipParatextProjectSettingsParser(container))
@@ -24,5 +24,11 @@ public class ZipParatextProjectTextUpdater : ParatextProjectTextUpdaterBase
     protected override Stream Open(string fileName)
     {
         return _projectContainer.OpenEntry(fileName);
+    }
+
+    public void Dispose()
+    {
+        _projectContainer.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
