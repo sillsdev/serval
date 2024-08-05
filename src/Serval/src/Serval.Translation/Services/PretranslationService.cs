@@ -76,7 +76,7 @@ public class PretranslationService(
             pretranslations = pretranslations.Select(p =>
                 ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
             );
-            Shared.Services.ZipParatextProjectTextUpdater updater =
+            using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
             string usfm = "";
             switch (textOrigin)
@@ -119,13 +119,13 @@ public class PretranslationService(
                     break;
             }
             // In order to support PretranslationUsfmTemplate.Auto
-            if (usfm != null)
+            if (!string.IsNullOrEmpty(usfm))
                 return usfm;
         }
 
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
         {
-            Shared.Services.ZipParatextProjectTextUpdater updater =
+            using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename);
 
             // Copy and update the source book if it exists

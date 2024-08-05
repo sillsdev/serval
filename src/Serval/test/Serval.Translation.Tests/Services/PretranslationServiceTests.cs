@@ -349,11 +349,11 @@ public class PretranslationServiceTests
             zipSubstituteSource.EntryExists("MATSRC.SFM").Returns(true);
             zipSubstituteTarget.EntryExists("MATTRG.SFM").Returns(true);
             TargetZipContainer = zipSubstituteTarget;
-            var textUpdaterSource = new Shared.Services.ZipParatextProjectTextUpdater(
+            using var textUpdaterSource = new Shared.Services.ZipParatextProjectTextUpdater(
                 zipSubstituteSource,
                 CreateProjectSettings("SRC")
             );
-            var textUpdaterTarget = new Shared.Services.ZipParatextProjectTextUpdater(
+            using var textUpdaterTarget = new Shared.Services.ZipParatextProjectTextUpdater(
                 zipSubstituteTarget,
                 CreateProjectSettings("TRG")
             );

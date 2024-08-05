@@ -14,7 +14,7 @@ public class ScriptureDataFileService(IFileSystem fileSystem, IOptionsMonitor<Da
 
     public ZipParatextProjectTextUpdater GetZipParatextProjectTextUpdater(string filename)
     {
-        using IZipContainer container = _fileSystem.OpenZipFile(GetFilePath(filename));
+        IZipContainer container = _fileSystem.OpenZipFile(GetFilePath(filename));
         return new ZipParatextProjectTextUpdater(container);
     }
 
