@@ -119,7 +119,7 @@ public class PretranslationService(
                     break;
             }
             // In order to support PretranslationUsfmTemplate.Auto
-            if (usfm != "")
+            if (usfm != null)
                 return usfm;
         }
 
