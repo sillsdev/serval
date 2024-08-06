@@ -15,7 +15,7 @@ public class ScriptureDataFileServiceTests
     public void GetZipParatextProjectTextUpdater()
     {
         TestEnvironment env = new();
-        ZipParatextProjectTextUpdater updater = env.Service.GetZipParatextProjectTextUpdater("file1.zip");
+        using ZipParatextProjectTextUpdater updater = env.Service.GetZipParatextProjectTextUpdater("file1.zip");
         Assert.That(
             updater.UpdateUsfm("MAT", [], preferExistingText: true),
             Is.EqualTo(
