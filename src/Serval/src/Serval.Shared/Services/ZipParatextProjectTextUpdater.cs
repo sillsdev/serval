@@ -2,6 +2,8 @@ namespace Serval.Shared.Services;
 
 public class ZipParatextProjectTextUpdater : ParatextProjectTextUpdaterBase, IDisposable
 {
+    private bool _disposed;
+
     public ZipParatextProjectTextUpdater(IZipContainer container)
         : base(new ZipParatextProjectSettingsParser(container))
     {
@@ -28,7 +30,19 @@ public class ZipParatextProjectTextUpdater : ParatextProjectTextUpdaterBase, IDi
 
     public void Dispose()
     {
-        _projectContainer.Dispose();
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _projectContainer.Dispose();
+            }
+            _disposed = true;
+        }
     }
 }
