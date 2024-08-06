@@ -38,7 +38,7 @@ public class ClearMLServiceTests
             + "    'src_lang': 'spa_Latn',\n"
             + "    'trg_lang': 'eng_Latn',\n"
             + "    'max_steps': 20000,\n"
-            + "    'shared_file_uri': 's3://aqua-ml-data',\n"
+            + "    'shared_file_uri': 's3://silnlp',\n"
             + "    'clearml': True\n"
             + "}\n"
             + "run(args)\n";

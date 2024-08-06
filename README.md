@@ -114,7 +114,7 @@ Now, when you run the tests from `Serval.E2ETests`, the token will automatically
 
 To view files stored in the bucket, run
   ```
-  aws s3 ls s3://aqua-ml-data/<deployment environment>
+  aws s3 ls s3://silnlp/<deployment environment>
   ```
 ### Mongo debugging
 
