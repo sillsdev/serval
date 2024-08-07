@@ -120,7 +120,7 @@ public class PretranslationService(
             }
             // In order to support PretranslationUsfmTemplate.Auto
             if (!string.IsNullOrEmpty(usfm))
-                return usfm;
+                return "";
         }
 
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
