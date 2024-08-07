@@ -340,12 +340,25 @@ public class PretranslationServiceTests
             ScriptureDataFileService = Substitute.For<IScriptureDataFileService>();
             ScriptureDataFileService.GetParatextProjectSettings("file1.zip").Returns(CreateProjectSettings("SRC"));
             ScriptureDataFileService.GetParatextProjectSettings("file2.zip").Returns(CreateProjectSettings("TRG"));
-            ScriptureDataFileService
-                .ReadParatextProjectBookAsync("file1.zip", "MAT")
-                .Returns(Task.FromResult<string?>(SourceUsfm));
-            ScriptureDataFileService
-                .ReadParatextProjectBookAsync("file2.zip", "MAT")
-                .Returns(Task.FromResult<string?>(null));
+            var zipSubstituteSource = Substitute.For<IZipContainer>();
+            var zipSubstituteTarget = Substitute.For<IZipContainer>();
+            zipSubstituteSource.OpenEntry("MATSRC.SFM").Returns(new MemoryStream(Encoding.UTF8.GetBytes(SourceUsfm)));
+            zipSubstituteTarget.OpenEntry("MATTRG.SFM").Returns(new MemoryStream(Encoding.UTF8.GetBytes("")));
+            zipSubstituteSource.EntryExists(Arg.Any<string>()).Returns(false);
+            zipSubstituteTarget.EntryExists(Arg.Any<string>()).Returns(false);
+            zipSubstituteSource.EntryExists("MATSRC.SFM").Returns(true);
+            zipSubstituteTarget.EntryExists("MATTRG.SFM").Returns(true);
+            TargetZipContainer = zipSubstituteTarget;
+            using var textUpdaterSource = new Shared.Services.ZipParatextProjectTextUpdater(
+                zipSubstituteSource,
+                CreateProjectSettings("SRC")
+            );
+            using var textUpdaterTarget = new Shared.Services.ZipParatextProjectTextUpdater(
+                zipSubstituteTarget,
+                CreateProjectSettings("TRG")
+            );
+            ScriptureDataFileService.GetZipParatextProjectTextUpdater("file1.zip").Returns(textUpdaterSource);
+            ScriptureDataFileService.GetZipParatextProjectTextUpdater("file2.zip").Returns(textUpdaterTarget);
             Service = new PretranslationService(Pretranslations, Engines, ScriptureDataFileService);
         }
 
@@ -353,29 +366,27 @@ public class PretranslationServiceTests
         public MemoryRepository<Pretranslation> Pretranslations { get; }
         public MemoryRepository<Engine> Engines { get; }
         public IScriptureDataFileService ScriptureDataFileService { get; }
+        public IZipContainer TargetZipContainer { get; }
 
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
             PretranslationUsfmTemplate template
         )
         {
-            return (
-                await Service.GetUsfmAsync(
-                    engineId: "engine1",
-                    modelRevision: 1,
-                    corpusId: "corpus1",
-                    textId: "MAT",
-                    textOrigin: textOrigin,
-                    template: template
-                )
-            ).Replace("\r\n", "\n");
+            string usfm = await Service.GetUsfmAsync(
+                engineId: "engine1",
+                modelRevision: 1,
+                corpusId: "corpus1",
+                textId: "MAT",
+                textOrigin: textOrigin,
+                template: template
+            );
+            return usfm.Replace("\r\n", "\n");
         }
 
         public void AddMatthewToTarget()
         {
-            ScriptureDataFileService
-                .ReadParatextProjectBookAsync("file2.zip", "MAT")
-                .Returns(Task.FromResult<string?>(TargetUsfm));
+            TargetZipContainer.OpenEntry("MATTRG.SFM").Returns(new MemoryStream(Encoding.UTF8.GetBytes(TargetUsfm)));
         }
 
         private static ParatextProjectSettings CreateProjectSettings(string name)

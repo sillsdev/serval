@@ -12,16 +12,15 @@ public class ScriptureDataFileServiceTests
     }
 
     [Test]
-    public async Task ReadParatextProjectBookAsync_Exists()
+    public void GetZipParatextProjectTextUpdater()
     {
         TestEnvironment env = new();
-        string? usfm = await env.Service.ReadParatextProjectBookAsync("file1.zip", "MAT");
-        Assert.That(usfm, Is.Not.Null);
+        using ZipParatextProjectTextUpdater updater = env.Service.GetZipParatextProjectTextUpdater("file1.zip");
         Assert.That(
-            usfm.Replace("\r\n", "\n"),
+            updater.UpdateUsfm("MAT", [], preferExistingText: true),
             Is.EqualTo(
-                @"\id MAT - PROJ
-\h Matthew
+                $@"\id MAT - PROJ
+\h {Canon.BookIdToEnglishName("MAT")}
 \c 1
 \p
 \v 1 Chapter one, verse one.
@@ -30,17 +29,9 @@ public class ScriptureDataFileServiceTests
 \p
 \v 1 Chapter two, verse one.
 \v 2 Chapter two, verse two.
-".Replace("\r\n", "\n")
+".Replace("\n", "\r\n")
             )
         );
-    }
-
-    [Test]
-    public async Task ReadParatextProjectBookAsync_DoesNotExist()
-    {
-        TestEnvironment env = new();
-        string? usfm = await env.Service.ReadParatextProjectBookAsync("file1.zip", "MRK");
-        Assert.That(usfm, Is.Null);
     }
 
     private class TestEnvironment

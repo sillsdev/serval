@@ -12,15 +12,10 @@ public class ScriptureDataFileService(IFileSystem fileSystem, IOptionsMonitor<Da
         return ParseProjectSettings(container);
     }
 
-    public async Task<string?> ReadParatextProjectBookAsync(string filename, string book)
+    public ZipParatextProjectTextUpdater GetZipParatextProjectTextUpdater(string filename)
     {
-        using IZipContainer container = _fileSystem.OpenZipFile(GetFilePath(filename));
-        ParatextProjectSettings settings = ParseProjectSettings(container);
-        string entryName = settings.GetBookFileName(book);
-        if (!container.EntryExists(entryName))
-            return null;
-        using StreamReader reader = new(container.OpenEntry(entryName));
-        return await reader.ReadToEndAsync();
+        IZipContainer container = _fileSystem.OpenZipFile(GetFilePath(filename));
+        return new ZipParatextProjectTextUpdater(container);
     }
 
     private string GetFilePath(string filename)
