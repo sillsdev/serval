@@ -49,3 +49,5 @@ artifacts
 *engine_data*
 *src_test*
 *trg_test*
+*.pyc
+scripts/clearml_stats/*
