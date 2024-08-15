@@ -50,13 +50,20 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         CancellationToken cancellationToken
     )
     {
+        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        if (engine is null)
+            throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
+
+        bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.SourceLanguage, out string srcLang);
+        bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.TargetLanguage, out string trgLang);
+
         (int trainCount, int pretranslateCount) = await WriteDataFilesAsync(
             buildId,
             data,
             buildOptions,
+            (engine.SourceLanguage, engine.TargetLanguage),
             cancellationToken
         );
-
         // Log summary of build data
         JsonObject buildPreprocessSummary =
             new()
@@ -65,16 +72,10 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 { "EngineId", engineId },
                 { "BuildId", buildId },
                 { "NumTrainRows", trainCount },
-                { "NumPretranslateRows", pretranslateCount }
+                { "NumPretranslateRows", pretranslateCount },
+                { "SourceLanguageResolved", srcLang },
+                { "TargetLanguageResolved", trgLang }
             };
-        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
-        if (engine is null)
-            throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
-
-        bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.SourceLanguage, out string srcLang);
-        buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
-        bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.TargetLanguage, out string trgLang);
-        buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
 
         if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
@@ -105,6 +106,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         string buildId,
         IReadOnlyList<Corpus> corpora,
         string? buildOptions,
+        (string, string) languageCodes,
         CancellationToken cancellationToken
     )
     {
@@ -164,8 +166,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
             if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
             {
-                ITextCorpus? sourceTermCorpus = _corpusService.CreateTermCorpora(corpus.SourceFiles).FirstOrDefault();
-                ITextCorpus? targetTermCorpus = _corpusService.CreateTermCorpora(corpus.TargetFiles).FirstOrDefault();
+                (string sourceLanguageCode, string targetLanguageCode) = languageCodes;
+                ITextCorpus? sourceTermCorpus = _corpusService
+                    .CreateTermCorpora(corpus.SourceFiles, sourceLanguageCode)
+                    .FirstOrDefault();
+                ITextCorpus? targetTermCorpus = _corpusService
+                    .CreateTermCorpora(corpus.TargetFiles, targetLanguageCode)
+                    .FirstOrDefault();
                 if (sourceTermCorpus is not null && targetTermCorpus is not null)
                 {
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
