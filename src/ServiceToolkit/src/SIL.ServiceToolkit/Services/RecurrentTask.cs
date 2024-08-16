@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Utils;
+﻿namespace SIL.ServiceToolkit.Services;
 
 public abstract class RecurrentTask(
     string serviceName,
