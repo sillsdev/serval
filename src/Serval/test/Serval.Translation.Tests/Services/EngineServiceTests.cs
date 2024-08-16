@@ -619,7 +619,8 @@ public class EngineServiceTests
                         fileNameSuffix: ".USFM",
                         biblicalTermsListType: "BiblicalTerms",
                         biblicalTermsProjectName: "",
-                        biblicalTermsFileName: "BiblicalTerms.xml"
+                        biblicalTermsFileName: "BiblicalTerms.xml",
+                        languageCode: "en"
                     )
                 );
 

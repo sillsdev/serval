@@ -402,7 +402,8 @@ public class PretranslationServiceTests
                 fileNameSuffix: $"{name}.SFM",
                 biblicalTermsListType: "Major",
                 biblicalTermsProjectName: "",
-                biblicalTermsFileName: "BiblicalTerms.xml"
+                biblicalTermsFileName: "BiblicalTerms.xml",
+                languageCode: "en"
             );
         }
     }

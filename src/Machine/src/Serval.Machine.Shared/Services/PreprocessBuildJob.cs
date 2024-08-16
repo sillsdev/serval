@@ -61,7 +61,6 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             buildId,
             data,
             buildOptions,
-            (engine.SourceLanguage, engine.TargetLanguage),
             cancellationToken
         );
         // Log summary of build data
@@ -106,7 +105,6 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         string buildId,
         IReadOnlyList<Corpus> corpora,
         string? buildOptions,
-        (string, string) languageCodes,
         CancellationToken cancellationToken
     )
     {
@@ -166,13 +164,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
             if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
             {
-                (string sourceLanguageCode, string targetLanguageCode) = languageCodes;
-                ITextCorpus? sourceTermCorpus = _corpusService
-                    .CreateTermCorpora(corpus.SourceFiles, sourceLanguageCode)
-                    .FirstOrDefault();
-                ITextCorpus? targetTermCorpus = _corpusService
-                    .CreateTermCorpora(corpus.TargetFiles, targetLanguageCode)
-                    .FirstOrDefault();
+                ITextCorpus? sourceTermCorpus = _corpusService.CreateTermCorpora(corpus.SourceFiles).FirstOrDefault();
+                ITextCorpus? targetTermCorpus = _corpusService.CreateTermCorpora(corpus.TargetFiles).FirstOrDefault();
                 if (sourceTermCorpus is not null && targetTermCorpus is not null)
                 {
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
