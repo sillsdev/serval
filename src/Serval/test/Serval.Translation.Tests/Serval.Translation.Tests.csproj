@@ -33,6 +33,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Serval.Translation\Serval.Translation.csproj" />
+		<ProjectReference Include="..\Serval.Shared.Tests\Serval.Shared.Tests.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -19,7 +19,7 @@ public class ScriptureDataFileServiceTests
         Assert.That(
             updater.UpdateUsfm("MAT", [], preferExistingText: true),
             Is.EqualTo(
-                $@"\id MAT - PROJ
+                    $@"\id MAT - PROJ
 \h {Canon.BookIdToEnglishName("MAT")}
 \c 1
 \p
@@ -29,8 +29,9 @@ public class ScriptureDataFileServiceTests
 \p
 \v 1 Chapter two, verse one.
 \v 2 Chapter two, verse two.
-".Replace("\n", "\r\n")
-            )
+"
+                )
+                .IgnoreLineEndings()
         );
     }
 
