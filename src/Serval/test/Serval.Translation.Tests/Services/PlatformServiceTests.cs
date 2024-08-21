@@ -155,12 +155,12 @@ public class PlatformServiceTests
         public TranslationPlatformServiceV1 PlatformService { get; }
     }
 
-    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertPretranslationRequest>
+    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertPretranslationsRequest>
     {
         private bool _endOfStream = false;
 
         public string EngineId { get; } = engineId;
-        public InsertPretranslationRequest Current => new() { EngineId = EngineId };
+        public InsertPretranslationsRequest Current => new() { EngineId = EngineId };
 
         public Task<bool> MoveNext(CancellationToken cancellationToken)
         {

@@ -20,6 +20,5 @@ global using Serval.Client;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Controllers;
 global using Serval.Shared.Services;
-global using Serval.Translation.Models;
 global using SIL.DataAccess;
 global using SIL.ObjectModel;

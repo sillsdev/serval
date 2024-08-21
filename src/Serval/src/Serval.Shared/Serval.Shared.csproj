@@ -20,11 +20,13 @@
 		<PackageReference Include="Grpc.HealthCheck" Version="2.52.0" />
 		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.52.0" />
 		<PackageReference Include="SIL.Machine" Version="3.2.5" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+		<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="3.5.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess\SIL.DataAccess.csproj" />
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+		<ProjectReference Include="..\Serval.Grpc\Serval.Grpc.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -38,9 +38,10 @@ public class DeletedFileCleaner : BackgroundService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                DateTimeOffset? next = _cronExpression.GetNextOccurrence(DateTimeOffset.Now, TimeZoneInfo.Local);
+                DateTimeOffset now = DateTimeOffset.Now;
+                DateTimeOffset? next = _cronExpression.GetNextOccurrence(now, TimeZoneInfo.Local);
                 Debug.Assert(next.HasValue);
-                await Task.Delay(next.Value - DateTimeOffset.Now, stoppingToken);
+                await Task.Delay(next.Value - now, stoppingToken);
                 await CleanAsync(stoppingToken);
             }
         }

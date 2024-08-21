@@ -32,7 +32,14 @@ jobs:
       - name: Pre-Test
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
       - name: Test
-        run: dotnet test --verbosity normal --filter "TestCategory!=E2E&TestCategory!=E2EMissingServices" --collect:"Xplat Code Coverage"
+        run: dotnet test --verbosity normal --filter "TestCategory!=E2E&TestCategory!=E2EMissingServices" --collect:"Xplat Code Coverage" --logger "trx;LogFileName=test-results.trx"
+      - name: Test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: NUnit Tests
+          path: src/**/TestResults/test-results.trx
+          reporter: dotnet-trx
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
