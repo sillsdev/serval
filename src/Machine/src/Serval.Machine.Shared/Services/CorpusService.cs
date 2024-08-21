@@ -43,10 +43,7 @@ public class CorpusService : ICorpusService
             switch (file.Format)
             {
                 case FileFormat.Paratext:
-                    using (var archive = ZipFile.OpenRead(file.Location))
-                    {
-                        yield return new ParatextBackupTermsCorpus(archive, ["PN"]);
-                    }
+                    yield return new ParatextBackupTermsCorpus(file.Location, ["PN"]);
                     break;
             }
         }
