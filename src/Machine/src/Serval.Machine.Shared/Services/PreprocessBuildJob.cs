@@ -50,13 +50,19 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         CancellationToken cancellationToken
     )
     {
+        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        if (engine is null)
+            throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
+
+        bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.SourceLanguage, out string srcLang);
+        bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.TargetLanguage, out string trgLang);
+
         (int trainCount, int pretranslateCount) = await WriteDataFilesAsync(
             buildId,
             data,
             buildOptions,
             cancellationToken
         );
-
         // Log summary of build data
         JsonObject buildPreprocessSummary =
             new()
@@ -65,16 +71,10 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 { "EngineId", engineId },
                 { "BuildId", buildId },
                 { "NumTrainRows", trainCount },
-                { "NumPretranslateRows", pretranslateCount }
+                { "NumPretranslateRows", pretranslateCount },
+                { "SourceLanguageResolved", srcLang },
+                { "TargetLanguageResolved", trgLang }
             };
-        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
-        if (engine is null)
-            throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
-
-        bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.SourceLanguage, out string srcLang);
-        buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
-        bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.TargetLanguage, out string trgLang);
-        buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
 
         if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))

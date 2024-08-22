@@ -36,9 +36,9 @@
 		<PackageReference Include="Hangfire.Mongo" Version="1.9.10" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.16" />
 		<PackageReference Include="Microsoft.Extensions.Http.Polly" Version="6.0.14" />
-		<PackageReference Include="SIL.Machine" Version="3.2.5" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
-		<PackageReference Include="SIL.Machine.Morphology.HermitCrab" Version="3.2.5" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj')" />
-		<PackageReference Include="SIL.Machine.Translation.Thot" Version="3.2.5" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
+		<PackageReference Include="SIL.Machine" Version="3.2.6" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+		<PackageReference Include="SIL.Machine.Morphology.HermitCrab" Version="3.2.6" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj')" />
+		<PackageReference Include="SIL.Machine.Translation.Thot" Version="3.2.6" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
 		<PackageReference Include="SIL.WritingSystems" Version="14.1.1" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 	</ItemGroup>
