@@ -19,7 +19,7 @@
 		<PackageReference Include="Grpc.Core.Api" Version="2.52.0" />
 		<PackageReference Include="Grpc.HealthCheck" Version="2.52.0" />
 		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.52.0" />
-		<PackageReference Include="SIL.Machine" Version="3.2.5" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+		<PackageReference Include="SIL.Machine" Version="3.2.6" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 	</ItemGroup>
 
 	<ItemGroup>
