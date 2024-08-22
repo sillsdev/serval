@@ -104,7 +104,7 @@ public class PreprocessBuildJobTests
             Assert.That(src1Count, Is.EqualTo(0));
             Assert.That(src2Count, Is.EqualTo(0));
             Assert.That(trgCount, Is.EqualTo(0));
-            Assert.That(termCount, Is.EqualTo(1));
+            Assert.That(termCount, Is.EqualTo(5726));
         });
     }
 
