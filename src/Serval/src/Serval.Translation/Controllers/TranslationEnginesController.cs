@@ -52,7 +52,7 @@ public class TranslationEnginesController(
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
 
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}", Name = "GetTranslationEngine")]
+    [HttpGet("{id}", Name = Endpoints.GetTranslationEngine)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -450,7 +450,7 @@ public class TranslationEnginesController(
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/corpora/{corpusId}", Name = "GetTranslationCorpus")]
+    [HttpGet("{id}/corpora/{corpusId}", Name = Endpoints.GetTranslationCorpus)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -737,7 +737,7 @@ public class TranslationEnginesController(
     /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/builds/{buildId}", Name = "GetTranslationBuild")]
+    [HttpGet("{id}/builds/{buildId}", Name = Endpoints.GetTranslationBuild)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -1126,7 +1126,7 @@ public class TranslationEnginesController(
         return new TranslationEngineDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl("GetTranslationEngine", new { id = source.Id }),
+            Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.Id }),
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
@@ -1144,13 +1144,13 @@ public class TranslationEnginesController(
         return new TranslationBuildDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl("GetTranslationBuild", new { id = source.EngineRef, buildId = source.Id }),
+            Url = _urlService.GetUrl(Endpoints.GetTranslationBuild, new { id = source.EngineRef, buildId = source.Id }),
             Revision = source.Revision,
             Name = source.Name,
             Engine = new ResourceLinkDto
             {
                 Id = source.EngineRef,
-                Url = _urlService.GetUrl("GetTranslationEngine", new { id = source.EngineRef })
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.EngineRef })
             },
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             Pretranslate = source.Pretranslate?.Select(s => Map(source.EngineRef, s)).ToList(),
@@ -1171,7 +1171,10 @@ public class TranslationEnginesController(
             Corpus = new ResourceLinkDto
             {
                 Id = source.CorpusRef,
-                Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
+                Url = _urlService.GetUrl(
+                    Endpoints.GetTranslationCorpus,
+                    new { id = engineId, corpusId = source.CorpusRef }
+                )
             },
             TextIds = source.TextIds,
             ScriptureRange = source.ScriptureRange
@@ -1185,7 +1188,10 @@ public class TranslationEnginesController(
             Corpus = new ResourceLinkDto
             {
                 Id = source.CorpusRef,
-                Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.CorpusRef })
+                Url = _urlService.GetUrl(
+                    Endpoints.GetTranslationCorpus,
+                    new { id = engineId, corpusId = source.CorpusRef }
+                )
             },
             TextIds = source.TextIds,
             ScriptureRange = source.ScriptureRange
@@ -1263,11 +1269,11 @@ public class TranslationEnginesController(
         return new TranslationCorpusDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl("GetTranslationCorpus", new { id = engineId, corpusId = source.Id }),
+            Url = _urlService.GetUrl(Endpoints.GetTranslationCorpus, new { id = engineId, corpusId = source.Id }),
             Engine = new ResourceLinkDto
             {
                 Id = engineId,
-                Url = _urlService.GetUrl("GetTranslationEngine", new { id = engineId })
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId })
             },
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
@@ -1284,7 +1290,7 @@ public class TranslationEnginesController(
             File = new ResourceLinkDto
             {
                 Id = source.Id,
-                Url = _urlService.GetUrl("GetDataFile", new { id = source.Id })
+                Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id })
             },
             TextId = source.TextId
         };

@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Services;
+﻿namespace Serval.Shared.Utils;
 
 public static class NUnitExtensions
 {

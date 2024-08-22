@@ -32,7 +32,7 @@
 		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
 		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.57.0" />
-		<PackageReference Include="HangFire" Version="1.8.5" />
+		<PackageReference Include="HangFire" Version="1.8.14" />
 		<PackageReference Include="Hangfire.Mongo" Version="1.9.10" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.16" />
 		<PackageReference Include="Microsoft.Extensions.Http.Polly" Version="6.0.14" />
@@ -50,6 +50,7 @@
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj')" />
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
+		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
 		<EmbeddedResource Include="data\flores200languages.csv" />
 	</ItemGroup>
 

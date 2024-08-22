@@ -3,17 +3,13 @@ using Serval.Translation.V1;
 
 namespace Serval.Machine.Shared.Services;
 
-public class ServalTranslationEngineServiceV1(
-    IEnumerable<ITranslationEngineService> engineServices,
-    HealthCheckService healthCheckService
-) : TranslationEngineApi.TranslationEngineApiBase
+public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineService> engineServices)
+    : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
 
     private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices =
         engineServices.ToDictionary(es => es.Type);
-
-    private readonly HealthCheckService _healthCheckService = healthCheckService;
 
     public override async Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
@@ -170,13 +166,6 @@ public class ServalTranslationEngineServiceV1(
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         bool isNative = engineService.IsLanguageNativeToModel(request.Language, out string internalCode);
         return Task.FromResult(new GetLanguageInfoResponse { InternalCode = internalCode, IsNative = isNative, });
-    }
-
-    public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
-    {
-        HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
-        HealthCheckResponse healthCheckResponse = WriteGrpcHealthCheckResponse.Generate(healthReport);
-        return healthCheckResponse;
     }
 
     private ITranslationEngineService GetEngineService(string engineTypeStr)

@@ -6,7 +6,6 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using NSubstitute;
 global using NUnit.Framework;
-global using NUnit.Framework.Constraints;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Services;
 global using Serval.Shared.Utils;
