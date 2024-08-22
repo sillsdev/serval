@@ -4,6 +4,8 @@ global using System.Xml.Linq;
 global using Microsoft.Extensions.Options;
 global using NSubstitute;
 global using NUnit.Framework;
+global using NUnit.Framework.Constraints;
 global using Serval.Shared.Configuration;
+global using Serval.Shared.Utils;
 global using SIL.Machine.Corpora;
 global using SIL.Scripture;

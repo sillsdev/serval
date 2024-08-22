@@ -64,7 +64,7 @@ public class ServalPlatformOutboxMessageHandler(TranslationPlatformApi.Translati
                     await foreach (Pretranslation pretranslation in pretranslations)
                     {
                         await call.RequestStream.WriteAsync(
-                            new InsertPretranslationRequest
+                            new InsertPretranslationsRequest
                             {
                                 EngineId = content!,
                                 CorpusId = pretranslation.CorpusId,
