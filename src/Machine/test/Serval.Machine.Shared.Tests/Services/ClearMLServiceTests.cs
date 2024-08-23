@@ -26,8 +26,9 @@ public class ClearMLServiceTests
         authService.GetAuthTokenAsync().Returns(Task.FromResult("accessToken"));
         var env = new HostingEnvironment { EnvironmentName = Environments.Development };
         var httpClientFactory = Substitute.For<IHttpClientFactory>();
+        var logger = Substitute.For<ILogger<ClearMLService>>();
         httpClientFactory.CreateClient("ClearML").Returns(httpClient);
-        var service = new ClearMLService(httpClientFactory, options, authService, env);
+        var service = new ClearMLService(httpClientFactory, options, authService, env, logger);
 
         string script =
             "from machine.jobs.build_nmt_engine import run\n"

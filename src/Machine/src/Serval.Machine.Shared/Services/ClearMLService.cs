@@ -4,7 +4,8 @@ public class ClearMLService(
     IHttpClientFactory httpClientFactory,
     IOptionsMonitor<ClearMLOptions> options,
     IClearMLAuthenticationService clearMLAuthService,
-    IHostEnvironment env
+    IHostEnvironment env,
+    ILogger<ClearMLService> logger
 ) : IClearMLService
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML");
@@ -19,6 +20,7 @@ public class ClearMLService(
         };
 
     private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
+    private readonly ILogger<ClearMLService> _logger = logger;
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -197,7 +199,8 @@ public class ClearMLService(
         CancellationToken cancellationToken = default
     )
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{service}.{action}")
+        string requestPath = $"{service}.{action}";
+        var request = new HttpRequestMessage(HttpMethod.Post, requestPath)
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
@@ -207,7 +210,20 @@ public class ClearMLService(
         );
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
-        return (JsonObject?)JsonNode.Parse(result);
+        try
+        {
+            return (JsonObject?)JsonNode.Parse(result);
+        }
+        catch
+        {
+            _logger.LogWarning(
+                "Failed to parse ClearML response with code {httpCode} from request path `{request}`: {Response}",
+                response.StatusCode,
+                requestPath,
+                result
+            );
+            throw;
+        }
     }
 
     private class SnakeCaseJsonNamingPolicy : JsonNamingPolicy
