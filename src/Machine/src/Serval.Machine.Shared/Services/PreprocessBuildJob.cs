@@ -178,7 +178,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 }
             }
 
-            foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+            foreach (Row row in AlignPretranslateCorpus(corpus, sourceTextCorpora[0], targetTextCorpus))
             {
                 if (
                     IsInPretranslate(row, corpus)
@@ -374,8 +374,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(Corpus corpus, ITextCorpus srcCorpus, ITextCorpus trgCorpus)
     {
+        IEnumerable<string>? textIds = corpus.PretranslateChapters is not null
+            ? corpus.PretranslateChapters.Keys
+            : corpus.PretranslateTextIds;
+        srcCorpus = srcCorpus.FilterTexts(textIds);
+        trgCorpus = trgCorpus.FilterTexts(textIds);
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
