@@ -246,7 +246,7 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public async Task RunAsync_OnlyParseSelectedBooks_NoBooks()
+    public async Task RunAsync_OnlyParseSelectedBooks_DoNotTrainOnBadBook()
     {
         using TestEnvironment env = new();
         Corpus corpus = env.DefaultParatextCorpus with
@@ -267,7 +267,7 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public void RunAsync_OnlyParseSelectedBooks_TrainOnBooks()
+    public void RunAsync_OnlyParseSelectedBooks_TrainOnBadBook()
     {
         using TestEnvironment env = new();
         Corpus corpus = env.DefaultParatextCorpus with
