@@ -1,6 +1,3 @@
-using System.Collections;
-using SIL.Scripture;
-
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
@@ -246,7 +243,7 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public async Task RunAsync_OnlyParseSelectedBooks_NoBadBooks()
+    public void RunAsync_OnlyParseSelectedBooks_NoBadBooks()
     {
         using TestEnvironment env = new();
         Corpus corpus = env.DefaultParatextCorpus with
@@ -263,7 +260,10 @@ public class PreprocessBuildJobTests
                     new DummyCorpus(new List<string>() { "LEV", "MRK", "MAT" }, new List<string>() { "MAT" })
                 }
             );
-        await env.RunBuildJobAsync(corpus);
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            await env.RunBuildJobAsync(corpus);
+        });
     }
 
     [Test]

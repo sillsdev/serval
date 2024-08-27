@@ -1,4 +1,5 @@
-﻿global using System.IO.Compression;
+﻿global using System.Collections;
+global using System.IO.Compression;
 global using System.Text;
 global using System.Text.Json;
 global using System.Text.Json.Nodes;
@@ -25,4 +26,5 @@ global using SIL.Machine.Tokenization;
 global using SIL.Machine.Translation;
 global using SIL.Machine.Utils;
 global using SIL.ObjectModel;
+global using SIL.Scripture;
 global using SIL.WritingSystems;
