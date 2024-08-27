@@ -188,12 +188,12 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(4));
+            Assert.That(src1Count, Is.EqualTo(5));
             Assert.That(src2Count, Is.EqualTo(12));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(12));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(13));
     }
 
     [Test]
@@ -240,6 +240,35 @@ public class PreprocessBuildJobTests
         Corpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
 
         await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: TranslationEngineType.SmtTransfer);
+    }
+
+    [Test]
+    public async Task RunAsync_RemoveFreestandingEllipses()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus1 = env.DefaultParatextCorpus with
+        {
+            TrainOnChapters = new Dictionary<string, HashSet<int>>
+            {
+                {
+                    "MAT",
+                    new HashSet<int>() { 2 }
+                }
+            }
+        };
+        await env.RunBuildJobAsync(corpus1, useKeyTerms: false);
+        string sourceExtract = await env.GetSourceExtractAsync();
+        Assert.That(
+            sourceExtract,
+            Is.EqualTo("Source one, chapter two, verse one.\nSource one, chapter two, verse two.\n\n"),
+            sourceExtract
+        );
+        string targetExtract = await env.GetTargetExtractAsync();
+        Assert.That(
+            targetExtract,
+            Is.EqualTo("Target one, chapter two, verse one.\n\nTarget one, chapter two, verse three.\n"),
+            targetExtract
+        );
     }
 
     [Test]
@@ -581,6 +610,18 @@ public class PreprocessBuildJobTests
                 .RunAsync(engineId, "build1", [corpus], useKeyTerms ? null : "{\"use_key_terms\":false}", default);
         }
 
+        public async Task<string> GetSourceExtractAsync()
+        {
+            using StreamReader srcReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.src.txt"));
+            return await srcReader.ReadToEndAsync();
+        }
+
+        public async Task<string> GetTargetExtractAsync()
+        {
+            using StreamReader trgReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.trg.txt"));
+            return await trgReader.ReadToEndAsync();
+        }
+
         public async Task<(int Source1Count, int Source2Count, int TargetCount, int TermCount)> GetTrainCountAsync()
         {
             using StreamReader srcReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.src.txt"));
@@ -659,7 +700,7 @@ public class PreprocessBuildJobTests
                 new List<TextRow>() { new TextRow(b, new ScriptureRef(new VerseRef("MAT", "1", "1", ScrVers.English))) }
             ));
 
-        public bool IsTokenized => throw new NotImplementedException();
+        public bool IsTokenized => false;
 
         public ScrVers Versification => ScrVers.English;
 

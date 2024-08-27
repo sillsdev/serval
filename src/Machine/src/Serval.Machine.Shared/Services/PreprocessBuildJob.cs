@@ -268,8 +268,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         IEnumerable<string>? textIds = corpus.TrainOnChapters is not null
             ? corpus.TrainOnChapters.Keys
             : corpus.TrainOnTextIds;
-        srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds)).ToArray();
-        trgCorpus = trgCorpus.FilterTexts(textIds);
+        srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds).Transform(CleanSegment)).ToArray();
+        trgCorpus = trgCorpus.FilterTexts(textIds).Transform(CleanSegment);
 
         if (trgCorpus.IsScripture())
         {
@@ -389,8 +389,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         IEnumerable<string>? textIds = corpus.PretranslateChapters is not null
             ? corpus.PretranslateChapters.Keys
             : corpus.PretranslateTextIds;
-        srcCorpus = srcCorpus.FilterTexts(textIds);
-        trgCorpus = trgCorpus.FilterTexts(textIds);
+        srcCorpus = srcCorpus.FilterTexts(textIds).Transform(CleanSegment);
+        trgCorpus = trgCorpus.FilterTexts(textIds).Transform(CleanSegment);
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
@@ -445,5 +445,12 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     {
         resolvedCode = languageCode;
         return true;
+    }
+
+    private static TextRow CleanSegment(TextRow row)
+    {
+        if (row.Text == "...")
+            row.Segment = [];
+        return row;
     }
 }
