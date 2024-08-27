@@ -246,7 +246,7 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public async Task RunAsync_OnlyParseSelectedBooks_DoNotTrainOnBadBook()
+    public async Task RunAsync_OnlyParseSelectedBooks_NoBadBooks()
     {
         using TestEnvironment env = new();
         Corpus corpus = env.DefaultParatextCorpus with
@@ -274,6 +274,29 @@ public class PreprocessBuildJobTests
         {
             TrainOnTextIds = new() { "MAT" },
             PretranslateTextIds = new() { "MRK" }
+        };
+        env.CorpusService = Substitute.For<ICorpusService>();
+        env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+            .Returns(
+                new List<ITextCorpus>()
+                {
+                    new DummyCorpus(new List<string>() { "LEV", "MRK", "MAT" }, new List<string>() { "MAT" })
+                }
+            );
+        Assert.ThrowsAsync<ArgumentException>(async () =>
+        {
+            await env.RunBuildJobAsync(corpus);
+        });
+    }
+
+    [Test]
+    public void RunAsync_OnlyParseSelectedBooks_PretranslateOnBadBook()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus = env.DefaultParatextCorpus with
+        {
+            TrainOnTextIds = new() { "LEV" },
+            PretranslateTextIds = new() { "MAT" }
         };
         env.CorpusService = Substitute.For<ICorpusService>();
         env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
