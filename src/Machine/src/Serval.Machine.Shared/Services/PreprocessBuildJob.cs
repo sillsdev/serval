@@ -183,7 +183,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 if (
                     IsInPretranslate(row, corpus)
                     && row.SourceSegment.Length > 0
-                    && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
+                    && row.SourceSegment.Trim() != "..."
+                    && (row.TargetSegment.Length == 0 || row.TargetSegment.Trim() == "..." || !IsInTrain(row, corpus))
                 )
                 {
                     pretranslateWriter.WriteStartObject();
@@ -299,7 +300,12 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         return sourceOnlyRows
             .Concat(targetRows)
             // filter out every list that only contains completely empty rows
-            .Where(rows => rows.Any(r => r.SourceSegment.Length > 0 || r.TargetSegment.Length > 0));
+            .Where(rows =>
+                rows.Any(r =>
+                    (r.SourceSegment.Length > 0 || r.TargetSegment.Length > 0)
+                    && (r.SourceSegment.Trim() != "..." || r.TargetSegment.Trim() != "...")
+                )
+            );
     }
 
     private static IEnumerable<Row?> AlignScripture(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
