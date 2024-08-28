@@ -242,6 +242,76 @@ public class PreprocessBuildJobTests
         await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: TranslationEngineType.SmtTransfer);
     }
 
+    [Test]
+    public void RunAsync_OnlyParseSelectedBooks_NoBadBooks()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus = env.DefaultParatextCorpus with
+        {
+            TrainOnTextIds = new() { "LEV" },
+            PretranslateTextIds = new() { "MRK" }
+        };
+
+        env.CorpusService = Substitute.For<ICorpusService>();
+        env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+            .Returns(
+                new List<ITextCorpus>()
+                {
+                    new DummyCorpus(new List<string>() { "LEV", "MRK", "MAT" }, new List<string>() { "MAT" })
+                }
+            );
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            await env.RunBuildJobAsync(corpus);
+        });
+    }
+
+    [Test]
+    public void RunAsync_OnlyParseSelectedBooks_TrainOnBadBook()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus = env.DefaultParatextCorpus with
+        {
+            TrainOnTextIds = new() { "MAT" },
+            PretranslateTextIds = new() { "MRK" }
+        };
+        env.CorpusService = Substitute.For<ICorpusService>();
+        env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+            .Returns(
+                new List<ITextCorpus>()
+                {
+                    new DummyCorpus(new List<string>() { "LEV", "MRK", "MAT" }, new List<string>() { "MAT" })
+                }
+            );
+        Assert.ThrowsAsync<ArgumentException>(async () =>
+        {
+            await env.RunBuildJobAsync(corpus);
+        });
+    }
+
+    [Test]
+    public void RunAsync_OnlyParseSelectedBooks_PretranslateOnBadBook()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus = env.DefaultParatextCorpus with
+        {
+            TrainOnTextIds = new() { "LEV" },
+            PretranslateTextIds = new() { "MAT" }
+        };
+        env.CorpusService = Substitute.For<ICorpusService>();
+        env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+            .Returns(
+                new List<ITextCorpus>()
+                {
+                    new DummyCorpus(new List<string>() { "LEV", "MRK", "MAT" }, new List<string>() { "MAT" })
+                }
+            );
+        Assert.ThrowsAsync<ArgumentException>(async () =>
+        {
+            await env.RunBuildJobAsync(corpus);
+        });
+    }
+
     private class TestEnvironment : DisposableBase
     {
         private static readonly string TestDataPath = Path.Combine(
@@ -256,7 +326,7 @@ public class PreprocessBuildJobTests
         private readonly TempDirectory _tempDir;
 
         public ISharedFileService SharedFileService { get; }
-        public ICorpusService CorpusService { get; }
+        public ICorpusService CorpusService { get; set; }
         public IPlatformService PlatformService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public IDistributedReaderWriterLockFactory LockFactory { get; }
@@ -576,6 +646,57 @@ public class PreprocessBuildJobTests
         protected override void DisposeManagedResources()
         {
             _tempDir.Dispose();
+        }
+    }
+
+    private class DummyCorpus(IEnumerable<string> books, IEnumerable<string> failsOn) : ITextCorpus
+    {
+        private IEnumerable<string> FailsOn { get; } = failsOn;
+
+        public IEnumerable<IText> Texts =>
+            books.Select(b => new MemoryText(
+                b,
+                new List<TextRow>() { new TextRow(b, new ScriptureRef(new VerseRef("MAT", "1", "1", ScrVers.English))) }
+            ));
+
+        public bool IsTokenized => throw new NotImplementedException();
+
+        public ScrVers Versification => ScrVers.English;
+
+        public int Count(bool includeEmpty = true, IEnumerable<string>? textIds = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int Count(bool includeEmpty = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerator<TextRow> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
+        {
+            if (textIds.Intersect(FailsOn).Any())
+            {
+                throw new ArgumentException(
+                    $"Text ids provided ({string.Join(',', textIds)}) include text ids specified to fail on ({string.Join(',', FailsOn)})."
+                );
+            }
+            return Texts.Where(t => textIds.Contains(t.Id)).SelectMany(t => t.GetRows());
+        }
+
+        public IEnumerable<TextRow> GetRows()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Texts.GetEnumerator();
         }
     }
 }

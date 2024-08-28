@@ -135,7 +135,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 continue;
 
             int skipCount = 0;
-            foreach (Row?[] rows in AlignTrainCorpus(sourceTextCorpora, targetTextCorpus))
+            foreach (Row?[] rows in AlignTrainCorpus(corpus, sourceTextCorpora, targetTextCorpus))
             {
                 if (skipCount > 0)
                 {
@@ -178,7 +178,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 }
             }
 
-            foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+            foreach (Row row in AlignPretranslateCorpus(corpus, sourceTextCorpora[0], targetTextCorpus))
             {
                 if (
                     IsInPretranslate(row, corpus)
@@ -259,8 +259,18 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             && (chapters.Contains(sr.ChapterNum) || chapters.Count == 0);
     }
 
-    private static IEnumerable<Row?[]> AlignTrainCorpus(IReadOnlyList<ITextCorpus> srcCorpora, ITextCorpus trgCorpus)
+    private static IEnumerable<Row?[]> AlignTrainCorpus(
+        Corpus corpus,
+        IReadOnlyList<ITextCorpus> srcCorpora,
+        ITextCorpus trgCorpus
+    )
     {
+        IEnumerable<string>? textIds = corpus.TrainOnChapters is not null
+            ? corpus.TrainOnChapters.Keys
+            : corpus.TrainOnTextIds;
+        srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds)).ToArray();
+        trgCorpus = trgCorpus.FilterTexts(textIds);
+
         if (trgCorpus.IsScripture())
         {
             return srcCorpora
@@ -374,8 +384,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(Corpus corpus, ITextCorpus srcCorpus, ITextCorpus trgCorpus)
     {
+        IEnumerable<string>? textIds = corpus.PretranslateChapters is not null
+            ? corpus.PretranslateChapters.Keys
+            : corpus.PretranslateTextIds;
+        srcCorpus = srcCorpus.FilterTexts(textIds);
+        trgCorpus = trgCorpus.FilterTexts(textIds);
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
