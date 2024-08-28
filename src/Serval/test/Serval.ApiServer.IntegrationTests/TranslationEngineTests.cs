@@ -192,6 +192,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 403, ECHO_ENGINE3_ID)] //Engine is not owned
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, "phony_id")]
     public async Task GetByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
