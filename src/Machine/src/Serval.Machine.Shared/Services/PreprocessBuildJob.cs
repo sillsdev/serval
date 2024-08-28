@@ -299,13 +299,19 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
         return sourceOnlyRows
             .Concat(targetRows)
+            .Select(rows =>
+                rows.Select(r =>
+                    {
+                        string sourceSegment,
+                            targetSegment;
+                        sourceSegment = r.SourceSegment.Trim() == "..." ? "" : r.SourceSegment;
+                        targetSegment = r.TargetSegment.Trim() == "..." ? "" : r.TargetSegment;
+                        return new Row(r.TextId, r.Refs, sourceSegment, targetSegment, r.RowCount);
+                    })
+                    .ToArray()
+            )
             // filter out every list that only contains completely empty rows
-            .Where(rows =>
-                rows.Any(r =>
-                    (r.SourceSegment.Length > 0 || r.TargetSegment.Length > 0)
-                    && (r.SourceSegment.Trim() != "..." || r.TargetSegment.Trim() != "...")
-                )
-            );
+            .Where(rows => rows.Any(r => r.SourceSegment.Length > 0 || r.TargetSegment.Length > 0));
     }
 
     private static IEnumerable<Row?> AlignScripture(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
