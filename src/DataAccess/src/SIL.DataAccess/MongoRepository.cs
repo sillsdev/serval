@@ -30,27 +30,41 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         CancellationToken cancellationToken = default
     )
     {
-        if (_context.Session is not null)
+        try
         {
-            return await _collection
-                .AsQueryable(_context.Session)
-                .Where(filter)
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
+            if (_context.Session is not null)
+            {
+                return await _collection
+                    .AsQueryable(_context.Session)
+                    .Where(filter)
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            return await _collection.AsQueryable().Where(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
-        return await _collection.AsQueryable().Where(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
+        catch (FormatException)
+        {
+            return [];
+        }
     }
 
     public async Task<bool> ExistsAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
-        if (_context.Session is not null)
+        try
         {
-            return await _collection
-                .AsQueryable(_context.Session)
-                .AnyAsync(filter, cancellationToken)
-                .ConfigureAwait(false);
+            if (_context.Session is not null)
+            {
+                return await _collection
+                    .AsQueryable(_context.Session)
+                    .AnyAsync(filter, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            return await _collection.AsQueryable().AnyAsync(filter, cancellationToken).ConfigureAwait(false);
         }
-        return await _collection.AsQueryable().AnyAsync(filter, cancellationToken).ConfigureAwait(false);
+        catch (FormatException)
+        {
+            return false;
+        }
     }
 
     public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
@@ -115,17 +129,24 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
             ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After
         };
         T? entity;
-        if (_context.Session is not null)
+        try
         {
-            entity = await _collection
-                .FindOneAndUpdateAsync(_context.Session, filter, updateDef, options, cancellationToken)
-                .ConfigureAwait(false);
+            if (_context.Session is not null)
+            {
+                entity = await _collection
+                    .FindOneAndUpdateAsync(_context.Session, filter, updateDef, options, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                entity = await _collection
+                    .FindOneAndUpdateAsync(filter, updateDef, options, cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
-        else
+        catch (FormatException)
         {
-            entity = await _collection
-                .FindOneAndUpdateAsync(filter, updateDef, options, cancellationToken)
-                .ConfigureAwait(false);
+            return default;
         }
         return entity;
     }
@@ -141,32 +162,46 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         updateBuilder.Inc(e => e.Revision, 1);
         UpdateDefinition<T> updateDef = updateBuilder.Build();
         UpdateResult result;
-        if (_context.Session is not null)
+        try
         {
-            result = await _collection
-                .UpdateManyAsync(_context.Session, filter, updateDef, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            if (_context.Session is not null)
+            {
+                result = await _collection
+                    .UpdateManyAsync(_context.Session, filter, updateDef, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                result = await _collection
+                    .UpdateManyAsync(filter, updateDef, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
-        else
+        catch (FormatException)
         {
-            result = await _collection
-                .UpdateManyAsync(filter, updateDef, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            return 0;
         }
         return (int)result.ModifiedCount;
     }
 
     public async Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
-        if (_context.Session is not null)
+        try
         {
+            if (_context.Session is not null)
+            {
+                return await _collection
+                    .FindOneAndDeleteAsync(_context.Session, filter, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
             return await _collection
-                .FindOneAndDeleteAsync(_context.Session, filter, cancellationToken: cancellationToken)
+                .FindOneAndDeleteAsync(filter, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
-        return await _collection
-            .FindOneAndDeleteAsync(filter, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        catch (FormatException)
+        {
+            return default;
+        }
     }
 
     public async Task<int> DeleteAllAsync(
@@ -175,17 +210,24 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
     )
     {
         DeleteResult result;
-        if (_context.Session is not null)
+        try
         {
-            result = await _collection
-                .DeleteManyAsync(_context.Session, filter, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            if (_context.Session is not null)
+            {
+                result = await _collection
+                    .DeleteManyAsync(_context.Session, filter, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                result = await _collection
+                    .DeleteManyAsync(filter, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
-        else
+        catch (FormatException)
         {
-            result = await _collection
-                .DeleteManyAsync(filter, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            return 0;
         }
         return (int)result.DeletedCount;
     }
