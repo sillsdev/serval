@@ -1,6 +1,6 @@
 externalHost: prod.serval-api.org
 environment: Production
-deploymentVersion: '1.5.5.1'
+deploymentVersion: '1.5.6'
 alertEmail: prod-serval-alerts@languagetechnology.org
 emailsToAlert: 'john_lambert@sil.org, eli_lowry@sil.org'
 enableTls: true
@@ -8,7 +8,7 @@ namespace: serval
 auth0Domain: languagetechnology.auth0.com
 lokiTenent: nlp-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
-servalImage: ghcr.io/sillsdev/serval:1.5.5.1
+servalImage: ghcr.io/sillsdev/serval:1.5.6
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.5.4
 ClearMLQueue: production
 MongoConnectionPrefix: prod_
