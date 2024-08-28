@@ -8,14 +8,21 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
-        if (_context.Session is not null)
+        try
         {
-            return await _collection
-                .AsQueryable(_context.Session)
-                .FirstOrDefaultAsync(filter, cancellationToken)
-                .ConfigureAwait(false);
+            if (_context.Session is not null)
+            {
+                return await _collection
+                    .AsQueryable(_context.Session)
+                    .FirstOrDefaultAsync(filter, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            return await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken).ConfigureAwait(false);
         }
-        return await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken).ConfigureAwait(false);
+        catch (FormatException)
+        {
+            return default;
+        }
     }
 
     public async Task<IReadOnlyList<T>> GetAllAsync(
