@@ -183,8 +183,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 if (
                     IsInPretranslate(row, corpus)
                     && row.SourceSegment.Length > 0
-                    && row.SourceSegment.Trim() != "..."
-                    && (row.TargetSegment.Length == 0 || row.TargetSegment.Trim() == "..." || !IsInTrain(row, corpus))
+                    && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
                 )
                 {
                     pretranslateWriter.WriteStartObject();
@@ -269,8 +268,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         IEnumerable<string>? textIds = corpus.TrainOnChapters is not null
             ? corpus.TrainOnChapters.Keys
             : corpus.TrainOnTextIds;
-        srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds)).ToArray();
-        trgCorpus = trgCorpus.FilterTexts(textIds);
+        srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds).Transform(CleanSegment)).ToArray();
+        trgCorpus = trgCorpus.FilterTexts(textIds).Transform(CleanSegment);
 
         if (trgCorpus.IsScripture())
         {
@@ -299,17 +298,6 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
         return sourceOnlyRows
             .Concat(targetRows)
-            .Select(rows =>
-                rows.Select(r =>
-                    {
-                        string sourceSegment,
-                            targetSegment;
-                        sourceSegment = r.SourceSegment.Trim() == "..." ? "" : r.SourceSegment;
-                        targetSegment = r.TargetSegment.Trim() == "..." ? "" : r.TargetSegment;
-                        return new Row(r.TextId, r.Refs, sourceSegment, targetSegment, r.RowCount);
-                    })
-                    .ToArray()
-            )
             // filter out every list that only contains completely empty rows
             .Where(rows => rows.Any(r => r.SourceSegment.Length > 0 || r.TargetSegment.Length > 0));
     }
@@ -401,8 +389,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         IEnumerable<string>? textIds = corpus.PretranslateChapters is not null
             ? corpus.PretranslateChapters.Keys
             : corpus.PretranslateTextIds;
-        srcCorpus = srcCorpus.FilterTexts(textIds);
-        trgCorpus = trgCorpus.FilterTexts(textIds);
+        srcCorpus = srcCorpus.FilterTexts(textIds).Transform(CleanSegment);
+        trgCorpus = trgCorpus.FilterTexts(textIds).Transform(CleanSegment);
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
@@ -457,5 +445,12 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     {
         resolvedCode = languageCode;
         return true;
+    }
+
+    private static TextRow CleanSegment(TextRow row)
+    {
+        if (row.Text == "...")
+            row.Segment = [];
+        return row;
     }
 }

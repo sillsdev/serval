@@ -659,7 +659,7 @@ public class PreprocessBuildJobTests
                 new List<TextRow>() { new TextRow(b, new ScriptureRef(new VerseRef("MAT", "1", "1", ScrVers.English))) }
             ));
 
-        public bool IsTokenized => throw new NotImplementedException();
+        public bool IsTokenized => false;
 
         public ScrVers Versification => ScrVers.English;
 
