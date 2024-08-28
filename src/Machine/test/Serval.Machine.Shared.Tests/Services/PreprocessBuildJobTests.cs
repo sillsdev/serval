@@ -188,12 +188,12 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(4));
+            Assert.That(src1Count, Is.EqualTo(5));
             Assert.That(src2Count, Is.EqualTo(12));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(12));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(13));
     }
 
     [Test]
