@@ -87,6 +87,7 @@ public class DataFilesTests
     [TestCase(new[] { Scopes.ReadFiles }, 403, ID3)]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403, ID1)]
     [TestCase(new[] { Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 404, "phony_id")]
     public async Task GetByIDAsync(IEnumerable<string> scope, int expectedStatusCode, string fileId)
     {
         DataFilesClient client = _env.CreateClient(scope);

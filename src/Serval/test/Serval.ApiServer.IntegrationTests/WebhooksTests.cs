@@ -53,6 +53,7 @@ public class WebhooksTests
     [TestCase(null, 200, ID)] //null gives all scope privileges
     [TestCase(null, 404, DOES_NOT_EXIST_ID)]
     [TestCase(new string[] { Scopes.ReadFiles }, 403, ID)] //Arbitrary unrelated privilege
+    [TestCase(null, 404, "phony_id")]
     public async Task GetWebhookByIdAsync(IEnumerable<string>? scope, int expectedStatusCode, string webhookId)
     {
         WebhooksClient client = _env.CreateClient(scope);
