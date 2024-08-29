@@ -243,6 +243,35 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
+    public async Task RunAsync_RemoveFreestandingEllipses()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus1 = env.DefaultParatextCorpus with
+        {
+            TrainOnChapters = new Dictionary<string, HashSet<int>>
+            {
+                {
+                    "MAT",
+                    new HashSet<int>() { 2 }
+                }
+            }
+        };
+        await env.RunBuildJobAsync(corpus1, useKeyTerms: false);
+        string sourceExtract = await env.GetSourceExtractAsync();
+        Assert.That(
+            sourceExtract,
+            Is.EqualTo("Source one, chapter two, verse one.\nSource one, chapter two, verse two.\n\n"),
+            sourceExtract
+        );
+        string targetExtract = await env.GetTargetExtractAsync();
+        Assert.That(
+            targetExtract,
+            Is.EqualTo("Target one, chapter two, verse one.\n\nTarget one, chapter two, verse three.\n"),
+            targetExtract
+        );
+    }
+
+    [Test]
     public void RunAsync_OnlyParseSelectedBooks_NoBadBooks()
     {
         using TestEnvironment env = new();
@@ -579,6 +608,18 @@ public class PreprocessBuildJobTests
         {
             return GetBuildJob(engineType)
                 .RunAsync(engineId, "build1", [corpus], useKeyTerms ? null : "{\"use_key_terms\":false}", default);
+        }
+
+        public async Task<string> GetSourceExtractAsync()
+        {
+            using StreamReader srcReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.src.txt"));
+            return await srcReader.ReadToEndAsync();
+        }
+
+        public async Task<string> GetTargetExtractAsync()
+        {
+            using StreamReader trgReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.trg.txt"));
+            return await trgReader.ReadToEndAsync();
         }
 
         public async Task<(int Source1Count, int Source2Count, int TargetCount, int TermCount)> GetTrainCountAsync()
