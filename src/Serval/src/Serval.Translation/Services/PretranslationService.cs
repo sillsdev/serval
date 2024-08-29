@@ -62,12 +62,7 @@ public class PretranslationService(
             .Select(p =>
                 (
                     Refs: (IReadOnlyList<ScriptureRef>)
-                        p.Refs.Select(r =>
-                            ScriptureRef
-                                .Parse(r, sourceSettings.Versification)
-                                .ChangeVersification(targetSettings.Versification)
-                        )
-                            .ToArray(),
+                        p.Refs.Select(r => ScriptureRef.Parse(r, sourceSettings.Versification)).ToArray(),
                     p.Translation
                 )
             )
@@ -79,7 +74,11 @@ public class PretranslationService(
             // the pretranslations are generated from the source book and inserted into the target book
             // use relaxed references since the USFM structure may not be the same
             pretranslations = pretranslations.Select(p =>
-                ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
+                (
+                    (IReadOnlyList<ScriptureRef>)
+                        p.Refs.Select(r => r.ChangeVersification(targetSettings.Versification).ToRelaxed()).ToArray(),
+                    p.Translation
+                )
             );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
