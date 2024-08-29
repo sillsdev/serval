@@ -254,6 +254,13 @@ public class PreprocessBuildJobTests
                     "MAT",
                     new HashSet<int>() { 2 }
                 }
+            },
+            PretranslateChapters = new Dictionary<string, HashSet<int>>
+            {
+                {
+                    "MAT",
+                    new HashSet<int>() { 2 }
+                }
             }
         };
         await env.RunBuildJobAsync(corpus1, useKeyTerms: false);
@@ -269,6 +276,10 @@ public class PreprocessBuildJobTests
             Is.EqualTo("Target one, chapter two, verse one.\n\nTarget one, chapter two, verse three.\n"),
             targetExtract
         );
+        JsonArray? pretranslations = await env.GetPretranslationAsync();
+        Assert.That(pretranslations, Is.Not.Null);
+        Assert.That(pretranslations.Count, Is.EqualTo(1));
+        Assert.That(pretranslations[0]!["translation"]!.ToString(), Is.EqualTo("Source one, chapter two, verse two."));
     }
 
     [Test]
@@ -651,12 +662,16 @@ public class PreprocessBuildJobTests
             return (src1Count, src2Count, trgCount, termCount);
         }
 
-        public async Task<int> GetPretranslateCountAsync()
+        public async Task<JsonArray?> GetPretranslationAsync()
         {
             using StreamReader reader =
                 new(await SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"));
-            JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(await reader.ReadToEndAsync());
-            return pretranslationJsonObject?.Count ?? 0;
+            return JsonSerializer.Deserialize<JsonArray>(await reader.ReadToEndAsync());
+        }
+
+        public async Task<int> GetPretranslateCountAsync()
+        {
+            return (await GetPretranslationAsync())?.Count ?? 0;
         }
 
         private void ZipParatextProject(string name)
