@@ -62,7 +62,12 @@ public class PretranslationService(
             .Select(p =>
                 (
                     Refs: (IReadOnlyList<ScriptureRef>)
-                        p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToArray(),
+                        p.Refs.Select(r =>
+                            ScriptureRef
+                                .Parse(r, sourceSettings.Versification)
+                                .ChangeVersification(targetSettings.Versification)
+                        )
+                            .ToArray(),
                     p.Translation
                 )
             )
