@@ -56,25 +56,26 @@ public class PretranslationService(
             targetFile.Filename
         );
 
-        IEnumerable<(IReadOnlyList<string> Refs, string Translation)> rawPretranslations = (
+        IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = (
             await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
-        ).Select(p => (p.Refs, p.Translation));
+        )
+            .Select(p =>
+                (
+                    Refs: (IReadOnlyList<ScriptureRef>)
+                        p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToArray(),
+                    p.Translation
+                )
+            )
+            .OrderBy(p => p.Refs[0]);
 
         // Update the target book if it exists
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
             // the pretranslations are generated from the source book and inserted into the target book
             // use relaxed references since the USFM structure may not be the same
-            IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = rawPretranslations
-                .Select(p =>
-                    (
-                        (IReadOnlyList<ScriptureRef>)
-                            p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification).ToRelaxed())
-                                .ToArray(),
-                        p.Translation
-                    )
-                )
-                .OrderBy(p => p.Item1[0]);
+            pretranslations = pretranslations.Select(p =>
+                ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
+            );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
             string usfm = "";
@@ -128,15 +129,6 @@ public class PretranslationService(
 
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
         {
-            IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = rawPretranslations
-                .Select(p =>
-                    (
-                        (IReadOnlyList<ScriptureRef>)
-                            p.Refs.Select(r => ScriptureRef.Parse(r, sourceSettings.Versification)).ToArray(),
-                        p.Translation
-                    )
-                )
-                .OrderBy(p => p.Item1[0]);
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename);
 
