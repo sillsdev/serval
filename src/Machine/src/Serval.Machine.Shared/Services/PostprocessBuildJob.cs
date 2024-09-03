@@ -7,10 +7,12 @@ public class PostprocessBuildJob(
     IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<PostprocessBuildJob> logger,
-    ISharedFileService sharedFileService
+    ISharedFileService sharedFileService,
+    IOptionsMonitor<BuildJobOptions> buildJobOptions
 ) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
 {
     protected ISharedFileService SharedFileService { get; } = sharedFileService;
+    private readonly BuildJobOptions _buildJobOptions = buildJobOptions.CurrentValue;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -33,7 +35,12 @@ public class PostprocessBuildJob(
             await PlatformService.InsertPretranslationsAsync(engineId, pretranslationsStream, cancellationToken);
         }
 
-        await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
+        await using (
+            await @lock.WriterLockAsync(
+                lifetime: _buildJobOptions.PostProcessLockLifetime,
+                cancellationToken: CancellationToken.None
+            )
+        )
         {
             await DataAccessContext.WithTransactionAsync(
                 async (ct) =>

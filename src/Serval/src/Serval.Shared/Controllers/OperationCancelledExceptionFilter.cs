@@ -11,7 +11,11 @@ public class OperationCancelledExceptionFilter(ILoggerFactory loggerFactory) : E
             || context.Exception is RpcException rpcEx && rpcEx.StatusCode == StatusCode.Cancelled
         )
         {
-            _logger.LogInformation("Request was cancelled");
+            _logger.LogInformation(
+                "Request {RequestMethod}:{RequestPath} was cancelled",
+                context.HttpContext.Request.Method,
+                context.HttpContext.Request.Path
+            );
             context.ExceptionHandled = true;
             context.Result = new StatusCodeResult(499);
         }

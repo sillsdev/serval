@@ -10,6 +10,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
     {
         services.AddFeatureManagement();
         services.AddRouting(o => o.LowercaseUrls = true);
+
+        var apiOptions = new ApiOptions();
+        Configuration.GetSection(ApiOptions.Key).Bind(apiOptions);
+        services.AddRequestTimeouts(o =>
+        {
+            o.DefaultPolicy = new RequestTimeoutPolicy { Timeout = apiOptions.DefaultHttpRequestTimeout };
+        });
         services.AddOutputCache(options =>
         {
             options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
@@ -215,6 +222,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         app.UseAuthentication();
 
         app.UseRouting();
+        app.UseRequestTimeouts();
         app.UseOutputCache();
         app.UseAuthorization();
         app.UseEndpoints(x =>

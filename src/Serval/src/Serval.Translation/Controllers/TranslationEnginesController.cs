@@ -757,7 +757,7 @@ public class TranslationEnginesController(
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetNewerRevisionAsync(buildId, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
-                cancellationToken
+                cancellationToken: cancellationToken
             );
             return change.Type switch
             {
@@ -867,7 +867,7 @@ public class TranslationEnginesController(
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetActiveNewerRevisionAsync(id, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
-                cancellationToken
+                cancellationToken: cancellationToken
             );
             return change.Type switch
             {

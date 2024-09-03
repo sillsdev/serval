@@ -49,6 +49,24 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddDistributedReaderWriterLockOptions(
+        this IMachineBuilder build,
+        Action<DistributedReaderWriterLockOptions> configureOptions
+    )
+    {
+        build.Services.Configure(configureOptions);
+        return build;
+    }
+
+    public static IMachineBuilder AddDistributedReaderWriterLockOptions(
+        this IMachineBuilder build,
+        IConfiguration config
+    )
+    {
+        build.Services.Configure<DistributedReaderWriterLockOptions>(config);
+        return build;
+    }
+
     public static IMachineBuilder AddMessageOutboxOptions(
         this IMachineBuilder builder,
         Action<MessageOutboxOptions> configureOptions

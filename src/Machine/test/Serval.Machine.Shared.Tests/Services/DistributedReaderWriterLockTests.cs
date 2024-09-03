@@ -394,9 +394,11 @@ public class DistributedReaderWriterLockTests
         {
             Locks = new MemoryRepository<RWLock>();
             var idGenerator = new ObjectIdGenerator();
-            var options = Substitute.For<IOptions<ServiceOptions>>();
-            options.Value.Returns(new ServiceOptions { ServiceId = "host" });
-            Factory = new DistributedReaderWriterLockFactory(options, Locks, idGenerator);
+            var serviceOptions = Substitute.For<IOptions<ServiceOptions>>();
+            serviceOptions.Value.Returns(new ServiceOptions { ServiceId = "host" });
+            var lockOptions = Substitute.For<IOptions<DistributedReaderWriterLockOptions>>();
+            lockOptions.Value.Returns(new DistributedReaderWriterLockOptions());
+            Factory = new DistributedReaderWriterLockFactory(serviceOptions, lockOptions, Locks, idGenerator);
         }
 
         public DistributedReaderWriterLockFactory Factory { get; }
