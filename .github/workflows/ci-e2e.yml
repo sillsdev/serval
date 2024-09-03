@@ -30,8 +30,15 @@ jobs:
       - name: Install regctl
         uses: iarekylew00t/regctl-installer@v1
 
-      - name: Getr Version of Machine.py
-        run: echo "MACHINE_PY_IMAGE=ghcr.io/sillsdev/machine.py:$(regctl image config ghcr.io/sillsdev/machine.py | jq -r ".config.Labels[\"org.opencontainers.image.version\"]")" >> $GITHUB_ENV
+      - name: Set proper version of Machine.py
+        run: |
+          export MACHINE_PY_IMAGE=ghcr.io/sillsdev/machine.py:$(regctl image config ghcr.io/sillsdev/machine.py | jq -r ".config.Labels[\"org.opencontainers.image.version\"]") && \
+          echo "MACHINE_PY_IMAGE=$MACHINE_PY_IMAGE" >> $GITHUB_ENV && \
+          echo "MACHINE_PY_CPU_IMAGE=$MACHINE_PY_IMAGE.cpu_only" >> $GITHUB_ENV
+
+      - name: Confirm proper version of Machine.py
+        run: |
+          echo $MACHINE_PY_IMAGE $MACHINE_PY_CPU_IMAGE
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -49,6 +56,9 @@ jobs:
 
       - name: Test
         run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E" --collect:"Xplat Code Coverage"
+
+      - name: Debug network again
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3

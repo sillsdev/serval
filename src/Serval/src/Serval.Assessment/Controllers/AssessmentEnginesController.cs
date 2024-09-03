@@ -314,7 +314,7 @@ public class AssessmentEnginesController(
             EntityChange<Job> change = await TaskEx.Timeout(
                 ct => _jobService.GetNewerRevisionAsync(jobId, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
-                cancellationToken
+                cancellationToken: cancellationToken
             );
             return change.Type switch
             {

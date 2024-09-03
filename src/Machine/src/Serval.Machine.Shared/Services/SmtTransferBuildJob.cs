@@ -10,7 +10,8 @@ public class SmtTransferBuildJob(
     IRepository<TrainSegmentPair> trainSegmentPairs,
     ITruecaserFactory truecaserFactory,
     ISmtModelFactory smtModelFactory,
-    ICorpusService corpusService
+    ICorpusService corpusService,
+    IOptions<BuildJobOptions> buildJobOptions
 )
     : HangfireBuildJob<IReadOnlyList<Corpus>>(
         platformService,
@@ -25,6 +26,7 @@ public class SmtTransferBuildJob(
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ICorpusService _corpusService = corpusService;
+    private readonly BuildJobOptions _buildJobOptions = buildJobOptions.Value;
 
     protected override Task InitializeAsync(
         string engineId,
@@ -110,7 +112,12 @@ public class SmtTransferBuildJob(
         if (engine is null)
             throw new OperationCanceledException();
 
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
+        await using (
+            await @lock.WriterLockAsync(
+                lifetime: _buildJobOptions.PostProcessLockLifetime,
+                cancellationToken: cancellationToken
+            )
+        )
         {
             cancellationToken.ThrowIfCancellationRequested();
             await smtModelTrainer.SaveAsync(CancellationToken.None);

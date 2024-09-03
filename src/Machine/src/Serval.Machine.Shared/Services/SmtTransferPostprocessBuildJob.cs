@@ -8,10 +8,11 @@ public class SmtTransferPostprocessBuildJob(
     IBuildJobService buildJobService,
     ILogger<SmtTransferPostprocessBuildJob> logger,
     ISharedFileService sharedFileService,
+    IOptionsMonitor<BuildJobOptions> buildJobOptions,
     IRepository<TrainSegmentPair> trainSegmentPairs,
     ISmtModelFactory smtModelFactory,
     ITruecaserFactory truecaserFactory,
-    IOptionsMonitor<SmtTransferEngineOptions> options
+    IOptionsMonitor<SmtTransferEngineOptions> engineOptions
 )
     : PostprocessBuildJob(
         platformService,
@@ -20,13 +21,14 @@ public class SmtTransferPostprocessBuildJob(
         dataAccessContext,
         buildJobService,
         logger,
-        sharedFileService
+        sharedFileService,
+        buildJobOptions
     )
 {
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _options = options;
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
 
     protected override async Task<int> SaveModelAsync(string engineId, string buildId)
     {
@@ -38,7 +40,7 @@ public class SmtTransferPostprocessBuildJob(
         )
         {
             await _smtModelFactory.UpdateEngineFromAsync(
-                Path.Combine(_options.CurrentValue.EnginesDir, engineId),
+                Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId),
                 engineStream,
                 CancellationToken.None
             );
@@ -54,7 +56,7 @@ public class SmtTransferPostprocessBuildJob(
         if (segmentPairs.Count == 0)
             return segmentPairs.Count;
 
-        string engineDir = Path.Combine(_options.CurrentValue.EnginesDir, engineId);
+        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         var tokenizer = new LatinWordTokenizer();
         var detokenizer = new LatinWordDetokenizer();
         ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineDir);
