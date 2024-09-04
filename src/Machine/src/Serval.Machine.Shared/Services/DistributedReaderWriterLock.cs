@@ -51,11 +51,24 @@ public class DistributedReaderWriterLock(
     {
         lifetime ??= _defaultLifetime;
         string lockId = _idGenerator.GenerateId();
+        StackTrace stackTrace = new StackTrace();
+        string callingSignature =
+            $"Filename: {stackTrace.GetFrame(1)?.GetFileName()}, Method: {stackTrace.GetFrame(1)?.GetMethod()?.Name}";
+
         if (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken))
         {
             await _locks.UpdateAsync(
                 _id,
-                u => u.Add(rwl => rwl.WriterQueue, new Lock { Id = lockId, HostId = _hostId }),
+                u =>
+                    u.Add(
+                        rwl => rwl.WriterQueue,
+                        new Lock
+                        {
+                            Id = lockId,
+                            HostId = _hostId,
+                            CallingSignature = callingSignature
+                        }
+                    ),
                 cancellationToken: cancellationToken
             );
             try
