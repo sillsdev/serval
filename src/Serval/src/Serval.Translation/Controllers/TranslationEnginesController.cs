@@ -31,6 +31,7 @@ public class TranslationEnginesController(
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet]
+    [RequestTimeout("LongRequest")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]

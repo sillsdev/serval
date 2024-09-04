@@ -10,6 +10,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
     {
         services.AddFeatureManagement();
         services.AddRouting(o => o.LowercaseUrls = true);
+        services.AddRequestTimeouts(o =>
+        {
+            o.DefaultPolicy = new RequestTimeoutPolicy { Timeout = TimeSpan.FromSeconds(10) };
+            o.AddPolicy("LongRequest", TimeSpan.FromSeconds(55));
+        });
         services.AddOutputCache(options =>
         {
             options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
@@ -215,6 +220,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         app.UseAuthentication();
 
         app.UseRouting();
+        app.UseRequestTimeouts();
         app.UseOutputCache();
         app.UseAuthorization();
         app.UseEndpoints(x =>

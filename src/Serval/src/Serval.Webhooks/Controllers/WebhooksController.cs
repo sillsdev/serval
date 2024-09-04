@@ -15,6 +15,7 @@ public class WebhooksController(IAuthorizationService authService, IWebhookServi
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
     [Authorize(Scopes.ReadHooks)]
     [HttpGet]
+    [RequestTimeout("LongRequest")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<IEnumerable<WebhookDto>> GetAllAsync(CancellationToken cancellationToken)

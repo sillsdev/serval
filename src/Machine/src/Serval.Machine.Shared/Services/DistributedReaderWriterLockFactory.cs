@@ -39,13 +39,7 @@ public class DistributedReaderWriterLockFactory(
             // the lock is already made - no new one needs to be made
             // This is done instead of checking if it exists first to prevent race conditions.
         }
-        return new DistributedReaderWriterLock(
-            _serviceOptions.ServiceId,
-            _locks,
-            _idGenerator,
-            id,
-            _serviceOptions.ReadWriteLockTimeout
-        );
+        return new DistributedReaderWriterLock(_serviceOptions.ServiceId, _locks, _idGenerator, id);
     }
 
     public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)

@@ -1,18 +1,13 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class DistributedReaderWriterLock(
-    string hostId,
-    IRepository<RWLock> locks,
-    IIdGenerator idGenerator,
-    string id,
-    TimeSpan defaultLifetime
-) : IDistributedReaderWriterLock
+public class DistributedReaderWriterLock(string hostId, IRepository<RWLock> locks, IIdGenerator idGenerator, string id)
+    : IDistributedReaderWriterLock
 {
     private readonly string _hostId = hostId;
     private readonly IRepository<RWLock> _locks = locks;
     private readonly IIdGenerator _idGenerator = idGenerator;
     private readonly string _id = id;
-    private readonly TimeSpan _defaultLifetime = defaultLifetime;
+    private readonly TimeSpan _defaultLifetime = TimeSpan.FromSeconds(10);
 
     public async Task<IAsyncDisposable> ReaderLockAsync(
         TimeSpan? lifetime = default,

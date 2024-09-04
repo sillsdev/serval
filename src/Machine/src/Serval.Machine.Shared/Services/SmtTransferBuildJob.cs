@@ -110,7 +110,9 @@ public class SmtTransferBuildJob(
         if (engine is null)
             throw new OperationCanceledException();
 
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
+        await using (
+            await @lock.WriterLockAsync(lifetime: TimeSpan.FromMinutes(5), cancellationToken: cancellationToken)
+        )
         {
             cancellationToken.ThrowIfCancellationRequested();
             await smtModelTrainer.SaveAsync(CancellationToken.None);
