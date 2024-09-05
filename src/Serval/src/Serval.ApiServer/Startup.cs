@@ -16,7 +16,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddRequestTimeouts(o =>
         {
             o.DefaultPolicy = new RequestTimeoutPolicy { Timeout = timeoutOptions.DefaultHttpRequestTimeout };
-            o.AddPolicy("LongRequest", timeoutOptions.LongHttpRequestTimeout);
         });
         services.AddOutputCache(options =>
         {

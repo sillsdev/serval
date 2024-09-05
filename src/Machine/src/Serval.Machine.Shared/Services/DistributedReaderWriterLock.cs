@@ -22,12 +22,13 @@ public class DistributedReaderWriterLock(
     {
         string lockId = _idGenerator.GenerateId();
         DateTime timeoutExpires = DateTime.UtcNow + (timeout ?? _timeoutOptions.DefaultLockTimeout);
-        await TaskEx.Timeout(
+        bool timed_out = await TaskEx.Timeout(
             async ct => await TryReaderLock(lockId, lifetime ?? _timeoutOptions.DefaultLockLifetime, ct),
             timeout ?? _timeoutOptions.DefaultLockTimeout,
-            throwOnTimeout: true,
             cancellationToken
         );
+        if (timed_out)
+            throw new TimeoutException("Timed out waiting for reader lock.");
         return new ReaderLockReleaser(this, lockId);
     }
 
@@ -38,15 +39,15 @@ public class DistributedReaderWriterLock(
     )
     {
         string lockId = _idGenerator.GenerateId();
-        StackTrace stackTrace = new StackTrace();
         DateTime timeoutExpires = DateTime.UtcNow + (timeout ?? _timeoutOptions.DefaultLockTimeout);
 
-        await TaskEx.Timeout(
+        bool timed_out = await TaskEx.Timeout(
             async ct => await TryWriterLock(lockId, lifetime ?? _timeoutOptions.DefaultLockLifetime, ct),
             timeout ?? _timeoutOptions.DefaultLockTimeout,
-            throwOnTimeout: true,
             cancellationToken
         );
+        if (timed_out)
+            throw new TimeoutException("Timed out waiting for writer lock.");
         return new WriterLockReleaser(this, lockId);
     }
 

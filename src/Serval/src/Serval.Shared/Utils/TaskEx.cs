@@ -19,30 +19,24 @@ public static class TaskEx
         return await completedTask;
     }
 
-    public static async Task Timeout(
+    public static async Task<bool> Timeout(
         Func<CancellationToken, Task> action,
         TimeSpan timeout,
-        bool throwOnTimeout = false,
         CancellationToken cancellationToken = default
     )
     {
         if (timeout == System.Threading.Timeout.InfiniteTimeSpan)
         {
             await action(cancellationToken);
+            return false;
         }
         else
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task task = action(cts.Token);
             Task delayTask = Task.Delay(timeout, cancellationToken);
-            Task completedTask = await Task.WhenAny(task, delayTask);
-            if (delayTask.Status == TaskStatus.RanToCompletion)
-            {
-                if (throwOnTimeout)
-                    throw new TimeoutException($"Operation timed out after {timeout}");
-                cts.Cancel();
-            }
-            await completedTask;
+            await Task.WhenAny(task, delayTask);
+            return delayTask.Status == TaskStatus.RanToCompletion;
         }
     }
 
