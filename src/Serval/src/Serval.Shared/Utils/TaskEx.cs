@@ -35,13 +35,14 @@ public static class TaskEx
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task task = action(cts.Token);
             Task delayTask = Task.Delay(timeout, cancellationToken);
-            await Task.WhenAny(task, delayTask);
+            Task completedTask = await Task.WhenAny(task, delayTask);
             if (delayTask.Status == TaskStatus.RanToCompletion)
             {
                 if (throwOnTimeout)
                     throw new TimeoutException($"Operation timed out after {timeout}");
                 cts.Cancel();
             }
+            await completedTask;
         }
     }
 
