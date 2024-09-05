@@ -268,7 +268,7 @@ public static class IMachineBuilderExtensions
                         );
                     }
                 );
-                o.AddRepository<RWLock>("locks", mapSetup: m => m.SetIgnoreExtraElements(true));
+                o.AddRepository<RWLock>("locks");
                 o.AddRepository<TrainSegmentPair>(
                     "train_segment_pairs",
                     init: c =>
