@@ -499,6 +499,7 @@ public class PreprocessBuildJobTests
             PlatformService = Substitute.For<IPlatformService>();
             LockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
+                new OptionsWrapper<TimeoutOptions>(new TimeoutOptions()),
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );

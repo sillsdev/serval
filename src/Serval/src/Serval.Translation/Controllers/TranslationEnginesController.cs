@@ -8,7 +8,7 @@ public class TranslationEnginesController(
     IEngineService engineService,
     IBuildService buildService,
     IPretranslationService pretranslationService,
-    IOptionsMonitor<ApiOptions> apiOptions,
+    IOptionsMonitor<TimeoutOptions> timeoutOptions,
     IUrlService urlService
 ) : ServalControllerBase(authService)
 {
@@ -18,7 +18,7 @@ public class TranslationEnginesController(
     private readonly IEngineService _engineService = engineService;
     private readonly IBuildService _buildService = buildService;
     private readonly IPretranslationService _pretranslationService = pretranslationService;
-    private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
+    private readonly IOptionsMonitor<TimeoutOptions> _timeoutOptions = timeoutOptions;
     private readonly IUrlService _urlService = urlService;
 
     /// <summary>
@@ -739,6 +739,7 @@ public class TranslationEnginesController(
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/builds/{buildId}", Name = Endpoints.GetTranslationBuild)]
+    [RequestTimeout("LongRequest")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -757,8 +758,8 @@ public class TranslationEnginesController(
         {
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetNewerRevisionAsync(buildId, minRevision.Value, ct),
-                _apiOptions.CurrentValue.LongPollTimeout,
-                cancellationToken
+                _timeoutOptions.CurrentValue.LongPollTimeout,
+                cancellationToken: cancellationToken
             );
             return change.Type switch
             {
@@ -848,6 +849,7 @@ public class TranslationEnginesController(
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/current-build")]
+    [RequestTimeout("LongRequest")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -867,8 +869,8 @@ public class TranslationEnginesController(
         {
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetActiveNewerRevisionAsync(id, minRevision.Value, ct),
-                _apiOptions.CurrentValue.LongPollTimeout,
-                cancellationToken
+                _timeoutOptions.CurrentValue.LongPollTimeout,
+                cancellationToken: cancellationToken
             );
             return change.Type switch
             {

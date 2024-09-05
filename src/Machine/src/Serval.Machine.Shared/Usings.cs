@@ -47,6 +47,8 @@ global using Serval.Machine.Shared.Configuration;
 global using Serval.Machine.Shared.Models;
 global using Serval.Machine.Shared.Services;
 global using Serval.Machine.Shared.Utils;
+global using Serval.Shared.Configuration;
+global using Serval.Shared.Utils;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
 global using SIL.Machine.Morphology.HermitCrab;

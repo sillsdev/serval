@@ -9,7 +9,7 @@ public class AssessmentEnginesController(
     IEngineService engineService,
     IJobService jobService,
     IResultService resultService,
-    IOptionsMonitor<ApiOptions> apiOptions,
+    IOptionsMonitor<TimeoutOptions> timeoutOptions,
     IUrlService urlService
 ) : ServalControllerBase(authService)
 {
@@ -19,7 +19,7 @@ public class AssessmentEnginesController(
     private readonly IEngineService _engineService = engineService;
     private readonly IJobService _jobService = jobService;
     private readonly IResultService _resultService = resultService;
-    private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
+    private readonly IOptionsMonitor<TimeoutOptions> _timeoutOptions = timeoutOptions;
     private readonly IUrlService _urlService = urlService;
 
     /// <summary>
@@ -296,6 +296,7 @@ public class AssessmentEnginesController(
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadAssessmentEngines)]
     [HttpGet("{id}/jobs/{jobId}", Name = Endpoints.GetAssessmentJob)]
+    [RequestTimeout("LongRequest")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -314,8 +315,8 @@ public class AssessmentEnginesController(
         {
             EntityChange<Job> change = await TaskEx.Timeout(
                 ct => _jobService.GetNewerRevisionAsync(jobId, minRevision.Value, ct),
-                _apiOptions.CurrentValue.LongPollTimeout,
-                cancellationToken
+                _timeoutOptions.CurrentValue.LongPollTimeout,
+                cancellationToken: cancellationToken
             );
             return change.Type switch
             {

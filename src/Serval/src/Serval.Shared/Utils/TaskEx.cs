@@ -22,6 +22,7 @@ public static class TaskEx
     public static async Task Timeout(
         Func<CancellationToken, Task> action,
         TimeSpan timeout,
+        bool throwOnTimeout = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -33,10 +34,14 @@ public static class TaskEx
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task task = action(cts.Token);
-            Task completedTask = await Task.WhenAny(task, Task.Delay(timeout, cancellationToken));
-            if (task != completedTask)
+            Task delayTask = Task.Delay(timeout, cancellationToken);
+            await Task.WhenAny(task, delayTask);
+            if (delayTask.Status == TaskStatus.RanToCompletion)
+            {
+                if (throwOnTimeout)
+                    throw new TimeoutException($"Operation timed out after {timeout}");
                 cts.Cancel();
-            await completedTask;
+            }
         }
     }
 

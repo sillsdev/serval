@@ -1,69 +1,62 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class DistributedReaderWriterLock(string hostId, IRepository<RWLock> locks, IIdGenerator idGenerator, string id)
-    : IDistributedReaderWriterLock
+public class DistributedReaderWriterLock(
+    string hostId,
+    IRepository<RWLock> locks,
+    IIdGenerator idGenerator,
+    string id,
+    TimeoutOptions timeoutOptions
+) : IDistributedReaderWriterLock
 {
     private readonly string _hostId = hostId;
     private readonly IRepository<RWLock> _locks = locks;
     private readonly IIdGenerator _idGenerator = idGenerator;
     private readonly string _id = id;
-    private readonly TimeSpan _defaultLifetime = TimeSpan.FromSeconds(10);
+    private readonly TimeoutOptions _timeoutOptions = timeoutOptions;
 
     public async Task<IAsyncDisposable> ReaderLockAsync(
         TimeSpan? lifetime = default,
+        TimeSpan? timeout = default,
         CancellationToken cancellationToken = default
     )
     {
-        lifetime ??= _defaultLifetime;
         string lockId = _idGenerator.GenerateId();
-        if (!await TryAcquireReaderLock(lockId, lifetime, cancellationToken))
-        {
-            using ISubscription<RWLock> sub = await _locks.SubscribeAsync(rwl => rwl.Id == _id, cancellationToken);
-            do
-            {
-                RWLock? rwLock = sub.Change.Entity;
-                if (rwLock is not null && !rwLock.IsAvailableForReading())
-                {
-                    TimeSpan? timeout = default;
-                    if (rwLock.WriterLock?.ExpiresAt is not null)
-                    {
-                        timeout = rwLock.WriterLock.ExpiresAt - DateTime.UtcNow;
-                        if (timeout < TimeSpan.Zero)
-                            timeout = TimeSpan.Zero;
-                    }
-                    if (timeout != TimeSpan.Zero)
-                        await sub.WaitForChangeAsync(timeout, cancellationToken);
-                }
-            } while (!await TryAcquireReaderLock(lockId, lifetime, cancellationToken));
-        }
+        DateTime timeoutExpires = DateTime.UtcNow + (timeout ?? _timeoutOptions.DefaultLockTimeout);
+        await TaskEx.Timeout(
+            async ct => await TryReaderLock(lockId, lifetime ?? _timeoutOptions.DefaultLockLifetime, ct),
+            timeout ?? _timeoutOptions.DefaultLockTimeout,
+            throwOnTimeout: true,
+            cancellationToken
+        );
         return new ReaderLockReleaser(this, lockId);
     }
 
     public async Task<IAsyncDisposable> WriterLockAsync(
         TimeSpan? lifetime = default,
+        TimeSpan? timeout = default,
         CancellationToken cancellationToken = default
     )
     {
-        lifetime ??= _defaultLifetime;
         string lockId = _idGenerator.GenerateId();
         StackTrace stackTrace = new StackTrace();
-        string callingSignature =
-            $"Filename: {stackTrace.GetFrame(1)?.GetFileName()}, Method: {stackTrace.GetFrame(1)?.GetMethod()?.Name}";
+        DateTime timeoutExpires = DateTime.UtcNow + (timeout ?? _timeoutOptions.DefaultLockTimeout);
 
+        await TaskEx.Timeout(
+            async ct => await TryWriterLock(lockId, lifetime ?? _timeoutOptions.DefaultLockLifetime, ct),
+            timeout ?? _timeoutOptions.DefaultLockTimeout,
+            throwOnTimeout: true,
+            cancellationToken
+        );
+        return new WriterLockReleaser(this, lockId);
+    }
+
+    private async Task TryWriterLock(string lockId, TimeSpan lifetime, CancellationToken cancellationToken)
+    {
         if (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken))
         {
             await _locks.UpdateAsync(
                 _id,
-                u =>
-                    u.Add(
-                        rwl => rwl.WriterQueue,
-                        new Lock
-                        {
-                            Id = lockId,
-                            HostId = _hostId,
-                            CallingSignature = callingSignature
-                        }
-                    ),
+                u => u.Add(rwl => rwl.WriterQueue, new Lock { Id = lockId, HostId = _hostId, }),
                 cancellationToken: cancellationToken
             );
             try
@@ -74,12 +67,9 @@ public class DistributedReaderWriterLock(string hostId, IRepository<RWLock> lock
                     RWLock? rwLock = sub.Change.Entity;
                     if (rwLock is not null && !rwLock.IsAvailableForWriting(lockId))
                     {
-                        var dateTimes = rwLock
-                            .ReaderLocks.Where(l => l.ExpiresAt.HasValue)
-                            .Select(l => l.ExpiresAt.GetValueOrDefault())
-                            .ToList();
+                        var dateTimes = rwLock.ReaderLocks.Select(l => l.ExpiresAt).ToList();
                         if (rwLock.WriterLock?.ExpiresAt is not null)
-                            dateTimes.Add(rwLock.WriterLock.ExpiresAt.Value);
+                            dateTimes.Add(rwLock.WriterLock.ExpiresAt);
                         TimeSpan? timeout = default;
                         if (dateTimes.Count > 0)
                         {
@@ -102,20 +92,16 @@ public class DistributedReaderWriterLock(string hostId, IRepository<RWLock> lock
                 throw;
             }
         }
-        return new WriterLockReleaser(this, lockId);
+        cancellationToken.ThrowIfCancellationRequested();
     }
 
-    private async Task<bool> TryAcquireWriterLock(
-        string lockId,
-        TimeSpan? lifetime,
-        CancellationToken cancellationToken
-    )
+    private async Task<bool> TryAcquireWriterLock(string lockId, TimeSpan lifetime, CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
         Expression<Func<RWLock, bool>> filter = rwl =>
             rwl.Id == _id
-            && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now)
-            && !rwl.ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now)
+            && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt <= now)
+            && !rwl.ReaderLocks.Any(l => l.ExpiresAt > now)
             && (!rwl.WriterQueue.Any() || rwl.WriterQueue[0].Id == lockId);
         void Update(IUpdateBuilder<RWLock> u)
         {
@@ -124,7 +110,7 @@ public class DistributedReaderWriterLock(string hostId, IRepository<RWLock> lock
                 new Lock
                 {
                     Id = lockId,
-                    ExpiresAt = lifetime is null ? null : now + lifetime,
+                    ExpiresAt = now + lifetime,
                     HostId = _hostId
                 }
             );
@@ -134,17 +120,36 @@ public class DistributedReaderWriterLock(string hostId, IRepository<RWLock> lock
         return rwLock is not null;
     }
 
-    private async Task<bool> TryAcquireReaderLock(
-        string lockId,
-        TimeSpan? lifetime,
-        CancellationToken cancellationToken
-    )
+    private async Task TryReaderLock(string lockId, TimeSpan lifetime, CancellationToken cancellationToken)
+    {
+        if (!await TryAcquireReaderLock(lockId, lifetime, cancellationToken))
+        {
+            using ISubscription<RWLock> sub = await _locks.SubscribeAsync(rwl => rwl.Id == _id, cancellationToken);
+            do
+            {
+                RWLock? rwLock = sub.Change.Entity;
+                if (rwLock is not null && !rwLock.IsAvailableForReading())
+                {
+                    TimeSpan? timeout = default;
+                    if (rwLock.WriterLock?.ExpiresAt is not null)
+                    {
+                        timeout = rwLock.WriterLock.ExpiresAt - DateTime.UtcNow;
+                        if (timeout < TimeSpan.Zero)
+                            timeout = TimeSpan.Zero;
+                    }
+                    if (timeout != TimeSpan.Zero)
+                        await sub.WaitForChangeAsync(timeout, cancellationToken);
+                }
+            } while (!await TryAcquireReaderLock(lockId, lifetime, cancellationToken));
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+    }
+
+    private async Task<bool> TryAcquireReaderLock(string lockId, TimeSpan lifetime, CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
         Expression<Func<RWLock, bool>> filter = rwl =>
-            rwl.Id == _id
-            && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now)
-            && !rwl.WriterQueue.Any();
+            rwl.Id == _id && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt <= now) && !rwl.WriterQueue.Any();
         void Update(IUpdateBuilder<RWLock> u)
         {
             u.Add(
@@ -152,7 +157,7 @@ public class DistributedReaderWriterLock(string hostId, IRepository<RWLock> lock
                 new Lock
                 {
                     Id = lockId,
-                    ExpiresAt = lifetime is null ? null : now + lifetime,
+                    ExpiresAt = now + lifetime,
                     HostId = _hostId
                 }
             );

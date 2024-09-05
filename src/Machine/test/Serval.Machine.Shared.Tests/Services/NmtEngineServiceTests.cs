@@ -100,6 +100,7 @@ public class NmtEngineServiceTests
             PlatformService = Substitute.For<IPlatformService>();
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
+                new OptionsWrapper<TimeoutOptions>(new TimeoutOptions()),
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );

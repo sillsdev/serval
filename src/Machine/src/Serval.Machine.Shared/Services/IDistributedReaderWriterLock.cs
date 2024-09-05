@@ -2,6 +2,14 @@
 
 public interface IDistributedReaderWriterLock
 {
-    Task<IAsyncDisposable> ReaderLockAsync(TimeSpan? lifetime = default, CancellationToken cancellationToken = default);
-    Task<IAsyncDisposable> WriterLockAsync(TimeSpan? lifetime = default, CancellationToken cancellationToken = default);
+    Task<IAsyncDisposable> ReaderLockAsync(
+        TimeSpan? lifetime = default,
+        TimeSpan? timeout = default,
+        CancellationToken cancellationToken = default
+    );
+    Task<IAsyncDisposable> WriterLockAsync(
+        TimeSpan? lifetime = default,
+        TimeSpan? timeout = default,
+        CancellationToken cancellationToken = default
+    );
 }

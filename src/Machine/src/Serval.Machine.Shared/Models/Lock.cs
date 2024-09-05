@@ -3,7 +3,6 @@
 public record Lock
 {
     public required string Id { get; init; }
-    public DateTime? ExpiresAt { get; init; }
+    public DateTime ExpiresAt { get; init; }
     public required string HostId { get; init; }
-    public string CallingSignature { get; init; } = "";
 }

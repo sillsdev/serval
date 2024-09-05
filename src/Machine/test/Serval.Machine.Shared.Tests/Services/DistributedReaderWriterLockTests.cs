@@ -130,6 +130,19 @@ public class DistributedReaderWriterLockTests
     }
 
     [Test]
+    public async Task ReaderLockAsync_Timeout()
+    {
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
+
+        await rwLock.WriterLockAsync(lifetime: TimeSpan.FromMilliseconds(500));
+        Assert.CatchAsync<TimeoutException>(async () =>
+        {
+            await rwLock.ReaderLockAsync(timeout: TimeSpan.FromMilliseconds(10));
+        });
+    }
+
+    [Test]
     public async Task ReaderLockAsync_Cancelled()
     {
         var env = new TestEnvironment();
@@ -345,6 +358,19 @@ public class DistributedReaderWriterLockTests
     }
 
     [Test]
+    public async Task WriterLockAsync_Timeout()
+    {
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
+
+        await rwLock.ReaderLockAsync(lifetime: TimeSpan.FromMilliseconds(500));
+        Assert.CatchAsync<TimeoutException>(async () =>
+        {
+            await rwLock.WriterLockAsync(timeout: TimeSpan.FromMilliseconds(10));
+        });
+    }
+
+    [Test]
     public async Task WriterLockAsync_Cancelled()
     {
         var env = new TestEnvironment();
@@ -394,9 +420,11 @@ public class DistributedReaderWriterLockTests
         {
             Locks = new MemoryRepository<RWLock>();
             var idGenerator = new ObjectIdGenerator();
-            var options = Substitute.For<IOptions<ServiceOptions>>();
-            options.Value.Returns(new ServiceOptions { ServiceId = "host" });
-            Factory = new DistributedReaderWriterLockFactory(options, Locks, idGenerator);
+            var serviceOptions = Substitute.For<IOptions<ServiceOptions>>();
+            serviceOptions.Value.Returns(new ServiceOptions { ServiceId = "host" });
+            var timeoutOptions = Substitute.For<IOptions<TimeoutOptions>>();
+            timeoutOptions.Value.Returns(new TimeoutOptions());
+            Factory = new DistributedReaderWriterLockFactory(serviceOptions, timeoutOptions, Locks, idGenerator);
         }
 
         public DistributedReaderWriterLockFactory Factory { get; }

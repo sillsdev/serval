@@ -10,10 +10,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
     {
         services.AddFeatureManagement();
         services.AddRouting(o => o.LowercaseUrls = true);
+
+        var timeoutOptions = new TimeoutOptions();
+        Configuration.GetSection(TimeoutOptions.Key).Bind(timeoutOptions);
         services.AddRequestTimeouts(o =>
         {
-            o.DefaultPolicy = new RequestTimeoutPolicy { Timeout = TimeSpan.FromSeconds(10) };
-            o.AddPolicy("LongRequest", TimeSpan.FromSeconds(55));
+            o.DefaultPolicy = new RequestTimeoutPolicy { Timeout = timeoutOptions.DefaultHttpRequestTimeout };
+            o.AddPolicy("LongRequest", timeoutOptions.LongHttpRequestTimeout);
         });
         services.AddOutputCache(options =>
         {

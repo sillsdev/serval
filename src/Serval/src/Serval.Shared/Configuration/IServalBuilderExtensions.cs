@@ -17,15 +17,15 @@ public static class IServalBuilderExtensions
         return builder;
     }
 
-    public static IServalBuilder AddApiOptions(this IServalBuilder builder, Action<ApiOptions> configureOptions)
+    public static IServalBuilder AddTimeoutOptions(this IServalBuilder builder, Action<TimeoutOptions> configureOptions)
     {
         builder.Services.Configure(configureOptions);
         return builder;
     }
 
-    public static IServalBuilder AddApiOptions(this IServalBuilder builder, IConfiguration config)
+    public static IServalBuilder AddTimeoutOptions(this IServalBuilder builder, IConfiguration config)
     {
-        builder.Services.Configure<ApiOptions>(config);
+        builder.Services.Configure<TimeoutOptions>(config);
         return builder;
     }
 

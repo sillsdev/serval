@@ -11,15 +11,14 @@ public record RWLock : IEntity
     public bool IsAvailableForReading()
     {
         var now = DateTime.UtcNow;
-        return (WriterLock is null || WriterLock.ExpiresAt is not null && WriterLock.ExpiresAt <= now)
-            && WriterQueue.Count == 0;
+        return (WriterLock is null || WriterLock.ExpiresAt <= now) && WriterQueue.Count == 0;
     }
 
     public bool IsAvailableForWriting(string? lockId = null)
     {
         var now = DateTime.UtcNow;
-        return (WriterLock is null || WriterLock.ExpiresAt is not null && WriterLock.ExpiresAt <= now)
-            && !ReaderLocks.Any(l => l.ExpiresAt is null || l.ExpiresAt > now)
+        return (WriterLock is null || WriterLock.ExpiresAt <= now)
+            && !ReaderLocks.Any(l => l.ExpiresAt > now)
             && (lockId is null || WriterQueue.Count > 0 && WriterQueue[0].Id == lockId);
     }
 }
