@@ -194,7 +194,7 @@ public class DataFilesController(
     /// Delete an existing file
     /// </summary>
     /// <remarks>
-    /// If a file is in a corpora and the file is deleted, it will be automatically removed from the corpora.
+    /// If a file is in a corpus and the file is deleted, it will be automatically removed from that corpus.
     /// If a build job has started before the file was deleted, the file will be used for the build job, even
     /// though it will no longer be accessible through the API.
     /// </remarks>

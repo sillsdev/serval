@@ -14,4 +14,6 @@ public static class Endpoints
     public const string GetAssessmentJob = "GetAssessmentJob";
 
     public const string GetWebhook = "GetWebhook";
+
+    public const string GetCorpus = "GetCorpus";
 }
