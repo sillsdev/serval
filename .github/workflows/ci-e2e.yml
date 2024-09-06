@@ -33,6 +33,9 @@ jobs:
       - name: Getr Version of Machine.py
         run: echo "MACHINE_PY_IMAGE=ghcr.io/sillsdev/machine.py:$(regctl image config ghcr.io/sillsdev/machine.py | jq -r ".config.Labels[\"org.opencontainers.image.version\"]")" >> $GITHUB_ENV
 
+      - name: Verify Version of Machine.py
+        run: echo $MACHINE_PY_IMAGE
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
