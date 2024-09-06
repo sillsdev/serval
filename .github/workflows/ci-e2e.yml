@@ -33,9 +33,11 @@ jobs:
       - name: Set proper version of Machine.py
         run: |
           echo "MACHINE_PY_IMAGE=ghcr.io/sillsdev/machine.py:$(regctl image config ghcr.io/sillsdev/machine.py | jq -r ".config.Labels[\"org.opencontainers.image.version\"]")" >> $GITHUB_ENV && \
-          echo "MACHINE_PY_CPU_IMAGE=ghcr.io/sillsdev/machine.py:$(regctl image config ghcr.io/sillsdev/machine.py | jq -r ".config.Labels[\"org.opencontainers.image.version\"]").cpu_only" >> $GITHUB_ENV && \
-          echo $MACHINE_PY_IMAGE && \
-          echo $MACHINE_PY_CPU_IMAGE
+          echo "MACHINE_PY_CPU_IMAGE=$MACHINE_PY_IMAGE.cpu_only" >> $GITHUB_ENV
+
+      - name: Confirm proper version of Machine.py
+        run: |
+          echo $MACHINE_PY_IMAGE $MACHINE_PY_CPU_IMAGE
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
