@@ -28,6 +28,7 @@ public static class IServiceCollectionExtensions
             builder.AddSharedFileOptions(o => { });
             builder.AddSmtTransferEngineOptions(o => { });
             builder.AddClearMLOptions(o => { });
+            builder.AddDistributedReaderWriterLockOptions(o => { });
             builder.AddBuildJobOptions(o => { });
             builder.AddMessageOutboxOptions(o => { });
         }
@@ -37,6 +38,9 @@ public static class IServiceCollectionExtensions
             builder.AddSharedFileOptions(configuration.GetSection(SharedFileOptions.Key));
             builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
             builder.AddClearMLOptions(configuration.GetSection(ClearMLOptions.Key));
+            builder.AddDistributedReaderWriterLockOptions(
+                configuration.GetSection(DistributedReaderWriterLockOptions.Key)
+            );
             builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
             builder.AddMessageOutboxOptions(configuration.GetSection(MessageOutboxOptions.Key));
         }

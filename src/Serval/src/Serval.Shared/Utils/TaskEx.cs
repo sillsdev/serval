@@ -13,13 +13,14 @@ public static class TaskEx
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<T?> task = action(cts.Token);
-        var completedTask = await Task.WhenAny(task, Delay<T?>(timeout, cancellationToken));
-        if (task != completedTask)
+        Task<T?> delayTask = Delay<T?>(timeout, cancellationToken);
+        var completedTask = await Task.WhenAny(task, delayTask);
+        if (delayTask.Status == TaskStatus.RanToCompletion)
             cts.Cancel();
         return await completedTask;
     }
 
-    public static async Task<bool> Timeout(
+    public static async Task Timeout(
         Func<CancellationToken, Task> action,
         TimeSpan timeout,
         CancellationToken cancellationToken = default
@@ -28,15 +29,16 @@ public static class TaskEx
         if (timeout == System.Threading.Timeout.InfiniteTimeSpan)
         {
             await action(cancellationToken);
-            return false;
         }
         else
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task task = action(cts.Token);
             Task delayTask = Task.Delay(timeout, cancellationToken);
-            await Task.WhenAny(task, delayTask);
-            return delayTask.Status == TaskStatus.RanToCompletion;
+            var completedTask = await Task.WhenAny(task, delayTask);
+            if (delayTask.Status == TaskStatus.RanToCompletion)
+                cts.Cancel();
+            await completedTask;
         }
     }
 

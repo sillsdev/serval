@@ -11,7 +11,7 @@ public class SmtTransferBuildJob(
     ITruecaserFactory truecaserFactory,
     ISmtModelFactory smtModelFactory,
     ICorpusService corpusService,
-    IOptions<TimeoutOptions> timeoutOptions
+    IOptions<BuildJobOptions> buildJobOptions
 )
     : HangfireBuildJob<IReadOnlyList<Corpus>>(
         platformService,
@@ -26,7 +26,7 @@ public class SmtTransferBuildJob(
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ICorpusService _corpusService = corpusService;
-    private readonly TimeoutOptions _timeoutOptions = timeoutOptions.Value;
+    private readonly BuildJobOptions _buildJobOptions = buildJobOptions.Value;
 
     protected override Task InitializeAsync(
         string engineId,
@@ -114,7 +114,7 @@ public class SmtTransferBuildJob(
 
         await using (
             await @lock.WriterLockAsync(
-                lifetime: _timeoutOptions.LongProcessLockLifetime,
+                lifetime: _buildJobOptions.PostProcessLockLifetime,
                 cancellationToken: cancellationToken
             )
         )

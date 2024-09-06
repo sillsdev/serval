@@ -19,7 +19,6 @@ global using NUnit.Framework;
 global using RichardSzalay.MockHttp;
 global using Serval.Machine.Shared.Configuration;
 global using Serval.Machine.Shared.Models;
-global using Serval.Shared.Configuration;
 global using SIL.DataAccess;
 global using SIL.Machine.Annotations;
 global using SIL.Machine.Corpora;

@@ -11,11 +11,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddFeatureManagement();
         services.AddRouting(o => o.LowercaseUrls = true);
 
-        var timeoutOptions = new TimeoutOptions();
-        Configuration.GetSection(TimeoutOptions.Key).Bind(timeoutOptions);
+        var apiOptions = new ApiOptions();
+        Configuration.GetSection(ApiOptions.Key).Bind(apiOptions);
         services.AddRequestTimeouts(o =>
         {
-            o.DefaultPolicy = new RequestTimeoutPolicy { Timeout = timeoutOptions.DefaultHttpRequestTimeout };
+            o.DefaultPolicy = new RequestTimeoutPolicy { Timeout = apiOptions.DefaultHttpRequestTimeout };
         });
         services.AddOutputCache(options =>
         {

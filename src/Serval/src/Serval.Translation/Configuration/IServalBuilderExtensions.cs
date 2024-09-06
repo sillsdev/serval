@@ -12,12 +12,12 @@ public static class IServalBuilderExtensions
     {
         if (builder.Configuration is null)
         {
-            builder.AddTimeoutOptions(o => { });
+            builder.AddApiOptions(o => { });
             builder.AddDataFileOptions(o => { });
         }
         else
         {
-            builder.AddTimeoutOptions(builder.Configuration.GetSection(TimeoutOptions.Key));
+            builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
             builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
         }
 

@@ -70,7 +70,7 @@ public class DistributedReaderWriterLockFactoryTests
             ServiceOptions serviceOptions = new() { ServiceId = "this_service" };
             Factory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(serviceOptions),
-                new OptionsWrapper<TimeoutOptions>(new TimeoutOptions()),
+                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
                 Locks,
                 new ObjectIdGenerator()
             );

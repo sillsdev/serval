@@ -9,7 +9,7 @@ public class AssessmentEnginesController(
     IEngineService engineService,
     IJobService jobService,
     IResultService resultService,
-    IOptionsMonitor<TimeoutOptions> timeoutOptions,
+    IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService
 ) : ServalControllerBase(authService)
 {
@@ -19,7 +19,7 @@ public class AssessmentEnginesController(
     private readonly IEngineService _engineService = engineService;
     private readonly IJobService _jobService = jobService;
     private readonly IResultService _resultService = resultService;
-    private readonly IOptionsMonitor<TimeoutOptions> _timeoutOptions = timeoutOptions;
+    private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
 
     /// <summary>
@@ -313,7 +313,7 @@ public class AssessmentEnginesController(
         {
             EntityChange<Job> change = await TaskEx.Timeout(
                 ct => _jobService.GetNewerRevisionAsync(jobId, minRevision.Value, ct),
-                _timeoutOptions.CurrentValue.LongPollTimeout,
+                _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
             );
             return change.Type switch

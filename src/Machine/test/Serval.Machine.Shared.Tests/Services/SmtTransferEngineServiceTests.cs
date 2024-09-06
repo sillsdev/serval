@@ -247,7 +247,7 @@ public class SmtTransferEngineServiceTests
             _truecaserFactory = CreateTruecaserFactory();
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
-                new OptionsWrapper<TimeoutOptions>(new TimeoutOptions()),
+                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
@@ -703,8 +703,10 @@ public class SmtTransferEngineServiceTests
                 }
                 if (jobType == typeof(SmtTransferPostprocessBuildJob))
                 {
-                    var options = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
-                    options.CurrentValue.Returns(new SmtTransferEngineOptions());
+                    var engineOptions = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
+                    engineOptions.CurrentValue.Returns(new SmtTransferEngineOptions());
+                    var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+                    buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new SmtTransferPostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -713,10 +715,11 @@ public class SmtTransferEngineServiceTests
                         _env.BuildJobService,
                         Substitute.For<ILogger<SmtTransferPostprocessBuildJob>>(),
                         _env.SharedFileService,
+                        buildJobOptions,
                         _env.TrainSegmentPairs,
                         _env.SmtModelFactory,
                         _env._truecaserFactory,
-                        options
+                        engineOptions
                     );
                 }
                 if (jobType == typeof(SmtTransferTrainBuildJob))

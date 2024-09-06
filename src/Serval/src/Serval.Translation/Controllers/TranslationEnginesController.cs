@@ -8,7 +8,7 @@ public class TranslationEnginesController(
     IEngineService engineService,
     IBuildService buildService,
     IPretranslationService pretranslationService,
-    IOptionsMonitor<TimeoutOptions> timeoutOptions,
+    IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService
 ) : ServalControllerBase(authService)
 {
@@ -18,7 +18,7 @@ public class TranslationEnginesController(
     private readonly IEngineService _engineService = engineService;
     private readonly IBuildService _buildService = buildService;
     private readonly IPretranslationService _pretranslationService = pretranslationService;
-    private readonly IOptionsMonitor<TimeoutOptions> _timeoutOptions = timeoutOptions;
+    private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
 
     /// <summary>
@@ -756,7 +756,7 @@ public class TranslationEnginesController(
         {
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetNewerRevisionAsync(buildId, minRevision.Value, ct),
-                _timeoutOptions.CurrentValue.LongPollTimeout,
+                _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
             );
             return change.Type switch
@@ -866,7 +866,7 @@ public class TranslationEnginesController(
         {
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetActiveNewerRevisionAsync(id, minRevision.Value, ct),
-                _timeoutOptions.CurrentValue.LongPollTimeout,
+                _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
             );
             return change.Type switch

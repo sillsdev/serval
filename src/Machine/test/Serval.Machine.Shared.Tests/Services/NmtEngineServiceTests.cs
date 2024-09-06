@@ -100,7 +100,7 @@ public class NmtEngineServiceTests
             PlatformService = Substitute.For<IPlatformService>();
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
-                new OptionsWrapper<TimeoutOptions>(new TimeoutOptions()),
+                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
@@ -308,6 +308,8 @@ public class NmtEngineServiceTests
                 }
                 if (jobType == typeof(PostprocessBuildJob))
                 {
+                    var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+                    buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new PostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -315,7 +317,8 @@ public class NmtEngineServiceTests
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
                         Substitute.For<ILogger<PostprocessBuildJob>>(),
-                        _env.SharedFileService
+                        _env.SharedFileService,
+                        buildJobOptions
                     );
                 }
                 return base.ActivateJob(jobType);
