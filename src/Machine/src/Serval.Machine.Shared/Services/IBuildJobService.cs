@@ -14,7 +14,8 @@ public interface IBuildJobService
     Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<bool> StartBuildJobAsync(
-        BuildJobRunnerType jobType,
+        BuildJobRunnerType runnerType,
+        TranslationEngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,

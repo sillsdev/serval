@@ -3,23 +3,19 @@
 public class PostprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
-    IDistributedReaderWriterLockFactory lockFactory,
     IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<PostprocessBuildJob> logger,
-    ISharedFileService sharedFileService,
-    IOptionsMonitor<BuildJobOptions> buildJobOptions
-) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
+    ISharedFileService sharedFileService
+) : HangfireBuildJob<(int, double)>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
     protected ISharedFileService SharedFileService { get; } = sharedFileService;
-    private readonly BuildJobOptions _buildJobOptions = buildJobOptions.CurrentValue;
 
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
         (int, double) data,
         string? buildOptions,
-        IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     )
     {
@@ -35,33 +31,20 @@ public class PostprocessBuildJob(
             await PlatformService.InsertPretranslationsAsync(engineId, pretranslationsStream, cancellationToken);
         }
 
-        await using (
-            await @lock.WriterLockAsync(
-                lifetime: _buildJobOptions.PostProcessLockLifetime,
-                cancellationToken: CancellationToken.None
-            )
-        )
-        {
-            await DataAccessContext.WithTransactionAsync(
-                async (ct) =>
-                {
-                    int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
-                    await PlatformService.BuildCompletedAsync(
-                        buildId,
-                        corpusSize + additionalCorpusSize,
-                        Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
-                        CancellationToken.None
-                    );
-                    await BuildJobService.BuildJobFinishedAsync(
-                        engineId,
-                        buildId,
-                        buildComplete: true,
-                        CancellationToken.None
-                    );
-                },
-                cancellationToken: CancellationToken.None
-            );
-        }
+        int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
+        await DataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                await PlatformService.BuildCompletedAsync(
+                    buildId,
+                    corpusSize + additionalCorpusSize,
+                    Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
+                    ct
+                );
+                await BuildJobService.BuildJobFinishedAsync(engineId, buildId, buildComplete: true, ct);
+            },
+            cancellationToken: CancellationToken.None
+        );
 
         Logger.LogInformation("Build completed ({0}).", buildId);
     }
@@ -75,7 +58,6 @@ public class PostprocessBuildJob(
         string engineId,
         string buildId,
         (int, double) data,
-        IDistributedReaderWriterLock @lock,
         JobCompletionStatus completionStatus
     )
     {

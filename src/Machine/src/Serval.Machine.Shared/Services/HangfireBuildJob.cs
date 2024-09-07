@@ -3,11 +3,10 @@
 public abstract class HangfireBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
-    IDistributedReaderWriterLockFactory lockFactory,
     IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<HangfireBuildJob> logger
-) : HangfireBuildJob<object?>(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
+) : HangfireBuildJob<object?>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
     public virtual Task RunAsync(
         string engineId,
@@ -23,7 +22,6 @@ public abstract class HangfireBuildJob(
 public abstract class HangfireBuildJob<T>(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
-    IDistributedReaderWriterLockFactory lockFactory,
     IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<HangfireBuildJob<T>> logger
@@ -31,7 +29,6 @@ public abstract class HangfireBuildJob<T>(
 {
     protected IPlatformService PlatformService { get; } = platformService;
     protected IRepository<TranslationEngine> Engines { get; } = engines;
-    protected IDistributedReaderWriterLockFactory LockFactory { get; } = lockFactory;
     protected IDataAccessContext DataAccessContext { get; } = dataAccessContext;
     protected IBuildJobService BuildJobService { get; } = buildJobService;
     protected ILogger<HangfireBuildJob<T>> Logger { get; } = logger;
@@ -44,21 +41,17 @@ public abstract class HangfireBuildJob<T>(
         CancellationToken cancellationToken
     )
     {
-        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         JobCompletionStatus completionStatus = JobCompletionStatus.Completed;
         try
         {
-            await InitializeAsync(engineId, buildId, data, @lock, cancellationToken);
-            await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
+            await InitializeAsync(engineId, buildId, data, cancellationToken);
+            if (!await BuildJobService.BuildJobStartedAsync(engineId, buildId, cancellationToken))
             {
-                if (!await BuildJobService.BuildJobStartedAsync(engineId, buildId, cancellationToken))
-                {
-                    completionStatus = JobCompletionStatus.Canceled;
-                    return;
-                }
+                completionStatus = JobCompletionStatus.Canceled;
+                return;
             }
 
-            await DoWorkAsync(engineId, buildId, data, buildOptions, @lock, cancellationToken);
+            await DoWorkAsync(engineId, buildId, data, buildOptions, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -70,22 +63,19 @@ public abstract class HangfireBuildJob<T>(
             if (engine?.CurrentBuild?.JobState is BuildJobState.Canceling)
             {
                 completionStatus = JobCompletionStatus.Canceled;
-                await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
-                {
-                    await DataAccessContext.WithTransactionAsync(
-                        async (ct) =>
-                        {
-                            await PlatformService.BuildCanceledAsync(buildId, CancellationToken.None);
-                            await BuildJobService.BuildJobFinishedAsync(
-                                engineId,
-                                buildId,
-                                buildComplete: false,
-                                CancellationToken.None
-                            );
-                        },
-                        cancellationToken: CancellationToken.None
-                    );
-                }
+                await DataAccessContext.WithTransactionAsync(
+                    async (ct) =>
+                    {
+                        await PlatformService.BuildCanceledAsync(buildId, CancellationToken.None);
+                        await BuildJobService.BuildJobFinishedAsync(
+                            engineId,
+                            buildId,
+                            buildComplete: false,
+                            CancellationToken.None
+                        );
+                    },
+                    cancellationToken: CancellationToken.None
+                );
                 Logger.LogInformation("Build canceled ({0})", buildId);
             }
             else if (engine is not null)
@@ -93,17 +83,14 @@ public abstract class HangfireBuildJob<T>(
                 // the build was canceled, because of a server shutdown
                 // switch state back to pending
                 completionStatus = JobCompletionStatus.Restarting;
-                await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
-                {
-                    await DataAccessContext.WithTransactionAsync(
-                        async (ct) =>
-                        {
-                            await PlatformService.BuildRestartingAsync(buildId, CancellationToken.None);
-                            await BuildJobService.BuildJobRestartingAsync(engineId, buildId, CancellationToken.None);
-                        },
-                        cancellationToken: CancellationToken.None
-                    );
-                }
+                await DataAccessContext.WithTransactionAsync(
+                    async (ct) =>
+                    {
+                        await PlatformService.BuildRestartingAsync(buildId, CancellationToken.None);
+                        await BuildJobService.BuildJobRestartingAsync(engineId, buildId, CancellationToken.None);
+                    },
+                    cancellationToken: CancellationToken.None
+                );
                 throw;
             }
             else
@@ -114,38 +101,29 @@ public abstract class HangfireBuildJob<T>(
         catch (Exception e)
         {
             completionStatus = JobCompletionStatus.Faulted;
-            await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
-            {
-                await DataAccessContext.WithTransactionAsync(
-                    async (ct) =>
-                    {
-                        await PlatformService.BuildFaultedAsync(buildId, e.Message, CancellationToken.None);
-                        await BuildJobService.BuildJobFinishedAsync(
-                            engineId,
-                            buildId,
-                            buildComplete: false,
-                            CancellationToken.None
-                        );
-                    },
-                    cancellationToken: CancellationToken.None
-                );
-            }
+            await DataAccessContext.WithTransactionAsync(
+                async (ct) =>
+                {
+                    await PlatformService.BuildFaultedAsync(buildId, e.Message, CancellationToken.None);
+                    await BuildJobService.BuildJobFinishedAsync(
+                        engineId,
+                        buildId,
+                        buildComplete: false,
+                        CancellationToken.None
+                    );
+                },
+                cancellationToken: CancellationToken.None
+            );
             Logger.LogError(0, e, "Build faulted ({0})", buildId);
             throw;
         }
         finally
         {
-            await CleanupAsync(engineId, buildId, data, @lock, completionStatus);
+            await CleanupAsync(engineId, buildId, data, completionStatus);
         }
     }
 
-    protected virtual Task InitializeAsync(
-        string engineId,
-        string buildId,
-        T data,
-        IDistributedReaderWriterLock @lock,
-        CancellationToken cancellationToken
-    )
+    protected virtual Task InitializeAsync(string engineId, string buildId, T data, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
@@ -155,17 +133,10 @@ public abstract class HangfireBuildJob<T>(
         string buildId,
         T data,
         string? buildOptions,
-        IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     );
 
-    protected virtual Task CleanupAsync(
-        string engineId,
-        string buildId,
-        T data,
-        IDistributedReaderWriterLock @lock,
-        JobCompletionStatus completionStatus
-    )
+    protected virtual Task CleanupAsync(string engineId, string buildId, T data, JobCompletionStatus completionStatus)
     {
         return Task.CompletedTask;
     }

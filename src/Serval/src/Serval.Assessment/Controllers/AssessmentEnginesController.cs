@@ -311,7 +311,7 @@ public class AssessmentEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            EntityChange<Job> change = await TaskEx.Timeout(
+            (_, EntityChange<Job> change) = await TaskEx.Timeout(
                 ct => _jobService.GetNewerRevisionAsync(jobId, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken

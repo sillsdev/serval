@@ -754,7 +754,7 @@ public class TranslationEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            EntityChange<Build> change = await TaskEx.Timeout(
+            (_, EntityChange<Build> change) = await TaskEx.Timeout(
                 ct => _buildService.GetNewerRevisionAsync(buildId, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
@@ -864,7 +864,7 @@ public class TranslationEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            EntityChange<Build> change = await TaskEx.Timeout(
+            (_, EntityChange<Build> change) = await TaskEx.Timeout(
                 ct => _buildService.GetActiveNewerRevisionAsync(id, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken

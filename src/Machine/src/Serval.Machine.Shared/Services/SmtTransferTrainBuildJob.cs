@@ -3,7 +3,6 @@
 public class SmtTransferTrainBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
-    IDistributedReaderWriterLockFactory lockFactory,
     IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<SmtTransferTrainBuildJob> logger,
@@ -11,7 +10,7 @@ public class SmtTransferTrainBuildJob(
     ITruecaserFactory truecaserFactory,
     ISmtModelFactory smtModelFactory,
     ITransferEngineFactory transferEngineFactory
-) : HangfireBuildJob(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
+) : HangfireBuildJob(platformService, engines, dataAccessContext, buildJobService, logger)
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
     private static readonly JsonSerializerOptions JsonSerializerOptions =
@@ -28,7 +27,6 @@ public class SmtTransferTrainBuildJob(
         string buildId,
         object? data,
         string? buildOptions,
-        IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     )
     {
@@ -55,27 +53,24 @@ public class SmtTransferTrainBuildJob(
 
         await GeneratePretranslationsAsync(buildId, engineDir, cancellationToken);
 
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            bool canceling = !await BuildJobService.StartBuildJobAsync(
-                BuildJobRunnerType.Hangfire,
-                engineId,
-                buildId,
-                BuildStage.Postprocess,
-                data: (trainCorpusSize, confidence),
-                buildOptions: buildOptions,
-                cancellationToken: cancellationToken
-            );
-            if (canceling)
-                throw new OperationCanceledException();
-        }
+        bool canceling = !await BuildJobService.StartBuildJobAsync(
+            BuildJobRunnerType.Hangfire,
+            TranslationEngineType.SmtTransfer,
+            engineId,
+            buildId,
+            BuildStage.Postprocess,
+            data: (trainCorpusSize, confidence),
+            buildOptions: buildOptions,
+            cancellationToken: cancellationToken
+        );
+        if (canceling)
+            throw new OperationCanceledException();
     }
 
     protected override async Task CleanupAsync(
         string engineId,
         string buildId,
         object? data,
-        IDistributedReaderWriterLock @lock,
         JobCompletionStatus completionStatus
     )
     {
@@ -118,22 +113,12 @@ public class SmtTransferTrainBuildJob(
         CancellationToken cancellationToken
     )
     {
-        await _smtModelFactory.InitNewAsync(engineDir, cancellationToken);
+        _smtModelFactory.InitNew(engineDir);
         LatinWordTokenizer tokenizer = new();
         int trainCorpusSize;
         double confidence;
-        using ITrainer smtModelTrainer = await _smtModelFactory.CreateTrainerAsync(
-            engineDir,
-            tokenizer,
-            parallelCorpus,
-            cancellationToken
-        );
-        using ITrainer truecaseTrainer = await _truecaserFactory.CreateTrainerAsync(
-            engineDir,
-            tokenizer,
-            targetCorpus,
-            cancellationToken
-        );
+        using ITrainer smtModelTrainer = _smtModelFactory.CreateTrainer(engineDir, tokenizer, parallelCorpus);
+        using ITrainer truecaseTrainer = _truecaserFactory.CreateTrainer(engineDir, tokenizer, targetCorpus);
         cancellationToken.ThrowIfCancellationRequested();
 
         var progress = new BuildProgress(PlatformService, buildId);
@@ -179,20 +164,18 @@ public class SmtTransferTrainBuildJob(
 
         LatinWordTokenizer tokenizer = new();
         LatinWordDetokenizer detokenizer = new();
-        ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineDir, CancellationToken.None);
-        using IInteractiveTranslationModel smtModel = await _smtModelFactory.CreateAsync(
+        ITruecaser truecaser = _truecaserFactory.Create(engineDir);
+        using IInteractiveTranslationModel smtModel = _smtModelFactory.Create(
             engineDir,
             tokenizer,
             detokenizer,
-            truecaser,
-            cancellationToken
+            truecaser
         );
-        using ITranslationEngine? transferEngine = await _transferEngineFactory.CreateAsync(
+        using ITranslationEngine? transferEngine = _transferEngineFactory.Create(
             engineDir,
             tokenizer,
             detokenizer,
-            truecaser,
-            cancellationToken
+            truecaser
         );
         HybridTranslationEngine hybridEngine = new(smtModel, transferEngine) { TargetDetokenizer = detokenizer };
 

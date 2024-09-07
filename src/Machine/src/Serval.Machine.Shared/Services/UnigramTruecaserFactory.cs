@@ -2,32 +2,26 @@
 
 public class UnigramTruecaserFactory : ITruecaserFactory
 {
-    public async Task<ITruecaser> CreateAsync(string engineDir, CancellationToken cancellationToken = default)
+    public ITruecaser Create(string engineDir)
     {
         var truecaser = new UnigramTruecaser();
         string path = GetModelPath(engineDir);
-        await truecaser.LoadAsync(path);
+        truecaser.Load(path);
         return truecaser;
     }
 
-    public Task<ITrainer> CreateTrainerAsync(
-        string engineDir,
-        ITokenizer<string, int, string> tokenizer,
-        ITextCorpus corpus,
-        CancellationToken cancellationToken = default
-    )
+    public ITrainer CreateTrainer(string engineDir, ITokenizer<string, int, string> tokenizer, ITextCorpus corpus)
     {
         string path = GetModelPath(engineDir);
         ITrainer trainer = new UnigramTruecaserTrainer(path, corpus) { Tokenizer = tokenizer };
-        return Task.FromResult(trainer);
+        return trainer;
     }
 
-    public Task CleanupAsync(string engineDir, CancellationToken cancellationToken = default)
+    public void Cleanup(string engineDir)
     {
         string path = GetModelPath(engineDir);
         if (File.Exists(path))
             File.Delete(path);
-        return Task.CompletedTask;
     }
 
     private static string GetModelPath(string engineDir)

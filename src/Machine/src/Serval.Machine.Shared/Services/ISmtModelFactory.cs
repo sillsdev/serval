@@ -2,21 +2,19 @@
 
 public interface ISmtModelFactory
 {
-    Task<IInteractiveTranslationModel> CreateAsync(
+    IInteractiveTranslationModel Create(
         string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
         IDetokenizer<string, string> detokenizer,
-        ITruecaser truecaser,
-        CancellationToken cancellationToken = default
+        ITruecaser truecaser
     );
-    Task<ITrainer> CreateTrainerAsync(
+    ITrainer CreateTrainer(
         string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
-        IParallelTextCorpus corpus,
-        CancellationToken cancellationToken = default
+        IParallelTextCorpus corpus
     );
-    Task InitNewAsync(string engineDir, CancellationToken cancellationToken = default);
-    Task CleanupAsync(string engineDir, CancellationToken cancellationToken = default);
+    void InitNew(string engineDir);
+    void Cleanup(string engineDir);
     Task UpdateEngineFromAsync(string engineDir, Stream source, CancellationToken cancellationToken = default);
     Task SaveEngineToAsync(string engineDir, Stream destination, CancellationToken cancellationToken = default);
 }

@@ -14,14 +14,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     public PreprocessBuildJob(
         IPlatformService platformService,
         IRepository<TranslationEngine> engines,
-        IDistributedReaderWriterLockFactory lockFactory,
         IDataAccessContext dataAccessContext,
         ILogger<PreprocessBuildJob> logger,
         IBuildJobService buildJobService,
         ISharedFileService sharedFileService,
         ICorpusService corpusService
     )
-        : base(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
+        : base(platformService, engines, dataAccessContext, buildJobService, logger)
     {
         _sharedFileService = sharedFileService;
         _corpusService = corpusService;
@@ -46,7 +45,6 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         string buildId,
         IReadOnlyList<Corpus> data,
         string? buildOptions,
-        IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     )
     {
@@ -86,19 +84,17 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            bool canceling = !await BuildJobService.StartBuildJobAsync(
-                TrainJobRunnerType,
-                engineId,
-                buildId,
-                BuildStage.Train,
-                buildOptions: buildOptions,
-                cancellationToken: cancellationToken
-            );
-            if (canceling)
-                throw new OperationCanceledException();
-        }
+        bool canceling = !await BuildJobService.StartBuildJobAsync(
+            TrainJobRunnerType,
+            engine.Type,
+            engine.Id,
+            buildId,
+            BuildStage.Train,
+            buildOptions: buildOptions,
+            cancellationToken: cancellationToken
+        );
+        if (canceling)
+            throw new OperationCanceledException();
     }
 
     private async Task<(int TrainCount, int PretranslateCount)> WriteDataFilesAsync(
@@ -209,7 +205,6 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         string engineId,
         string buildId,
         IReadOnlyList<Corpus> data,
-        IDistributedReaderWriterLock @lock,
         JobCompletionStatus completionStatus
     )
     {

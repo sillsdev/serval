@@ -1,16 +1,20 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using SIL.ObjectModel;
+
+namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferEngineStateService(
     ISmtModelFactory smtModelFactory,
     ITransferEngineFactory transferEngineFactory,
     ITruecaserFactory truecaserFactory,
-    IOptionsMonitor<SmtTransferEngineOptions> options
-) : AsyncDisposableBase
+    IOptionsMonitor<SmtTransferEngineOptions> options,
+    ILogger<SmtTransferEngineStateService> logger
+) : DisposableBase
 {
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ITransferEngineFactory _transferEngineFactory = transferEngineFactory;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly IOptionsMonitor<SmtTransferEngineOptions> _options = options;
+    private readonly ILogger<SmtTransferEngineStateService> _logger = logger;
 
     private readonly ConcurrentDictionary<string, SmtTransferEngineState> _engineStates =
         new ConcurrentDictionary<string, SmtTransferEngineState>();
@@ -20,9 +24,9 @@ public class SmtTransferEngineStateService(
         return _engineStates.GetOrAdd(engineId, CreateState);
     }
 
-    public bool TryRemove(string engineId, [MaybeNullWhen(false)] out SmtTransferEngineState state)
+    public void Remove(string engineId)
     {
-        return _engineStates.TryRemove(engineId, out state);
+        _engineStates.TryRemove(engineId, out _);
     }
 
     public async Task CommitAsync(
@@ -34,20 +38,24 @@ public class SmtTransferEngineStateService(
     {
         foreach (SmtTransferEngineState state in _engineStates.Values)
         {
-            IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(state.EngineId, cancellationToken);
-            await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
+            try
             {
-                TranslationEngine? engine = await engines.GetAsync(
-                    e => e.EngineId == state.EngineId,
-                    cancellationToken
+                IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(state.EngineId, cancellationToken);
+                await @lock.WriterLockAsync(
+                    async ct =>
+                    {
+                        TranslationEngine? engine = await engines.GetAsync(state.EngineId, ct);
+                        if (engine is not null && !(engine.CollectTrainSegmentPairs ?? false))
+                            // there is no way to cancel this call
+                            state.Commit(engine.BuildRevision, inactiveTimeout);
+                    },
+                    _options.CurrentValue.EngineCommitTimeout,
+                    cancellationToken: cancellationToken
                 );
-                if (
-                    engine is not null
-                    && (engine.CurrentBuild is null || engine.CurrentBuild.JobState is BuildJobState.Pending)
-                )
-                {
-                    await state.CommitAsync(engine.BuildRevision, inactiveTimeout, cancellationToken);
-                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error occurred while committing SMT transfer engine {EngineId}.", state.EngineId);
             }
         }
     }
@@ -63,10 +71,10 @@ public class SmtTransferEngineStateService(
         );
     }
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override void DisposeManagedResources()
     {
         foreach (SmtTransferEngineState state in _engineStates.Values)
-            await state.DisposeAsync();
+            state.Dispose();
         _engineStates.Clear();
     }
 }
