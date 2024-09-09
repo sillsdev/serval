@@ -89,7 +89,7 @@ public class SmtTransferEngineState(
             Unload();
             CurrentBuildRevision = buildRevision;
         }
-        else if (DateTime.Now - LastUsedTime > inactiveTimeout)
+        else if (DateTime.UtcNow - LastUsedTime > inactiveTimeout)
         {
             Unload();
         }

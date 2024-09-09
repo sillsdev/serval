@@ -212,7 +212,6 @@ public class NmtEngineServiceTests
         {
             return new NmtEngineService(
                 PlatformService,
-                _lockFactory,
                 new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
@@ -263,6 +262,7 @@ public class NmtEngineServiceTests
 
             await BuildJobService.StartBuildJobAsync(
                 BuildJobRunnerType.Hangfire,
+                TranslationEngineType.Nmt,
                 "engine1",
                 "build1",
                 BuildStage.Postprocess,
@@ -297,7 +297,6 @@ public class NmtEngineServiceTests
                     return new NmtPreprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env._lockFactory,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         _env.BuildJobService,
@@ -313,12 +312,10 @@ public class NmtEngineServiceTests
                     return new PostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env._lockFactory,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
                         Substitute.For<ILogger<PostprocessBuildJob>>(),
-                        _env.SharedFileService,
-                        buildJobOptions
+                        _env.SharedFileService
                     );
                 }
                 return base.ActivateJob(jobType);

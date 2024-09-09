@@ -13,12 +13,13 @@ public static class TaskEx
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<T> task = action(cts.Token);
-        Task<T> completedTask = await Task.WhenAny(task, Delay<T>(timeout, cancellationToken));
+        Task<T?> completedTask = await Task.WhenAny(task as Task<T?>, Delay<T>(timeout, cancellationToken));
+        T? result = await completedTask;
         if (completedTask == task)
-            return (true, await task);
+            return (true, result);
 
         cts.Cancel();
-        return (false, default);
+        return (false, result);
     }
 
     public static async Task<bool> Timeout(
@@ -37,6 +38,7 @@ public static class TaskEx
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task task = action(cts.Token);
             Task completedTask = await Task.WhenAny(task, Task.Delay(timeout, cancellationToken));
+            await completedTask;
             if (completedTask == task)
                 return true;
 
@@ -45,9 +47,9 @@ public static class TaskEx
         }
     }
 
-    private static async Task<T> Delay<T>(TimeSpan timeout, CancellationToken cancellationToken = default)
+    private static async Task<T?> Delay<T>(TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         await Task.Delay(timeout, cancellationToken);
-        return default!;
+        return default;
     }
 }

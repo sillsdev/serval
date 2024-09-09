@@ -54,9 +54,16 @@ public class DistributedReaderWriterLock(
         CancellationToken cancellationToken = default
     )
     {
-        string lockId = _idGenerator.GenerateId();
-        TimeSpan resolvedLifetime = lifetime ?? _lockOptions.DefaultLifetime;
+        if (lifetime < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(lifetime),
+                "The lifetime must be greater than or equal to zero."
+            );
+        }
 
+        TimeSpan resolvedLifetime = lifetime ?? _lockOptions.DefaultLifetime;
+        string lockId = _idGenerator.GenerateId();
         (bool acquired, DateTime expiresAt) = await TryAcquireReaderLock(lockId, resolvedLifetime, cancellationToken);
         if (!acquired)
         {
@@ -85,6 +92,7 @@ public class DistributedReaderWriterLock(
             (bool completed, T? result) = await TaskEx.Timeout(action, expiresAt - DateTime.UtcNow, cancellationToken);
             if (!completed)
                 throw new TimeoutException($"A reader lock for the distributed lock '{_id}' expired.");
+            // if the task sucssfully completed, then the result will be populated
             return result!;
         }
         finally
@@ -104,14 +112,22 @@ public class DistributedReaderWriterLock(
         CancellationToken cancellationToken = default
     )
     {
-        string lockId = _idGenerator.GenerateId();
+        if (lifetime < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(lifetime),
+                "The lifetime must be greater than or equal to zero."
+            );
+        }
+
         TimeSpan resolvedLifetime = lifetime ?? _lockOptions.DefaultLifetime;
+        string lockId = _idGenerator.GenerateId();
         (bool acquired, DateTime expiresAt) = await TryAcquireWriterLock(lockId, resolvedLifetime, cancellationToken);
         if (!acquired)
         {
             await _locks.UpdateAsync(
                 _id,
-                u => u.Add(rwl => rwl.WriterQueue, new Lock { Id = lockId, HostId = _hostId, }),
+                u => u.Add(rwl => rwl.WriterQueue, new Lock { Id = lockId, HostId = _hostId }),
                 cancellationToken: cancellationToken
             );
             try
@@ -154,6 +170,7 @@ public class DistributedReaderWriterLock(
             (bool completed, T? result) = await TaskEx.Timeout(action, expiresAt - DateTime.UtcNow, cancellationToken);
             if (!completed)
                 throw new TimeoutException($"A writer lock for the distributed lock '{_id}' expired.");
+            // if the task sucssfully completed, then the result will be populated
             return result!;
         }
         finally

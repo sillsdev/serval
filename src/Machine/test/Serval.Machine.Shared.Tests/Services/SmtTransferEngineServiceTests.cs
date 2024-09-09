@@ -22,8 +22,8 @@ public class SmtTransferEngineServiceTests
             Assert.That(engine?.IsModelPersisted, Is.True);
         });
         string engineDir = Path.Combine("translation_engines", EngineId2);
-        _ = env.SmtModelFactory.Received().InitNewAsync(engineDir);
-        _ = env.TransferEngineFactory.Received().InitNewAsync(engineDir);
+        env.SmtModelFactory.Received().InitNew(engineDir);
+        env.TransferEngineFactory.Received().InitNew(engineDir);
     }
 
     [TestCase(BuildJobRunnerType.Hangfire)]
@@ -77,7 +77,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, buildOptions: "{}", corpora: []);
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -159,7 +159,7 @@ public class SmtTransferEngineServiceTests
         engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Null);
         Assert.That(engine.BuildRevision, Is.EqualTo(2));
-        _ = env.SmtModel.Received(2).TrainSegmentAsync("esto es una prueba.", "this is a test.", true);
+        env.SmtModel.Received(2).TrainSegment("esto es una prueba.", "this is a test.", true);
     }
 
     [Test]
@@ -169,7 +169,7 @@ public class SmtTransferEngineServiceTests
         await env.Service.TrainSegmentPairAsync(EngineId1, "esto es una prueba.", "this is a test.", true);
         await Task.Delay(10);
         await env.CommitAsync(TimeSpan.Zero);
-        _ = env.SmtModel.Received().SaveAsync();
+        env.SmtModel.Received().Save();
         Assert.That(env.StateService.Get(EngineId1).IsLoaded, Is.False);
     }
 
@@ -179,7 +179,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment();
         await env.Service.TrainSegmentPairAsync(EngineId1, "esto es una prueba.", "this is a test.", true);
         await env.CommitAsync(TimeSpan.FromHours(1));
-        _ = env.SmtModel.Received().SaveAsync();
+        env.SmtModel.Received().Save();
         Assert.That(env.StateService.Get(EngineId1).IsLoaded, Is.True);
     }
 
@@ -396,7 +396,8 @@ public class SmtTransferEngineServiceTests
                 SmtModelFactory,
                 TransferEngineFactory,
                 _truecaserFactory,
-                options
+                options,
+                Substitute.For<ILogger<SmtTransferEngineStateService>>()
             );
         }
 
@@ -440,70 +441,64 @@ public class SmtTransferEngineServiceTests
                 },
                 [new Phrase(Range<int>.Create(0, 5), 5)]
             );
+            SmtModel.Translate(1, Arg.Any<string>()).Returns([translationResult]);
             SmtModel
-                .TranslateAsync(1, Arg.Any<string>())
-                .Returns(Task.FromResult<IReadOnlyList<TranslationResult>>([translationResult]));
-            SmtModel
-                .GetWordGraphAsync(Arg.Any<string>())
+                .GetWordGraph(Arg.Any<string>())
                 .Returns(
-                    Task.FromResult(
-                        new WordGraph(
-                            "esto es una prueba .".Split(),
-                            new[]
-                            {
-                                new WordGraphArc(
-                                    0,
-                                    1,
-                                    1.0,
-                                    "this is".Split(),
-                                    new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
-                                    Range<int>.Create(0, 2),
-                                    GetSources(2, false),
-                                    [1.0, 1.0]
-                                ),
-                                new WordGraphArc(
-                                    1,
-                                    2,
-                                    1.0,
-                                    "a test".Split(),
-                                    new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
-                                    Range<int>.Create(2, 4),
-                                    GetSources(2, false),
-                                    [1.0, 1.0]
-                                ),
-                                new WordGraphArc(
-                                    2,
-                                    3,
-                                    1.0,
-                                    ".".Split(),
-                                    new WordAlignmentMatrix(1, 1) { [0, 0] = true },
-                                    Range<int>.Create(4, 5),
-                                    GetSources(1, false),
-                                    [1.0]
-                                )
-                            },
-                            [3]
-                        )
+                    new WordGraph(
+                        "esto es una prueba .".Split(),
+                        new[]
+                        {
+                            new WordGraphArc(
+                                0,
+                                1,
+                                1.0,
+                                "this is".Split(),
+                                new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
+                                Range<int>.Create(0, 2),
+                                GetSources(2, false),
+                                [1.0, 1.0]
+                            ),
+                            new WordGraphArc(
+                                1,
+                                2,
+                                1.0,
+                                "a test".Split(),
+                                new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
+                                Range<int>.Create(2, 4),
+                                GetSources(2, false),
+                                [1.0, 1.0]
+                            ),
+                            new WordGraphArc(
+                                2,
+                                3,
+                                1.0,
+                                ".".Split(),
+                                new WordAlignmentMatrix(1, 1) { [0, 0] = true },
+                                Range<int>.Create(4, 5),
+                                GetSources(1, false),
+                                [1.0]
+                            )
+                        },
+                        [3]
                     )
                 );
 
             factory
-                .CreateAsync(
+                .Create(
                     Arg.Any<string>(),
                     Arg.Any<IRangeTokenizer<string, int, string>>(),
                     Arg.Any<IDetokenizer<string, string>>(),
-                    Arg.Any<ITruecaser>(),
-                    Arg.Any<CancellationToken>()
+                    Arg.Any<ITruecaser>()
                 )
-                .Returns(Task.FromResult(SmtModel));
+                .Returns(SmtModel);
             factory
-                .CreateTrainerAsync(
+                .CreateTrainer(
                     Arg.Any<string>(),
                     Arg.Any<IRangeTokenizer<string, int, string>>(),
-                    Arg.Any<IParallelTextCorpus>(),
-                    Arg.Any<CancellationToken>()
+                    Arg.Any<IParallelTextCorpus>()
                 )
-                .Returns(Task.FromResult(SmtBatchTrainer));
+                .Returns(SmtBatchTrainer);
             return factory;
         }
 
@@ -512,57 +507,49 @@ public class SmtTransferEngineServiceTests
             ITransferEngineFactory factory = Substitute.For<ITransferEngineFactory>();
             ITranslationEngine engine = Substitute.For<ITranslationEngine>();
             engine
-                .TranslateAsync(Arg.Any<string>())
+                .Translate(Arg.Any<string>())
                 .Returns(
-                    Task.FromResult(
-                        new TranslationResult(
-                            "this is a TEST.",
-                            "esto es una prueba .".Split(),
-                            "this is a TEST .".Split(),
-                            [1.0, 1.0, 1.0, 1.0, 1.0],
-                            [
-                                TranslationSources.Transfer,
-                                TranslationSources.Transfer,
-                                TranslationSources.Transfer,
-                                TranslationSources.Transfer,
-                                TranslationSources.Transfer
-                            ],
-                            new WordAlignmentMatrix(5, 5)
-                            {
-                                [0, 0] = true,
-                                [1, 1] = true,
-                                [2, 2] = true,
-                                [3, 3] = true,
-                                [4, 4] = true
-                            },
-                            [new Phrase(Range<int>.Create(0, 5), 5)]
-                        )
+                    new TranslationResult(
+                        "this is a TEST.",
+                        "esto es una prueba .".Split(),
+                        "this is a TEST .".Split(),
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [
+                            TranslationSources.Transfer,
+                            TranslationSources.Transfer,
+                            TranslationSources.Transfer,
+                            TranslationSources.Transfer,
+                            TranslationSources.Transfer
+                        ],
+                        new WordAlignmentMatrix(5, 5)
+                        {
+                            [0, 0] = true,
+                            [1, 1] = true,
+                            [2, 2] = true,
+                            [3, 3] = true,
+                            [4, 4] = true
+                        },
+                        [new Phrase(Range<int>.Create(0, 5), 5)]
                     )
                 );
             factory
-                .CreateAsync(
+                .Create(
                     Arg.Any<string>(),
                     Arg.Any<IRangeTokenizer<string, int, string>>(),
                     Arg.Any<IDetokenizer<string, string>>(),
-                    Arg.Any<ITruecaser>(),
-                    Arg.Any<CancellationToken>()
+                    Arg.Any<ITruecaser>()
                 )
-                .Returns(Task.FromResult<ITranslationEngine?>(engine));
+                .Returns(engine);
             return factory;
         }
 
         private ITruecaserFactory CreateTruecaserFactory()
         {
             ITruecaserFactory factory = Substitute.For<ITruecaserFactory>();
-            factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
+            factory.Create(Arg.Any<string>()).Returns(Truecaser);
             factory
-                .CreateTrainerAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<ITokenizer<string, int, string>>(),
-                    Arg.Any<ITextCorpus>(),
-                    Arg.Any<CancellationToken>()
-                )
-                .Returns(Task.FromResult(TruecaserTrainer));
+                .CreateTrainer(Arg.Any<string>(), Arg.Any<ITokenizer<string, int, string>>(), Arg.Any<ITextCorpus>())
+                .Returns(TruecaserTrainer);
             return factory;
         }
 
@@ -632,23 +619,13 @@ public class SmtTransferEngineServiceTests
                 await BuildJobService.BuildJobStartedAsync("engine1", "build1", _cancellationTokenSource.Token);
 
                 string engineDir = Path.Combine("translation_engines", EngineId1);
-                await SmtModelFactory.InitNewAsync(engineDir, _cancellationTokenSource.Token);
+                SmtModelFactory.InitNew(engineDir);
                 ITextCorpus sourceCorpus = new DictionaryTextCorpus();
                 ITextCorpus targetCorpus = new DictionaryTextCorpus();
                 IParallelTextCorpus parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
                 LatinWordTokenizer tokenizer = new();
-                using ITrainer smtModelTrainer = await SmtModelFactory.CreateTrainerAsync(
-                    engineDir,
-                    tokenizer,
-                    parallelCorpus,
-                    _cancellationTokenSource.Token
-                );
-                using ITrainer truecaseTrainer = await _truecaserFactory.CreateTrainerAsync(
-                    engineDir,
-                    tokenizer,
-                    targetCorpus,
-                    _cancellationTokenSource.Token
-                );
+                using ITrainer smtModelTrainer = SmtModelFactory.CreateTrainer(engineDir, tokenizer, parallelCorpus);
+                using ITrainer truecaseTrainer = _truecaserFactory.CreateTrainer(engineDir, tokenizer, targetCorpus);
                 await smtModelTrainer.TrainAsync(null, _cancellationTokenSource.Token);
                 await truecaseTrainer.TrainAsync(cancellationToken: _cancellationTokenSource.Token);
 
@@ -667,6 +644,7 @@ public class SmtTransferEngineServiceTests
 
                 await BuildJobService.StartBuildJobAsync(
                     BuildJobRunnerType.Hangfire,
+                    TranslationEngineType.SmtTransfer,
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,
@@ -685,17 +663,18 @@ public class SmtTransferEngineServiceTests
 
             public override object ActivateJob(Type jobType)
             {
-                if (jobType == typeof(PreprocessBuildJob))
+                if (jobType == typeof(SmtTransferPreprocessBuildJob))
                 {
-                    return new PreprocessBuildJob(
+                    return new SmtTransferPreprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env._lockFactory,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<PreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
-                        Substitute.For<ICorpusService>()
+                        Substitute.For<ICorpusService>(),
+                        _env._lockFactory,
+                        _env.TrainSegmentPairs
                     )
                     {
                         TrainJobRunnerType = _env._trainJobRunnerType
@@ -710,12 +689,11 @@ public class SmtTransferEngineServiceTests
                     return new SmtTransferPostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env._lockFactory,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
                         Substitute.For<ILogger<SmtTransferPostprocessBuildJob>>(),
                         _env.SharedFileService,
-                        buildJobOptions,
+                        _env._lockFactory,
                         _env.TrainSegmentPairs,
                         _env.SmtModelFactory,
                         _env._truecaserFactory,
@@ -727,7 +705,6 @@ public class SmtTransferEngineServiceTests
                     return new SmtTransferTrainBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env._lockFactory,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
                         Substitute.For<ILogger<SmtTransferTrainBuildJob>>(),
