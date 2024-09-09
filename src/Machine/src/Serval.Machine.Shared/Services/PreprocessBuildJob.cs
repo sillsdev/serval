@@ -87,7 +87,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         bool canceling = !await BuildJobService.StartBuildJobAsync(
             TrainJobRunnerType,
             engine.Type,
-            engine.Id,
+            engineId,
             buildId,
             BuildStage.Train,
             buildOptions: buildOptions,
