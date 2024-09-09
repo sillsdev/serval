@@ -702,8 +702,10 @@ public class SmtTransferEngineServiceTests
                 }
                 if (jobType == typeof(SmtTransferPostprocessBuildJob))
                 {
-                    var options = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
-                    options.CurrentValue.Returns(new SmtTransferEngineOptions());
+                    var engineOptions = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
+                    engineOptions.CurrentValue.Returns(new SmtTransferEngineOptions());
+                    var buildOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+                    buildOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new SmtTransferPostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -715,7 +717,8 @@ public class SmtTransferEngineServiceTests
                         _env.TrainSegmentPairs,
                         _env.SmtModelFactory,
                         _env._truecaserFactory,
-                        options
+                        buildOptions,
+                        engineOptions
                     );
                 }
                 if (jobType == typeof(SmtTransferTrainBuildJob))
