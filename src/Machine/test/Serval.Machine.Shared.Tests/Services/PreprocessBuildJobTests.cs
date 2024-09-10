@@ -369,6 +369,7 @@ public class PreprocessBuildJobTests
         public ICorpusService CorpusService { get; set; }
         public IPlatformService PlatformService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
+        public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
         public IDistributedReaderWriterLockFactory LockFactory { get; }
         public IBuildJobService BuildJobService { get; }
         public IClearMLService ClearMLService { get; }
@@ -495,10 +496,12 @@ public class PreprocessBuildJobTests
                     }
                 }
             );
+            TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
             CorpusService = new CorpusService();
             PlatformService = Substitute.For<IPlatformService>();
             LockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
+                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
@@ -576,7 +579,6 @@ public class PreprocessBuildJobTests
                     return new NmtPreprocessBuildJob(
                         PlatformService,
                         Engines,
-                        LockFactory,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         BuildJobService,
@@ -590,15 +592,16 @@ public class PreprocessBuildJobTests
                 }
                 case TranslationEngineType.SmtTransfer:
                 {
-                    return new PreprocessBuildJob(
+                    return new SmtTransferPreprocessBuildJob(
                         PlatformService,
                         Engines,
-                        LockFactory,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<PreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
-                        CorpusService
+                        CorpusService,
+                        LockFactory,
+                        TrainSegmentPairs
                     )
                     {
                         Seed = 1234

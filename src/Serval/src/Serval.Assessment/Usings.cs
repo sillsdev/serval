@@ -29,3 +29,4 @@ global using Serval.Shared.Services;
 global using Serval.Shared.Utils;
 global using SIL.DataAccess;
 global using SIL.Scripture;
+global using SIL.ServiceToolkit.Utils;

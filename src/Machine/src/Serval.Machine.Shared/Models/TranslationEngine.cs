@@ -11,4 +11,5 @@ public record TranslationEngine : IEntity
     public required bool IsModelPersisted { get; init; }
     public int BuildRevision { get; init; }
     public Build? CurrentBuild { get; init; }
+    public bool? CollectTrainSegmentPairs { get; init; }
 }

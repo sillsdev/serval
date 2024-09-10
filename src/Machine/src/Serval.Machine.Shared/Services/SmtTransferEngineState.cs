@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using SIL.ObjectModel;
+
+namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferEngineState(
     ISmtModelFactory smtModelFactory,
@@ -6,7 +8,7 @@ public class SmtTransferEngineState(
     ITruecaserFactory truecaserFactory,
     IOptionsMonitor<SmtTransferEngineOptions> options,
     string engineId
-) : AsyncDisposableBase
+) : DisposableBase
 {
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ITransferEngineFactory _transferEngineFactory = transferEngineFactory;
@@ -21,34 +23,37 @@ public class SmtTransferEngineState(
 
     public bool IsUpdated { get; set; }
     public int CurrentBuildRevision { get; set; } = -1;
-    public DateTime LastUsedTime { get; set; } = DateTime.UtcNow;
+    public DateTime LastUsedTime { get; private set; } = DateTime.UtcNow;
     public bool IsLoaded => _hybridEngine != null;
 
     private string EngineDir => Path.Combine(_options.CurrentValue.EnginesDir, EngineId);
 
-    public async Task InitNewAsync(CancellationToken cancellationToken = default)
+    public void InitNew()
     {
-        await _smtModelFactory.InitNewAsync(EngineDir, cancellationToken);
-        await _transferEngineFactory.InitNewAsync(EngineDir, cancellationToken);
+        _smtModelFactory.InitNew(EngineDir);
+        _transferEngineFactory.InitNew(EngineDir);
     }
 
-    public async Task<HybridTranslationEngine> GetHybridEngineAsync(int buildRevision)
+    public async Task<HybridTranslationEngine> GetHybridEngineAsync(
+        int buildRevision,
+        CancellationToken cancellationToken = default
+    )
     {
-        using (await _lock.LockAsync())
+        using (await _lock.LockAsync(cancellationToken))
         {
             if (_hybridEngine is not null && CurrentBuildRevision != -1 && buildRevision != CurrentBuildRevision)
             {
                 IsUpdated = false;
-                await UnloadAsync();
+                Unload();
             }
 
             if (_hybridEngine is null)
             {
                 LatinWordTokenizer tokenizer = new();
                 LatinWordDetokenizer detokenizer = new();
-                ITruecaser truecaser = await _truecaserFactory.CreateAsync(EngineDir);
-                _smtModel = await _smtModelFactory.CreateAsync(EngineDir, tokenizer, detokenizer, truecaser);
-                ITranslationEngine? transferEngine = await _transferEngineFactory.CreateAsync(
+                ITruecaser truecaser = _truecaserFactory.Create(EngineDir);
+                _smtModel = _smtModelFactory.Create(EngineDir, tokenizer, detokenizer, truecaser);
+                ITranslationEngine? transferEngine = _transferEngineFactory.Create(
                     EngineDir,
                     tokenizer,
                     detokenizer,
@@ -64,19 +69,15 @@ public class SmtTransferEngineState(
         }
     }
 
-    public async Task DeleteDataAsync()
+    public void DeleteData()
     {
-        await UnloadAsync();
-        await _smtModelFactory.CleanupAsync(EngineDir);
-        await _transferEngineFactory.CleanupAsync(EngineDir);
-        await _truecaserFactory.CleanupAsync(EngineDir);
+        Unload();
+        _smtModelFactory.Cleanup(EngineDir);
+        _transferEngineFactory.Cleanup(EngineDir);
+        _truecaserFactory.Cleanup(EngineDir);
     }
 
-    public async Task CommitAsync(
-        int buildRevision,
-        TimeSpan inactiveTimeout,
-        CancellationToken cancellationToken = default
-    )
+    public void Commit(int buildRevision, TimeSpan inactiveTimeout)
     {
         if (_hybridEngine is null)
             return;
@@ -85,34 +86,39 @@ public class SmtTransferEngineState(
             CurrentBuildRevision = buildRevision;
         if (buildRevision != CurrentBuildRevision)
         {
-            await UnloadAsync(cancellationToken);
+            Unload();
             CurrentBuildRevision = buildRevision;
         }
-        else if (DateTime.Now - LastUsedTime > inactiveTimeout)
+        else if (DateTime.UtcNow - LastUsedTime > inactiveTimeout)
         {
-            await UnloadAsync(cancellationToken);
+            Unload();
         }
         else
         {
-            await SaveModelAsync(cancellationToken);
+            SaveModel();
         }
     }
 
-    private async Task SaveModelAsync(CancellationToken cancellationToken = default)
+    public void Touch()
+    {
+        LastUsedTime = DateTime.UtcNow;
+    }
+
+    private void SaveModel()
     {
         if (_smtModel is not null && IsUpdated)
         {
-            await _smtModel.SaveAsync(cancellationToken);
+            _smtModel.Save();
             IsUpdated = false;
         }
     }
 
-    private async Task UnloadAsync(CancellationToken cancellationToken = default)
+    private void Unload()
     {
         if (_hybridEngine is null)
             return;
 
-        await SaveModelAsync(cancellationToken);
+        SaveModel();
 
         _hybridEngine.Dispose();
 
@@ -121,8 +127,8 @@ public class SmtTransferEngineState(
         CurrentBuildRevision = -1;
     }
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override void DisposeManagedResources()
     {
-        await UnloadAsync();
+        Unload();
     }
 }

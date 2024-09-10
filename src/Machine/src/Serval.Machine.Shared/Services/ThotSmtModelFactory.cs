@@ -4,12 +4,11 @@ public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) :
 {
     private readonly IOptionsMonitor<ThotSmtModelOptions> _options = options;
 
-    public Task<IInteractiveTranslationModel> CreateAsync(
+    public IInteractiveTranslationModel Create(
         string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
         IDetokenizer<string, string> detokenizer,
-        ITruecaser truecaser,
-        CancellationToken cancellationToken = default
+        ITruecaser truecaser
     )
     {
         string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
@@ -22,14 +21,13 @@ public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) :
             LowercaseTarget = true,
             Truecaser = truecaser
         };
-        return Task.FromResult(model);
+        return model;
     }
 
-    public Task<ITrainer> CreateTrainerAsync(
+    public ITrainer CreateTrainer(
         string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
-        IParallelTextCorpus corpus,
-        CancellationToken cancellationToken = default
+        IParallelTextCorpus corpus
     )
     {
         string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
@@ -40,21 +38,20 @@ public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) :
             LowercaseSource = true,
             LowercaseTarget = true
         };
-        return Task.FromResult(trainer);
+        return trainer;
     }
 
-    public Task InitNewAsync(string engineDir, CancellationToken cancellationToken = default)
+    public void InitNew(string engineDir)
     {
         if (!Directory.Exists(engineDir))
             Directory.CreateDirectory(engineDir);
         ZipFile.ExtractToDirectory(_options.CurrentValue.NewModelFile, engineDir);
-        return Task.CompletedTask;
     }
 
-    public Task CleanupAsync(string engineDir, CancellationToken cancellationToken = default)
+    public void Cleanup(string engineDir)
     {
         if (!Directory.Exists(engineDir))
-            return Task.CompletedTask;
+            return;
         DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "lm"));
         DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "tm"));
         string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
@@ -62,7 +59,6 @@ public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) :
             File.Delete(smtConfigFileName);
         if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
             Directory.Delete(engineDir);
-        return Task.CompletedTask;
     }
 
     public async Task UpdateEngineFromAsync(

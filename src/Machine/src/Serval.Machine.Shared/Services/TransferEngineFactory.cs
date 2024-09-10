@@ -2,12 +2,11 @@
 
 public class TransferEngineFactory : ITransferEngineFactory
 {
-    public Task<ITranslationEngine?> CreateAsync(
+    public ITranslationEngine? Create(
         string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
         IDetokenizer<string, string> detokenizer,
-        ITruecaser truecaser,
-        CancellationToken cancellationToken = default
+        ITruecaser truecaser
     )
     {
         string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
@@ -35,19 +34,18 @@ public class TransferEngineFactory : ITransferEngineFactory
                 Truecaser = truecaser
             };
         }
-        return Task.FromResult(transferEngine);
+        return transferEngine;
     }
 
-    public Task InitNewAsync(string engineDir, CancellationToken cancellationToken = default)
+    public void InitNew(string engineDir)
     {
         // TODO: generate source and target config files
-        return Task.CompletedTask;
     }
 
-    public Task CleanupAsync(string engineDir, CancellationToken cancellationToken = default)
+    public void Cleanup(string engineDir)
     {
         if (!Directory.Exists(engineDir))
-            return Task.CompletedTask;
+            return;
         string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
         if (File.Exists(hcSrcConfigFileName))
             File.Delete(hcSrcConfigFileName);
@@ -56,6 +54,5 @@ public class TransferEngineFactory : ITransferEngineFactory
             File.Delete(hcTrgConfigFileName);
         if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
             Directory.Delete(engineDir);
-        return Task.CompletedTask;
     }
 }

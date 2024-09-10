@@ -2,13 +2,12 @@
 
 public interface ITransferEngineFactory
 {
-    Task<ITranslationEngine?> CreateAsync(
+    ITranslationEngine? Create(
         string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
         IDetokenizer<string, string> detokenizer,
-        ITruecaser truecaser,
-        CancellationToken cancellationToken = default
+        ITruecaser truecaser
     );
-    Task InitNewAsync(string engineDir, CancellationToken cancellationToken = default);
-    Task CleanupAsync(string engineDir, CancellationToken cancellationToken = default);
+    void InitNew(string engineDir);
+    void Cleanup(string engineDir);
 }

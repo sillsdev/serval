@@ -24,6 +24,7 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+		<PackageReference Include="Nito.AsyncEx.Coordination" Version="5.1.2" />
 		<PackageReference Include="NSubstitute" Version="5.0.0" />
 		<PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.16">
 			<PrivateAssets>all</PrivateAssets>

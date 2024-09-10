@@ -2,7 +2,6 @@
 
 public class NmtEngineService(
     IPlatformService platformService,
-    IDistributedReaderWriterLockFactory lockFactory,
     IDataAccessContext dataAccessContext,
     IRepository<TranslationEngine> engines,
     IBuildJobService buildJobService,
@@ -11,7 +10,6 @@ public class NmtEngineService(
     ISharedFileService sharedFileService
 ) : ITranslationEngineService
 {
-    private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
@@ -61,15 +59,10 @@ public class NmtEngineService(
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            await CancelBuildJobAsync(engineId, cancellationToken);
+        await CancelBuildJobAsync(engineId, cancellationToken);
 
-            await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
-            await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
-        }
-        await _lockFactory.DeleteAsync(engineId, CancellationToken.None);
+        await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
+        await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
     }
 
     public async Task StartBuildAsync(
@@ -80,33 +73,26 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            // If there is a pending/running build, then no need to start a new one.
-            if (await _buildJobService.IsEngineBuilding(engineId, cancellationToken))
-                throw new InvalidOperationException("The engine is already building or in the process of canceling.");
-
-            await _buildJobService.StartBuildJobAsync(
-                BuildJobRunnerType.Hangfire,
-                engineId,
-                buildId,
-                BuildStage.Preprocess,
-                corpora,
-                buildOptions,
-                cancellationToken
-            );
-        }
+        bool building = !await _buildJobService.StartBuildJobAsync(
+            BuildJobRunnerType.Hangfire,
+            TranslationEngineType.Nmt,
+            engineId,
+            buildId,
+            BuildStage.Preprocess,
+            corpora,
+            buildOptions,
+            cancellationToken
+        );
+        // If there is a pending/running build, then no need to start a new one.
+        if (building)
+            throw new InvalidOperationException("The engine is already building or in the process of canceling.");
     }
 
     public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            if (!await CancelBuildJobAsync(engineId, cancellationToken))
-                throw new InvalidOperationException("The engine is not currently building.");
-        }
+        bool building = await CancelBuildJobAsync(engineId, cancellationToken);
+        if (!building)
+            throw new InvalidOperationException("The engine is not currently building.");
     }
 
     public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(

@@ -100,6 +100,7 @@ public class NmtEngineServiceTests
             PlatformService = Substitute.For<IPlatformService>();
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
+                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
@@ -211,7 +212,6 @@ public class NmtEngineServiceTests
         {
             return new NmtEngineService(
                 PlatformService,
-                _lockFactory,
                 new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
@@ -262,6 +262,7 @@ public class NmtEngineServiceTests
 
             await BuildJobService.StartBuildJobAsync(
                 BuildJobRunnerType.Hangfire,
+                TranslationEngineType.Nmt,
                 "engine1",
                 "build1",
                 BuildStage.Postprocess,
@@ -296,7 +297,6 @@ public class NmtEngineServiceTests
                     return new NmtPreprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env._lockFactory,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         _env.BuildJobService,
@@ -307,17 +307,15 @@ public class NmtEngineServiceTests
                 }
                 if (jobType == typeof(PostprocessBuildJob))
                 {
-                    var options = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
-                    options.CurrentValue.Returns(new BuildJobOptions());
+                    var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+                    buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new PostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env._lockFactory,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
                         Substitute.For<ILogger<PostprocessBuildJob>>(),
-                        _env.SharedFileService,
-                        options
+                        _env.SharedFileService
                     );
                 }
                 return base.ActivateJob(jobType);

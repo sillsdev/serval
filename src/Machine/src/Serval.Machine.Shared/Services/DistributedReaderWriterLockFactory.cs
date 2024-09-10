@@ -2,11 +2,13 @@
 
 public class DistributedReaderWriterLockFactory(
     IOptions<ServiceOptions> serviceOptions,
+    IOptions<DistributedReaderWriterLockOptions> lockOptions,
     IRepository<RWLock> locks,
     IIdGenerator idGenerator
 ) : IDistributedReaderWriterLockFactory
 {
     private readonly ServiceOptions _serviceOptions = serviceOptions.Value;
+    private readonly DistributedReaderWriterLockOptions _lockOptions = lockOptions.Value;
     private readonly IIdGenerator _idGenerator = idGenerator;
     private readonly IRepository<RWLock> _locks = locks;
 
@@ -39,7 +41,7 @@ public class DistributedReaderWriterLockFactory(
             // the lock is already made - no new one needs to be made
             // This is done instead of checking if it exists first to prevent race conditions.
         }
-        return new DistributedReaderWriterLock(_serviceOptions.ServiceId, _locks, _idGenerator, id);
+        return new DistributedReaderWriterLock(_serviceOptions.ServiceId, _locks, _idGenerator, id, _lockOptions);
     }
 
     public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
