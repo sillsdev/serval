@@ -6,10 +6,12 @@ public class PostprocessBuildJob(
     IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<PostprocessBuildJob> logger,
-    ISharedFileService sharedFileService
+    ISharedFileService sharedFileService,
+    IOptionsMonitor<BuildJobOptions> options
 ) : HangfireBuildJob<(int, double)>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
     protected ISharedFileService SharedFileService { get; } = sharedFileService;
+    private readonly BuildJobOptions _buildJobOptions = options.CurrentValue;
 
     protected override async Task DoWorkAsync(
         string engineId,

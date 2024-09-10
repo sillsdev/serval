@@ -11,8 +11,18 @@ public class SmtTransferPostprocessBuildJob(
     IRepository<TrainSegmentPair> trainSegmentPairs,
     ISmtModelFactory smtModelFactory,
     ITruecaserFactory truecaserFactory,
+    IOptionsMonitor<BuildJobOptions> buildOptions,
     IOptionsMonitor<SmtTransferEngineOptions> engineOptions
-) : PostprocessBuildJob(platformService, engines, dataAccessContext, buildJobService, logger, sharedFileService)
+)
+    : PostprocessBuildJob(
+        platformService,
+        engines,
+        dataAccessContext,
+        buildJobService,
+        logger,
+        sharedFileService,
+        buildOptions
+    )
 {
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;

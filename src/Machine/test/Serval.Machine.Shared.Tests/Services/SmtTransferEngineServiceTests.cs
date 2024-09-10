@@ -697,6 +697,7 @@ public class SmtTransferEngineServiceTests
                         _env.TrainSegmentPairs,
                         _env.SmtModelFactory,
                         _env._truecaserFactory,
+                        buildJobOptions,
                         engineOptions
                     );
                 }

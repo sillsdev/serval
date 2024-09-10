@@ -315,7 +315,8 @@ public class NmtEngineServiceTests
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
                         Substitute.For<ILogger<PostprocessBuildJob>>(),
-                        _env.SharedFileService
+                        _env.SharedFileService,
+                        buildJobOptions
                     );
                 }
                 return base.ActivateJob(jobType);
