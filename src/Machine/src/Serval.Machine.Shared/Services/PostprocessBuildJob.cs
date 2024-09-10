@@ -7,10 +7,12 @@ public class PostprocessBuildJob(
     IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<PostprocessBuildJob> logger,
-    ISharedFileService sharedFileService
+    ISharedFileService sharedFileService,
+    IOptionsMonitor<BuildJobOptions> options
 ) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
 {
     protected ISharedFileService SharedFileService { get; } = sharedFileService;
+    private readonly BuildJobOptions _options = options.CurrentValue;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -73,6 +75,9 @@ public class PostprocessBuildJob(
     )
     {
         if (completionStatus is JobCompletionStatus.Restarting)
+            return;
+
+        if (_options.PreserveBuildFiles)
             return;
 
         try

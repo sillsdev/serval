@@ -307,6 +307,8 @@ public class NmtEngineServiceTests
                 }
                 if (jobType == typeof(PostprocessBuildJob))
                 {
+                    var options = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+                    options.CurrentValue.Returns(new BuildJobOptions());
                     return new PostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -314,7 +316,8 @@ public class NmtEngineServiceTests
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
                         Substitute.For<ILogger<PostprocessBuildJob>>(),
-                        _env.SharedFileService
+                        _env.SharedFileService,
+                        options
                     );
                 }
                 return base.ActivateJob(jobType);
