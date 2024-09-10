@@ -9,7 +9,8 @@ public class TranslationEnginesController(
     IBuildService buildService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
-    IUrlService urlService
+    IUrlService urlService,
+    ILogger<TranslationEnginesController> logger
 ) : ServalControllerBase(authService)
 {
     private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
@@ -20,6 +21,7 @@ public class TranslationEnginesController(
     private readonly IPretranslationService _pretranslationService = pretranslationService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
+    private readonly ILogger<TranslationEnginesController> _logger = logger;
 
     /// <summary>
     /// Get all translation engines
@@ -185,6 +187,7 @@ public class TranslationEnginesController(
     {
         await AuthorizeAsync(id, cancellationToken);
         TranslationResult result = await _engineService.TranslateAsync(id, segment, cancellationToken);
+        _logger.LogInformation("Translated segment for engine {EngineId}", id);
         return Ok(Map(result));
     }
 
@@ -222,6 +225,7 @@ public class TranslationEnginesController(
     {
         await AuthorizeAsync(id, cancellationToken);
         IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(id, n, segment, cancellationToken);
+        _logger.LogInformation("Translated {n} segments for engine {EngineId}", n, id);
         return Ok(results.Select(Map));
     }
 
@@ -257,6 +261,7 @@ public class TranslationEnginesController(
     {
         await AuthorizeAsync(id, cancellationToken);
         WordGraph wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
+        _logger.LogInformation("Got word graph for engine {EngineId}", id);
         return Ok(Map(wordGraph));
     }
 
@@ -303,6 +308,7 @@ public class TranslationEnginesController(
             segmentPair.SentenceStart,
             cancellationToken
         );
+        _logger.LogInformation("Trained segment pair for engine {EngineId}", id);
         return Ok();
     }
 
@@ -557,6 +563,13 @@ public class TranslationEnginesController(
             textId,
             cancellationToken
         );
+        _logger.LogInformation(
+            "Returning {Count} pretranslations for engine {EngineId}, corpus {CorpusId}, and query {TextId}",
+            pretranslations.Count(),
+            id,
+            corpusId,
+            textId
+        );
         return Ok(pretranslations.Select(Map));
     }
 
@@ -611,6 +624,13 @@ public class TranslationEnginesController(
             corpusId,
             textId,
             cancellationToken
+        );
+        _logger.LogInformation(
+            "Returning {Count} pretranslations for engine {EngineId}, corpus {CorpusId}, and textId {TextId}",
+            pretranslations.Count(),
+            id,
+            corpusId,
+            textId
         );
         return Ok(pretranslations.Select(Map));
     }
@@ -684,6 +704,7 @@ public class TranslationEnginesController(
         );
         if (usfm == "")
             return NoContent();
+        _logger.LogInformation("Returning USFM for {TextId} in {CorpusId} of {EngineId}", textId, corpusId, id);
         return Content(usfm, "text/plain");
     }
 
