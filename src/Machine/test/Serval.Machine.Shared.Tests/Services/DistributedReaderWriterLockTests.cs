@@ -6,342 +6,374 @@ public class DistributedReaderWriterLockTests
     [Test]
     public async Task ReaderLockAsync_NoLockAcquired()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        RWLock entity;
-        await using (await rwLock.ReaderLockAsync())
+        await rwLock.ReaderLockAsync(ct =>
         {
-            entity = env.Locks.Get("test");
-            Assert.Multiple(() =>
-            {
-                Assert.That(entity.IsAvailableForReading(), Is.True);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
-            });
-        }
-
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
+            RWLock lockEntity = env.Locks.Get("test");
+            Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+            Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+            return Task.CompletedTask;
         });
+
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
     public async Task ReaderLockAsync_ReaderLockAcquired()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        RWLock entity;
-        await using (await rwLock.ReaderLockAsync())
+        await rwLock.ReaderLockAsync(async ct =>
         {
-            await using (await rwLock.ReaderLockAsync())
-            {
-                entity = env.Locks.Get("test");
-                Assert.Multiple(() =>
+            await rwLock.ReaderLockAsync(
+                ct =>
                 {
-                    Assert.That(entity.IsAvailableForReading(), Is.True);
-                    Assert.That(entity.IsAvailableForWriting(), Is.False);
-                });
-            }
-        }
-
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
+                    RWLock lockEntity = env.Locks.Get("test");
+                    Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+                    Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+                    return Task.CompletedTask;
+                },
+                cancellationToken: ct
+            );
         });
+
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
     public async Task ReaderLockAsync_WriterLockAcquiredAndNotReleased()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        await rwLock.WriterLockAsync();
-        var task = rwLock.ReaderLockAsync();
-        await AssertNeverCompletesAsync(task);
+        using CancellationTokenSource cts = new();
+        Task task1 = rwLock.WriterLockAsync(
+            ct => Task.Delay(Timeout.InfiniteTimeSpan, ct),
+            cancellationToken: cts.Token
+        );
+        Task task2 = rwLock.ReaderLockAsync(
+            ct => Task.Delay(Timeout.InfiniteTimeSpan, ct),
+            cancellationToken: cts.Token
+        );
+
+        await AssertNeverCompletesAsync(task2);
+
+        cts.Cancel();
+        Assert.ThrowsAsync<TaskCanceledException>(async () => await task1);
+        Assert.ThrowsAsync<TaskCanceledException>(async () => await task2);
     }
 
     [Test]
     public async Task ReaderLockAsync_WriterLockAcquiredAndReleased()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        Task<IAsyncDisposable> task;
-        await using (await rwLock.WriterLockAsync())
+        AsyncManualResetEvent @event = new(false);
+        Task<Task> outerTask = rwLock.WriterLockAsync(async ct =>
         {
-            task = rwLock.ReaderLockAsync();
+            Task task = rwLock.ReaderLockAsync(
+                ct =>
+                {
+                    RWLock lockEntity = env.Locks.Get("test");
+                    Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+                    Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+                    return Task.CompletedTask;
+                },
+                cancellationToken: ct
+            );
             Assert.That(task.IsCompleted, Is.False);
-        }
-
-        RWLock entity;
-        await using (await task)
-        {
-            entity = env.Locks.Get("test");
-            Assert.Multiple(() =>
-            {
-                Assert.That(entity.IsAvailableForReading(), Is.True);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
-            });
-        }
-
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
+            await @event.WaitAsync(ct);
+            return task;
         });
+
+        @event.Set();
+        Task innerTask = await outerTask;
+        await innerTask;
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
     public async Task ReaderLockAsync_WriterLockAcquiredAndExpired()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        RWLock entity;
-        await using (await rwLock.WriterLockAsync(TimeSpan.FromMilliseconds(400)))
-        {
-            var task = rwLock.ReaderLockAsync();
-            await Task.Delay(500);
-            await using (await task)
+        Task? innerTask = null;
+        Task outerTask = rwLock.WriterLockAsync(
+            async ct =>
             {
-                entity = env.Locks.Get("test");
-                Assert.Multiple(() =>
-                {
-                    Assert.That(entity.IsAvailableForReading(), Is.True);
-                    Assert.That(entity.IsAvailableForWriting(), Is.False);
-                });
-            }
-        }
+                innerTask = rwLock.ReaderLockAsync(
+                    ct =>
+                    {
+                        RWLock lockEntity = env.Locks.Get("test");
+                        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+                        Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+                        return Task.CompletedTask;
+                    },
+                    cancellationToken: CancellationToken.None
+                );
+                await Task.Delay(500, ct);
+            },
+            lifetime: TimeSpan.FromMilliseconds(400)
+        );
 
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
-        });
+        Assert.ThrowsAsync<TimeoutException>(async () => await outerTask);
+        Assert.That(innerTask, Is.Not.Null);
+        await innerTask;
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
     public async Task ReaderLockAsync_Cancelled()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        Task<IAsyncDisposable> task;
-        await using (await rwLock.WriterLockAsync())
+        await rwLock.WriterLockAsync(ct =>
         {
-            var cts = new CancellationTokenSource();
-            task = rwLock.ReaderLockAsync(cancellationToken: cts.Token);
+            using CancellationTokenSource cts = new();
+            Task task = rwLock.ReaderLockAsync(
+                ct => Task.Delay(Timeout.InfiniteTimeSpan, ct),
+                cancellationToken: cts.Token
+            );
             cts.Cancel();
             Assert.CatchAsync<OperationCanceledException>(async () => await task);
-        }
-
-        RWLock entity;
-        await using (await rwLock.ReaderLockAsync())
-        {
-            entity = env.Locks.Get("test");
-            Assert.Multiple(() =>
-            {
-                Assert.That(entity.IsAvailableForReading(), Is.True);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
-            });
-        }
-
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
+            return Task.CompletedTask;
         });
+
+        await rwLock.ReaderLockAsync(ct =>
+        {
+            RWLock lockEntity = env.Locks.Get("test");
+            Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+            Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+            return Task.CompletedTask;
+        });
+
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
     public async Task WriterLockAsync_NoLockAcquired()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        RWLock entity;
-        await using (await rwLock.WriterLockAsync())
+        await rwLock.WriterLockAsync(ct =>
         {
-            entity = env.Locks.Get("test");
-            Assert.Multiple(() =>
-            {
-                Assert.That(entity.IsAvailableForReading(), Is.False);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
-            });
-        }
-
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
+            RWLock lockEntity = env.Locks.Get("test");
+            Assert.That(lockEntity.IsAvailableForReading(), Is.False);
+            Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+            return Task.CompletedTask;
         });
+
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
     public async Task WriterLockAsync_ReaderLockAcquiredAndNotReleased()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        await rwLock.ReaderLockAsync();
-        var task = rwLock.WriterLockAsync();
-        await AssertNeverCompletesAsync(task);
+        using CancellationTokenSource cts = new();
+        Task task1 = rwLock.ReaderLockAsync(
+            ct => Task.Delay(Timeout.InfiniteTimeSpan, ct),
+            cancellationToken: cts.Token
+        );
+        Task task2 = rwLock.WriterLockAsync(
+            ct => Task.Delay(Timeout.InfiniteTimeSpan, ct),
+            cancellationToken: cts.Token
+        );
+
+        await AssertNeverCompletesAsync(task2);
+
+        cts.Cancel();
+        Assert.ThrowsAsync<TaskCanceledException>(async () => await task1);
+        Assert.ThrowsAsync<TaskCanceledException>(async () => await task2);
     }
 
     [Test]
     public async Task WriterLockAsync_ReaderLockAcquiredAndReleased()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        Task<IAsyncDisposable> task;
-        await using (await rwLock.ReaderLockAsync())
+        AsyncManualResetEvent @event = new(false);
+        Task<Task> outerTask = rwLock.ReaderLockAsync(async ct =>
         {
-            task = rwLock.WriterLockAsync();
+            Task task = rwLock.WriterLockAsync(
+                ct =>
+                {
+                    RWLock lockEntity = env.Locks.Get("test");
+                    Assert.That(lockEntity.IsAvailableForReading(), Is.False);
+                    Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+                    return Task.CompletedTask;
+                },
+                cancellationToken: ct
+            );
             Assert.That(task.IsCompleted, Is.False);
-        }
-
-        RWLock entity;
-        await using (await task)
-        {
-            entity = env.Locks.Get("test");
-            Assert.Multiple(() =>
-            {
-                Assert.That(entity.IsAvailableForReading(), Is.False);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
-            });
-        }
-
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
+            await @event.WaitAsync(ct);
+            return task;
         });
+
+        @event.Set();
+        Task innerTask = await outerTask;
+        await innerTask;
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
     public async Task WriterLockAsync_WriterLockAcquiredAndNeverReleased()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        await rwLock.WriterLockAsync();
-        var task = rwLock.WriterLockAsync();
-        await AssertNeverCompletesAsync(task);
+        using CancellationTokenSource cts = new();
+        Task task1 = rwLock.WriterLockAsync(
+            ct => Task.Delay(Timeout.InfiniteTimeSpan, ct),
+            cancellationToken: cts.Token
+        );
+        Task task2 = rwLock.WriterLockAsync(
+            ct => Task.Delay(Timeout.InfiniteTimeSpan, ct),
+            cancellationToken: cts.Token
+        );
+
+        await AssertNeverCompletesAsync(task2);
+
+        cts.Cancel();
+        Assert.ThrowsAsync<TaskCanceledException>(async () => await task1);
+        Assert.ThrowsAsync<TaskCanceledException>(async () => await task2);
     }
 
     [Test]
     public async Task WriterLockAsync_WriterLockAcquiredAndReleased()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        Task<IAsyncDisposable> task;
-        await using (await rwLock.WriterLockAsync())
+        AsyncManualResetEvent @event = new(false);
+        Task<Task> outerTask = rwLock.WriterLockAsync(async ct =>
         {
-            task = rwLock.WriterLockAsync();
+            Task task = rwLock.WriterLockAsync(
+                ct =>
+                {
+                    RWLock lockEntity = env.Locks.Get("test");
+                    Assert.That(lockEntity.IsAvailableForReading(), Is.False);
+                    Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+                    return Task.CompletedTask;
+                },
+                cancellationToken: ct
+            );
             Assert.That(task.IsCompleted, Is.False);
-        }
-
-        RWLock entity;
-        await using (await task)
-        {
-            entity = env.Locks.Get("test");
-            Assert.Multiple(() =>
-            {
-                Assert.That(entity.IsAvailableForReading(), Is.False);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
-            });
-        }
-
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
+            await @event.WaitAsync(ct);
+            return task;
         });
+
+        @event.Set();
+        Task innerTask = await outerTask;
+        await innerTask;
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
     public async Task WriterLockAsync_WriterLockTakesPriorityOverReaderLock()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        Task<IAsyncDisposable> writeTask,
-            readTask;
-        await using (await rwLock.WriterLockAsync())
+        int value = 1;
+        AsyncManualResetEvent @event = new(false);
+        Task<(Task<int>, Task<int>)> outerTask = rwLock.WriterLockAsync(async ct =>
         {
-            readTask = rwLock.ReaderLockAsync();
+            Task<int> readTask = rwLock.ReaderLockAsync(ct => Task.FromResult(value++), cancellationToken: ct);
             Assert.That(readTask.IsCompleted, Is.False);
-            writeTask = rwLock.WriterLockAsync();
+            Task<int> writeTask = rwLock.WriterLockAsync(ct => Task.FromResult(value++), cancellationToken: ct);
             Assert.That(writeTask.IsCompleted, Is.False);
-        }
+            await @event.WaitAsync(ct);
+            return (writeTask, readTask);
+        });
 
-        await writeTask;
-        await AssertNeverCompletesAsync(readTask);
+        @event.Set();
+        (Task<int> writeTask, Task<int> readTask) = await outerTask;
+        Assert.That(await writeTask, Is.EqualTo(1));
+        Assert.That(await readTask, Is.EqualTo(2));
     }
 
     [Test]
     public async Task WriterLockAsync_FirstWriterLockHasPriority()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        Task<IAsyncDisposable> task1,
-            task2;
-        await using (await rwLock.WriterLockAsync())
+        int value = 1;
+        AsyncManualResetEvent @event = new(false);
+        Task<(Task<int>, Task<int>)> outerTask = rwLock.WriterLockAsync(async ct =>
         {
-            task1 = rwLock.WriterLockAsync();
+            Task<int> task1 = rwLock.WriterLockAsync(ct => Task.FromResult(value++), cancellationToken: ct);
             Assert.That(task1.IsCompleted, Is.False);
-            task2 = rwLock.WriterLockAsync();
+            Task<int> task2 = rwLock.WriterLockAsync(ct => Task.FromResult(value++), cancellationToken: ct);
             Assert.That(task2.IsCompleted, Is.False);
-        }
+            await @event.WaitAsync(ct);
+            return (task1, task2);
+        });
 
-        await task1;
-        await AssertNeverCompletesAsync(task2);
+        @event.Set();
+        (Task<int> task1, Task<int> task2) = await outerTask;
+        Assert.That(await task1, Is.EqualTo(1));
+        Assert.That(await task2, Is.EqualTo(2));
     }
 
     [Test]
     public async Task WriterLockAsync_WriterLockAcquiredAndExpired()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        RWLock entity;
-        await using (await rwLock.WriterLockAsync(TimeSpan.FromMilliseconds(400)))
-        {
-            var task = rwLock.WriterLockAsync();
-            await Task.Delay(500);
-            await using (await task)
+        Task? innerTask = null;
+        Task outerTask = rwLock.WriterLockAsync(
+            async ct =>
             {
-                entity = env.Locks.Get("test");
-                Assert.Multiple(() =>
-                {
-                    Assert.That(entity.IsAvailableForReading(), Is.False);
-                    Assert.That(entity.IsAvailableForWriting(), Is.False);
-                });
-            }
-        }
+                innerTask = rwLock.WriterLockAsync(
+                    ct =>
+                    {
+                        RWLock lockEntity = env.Locks.Get("test");
+                        Assert.That(lockEntity.IsAvailableForReading(), Is.False);
+                        Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+                        return Task.CompletedTask;
+                    },
+                    cancellationToken: CancellationToken.None
+                );
+                await Task.Delay(500, ct);
+            },
+            lifetime: TimeSpan.FromMilliseconds(400)
+        );
 
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
-        });
+        Assert.ThrowsAsync<TimeoutException>(async () => await outerTask);
+        Assert.That(innerTask, Is.Not.Null);
+        await innerTask;
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     [Test]
@@ -350,32 +382,29 @@ public class DistributedReaderWriterLockTests
         var env = new TestEnvironment();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
-        Task<IAsyncDisposable> task;
-        await using (await rwLock.WriterLockAsync())
+        await rwLock.WriterLockAsync(ct =>
         {
-            var cts = new CancellationTokenSource();
-            task = rwLock.WriterLockAsync(cancellationToken: cts.Token);
+            using CancellationTokenSource cts = new();
+            Task task = rwLock.WriterLockAsync(
+                ct => Task.Delay(Timeout.InfiniteTimeSpan, ct),
+                cancellationToken: cts.Token
+            );
             cts.Cancel();
             Assert.CatchAsync<OperationCanceledException>(async () => await task);
-        }
-
-        RWLock entity;
-        await using (await rwLock.WriterLockAsync())
-        {
-            entity = env.Locks.Get("test");
-            Assert.Multiple(() =>
-            {
-                Assert.That(entity.IsAvailableForReading(), Is.False);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
-            });
-        }
-
-        entity = env.Locks.Get("test");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.True);
+            return Task.CompletedTask;
         });
+
+        await rwLock.WriterLockAsync(ct =>
+        {
+            RWLock lockEntity = env.Locks.Get("test");
+            Assert.That(lockEntity.IsAvailableForReading(), Is.False);
+            Assert.That(lockEntity.IsAvailableForWriting(), Is.False);
+            return Task.CompletedTask;
+        });
+
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }
 
     private static async Task AssertNeverCompletesAsync(Task task, int timeout = 100)
@@ -385,7 +414,14 @@ public class DistributedReaderWriterLockTests
         Task completedTask = await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false);
         if (completedTask == task)
             Assert.Fail("Task completed unexpectedly.");
-        var _ = task.ContinueWith(_ => Assert.Fail("Task completed unexpectedly."), TaskScheduler.Default);
+        var _ = task.ContinueWith(
+            t =>
+            {
+                if (!t.IsCanceled)
+                    Assert.Fail("Task completed unexpectedly.");
+            },
+            TaskScheduler.Default
+        );
     }
 
     private class TestEnvironment
@@ -394,9 +430,11 @@ public class DistributedReaderWriterLockTests
         {
             Locks = new MemoryRepository<RWLock>();
             var idGenerator = new ObjectIdGenerator();
-            var options = Substitute.For<IOptions<ServiceOptions>>();
-            options.Value.Returns(new ServiceOptions { ServiceId = "host" });
-            Factory = new DistributedReaderWriterLockFactory(options, Locks, idGenerator);
+            var serviceOptions = Substitute.For<IOptions<ServiceOptions>>();
+            serviceOptions.Value.Returns(new ServiceOptions { ServiceId = "host" });
+            var lockOptions = Substitute.For<IOptions<DistributedReaderWriterLockOptions>>();
+            lockOptions.Value.Returns(new DistributedReaderWriterLockOptions());
+            Factory = new DistributedReaderWriterLockFactory(serviceOptions, lockOptions, Locks, idGenerator);
         }
 
         public DistributedReaderWriterLockFactory Factory { get; }

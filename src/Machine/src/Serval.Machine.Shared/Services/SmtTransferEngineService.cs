@@ -40,7 +40,7 @@ public class SmtTransferEngineService(
         }
 
         TranslationEngine translationEngine = await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
                 var translationEngine = new TranslationEngine
                 {
@@ -57,38 +57,30 @@ public class SmtTransferEngineService(
             cancellationToken: cancellationToken
         );
 
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, CancellationToken.None);
-        await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
-        {
-            SmtTransferEngineState state = _stateService.Get(engineId);
-            await state.InitNewAsync(CancellationToken.None);
-        }
+        SmtTransferEngineState state = _stateService.Get(engineId);
+        state.InitNew();
         return translationEngine;
     }
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            await CancelBuildJobAsync(engineId, cancellationToken);
+        await CancelBuildJobAsync(engineId, cancellationToken);
 
-            await _dataAccessContext.WithTransactionAsync(
-                async (ct) =>
-                {
-                    await _engines.DeleteAsync(e => e.EngineId == engineId, ct);
-                    await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, ct);
-                },
-                cancellationToken: cancellationToken
-            );
-            await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
-
-            if (_stateService.TryRemove(engineId, out SmtTransferEngineState? state))
+        await _dataAccessContext.WithTransactionAsync(
+            async ct =>
             {
-                await state.DeleteDataAsync();
-                await state.DisposeAsync();
-            }
-        }
+                await _engines.DeleteAsync(e => e.EngineId == engineId, ct);
+                await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, ct);
+            },
+            cancellationToken: cancellationToken
+        );
+        await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
+
+        SmtTransferEngineState state = _stateService.Get(engineId);
+        _stateService.Remove(engineId);
+        // there is no way to cancel this call
+        state.DeleteData();
+        state.Dispose();
         await _lockFactory.DeleteAsync(engineId, CancellationToken.None);
     }
 
@@ -99,16 +91,22 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
+        TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
+        SmtTransferEngineState state = _stateService.Get(engineId);
+
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.ReaderLockAsync(cancellationToken: cancellationToken))
-        {
-            TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
-            SmtTransferEngineState state = _stateService.Get(engineId);
-            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
-            IReadOnlyList<TranslationResult> results = await hybridEngine.TranslateAsync(n, segment, cancellationToken);
-            state.LastUsedTime = DateTime.Now;
-            return results;
-        }
+        IReadOnlyList<TranslationResult> results = await @lock.ReaderLockAsync(
+            async ct =>
+            {
+                HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
+                // there is no way to cancel this call
+                return hybridEngine.Translate(n, segment);
+            },
+            cancellationToken: cancellationToken
+        );
+
+        state.Touch();
+        return results;
     }
 
     public async Task<WordGraph> GetWordGraphAsync(
@@ -117,16 +115,22 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
+        TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
+        SmtTransferEngineState state = _stateService.Get(engineId);
+
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.ReaderLockAsync(cancellationToken: cancellationToken))
-        {
-            TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
-            SmtTransferEngineState state = _stateService.Get(engineId);
-            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
-            WordGraph result = await hybridEngine.GetWordGraphAsync(segment, cancellationToken);
-            state.LastUsedTime = DateTime.Now;
-            return result;
-        }
+        WordGraph result = await @lock.ReaderLockAsync(
+            async ct =>
+            {
+                HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
+                // there is no way to cancel this call
+                return hybridEngine.GetWordGraph(segment);
+            },
+            cancellationToken: cancellationToken
+        );
+
+        state.Touch();
+        return result;
     }
 
     public async Task TrainSegmentPairAsync(
@@ -137,47 +141,39 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
+        SmtTransferEngineState state = _stateService.Get(engineId);
+
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
-
-            async Task TrainSubroutineAsync(SmtTransferEngineState state, CancellationToken ct)
+        await @lock.WriterLockAsync(
+            async ct =>
             {
-                HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
-                await hybridEngine.TrainSegmentAsync(sourceSegment, targetSegment, sentenceStart, ct);
-                await _platformService.IncrementTrainSizeAsync(engineId, cancellationToken: CancellationToken.None);
-            }
+                TranslationEngine engine = await GetEngineAsync(engineId, ct);
 
-            SmtTransferEngineState state = _stateService.Get(engineId);
-            await _dataAccessContext.WithTransactionAsync(
-                async (ct) =>
+                HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
+                // there is no way to cancel this call
+                hybridEngine.TrainSegment(sourceSegment, targetSegment, sentenceStart);
+
+                if (engine.CollectTrainSegmentPairs ?? false)
                 {
-                    if (engine.CurrentBuild?.JobState is BuildJobState.Active)
-                    {
-                        await _trainSegmentPairs.InsertAsync(
-                            new TrainSegmentPair
-                            {
-                                TranslationEngineRef = engineId,
-                                Source = sourceSegment,
-                                Target = targetSegment,
-                                SentenceStart = sentenceStart
-                            },
-                            CancellationToken.None
-                        );
-                        await TrainSubroutineAsync(state, CancellationToken.None);
-                    }
-                    else
-                    {
-                        await TrainSubroutineAsync(state, ct);
-                    }
-                },
-                cancellationToken: cancellationToken
-            );
+                    await _trainSegmentPairs.InsertAsync(
+                        new TrainSegmentPair
+                        {
+                            TranslationEngineRef = engineId,
+                            Source = sourceSegment,
+                            Target = targetSegment,
+                            SentenceStart = sentenceStart
+                        },
+                        CancellationToken.None
+                    );
+                }
 
-            state.IsUpdated = true;
-            state.LastUsedTime = DateTime.Now;
-        }
+                state.IsUpdated = true;
+            },
+            cancellationToken: cancellationToken
+        );
+
+        await _platformService.IncrementTrainSizeAsync(engineId, cancellationToken: CancellationToken.None);
+        state.Touch();
     }
 
     public async Task StartBuildAsync(
@@ -188,37 +184,32 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            // If there is a pending/running build, then no need to start a new one.
-            if (await _buildJobService.IsEngineBuilding(engineId, cancellationToken))
-                throw new InvalidOperationException("The engine is already building or in the process of canceling.");
+        bool building = !await _buildJobService.StartBuildJobAsync(
+            BuildJobRunnerType.Hangfire,
+            TranslationEngineType.SmtTransfer,
+            engineId,
+            buildId,
+            BuildStage.Preprocess,
+            corpora,
+            buildOptions,
+            cancellationToken
+        );
+        // If there is a pending/running build, then no need to start a new one.
+        if (building)
+            throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
-            await _buildJobService.StartBuildJobAsync(
-                BuildJobRunnerType.Hangfire,
-                engineId,
-                buildId,
-                BuildStage.Preprocess,
-                corpora,
-                buildOptions,
-                cancellationToken
-            );
-            SmtTransferEngineState state = _stateService.Get(engineId);
-            state.LastUsedTime = DateTime.UtcNow;
-        }
+        SmtTransferEngineState state = _stateService.Get(engineId);
+        state.Touch();
     }
 
     public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            if (!await CancelBuildJobAsync(engineId, cancellationToken))
-                throw new InvalidOperationException("The engine is not currently building.");
-            SmtTransferEngineState state = _stateService.Get(engineId);
-            state.LastUsedTime = DateTime.UtcNow;
-        }
+        bool building = await CancelBuildJobAsync(engineId, cancellationToken);
+        if (!building)
+            throw new InvalidOperationException("The engine is not currently building.");
+
+        SmtTransferEngineState state = _stateService.Get(engineId);
+        state.Touch();
     }
 
     public int GetQueueSize()
@@ -235,7 +226,7 @@ public class SmtTransferEngineService(
     {
         string? buildId = null;
         await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
                 (buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(engineId, ct);
                 if (buildId is not null && jobState is BuildJobState.None)

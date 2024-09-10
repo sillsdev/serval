@@ -21,9 +21,9 @@
 		<PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="6.0.2" />
 		<PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
 		<PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.2" />
-		<PackageReference Include="Hangfire" Version="1.7.33" />
-		<PackageReference Include="Hangfire.Mongo" Version="1.9.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.14" />
+		<PackageReference Include="Hangfire" Version="1.8.14" />
+		<PackageReference Include="Hangfire.Mongo" Version="1.9.10" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
 		<PackageReference Include="NSwag.AspNetCore" Version="14.1.0" />
 		<PackageReference Include="NSwag.MSBuild" Version="14.1.0">
 			<PrivateAssets>all</PrivateAssets>

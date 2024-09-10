@@ -3,7 +3,6 @@
 public class NmtPreprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
-    IDistributedReaderWriterLockFactory lockFactory,
     IDataAccessContext dataAccessContext,
     ILogger<NmtPreprocessBuildJob> logger,
     IBuildJobService buildJobService,
@@ -14,7 +13,6 @@ public class NmtPreprocessBuildJob(
     : PreprocessBuildJob(
         platformService,
         engines,
-        lockFactory,
         dataAccessContext,
         logger,
         buildJobService,

@@ -59,6 +59,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
 
     public async Task<bool> StartBuildJobAsync(
         BuildJobRunnerType runnerType,
+        TranslationEngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,
@@ -67,18 +68,9 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await _engines.GetAsync(
-            e =>
-                e.EngineId == engineId
-                && (e.CurrentBuild == null || e.CurrentBuild.JobState != BuildJobState.Canceling),
-            cancellationToken
-        );
-        if (engine is null)
-            return false;
-
         IBuildJobRunner runner = _runners[runnerType];
         string jobId = await runner.CreateJobAsync(
-            engine.Type,
+            engineType,
             engineId,
             buildId,
             stage,
@@ -88,8 +80,17 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         );
         try
         {
-            await _engines.UpdateAsync(
-                e => e.EngineId == engineId,
+            TranslationEngine? engine = await _engines.UpdateAsync(
+                e =>
+                    e.EngineId == engineId
+                    && (
+                        (stage == BuildStage.Preprocess && e.CurrentBuild == null)
+                        || (
+                            stage != BuildStage.Preprocess
+                            && e.CurrentBuild != null
+                            && e.CurrentBuild.JobState != BuildJobState.Canceling
+                        )
+                    ),
                 u =>
                     u.Set(
                         e => e.CurrentBuild,
@@ -105,6 +106,11 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
                     ),
                 cancellationToken: cancellationToken
             );
+            if (engine is null)
+            {
+                await runner.DeleteJobAsync(jobId, CancellationToken.None);
+                return false;
+            }
             await runner.EnqueueJobAsync(jobId, engine.Type, cancellationToken);
             return true;
         }
@@ -120,44 +126,36 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await _engines.GetAsync(
-            e => e.EngineId == engineId && e.CurrentBuild != null,
-            cancellationToken
+        // cancel a job that hasn't started yet
+        TranslationEngine? engine = await _engines.UpdateAsync(
+            e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Pending,
+            u =>
+            {
+                u.Unset(b => b.CurrentBuild);
+                u.Set(e => e.CollectTrainSegmentPairs, false);
+            },
+            returnOriginal: true,
+            cancellationToken: cancellationToken
         );
-        if (engine is null || engine.CurrentBuild is null)
-            return (null, BuildJobState.None);
-
-        IBuildJobRunner runner = _runners[engine.CurrentBuild.BuildJobRunner];
-
-        if (engine.CurrentBuild.JobState is BuildJobState.Pending)
+        if (engine is not null && engine.CurrentBuild is not null)
         {
-            // cancel a job that hasn't started yet
-            engine = await _engines.UpdateAsync(
-                e => e.EngineId == engineId && e.CurrentBuild != null,
-                u => u.Unset(b => b.CurrentBuild),
-                returnOriginal: true,
-                cancellationToken: cancellationToken
-            );
-            if (engine is not null && engine.CurrentBuild is not null)
-            {
-                // job will be deleted from the queue
-                await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
-                return (engine.CurrentBuild.BuildId, BuildJobState.None);
-            }
+            // job will be deleted from the queue
+            IBuildJobRunner runner = _runners[engine.CurrentBuild.BuildJobRunner];
+            await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
+            return (engine.CurrentBuild.BuildId, BuildJobState.None);
         }
-        else if (engine.CurrentBuild.JobState is BuildJobState.Active)
+
+        // cancel a job that is already running
+        engine = await _engines.UpdateAsync(
+            e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Active,
+            u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Canceling),
+            cancellationToken: cancellationToken
+        );
+        if (engine is not null && engine.CurrentBuild is not null)
         {
-            // cancel a job that is already running
-            engine = await _engines.UpdateAsync(
-                e => e.EngineId == engineId && e.CurrentBuild != null,
-                u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Canceling),
-                cancellationToken: cancellationToken
-            );
-            if (engine is not null && engine.CurrentBuild is not null)
-            {
-                await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
-                return (engine.CurrentBuild.BuildId, BuildJobState.Canceling);
-            }
+            IBuildJobRunner runner = _runners[engine.CurrentBuild.BuildJobRunner];
+            await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
+            return (engine.CurrentBuild.BuildId, BuildJobState.Canceling);
         }
 
         return (null, BuildJobState.None);
@@ -193,6 +191,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
             u =>
             {
                 u.Unset(e => e.CurrentBuild);
+                u.Set(e => e.CollectTrainSegmentPairs, false);
                 if (buildComplete)
                     u.Inc(e => e.BuildRevision);
             },
