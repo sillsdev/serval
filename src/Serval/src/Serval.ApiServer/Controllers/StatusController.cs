@@ -7,13 +7,15 @@ public class StatusController(
     HealthCheckService healthCheckService,
     IAuthorizationService authService,
     IWebHostEnvironment env,
-    IConfiguration configuration
+    IConfiguration configuration,
+    ILogger<StatusController> logger
 ) : ServalControllerBase(authService)
 {
     private readonly HealthCheckService _healthCheckService = healthCheckService;
     private readonly IWebHostEnvironment _env = env;
 
     private readonly IConfiguration _configuration = configuration;
+    private readonly ILogger<StatusController> _logger = logger;
 
     /// <summary>
     /// Get Health
@@ -30,6 +32,10 @@ public class StatusController(
     public async Task<ActionResult<HealthReportDto>> GetHealthAsync()
     {
         HealthReport report = await _healthCheckService.CheckHealthAsync();
+        if (report.Status != HealthStatus.Healthy)
+        {
+            _logger.LogWarning("Health check failed: {Report}", Newtonsoft.Json.JsonConvert.SerializeObject(report));
+        }
         return Ok(Map(report));
     }
 
@@ -44,6 +50,11 @@ public class StatusController(
     public async Task<ActionResult<HealthReportDto>> GetPingAsync()
     {
         HealthReport report = await _healthCheckService.CheckHealthAsync();
+        if (report.Status != HealthStatus.Healthy)
+        {
+            _logger.LogWarning("Health check failed: {Report}", Newtonsoft.Json.JsonConvert.SerializeObject(report));
+        }
+
         HealthReportDto reportDto = Map(report);
 
         // remove results as this is a public endpoint
