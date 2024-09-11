@@ -141,4 +141,6 @@ See the Swagger documentation for Serval [here](https://prod.serval-api.org/swag
 
 BugSnag for error reporting:
 
-<img src="https://www.bugsnag.com/wp-content/uploads/2023/06/63bc40cd9d502eda8ea74ce7_Bugsnag-Full-Color-1.svg" alt="bugsnag" width="200"/>
+<a href="https://www.bugsnag.com/">
+   <img src="https://www.bugsnag.com/wp-content/uploads/2023/06/63bc40cd9d502eda8ea74ce7_Bugsnag-Full-Color-1.svg" alt="bugsnag" width="200"/>
+</a>
