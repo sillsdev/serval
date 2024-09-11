@@ -1046,29 +1046,58 @@ public class TranslationEnginesController(
             return null;
 
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
+        var parallelCorpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
         var pretranslateCorpora = new List<PretranslateCorpus>();
-        foreach (PretranslateCorpusConfigDto ptcc in source)
+        foreach (PretranslateCorpusConfigDto pcc in source)
         {
-            if (!corpusIds.Contains(ptcc.CorpusId))
+            if (pcc.CorpusId != null)
             {
-                throw new InvalidOperationException(
-                    $"The corpus {ptcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
-                );
-            }
-            if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
-            {
-                throw new InvalidOperationException(
-                    $"The corpus {ptcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
-                );
-            }
-            pretranslateCorpora.Add(
-                new PretranslateCorpus
+                if (pcc.ParallelCorpusId != null)
                 {
-                    CorpusRef = ptcc.CorpusId,
-                    TextIds = ptcc.TextIds?.ToList(),
-                    ScriptureRange = ptcc.ScriptureRange
+                    throw new InvalidOperationException($"Only one of ParallelCorpusId and CorpusId can be set.");
                 }
-            );
+                if (!corpusIds.Contains(pcc.CorpusId))
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {pcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                if (pcc.TextIds != null && pcc.ScriptureRange != null)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {pcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
+                    );
+                }
+                pretranslateCorpora.Add(
+                    new PretranslateCorpus
+                    {
+                        CorpusRef = pcc.CorpusId,
+                        TextIds = pcc.TextIds?.ToList(),
+                        ScriptureRange = pcc.ScriptureRange
+                    }
+                );
+            }
+            else
+            {
+                if (pcc.ParallelCorpusId == null)
+                {
+                    throw new InvalidOperationException($"One of ParallelCorpusId and CorpusId must be set.");
+                }
+                if (!parallelCorpusIds.Contains(pcc.ParallelCorpusId))
+                {
+                    throw new InvalidOperationException(
+                        $"The parallel corpus {pcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                pretranslateCorpora.Add(
+                    new PretranslateCorpus
+                    {
+                        ParallelCorpusRef = pcc.ParallelCorpusId,
+                        SourceFilter = Map(pcc.SourceFilter),
+                        TargetFilter = Map(pcc.TargetFilter)
+                    }
+                );
+            }
         }
         return pretranslateCorpora;
     }
@@ -1079,31 +1108,79 @@ public class TranslationEnginesController(
             return null;
 
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
+        var parallelCorpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
         var trainOnCorpora = new List<TrainingCorpus>();
         foreach (TrainingCorpusConfigDto tcc in source)
         {
-            if (!corpusIds.Contains(tcc.CorpusId))
+            if (tcc.CorpusId != null)
             {
-                throw new InvalidOperationException(
-                    $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
-                );
-            }
-            if (tcc.TextIds != null && tcc.ScriptureRange != null)
-            {
-                throw new InvalidOperationException(
-                    $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
-                );
-            }
-            trainOnCorpora.Add(
-                new TrainingCorpus
+                if (tcc.ParallelCorpusId != null)
                 {
-                    CorpusRef = tcc.CorpusId,
-                    TextIds = tcc.TextIds?.ToList(),
-                    ScriptureRange = tcc.ScriptureRange
+                    throw new InvalidOperationException($"Only one of ParallelCorpusId and CorpusId can be set.");
                 }
-            );
+                if (!corpusIds.Contains(tcc.CorpusId))
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                if (tcc.TextIds != null && tcc.ScriptureRange != null)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
+                    );
+                }
+                trainOnCorpora.Add(
+                    new TrainingCorpus
+                    {
+                        CorpusRef = tcc.CorpusId,
+                        TextIds = tcc.TextIds?.ToList(),
+                        ScriptureRange = tcc.ScriptureRange
+                    }
+                );
+            }
+            else
+            {
+                if (tcc.ParallelCorpusId == null)
+                {
+                    throw new InvalidOperationException($"One of ParallelCorpusId and CorpusId must be set.");
+                }
+                if (!parallelCorpusIds.Contains(tcc.ParallelCorpusId))
+                {
+                    throw new InvalidOperationException(
+                        $"The parallel corpus {tcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                trainOnCorpora.Add(
+                    new TrainingCorpus
+                    {
+                        ParallelCorpusRef = tcc.ParallelCorpusId,
+                        SourceFilter = Map(tcc.SourceFilter),
+                        TargetFilter = Map(tcc.TargetFilter)
+                    }
+                );
+            }
         }
         return trainOnCorpora;
+    }
+
+    private static ParallelCorpusFilter? Map(ParallelCorpusFilterConfigDto? source)
+    {
+        if (source is null)
+            return null;
+
+        if (source.TextIds != null && source.ScriptureRange != null)
+        {
+            throw new InvalidOperationException(
+                $"The parallel corpus filter for corpus {source.CorpusRef} is not valid: At most, one of TextIds and ScriptureRange can be set."
+            );
+        }
+        return new ParallelCorpusFilter
+        {
+            CorpusRef = source.CorpusRef,
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange
+        };
     }
 
     private static Dictionary<string, object>? Map(object? source)
@@ -1168,16 +1245,29 @@ public class TranslationEnginesController(
     {
         return new PretranslateCorpusDto
         {
-            Corpus = new ResourceLinkDto
-            {
-                Id = source.CorpusRef,
-                Url = _urlService.GetUrl(
-                    Endpoints.GetTranslationCorpus,
-                    new { id = engineId, corpusId = source.CorpusRef }
-                )
-            },
+            Corpus =
+                source.CorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.CorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetTranslationCorpus,
+                            new { id = engineId, corpusId = source.CorpusRef }
+                        )
+                    }
+                    : null,
             TextIds = source.TextIds,
-            ScriptureRange = source.ScriptureRange
+            ScriptureRange = source.ScriptureRange,
+            ParallelCorpus =
+                source.ParallelCorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.ParallelCorpusRef,
+                        Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.ParallelCorpusRef }) //TODO not get corpus!
+                    }
+                    : null,
+            SourceFilter = Map(source.SourceFilter),
+            TargetFilter = Map(source.TargetFilter)
         };
     }
 
@@ -1185,13 +1275,43 @@ public class TranslationEnginesController(
     {
         return new TrainingCorpusDto
         {
+            Corpus =
+                source.CorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.CorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetTranslationCorpus,
+                            new { id = engineId, corpusId = source.CorpusRef }
+                        )
+                    }
+                    : null,
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange,
+            ParallelCorpus =
+                source.ParallelCorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.ParallelCorpusRef,
+                        Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.ParallelCorpusRef }) //TODO not get corpus!
+                    }
+                    : null,
+            SourceFilter = Map(source.SourceFilter),
+            TargetFilter = Map(source.TargetFilter)
+        };
+    }
+
+    private ParallelCorpusFilterDto? Map(ParallelCorpusFilter? source)
+    {
+        if (source is null)
+            return null;
+
+        return new ParallelCorpusFilterDto
+        {
             Corpus = new ResourceLinkDto
             {
                 Id = source.CorpusRef,
-                Url = _urlService.GetUrl(
-                    Endpoints.GetTranslationCorpus,
-                    new { id = engineId, corpusId = source.CorpusRef }
-                )
+                Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.CorpusRef })
             },
             TextIds = source.TextIds,
             ScriptureRange = source.ScriptureRange

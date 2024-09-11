@@ -52,6 +52,16 @@ public interface IEngineService
         CancellationToken cancellationToken = default
     );
 
+    Task AddParallelCorpus(string engineId, ParallelCorpus corpus, CancellationToken cancellationToken = default);
+    Task<ParallelCorpus> UpdateParallelCorpusAsync(
+        string engineId,
+        string parallelCorpusId,
+        IReadOnlyList<string>? sourceCorpusRefs,
+        IReadOnlyList<string>? targetCorpusRefs,
+        CancellationToken cancellationToken = default
+    );
+    Task DeleteParallelCorpus(string engineId, string parallelCorpusId, CancellationToken cancellationToken = default);
+
     Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default);
 
     Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default);
