@@ -394,6 +394,10 @@ public class DistributedReaderWriterLockTests
             return Task.CompletedTask;
         });
 
+        RWLock lockEntity = env.Locks.Get("test");
+        Assert.That(lockEntity.IsAvailableForReading(), Is.True);
+        Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
+
         await rwLock.WriterLockAsync(ct =>
         {
             RWLock lockEntity = env.Locks.Get("test");
@@ -402,7 +406,7 @@ public class DistributedReaderWriterLockTests
             return Task.CompletedTask;
         });
 
-        RWLock lockEntity = env.Locks.Get("test");
+        lockEntity = env.Locks.Get("test");
         Assert.That(lockEntity.IsAvailableForReading(), Is.True);
         Assert.That(lockEntity.IsAvailableForWriting(), Is.True);
     }

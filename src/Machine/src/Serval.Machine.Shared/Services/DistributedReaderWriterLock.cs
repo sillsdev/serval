@@ -159,7 +159,7 @@ public class DistributedReaderWriterLock(
                 await _locks.UpdateAsync(
                     _id,
                     u => u.RemoveAll(rwl => rwl.WriterQueue, l => l.Id == lockId),
-                    cancellationToken: cancellationToken
+                    cancellationToken: CancellationToken.None
                 );
                 throw;
             }
