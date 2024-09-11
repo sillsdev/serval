@@ -5,9 +5,10 @@
 [OpenApiTag("Files")]
 public class DataFilesController(
     IAuthorizationService authService,
+    Bugsnag.IClient bugsnagClient,
     IDataFileService dataFileService,
     IUrlService urlService
-) : ServalControllerBase(authService)
+) : ServalControllerBase(authService, bugsnagClient)
 {
     private readonly IDataFileService _dataFileService = dataFileService;
     private readonly IUrlService _urlService = urlService;

@@ -6,10 +6,11 @@ namespace Serval.ApiServer.Controllers;
 public class StatusController(
     HealthCheckService healthCheckService,
     IAuthorizationService authService,
+    Bugsnag.IClient bugsnagClient,
     IWebHostEnvironment env,
     IConfiguration configuration,
     ILogger<StatusController> logger
-) : ServalControllerBase(authService)
+) : ServalControllerBase(authService, bugsnagClient)
 {
     private readonly HealthCheckService _healthCheckService = healthCheckService;
     private readonly IWebHostEnvironment _env = env;

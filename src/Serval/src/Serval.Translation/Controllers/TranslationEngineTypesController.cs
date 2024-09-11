@@ -3,8 +3,11 @@
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engine-types")]
 [OpenApiTag("Translation Engines")]
-public class TranslationEngineTypesController(IAuthorizationService authService, IEngineService engineService)
-    : ServalControllerBase(authService)
+public class TranslationEngineTypesController(
+    IAuthorizationService authService,
+    Bugsnag.IClient bugsnagClient,
+    IEngineService engineService
+) : ServalControllerBase(authService, bugsnagClient)
 {
     private readonly IEngineService _engineService = engineService;
 

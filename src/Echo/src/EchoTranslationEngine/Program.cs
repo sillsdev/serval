@@ -12,6 +12,8 @@ builder.Services.AddSingleton<BackgroundTaskQueue>();
 
 builder.Services.AddHealthChecks().AddCheck("Live", () => HealthCheckResult.Healthy());
 
+builder.Services.AddBugSnag(builder.Configuration);
+
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.

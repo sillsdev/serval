@@ -5,13 +5,14 @@
 [OpenApiTag("Translation Engines")]
 public class TranslationEnginesController(
     IAuthorizationService authService,
+    Bugsnag.IClient bugsnagClient,
     IEngineService engineService,
     IBuildService buildService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService,
     ILogger<TranslationEnginesController> logger
-) : ServalControllerBase(authService)
+) : ServalControllerBase(authService, bugsnagClient)
 {
     private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
         new() { Converters = { new ObjectToInferredTypesConverter() } };

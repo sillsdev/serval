@@ -6,12 +6,13 @@
 [FeatureGate("Assessment")]
 public class AssessmentEnginesController(
     IAuthorizationService authService,
+    Bugsnag.IClient bugsnagClient,
     IEngineService engineService,
     IJobService jobService,
     IResultService resultService,
     IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService
-) : ServalControllerBase(authService)
+) : ServalControllerBase(authService, bugsnagClient)
 {
     private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
         new() { Converters = { new ObjectToInferredTypesConverter() } };

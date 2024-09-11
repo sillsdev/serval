@@ -2,6 +2,7 @@
 
 [ApiController]
 [Produces("application/json")]
+[TypeFilter(typeof(BugsnagExceptionFilter))]
 [TypeFilter(typeof(OperationCancelledExceptionFilter))]
 [TypeFilter(typeof(NotSupportedExceptionFilter))]
 [TypeFilter(typeof(ServiceUnavailableExceptionFilter))]
@@ -10,9 +11,11 @@
 [TypeFilter(typeof(NotFoundExceptionFilter))]
 [TypeFilter(typeof(ForbiddenExceptionFilter))]
 [TypeFilter(typeof(BadRequestExceptionFilter))]
-public abstract class ServalControllerBase(IAuthorizationService authService) : Controller
+public abstract class ServalControllerBase(IAuthorizationService authService, Bugsnag.IClient bugsnagClient)
+    : Controller
 {
     private readonly IAuthorizationService _authService = authService;
+    protected readonly Bugsnag.IClient BugsnagClient = bugsnagClient;
 
     protected string Owner => User.Identity!.Name!;
 

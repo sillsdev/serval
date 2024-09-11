@@ -25,6 +25,8 @@ if (builder.Environment.IsDevelopment())
         });
 }
 
+builder.Services.AddBugSnag(builder.Configuration);
+
 var app = builder.Build();
 
 app.Run();
