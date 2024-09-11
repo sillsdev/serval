@@ -13,13 +13,10 @@ public static class IServiceCollectionExtensions
         {
             Console.WriteLine("BugSnag ApiKey not available - not adding BugSnag.");
         }
-        else
+        services.AddBugsnag(configuration =>
         {
-            services.AddBugsnag(configuration =>
-            {
-                configuration.ApiKey = apiKey;
-            });
-        }
+            configuration.ApiKey = apiKey;
+        });
         return services;
     }
 }
