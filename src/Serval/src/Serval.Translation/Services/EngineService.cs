@@ -475,6 +475,72 @@ public class EngineService(
         }
     }
 
+    public Task AddParallelCorpus(string engineId, ParallelCorpus corpus, CancellationToken cancellationToken = default)
+    {
+        return Entities.UpdateAsync(
+            engineId,
+            u => u.Add(e => e.ParallelCorpora, corpus),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public async Task<ParallelCorpus> UpdateParallelCorpusAsync(
+        string engineId,
+        string parallelCorpusId,
+        IReadOnlyList<string>? sourceCorpusRefs,
+        IReadOnlyList<string>? targetCorpusRefs,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Engine? engine = await Entities.UpdateAsync(
+            e => e.Id == engineId && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
+            u =>
+            {
+                if (sourceCorpusRefs is not null)
+                    u.Set(c => c.ParallelCorpora[ArrayPosition.FirstMatching].SourceCorporaRefs, sourceCorpusRefs);
+                if (targetCorpusRefs is not null)
+                    u.Set(c => c.ParallelCorpora[ArrayPosition.FirstMatching].TargetCorporaRefs, targetCorpusRefs);
+            },
+            cancellationToken: cancellationToken
+        );
+        if (engine is null)
+        {
+            throw new EntityNotFoundException(
+                $"Could not find the Corpus '{parallelCorpusId}' in Engine '{engineId}'."
+            );
+        }
+
+        return engine.ParallelCorpora.First(c => c.Id == parallelCorpusId);
+    }
+
+    public async Task DeleteParallelCorpus(
+        string engineId,
+        string parallelCorpusId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Engine? originalEngine = null;
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                originalEngine = await Entities.UpdateAsync(
+                    engineId,
+                    u => u.RemoveAll(e => e.ParallelCorpora, c => c.Id == parallelCorpusId),
+                    returnOriginal: true,
+                    cancellationToken: ct
+                );
+                if (originalEngine is null || !originalEngine.ParallelCorpora.Any(c => c.Id == parallelCorpusId))
+                {
+                    throw new EntityNotFoundException(
+                        $"Could not find the Corpus '{parallelCorpusId}' in Engine '{engineId}'."
+                    );
+                }
+                await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == parallelCorpusId, ct);
+            },
+            cancellationToken: cancellationToken
+        );
+    }
+
     public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)
     {
         return Entities.UpdateAllAsync(
