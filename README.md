@@ -136,3 +136,9 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 ## Documentation
 
 See the Swagger documentation for Serval [here](https://prod.serval-api.org/swagger/index.html).
+
+## Special thanks to
+
+BugSnag for error reporting:
+
+<img src="https://www.bugsnag.com/wp-content/uploads/2023/06/63bc40cd9d502eda8ea74ce7_Bugsnag-Full-Color-1.svg" alt="bugsnag" width="200"/>
