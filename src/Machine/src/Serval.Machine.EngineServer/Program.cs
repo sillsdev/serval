@@ -1,3 +1,4 @@
+using Bugsnag.AspNet.Core;
 using Hangfire;
 using OpenTelemetry.Trace;
 
@@ -28,6 +29,9 @@ if (builder.Environment.IsDevelopment())
                 .AddConsoleExporter();
         });
 }
+
+builder.Services.Configure<Bugsnag.Configuration>(builder.Configuration.GetSection("Bugsnag"));
+builder.Services.AddBugsnag();
 
 var app = builder.Build();
 
