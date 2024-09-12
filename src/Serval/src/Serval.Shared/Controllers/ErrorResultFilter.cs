@@ -7,7 +7,7 @@ public class ErrorResultFilter(ILoggerFactory loggerFactory) : IAlwaysRunResultF
 
     public void OnResultExecuted(ResultExecutedContext context)
     {
-        if (context.HttpContext.Response.StatusCode >= 400)
+        if (context.HttpContext.Response.StatusCode >= 500)
         {
             _logger.LogInformation(
                 "Client {client} made request:\n {request}.\n Serval responded with code {statusCode}. Trace: {activityId}",
