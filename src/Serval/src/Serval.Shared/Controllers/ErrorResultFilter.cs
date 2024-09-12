@@ -9,13 +9,17 @@ public class ErrorResultFilter(ILoggerFactory loggerFactory) : IAlwaysRunResultF
     {
         if (context.HttpContext.Response.StatusCode >= 400)
         {
+            string routeData = JsonSerializer.Serialize(
+                ((Controller)context.Controller).ControllerContext.RouteData.Values,
+                JsonSerializerOptions
+            );
+            if (context.HttpContext.Response.StatusCode == 408 && routeData.Contains("GetCurrentBuild"))
+                // Ignore 408 errors for GetCurrentBuild
+                return;
             _logger.LogInformation(
                 "Client {client} made request:\n {request}.\n Serval responded with code {statusCode}. Trace: {activityId}",
                 ((Controller)context.Controller).User.Identity?.Name?.ToString(),
-                JsonSerializer.Serialize(
-                    ((Controller)context.Controller).ControllerContext.RouteData.Values,
-                    JsonSerializerOptions
-                ),
+                routeData,
                 context.HttpContext.Response.StatusCode,
                 Activity.Current?.Id
             );
