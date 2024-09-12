@@ -1,3 +1,4 @@
+using Bugsnag.AspNet.Core;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,9 @@ if (builder.Environment.IsDevelopment())
                 .AddConsoleExporter();
         });
 }
+
+builder.Services.Configure<Bugsnag.Configuration>(builder.Configuration.GetSection("Bugsnag"));
+builder.Services.AddBugsnag();
 
 var app = builder.Build();
 
