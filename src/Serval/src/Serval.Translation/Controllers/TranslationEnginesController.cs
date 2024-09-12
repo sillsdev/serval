@@ -704,7 +704,12 @@ public class TranslationEnginesController(
         );
         if (usfm == "")
             return NoContent();
-        _logger.LogInformation("Returning USFM for {TextId} in {CorpusId} of {EngineId}", textId, corpusId, id);
+        _logger.LogInformation(
+            "Returning USFM for {TextId} in engine {EngineId} for corpus {corpusId}",
+            textId,
+            id,
+            corpusId
+        );
         return Content(usfm, "text/plain");
     }
 
