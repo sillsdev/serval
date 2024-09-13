@@ -73,8 +73,8 @@ public class DistributedReaderWriterLock(
                 RWLock? rwLock = sub.Change.Entity;
                 if (rwLock is not null && !rwLock.IsAvailableForReading())
                 {
-                    TimeSpan? timeout = default;
-                    if (rwLock.WriterLock?.ExpiresAt is not null)
+                    TimeSpan? timeout = null;
+                    if (rwLock.WriterQueue.Count == 0 && rwLock.WriterLock?.ExpiresAt is not null)
                     {
                         timeout = rwLock.WriterLock.ExpiresAt - DateTime.UtcNow;
                         if (timeout < TimeSpan.Zero)
@@ -138,15 +138,18 @@ public class DistributedReaderWriterLock(
                     RWLock? rwLock = sub.Change.Entity;
                     if (rwLock is not null && !rwLock.IsAvailableForWriting(lockId))
                     {
-                        var dateTimes = rwLock.ReaderLocks.Select(l => l.ExpiresAt).ToList();
-                        if (rwLock.WriterLock?.ExpiresAt is not null)
-                            dateTimes.Add(rwLock.WriterLock.ExpiresAt);
-                        TimeSpan? timeout = default;
-                        if (dateTimes.Count > 0)
+                        TimeSpan? timeout = null;
+                        if (rwLock.WriterQueue[0].Id == lockId)
                         {
-                            timeout = dateTimes.Max() - DateTime.UtcNow;
-                            if (timeout < TimeSpan.Zero)
-                                timeout = TimeSpan.Zero;
+                            var dateTimes = rwLock.ReaderLocks.Select(l => l.ExpiresAt).ToList();
+                            if (rwLock.WriterLock?.ExpiresAt is not null)
+                                dateTimes.Add(rwLock.WriterLock.ExpiresAt);
+                            if (dateTimes.Count > 0)
+                            {
+                                timeout = dateTimes.Max() - DateTime.UtcNow;
+                                if (timeout < TimeSpan.Zero)
+                                    timeout = TimeSpan.Zero;
+                            }
                         }
                         if (timeout != TimeSpan.Zero)
                             await sub.WaitForChangeAsync(timeout, cancellationToken);
