@@ -7,7 +7,7 @@ spec:
   groups:
     - name: cpu
       rules:
-        - alert: engine-cpu-80perc
+        - alert: engine-cpu-60perc
           annotations:
             description: >-
               '{{ "{{ $labels.container }}" }} has high CPU for over 30 minutes.'
@@ -15,7 +15,7 @@ spec:
             min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container!~"POD" } [3m]))
             by (container, namespace) / on (container, namespace)
             min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container!~"POD"})
-            by (container, namespace) * 100 >= 80
+            by (container, namespace) * 100 >= 60
           for: 30m
           labels:
             severity: warning
