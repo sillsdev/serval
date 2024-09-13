@@ -7,30 +7,16 @@ spec:
   groups:
     - name: cpu
       rules:
-        - alert: cpu-80perc
+        - alert: engine-cpu-80perc
           annotations:
             description: >-
-              '{{ "{{ $labels.container }}" }} has high CPU for over 3 minutes.'
+              '{{ "{{ $labels.container }}" }} has high CPU for over 30 minutes.'
           expr: >-
-            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container!~"POD|machine-job" } [3m]))
+            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container!~"POD" } [3m]))
             by (container, namespace) / on (container, namespace)
-            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container!~"POD|machine-job"})
+            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container!~"POD"})
             by (container, namespace) * 100 >= 80
-          for: 0s
-          labels:
-            severity: warning
-    - name: cpu-job
-      rules:
-        - alert: cpu-long-job
-          annotations:
-            description: >-
-              '{{ "{{ $labels.container }}" }} has a job running over 3 hours.'
-          expr: >-
-            min (rate (container_cpu_usage_seconds_total {image!="", namespace="{{ .Values.namespace }}", container="machine-job" } [3h]))
-            by (container, namespace) / on (container, namespace)
-            min (kube_pod_container_resource_limits{resource="cpu", namespace="{{ .Values.namespace }}", container="machine-job"})
-            by (container, namespace) * 100 >= 80
-          for: 0s
+          for: 30m
           labels:
             severity: warning
     - name: memory
