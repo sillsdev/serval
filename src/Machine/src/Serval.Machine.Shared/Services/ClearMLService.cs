@@ -216,11 +216,19 @@ public class ClearMLService(
         }
         catch
         {
+            StringBuilder headerString = new();
+            foreach (KeyValuePair<string, IEnumerable<string>> header in response.Headers)
+            {
+                headerString.Append(
+                    CultureInfo.InvariantCulture,
+                    $"{header.Key}: {string.Join(", ", header.Value)}{Environment.NewLine}"
+                );
+            }
             _logger.LogWarning(
                 "Failed to parse ClearML response with code {httpCode} from request path `{request}`: {Response}",
                 response.StatusCode,
                 requestPath,
-                result
+                headerString.ToString()
             );
             throw;
         }
