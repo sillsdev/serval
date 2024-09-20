@@ -7,7 +7,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_FilterOutEverything()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { };
+        TranslationCorpus corpus1 = env.DefaultTextFileCorpus with { };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -25,7 +25,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_TrainOnAll()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { TrainOnTextIds = null };
+        TranslationCorpus corpus1 = env.DefaultTextFileCorpus with { TrainOnTextIds = null };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -43,7 +43,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_TrainOnTextIds()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { TrainOnTextIds = ["textId1"] };
+        TranslationCorpus corpus1 = env.DefaultTextFileCorpus with { TrainOnTextIds = ["textId1"] };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -61,7 +61,11 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_TrainAndPretranslateAll()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = null, TrainOnTextIds = null };
+        TranslationCorpus corpus1 = env.DefaultTextFileCorpus with
+        {
+            PretranslateTextIds = null,
+            TrainOnTextIds = null
+        };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -72,7 +76,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_PretranslateAll()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = null };
+        TranslationCorpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = null };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -83,7 +87,11 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_PretranslateTextIds()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = ["textId1"], TrainOnTextIds = null };
+        TranslationCorpus corpus1 = env.DefaultTextFileCorpus with
+        {
+            PretranslateTextIds = ["textId1"],
+            TrainOnTextIds = null
+        };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -94,7 +102,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_EnableKeyTerms()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultParatextCorpus with { };
+        TranslationCorpus corpus1 = env.DefaultParatextCorpus with { };
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: true);
 
@@ -112,7 +120,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_DisableKeyTerms()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultParatextCorpus with { };
+        TranslationCorpus corpus1 = env.DefaultParatextCorpus with { };
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: false);
 
@@ -130,7 +138,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_PretranslateChapters()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultParatextCorpus with
+        TranslationCorpus corpus1 = env.DefaultParatextCorpus with
         {
             PretranslateChapters = new Dictionary<string, HashSet<int>>
             {
@@ -150,7 +158,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_TrainOnChapters()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultParatextCorpus with
+        TranslationCorpus corpus1 = env.DefaultParatextCorpus with
         {
             TrainOnChapters = new Dictionary<string, HashSet<int>>
             {
@@ -177,7 +185,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_MixedSource_Paratext()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultMixedSourceParatextCorpus with
+        TranslationCorpus corpus1 = env.DefaultMixedSourceParatextCorpus with
         {
             TrainOnTextIds = null,
             PretranslateTextIds = null
@@ -200,7 +208,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_MixedSource_Text()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultMixedSourceTextFileCorpus with
+        TranslationCorpus corpus1 = env.DefaultMixedSourceTextFileCorpus with
         {
             TrainOnTextIds = null,
             PretranslateTextIds = null,
@@ -225,7 +233,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_UnknownLanguageTagsNoData()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
+        TranslationCorpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
@@ -237,7 +245,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_UnknownLanguageTagsNoDataSmtTransfer()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
+        TranslationCorpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
 
         await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: TranslationEngineType.SmtTransfer);
     }
@@ -246,7 +254,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_RemoveFreestandingEllipses()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultParatextCorpus with
+        TranslationCorpus corpus1 = env.DefaultParatextCorpus with
         {
             TrainOnChapters = new Dictionary<string, HashSet<int>>
             {
@@ -286,7 +294,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_OnlyParseSelectedBooks_NoBadBooks()
     {
         using TestEnvironment env = new();
-        Corpus corpus = env.DefaultParatextCorpus with
+        TranslationCorpus corpus = env.DefaultParatextCorpus with
         {
             TrainOnTextIds = new() { "LEV" },
             PretranslateTextIds = new() { "MRK" }
@@ -310,7 +318,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_OnlyParseSelectedBooks_TrainOnBadBook()
     {
         using TestEnvironment env = new();
-        Corpus corpus = env.DefaultParatextCorpus with
+        TranslationCorpus corpus = env.DefaultParatextCorpus with
         {
             TrainOnTextIds = new() { "MAT" },
             PretranslateTextIds = new() { "MRK" }
@@ -333,7 +341,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_OnlyParseSelectedBooks_PretranslateOnBadBook()
     {
         using TestEnvironment env = new();
-        Corpus corpus = env.DefaultParatextCorpus with
+        TranslationCorpus corpus = env.DefaultParatextCorpus with
         {
             TrainOnTextIds = new() { "LEV" },
             PretranslateTextIds = new() { "MAT" }
@@ -375,10 +383,10 @@ public class PreprocessBuildJobTests
         public IClearMLService ClearMLService { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
-        public Corpus DefaultTextFileCorpus { get; }
-        public Corpus DefaultMixedSourceTextFileCorpus { get; }
-        public Corpus DefaultParatextCorpus { get; }
-        public Corpus DefaultMixedSourceParatextCorpus { get; }
+        public TranslationCorpus DefaultTextFileCorpus { get; }
+        public TranslationCorpus DefaultMixedSourceTextFileCorpus { get; }
+        public TranslationCorpus DefaultParatextCorpus { get; }
+        public TranslationCorpus DefaultMixedSourceParatextCorpus { get; }
 
         public TestEnvironment()
         {
@@ -614,7 +622,7 @@ public class PreprocessBuildJobTests
         }
 
         public Task RunBuildJobAsync(
-            Corpus corpus,
+            TranslationCorpus corpus,
             bool useKeyTerms = true,
             string engineId = "engine1",
             TranslationEngineType engineType = TranslationEngineType.Nmt

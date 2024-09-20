@@ -4,8 +4,8 @@ using Serval.Assessment.V1;
 namespace Serval.Assessment.Services;
 
 public class AssessmentPlatformServiceV1(
-    IRepository<Job> jobs,
-    IRepository<Engine> engines,
+    IRepository<AssessmentJob> jobs,
+    IRepository<AssessmentEngine> engines,
     IRepository<Result> results,
     IDataAccessContext dataAccessContext,
     IPublishEndpoint publishEndpoint
@@ -14,8 +14,8 @@ public class AssessmentPlatformServiceV1(
     private const int ResultInsertBatchSize = 128;
     private static readonly Empty Empty = new();
 
-    private readonly IRepository<Job> _jobs = jobs;
-    private readonly IRepository<Engine> _engines = engines;
+    private readonly IRepository<AssessmentJob> _jobs = jobs;
+    private readonly IRepository<AssessmentEngine> _engines = engines;
     private readonly IRepository<Result> _results = results;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
@@ -25,7 +25,7 @@ public class AssessmentPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Job? job = await _jobs.UpdateAsync(
+                AssessmentJob? job = await _jobs.UpdateAsync(
                     request.JobId,
                     u => u.Set(b => b.State, JobState.Active),
                     cancellationToken: ct
@@ -33,7 +33,7 @@ public class AssessmentPlatformServiceV1(
                 if (job is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The job does not exist."));
 
-                Engine? engine = await _engines.GetAsync(job.EngineRef, cancellationToken: ct);
+                AssessmentEngine? engine = await _engines.GetAsync(job.EngineRef, cancellationToken: ct);
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
@@ -57,7 +57,7 @@ public class AssessmentPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Job? job = await _jobs.UpdateAsync(
+                AssessmentJob? job = await _jobs.UpdateAsync(
                     request.JobId,
                     u =>
                         u.Set(b => b.State, JobState.Completed)
@@ -68,7 +68,7 @@ public class AssessmentPlatformServiceV1(
                 if (job is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The job does not exist."));
 
-                Engine? engine = await _engines.GetAsync(job.EngineRef, cancellationToken: ct);
+                AssessmentEngine? engine = await _engines.GetAsync(job.EngineRef, cancellationToken: ct);
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
@@ -96,7 +96,7 @@ public class AssessmentPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Job? job = await _jobs.UpdateAsync(
+                AssessmentJob? job = await _jobs.UpdateAsync(
                     request.JobId,
                     u =>
                     {
@@ -109,7 +109,7 @@ public class AssessmentPlatformServiceV1(
                 if (job is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The job does not exist."));
 
-                Engine? engine = await _engines.GetAsync(job.EngineRef, cancellationToken: ct);
+                AssessmentEngine? engine = await _engines.GetAsync(job.EngineRef, cancellationToken: ct);
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
@@ -137,7 +137,7 @@ public class AssessmentPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Job? job = await _jobs.UpdateAsync(
+                AssessmentJob? job = await _jobs.UpdateAsync(
                     request.JobId,
                     u =>
                     {
@@ -150,7 +150,7 @@ public class AssessmentPlatformServiceV1(
                 if (job is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The job does not exist."));
 
-                Engine? engine = await _engines.GetAsync(job.EngineRef, cancellationToken: ct);
+                AssessmentEngine? engine = await _engines.GetAsync(job.EngineRef, cancellationToken: ct);
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
@@ -175,7 +175,7 @@ public class AssessmentPlatformServiceV1(
 
     public override async Task<Empty> JobRestarting(JobRestartingRequest request, ServerCallContext context)
     {
-        Job? job = await _jobs.UpdateAsync(
+        AssessmentJob? job = await _jobs.UpdateAsync(
             request.JobId,
             u =>
             {
@@ -225,7 +225,7 @@ public class AssessmentPlatformServiceV1(
         {
             if (jobId != request.JobId)
             {
-                Job? job = await _jobs.GetAsync(request.JobId, context.CancellationToken);
+                AssessmentJob? job = await _jobs.GetAsync(request.JobId, context.CancellationToken);
                 if (job is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The job does not exist."));
                 engineId = job.EngineRef;

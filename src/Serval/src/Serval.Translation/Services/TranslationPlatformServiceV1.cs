@@ -4,8 +4,8 @@ using Serval.Translation.V1;
 namespace Serval.Translation.Services;
 
 public class TranslationPlatformServiceV1(
-    IRepository<Build> builds,
-    IRepository<Engine> engines,
+    IRepository<TranslationBuildJob> builds,
+    IRepository<TranslationEngine> engines,
     IRepository<Pretranslation> pretranslations,
     IDataAccessContext dataAccessContext,
     IPublishEndpoint publishEndpoint
@@ -14,8 +14,8 @@ public class TranslationPlatformServiceV1(
     private const int PretranslationInsertBatchSize = 128;
     private static readonly Empty Empty = new();
 
-    private readonly IRepository<Build> _builds = builds;
-    private readonly IRepository<Engine> _engines = engines;
+    private readonly IRepository<TranslationBuildJob> _builds = builds;
+    private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
@@ -25,7 +25,7 @@ public class TranslationPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Build? build = await _builds.UpdateAsync(
+                TranslationBuildJob? build = await _builds.UpdateAsync(
                     request.BuildId,
                     u => u.Set(b => b.State, JobState.Active),
                     cancellationToken: ct
@@ -33,7 +33,7 @@ public class TranslationPlatformServiceV1(
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-                Engine? engine = await _engines.UpdateAsync(
+                TranslationEngine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
                     u => u.Set(e => e.IsBuilding, true),
                     cancellationToken: ct
@@ -61,7 +61,7 @@ public class TranslationPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Build? build = await _builds.UpdateAsync(
+                TranslationBuildJob? build = await _builds.UpdateAsync(
                     request.BuildId,
                     u =>
                         u.Set(b => b.State, JobState.Completed)
@@ -72,7 +72,7 @@ public class TranslationPlatformServiceV1(
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-                Engine? engine = await _engines.UpdateAsync(
+                TranslationEngine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
                     u =>
                         u.Set(e => e.Confidence, request.Confidence)
@@ -114,7 +114,7 @@ public class TranslationPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Build? build = await _builds.UpdateAsync(
+                TranslationBuildJob? build = await _builds.UpdateAsync(
                     request.BuildId,
                     u =>
                         u.Set(b => b.Message, "Canceled")
@@ -125,7 +125,7 @@ public class TranslationPlatformServiceV1(
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-                Engine? engine = await _engines.UpdateAsync(
+                TranslationEngine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
                     u => u.Set(e => e.IsBuilding, false),
                     cancellationToken: ct
@@ -163,7 +163,7 @@ public class TranslationPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Build? build = await _builds.UpdateAsync(
+                TranslationBuildJob? build = await _builds.UpdateAsync(
                     request.BuildId,
                     u =>
                         u.Set(b => b.State, JobState.Faulted)
@@ -174,7 +174,7 @@ public class TranslationPlatformServiceV1(
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-                Engine? engine = await _engines.UpdateAsync(
+                TranslationEngine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
                     u => u.Set(e => e.IsBuilding, false),
                     cancellationToken: ct
@@ -212,7 +212,7 @@ public class TranslationPlatformServiceV1(
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Build? build = await _builds.UpdateAsync(
+                TranslationBuildJob? build = await _builds.UpdateAsync(
                     request.BuildId,
                     u =>
                         u.Set(b => b.Message, "Restarting")
@@ -224,7 +224,7 @@ public class TranslationPlatformServiceV1(
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-                Engine? engine = await _engines.GetAsync(build.EngineRef, ct);
+                TranslationEngine? engine = await _engines.GetAsync(build.EngineRef, ct);
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
@@ -291,7 +291,7 @@ public class TranslationPlatformServiceV1(
         {
             if (request.EngineId != engineId)
             {
-                Engine? engine = await _engines.GetAsync(request.EngineId, context.CancellationToken);
+                TranslationEngine? engine = await _engines.GetAsync(request.EngineId, context.CancellationToken);
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
                 nextModelRevision = engine.ModelRevision + 1;

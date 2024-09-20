@@ -7,7 +7,7 @@ public record TranslationBuildDto
     public required int Revision { get; init; }
     public string? Name { get; init; }
     public required ResourceLinkDto Engine { get; init; }
-    public IReadOnlyList<TrainingCorpusDto>? TrainOn { get; init; }
+    public IReadOnlyList<CorpusFilterDto>? TrainOn { get; init; }
     public IReadOnlyList<PretranslateCorpusDto>? Pretranslate { get; init; }
     public required int Step { get; init; }
     public double? PercentCompleted { get; init; }

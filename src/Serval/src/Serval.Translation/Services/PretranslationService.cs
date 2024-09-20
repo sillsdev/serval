@@ -4,11 +4,11 @@ namespace Serval.Translation.Services;
 
 public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
-    IRepository<Engine> engines,
+    IRepository<TranslationEngine> engines,
     IScriptureDataFileService scriptureDataFileService
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
-    private readonly IRepository<Engine> _engines = engines;
+    private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
     public async Task<IEnumerable<Pretranslation>> GetAllAsync(
@@ -39,8 +39,8 @@ public class PretranslationService(
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await _engines.GetAsync(engineId, cancellationToken);
-        Corpus? corpus = engine?.Corpora.SingleOrDefault(c => c.Id == corpusId);
+        TranslationEngine? engine = await _engines.GetAsync(engineId, cancellationToken);
+        TrainingCorpus? corpus = engine?.Corpora.SingleOrDefault(c => c.Id == corpusId);
         if (corpus is null)
             throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
 

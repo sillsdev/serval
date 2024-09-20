@@ -91,7 +91,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        Models.Corpus[] corpora = request.Corpora.Select(Map).ToArray();
+        Models.TranslationCorpus[] corpora = request.Corpora.Select(Map).ToArray();
         try
         {
             await engineService.StartBuildAsync(
@@ -269,7 +269,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.Corpus Map(Translation.V1.Corpus source)
+    private static Models.TranslationCorpus Map(Translation.V1.Corpus source)
     {
         var pretranslateChapters = source.PretranslateChapters.ToDictionary(
             kvp => kvp.Key,
@@ -283,7 +283,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         );
         FilterChoice trainingFilter = GetFilterChoice(source.TrainOnAll, trainOnChapters);
 
-        return new Models.Corpus
+        return new Models.TranslationCorpus
         {
             Id = source.Id,
             SourceLanguage = source.SourceLanguage,

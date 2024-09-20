@@ -10,7 +10,7 @@ public class PlatformServiceTests
     {
         var env = new TestEnvironment();
         await env.Engines.InsertAsync(
-            new Engine()
+            new TranslationEngine()
             {
                 Id = "e0",
                 Owner = "owner1",
@@ -20,7 +20,7 @@ public class PlatformServiceTests
                 Corpora = []
             }
         );
-        await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
+        await env.Builds.InsertAsync(new TranslationBuildJob() { Id = "b0", EngineRef = "e0" });
         await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Active));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.True);
@@ -64,7 +64,7 @@ public class PlatformServiceTests
     {
         var env = new TestEnvironment();
         await env.Engines.InsertAsync(
-            new Engine()
+            new TranslationEngine()
             {
                 Id = "e0",
                 Owner = "owner1",
@@ -74,7 +74,7 @@ public class PlatformServiceTests
                 Corpora = []
             }
         );
-        await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
+        await env.Builds.InsertAsync(new TranslationBuildJob() { Id = "b0", EngineRef = "e0" });
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.Null);
         Assert.That(env.Builds.Get("b0").PercentCompleted, Is.Null);
         await env.PlatformService.UpdateBuildStatus(
@@ -95,7 +95,7 @@ public class PlatformServiceTests
     {
         var env = new TestEnvironment();
         await env.Engines.InsertAsync(
-            new Engine()
+            new TranslationEngine()
             {
                 Id = "e0",
                 Owner = "owner1",
@@ -117,8 +117,8 @@ public class PlatformServiceTests
     {
         public TestEnvironment()
         {
-            Builds = new MemoryRepository<Build>();
-            Engines = new MemoryRepository<Engine>();
+            Builds = new MemoryRepository<TranslationBuildJob>();
+            Engines = new MemoryRepository<TranslationEngine>();
             Pretranslations = new MemoryRepository<Pretranslation>();
             DataAccessContext = Substitute.For<IDataAccessContext>();
             PublishEndpoint = Substitute.For<IPublishEndpoint>();
@@ -146,8 +146,8 @@ public class PlatformServiceTests
             );
         }
 
-        public MemoryRepository<Build> Builds { get; }
-        public MemoryRepository<Engine> Engines { get; }
+        public MemoryRepository<TranslationBuildJob> Builds { get; }
+        public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
         public IDataAccessContext DataAccessContext { get; }
         public IPublishEndpoint PublishEndpoint { get; }

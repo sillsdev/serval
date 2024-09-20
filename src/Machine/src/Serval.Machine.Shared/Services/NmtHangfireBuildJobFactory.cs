@@ -11,7 +11,7 @@ public class NmtHangfireBuildJobFactory : IHangfireBuildJobFactory
         return stage switch
         {
             BuildStage.Preprocess
-                => CreateJob<NmtPreprocessBuildJob, IReadOnlyList<Corpus>>(
+                => CreateJob<NmtPreprocessBuildJob, IReadOnlyList<TranslationCorpus>>(
                     engineId,
                     buildId,
                     "nmt",

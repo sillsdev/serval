@@ -18,9 +18,9 @@ public static class IServalBuilderExtensions
             builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
         }
 
-        builder.Services.AddScoped<IJobService, JobService>();
+        builder.Services.AddScoped(typeof(IJobService<AssessmentJob>), typeof(JobService<AssessmentJob>));
         builder.Services.AddScoped<IResultService, ResultService>();
-        builder.Services.AddScoped<IEngineService, EngineService>();
+        builder.Services.AddScoped<IAssessmentEngineService, AssessmentEngineService>();
 
         var assessmentOptions = new AssessmentOptions();
         builder.Configuration?.GetSection(AssessmentOptions.Key).Bind(assessmentOptions);

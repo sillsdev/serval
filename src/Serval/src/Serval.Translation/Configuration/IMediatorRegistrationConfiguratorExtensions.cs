@@ -6,7 +6,7 @@ public static class IMediatorRegistrationConfiguratorExtensions
         this IMediatorRegistrationConfigurator configurator
     )
     {
-        configurator.AddConsumer<DataFileDeletedConsumer>();
+        configurator.AddConsumer<DataFileDeletedConsumer<ITranslationEngineService>>();
         return configurator;
     }
 }

@@ -21,9 +21,9 @@ public static class IServalBuilderExtensions
             builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
         }
 
-        builder.Services.AddScoped<IBuildService, BuildService>();
+        builder.Services.AddScoped(typeof(IJobService<TranslationBuildJob>), typeof(JobService<TranslationBuildJob>));
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
-        builder.Services.AddScoped<IEngineService, EngineService>();
+        builder.Services.AddScoped<ITranslationEngineService, TranslationEngineService>();
 
         var translationOptions = new TranslationOptions();
         builder.Configuration?.GetSection(TranslationOptions.Key).Bind(translationOptions);

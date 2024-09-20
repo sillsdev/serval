@@ -5,8 +5,8 @@
 [OpenApiTag("Translation Engines")]
 public class TranslationEnginesController(
     IAuthorizationService authService,
-    IEngineService engineService,
-    IBuildService buildService,
+    ITranslationEngineService engineService,
+    IJobService<TranslationBuildJob> buildJobService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService,
@@ -16,8 +16,8 @@ public class TranslationEnginesController(
     private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
         new() { Converters = { new ObjectToInferredTypesConverter() } };
 
-    private readonly IEngineService _engineService = engineService;
-    private readonly IBuildService _buildService = buildService;
+    private readonly ITranslationEngineService _engineService = engineService;
+    private readonly IJobService<TranslationBuildJob> _buildService = buildJobService;
     private readonly IPretranslationService _pretranslationService = pretranslationService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
@@ -65,7 +65,7 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         return Ok(Map(engine));
     }
@@ -125,8 +125,8 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = Map(engineConfig);
-        Engine updatedEngine = await _engineService.CreateAsync(engine, cancellationToken);
+        TranslationEngine engine = Map(engineConfig);
+        TranslationEngine updatedEngine = await _engineService.CreateAsync(engine, cancellationToken);
         TranslationEngineDto dto = Map(updatedEngine);
         return Created(dto.Url, dto);
     }
@@ -352,19 +352,24 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
+    public async Task<ActionResult<TrainingCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
-        [FromBody] TranslationCorpusConfigDto corpusConfig,
+        [FromBody] TrainingCorpusConfigDto corpusConfig,
         [FromServices] IRequestClient<GetDataFile> getDataFileClient,
         [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Corpus corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
+        TrainingCorpus corpus = await MapAsync(
+            getDataFileClient,
+            idGenerator.GenerateId(),
+            corpusConfig,
+            cancellationToken
+        );
         await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
-        TranslationCorpusDto dto = Map(id, corpus);
+        TrainingCorpusDto dto = Map(id, corpus);
         return Created(dto.Url, dto);
     }
 
@@ -394,7 +399,7 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationCorpusDto>> UpdateCorpusAsync(
+    public async Task<ActionResult<TrainingCorpusDto>> UpdateCorpusAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
         [FromBody] TranslationCorpusUpdateConfigDto corpusConfig,
@@ -403,7 +408,7 @@ public class TranslationEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        Corpus corpus = await _engineService.UpdateCorpusAsync(
+        TrainingCorpus corpus = await _engineService.UpdateCorpusAsync(
             id,
             corpusId,
             corpusConfig.SourceFiles is null
@@ -434,12 +439,12 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<IEnumerable<TranslationCorpusDto>>> GetAllCorporaAsync(
+    public async Task<ActionResult<IEnumerable<TrainingCorpusDto>>> GetAllCorporaAsync(
         [NotNull] string id,
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         return Ok(engine.Corpora.Select(c => Map(id, c)));
     }
@@ -462,15 +467,15 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationCorpusDto>> GetCorpusAsync(
+    public async Task<ActionResult<TrainingCorpusDto>> GetCorpusAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Corpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
+        TrainingCorpus? corpus = engine.Corpora.FirstOrDefault(f => f.Id == corpusId);
         if (corpus == null)
             return NotFound();
         return Ok(Map(id, corpus));
@@ -549,7 +554,7 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
@@ -611,7 +616,7 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
@@ -686,7 +691,7 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
@@ -780,7 +785,7 @@ public class TranslationEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            (_, EntityChange<Build> change) = await TaskEx.Timeout(
+            (_, EntityChange<TranslationBuildJob> change) = await TaskEx.Timeout(
                 ct => _buildService.GetNewerRevisionAsync(buildId, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
@@ -794,7 +799,7 @@ public class TranslationEnginesController(
         }
         else
         {
-            Build build = await _buildService.GetAsync(buildId, cancellationToken);
+            TranslationBuildJob build = await _buildService.GetAsync(buildId, cancellationToken);
             return Ok(Map(build));
         }
     }
@@ -845,10 +850,10 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Build build = Map(engine, buildConfig);
-        await _engineService.StartBuildAsync(build, cancellationToken);
+        TranslationBuildJob build = Map(engine, buildConfig);
+        await _engineService.StartJobAsync(build, cancellationToken);
 
         TranslationBuildDto dto = Map(build);
         return Created(dto.Url, dto);
@@ -890,7 +895,7 @@ public class TranslationEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            (_, EntityChange<Build> change) = await TaskEx.Timeout(
+            (_, EntityChange<TranslationBuildJob> change) = await TaskEx.Timeout(
                 ct => _buildService.GetActiveNewerRevisionAsync(id, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
@@ -904,7 +909,7 @@ public class TranslationEnginesController(
         }
         else
         {
-            Build? build = await _buildService.GetActiveAsync(id, cancellationToken);
+            TranslationBuildJob? build = await _buildService.GetActiveAsync(id, cancellationToken);
             if (build == null)
                 return NoContent();
 
@@ -938,7 +943,7 @@ public class TranslationEnginesController(
     public async Task<ActionResult> CancelBuildAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         await AuthorizeAsync(id, cancellationToken);
-        if (!await _engineService.CancelBuildAsync(id, cancellationToken))
+        if (!await _engineService.CancelJobAsync(id, cancellationToken))
             return NoContent();
         return Ok();
     }
@@ -985,18 +990,18 @@ public class TranslationEnginesController(
 
     private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
     }
 
-    private async Task<Corpus> MapAsync(
+    private async Task<TrainingCorpus> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
         string corpusId,
-        TranslationCorpusConfigDto source,
+        TrainingCorpusConfigDto source,
         CancellationToken cancellationToken
     )
     {
-        return new Corpus
+        return new TrainingCorpus
         {
             Id = corpusId,
             Name = source.Name,
@@ -1009,12 +1014,12 @@ public class TranslationEnginesController(
 
     private async Task<List<CorpusFile>> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
-        IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
+        IEnumerable<CorpusFileConfigDto> fileConfigs,
         CancellationToken cancellationToken
     )
     {
         var files = new List<CorpusFile>();
-        foreach (TranslationCorpusFileConfigDto fileConfig in fileConfigs)
+        foreach (CorpusFileConfigDto fileConfig in fileConfigs)
         {
             Response<DataFileResult, DataFileNotFound> response = await getDataFileClient.GetResponse<
                 DataFileResult,
@@ -1040,9 +1045,9 @@ public class TranslationEnginesController(
         return files;
     }
 
-    private Engine Map(TranslationEngineConfigDto source)
+    private TranslationEngine Map(TranslationEngineConfigDto source)
     {
-        return new Engine
+        return new TranslationEngine
         {
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
@@ -1054,9 +1059,9 @@ public class TranslationEnginesController(
         };
     }
 
-    private static Build Map(Engine engine, TranslationBuildConfigDto source)
+    private static TranslationBuildJob Map(TranslationEngine engine, TranslationBuildConfigDto source)
     {
-        return new Build
+        return new TranslationBuildJob
         {
             EngineRef = engine.Id,
             Name = source.Name,
@@ -1066,7 +1071,10 @@ public class TranslationEnginesController(
         };
     }
 
-    private static List<PretranslateCorpus>? Map(Engine engine, IReadOnlyList<PretranslateCorpusConfigDto>? source)
+    private static List<PretranslateCorpus>? Map(
+        TranslationEngine engine,
+        IReadOnlyList<PretranslateCorpusConfigDto>? source
+    )
     {
         if (source is null)
             return null;
@@ -1099,14 +1107,14 @@ public class TranslationEnginesController(
         return pretranslateCorpora;
     }
 
-    private static List<TrainingCorpus>? Map(Engine engine, IReadOnlyList<TrainingCorpusConfigDto>? source)
+    private static List<FilteredCorpus>? Map(TranslationEngine engine, IReadOnlyList<CorpusFilterConfigDto>? source)
     {
         if (source is null)
             return null;
 
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
-        var trainOnCorpora = new List<TrainingCorpus>();
-        foreach (TrainingCorpusConfigDto tcc in source)
+        var trainOnCorpora = new List<FilteredCorpus>();
+        foreach (CorpusFilterConfigDto tcc in source)
         {
             if (!corpusIds.Contains(tcc.CorpusId))
             {
@@ -1121,7 +1129,7 @@ public class TranslationEnginesController(
                 );
             }
             trainOnCorpora.Add(
-                new TrainingCorpus
+                new FilteredCorpus
                 {
                     CorpusRef = tcc.CorpusId,
                     TextIds = tcc.TextIds?.ToList(),
@@ -1147,7 +1155,7 @@ public class TranslationEnginesController(
         }
     }
 
-    private TranslationEngineDto Map(Engine source)
+    private TranslationEngineDto Map(TranslationEngine source)
     {
         return new TranslationEngineDto
         {
@@ -1165,7 +1173,7 @@ public class TranslationEnginesController(
         };
     }
 
-    private TranslationBuildDto Map(Build source)
+    private TranslationBuildDto Map(TranslationBuildJob source)
     {
         return new TranslationBuildDto
         {
@@ -1207,9 +1215,9 @@ public class TranslationEnginesController(
         };
     }
 
-    private TrainingCorpusDto Map(string engineId, TrainingCorpus source)
+    private CorpusFilterDto Map(string engineId, FilteredCorpus source)
     {
-        return new TrainingCorpusDto
+        return new CorpusFilterDto
         {
             Corpus = new ResourceLinkDto
             {
@@ -1290,9 +1298,9 @@ public class TranslationEnginesController(
         };
     }
 
-    private TranslationCorpusDto Map(string engineId, Corpus source)
+    private TrainingCorpusDto Map(string engineId, TrainingCorpus source)
     {
-        return new TranslationCorpusDto
+        return new TrainingCorpusDto
         {
             Id = source.Id,
             Url = _urlService.GetUrl(Endpoints.GetTranslationCorpus, new { id = engineId, corpusId = source.Id }),
@@ -1309,9 +1317,9 @@ public class TranslationEnginesController(
         };
     }
 
-    private TranslationCorpusFileDto Map(CorpusFile source)
+    private CorpusFileDto Map(CorpusFile source)
     {
-        return new TranslationCorpusFileDto
+        return new CorpusFileDto
         {
             File = new ResourceLinkDto
             {

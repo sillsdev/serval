@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using MassTransit.Mediator;
+using Serval.Shared.Models;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -68,7 +69,7 @@ public class EngineServiceTests
     public async Task CreateAsync()
     {
         var env = new TestEnvironment();
-        Engine engine =
+        TranslationEngine engine =
             new()
             {
                 Id = "engine1",
@@ -91,7 +92,7 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.DeleteAsync("engine1");
-        Engine? engine = await env.Engines.GetAsync(engineId);
+        TranslationEngine? engine = await env.Engines.GetAsync(engineId);
         Assert.That(engine, Is.Null);
     }
 
@@ -108,7 +109,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
+        await env.Service.StartJobAsync(new TranslationBuildJob { Id = BUILD1_ID, EngineRef = engineId });
         _ = env.TranslationServiceClient.Received()
             .StartBuildAsync(
                 new StartBuildRequest
@@ -153,12 +154,12 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartBuildAsync(
-            new Build
+        await env.Service.StartJobAsync(
+            new TranslationBuildJob
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = [] }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", TextIds = [] }]
             }
         );
         _ = env.TranslationServiceClient.Received()
@@ -206,12 +207,12 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartBuildAsync(
-            new Build
+        await env.Service.StartJobAsync(
+            new TranslationBuildJob
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
             }
         );
         _ = env.TranslationServiceClient.Received()
@@ -259,12 +260,12 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartBuildAsync(
-            new Build
+        await env.Service.StartJobAsync(
+            new TranslationBuildJob
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1" }]
             }
         );
         _ = env.TranslationServiceClient.Received()
@@ -313,12 +314,12 @@ public class EngineServiceTests
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         Assert.ThrowsAsync<InvalidOperationException>(
             () =>
-                env.Service.StartBuildAsync(
-                    new Build
+                env.Service.StartJobAsync(
+                    new TranslationBuildJob
                     {
                         Id = BUILD1_ID,
                         EngineRef = engineId,
-                        TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }]
+                        TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }]
                     }
                 )
         );
@@ -329,12 +330,12 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
-        await env.Service.StartBuildAsync(
-            new Build
+        await env.Service.StartJobAsync(
+            new TranslationBuildJob
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
             }
         );
         _ = env.TranslationServiceClient.Received()
@@ -392,12 +393,12 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
-        await env.Service.StartBuildAsync(
-            new Build
+        await env.Service.StartJobAsync(
+            new TranslationBuildJob
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
             }
         );
         _ = env.TranslationServiceClient.Received()
@@ -444,17 +445,17 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.CancelBuildAsync(engineId);
+        await env.Service.CancelJobAsync(engineId);
     }
 
     [Test]
     public async Task UpdateCorpusAsync()
     {
         var env = new TestEnvironment();
-        Engine engine = await env.CreateEngineWithTextFilesAsync();
+        TranslationEngine engine = await env.CreateEngineWithTextFilesAsync();
         string corpusId = engine.Corpora[0].Id;
 
-        Models.Corpus? corpus = await env.Service.UpdateCorpusAsync(
+        TrainingCorpus? corpus = await env.Service.UpdateCorpusAsync(
             engine.Id,
             corpusId,
             sourceFiles:
@@ -488,7 +489,7 @@ public class EngineServiceTests
     {
         public TestEnvironment()
         {
-            Engines = new MemoryRepository<Engine>();
+            Engines = new MemoryRepository<TranslationEngine>();
             TranslationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             var translationResult = new V1.TranslationResult
             {
@@ -624,9 +625,9 @@ public class EngineServiceTests
                     )
                 );
 
-            Service = new EngineService(
+            Service = new TranslationEngineService(
                 Engines,
-                new MemoryRepository<Build>(),
+                new MemoryRepository<TranslationBuildJob>(),
                 new MemoryRepository<Pretranslation>(),
                 Substitute.For<IScopedMediator>(),
                 grpcClientFactory,
@@ -637,20 +638,20 @@ public class EngineServiceTests
             );
         }
 
-        public EngineService Service { get; }
-        public IRepository<Engine> Engines { get; }
+        public TranslationEngineService Service { get; }
+        public IRepository<TranslationEngine> Engines { get; }
         public TranslationEngineApi.TranslationEngineApiClient TranslationServiceClient { get; }
 
-        public async Task<Engine> CreateEngineWithTextFilesAsync()
+        public async Task<TranslationEngine> CreateEngineWithTextFilesAsync()
         {
-            var engine = new Engine
+            var engine = new TranslationEngine
             {
                 Id = "engine1",
                 Owner = "owner1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "Smt",
-                Corpora = new Models.Corpus[]
+                Corpora = new TrainingCorpus[]
                 {
                     new()
                     {
@@ -684,16 +685,16 @@ public class EngineServiceTests
             return engine;
         }
 
-        public async Task<Engine> CreateEngineWithParatextProjectAsync()
+        public async Task<TranslationEngine> CreateEngineWithParatextProjectAsync()
         {
-            var engine = new Engine
+            var engine = new TranslationEngine
             {
                 Id = "engine1",
                 Owner = "owner1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "Smt",
-                Corpora = new Models.Corpus[]
+                Corpora = new TrainingCorpus[]
                 {
                     new()
                     {

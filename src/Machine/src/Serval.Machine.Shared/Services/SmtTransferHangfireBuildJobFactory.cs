@@ -11,7 +11,7 @@ public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
         return stage switch
         {
             BuildStage.Preprocess
-                => CreateJob<SmtTransferPreprocessBuildJob, IReadOnlyList<Corpus>>(
+                => CreateJob<SmtTransferPreprocessBuildJob, IReadOnlyList<TranslationCorpus>>(
                     engineId,
                     buildId,
                     "smt_transfer",

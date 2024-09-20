@@ -6,8 +6,8 @@
 [FeatureGate("Assessment")]
 public class AssessmentEnginesController(
     IAuthorizationService authService,
-    IEngineService engineService,
-    IJobService jobService,
+    IAssessmentEngineService engineService,
+    IJobService<AssessmentJob> jobService,
     IResultService resultService,
     IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService
@@ -16,8 +16,8 @@ public class AssessmentEnginesController(
     private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
         new() { Converters = { new ObjectToInferredTypesConverter() } };
 
-    private readonly IEngineService _engineService = engineService;
-    private readonly IJobService _jobService = jobService;
+    private readonly IAssessmentEngineService _engineService = engineService;
+    private readonly IJobService<AssessmentJob> _jobService = jobService;
     private readonly IResultService _resultService = resultService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
@@ -64,7 +64,7 @@ public class AssessmentEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        AssessmentEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         return Ok(Map(engine));
     }
@@ -92,8 +92,8 @@ public class AssessmentEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await MapAsync(getDataFileClient, engineConfig, cancellationToken);
-        Engine updatedEngine = await _engineService.CreateAsync(engine, cancellationToken);
+        AssessmentEngine engine = await MapAsync(getDataFileClient, engineConfig, cancellationToken);
+        AssessmentEngine updatedEngine = await _engineService.CreateAsync(engine, cancellationToken);
         AssessmentEngineDto dto = Map(updatedEngine);
         return Created(dto.Url, dto);
     }
@@ -144,7 +144,7 @@ public class AssessmentEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        AssessmentEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         return Ok(Map(id, Endpoints.GetAssessmentCorpus, engine.Corpus));
     }
@@ -205,7 +205,7 @@ public class AssessmentEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        AssessmentEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         if (engine.ReferenceCorpus is null)
             return NoContent();
@@ -311,7 +311,7 @@ public class AssessmentEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            (_, EntityChange<Job> change) = await TaskEx.Timeout(
+            (_, EntityChange<AssessmentJob> change) = await TaskEx.Timeout(
                 ct => _jobService.GetNewerRevisionAsync(jobId, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
@@ -325,7 +325,7 @@ public class AssessmentEnginesController(
         }
         else
         {
-            Job job = await _jobService.GetAsync(jobId, cancellationToken);
+            AssessmentJob job = await _jobService.GetAsync(jobId, cancellationToken);
             return Ok(Map(job));
         }
     }
@@ -356,9 +356,9 @@ public class AssessmentEnginesController(
         CancellationToken cancellationToken
     )
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        AssessmentEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Job job = Map(engine, jobConfig);
+        AssessmentJob job = Map(engine, jobConfig);
         await _engineService.StartJobAsync(job, cancellationToken);
 
         AssessmentJobDto dto = Map(job);
@@ -499,11 +499,11 @@ public class AssessmentEnginesController(
 
     private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
     {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        AssessmentEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
     }
 
-    private AssessmentEngineDto Map(Engine source)
+    private AssessmentEngineDto Map(AssessmentEngine source)
     {
         return new AssessmentEngineDto
         {
@@ -518,13 +518,13 @@ public class AssessmentEnginesController(
         };
     }
 
-    private async Task<Engine> MapAsync(
+    private async Task<AssessmentEngine> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
         AssessmentEngineConfigDto source,
         CancellationToken cancellationToken
     )
     {
-        return new Engine
+        return new AssessmentEngine
         {
             Name = source.Name,
             Type = source.Type.ToPascalCase(),
@@ -547,7 +547,7 @@ public class AssessmentEnginesController(
         };
     }
 
-    private AssessmentJobDto Map(Job source)
+    private AssessmentJobDto Map(AssessmentJob source)
     {
         return new AssessmentJobDto
         {
@@ -570,12 +570,12 @@ public class AssessmentEnginesController(
         };
     }
 
-    private static Job Map(Engine engine, AssessmentJobConfigDto source)
+    private static AssessmentJob Map(AssessmentEngine engine, AssessmentJobConfigDto source)
     {
         if (source.TextIds is not null && source.ScriptureRange is not null)
             throw new InvalidOperationException("Set at most one of TextIds and ScriptureRange.");
 
-        return new Job
+        return new AssessmentJob
         {
             EngineRef = engine.Id,
             Name = source.Name,

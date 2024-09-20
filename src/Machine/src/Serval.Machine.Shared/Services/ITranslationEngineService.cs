@@ -35,7 +35,7 @@ public interface ITranslationEngineService
         string engineId,
         string buildId,
         string? buildOptions,
-        IReadOnlyList<Corpus> corpora,
+        IReadOnlyList<TranslationCorpus> corpora,
         CancellationToken cancellationToken = default
     );
 

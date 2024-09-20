@@ -3518,7 +3518,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
         /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TrainingCorpus> AddCorpusAsync(string id, TrainingCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -3527,7 +3527,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id</param>
         /// <returns>The files</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<TrainingCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -3542,7 +3542,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationCorpus> UpdateCorpusAsync(string id, string corpusId, TranslationCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TrainingCorpus> UpdateCorpusAsync(string id, string corpusId, TranslationCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -3552,7 +3552,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id</param>
         /// <returns>The corpus configuration</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TrainingCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -4767,7 +4767,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
         /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TrainingCorpus> AddCorpusAsync(string id, TrainingCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -4820,7 +4820,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 201)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TrainingCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -4884,7 +4884,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id</param>
         /// <returns>The files</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<TrainingCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -4930,7 +4930,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<TranslationCorpus>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<TrainingCorpus>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -4994,7 +4994,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationCorpus> UpdateCorpusAsync(string id, string corpusId, TranslationCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TrainingCorpus> UpdateCorpusAsync(string id, string corpusId, TranslationCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5051,7 +5051,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TrainingCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -5116,7 +5116,7 @@ namespace Serval.Client
         /// <param name="corpusId">The corpus id</param>
         /// <returns>The corpus configuration</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TrainingCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5166,7 +5166,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TrainingCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -8135,7 +8135,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationCorpus
+    public partial class TrainingCorpus
     {
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -8162,16 +8162,16 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationCorpusFile> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
+        public System.Collections.Generic.IList<CorpusFile> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<CorpusFile>();
 
         [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationCorpusFile> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
+        public System.Collections.Generic.IList<CorpusFile> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<CorpusFile>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationCorpusFile
+    public partial class CorpusFile
     {
         [Newtonsoft.Json.JsonProperty("file", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -8183,7 +8183,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationCorpusConfig
+    public partial class TrainingCorpusConfig
     {
         /// <summary>
         /// The corpus name.
@@ -8201,16 +8201,16 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationCorpusFileConfig> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
+        public System.Collections.Generic.IList<CorpusFileConfig> SourceFiles { get; set; } = new System.Collections.ObjectModel.Collection<CorpusFileConfig>();
 
         [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationCorpusFileConfig> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFileConfig>();
+        public System.Collections.Generic.IList<CorpusFileConfig> TargetFiles { get; set; } = new System.Collections.ObjectModel.Collection<CorpusFileConfig>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationCorpusFileConfig
+    public partial class CorpusFileConfig
     {
         [Newtonsoft.Json.JsonProperty("fileId", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -8225,10 +8225,10 @@ namespace Serval.Client
     public partial class TranslationCorpusUpdateConfig
     {
         [Newtonsoft.Json.JsonProperty("sourceFiles", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<TranslationCorpusFileConfig>? SourceFiles { get; set; } = default!;
+        public System.Collections.Generic.IList<CorpusFileConfig>? SourceFiles { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("targetFiles", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<TranslationCorpusFileConfig>? TargetFiles { get; set; } = default!;
+        public System.Collections.Generic.IList<CorpusFileConfig>? TargetFiles { get; set; } = default!;
 
     }
 
@@ -8304,7 +8304,7 @@ namespace Serval.Client
         public ResourceLink Engine { get; set; } = new ResourceLink();
 
         [Newtonsoft.Json.JsonProperty("trainOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<TrainingCorpus>? TrainOn { get; set; } = default!;
+        public System.Collections.Generic.IList<CorpusFilter>? TrainOn { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<PretranslateCorpus>? Pretranslate { get; set; } = default!;
@@ -8338,7 +8338,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TrainingCorpus
+    public partial class CorpusFilter
     {
         [Newtonsoft.Json.JsonProperty("corpus", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -8374,7 +8374,7 @@ namespace Serval.Client
         public string? Name { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("trainOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<TrainingCorpusConfig>? TrainOn { get; set; } = default!;
+        public System.Collections.Generic.IList<CorpusFilterConfig>? TrainOn { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<PretranslateCorpusConfig>? Pretranslate { get; set; } = default!;
@@ -8385,7 +8385,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TrainingCorpusConfig
+    public partial class CorpusFilterConfig
     {
         [Newtonsoft.Json.JsonProperty("corpusId", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]

@@ -270,7 +270,7 @@ public class PretranslationServiceTests
     {
         public TestEnvironment()
         {
-            Engines = new MemoryRepository<Engine>(
+            Engines = new MemoryRepository<TranslationEngine>(
                 [
                     new()
                     {
@@ -364,7 +364,7 @@ public class PretranslationServiceTests
 
         public PretranslationService Service { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
-        public MemoryRepository<Engine> Engines { get; }
+        public MemoryRepository<TranslationEngine> Engines { get; }
         public IScriptureDataFileService ScriptureDataFileService { get; }
         public IZipContainer TargetZipContainer { get; }
 
