@@ -20,12 +20,6 @@ public static class Scopes
     public const string ReadFiles = "read:files";
     public const string UpdateFiles = "update:files";
     public const string DeleteFiles = "delete:files";
-
-    public const string CreateCorpora = "read:files"; //"create:corpora"; //TODO fix auth scopes
-    public const string ReadCorpora = "read:files"; //"read:corpora";
-    public const string UpdateCorpora = "read:files"; //"update:corpora";
-    public const string DeleteCorpora = "read:files"; //"delete:corpora";
-
     public const string ReadStatus = "read:status";
 
     public static IEnumerable<string> All =>
@@ -45,10 +39,6 @@ public static class Scopes
             ReadFiles,
             UpdateFiles,
             DeleteFiles,
-            ReadStatus,
-            CreateCorpora,
-            ReadCorpora,
-            UpdateCorpora,
-            DeleteCorpora
+            ReadStatus
         ];
 }
