@@ -2,7 +2,7 @@
 
 public interface IResultService
 {
-    Task<IEnumerable<Result>> GetAllAsync(
+    Task<IEnumerable<AssessmentResult>> GetAllAsync(
         string engineId,
         string jobId,
         string? textId = null,

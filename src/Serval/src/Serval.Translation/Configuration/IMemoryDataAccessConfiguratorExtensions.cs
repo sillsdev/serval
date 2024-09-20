@@ -6,8 +6,8 @@ public static class IMemoryDataAccessConfiguratorExtensions
         this IMemoryDataAccessConfigurator configurator
     )
     {
-        configurator.AddRepository<Engine>();
-        configurator.AddRepository<Build>();
+        configurator.AddRepository<TranslationEngine>();
+        configurator.AddRepository<TranslationBuild>();
         configurator.AddRepository<Pretranslation>();
         return configurator;
     }

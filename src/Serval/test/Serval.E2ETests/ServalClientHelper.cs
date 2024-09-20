@@ -177,19 +177,17 @@ public class ServalClientHelper : IAsyncDisposable
     {
         List<DataFile> sourceFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, sourceLanguage);
 
-        var targetFileConfig = new List<TranslationCorpusFileConfig>();
+        var targetFileConfig = new List<CorpusFileConfig>();
         if (!pretranslate)
         {
             List<DataFile> targetFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, targetLanguage);
             foreach (var item in targetFiles.Select((file, i) => new { i, file }))
             {
-                targetFileConfig.Add(
-                    new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
-                );
+                targetFileConfig.Add(new CorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] });
             }
         }
 
-        var sourceFileConfig = new List<TranslationCorpusFileConfig>();
+        var sourceFileConfig = new List<CorpusFileConfig>();
 
         if (sourceLanguage == targetLanguage && !pretranslate)
         {
@@ -201,15 +199,13 @@ public class ServalClientHelper : IAsyncDisposable
         {
             for (int i = 0; i < sourceFiles.Count; i++)
             {
-                sourceFileConfig.Add(
-                    new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
-                );
+                sourceFileConfig.Add(new CorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] });
             }
         }
 
-        TranslationCorpus response = await TranslationEnginesClient.AddCorpusAsync(
+        TrainingCorpus response = await TranslationEnginesClient.AddCorpusAsync(
             id: engineId,
-            new TranslationCorpusConfig
+            new TrainingCorpusConfig
             {
                 Name = "None",
                 SourceFiles = sourceFileConfig,

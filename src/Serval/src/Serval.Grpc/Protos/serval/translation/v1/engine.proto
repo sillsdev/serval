@@ -4,35 +4,24 @@ package serval.translation.v1;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "Protos/serval/engine/v1/engine.proto";
 
 service TranslationEngineApi {
-    rpc Create(CreateRequest) returns (CreateResponse);
-    rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
     rpc Translate(TranslateRequest) returns (TranslateResponse);
     rpc GetWordGraph(GetWordGraphRequest) returns (GetWordGraphResponse);
     rpc TrainSegmentPair(TrainSegmentPairRequest) returns (google.protobuf.Empty);
-    rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
-    rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
     rpc GetModelDownloadUrl(GetModelDownloadUrlRequest) returns (GetModelDownloadUrlResponse);
-    rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
     rpc GetLanguageInfo(GetLanguageInfoRequest) returns (GetLanguageInfoResponse);
 }
 
-message CreateRequest {
-    string engine_type = 1;
-    string engine_id = 2;
-    optional string engine_name = 3;
-    string source_language = 4;
-    string target_language = 5;
-    optional bool is_model_persisted = 6;
+message CreateEngineParameters {
+    string source_language = 1;
+    string target_language = 2;
+    optional bool is_model_persisted = 3;
 }
 
-message CreateResponse {
+message CreateEngineResults {
     bool is_model_persisted = 1;
-}
-message DeleteRequest {
-    string engine_type = 1;
-    string engine_id = 2;
 }
 
 message TranslateRequest {
@@ -64,20 +53,6 @@ message TrainSegmentPairRequest {
     bool sentence_start = 5;
 }
 
-message StartBuildRequest {
-    string engine_type = 1;
-    string engine_id = 2;
-    string build_id = 3;
-    optional string options = 4;
-    repeated Corpus corpora = 5;
-}
-
-message CancelBuildRequest {
-    string engine_type = 1;
-    string engine_id = 2;
-}
-
-
 message GetModelDownloadUrlRequest {
     string engine_type = 1;
     string engine_id = 2;
@@ -89,14 +64,6 @@ message GetModelDownloadUrlResponse {
     google.protobuf.Timestamp expires_at = 3;
 }
 
-message GetQueueSizeRequest {
-    string engine_type = 1;
-}
-
-message GetQueueSizeResponse {
-    int32 size = 1;
-}
-
 message GetLanguageInfoRequest {
     string engine_type = 1;
     string language = 2;
@@ -105,12 +72,6 @@ message GetLanguageInfoRequest {
 message GetLanguageInfoResponse {
     bool is_native = 3;
     optional string internal_code = 1;
-}
-
-
-message AlignedWordPair {
-    int32 source_index = 1;
-    int32 target_index = 2;
 }
 
 message Phrase {
@@ -129,7 +90,7 @@ message TranslationResult {
     repeated string target_tokens = 3;
     repeated double confidences = 4;
     repeated TranslationSources sources = 5;
-    repeated AlignedWordPair alignment = 6;
+    repeated engine.v1.AlignedWordPair alignment = 6;
     repeated Phrase phrases = 7;
 }
 
@@ -141,7 +102,7 @@ message WordGraphArc {
     repeated double confidences = 5;
     int32 source_segment_start = 6;
     int32 source_segment_end = 7;
-    repeated AlignedWordPair alignment = 8;
+    repeated engine.v1.AlignedWordPair alignment = 8;
     repeated TranslationSources sources = 9;
 }
 
@@ -152,33 +113,18 @@ message WordGraph {
     repeated WordGraphArc arcs = 4;
 }
 
-message Corpus {
+message TranslationCorpus {
     string id = 1;
     string source_language = 2;
     string target_language = 3;
     bool train_on_all = 4;
     bool pretranslate_all = 5;
-    map<string, ScriptureChapters> train_on_chapters = 6;
-    map<string, ScriptureChapters> pretranslate_chapters = 7;
+    map<string, engine.v1.ScriptureChapters> train_on_chapters = 6;
+    map<string, engine.v1.ScriptureChapters> pretranslate_chapters = 7;
     repeated string train_on_text_ids = 8;
     repeated string pretranslate_text_ids = 9;
-    repeated CorpusFile source_files = 10;
-    repeated CorpusFile target_files = 11;
-}
-
-message ScriptureChapters {
-    repeated int32 chapters = 1;
-}
-
-message CorpusFile {
-    string location = 1;
-    FileFormat format = 2;
-    string text_id = 3;
-}
-
-enum FileFormat {
-    FILE_FORMAT_TEXT = 0;
-    FILE_FORMAT_PARATEXT = 1;
+    repeated engine.v1.CorpusFile source_files = 10;
+    repeated engine.v1.CorpusFile target_files = 11;
 }
 
 enum TranslationSource {

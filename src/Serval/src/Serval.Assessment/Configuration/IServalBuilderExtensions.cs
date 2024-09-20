@@ -1,5 +1,4 @@
-﻿using Serval.Assessment.V1;
-using Serval.Health.V1;
+﻿using Serval.Health.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -18,9 +17,9 @@ public static class IServalBuilderExtensions
             builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
         }
 
-        builder.Services.AddScoped<IJobService, JobService>();
+        builder.Services.AddScoped(typeof(IBuildService<AssessmentBuild>), typeof(BuildService<AssessmentBuild>));
         builder.Services.AddScoped<IResultService, ResultService>();
-        builder.Services.AddScoped<IEngineService, EngineService>();
+        builder.Services.AddScoped<IAssessmentEngineService, AssessmentEngineService>();
 
         var assessmentOptions = new AssessmentOptions();
         builder.Configuration?.GetSection(AssessmentOptions.Key).Bind(assessmentOptions);

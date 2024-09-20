@@ -66,7 +66,7 @@ public abstract class HangfireBuildJob<T>(
                 await DataAccessContext.WithTransactionAsync(
                     async (ct) =>
                     {
-                        await PlatformService.BuildCanceledAsync(buildId, CancellationToken.None);
+                        await PlatformService.JobCanceledAsync(buildId, CancellationToken.None);
                         await BuildJobService.BuildJobFinishedAsync(
                             engineId,
                             buildId,
@@ -86,7 +86,7 @@ public abstract class HangfireBuildJob<T>(
                 await DataAccessContext.WithTransactionAsync(
                     async (ct) =>
                     {
-                        await PlatformService.BuildRestartingAsync(buildId, CancellationToken.None);
+                        await PlatformService.JobRestartingAsync(buildId, CancellationToken.None);
                         await BuildJobService.BuildJobRestartingAsync(engineId, buildId, CancellationToken.None);
                     },
                     cancellationToken: CancellationToken.None
@@ -104,7 +104,7 @@ public abstract class HangfireBuildJob<T>(
             await DataAccessContext.WithTransactionAsync(
                 async (ct) =>
                 {
-                    await PlatformService.BuildFaultedAsync(buildId, e.Message, CancellationToken.None);
+                    await PlatformService.JobFaultedAsync(buildId, e.Message, CancellationToken.None);
                     await BuildJobService.BuildJobFinishedAsync(
                         engineId,
                         buildId,

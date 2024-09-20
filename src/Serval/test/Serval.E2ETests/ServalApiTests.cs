@@ -304,7 +304,7 @@ public class ServalApiTests
         );
 
         //Retrieve corpus
-        TranslationCorpus corpus = await _helperClient.TranslationEnginesClient.GetCorpusAsync(engineId, cId);
+        TrainingCorpus corpus = await _helperClient.TranslationEnginesClient.GetCorpusAsync(engineId, cId);
         Assert.That(corpus.SourceLanguage, Is.EqualTo("en"));
         Assert.That(corpus.TargetFiles, Has.Count.EqualTo(3));
 
@@ -398,9 +398,9 @@ public class ServalApiTests
 
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "en", "sbp", "NMT4");
 
-        TranslationCorpus corpus = await _helperClient.TranslationEnginesClient.AddCorpusAsync(
+        TrainingCorpus corpus = await _helperClient.TranslationEnginesClient.AddCorpusAsync(
             engineId,
-            new TranslationCorpusConfig
+            new TrainingCorpusConfig
             {
                 SourceLanguage = "en",
                 TargetLanguage = "sbp",

@@ -40,7 +40,7 @@ public class SmtTransferEngineServiceTests
             BuildId1,
             null,
             [
-                new Corpus()
+                new TranslationCorpus()
                 {
                     Id = CorpusId1,
                     SourceLanguage = "es",
@@ -103,7 +103,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(BuildJobRunnerType.Hangfire);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<TranslationCorpus>());
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -113,7 +113,7 @@ public class SmtTransferEngineServiceTests
         engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Pending));
-        _ = env.PlatformService.Received().BuildRestartingAsync(BuildId1);
+        _ = env.PlatformService.Received().JobRestartingAsync(BuildId1);
         env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
         env.StartServer();
         await env.WaitForBuildToFinishAsync();
@@ -128,7 +128,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<TranslationCorpus>());
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -148,7 +148,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<TranslationCorpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -223,7 +223,7 @@ public class SmtTransferEngineServiceTests
                 {
                     Id = EngineId1,
                     EngineId = EngineId1,
-                    Type = TranslationEngineType.SmtTransfer,
+                    Type = EngineType.SmtTransfer,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -262,14 +262,14 @@ public class SmtTransferEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            TranslationEngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            TranslationEngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -583,7 +583,7 @@ public class SmtTransferEngineServiceTests
         public Task WaitForTrainingToStartAsync()
         {
             return WaitForBuildState(e =>
-                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage is BuildStage.Train
+                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage is BuildStage.Process
             );
         }
 
@@ -644,7 +644,7 @@ public class SmtTransferEngineServiceTests
 
                 await BuildJobService.StartBuildJobAsync(
                     BuildJobRunnerType.Hangfire,
-                    TranslationEngineType.SmtTransfer,
+                    EngineType.SmtTransfer,
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,

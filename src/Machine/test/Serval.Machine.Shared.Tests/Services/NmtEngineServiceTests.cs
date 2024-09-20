@@ -9,7 +9,7 @@ public class NmtEngineServiceTests
         using var env = new TestEnvironment();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<TranslationCorpus>());
         await env.WaitForBuildToFinishAsync();
         engine = env.Engines.Get("engine1");
         Assert.Multiple(() =>
@@ -28,7 +28,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<TranslationCorpus>());
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -55,7 +55,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<TranslationCorpus>());
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -88,7 +88,7 @@ public class NmtEngineServiceTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -132,14 +132,14 @@ public class NmtEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            TranslationEngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            TranslationEngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -231,7 +231,7 @@ public class NmtEngineServiceTests
         public Task WaitForBuildToStartAsync()
         {
             return WaitForBuildState(e =>
-                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == BuildStage.Train
+                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == BuildStage.Process
             );
         }
 
@@ -262,7 +262,7 @@ public class NmtEngineServiceTests
 
             await BuildJobService.StartBuildJobAsync(
                 BuildJobRunnerType.Hangfire,
-                TranslationEngineType.Nmt,
+                EngineType.Nmt,
                 "engine1",
                 "build1",
                 BuildStage.Postprocess,

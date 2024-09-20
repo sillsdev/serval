@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package serval.engine.v1;
+
+import "google/protobuf/empty.proto";
+
+service EnginePlatformApi {
+    rpc UpdateBuildStatus(UpdateBuildStatusRequest) returns (google.protobuf.Empty);
+    rpc BuildStarted(BuildStartedRequest) returns (google.protobuf.Empty);
+    rpc BuildCompleted(BuildCompletedRequest) returns (google.protobuf.Empty);
+    rpc BuildCanceled(BuildCanceledRequest) returns (google.protobuf.Empty);
+    rpc BuildFaulted(BuildFaultedRequest) returns (google.protobuf.Empty);
+    rpc BuildRestarting(BuildRestartingRequest) returns (google.protobuf.Empty);
+    rpc InsertResults(stream InsertResultsRequest) returns (google.protobuf.Empty);
+}
+
+message UpdateBuildStatusRequest {
+    string build_id = 1;
+    int32 step = 2;
+    optional double percent_completed = 3;
+    optional string message = 4;
+    optional int32 queue_depth = 5;
+}
+
+message BuildStartedRequest {
+    string build_id = 1;
+}
+
+message BuildCompletedRequest {
+    string build_id = 1;
+    string statistics_serialized = 2;
+}
+
+message BuildCanceledRequest {
+    string build_id = 1;
+}
+
+message BuildFaultedRequest {
+    string build_id = 1;
+    string message = 2;
+}
+
+message BuildRestartingRequest {
+    string build_id = 1;
+}
+
+message InsertResultsRequest {
+    string engine_id = 1;
+    string content_serialized = 2;
+}

@@ -7,11 +7,12 @@ public class ClearMLBuildJobRunner(
 ) : IBuildJobRunner
 {
     private readonly IClearMLService _clearMLService = clearMLService;
-    private readonly Dictionary<TranslationEngineType, IClearMLBuildJobFactory> _buildJobFactories =
+    private readonly Dictionary<EngineType, IClearMLBuildJobFactory> _buildJobFactories =
         buildJobFactories.ToDictionary(f => f.EngineType);
 
-    private readonly Dictionary<TranslationEngineType, ClearMLBuildQueue> _options =
-        options.CurrentValue.ClearML.ToDictionary(o => o.TranslationEngineType);
+    private readonly Dictionary<EngineType, ClearMLBuildQueue> _options = options.CurrentValue.ClearML.ToDictionary(o =>
+        o.TranslationEngineType
+    );
 
     public BuildJobRunnerType Type => BuildJobRunnerType.ClearML;
 
@@ -32,7 +33,7 @@ public class ClearMLBuildJobRunner(
     }
 
     public async Task<string> CreateJobAsync(
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,
@@ -74,7 +75,7 @@ public class ClearMLBuildJobRunner(
 
     public Task<bool> EnqueueJobAsync(
         string jobId,
-        TranslationEngineType engineType,
+        EngineType engineType,
         CancellationToken cancellationToken = default
     )
     {

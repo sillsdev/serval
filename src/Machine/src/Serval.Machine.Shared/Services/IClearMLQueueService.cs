@@ -2,5 +2,5 @@
 
 public interface IClearMLQueueService
 {
-    public int GetQueueSize(TranslationEngineType engineType);
+    public int GetQueueSize(EngineType engineType);
 }

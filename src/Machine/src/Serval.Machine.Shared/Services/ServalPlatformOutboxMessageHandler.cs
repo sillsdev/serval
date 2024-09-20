@@ -1,11 +1,16 @@
-﻿using Serval.Translation.V1;
+﻿using Serval.Engine.V1;
+using Serval.Translation.V1;
 
 namespace Serval.Machine.Shared.Services;
 
-public class ServalPlatformOutboxMessageHandler(TranslationPlatformApi.TranslationPlatformApiClient client)
-    : IOutboxMessageHandler
+public class ServalPlatformOutboxMessageHandler(
+    EnginePlatformApi.EnginePlatformApiClient engineClient,
+    TranslationPlatformExtensionsApi.TranslationPlatformExtensionsApiClient translationClient
+) : IOutboxMessageHandler
 {
-    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
+    private readonly EnginePlatformApi.EnginePlatformApiClient _engineClient = engineClient;
+    private readonly TranslationPlatformExtensionsApi.TranslationPlatformExtensionsApiClient _translationClient =
+        translationClient;
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -21,31 +26,31 @@ public class ServalPlatformOutboxMessageHandler(TranslationPlatformApi.Translati
         switch (method)
         {
             case ServalPlatformOutboxConstants.BuildStarted:
-                await _client.BuildStartedAsync(
+                await _engineClient.BuildStartedAsync(
                     JsonSerializer.Deserialize<BuildStartedRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalPlatformOutboxConstants.BuildCompleted:
-                await _client.BuildCompletedAsync(
+                await _engineClient.BuildCompletedAsync(
                     JsonSerializer.Deserialize<BuildCompletedRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalPlatformOutboxConstants.BuildCanceled:
-                await _client.BuildCanceledAsync(
+                await _engineClient.BuildCanceledAsync(
                     JsonSerializer.Deserialize<BuildCanceledRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalPlatformOutboxConstants.BuildFaulted:
-                await _client.BuildFaultedAsync(
+                await _engineClient.BuildFaultedAsync(
                     JsonSerializer.Deserialize<BuildFaultedRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalPlatformOutboxConstants.BuildRestarting:
-                await _client.BuildRestartingAsync(
+                await _engineClient.BuildRestartingAsync(
                     JsonSerializer.Deserialize<BuildRestartingRequest>(content!),
                     cancellationToken: cancellationToken
                 );
@@ -59,18 +64,23 @@ public class ServalPlatformOutboxMessageHandler(TranslationPlatformApi.Translati
                     )
                     .OfType<Pretranslation>();
 
-                using (var call = _client.InsertPretranslations(cancellationToken: cancellationToken))
+                using (var call = _engineClient.InsertResults(cancellationToken: cancellationToken))
                 {
                     await foreach (Pretranslation pretranslation in pretranslations)
                     {
                         await call.RequestStream.WriteAsync(
-                            new InsertPretranslationsRequest
+                            new InsertResultsRequest
                             {
                                 EngineId = content!,
-                                CorpusId = pretranslation.CorpusId,
-                                TextId = pretranslation.TextId,
-                                Refs = { pretranslation.Refs },
-                                Translation = pretranslation.Translation
+                                ContentSerialized = JsonSerializer.Serialize(
+                                    new TranslationResultContent
+                                    {
+                                        CorpusId = pretranslation.CorpusId,
+                                        TextId = pretranslation.TextId,
+                                        Refs = { pretranslation.Refs },
+                                        Translation = pretranslation.Translation
+                                    }
+                                ),
                             },
                             cancellationToken
                         );
@@ -80,7 +90,7 @@ public class ServalPlatformOutboxMessageHandler(TranslationPlatformApi.Translati
                 }
                 break;
             case ServalPlatformOutboxConstants.IncrementTranslationEngineCorpusSize:
-                await _client.IncrementTranslationEngineCorpusSizeAsync(
+                await _translationClient.IncrementTranslationEngineCorpusSizeAsync(
                     JsonSerializer.Deserialize<IncrementTranslationEngineCorpusSizeRequest>(content!),
                     cancellationToken: cancellationToken
                 );

@@ -1,6 +1,6 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
+public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<TranslationCorpus>>
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
@@ -43,7 +43,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<Corpus> data,
+        IReadOnlyList<TranslationCorpus> data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -89,7 +89,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             engine.Type,
             engineId,
             buildId,
-            BuildStage.Train,
+            BuildStage.Process,
             buildOptions: buildOptions,
             cancellationToken: cancellationToken
         );
@@ -99,7 +99,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
     private async Task<(int TrainCount, int PretranslateCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<Corpus> corpora,
+        IReadOnlyList<TranslationCorpus> corpora,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -121,7 +121,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        foreach (Corpus corpus in corpora)
+        foreach (TranslationCorpus corpus in corpora)
         {
             ITextCorpus[] sourceTextCorpora = _corpusService.CreateTextCorpora(corpus.SourceFiles).ToArray();
             ITextCorpus targetTextCorpus =
@@ -204,7 +204,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     protected override async Task CleanupAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<Corpus> data,
+        IReadOnlyList<TranslationCorpus> data,
         JobCompletionStatus completionStatus
     )
     {
@@ -221,12 +221,12 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static bool IsInTrain(Row row, Corpus corpus)
+    private static bool IsInTrain(Row row, TranslationCorpus corpus)
     {
         return IsIncluded(row, corpus.TrainOnTextIds, corpus.TrainOnChapters);
     }
 
-    private static bool IsInPretranslate(Row row, Corpus corpus)
+    private static bool IsInPretranslate(Row row, TranslationCorpus corpus)
     {
         return IsIncluded(row, corpus.PretranslateTextIds, corpus.PretranslateChapters);
     }
@@ -255,7 +255,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     }
 
     private static IEnumerable<Row?[]> AlignTrainCorpus(
-        Corpus corpus,
+        TranslationCorpus corpus,
         IReadOnlyList<ITextCorpus> srcCorpora,
         ITextCorpus trgCorpus
     )
@@ -379,7 +379,11 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(Corpus corpus, ITextCorpus srcCorpus, ITextCorpus trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(
+        TranslationCorpus corpus,
+        ITextCorpus srcCorpus,
+        ITextCorpus trgCorpus
+    )
     {
         IEnumerable<string>? textIds = corpus.PretranslateChapters is not null
             ? corpus.PretranslateChapters.Keys

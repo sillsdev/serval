@@ -1,5 +1,8 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using System.Text.Json;
+using Google.Protobuf.WellKnownTypes;
 using MassTransit.Mediator;
+using Serval.Engine.V1;
+using Serval.Shared.Models;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -68,7 +71,7 @@ public class EngineServiceTests
     public async Task CreateAsync()
     {
         var env = new TestEnvironment();
-        Engine engine =
+        TranslationEngine engine =
             new()
             {
                 Id = "engine1",
@@ -91,7 +94,7 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.DeleteAsync("engine1");
-        Engine? engine = await env.Engines.GetAsync(engineId);
+        TranslationEngine? engine = await env.Engines.GetAsync(engineId);
         Assert.That(engine, Is.Null);
     }
 
@@ -108,17 +111,16 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
-        _ = env.TranslationServiceClient.Received()
+        await env.Service.StartBuildAsync(new TranslationBuild { Id = BUILD1_ID, EngineRef = engineId });
+        _ = env.EngineServiceClient.Received()
             .StartBuildAsync(
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.Corpus
+                    CorporaSerialized = JsonSerializer.Serialize(
+                        new TranslationCorpus
                         {
                             Id = "corpus1",
                             SourceLanguage = "es",
@@ -126,7 +128,7 @@ public class EngineServiceTests
                             TrainOnAll = true,
                             SourceFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.txt",
                                     Format = FileFormat.Text,
@@ -135,7 +137,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.txt",
                                     Format = FileFormat.Text,
@@ -143,7 +145,7 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
@@ -154,23 +156,22 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.StartBuildAsync(
-            new Build
+            new TranslationBuild
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = [] }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", TextIds = [] }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
+        _ = env.EngineServiceClient.Received()
             .StartBuildAsync(
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.Corpus
+                    CorporaSerialized = JsonSerializer.Serialize(
+                        new TranslationCorpus
                         {
                             Id = "corpus1",
                             SourceLanguage = "es",
@@ -179,7 +180,7 @@ public class EngineServiceTests
                             TrainOnTextIds = { },
                             SourceFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.txt",
                                     Format = FileFormat.Text,
@@ -188,7 +189,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.txt",
                                     Format = FileFormat.Text,
@@ -196,7 +197,7 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
@@ -207,23 +208,22 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.StartBuildAsync(
-            new Build
+            new TranslationBuild
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
+        _ = env.EngineServiceClient.Received()
             .StartBuildAsync(
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.Corpus
+                    CorporaSerialized = JsonSerializer.Serialize(
+                        new TranslationCorpus
                         {
                             Id = "corpus1",
                             SourceLanguage = "es",
@@ -232,7 +232,7 @@ public class EngineServiceTests
                             TrainOnTextIds = { "text1" },
                             SourceFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.txt",
                                     Format = FileFormat.Text,
@@ -241,7 +241,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.txt",
                                     Format = FileFormat.Text,
@@ -249,7 +249,7 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
@@ -260,23 +260,22 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.StartBuildAsync(
-            new Build
+            new TranslationBuild
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
+        _ = env.EngineServiceClient.Received()
             .StartBuildAsync(
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.Corpus
+                    CorporaSerialized = JsonSerializer.Serialize(
+                        new TranslationCorpus
                         {
                             Id = "corpus1",
                             SourceLanguage = "es",
@@ -284,7 +283,7 @@ public class EngineServiceTests
                             TrainOnAll = true,
                             SourceFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.txt",
                                     Format = FileFormat.Text,
@@ -293,7 +292,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.txt",
                                     Format = FileFormat.Text,
@@ -301,7 +300,7 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
@@ -314,11 +313,11 @@ public class EngineServiceTests
         Assert.ThrowsAsync<InvalidOperationException>(
             () =>
                 env.Service.StartBuildAsync(
-                    new Build
+                    new TranslationBuild
                     {
                         Id = BUILD1_ID,
                         EngineRef = engineId,
-                        TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }]
+                        TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }]
                     }
                 )
         );
@@ -330,23 +329,22 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
         await env.Service.StartBuildAsync(
-            new Build
+            new TranslationBuild
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
+        _ = env.EngineServiceClient.Received()
             .StartBuildAsync(
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.Corpus
+                    CorporaSerialized = JsonSerializer.Serialize(
+                        new TranslationCorpus
                         {
                             Id = "corpus1",
                             SourceLanguage = "es",
@@ -365,7 +363,7 @@ public class EngineServiceTests
                             },
                             SourceFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.zip",
                                     Format = FileFormat.Paratext,
@@ -374,7 +372,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.zip",
                                     Format = FileFormat.Paratext,
@@ -382,7 +380,7 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
@@ -393,23 +391,22 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
         await env.Service.StartBuildAsync(
-            new Build
+            new TranslationBuild
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
+                TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
+        _ = env.EngineServiceClient.Received()
             .StartBuildAsync(
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.Corpus
+                    CorporaSerialized = JsonSerializer.Serialize(
+                        new TranslationCorpus
                         {
                             Id = "corpus1",
                             SourceLanguage = "es",
@@ -417,7 +414,7 @@ public class EngineServiceTests
                             TrainOnAll = false,
                             SourceFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.zip",
                                     Format = FileFormat.Paratext,
@@ -426,7 +423,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new V1.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.zip",
                                     Format = FileFormat.Paratext,
@@ -434,7 +431,7 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
@@ -451,10 +448,10 @@ public class EngineServiceTests
     public async Task UpdateCorpusAsync()
     {
         var env = new TestEnvironment();
-        Engine engine = await env.CreateEngineWithTextFilesAsync();
+        TranslationEngine engine = await env.CreateEngineWithTextFilesAsync();
         string corpusId = engine.Corpora[0].Id;
 
-        Models.Corpus? corpus = await env.Service.UpdateCorpusAsync(
+        TrainingCorpus? corpus = await env.Service.UpdateCorpusAsync(
             engine.Id,
             corpusId,
             sourceFiles:
@@ -488,8 +485,9 @@ public class EngineServiceTests
     {
         public TestEnvironment()
         {
-            Engines = new MemoryRepository<Engine>();
+            Engines = new MemoryRepository<TranslationEngine>();
             TranslationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
+            EngineServiceClient = Substitute.For<EngineApi.EngineApiClient>();
             var translationResult = new V1.TranslationResult
             {
                 Translation = "this is a test.",
@@ -506,11 +504,11 @@ public class EngineServiceTests
                 },
                 Alignment =
                 {
-                    new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                    new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                    new V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
-                    new V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
+                    new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
                 },
                 Phrases =
                 {
@@ -540,8 +538,8 @@ public class EngineServiceTests
                         TargetTokens = { "this is".Split() },
                         Alignment =
                         {
-                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
+                            new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                            new Engine.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
                         },
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 2,
@@ -556,8 +554,8 @@ public class EngineServiceTests
                         TargetTokens = { "a test".Split() },
                         Alignment =
                         {
-                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
+                            new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                            new Engine.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
                         },
                         SourceSegmentStart = 2,
                         SourceSegmentEnd = 4,
@@ -572,7 +570,7 @@ public class EngineServiceTests
                         TargetTokens = { ".".Split() },
                         Alignment =
                         {
-                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
+                            new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
                         },
                         SourceSegmentStart = 4,
                         SourceSegmentEnd = 5,
@@ -585,16 +583,16 @@ public class EngineServiceTests
             TranslationServiceClient
                 .GetWordGraphAsync(Arg.Any<GetWordGraphRequest>())
                 .Returns(CreateAsyncUnaryCall(getWordGraphResponse));
-            TranslationServiceClient
+            EngineServiceClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
-            TranslationServiceClient
+            EngineServiceClient
                 .CreateAsync(Arg.Any<CreateRequest>())
                 .Returns(CreateAsyncUnaryCall(new CreateResponse()));
-            TranslationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
-            TranslationServiceClient
+            EngineServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
+            EngineServiceClient
                 .StartBuildAsync(Arg.Any<StartBuildRequest>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new StartBuildResponse()));
             TranslationServiceClient
                 .TrainSegmentPairAsync(Arg.Any<TrainSegmentPairRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
@@ -624,9 +622,9 @@ public class EngineServiceTests
                     )
                 );
 
-            Service = new EngineService(
+            Service = new TranslationEngineService(
                 Engines,
-                new MemoryRepository<Build>(),
+                new MemoryRepository<TranslationBuild>(),
                 new MemoryRepository<Pretranslation>(),
                 Substitute.For<IScopedMediator>(),
                 grpcClientFactory,
@@ -637,20 +635,21 @@ public class EngineServiceTests
             );
         }
 
-        public EngineService Service { get; }
-        public IRepository<Engine> Engines { get; }
+        public TranslationEngineService Service { get; }
+        public IRepository<TranslationEngine> Engines { get; }
+        public EngineApi.EngineApiClient EngineServiceClient { get; }
         public TranslationEngineApi.TranslationEngineApiClient TranslationServiceClient { get; }
 
-        public async Task<Engine> CreateEngineWithTextFilesAsync()
+        public async Task<TranslationEngine> CreateEngineWithTextFilesAsync()
         {
-            var engine = new Engine
+            var engine = new TranslationEngine
             {
                 Id = "engine1",
                 Owner = "owner1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "Smt",
-                Corpora = new Models.Corpus[]
+                Corpora = new TrainingCorpus[]
                 {
                     new()
                     {
@@ -684,16 +683,16 @@ public class EngineServiceTests
             return engine;
         }
 
-        public async Task<Engine> CreateEngineWithParatextProjectAsync()
+        public async Task<TranslationEngine> CreateEngineWithParatextProjectAsync()
         {
-            var engine = new Engine
+            var engine = new TranslationEngine
             {
                 Id = "engine1",
                 Owner = "owner1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "Smt",
-                Corpora = new Models.Corpus[]
+                Corpora = new TrainingCorpus[]
                 {
                     new()
                     {

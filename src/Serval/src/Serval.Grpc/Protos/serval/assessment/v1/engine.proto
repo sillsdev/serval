@@ -1,62 +1,16 @@
 ﻿syntax = "proto3";
 
 package serval.assessment.v1;
-
-import "google/protobuf/empty.proto";
+import "Protos/serval/engine/v1/engine.proto";
 
 service AssessmentEngineApi {
-    rpc Create(CreateRequest) returns (google.protobuf.Empty);
-    rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
-    rpc StartJob(StartJobRequest) returns (google.protobuf.Empty);
-    rpc CancelJob(CancelJobRequest) returns (google.protobuf.Empty);
 }
 
-message CreateRequest {
-    string engine_type = 1;
-    string engine_id = 2;
-    optional string engine_name = 3;
-}
-
-message DeleteRequest {
-    string engine_type = 1;
-    string engine_id = 2;
-}
-
-message StartJobRequest {
-    string engine_type = 1;
-    string engine_id = 2;
-    string job_id = 3;
-    Corpus corpus = 4;
-    optional Corpus reference_corpus = 5;
-    bool include_all = 6;
-    map<string, ScriptureChapters> include_chapters = 7;
-    repeated string include_text_ids = 8;
-    optional string options = 9;
-}
-
-message CancelJobRequest {
-    string engine_type = 1;
-    string engine_id = 2;
-    string job_id = 3;
-}
-
-message ScriptureChapters {
-    repeated int32 chapters = 1;
-}
-
-message Corpus {
+message AssessmentCorpus {
     string id = 1;
     string language = 2;
-    repeated CorpusFile files = 3;
-}
-
-message CorpusFile {
-    string location = 1;
-    FileFormat format = 2;
-    string text_id = 3;
-}
-
-enum FileFormat {
-    FILE_FORMAT_TEXT = 0;
-    FILE_FORMAT_PARATEXT = 1;
+    bool include_all = 3;
+    map<string, engine.v1.ScriptureChapters> include_chapters = 4;
+    repeated string include_text_ids = 9;
+    repeated engine.v1.CorpusFile files = 5;
 }

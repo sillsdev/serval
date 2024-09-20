@@ -3,10 +3,12 @@
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engine-types")]
 [OpenApiTag("Translation Engines")]
-public class TranslationEngineTypesController(IAuthorizationService authService, IEngineService engineService)
-    : ServalControllerBase(authService)
+public class TranslationEngineTypesController(
+    IAuthorizationService authService,
+    ITranslationEngineService engineService
+) : ServalControllerBase(authService)
 {
-    private readonly IEngineService _engineService = engineService;
+    private readonly ITranslationEngineService _engineService = engineService;
 
     /// <summary>
     /// Get queue information for a given engine type

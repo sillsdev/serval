@@ -270,7 +270,7 @@ public class PretranslationServiceTests
     {
         public TestEnvironment()
         {
-            Engines = new MemoryRepository<Engine>(
+            Engines = new MemoryRepository<TranslationEngine>(
                 [
                     new()
                     {
@@ -279,7 +279,7 @@ public class PretranslationServiceTests
                         SourceLanguage = "en",
                         TargetLanguage = "en",
                         Type = "nmt",
-                        ModelRevision = 1,
+                        BuildRevision = 1,
                         Corpora =
                         [
                             new()
@@ -364,7 +364,7 @@ public class PretranslationServiceTests
 
         public PretranslationService Service { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
-        public MemoryRepository<Engine> Engines { get; }
+        public MemoryRepository<TranslationEngine> Engines { get; }
         public IScriptureDataFileService ScriptureDataFileService { get; }
         public IZipContainer TargetZipContainer { get; }
 
@@ -375,7 +375,7 @@ public class PretranslationServiceTests
         {
             string usfm = await Service.GetUsfmAsync(
                 engineId: "engine1",
-                modelRevision: 1,
+                jobRevision: 1,
                 corpusId: "corpus1",
                 textId: "MAT",
                 textOrigin: textOrigin,

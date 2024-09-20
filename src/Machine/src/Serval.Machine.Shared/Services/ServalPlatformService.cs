@@ -1,27 +1,28 @@
-﻿using Serval.Translation.V1;
+﻿using Serval.Engine.V1;
+using Serval.Translation.V1;
 
 namespace Serval.Machine.Shared.Services;
 
 public class ServalPlatformService(
-    TranslationPlatformApi.TranslationPlatformApiClient client,
+    EnginePlatformApi.EnginePlatformApiClient client,
     IMessageOutboxService outboxService
 ) : IPlatformService
 {
-    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
+    private readonly EnginePlatformApi.EnginePlatformApiClient _client = client;
     private readonly IMessageOutboxService _outboxService = outboxService;
 
-    public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
+    public async Task JobStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildStarted,
             buildId,
-            JsonSerializer.Serialize(new BuildStartedRequest { BuildId = buildId }),
+            JsonSerializer.Serialize(new JobStartedRequest { JobId = buildId }),
             cancellationToken: cancellationToken
         );
     }
 
-    public async Task BuildCompletedAsync(
+    public async Task JobCompletedAsync(
         string buildId,
         int trainSize,
         double confidence,
@@ -33,9 +34,9 @@ public class ServalPlatformService(
             ServalPlatformOutboxConstants.BuildCompleted,
             buildId,
             JsonSerializer.Serialize(
-                new BuildCompletedRequest
+                new JobCompletedRequest
                 {
-                    BuildId = buildId,
+                    JobId = buildId,
                     CorpusSize = trainSize,
                     Confidence = confidence
                 }
@@ -44,47 +45,47 @@ public class ServalPlatformService(
         );
     }
 
-    public async Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default)
+    public async Task JobCanceledAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildCanceled,
             buildId,
-            JsonSerializer.Serialize(new BuildCanceledRequest { BuildId = buildId }),
+            JsonSerializer.Serialize(new JobCanceledRequest { JobId = buildId }),
             cancellationToken: cancellationToken
         );
     }
 
-    public async Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default)
+    public async Task JobFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildFaulted,
             buildId,
-            JsonSerializer.Serialize(new BuildFaultedRequest { BuildId = buildId, Message = message }),
+            JsonSerializer.Serialize(new JobFaultedRequest { JobId = buildId, Message = message }),
             cancellationToken: cancellationToken
         );
     }
 
-    public async Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default)
+    public async Task JobRestartingAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildRestarting,
             buildId,
-            JsonSerializer.Serialize(new BuildRestartingRequest { BuildId = buildId }),
+            JsonSerializer.Serialize(new JobRestartingRequest { JobId = buildId }),
             cancellationToken: cancellationToken
         );
     }
 
-    public async Task UpdateBuildStatusAsync(
+    public async Task UpdateJobStatusAsync(
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
         CancellationToken cancellationToken = default
     )
     {
-        var request = new UpdateBuildStatusRequest { BuildId = buildId, Step = progressStatus.Step };
+        var request = new UpdateJobStatusRequest { JobId = buildId, Step = progressStatus.Step };
         if (progressStatus.PercentCompleted.HasValue)
             request.PercentCompleted = progressStatus.PercentCompleted.Value;
         if (progressStatus.Message is not null)
@@ -93,14 +94,14 @@ public class ServalPlatformService(
             request.QueueDepth = queueDepth.Value;
 
         // just try to send it - if it fails, it fails.
-        await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);
+        await _client.UpdateJobStatusAsync(request, cancellationToken: cancellationToken);
     }
 
-    public async Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default)
+    public async Task UpdateJobStatusAsync(string buildId, int step, CancellationToken cancellationToken = default)
     {
         // just try to send it - if it fails, it fails.
-        await _client.UpdateBuildStatusAsync(
-            new UpdateBuildStatusRequest { BuildId = buildId, Step = step },
+        await _client.UpdateJobStatusAsync(
+            new UpdateJobStatusRequest { JobId = buildId, Step = step },
             cancellationToken: cancellationToken
         );
     }

@@ -11,7 +11,7 @@ public class NmtClearMLBuildJobFactoryTests
             "engine1",
             "build1",
             "test_model",
-            BuildStage.Train,
+            BuildStage.Process,
             buildOptions: "{ \"max_steps\": \"10\" }"
         );
         Assert.That(
@@ -43,7 +43,7 @@ run(args)
             "engine1",
             "build1",
             "test_model",
-            BuildStage.Train
+            BuildStage.Process
         );
         Assert.That(
             script,
@@ -81,7 +81,7 @@ run(args)
                 {
                     Id = "engine1",
                     EngineId = "engine1",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -91,7 +91,7 @@ run(args)
                         BuildId = "build1",
                         JobId = "job1",
                         BuildJobRunner = BuildJobRunnerType.ClearML,
-                        Stage = BuildStage.Train,
+                        Stage = BuildStage.Process,
                         JobState = BuildJobState.Pending
                     }
                 }

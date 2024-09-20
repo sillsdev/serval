@@ -8,20 +8,24 @@ public static class IMongoDataAccessConfiguratorExtensions
         this IMongoDataAccessConfigurator configurator
     )
     {
-        configurator.AddRepository<Engine>(
+        configurator.AddRepository<TranslationEngine>(
             "translation.engines",
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
+                    new CreateIndexModel<TranslationEngine>(
+                        Builders<TranslationEngine>.IndexKeys.Ascending(e => e.Owner)
+                    )
                 );
             }
         );
-        configurator.AddRepository<Build>(
+        configurator.AddRepository<TranslationBuild>(
             "translation.builds",
             init: c =>
                 c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
+                    new CreateIndexModel<TranslationBuild>(
+                        Builders<TranslationBuild>.IndexKeys.Ascending(b => b.EngineRef)
+                    )
                 )
         );
         configurator.AddRepository<Pretranslation>(
@@ -30,7 +34,7 @@ public static class IMongoDataAccessConfiguratorExtensions
             {
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.ModelRevision)
+                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.BuildRevision)
                     )
                 );
                 await c.Indexes.CreateOrUpdateAsync(
@@ -45,7 +49,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                     new CreateIndexModel<Pretranslation>(
                         Builders<Pretranslation>
                             .IndexKeys.Ascending(pt => pt.EngineRef)
-                            .Ascending(pt => pt.ModelRevision)
+                            .Ascending(pt => pt.BuildRevision)
                     )
                 );
                 await c.Indexes.CreateOrUpdateAsync(
@@ -53,7 +57,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                         Builders<Pretranslation>
                             .IndexKeys.Ascending(pt => pt.EngineRef)
                             .Ascending(pt => pt.CorpusRef)
-                            .Ascending(pt => pt.ModelRevision)
+                            .Ascending(pt => pt.BuildRevision)
                             .Ascending(pt => pt.TextId)
                     )
                 );

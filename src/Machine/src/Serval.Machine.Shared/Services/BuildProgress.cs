@@ -19,7 +19,7 @@ public class BuildProgress(IPlatformService platformService, string buildId) : I
             return;
 
         _lastReportTime = DateTime.Now;
-        _platformService.UpdateBuildStatusAsync(_buildId, value);
+        _platformService.UpdateJobStatusAsync(_buildId, value);
         _prevStatus = value;
     }
 }

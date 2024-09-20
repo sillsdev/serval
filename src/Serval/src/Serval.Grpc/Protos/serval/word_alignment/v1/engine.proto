@@ -1,0 +1,31 @@
+﻿syntax = "proto3";
+
+package serval.word_alignment.v1;
+
+service WordAlignmentEngineApi {
+    rpc GetWordAlignment(GetWordAlignmentRequest) returns (GetWordAlignmentResponse);
+}
+
+message GetWordAlignmentRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string source_segment = 3;
+    string target_segment = 4;
+    int32 n = 5;
+}
+
+message GetWordAlignmentResponse {
+    WordAlignmentResult results = 1;
+}
+
+message AlignedWordPair {
+    int32 source_index = 1;
+    int32 target_index = 2;
+}
+
+message WordAlignmentResult {
+    repeated string source_tokens = 1;
+    repeated string target_tokens = 2;
+    repeated double confidences = 3;
+    repeated AlignedWordPair alignment = 4;
+}

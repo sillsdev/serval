@@ -1,9 +1,13 @@
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
+builder.Services.AddGrpcClient<EnginePlatformApi.EnginePlatformApiClient>(o =>
 {
-    o.Address = new Uri(builder.Configuration.GetConnectionString("TranslationPlatformApi")!);
+    o.Address = new Uri(builder.Configuration.GetConnectionString("EnginePlatformApi")!);
+});
+builder.Services.AddGrpcClient<TranslationPlatformExtensionsApi.TranslationPlatformExtensionsApiClient>(o =>
+{
+    o.Address = new Uri(builder.Configuration.GetConnectionString("TranslationPlatformExtensionsApi")!);
 });
 builder.Services.AddGrpc();
 

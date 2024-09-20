@@ -10,7 +10,7 @@ public class NmtClearMLBuildJobFactory(
     private readonly ILanguageTagService _languageTagService = languageTagService;
     private readonly IRepository<TranslationEngine> _engines = engines;
 
-    public TranslationEngineType EngineType => TranslationEngineType.Nmt;
+    public EngineType EngineType => EngineType.Nmt;
 
     public async Task<string> CreateJobScriptAsync(
         string engineId,
@@ -22,7 +22,7 @@ public class NmtClearMLBuildJobFactory(
         CancellationToken cancellationToken = default
     )
     {
-        if (stage == BuildStage.Train)
+        if (stage == BuildStage.Process)
         {
             TranslationEngine? engine = await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
             if (engine is null)

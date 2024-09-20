@@ -33,7 +33,7 @@ public class HangfireBuildJobRunner(
     }
 
     private readonly IBackgroundJobClient _jobClient = jobClient;
-    private readonly Dictionary<TranslationEngineType, IHangfireBuildJobFactory> _buildJobFactories =
+    private readonly Dictionary<EngineType, IHangfireBuildJobFactory> _buildJobFactories =
         buildJobFactories.ToDictionary(f => f.EngineType);
 
     public BuildJobRunnerType Type => BuildJobRunnerType.Hangfire;
@@ -49,7 +49,7 @@ public class HangfireBuildJobRunner(
     }
 
     public Task<string> CreateJobAsync(
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,
@@ -70,7 +70,7 @@ public class HangfireBuildJobRunner(
 
     public Task<bool> EnqueueJobAsync(
         string jobId,
-        TranslationEngineType engineType,
+        EngineType engineType,
         CancellationToken cancellationToken = default
     )
     {

@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Serval.Assessment.Models;
 using Serval.Assessment.V1;
+using Serval.Engine.V1;
 using static Serval.ApiServer.Utils;
 
 namespace Serval.ApiServer;
@@ -18,7 +19,7 @@ public class AssessmentEngineTests
         DataFiles.Models.DataFile dataFile = await env.AddDataFileAsync();
 
         AssessmentEnginesClient client = env.CreateClient();
-        AssessmentEngine result = await client.CreateAsync(
+        Client.AssessmentEngine result = await client.CreateAsync(
             new()
             {
                 Name = "test",
@@ -27,21 +28,21 @@ public class AssessmentEngineTests
             }
         );
         Assert.That(result.Name, Is.EqualTo("test"));
-        AssessmentEngine? engine = await client.GetAsync(result.Id);
+        Client.AssessmentEngine? engine = await client.GetAsync(result.Id);
         Assert.That(engine, Is.Not.Null);
         Assert.That(engine.Name, Is.EqualTo("test"));
     }
 
     [Test]
-    public async Task StartJobAsync()
+    public async Task StartBuildAsync()
     {
         using TestEnvironment env = new();
-        Engine engine = await env.AddEngineAsync();
+        Assessment.Models.AssessmentEngine engine = await env.AddEngineAsync();
 
         AssessmentEnginesClient client = env.CreateClient();
-        AssessmentJob result = await client.StartJobAsync(engine.Id, new() { Name = "test" });
+        Client.AssessmentJob result = await client.StartBuildAsync(engine.Id, new() { Name = "test" });
         Assert.That(result.Name, Is.EqualTo("test"));
-        AssessmentJob? job = await client.GetJobAsync(engine.Id, result.Id);
+        Client.AssessmentJob? job = await client.GetJobAsync(engine.Id, result.Id);
         Assert.That(job, Is.Not.Null);
         Assert.That(job.Name, Is.EqualTo("test"));
     }
@@ -50,7 +51,7 @@ public class AssessmentEngineTests
     public async Task GetAllResultsAsync()
     {
         using TestEnvironment env = new();
-        Job job = await env.AddJobAsync();
+        Assessment.Models.AssessmentBuild job = await env.AddJobAsync();
         await env.Results.InsertAllAsync(
             [
                 new()
@@ -72,7 +73,7 @@ public class AssessmentEngineTests
 
         AssessmentEnginesClient client = env.CreateClient();
 
-        IList<AssessmentResult> results = await client.GetAllResultsAsync(job.EngineRef, job.Id);
+        IList<Client.AssessmentResult> results = await client.GetAllResultsAsync(job.EngineRef, job.Id);
         Assert.That(results, Has.Count.EqualTo(2));
 
         results = await client.GetAllResultsAsync(job.EngineRef, job.Id, textId: "text1");
@@ -93,10 +94,10 @@ public class AssessmentEngineTests
 
             Factory = new ServalWebApplicationFactory();
             _scope = Factory.Services.CreateScope();
-            Engines = _scope.ServiceProvider.GetRequiredService<IRepository<Engine>>();
+            Engines = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentEngine>>();
             DataFiles = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.DataFile>>();
-            Results = _scope.ServiceProvider.GetRequiredService<IRepository<Result>>();
-            Jobs = _scope.ServiceProvider.GetRequiredService<IRepository<Job>>();
+            Results = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentResult>>();
+            Jobs = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentBuild>>();
 
             Client = Substitute.For<AssessmentEngineApi.AssessmentEngineApiClient>();
             Client
@@ -106,10 +107,10 @@ public class AssessmentEngineTests
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             Client
-                .StartJobAsync(Arg.Any<StartJobRequest>(), null, null, Arg.Any<CancellationToken>())
+                .StartBuildAsync(Arg.Any<StartJobRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             Client
-                .CancelJobAsync(Arg.Any<CancelJobRequest>(), null, null, Arg.Any<CancellationToken>())
+                .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             Client
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
@@ -117,10 +118,10 @@ public class AssessmentEngineTests
         }
 
         public ServalWebApplicationFactory Factory { get; }
-        public IRepository<Engine> Engines { get; }
+        public IRepository<Assessment.Models.AssessmentEngine> Engines { get; }
         public IRepository<DataFiles.Models.DataFile> DataFiles { get; }
-        public IRepository<Result> Results { get; }
-        public IRepository<Job> Jobs { get; }
+        public IRepository<Assessment.Models.AssessmentResult> Results { get; }
+        public IRepository<Assessment.Models.AssessmentBuild> Jobs { get; }
         public AssessmentEngineApi.AssessmentEngineApiClient Client { get; }
 
         public AssessmentEnginesClient CreateClient(IEnumerable<string>? scope = null)
@@ -164,10 +165,10 @@ public class AssessmentEngineTests
             return dataFile;
         }
 
-        public async Task<Engine> AddEngineAsync()
+        public async Task<Assessment.Models.AssessmentEngine> AddEngineAsync()
         {
             DataFiles.Models.DataFile dataFile = await AddDataFileAsync();
-            Engine engine =
+            Assessment.Models.AssessmentEngine engine =
                 new()
                 {
                     Owner = ClientId1,
@@ -191,15 +192,15 @@ public class AssessmentEngineTests
             return engine;
         }
 
-        public async Task<Job> AddJobAsync()
+        public async Task<Assessment.Models.AssessmentBuild> AddJobAsync()
         {
-            Engine engine = await AddEngineAsync();
-            Job job =
+            Assessment.Models.AssessmentEngine engine = await AddEngineAsync();
+            Assessment.Models.AssessmentBuild job =
                 new()
                 {
                     Name = "test",
                     EngineRef = engine.Id,
-                    State = Shared.Contracts.JobState.Completed,
+                    State = Shared.Contracts.BuildState.Completed,
                     Message = "Completed",
                     DateFinished = DateTime.UtcNow
                 };

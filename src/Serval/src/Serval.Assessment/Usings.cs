@@ -1,5 +1,4 @@
 ﻿global using System.Diagnostics.CodeAnalysis;
-global using System.Linq.Expressions;
 global using System.Text.Json;
 global using System.Text.Json.Nodes;
 global using Asp.Versioning;
@@ -17,11 +16,11 @@ global using Microsoft.Extensions.Options;
 global using Microsoft.FeatureManagement.Mvc;
 global using NSwag.Annotations;
 global using Serval.Assessment.Configuration;
-global using Serval.Assessment.Consumers;
 global using Serval.Assessment.Contracts;
 global using Serval.Assessment.Models;
 global using Serval.Assessment.Services;
 global using Serval.Shared.Configuration;
+global using Serval.Shared.Consumers;
 global using Serval.Shared.Contracts;
 global using Serval.Shared.Controllers;
 global using Serval.Shared.Models;

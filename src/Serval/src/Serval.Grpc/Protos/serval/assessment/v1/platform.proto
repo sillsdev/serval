@@ -4,48 +4,15 @@ package serval.assessment.v1;
 
 import "google/protobuf/empty.proto";
 
-service AssessmentPlatformApi {
-    rpc UpdateJobStatus(UpdateJobStatusRequest) returns (google.protobuf.Empty);
-    rpc JobStarted(JobStartedRequest) returns (google.protobuf.Empty);
-    rpc JobCompleted(JobCompletedRequest) returns (google.protobuf.Empty);
-    rpc JobCanceled(JobCanceledRequest) returns (google.protobuf.Empty);
-    rpc JobFaulted(JobFaultedRequest) returns (google.protobuf.Empty);
-    rpc JobRestarting(JobRestartingRequest) returns (google.protobuf.Empty);
 
-    rpc InsertResults(stream InsertResultsRequest) returns (google.protobuf.Empty);
+message AssessmentEngineCompletedStatistics {
+    float confidence = 1;
+    int32 corpus_size = 2;
 }
 
-message UpdateJobStatusRequest {
-    string job_id = 1;
-    optional double percent_completed = 2;
-    optional string message = 3;
-}
-
-message JobStartedRequest {
-    string job_id = 1;
-}
-
-message JobCompletedRequest {
-    string job_id = 1;
-}
-
-message JobCanceledRequest {
-    string job_id = 1;
-}
-
-message JobFaultedRequest {
-    string job_id = 1;
-    string message = 2;
-}
-
-message JobRestartingRequest {
-    string job_id = 1;
-}
-
-message InsertResultsRequest {
-    string job_id = 1;
-    string text_id = 2;
-    string ref = 3;
-    optional double score = 4;
-    optional string description = 5;
+message AssessmentResultContent {
+    string text_id = 1;
+    string ref = 2;
+    float score = 3;
+    string description = 4;
 }

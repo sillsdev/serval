@@ -1,3 +1,4 @@
+using Serval.Engine.V1;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -10,7 +11,7 @@ public class PlatformServiceTests
     {
         var env = new TestEnvironment();
         await env.Engines.InsertAsync(
-            new Engine()
+            new TranslationEngine()
             {
                 Id = "e0",
                 Owner = "owner1",
@@ -20,51 +21,45 @@ public class PlatformServiceTests
                 Corpora = []
             }
         );
-        await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
-        await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Active));
+        await env.Builds.InsertAsync(new TranslationBuild() { Id = "b0", EngineRef = "e0" });
+        await env.PlatformService.BuildStarted(new JobStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.BuildState.Active));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.True);
 
-        await env.PlatformService.BuildCanceled(new BuildCanceledRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Canceled));
+        await env.PlatformService.BuildCanceled(new JobCanceledRequest() { BuildId = "b0" }, env.ServerCallContext);
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.BuildState.Canceled));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        await env.PlatformService.BuildRestarting(
-            new BuildRestartingRequest() { BuildId = "b0" },
-            env.ServerCallContext
-        );
-        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Pending));
+        await env.PlatformService.BuildRestarting(new JobRestartingRequest() { BuildId = "b0" }, env.ServerCallContext);
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.BuildState.Pending));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
 
-        await env.PlatformService.BuildFaulted(new BuildFaultedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildFaulted(new JobFaultedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
-        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Faulted));
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.BuildState.Faulted));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        await env.PlatformService.BuildRestarting(
-            new BuildRestartingRequest() { BuildId = "b0" },
-            env.ServerCallContext
-        );
+        await env.PlatformService.BuildRestarting(new JobRestartingRequest() { BuildId = "b0" }, env.ServerCallContext);
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
-        await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildCompleted(new JobCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
-        await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildStarted(new JobStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
-        await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildCompleted(new JobCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
     }
 
     [Test]
-    public async Task UpdateBuildStatusAsync()
+    public async Task UpdateJobStatusAsync()
     {
         var env = new TestEnvironment();
         await env.Engines.InsertAsync(
-            new Engine()
+            new TranslationEngine()
             {
                 Id = "e0",
                 Owner = "owner1",
@@ -74,11 +69,11 @@ public class PlatformServiceTests
                 Corpora = []
             }
         );
-        await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
+        await env.Builds.InsertAsync(new TranslationBuild() { Id = "b0", EngineRef = "e0" });
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.Null);
         Assert.That(env.Builds.Get("b0").PercentCompleted, Is.Null);
-        await env.PlatformService.UpdateBuildStatus(
-            new UpdateBuildStatusRequest()
+        await env.PlatformService.UpdateJobStatus(
+            new UpdateJobStatusRequest()
             {
                 BuildId = "b0",
                 QueueDepth = 1,
@@ -95,7 +90,7 @@ public class PlatformServiceTests
     {
         var env = new TestEnvironment();
         await env.Engines.InsertAsync(
-            new Engine()
+            new TranslationEngine()
             {
                 Id = "e0",
                 Owner = "owner1",
@@ -117,8 +112,8 @@ public class PlatformServiceTests
     {
         public TestEnvironment()
         {
-            Builds = new MemoryRepository<Build>();
-            Engines = new MemoryRepository<Engine>();
+            Builds = new MemoryRepository<TranslationBuild>();
+            Engines = new MemoryRepository<TranslationEngine>();
             Pretranslations = new MemoryRepository<Pretranslation>();
             DataAccessContext = Substitute.For<IDataAccessContext>();
             PublishEndpoint = Substitute.For<IPublishEndpoint>();
@@ -146,8 +141,8 @@ public class PlatformServiceTests
             );
         }
 
-        public MemoryRepository<Build> Builds { get; }
-        public MemoryRepository<Engine> Engines { get; }
+        public MemoryRepository<TranslationBuild> Builds { get; }
+        public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
         public IDataAccessContext DataAccessContext { get; }
         public IPublishEndpoint PublishEndpoint { get; }
@@ -155,12 +150,12 @@ public class PlatformServiceTests
         public TranslationPlatformServiceV1 PlatformService { get; }
     }
 
-    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertPretranslationsRequest>
+    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertResultsRequest>
     {
         private bool _endOfStream = false;
 
         public string EngineId { get; } = engineId;
-        public InsertPretranslationsRequest Current => new() { EngineId = EngineId };
+        public InsertResultsRequest Current => new() { EngineId = EngineId };
 
         public Task<bool> MoveNext(CancellationToken cancellationToken)
         {

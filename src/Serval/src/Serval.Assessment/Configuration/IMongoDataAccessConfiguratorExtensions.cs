@@ -6,34 +6,42 @@ public static class IMongoDataAccessConfiguratorExtensions
 {
     public static IMongoDataAccessConfigurator AddAssessmentRepositories(this IMongoDataAccessConfigurator configurator)
     {
-        configurator.AddRepository<Engine>(
+        configurator.AddRepository<AssessmentEngine>(
             "assessment.engines",
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
+                    new CreateIndexModel<AssessmentEngine>(Builders<AssessmentEngine>.IndexKeys.Ascending(e => e.Owner))
                 );
             }
         );
-        configurator.AddRepository<Job>(
+        configurator.AddRepository<AssessmentBuild>(
             "assessment.jobs",
             init: c =>
                 c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Job>(Builders<Job>.IndexKeys.Ascending(b => b.EngineRef))
+                    new CreateIndexModel<AssessmentBuild>(
+                        Builders<AssessmentBuild>.IndexKeys.Ascending(b => b.EngineRef)
+                    )
                 )
         );
-        configurator.AddRepository<Result>(
+        configurator.AddRepository<AssessmentResult>(
             "assessment.results",
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Result>(Builders<Result>.IndexKeys.Ascending(pt => pt.EngineRef))
+                    new CreateIndexModel<AssessmentResult>(
+                        Builders<AssessmentResult>.IndexKeys.Ascending(pt => pt.EngineRef)
+                    )
                 );
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Result>(Builders<Result>.IndexKeys.Ascending(pt => pt.JobRef))
+                    new CreateIndexModel<AssessmentResult>(
+                        Builders<AssessmentResult>.IndexKeys.Ascending(pt => pt.BuildRevision)
+                    )
                 );
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Result>(Builders<Result>.IndexKeys.Ascending(pt => pt.TextId))
+                    new CreateIndexModel<AssessmentResult>(
+                        Builders<AssessmentResult>.IndexKeys.Ascending(pt => pt.TextId)
+                    )
                 );
             }
         );

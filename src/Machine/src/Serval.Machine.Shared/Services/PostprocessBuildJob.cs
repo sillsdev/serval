@@ -37,7 +37,7 @@ public class PostprocessBuildJob(
         await DataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                await PlatformService.BuildCompletedAsync(
+                await PlatformService.JobCompletedAsync(
                     buildId,
                     corpusSize + additionalCorpusSize,
                     Math.Round(confidence, 2, MidpointRounding.AwayFromZero),

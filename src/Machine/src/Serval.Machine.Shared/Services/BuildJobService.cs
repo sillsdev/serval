@@ -22,7 +22,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         );
     }
 
-    public async Task<Build?> GetBuildAsync(
+    public async Task<Models.Build?> GetBuildAsync(
         string engineId,
         string buildId,
         CancellationToken cancellationToken = default
@@ -59,7 +59,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
 
     public async Task<bool> StartBuildJobAsync(
         BuildJobRunnerType runnerType,
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,
@@ -92,9 +92,9 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
                         )
                     ),
                 u =>
-                    u.Set(
+                    u.Set<Models.Build>(
                         e => e.CurrentBuild,
-                        new Build
+                        new Models.Build
                         {
                             BuildId = buildId,
                             JobId = jobId,
