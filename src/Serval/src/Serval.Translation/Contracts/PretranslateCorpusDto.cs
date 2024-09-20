@@ -9,6 +9,6 @@ public record PretranslateCorpusDto
     public string? ScriptureRange { get; init; }
 
     public ResourceLinkDto? ParallelCorpus { get; init; }
-    public ParallelCorpusFilterDto? SourceFilter { get; init; }
-    public ParallelCorpusFilterDto? TargetFilter { get; init; }
+    public IReadOnlyList<ParallelCorpusFilterDto>? SourceFilters { get; init; }
+    public IReadOnlyList<ParallelCorpusFilterDto>? TargetFilters { get; init; }
 }

@@ -7,6 +7,6 @@ public record TrainingCorpusConfigDto
     public string? ScriptureRange { get; init; }
 
     public string? ParallelCorpusId { get; init; }
-    public ParallelCorpusFilterConfigDto? SourceFilter { get; init; }
-    public ParallelCorpusFilterConfigDto? TargetFilter { get; init; }
+    public IReadOnlyList<ParallelCorpusFilterConfigDto>? SourceFilters { get; init; }
+    public IReadOnlyList<ParallelCorpusFilterConfigDto>? TargetFilters { get; init; }
 }

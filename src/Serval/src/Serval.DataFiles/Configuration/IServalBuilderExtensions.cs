@@ -13,4 +13,10 @@ public static class IServalBuilderExtensions
         builder.Services.AddHostedService<DeletedFileCleaner>();
         return builder;
     }
+
+    public static IServalBuilder AddCorpora(this IServalBuilder builder)
+    {
+        builder.Services.AddScoped<ICorpusService, CorpusService>();
+        return builder;
+    }
 }

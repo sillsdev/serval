@@ -1,15 +1,19 @@
-using MassTransit;
-
 namespace Serval.Corpora.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/corpora")]
 [OpenApiTag("Corpora")]
-public class CorporaController(IAuthorizationService authService, ICorpusService corpusService, IUrlService urlService)
-    : ServalControllerBase(authService)
+public class CorporaController(
+    IAuthorizationService authService,
+    ICorpusService corpusService,
+    IUrlService urlService,
+    IDataFileService dataFileService
+) : ServalControllerBase(authService)
 {
     private readonly ICorpusService _corpusService = corpusService;
     private readonly IUrlService _urlService = urlService;
+
+    private readonly IDataFileService _dataFileService = dataFileService;
 
     /// <summary>
     /// Get all corpora
@@ -18,7 +22,7 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
-    [Authorize(Scopes.ReadCorpora)]
+    [Authorize(Scopes.ReadFiles)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -39,7 +43,7 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
     /// <response code="403">The authenticated client cannot perform the operation or does not own the corpus</response>
     /// <response code="404">The corpus does not exist</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
-    [Authorize(Scopes.ReadCorpora)]
+    [Authorize(Scopes.ReadFiles)]
     [HttpGet("{id}", Name = Endpoints.GetCorpus)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -63,7 +67,7 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
-    [Authorize(Scopes.CreateCorpora)]
+    [Authorize(Scopes.CreateFiles)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -77,7 +81,7 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
         CancellationToken cancellationToken
     )
     {
-        Corpus corpus = await MapAsync(getDataFileClient, corpusConfig, idGenerator.GenerateId(), cancellationToken);
+        Corpus corpus = await MapAsync(corpusConfig, idGenerator.GenerateId(), cancellationToken);
         await _corpusService.CreateAsync(corpus, cancellationToken);
         CorpusDto dto = Map(corpus);
         return Created(dto.Url, dto);
@@ -87,7 +91,7 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
     /// Update an existing corpus
     /// </summary>
     /// <param name="id">The unique identifier for the corpus</param>
-    /// <param name="files">The new corpus files</param>
+    /// <param name="files">Tuples of the ids of the new corpus files and the associated text ids</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus was updated successfully</response>
     /// <response code="400">Bad request</response>
@@ -95,7 +99,7 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
     /// <response code="403">The authenticated client cannot perform the operation or does not own the corpus</response>
     /// <response code="404">The corpus does not exist and therefore cannot be updated</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
-    [Authorize(Scopes.UpdateCorpora)]
+    [Authorize(Scopes.UpdateFiles)]
     [HttpPatch("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -106,7 +110,6 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
     public async Task<ActionResult<CorpusDto>> UpdateAsync(
         [NotNull] string id,
         [NotNull] IReadOnlyList<CorpusFileConfigDto> files,
-        [FromServices] IRequestClient<GetDataFile> getDataFileClient,
         CancellationToken cancellationToken
     )
     {
@@ -114,7 +117,7 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
 
         Corpus corpus = await _corpusService.UpdateAsync(
             id,
-            await MapAsync(getDataFileClient, files, cancellationToken),
+            await MapAsync(files, cancellationToken),
             cancellationToken
         );
 
@@ -132,7 +135,7 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
     /// <response code="403">The authenticated client cannot perform the operation or does not own the corpus</response>
     /// <response code="404">The corpus does not exist and therefore cannot be deleted</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
-    [Authorize(Scopes.DeleteCorpora)]
+    [Authorize(Scopes.DeleteFiles)]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -152,53 +155,31 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
         await AuthorizeAsync(corpus);
     }
 
-    private async Task<Corpus> MapAsync(
-        IRequestClient<GetDataFile> getDataFileClient,
-        CorpusConfigDto corpusConfig,
-        string id,
-        CancellationToken cancellationToken
-    )
+    private async Task<Corpus> MapAsync(CorpusConfigDto corpusConfig, string id, CancellationToken cancellationToken)
     {
         return new Corpus
         {
             Id = id,
             Owner = Owner,
             Language = corpusConfig.Language,
-            Files = await MapAsync(getDataFileClient, corpusConfig.Files, cancellationToken)
+            Files = await MapAsync(corpusConfig.Files, cancellationToken)
         };
     }
 
     private async Task<IReadOnlyList<CorpusFile>> MapAsync(
-        IRequestClient<GetDataFile> getDataFileClient,
-        IEnumerable<CorpusFileConfigDto> corpusFileConfigs,
+        IReadOnlyList<CorpusFileConfigDto> files,
         CancellationToken cancellationToken
     )
     {
-        var files = new List<CorpusFile>();
-        foreach (CorpusFileConfigDto corpusFileConfig in corpusFileConfigs)
+        var dataFiles = new List<CorpusFile>();
+        foreach (CorpusFileConfigDto file in files)
         {
-            Response<DataFileResult, DataFileNotFound> response = await getDataFileClient.GetResponse<
-                DataFileResult,
-                DataFileNotFound
-            >(new GetDataFile { DataFileId = corpusFileConfig.FileId, Owner = Owner }, cancellationToken);
-            if (response.Is(out Response<DataFileResult>? result))
-            {
-                files.Add(
-                    new CorpusFile
-                    {
-                        Id = corpusFileConfig.FileId,
-                        Filename = result.Message.Filename,
-                        TextId = corpusFileConfig.TextId ?? result.Message.Name,
-                        Format = result.Message.Format
-                    }
-                );
-            }
-            else if (response.Is(out Response<DataFileNotFound>? _))
-            {
-                throw new InvalidOperationException($"The data file {corpusFileConfig.FileId} cannot be found.");
-            }
+            DataFile? dataFile = await _dataFileService.GetAsync(file.FileId, cancellationToken);
+            if (dataFile == null)
+                throw new InvalidOperationException($"DataFile with id {file.FileId} does not exist.");
+            dataFiles.Add(new CorpusFile { File = dataFile, TextId = file.TextId });
         }
-        return files;
+        return dataFiles;
     }
 
     private CorpusDto Map(Corpus source)
@@ -216,14 +197,18 @@ public class CorporaController(IAuthorizationService authService, ICorpusService
 
     private CorpusFileDto Map(CorpusFile source)
     {
-        return new CorpusFileDto
+        return new CorpusFileDto { File = Map(source.File), TextId = source.TextId };
+    }
+
+    private DataFileDto Map(DataFile source)
+    {
+        return new DataFileDto
         {
-            TextId = source.TextId,
-            File = new ResourceLinkDto
-            {
-                Id = source.Id,
-                Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id })
-            }
+            Id = source.Id,
+            Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id }),
+            Name = source.Name,
+            Format = source.Format,
+            Revision = source.Revision
         };
     }
 }
