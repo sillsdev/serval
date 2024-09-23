@@ -1,4 +1,4 @@
-namespace Serval.Corpora.Contracts;
+namespace Serval.DataFiles.Models;
 
 public record CorpusFile
 {

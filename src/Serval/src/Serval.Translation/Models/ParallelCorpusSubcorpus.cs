@@ -1,6 +1,6 @@
 namespace Serval.Translation.Models;
 
-public record ParallelCorpusSubcorpus
+public record ParallelCorpusSubcorpus //TODO Better name? Monolingual corpus?
 {
     public required string Id { get; set; }
     public string? Name { get; set; }
