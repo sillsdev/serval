@@ -440,6 +440,658 @@ public class EngineServiceTests
     }
 
     [Test]
+    public async Task StartBuildAsync_ParallelCorpus_TextFiles()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithTextFilesAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn =
+                [
+                    new TrainingCorpus
+                    {
+                        ParallelCorpusRef = "parallel-corpus1",
+                        SourceFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new()
+                            {
+                                CorpusRef = "parallel-corpus1-source1",
+                                TextIds = new List<string> { "MAT" }
+                            }
+                        },
+                        TargetFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new()
+                            {
+                                CorpusRef = "parallel-corpus1-target1",
+                                TextIds = new List<string> { "MAT" }
+                            }
+                        }
+                    }
+                ]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnTextIds = { "MAT" },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Text,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Text,
+                                    TextId = "file2.zip"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_TextIds_ParallelCorpus()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn =
+                [
+                    new TrainingCorpus
+                    {
+                        ParallelCorpusRef = "parallel-corpus1",
+                        SourceFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new()
+                            {
+                                CorpusRef = "parallel-corpus1-source1",
+                                TextIds = new List<string>() { "MAT", "MRK" }
+                            }
+                        },
+                        TargetFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new()
+                            {
+                                CorpusRef = "parallel-corpus1-target1",
+                                TextIds = new List<string>() { "MAT", "MRK" }
+                            }
+                        }
+                    }
+                ]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MAT",
+                                    new ScriptureChapters { Chapters = { Enumerable.Range(1, 28) } }
+                                },
+                                {
+                                    "MRK",
+                                    new ScriptureChapters { Chapters = { Enumerable.Range(1, 16) } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_ScriptureRange_ParallelCorpus()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn =
+                [
+                    new TrainingCorpus
+                    {
+                        ParallelCorpusRef = "parallel-corpus1",
+                        SourceFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" }
+                        },
+                        TargetFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 1;MRK" }
+                        }
+                    }
+                ]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MAT",
+                                    new ScriptureChapters { Chapters = { 1 } }
+                                },
+                                {
+                                    "MRK",
+                                    new ScriptureChapters { Chapters = { Enumerable.Range(1, 16) } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_MixedSourceAndTarget_ParallelCorpus()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn =
+                [
+                    new TrainingCorpus
+                    {
+                        ParallelCorpusRef = "parallel-corpus1",
+                        SourceFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1-2;MRK 1-2" },
+                            new() { CorpusRef = "parallel-corpus1-source2", ScriptureRange = "MAT 3;MRK 1" }
+                        },
+                        TargetFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 2-3;MRK 2" },
+                            new() { CorpusRef = "parallel-corpus1-target2", ScriptureRange = "MAT 1;MRK 1-2" }
+                        }
+                    }
+                ]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MAT",
+                                    new ScriptureChapters { Chapters = { 1 } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file4.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file4.zip"
+                                }
+                            }
+                        },
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MAT",
+                                    new ScriptureChapters { Chapters = { 2 } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                }
+                            }
+                        },
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MRK",
+                                    new ScriptureChapters { Chapters = { 1 } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                },
+                                new V1.CorpusFile
+                                {
+                                    Location = "file3.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file3.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file4.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file4.zip"
+                                }
+                            }
+                        },
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MRK",
+                                    new ScriptureChapters { Chapters = { 2 } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                },
+                                new V1.CorpusFile
+                                {
+                                    Location = "file4.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file4.zip"
+                                }
+                            }
+                        },
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MAT",
+                                    new ScriptureChapters { Chapters = { 3 } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file3.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file3.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                }
+                            }
+                        },
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_NoFilters_ParallelCorpus()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn = [new TrainingCorpus { ParallelCorpusRef = "parallel-corpus1" }]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = true,
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                },
+                                new V1.CorpusFile
+                                {
+                                    Location = "file3.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file3.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                },
+                                new V1.CorpusFile
+                                {
+                                    Location = "file4.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file4.zip"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_TrainOnNotSpecified_ParallelCorpus()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = true,
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                },
+                                new V1.CorpusFile
+                                {
+                                    Location = "file3.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file3.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                },
+                                new V1.CorpusFile
+                                {
+                                    Location = "file4.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file4.zip"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_NoTargetFilter_ParallelCorpus()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn =
+                [
+                    new TrainingCorpus
+                    {
+                        ParallelCorpusRef = "parallel-corpus1",
+                        SourceFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" }
+                        }
+                    }
+                ]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.Corpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceLanguage = "es",
+                            TargetLanguage = "en",
+                            TrainOnAll = false,
+                            TrainOnChapters =
+                            {
+                                {
+                                    "MAT",
+                                    new ScriptureChapters { Chapters = { 1 } }
+                                },
+                                {
+                                    "MRK",
+                                    new ScriptureChapters { Chapters = { Enumerable.Range(1, 16) } }
+                                }
+                            },
+                            SourceFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file1.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file1.zip"
+                                }
+                            },
+                            TargetFiles =
+                            {
+                                new V1.CorpusFile
+                                {
+                                    Location = "file2.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file2.zip"
+                                },
+                                new V1.CorpusFile
+                                {
+                                    Location = "file4.zip",
+                                    Format = FileFormat.Paratext,
+                                    TextId = "file4.zip"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
     public async Task CancelBuildAsync_EngineExistsNotBuilding()
     {
         var env = new TestEnvironment();
@@ -720,6 +1372,188 @@ public class EngineServiceTests
                                 TextId = "file2.zip"
                             }
                         ],
+                    }
+                }
+            };
+            await Engines.InsertAsync(engine);
+            return engine;
+        }
+
+        public async Task<Engine> CreateParallelCorpusEngineWithTextFilesAsync()
+        {
+            var engine = new Engine
+            {
+                Id = "engine1",
+                Owner = "owner1",
+                SourceLanguage = "es",
+                TargetLanguage = "en",
+                Type = "Smt",
+                ParallelCorpora = new Models.ParallelCorpus[]
+                {
+                    new()
+                    {
+                        Id = "parallel-corpus1",
+                        SourceCorpora = new List<ParallelCorpusSubcorpus>()
+                        {
+                            new()
+                            {
+                                Id = "parallel-corpus1-source1",
+                                Name = "",
+                                Language = "es",
+                                Files =
+                                [
+                                    new()
+                                    {
+                                        Id = "file1",
+                                        Filename = "file1.zip",
+                                        Format = Shared.Contracts.FileFormat.Text,
+                                        TextId = "MAT"
+                                    }
+                                ]
+                            },
+                            new()
+                            {
+                                Id = "parallel-corpus1-source2",
+                                Name = "",
+                                Language = "es",
+                                Files =
+                                [
+                                    new()
+                                    {
+                                        Id = "file3",
+                                        Filename = "file3.zip",
+                                        Format = Shared.Contracts.FileFormat.Text,
+                                        TextId = "MRK"
+                                    }
+                                ]
+                            }
+                        },
+                        TargetCorpora = new List<ParallelCorpusSubcorpus>()
+                        {
+                            new()
+                            {
+                                Id = "parallel-corpus1-target1",
+                                Name = "",
+                                Language = "en",
+                                Files =
+                                [
+                                    new()
+                                    {
+                                        Id = "file2",
+                                        Filename = "file2.zip",
+                                        Format = Shared.Contracts.FileFormat.Text,
+                                        TextId = "MAT"
+                                    }
+                                ]
+                            },
+                            new()
+                            {
+                                Id = "parallel-corpus1-target2",
+                                Name = "",
+                                Language = "en",
+                                Files =
+                                [
+                                    new()
+                                    {
+                                        Id = "file4",
+                                        Filename = "file4.zip",
+                                        Format = Shared.Contracts.FileFormat.Text,
+                                        TextId = "MRK"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            };
+            await Engines.InsertAsync(engine);
+            return engine;
+        }
+
+        public async Task<Engine> CreateParallelCorpusEngineWithParatextProjectAsync()
+        {
+            var engine = new Engine
+            {
+                Id = "engine1",
+                Owner = "owner1",
+                SourceLanguage = "es",
+                TargetLanguage = "en",
+                Type = "Smt",
+                ParallelCorpora = new Models.ParallelCorpus[]
+                {
+                    new()
+                    {
+                        Id = "parallel-corpus1",
+                        SourceCorpora = new List<ParallelCorpusSubcorpus>()
+                        {
+                            new()
+                            {
+                                Id = "parallel-corpus1-source1",
+                                Name = "",
+                                Language = "es",
+                                Files =
+                                [
+                                    new()
+                                    {
+                                        Id = "file1",
+                                        Filename = "file1.zip",
+                                        Format = Shared.Contracts.FileFormat.Paratext,
+                                        TextId = "file1.zip"
+                                    }
+                                ]
+                            },
+                            new()
+                            {
+                                Id = "parallel-corpus1-source2",
+                                Name = "",
+                                Language = "es",
+                                Files =
+                                [
+                                    new()
+                                    {
+                                        Id = "file3",
+                                        Filename = "file3.zip",
+                                        Format = Shared.Contracts.FileFormat.Paratext,
+                                        TextId = "file3.zip"
+                                    }
+                                ]
+                            }
+                        },
+                        TargetCorpora = new List<ParallelCorpusSubcorpus>()
+                        {
+                            new()
+                            {
+                                Id = "parallel-corpus1-target1",
+                                Name = "",
+                                Language = "en",
+                                Files =
+                                [
+                                    new()
+                                    {
+                                        Id = "file2",
+                                        Filename = "file2.zip",
+                                        Format = Shared.Contracts.FileFormat.Paratext,
+                                        TextId = "file2.zip"
+                                    }
+                                ]
+                            },
+                            new()
+                            {
+                                Id = "parallel-corpus1-target2",
+                                Name = "",
+                                Language = "en",
+                                Files =
+                                [
+                                    new()
+                                    {
+                                        Id = "file4",
+                                        Filename = "file4.zip",
+                                        Format = Shared.Contracts.FileFormat.Paratext,
+                                        TextId = "file4.zip"
+                                    }
+                                ]
+                            }
+                        }
                     }
                 }
             };
