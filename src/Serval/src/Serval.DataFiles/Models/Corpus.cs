@@ -1,4 +1,4 @@
-namespace Serval.Corpora.Models;
+namespace Serval.DataFiles.Models;
 
 public record Corpus : IOwnedEntity
 {

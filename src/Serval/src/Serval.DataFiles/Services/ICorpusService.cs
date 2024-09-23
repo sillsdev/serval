@@ -1,4 +1,4 @@
-namespace Serval.Corpora.Services;
+namespace Serval.DataFiles.Services;
 
 public interface ICorpusService
 {
