@@ -496,7 +496,7 @@ public class EngineServiceTests
                                 {
                                     Location = "file1.zip",
                                     Format = FileFormat.Text,
-                                    TextId = "file1.zip"
+                                    TextId = "MAT"
                                 }
                             },
                             TargetFiles =
@@ -505,7 +505,7 @@ public class EngineServiceTests
                                 {
                                     Location = "file2.zip",
                                     Format = FileFormat.Text,
-                                    TextId = "file2.zip"
+                                    TextId = "MAT"
                                 }
                             }
                         }
