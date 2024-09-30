@@ -277,9 +277,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     (
                         sc.Subcorpus,
                         sc.TextCorpus.FilterTexts(
-                            (sc.Subcorpus.PretranslateTextIds ?? new()).Union(
-                                (sc.Subcorpus.PretranslateChapters ?? new()).Keys
-                            )
+                            (sc.Subcorpus.PretranslateTextIds ?? new())
+                                .Union((sc.Subcorpus.PretranslateChapters ?? new()).Keys)
+                                .Except(
+                                    (sc.Subcorpus.TrainOnTextIds ?? new()).Union(
+                                        (sc.Subcorpus.TrainOnChapters ?? new()).Keys
+                                    )
+                                )
                         )
                     )
                 )
@@ -294,6 +298,16 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                             && chapters != null
                             && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum))
                         )
+                            && !(
+                                (
+                                    (sc.Subcorpus.TrainOnChapters ?? new()).TryGetValue(
+                                        sr.Book,
+                                        out HashSet<int>? trainChapters
+                                    )
+                                    && trainChapters != null
+                                    && (trainChapters.Count == 0 || trainChapters.Contains(sr.ChapterNum))
+                                )
+                            )
                     )
                 )
                 .ToArray();
@@ -334,7 +348,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     continue;
                 }
 
-                Row[] trainRows = rows.Where(r => r is not null && IsInTrain(r, corpus)).Cast<Row>().ToArray();
+                Row[] trainRows = rows.Where(r => r is not null).Cast<Row>().ToArray();
                 if (trainRows.Length > 0)
                 {
                     Row row = trainRows[0];
@@ -384,11 +398,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
             foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpora[0].TextCorpus))
             {
-                if (
-                    IsInPretranslate(row, corpus)
-                    && row.SourceSegment.Length > 0
-                    && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
-                )
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
                 {
                     pretranslateWriter.WriteStartObject();
                     pretranslateWriter.WriteString("corpusId", corpus.Id);
@@ -435,21 +445,21 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         return IsIncluded(row, corpus.TrainOnTextIds, corpus.TrainOnChapters);
     }
 
-    private static bool IsInTrain(Row row, ParallelCorpus corpus)
-    {
-        return corpus.SourceCorpora.Any(sc => IsIncluded(row, sc.TrainOnTextIds, sc.TrainOnChapters))
-            && corpus.TargetCorpora.Any(tc => IsIncluded(row, tc.TrainOnTextIds, tc.TrainOnChapters));
-    }
+    // private static bool IsInTrain(Row row, ParallelCorpus corpus)
+    // {
+    //     return corpus.SourceCorpora.Any(sc => IsIncluded(row, sc.TrainOnTextIds, sc.TrainOnChapters))
+    //         && corpus.TargetCorpora.Any(tc => IsIncluded(row, tc.TrainOnTextIds, tc.TrainOnChapters));
+    // }
 
     private static bool IsInPretranslate(Row row, Corpus corpus)
     {
         return IsIncluded(row, corpus.PretranslateTextIds, corpus.PretranslateChapters);
     }
 
-    private static bool IsInPretranslate(Row row, ParallelCorpus corpus)
-    {
-        return corpus.SourceCorpora.Any(sc => IsIncluded(row, sc.PretranslateTextIds, sc.PretranslateChapters));
-    }
+    // private static bool IsInPretranslate(Row row, ParallelCorpus corpus)
+    // {
+    //     return corpus.SourceCorpora.Any(sc => IsIncluded(row, sc.PretranslateTextIds, sc.PretranslateChapters));
+    // }
 
     private static bool IsIncluded(
         Row? row,
