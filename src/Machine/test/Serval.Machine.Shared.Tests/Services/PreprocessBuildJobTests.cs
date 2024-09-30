@@ -416,7 +416,7 @@ public class PreprocessBuildJobTests
                         {
                             {
                                 "MAT",
-                                new() { }
+                                new() { 1 }
                             },
                             {
                                 "MRK",
@@ -433,7 +433,7 @@ public class PreprocessBuildJobTests
                         {
                             {
                                 "MAT",
-                                new() { }
+                                new() { 1 }
                             },
                             {
                                 "MRK",
