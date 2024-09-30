@@ -262,7 +262,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     )
                 )
                 .Select(sc =>
-                    sc.Item2.FilterTextRows(row =>
+                    sc.Item2.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || (
                             (sc.Subcorpus.TrainOnChapters ?? new()).TryGetValue(sr.Book, out HashSet<int>? chapters)
@@ -288,7 +288,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     )
                 )
                 .Select(sc =>
-                    sc.Item2.FilterTextRows(row =>
+                    sc.Item2.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || (
                             (sc.Subcorpus.PretranslateChapters ?? new()).TryGetValue(
@@ -325,7 +325,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     )
                 )
                 .Select(tc =>
-                    tc.Item2.FilterTextRows(row =>
+                    tc.Item2.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || (
                             (tc.Subcorpus.TrainOnChapters ?? new()).TryGetValue(sr.Book, out HashSet<int>? chapters)
