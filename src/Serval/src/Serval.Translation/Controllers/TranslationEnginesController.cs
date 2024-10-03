@@ -1209,13 +1209,13 @@ public class TranslationEnginesController(
         return files;
     }
 
-    private async Task<List<ParallelCorpusSubcorpus>> MapAsync(
+    private async Task<List<MonolingualCorpus>> MapAsync(
         IRequestClient<GetCorpus> getCorpusClient,
         IEnumerable<string> corpusIds,
         CancellationToken cancellationToken
     )
     {
-        var corpora = new List<ParallelCorpusSubcorpus>();
+        var corpora = new List<MonolingualCorpus>();
         foreach (string corpusId in corpusIds)
         {
             Response<CorpusResult, CorpusNotFound> response = await getCorpusClient.GetResponse<
@@ -1225,7 +1225,7 @@ public class TranslationEnginesController(
             if (response.Is(out Response<CorpusResult>? result))
             {
                 corpora.Add(
-                    new ParallelCorpusSubcorpus
+                    new MonolingualCorpus
                     {
                         Id = corpusId,
                         Name = result.Message.Name ?? "",
@@ -1655,9 +1655,9 @@ public class TranslationEnginesController(
         };
     }
 
-    private TranslationParallelCorpusSubcorpusDto Map(ParallelCorpusSubcorpus source)
+    private TranslationMonolingualCorpusDto Map(MonolingualCorpus source)
     {
-        return new TranslationParallelCorpusSubcorpusDto
+        return new TranslationMonolingualCorpusDto
         {
             Id = source.Id,
             Language = source.Language,

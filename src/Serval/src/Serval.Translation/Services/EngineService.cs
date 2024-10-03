@@ -1,6 +1,5 @@
 ﻿using MassTransit.Mediator;
 using Serval.Translation.V1;
-using SIL.Scripture;
 
 namespace Serval.Translation.Services;
 
@@ -206,7 +205,7 @@ public class EngineService(
         {
             return ScriptureRangeParser.GetChapters(
                 scriptureRange,
-                _scriptureDataFileService.GetParatextProjectSettings(fileLocation).Versification //TODO corpus.TargetFiles.First().Location
+                _scriptureDataFileService.GetParatextProjectSettings(fileLocation).Versification
             );
         }
         catch (ArgumentException ae)
@@ -228,11 +227,8 @@ public class EngineService(
             StartBuildRequest request;
             if (engine.ParallelCorpora.Any())
             {
+                var trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
                 var pretranslate = build.Pretranslate?.ToDictionary(c => c.ParallelCorpusRef!);
-                List<TrainingSubcorpus>? corporaPerTexts = GetTrainingCorporaPerTexts(
-                    build.TrainOn ?? new List<TrainingCorpus>(),
-                    engine.ParallelCorpora
-                );
                 request = new StartBuildRequest
                 {
                     EngineType = engine.Type,
@@ -240,13 +236,8 @@ public class EngineService(
                     BuildId = build.Id,
                     Corpora =
                     {
-                        engine.ParallelCorpora.SelectMany(c =>
-                            Map(
-                                c,
-                                corporaPerTexts,
-                                pretranslate?.GetValueOrDefault(c.Id),
-                                trainOnAll: build.TrainOn == null || corporaPerTexts == null
-                            )
+                        engine.ParallelCorpora.Select(c =>
+                            Map(c, trainOn?.GetValueOrDefault(c.Id), pretranslate?.GetValueOrDefault(c.Id))
                         )
                     }
                 };
@@ -306,280 +297,6 @@ public class EngineService(
         {
             await _builds.DeleteAsync(build, CancellationToken.None);
             throw;
-        }
-    }
-
-    private record TrainingSubcorpus
-    {
-        public Dictionary<string, List<int>>? Chapters { get; init; }
-        public List<string>? TextIds { get; init; }
-        public required List<string> SourceCorporaRefs { get; init; }
-        public required List<string> TargetCorporaRefs { get; init; }
-    }
-
-    private enum CorpusType
-    {
-        Source = 0,
-        Target = 1
-    }
-
-    private List<TrainingSubcorpus>? GetTrainingCorporaPerTexts(
-        IReadOnlyList<TrainingCorpus> trainingCorpora,
-        IReadOnlyList<ParallelCorpus> parallelCorpora
-    )
-    {
-        Dictionary<string, List<(string Location, Shared.Contracts.FileFormat Format)>> fileLocations = parallelCorpora
-            .SelectMany(pc => pc.SourceCorpora.Concat(pc.TargetCorpora))
-            .Where(c => c.Files.Count > 0)
-            .Select(c =>
-                (
-                    c.Id,
-                    c.Files.Select(f =>
-                        (Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, f.Filename), f.Format)
-                    )
-                        .ToList()
-                )
-            )
-            .ToDictionary();
-
-        List<string> parallelCorpusSourceIds = parallelCorpora
-            .SelectMany(pc => pc.SourceCorpora)
-            .Select(sc => sc.Id)
-            .ToList();
-
-        List<string> parallelCorpusTargetIds = parallelCorpora
-            .SelectMany(pc => pc.TargetCorpora)
-            .Select(tc => tc.Id)
-            .ToList();
-
-        List<string> trainingCorpusSourceFilterCorpusIds = trainingCorpora
-            .Where(tc => tc.SourceFilters != null)
-            .SelectMany(tc => tc.SourceFilters!)
-            .Select(sf => sf.CorpusRef)
-            .ToList();
-
-        List<string> trainingCorpusTargetFilterCorpusIds = trainingCorpora
-            .Where(tc => tc.TargetFilters != null)
-            .SelectMany(tc => tc.TargetFilters!)
-            .Select(sf => sf.CorpusRef)
-            .ToList();
-
-        if (trainingCorpusSourceFilterCorpusIds.Where(id => !parallelCorpusSourceIds.Contains(id)).Any())
-        {
-            throw new InvalidOperationException(
-                "Corpus specified in source filter could not be found within parallel corpus."
-            ); //TODO better error message?
-        }
-        if (trainingCorpusTargetFilterCorpusIds.Where(id => !parallelCorpusTargetIds.Contains(id)).Any())
-        {
-            throw new InvalidOperationException(
-                "Corpus specified in target filter could not be found within parallel corpus."
-            ); //TODO better error message?
-        }
-
-        List<string> unfilteredSourceCorpora = trainingCorpora
-            .Where(tc => tc.SourceFilters == null)
-            .Select(tc => tc.ParallelCorpusRef)
-            .SelectMany(r => parallelCorpora.Where(pc => pc.Id == r).First().SourceCorpora.Select(c => c.Id))
-            .ToList();
-
-        List<string> unfilteredTargetCorpora = trainingCorpora
-            .Where(tc => tc.TargetFilters == null)
-            .Select(tc => tc.ParallelCorpusRef)
-            .SelectMany(r => parallelCorpora.Where(pc => pc.Id == r).First().TargetCorpora.Select(c => c.Id))
-            .ToList();
-
-        IEnumerable<(
-            (string Book, int Chapter) Verse,
-            (string Ref, CorpusType Type, Shared.Contracts.FileFormat Format) Corpus
-        )> ProcessFilter(ParallelCorpusFilter filter, CorpusType corpusType)
-        {
-            var bookChapters = new List<(string, int)>();
-            if (
-                fileLocations.TryGetValue(
-                    filter.CorpusRef,
-                    out List<(string Location, Shared.Contracts.FileFormat Format)>? files
-                )
-            )
-            {
-                if (files.Count == 1 && files[0].Format == Shared.Contracts.FileFormat.Paratext)
-                {
-                    ScrVers versification = _scriptureDataFileService
-                        .GetParatextProjectSettings(files[0].Location)
-                        .Versification;
-                    if (filter.TextIds != null)
-                    {
-                        bookChapters = filter
-                            .TextIds.SelectMany(id =>
-                                Enumerable
-                                    .Range(1, versification.GetLastChapter(Canon.BookIdToNumber(id)))
-                                    .Select(chpt => (id, chpt))
-                            )
-                            .ToList();
-                    }
-                    else if (!string.IsNullOrEmpty(filter.ScriptureRange))
-                    {
-                        bookChapters = GetChapters(files[0].Location, filter.ScriptureRange)
-                            .Select(kvp =>
-                                (
-                                    kvp.Key,
-                                    kvp.Value.Count == 0
-                                        ? Enumerable.Range(
-                                            1,
-                                            versification.GetLastChapter(Canon.BookIdToNumber(kvp.Key))
-                                        )
-                                        : kvp.Value
-                                )
-                            )
-                            .SelectMany(tup => tup.Item2.Select(chpt => (tup.Item1, chpt)))
-                            .ToList();
-                    }
-                    return bookChapters.Select(bc =>
-                        ((bc.Item1, bc.Item2), (filter.CorpusRef, corpusType, Shared.Contracts.FileFormat.Paratext))
-                    );
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(filter.ScriptureRange))
-                    {
-                        throw new InvalidOperationException(
-                            $"The corpus {filter.CorpusRef} is not compatible with using a scripture range"
-                        );
-                    }
-                    if (filter.TextIds != null)
-                    {
-                        return filter.TextIds.Select(tid =>
-                            ((tid, 0), (filter.CorpusRef, corpusType, Shared.Contracts.FileFormat.Text))
-                        );
-                    }
-                }
-            }
-            throw new InvalidOperationException($"Could not locate files associated with {filter.CorpusRef}");
-        }
-
-        IReadOnlyList<(
-            (string Book, int Chapter) Verse,
-            (string Ref, CorpusType Type, Shared.Contracts.FileFormat Format) Corpus
-        )> sourceCorporaPerChapters = trainingCorpora
-            .Where(tc => tc.SourceFilters != null)
-            .SelectMany(tc => tc.SourceFilters!)
-            .SelectMany(sf => ProcessFilter(sf, CorpusType.Source))
-            .ToList();
-
-        IReadOnlyList<(
-            (string Book, int Chapter) Verse,
-            (string CorpusRef, CorpusType CorpusType, Shared.Contracts.FileFormat Format) Corpus
-        )> targetCorporaPerChapters = trainingCorpora
-            .Where(tc => tc.TargetFilters != null)
-            .SelectMany(tc => tc.TargetFilters!)
-            .SelectMany(tf => ProcessFilter(tf, CorpusType.Target))
-            .ToList();
-
-        List<TrainingSubcorpus> trainingSubcorpora = sourceCorporaPerChapters
-            .Concat(targetCorporaPerChapters)
-            .Aggregate(
-                new Dictionary<
-                    (string Book, int Chapter),
-                    List<(string CorpusRef, CorpusType CorpusType, Shared.Contracts.FileFormat CorpusFormat)>
-                >(),
-                (dict, tup) =>
-                {
-                    if (
-                        dict.TryGetValue(
-                            tup.Verse,
-                            out List<(string, CorpusType, Shared.Contracts.FileFormat)>? corporaList
-                        )
-                    )
-                    {
-                        corporaList.Add(tup.Corpus);
-                    }
-                    else
-                    {
-                        dict[tup.Verse] = new() { tup.Corpus };
-                    }
-                    return dict;
-                }
-            )
-            .Aggregate(
-                new Dictionary<
-                    List<(string CorpusRef, CorpusType CorpusType, Shared.Contracts.FileFormat CorpusFormat)>,
-                    Dictionary<string, List<int>>
-                >(new CorpusListValueComparer()),
-                (dict, kvp) =>
-                {
-                    if (dict.TryGetValue(kvp.Value, out Dictionary<string, List<int>>? chaptersPerBook))
-                    {
-                        if (chaptersPerBook.TryGetValue(kvp.Key.Book, out List<int>? chapters))
-                        {
-                            if (!chapters.Contains(kvp.Key.Chapter))
-                                chapters.Add(kvp.Key.Chapter);
-                        }
-                        else
-                        {
-                            chaptersPerBook[kvp.Key.Book] = new List<int>() { kvp.Key.Chapter };
-                        }
-                    }
-                    else
-                    {
-                        dict[kvp.Value] = new Dictionary<string, List<int>>()
-                        {
-                            {
-                                kvp.Key.Book,
-                                new() { kvp.Key.Chapter }
-                            }
-                        };
-                    }
-                    return dict;
-                }
-            )
-            .Select(kvp => new TrainingSubcorpus()
-            {
-                SourceCorporaRefs = kvp.Key.Where(corpus => corpus.CorpusType == CorpusType.Source)
-                    .Select(corpus => corpus.CorpusRef)
-                    .Concat(unfilteredSourceCorpora)
-                    .ToList(),
-                TargetCorporaRefs = kvp.Key.Where(corpus => corpus.CorpusType == CorpusType.Target)
-                    .Select(corpus => corpus.CorpusRef)
-                    .Concat(unfilteredTargetCorpora)
-                    .ToList(),
-                Chapters = kvp.Key.All(corpus => corpus.CorpusFormat == Shared.Contracts.FileFormat.Paratext)
-                    ? kvp.Value
-                    : null,
-                TextIds = kvp.Key.All(corpus => corpus.CorpusFormat == Shared.Contracts.FileFormat.Text)
-                    ? kvp.Value.Select(kvp => kvp.Key).ToList()
-                    : null
-            })
-            .ToList();
-        if (trainingSubcorpora.Count == 0)
-        {
-            return null;
-        }
-        return trainingSubcorpora;
-    }
-
-    private class CorpusListValueComparer
-        : IEqualityComparer<List<(string CorpusRef, CorpusType CorpusType, Shared.Contracts.FileFormat CorpusFormat)>>
-    {
-        public bool Equals(
-            List<(string CorpusRef, CorpusType CorpusType, Shared.Contracts.FileFormat CorpusFormat)>? x,
-            List<(string CorpusRef, CorpusType CorpusType, Shared.Contracts.FileFormat CorpusFormat)>? y
-        )
-        {
-            if (x == y)
-                return true;
-            return x != null && y != null && x.SequenceEqual(y);
-        }
-
-        public int GetHashCode(
-            [DisallowNull] List<(string CorpusRef, CorpusType CorpusType, Shared.Contracts.FileFormat CorpusFormat)> obj
-        )
-        {
-            int hash = 31;
-            foreach ((string corpusRef, CorpusType type, Shared.Contracts.FileFormat format) in obj)
-            {
-                hash = hash * 71 + corpusRef.GetHashCode() + type.GetHashCode() + format.GetHashCode();
-            }
-            return hash;
         }
     }
 
@@ -699,7 +416,11 @@ public class EngineService(
         }
     }
 
-    public Task AddParallelCorpus(string engineId, ParallelCorpus corpus, CancellationToken cancellationToken = default)
+    public Task AddParallelCorpus(
+        string engineId,
+        Models.ParallelCorpus corpus,
+        CancellationToken cancellationToken = default
+    )
     {
         return Entities.UpdateAsync(
             engineId,
@@ -708,11 +429,11 @@ public class EngineService(
         );
     }
 
-    public async Task<ParallelCorpus> UpdateParallelCorpusAsync(
+    public async Task<Models.ParallelCorpus> UpdateParallelCorpusAsync(
         string engineId,
         string parallelCorpusId,
-        IReadOnlyList<ParallelCorpusSubcorpus>? sourceCorpora,
-        IReadOnlyList<ParallelCorpusSubcorpus>? targetCorpora,
+        IReadOnlyList<Models.MonolingualCorpus>? sourceCorpora,
+        IReadOnlyList<Models.MonolingualCorpus>? targetCorpora,
         CancellationToken cancellationToken = default
     )
     {
@@ -871,55 +592,23 @@ public class EngineService(
         };
     }
 
-    private V1.Corpus Map(Models.Corpus source, TrainingCorpus? trainingCorpus, PretranslateCorpus? pretranslateCorpus)
+    private V1.ParallelCorpus Map(Corpus source, TrainingCorpus? trainingCorpus, PretranslateCorpus? pretranslateCorpus)
     {
-        var corpus = new V1.Corpus
+        var sourceFiles = source.SourceFiles.Select(Map);
+        var targetFiles = source.TargetFiles.Select(Map);
+        var sourceCorpus = new V1.MonolingualCorpus
         {
-            Id = source.Id,
-            SourceLanguage = source.SourceLanguage,
-            TargetLanguage = source.TargetLanguage,
-            SourceFiles = { source.SourceFiles.Select(Map) },
-            TargetFiles = { source.TargetFiles.Select(Map) }
+            Language = source.SourceLanguage,
+            Files = { source.SourceFiles.Select(Map) }
         };
-        if (pretranslateCorpus != null)
+        var targetCorpus = new V1.MonolingualCorpus
         {
-            corpus.PretranslateAll = pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null;
-            if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
-            {
-                throw new InvalidOperationException(
-                    $"The corpus {source.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
-                );
-            }
-            if (pretranslateCorpus.TextIds is not null)
-                corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
-            if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
-            {
-                if (
-                    source.TargetFiles.Count > 1
-                    || source.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext
-                )
-                {
-                    throw new InvalidOperationException(
-                        $"The corpus {source.Id} is not compatible with using a scripture range"
-                    );
-                }
-                corpus.PretranslateChapters.Add(
-                    GetChapters(corpus.TargetFiles[0].Location, pretranslateCorpus.ScriptureRange)
-                        .Select(
-                            (kvp) =>
-                            {
-                                var scriptureChapters = new ScriptureChapters();
-                                scriptureChapters.Chapters.Add(kvp.Value);
-                                return (kvp.Key, scriptureChapters);
-                            }
-                        )
-                        .ToDictionary()
-                );
-            }
-        }
+            Language = source.TargetLanguage,
+            Files = { source.TargetFiles.Select(Map) }
+        };
+
         if (trainingCorpus != null)
         {
-            corpus.TrainOnAll = trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null;
             if (trainingCorpus.TextIds is not null && trainingCorpus.ScriptureRange is not null)
             {
                 throw new InvalidOperationException(
@@ -927,20 +616,52 @@ public class EngineService(
                 );
             }
             if (trainingCorpus.TextIds is not null)
-                corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
+            {
+                sourceCorpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
+                targetCorpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
+            }
             if (!string.IsNullOrEmpty(trainingCorpus.ScriptureRange))
             {
-                if (
-                    source.TargetFiles.Count > 1
-                    || source.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext
-                )
+                if (targetCorpus.Files.Count > 1 || targetCorpus.Files[0].Format != V1.FileFormat.Paratext)
                 {
                     throw new InvalidOperationException(
                         $"The corpus {source.Id} is not compatible with using a scripture range"
                     );
                 }
-                corpus.TrainOnChapters.Add(
-                    GetChapters(corpus.TargetFiles[0].Location, trainingCorpus.ScriptureRange)
+                var chapters = GetChapters(targetCorpus.Files[0].Location, trainingCorpus.ScriptureRange)
+                    .Select(
+                        (kvp) =>
+                        {
+                            var scriptureChapters = new ScriptureChapters();
+                            scriptureChapters.Chapters.Add(kvp.Value);
+                            return (kvp.Key, scriptureChapters);
+                        }
+                    )
+                    .ToDictionary();
+                sourceCorpus.TrainOnChapters.Add(chapters);
+                targetCorpus.TrainOnChapters.Add(chapters);
+            }
+        }
+        if (pretranslateCorpus != null)
+        {
+            if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {source.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
+                );
+            }
+            if (pretranslateCorpus.TextIds is not null)
+                sourceCorpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
+            if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
+            {
+                if (targetCorpus.Files.Count > 1 || targetCorpus.Files[0].Format != V1.FileFormat.Paratext)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {source.Id} is not compatible with using a scripture range"
+                    );
+                }
+                sourceCorpus.PretranslateChapters.Add(
+                    GetChapters(targetCorpus.Files[0].Location, pretranslateCorpus.ScriptureRange)
                         .Select(
                             (kvp) =>
                             {
@@ -953,94 +674,107 @@ public class EngineService(
                 );
             }
         }
-        else
+        return new V1.ParallelCorpus
         {
-            corpus.TrainOnAll = true;
-        }
-        return corpus;
+            Id = source.Id,
+            SourceCorpora = { sourceCorpus },
+            TargetCorpora = { targetCorpus }
+        };
     }
 
-    private IEnumerable<V1.Corpus> Map(
-        ParallelCorpus source,
-        List<TrainingSubcorpus>? trainingCorpora,
-        PretranslateCorpus? pretranslateCorpus,
-        bool trainOnAll = false
+    private V1.ParallelCorpus Map(
+        Models.ParallelCorpus source,
+        TrainingCorpus? trainingCorpus,
+        PretranslateCorpus? pretranslateCorpus
     )
     {
-        if (pretranslateCorpus != null)
-        {
-            var corpus = new V1.Corpus
-            {
-                Id = source.Id,
-                SourceLanguage = source.SourceCorpora[0].Language,
-                TargetLanguage = source.TargetCorpora[0].Language,
-                SourceFiles = { source.SourceCorpora.SelectMany(c => c.Files.Select(Map)) },
-                TargetFiles = { source.TargetCorpora.SelectMany(c => c.Files.Select(Map)) }
-            };
-            yield return corpus.Clone();
-            corpus.PretranslateChapters.Clear();
-        }
-        if (!trainOnAll && trainingCorpora != null)
-        {
-            foreach (TrainingSubcorpus trainingCorpus in trainingCorpora)
-            {
-                var corpus = new V1.Corpus
-                {
-                    Id = source.Id,
-                    SourceLanguage = source.SourceCorpora[0].Language,
-                    TargetLanguage = source.TargetCorpora[0].Language,
-                    SourceFiles =
-                    {
-                        source
-                            .SourceCorpora.Where(sc => trainingCorpus.SourceCorporaRefs.Contains(sc.Id))
-                            .SelectMany(sc => sc.Files)
-                            .Select(Map)
-                    },
-                    TargetFiles =
-                    {
-                        source
-                            .TargetCorpora.Where(sc => trainingCorpus.TargetCorporaRefs.Contains(sc.Id))
-                            .SelectMany(sc => sc.Files)
-                            .Select(Map)
-                    }
-                };
-                if (trainingCorpus.Chapters != null)
-                {
-                    corpus.TrainOnChapters.Add(
-                        trainingCorpus
-                            .Chapters.Select(
-                                (kvp) =>
-                                {
-                                    var scriptureChapters = new ScriptureChapters();
-                                    scriptureChapters.Chapters.Add(kvp.Value);
-                                    return (kvp.Key, scriptureChapters);
-                                }
-                            )
-                            .ToDictionary()
-                    );
-                }
-                if (trainingCorpus.TextIds != null)
-                {
-                    corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
-                }
+        string? referenceFileLocation =
+            source.TargetCorpora.Count > 0 && source.TargetCorpora[0].Files.Count > 0
+                ? Map(source.TargetCorpora[0].Files[0]).Location
+                : null;
 
-                yield return corpus.Clone();
-                corpus.TrainOnChapters.Clear();
-                corpus.TrainOnTextIds.Clear();
-            }
-        }
-        else
+        return new V1.ParallelCorpus
         {
-            yield return new V1.Corpus
+            Id = source.Id,
+            SourceCorpora =
             {
-                Id = source.Id,
-                SourceLanguage = source.SourceCorpora[0].Language,
-                TargetLanguage = source.TargetCorpora[0].Language,
-                SourceFiles = { source.SourceCorpora.SelectMany(c => c.Files.Select(Map)) },
-                TargetFiles = { source.TargetCorpora.SelectMany(c => c.Files.Select(Map)) },
-                TrainOnAll = trainOnAll
-            };
-        }
+                source.SourceCorpora.Select(sc =>
+                    Map(
+                        sc,
+                        trainingCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
+                        pretranslateCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
+                        referenceFileLocation
+                    )
+                )
+            },
+            TargetCorpora =
+            {
+                source.TargetCorpora.Select(tc =>
+                    Map(
+                        tc,
+                        trainingCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
+                        pretranslateCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
+                        referenceFileLocation
+                    )
+                )
+            }
+        };
+    }
+
+    private V1.MonolingualCorpus Map(
+        Models.MonolingualCorpus source,
+        ParallelCorpusFilter? trainingFilter,
+        ParallelCorpusFilter? pretranslateFilter,
+        string? referenceFileLocation
+    )
+    {
+        var trainOnChapters =
+            trainingFilter is not null && trainingFilter.ScriptureRange is not null && referenceFileLocation is not null
+                ? GetChapters(referenceFileLocation, trainingFilter.ScriptureRange)
+                    .Select(
+                        (kvp) =>
+                        {
+                            var scriptureChapters = new ScriptureChapters();
+                            scriptureChapters.Chapters.Add(kvp.Value);
+                            return (kvp.Key, scriptureChapters);
+                        }
+                    )
+                    .ToDictionary()
+                : null;
+
+        var pretranslateChapters =
+            pretranslateFilter is not null
+            && pretranslateFilter.ScriptureRange is not null
+            && referenceFileLocation is not null
+                ? GetChapters(referenceFileLocation, pretranslateFilter.ScriptureRange)
+                    .Select(
+                        (kvp) =>
+                        {
+                            var scriptureChapters = new ScriptureChapters();
+                            scriptureChapters.Chapters.Add(kvp.Value);
+                            return (kvp.Key, scriptureChapters);
+                        }
+                    )
+                    .ToDictionary()
+                : null;
+
+        var corpus = new V1.MonolingualCorpus
+        {
+            Id = source.Id,
+            Language = source.Language,
+            Files = { source.Files.Select(Map) }
+        };
+
+        if (trainOnChapters is not null)
+            corpus.TrainOnChapters.Add(trainOnChapters);
+        if (trainingFilter?.TextIds is not null)
+            corpus.TrainOnTextIds.Add(trainingFilter.TextIds);
+        if (pretranslateChapters is not null)
+            corpus.PretranslateChapters.Add(pretranslateChapters);
+        if (pretranslateFilter?.TextIds is not null)
+            corpus.PretranslateTextIds.Add(pretranslateFilter.TextIds);
+
+        return corpus;
     }
 
     private V1.CorpusFile Map(Models.CorpusFile source)

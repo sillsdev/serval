@@ -9712,16 +9712,16 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceCorpora", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationParallelCorpusSubcorpus> SourceCorpora { get; set; } = new System.Collections.ObjectModel.Collection<TranslationParallelCorpusSubcorpus>();
+        public System.Collections.Generic.IList<TranslationMonolingualCorpus> SourceCorpora { get; set; } = new System.Collections.ObjectModel.Collection<TranslationMonolingualCorpus>();
 
         [Newtonsoft.Json.JsonProperty("targetCorpora", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationParallelCorpusSubcorpus> TargetCorpora { get; set; } = new System.Collections.ObjectModel.Collection<TranslationParallelCorpusSubcorpus>();
+        public System.Collections.Generic.IList<TranslationMonolingualCorpus> TargetCorpora { get; set; } = new System.Collections.ObjectModel.Collection<TranslationMonolingualCorpus>();
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationParallelCorpusSubcorpus
+    public partial class TranslationMonolingualCorpus
     {
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]

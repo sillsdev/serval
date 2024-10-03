@@ -1,6 +1,6 @@
 namespace Serval.Translation.Contracts;
 
-public record TranslationParallelCorpusSubcorpusDto
+public record TranslationMonolingualCorpusDto
 {
     public required string Id { get; set; }
     public string? Name { get; init; }

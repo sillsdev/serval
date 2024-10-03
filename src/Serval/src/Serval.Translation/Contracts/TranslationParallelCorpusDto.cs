@@ -6,8 +6,8 @@ public record TranslationParallelCorpusDto
     public required string Url { get; init; }
     public required ResourceLinkDto Engine { get; init; }
 
-    public required IReadOnlyList<TranslationParallelCorpusSubcorpusDto> SourceCorpora { get; init; } =
-        new List<TranslationParallelCorpusSubcorpusDto>();
-    public required IReadOnlyList<TranslationParallelCorpusSubcorpusDto> TargetCorpora { get; init; } =
-        new List<TranslationParallelCorpusSubcorpusDto>();
+    public required IReadOnlyList<TranslationMonolingualCorpusDto> SourceCorpora { get; init; } =
+        new List<TranslationMonolingualCorpusDto>();
+    public required IReadOnlyList<TranslationMonolingualCorpusDto> TargetCorpora { get; init; } =
+        new List<TranslationMonolingualCorpusDto>();
 }

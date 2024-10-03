@@ -12,7 +12,7 @@ public class SmtTransferBuildJob(
     ISmtModelFactory smtModelFactory,
     ICorpusService corpusService
 )
-    : HangfireBuildJob<IReadOnlyList<Corpus>>(
+    : HangfireBuildJob<IReadOnlyList<ParallelCorpus>>(
         platformService,
         engines,
         lockFactory,
@@ -29,7 +29,7 @@ public class SmtTransferBuildJob(
     protected override Task InitializeAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<Corpus> data,
+        IReadOnlyList<ParallelCorpus> data,
         IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     )
@@ -40,7 +40,7 @@ public class SmtTransferBuildJob(
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<Corpus> data,
+        IReadOnlyList<ParallelCorpus> data,
         string? buildOptions,
         IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
@@ -59,10 +59,14 @@ public class SmtTransferBuildJob(
 
         var targetCorpora = new List<ITextCorpus>();
         var parallelCorpora = new List<IParallelTextCorpus>();
-        foreach (Corpus corpus in data)
+        foreach (ParallelCorpus corpus in data)
         {
-            ITextCorpus? sourceTextCorpus = _corpusService.CreateTextCorpora(corpus.SourceFiles).FirstOrDefault();
-            ITextCorpus? targetTextCorpus = _corpusService.CreateTextCorpora(corpus.TargetFiles).FirstOrDefault();
+            ITextCorpus? sourceTextCorpus = _corpusService
+                .CreateTextCorpora(corpus.SourceCorpora.SelectMany(sc => sc.Files).ToList())
+                .FirstOrDefault();
+            ITextCorpus? targetTextCorpus = _corpusService
+                .CreateTextCorpora(corpus.TargetCorpora.SelectMany(tc => tc.Files).ToList())
+                .FirstOrDefault();
             if (sourceTextCorpus is null || targetTextCorpus is null)
                 continue;
 
@@ -71,8 +75,12 @@ public class SmtTransferBuildJob(
 
             if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
             {
-                ITextCorpus? sourceTermCorpus = _corpusService.CreateTermCorpora(corpus.SourceFiles).FirstOrDefault();
-                ITextCorpus? targetTermCorpus = _corpusService.CreateTermCorpora(corpus.TargetFiles).FirstOrDefault();
+                ITextCorpus? sourceTermCorpus = _corpusService
+                    .CreateTermCorpora(corpus.SourceCorpora.SelectMany(sc => sc.Files).ToList())
+                    .FirstOrDefault();
+                ITextCorpus? targetTermCorpus = _corpusService
+                    .CreateTermCorpora(corpus.TargetCorpora.SelectMany(tc => tc.Files).ToList())
+                    .FirstOrDefault();
                 if (sourceTermCorpus is not null && targetTermCorpus is not null)
                 {
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
