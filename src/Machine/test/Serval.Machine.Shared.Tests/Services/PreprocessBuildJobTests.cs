@@ -337,147 +337,146 @@ public class PreprocessBuildJobTests
         });
     }
 
-    //     [Test] // TODO
-    //     public async Task ParallelCorpusLogic()
-    //     {
-    //         using TestEnvironment env = new();
-    //         var corpora = new List<PreprocessBuildJob.ParallelCorpus>()
-    //         {
-    //             new PreprocessBuildJob.ParallelCorpus()
-    //             {
-    //                 Id = "1",
-    //                 SourceCorpora = new List<PreprocessBuildJob.ParallelCorpusSubcorpus>()
-    //                 {
-    //                     new()
-    //                     {
-    //                         Id = "_1",
-    //                         Language = "en",
-    //                         Files = new List<CorpusFile> { env.ParatextFile("pt-source1") },
-    //                         TrainOnChapters = new()
-    //                         {
-    //                             {
-    //                                 "MAT",
-    //                                 new() { 1 }
-    //                             },
-    //                             {
-    //                                 "LEV",
-    //                                 new() { }
-    //                             }
-    //                         },
-    //                         PretranslateChapters = new()
-    //                         {
-    //                             {
-    //                                 "1CH",
-    //                                 new() { }
-    //                             }
-    //                         }
-    //                     },
-    //                     new()
-    //                     {
-    //                         Id = "_1",
-    //                         Language = "en",
-    //                         Files = new List<CorpusFile> { env.ParatextFile("pt-source2") },
-    //                         TrainOnChapters = new()
-    //                         {
-    //                             {
-    //                                 "MAT",
-    //                                 new() { 1 }
-    //                             },
-    //                             {
-    //                                 "MRK",
-    //                                 new() { }
-    //                             }
-    //                         },
-    //                     },
-    //                 },
-    //                 TargetCorpora = new List<PreprocessBuildJob.ParallelCorpusSubcorpus>()
-    //                 {
-    //                     new()
-    //                     {
-    //                         Id = "_1",
-    //                         Language = "en",
-    //                         Files = new List<CorpusFile> { env.ParatextFile("pt-target1") },
-    //                         TrainOnChapters = new()
-    //                         {
-    //                             {
-    //                                 "MAT",
-    //                                 new() { 1 }
-    //                             },
-    //                             {
-    //                                 "MRK",
-    //                                 new() { }
-    //                             }
-    //                         }
-    //                     },
-    //                     new()
-    //                     {
-    //                         Id = "_2",
-    //                         Language = "en",
-    //                         Files = new List<CorpusFile> { env.ParatextFile("pt-target2") },
-    //                         TrainOnChapters = new()
-    //                         {
-    //                             {
-    //                                 "MAT",
-    //                                 new() { 1 }
-    //                             },
-    //                             {
-    //                                 "MRK",
-    //                                 new() { }
-    //                             },
-    //                             {
-    //                                 "LEV",
-    //                                 new() { }
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         };
-    //         await env.GetBuildJob(TranslationEngineType.SmtTransfer)
-    //             .WriteDataFilesAsync("build1", corpora, "{\"use_key_terms\":false}", default);
-    //         Assert.Multiple(async () =>
-    //         {
-    //             Assert.That(
-    //                 await env.GetSourceExtractAsync(),
-    //                 Is.EqualTo(
-    //                     @"Source one, chapter fourteen, verse fifty-five. Segment b.
-    // Source one, chapter fourteen, verse fifty-six.
-    // Source one, chapter one, verse one.
-    // Source two, chapter one, verse two.
-    // Source two, chapter one, verse three.
-    // Source two, chapter one, verse four.
-    // Source two, chapter one, verse five. Source two, chapter one, verse six.
-    // Source two, chapter one, verse seven. Source two, chapter one, verse eight.
-    // Source two, chapter one, verse nine. Source two, chapter one, verse ten.
-    // Source two, chapter one, verse one.
-    // "
-    //                 )
-    //             );
-    //             Assert.That(
-    //                 await env.GetTargetExtractAsync(),
-    //                 Is.EqualTo(
-    //                     @"Target two, chapter fourteen, verse fifty-five.
-    // Target two, chapter fourteen, verse fifty-six.
-    // Target one, chapter one, verse one.
-    // Target one, chapter one, verse two.
-    // Target one, chapter one, verse three.
+    [Test]
+    public async Task ParallelCorpusLogic()
+    {
+        using TestEnvironment env = new();
+        var corpora = new List<ParallelCorpus>()
+        {
+            new ParallelCorpus()
+            {
+                Id = "1",
+                SourceCorpora = new List<MonolingualCorpus>()
+                {
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-source1") },
+                        TrainOnChapters = new()
+                        {
+                            {
+                                "MAT",
+                                new() { 1 }
+                            },
+                            {
+                                "LEV",
+                                new() { }
+                            }
+                        },
+                        PretranslateChapters = new()
+                        {
+                            {
+                                "1CH",
+                                new() { }
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-source2") },
+                        TrainOnChapters = new()
+                        {
+                            {
+                                "MAT",
+                                new() { 1 }
+                            },
+                            {
+                                "MRK",
+                                new() { }
+                            }
+                        },
+                    },
+                },
+                TargetCorpora = new List<MonolingualCorpus>()
+                {
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-target1") },
+                        TrainOnChapters = new()
+                        {
+                            {
+                                "MAT",
+                                new() { 1 }
+                            },
+                            {
+                                "MRK",
+                                new() { }
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Id = "_2",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-target2") },
+                        TrainOnChapters = new()
+                        {
+                            {
+                                "MAT",
+                                new() { 1 }
+                            },
+                            {
+                                "MRK",
+                                new() { }
+                            },
+                            {
+                                "LEV",
+                                new() { }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        await env.RunBuildJobAsync(corpora, useKeyTerms: false);
+        Assert.Multiple(async () =>
+        {
+            Assert.That(
+                await env.GetSourceExtractAsync(),
+                Is.EqualTo(
+                    @"Source one, chapter fourteen, verse fifty-five. Segment b.
+Source one, chapter fourteen, verse fifty-six.
+Source one, chapter one, verse one.
+Source two, chapter one, verse two.
+Source two, chapter one, verse three.
+Source two, chapter one, verse four.
+Source two, chapter one, verse five. Source two, chapter one, verse six.
+Source two, chapter one, verse seven. Source two, chapter one, verse eight.
+Source two, chapter one, verse nine. Source two, chapter one, verse ten.
+Source two, chapter one, verse one.
+"
+                )
+            );
+            Assert.That(
+                await env.GetTargetExtractAsync(),
+                Is.EqualTo(
+                    @"Target two, chapter fourteen, verse fifty-five.
+Target two, chapter fourteen, verse fifty-six.
+Target one, chapter one, verse one.
+Target one, chapter one, verse two.
+Target one, chapter one, verse three.
 
-    // Target one, chapter one, verse five and six.
-    // Target one, chapter one, verse seven and eight.
-    // Target one, chapter one, verse nine and ten.
+Target one, chapter one, verse five and six.
+Target one, chapter one, verse seven and eight.
+Target one, chapter one, verse nine and ten.
 
-    // "
-    //                 )
-    //             );
-    //         });
-    //         JsonArray? pretranslations = await env.GetPretranslationsAsync();
-    //         Assert.That(pretranslations, Is.Not.Null);
-    //         Assert.That(pretranslations!.Count, Is.EqualTo(7), pretranslations.ToJsonString());
-    //         Assert.That(
-    //             pretranslations[2]!["translation"]!.ToString(),
-    //             Is.EqualTo("Source one, chapter twelve, verse one.")
-    //         );
-    //     }
+"
+                )
+            );
+        });
+        JsonArray? pretranslations = await env.GetPretranslationsAsync();
+        Assert.That(pretranslations, Is.Not.Null);
+        Assert.That(pretranslations!.Count, Is.EqualTo(37), pretranslations.ToJsonString());
+        Assert.That(
+            pretranslations[2]!["translation"]!.ToString(),
+            Is.EqualTo("Source one, chapter twelve, verse one.")
+        );
+    }
 
     private class TestEnvironment : DisposableBase
     {
@@ -938,8 +937,24 @@ public class PreprocessBuildJobTests
             TranslationEngineType engineType = TranslationEngineType.Nmt
         )
         {
+            return RunBuildJobAsync([corpus], useKeyTerms, engineId, engineType);
+        }
+
+        public Task RunBuildJobAsync(
+            IEnumerable<ParallelCorpus> corpora,
+            bool useKeyTerms = true,
+            string engineId = "engine1",
+            TranslationEngineType engineType = TranslationEngineType.Nmt
+        )
+        {
             return GetBuildJob(engineType)
-                .RunAsync(engineId, "build1", [corpus], useKeyTerms ? null : "{\"use_key_terms\":false}", default);
+                .RunAsync(
+                    engineId,
+                    "build1",
+                    corpora.ToList(),
+                    useKeyTerms ? null : "{\"use_key_terms\":false}",
+                    default
+                );
         }
 
         public async Task<string> GetSourceExtractAsync()
