@@ -4,23 +4,23 @@ public interface IPlatformService
 {
     Task IncrementTrainSizeAsync(string engineId, int count = 1, CancellationToken cancellationToken = default);
 
-    Task UpdateBuildStatusAsync(
+    Task UpdateJobStatusAsync(
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
         CancellationToken cancellationToken = default
     );
-    Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default);
-    Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default);
-    Task BuildCompletedAsync(
+    Task UpdateJobStatusAsync(string buildId, int step, CancellationToken cancellationToken = default);
+    Task JobStartedAsync(string buildId, CancellationToken cancellationToken = default);
+    Task JobCompletedAsync(
         string buildId,
         int trainSize,
         double confidence,
         CancellationToken cancellationToken = default
     );
-    Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default);
-    Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default);
-    Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default);
+    Task JobCanceledAsync(string buildId, CancellationToken cancellationToken = default);
+    Task JobFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default);
+    Task JobRestartingAsync(string buildId, CancellationToken cancellationToken = default);
 
     Task InsertPretranslationsAsync(
         string engineId,

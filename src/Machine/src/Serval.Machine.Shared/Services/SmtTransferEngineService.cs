@@ -230,7 +230,7 @@ public class SmtTransferEngineService(
             {
                 (buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(engineId, ct);
                 if (buildId is not null && jobState is BuildJobState.None)
-                    await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+                    await _platformService.JobCanceledAsync(buildId, CancellationToken.None);
             },
             cancellationToken: cancellationToken
         );

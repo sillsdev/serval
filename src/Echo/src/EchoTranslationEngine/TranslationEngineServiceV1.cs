@@ -61,15 +61,15 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
         return Task.FromResult(response);
     }
 
-    public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
+    public override async Task<Empty> StartJob(StartJobRequest request, ServerCallContext context)
     {
         await _taskQueue.QueueBackgroundWorkItemAsync(
             async (services, cancellationToken) =>
             {
                 TranslationPlatformApi.TranslationPlatformApiClient client =
                     services.GetRequiredService<TranslationPlatformApi.TranslationPlatformApiClient>();
-                await client.BuildStartedAsync(
-                    new BuildStartedRequest { BuildId = request.BuildId },
+                await client.JobStartedAsync(
+                    new JobStartedRequest { JobId = request.JobId },
                     cancellationToken: cancellationToken
                 );
 
@@ -80,7 +80,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                             client.InsertPretranslations(cancellationToken: cancellationToken)
                     )
                     {
-                        foreach (Corpus corpus in request.Corpora)
+                        foreach (TranslationCorpus corpus in request.Corpora)
                         {
                             if (!corpus.PretranslateAll && corpus.PretranslateTextIds.Count == 0)
                                 continue;
@@ -223,22 +223,22 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                         await call;
                     }
 
-                    await client.BuildCompletedAsync(
-                        new BuildCompletedRequest { BuildId = request.BuildId, Confidence = 1.0 },
+                    await client.JobCompletedAsync(
+                        new JobCompletedRequest { JobId = request.JobId, Confidence = 1.0 },
                         cancellationToken: CancellationToken.None
                     );
                 }
                 catch (OperationCanceledException)
                 {
-                    await client.BuildCanceledAsync(
-                        new BuildCanceledRequest { BuildId = request.BuildId },
+                    await client.JobCanceledAsync(
+                        new JobCanceledRequest { JobId = request.JobId },
                         cancellationToken: CancellationToken.None
                     );
                 }
                 catch (Exception e)
                 {
-                    await client.BuildFaultedAsync(
-                        new BuildFaultedRequest { BuildId = request.BuildId, Message = e.Message },
+                    await client.JobFaultedAsync(
+                        new JobFaultedRequest { JobId = request.JobId, Message = e.Message },
                         cancellationToken: CancellationToken.None
                     );
                 }

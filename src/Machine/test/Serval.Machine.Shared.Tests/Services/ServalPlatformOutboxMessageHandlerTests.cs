@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Serval.Base;
 using Serval.Translation.V1;
 
 namespace Serval.Machine.Shared.Services;
@@ -16,11 +17,11 @@ public class ServalPlatformOutboxMessageHandlerTests
 
         await env.Handler.HandleMessageAsync(
             ServalPlatformOutboxConstants.BuildStarted,
-            JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "C" }),
+            JsonSerializer.Serialize(new JobStartedRequest { JobId = "C" }),
             null
         );
 
-        _ = env.Client.Received(1).BuildStartedAsync(Arg.Is<BuildStartedRequest>(x => x.BuildId == "C"));
+        _ = env.Client.Received(1).JobStartedAsync(Arg.Is<JobStartedRequest>(x => x.JobId == "C"));
     }
 
     [Test]
@@ -71,10 +72,10 @@ public class ServalPlatformOutboxMessageHandlerTests
         public TestEnvironment()
         {
             Client = Substitute.For<TranslationPlatformApi.TranslationPlatformApiClient>();
-            Client.BuildStartedAsync(Arg.Any<BuildStartedRequest>()).Returns(CreateEmptyUnaryCall());
-            Client.BuildCanceledAsync(Arg.Any<BuildCanceledRequest>()).Returns(CreateEmptyUnaryCall());
-            Client.BuildFaultedAsync(Arg.Any<BuildFaultedRequest>()).Returns(CreateEmptyUnaryCall());
-            Client.BuildCompletedAsync(Arg.Any<BuildCompletedRequest>()).Returns(CreateEmptyUnaryCall());
+            Client.JobStartedAsync(Arg.Any<JobStartedRequest>()).Returns(CreateEmptyUnaryCall());
+            Client.JobCanceledAsync(Arg.Any<JobCanceledRequest>()).Returns(CreateEmptyUnaryCall());
+            Client.JobFaultedAsync(Arg.Any<JobFaultedRequest>()).Returns(CreateEmptyUnaryCall());
+            Client.JobCompletedAsync(Arg.Any<JobCompletedRequest>()).Returns(CreateEmptyUnaryCall());
             Client
                 .IncrementTranslationEngineCorpusSizeAsync(Arg.Any<IncrementTranslationEngineCorpusSizeRequest>())
                 .Returns(CreateEmptyUnaryCall());

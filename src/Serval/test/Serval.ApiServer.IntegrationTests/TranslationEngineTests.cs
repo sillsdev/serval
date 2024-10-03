@@ -1,4 +1,5 @@
 using Google.Protobuf.WellKnownTypes;
+using Serval.Base;
 using Serval.Translation.V1;
 using static Serval.ApiServer.Utils;
 
@@ -1235,7 +1236,7 @@ public class TranslationEngineTests
         {
             var build = new Translation.Models.TranslationBuildJob { EngineRef = engineId };
             await _env.Builds.InsertAsync(build);
-            _env.NmtClient.CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
+            _env.NmtClient.CancelJobAsync(Arg.Any<CancelJobRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
         }
 
@@ -1269,7 +1270,7 @@ public class TranslationEngineTests
         var ptcc = new PretranslateCorpusConfig { CorpusId = addedCorpus.Id, TextIds = ["all"] };
         var tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
         Client.TranslationBuild build = await client.StartBuildAsync(engineId, tbc);
-        _env.NmtClient.StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
+        _env.NmtClient.StartJobAsync(Arg.Any<StartJobRequest>(), null, null, Arg.Any<CancellationToken>())
             .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
@@ -1406,10 +1407,10 @@ public class TranslationEngineTests
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             EchoClient
-                .StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
+                .StartJobAsync(Arg.Any<StartJobRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             EchoClient
-                .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
+                .CancelJobAsync(Arg.Any<CancelJobRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             EchoClient
                 .GetModelDownloadUrlAsync(
@@ -1519,11 +1520,11 @@ public class TranslationEngineTests
                 },
                 Alignment =
                 {
-                    new Translation.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                    new Translation.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                    new Translation.V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
-                    new Translation.V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new Translation.V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
+                    new Base.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                    new Base.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                    new Base.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
+                    new Base.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
+                    new Base.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
                 },
                 Phrases =
                 {
@@ -1551,10 +1552,10 @@ public class TranslationEngineTests
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             NmtClient
-                .StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
+                .StartJobAsync(Arg.Any<StartJobRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             NmtClient
-                .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
+                .CancelJobAsync(Arg.Any<CancelJobRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             NmtClient
                 .GetWordGraphAsync(Arg.Any<GetWordGraphRequest>(), null, null, Arg.Any<CancellationToken>())

@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Serval.Base;
 using Serval.Translation.V1;
 
 namespace Serval.Machine.Shared.Services;
@@ -88,7 +89,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         return Empty;
     }
 
-    public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
+    public override async Task<Empty> StartJob(StartJobRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         Models.TranslationCorpus[] corpora = request.Corpora.Select(Map).ToArray();
@@ -96,7 +97,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         {
             await engineService.StartBuildAsync(
                 request.EngineId,
-                request.BuildId,
+                request.JobId,
                 request.HasOptions ? request.Options : null,
                 corpora,
                 context.CancellationToken
@@ -109,7 +110,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         return Empty;
     }
 
-    public override async Task<Empty> CancelBuild(CancelBuildRequest request, ServerCallContext context)
+    public override async Task<Empty> CancelJob(CancelJobRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         try
@@ -247,14 +248,14 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static IEnumerable<Translation.V1.AlignedWordPair> Map(WordAlignmentMatrix source)
+    private static IEnumerable<Base.AlignedWordPair> Map(WordAlignmentMatrix source)
     {
         for (int i = 0; i < source.RowCount; i++)
         {
             for (int j = 0; j < source.ColumnCount; j++)
             {
                 if (source[i, j])
-                    yield return new Translation.V1.AlignedWordPair { SourceIndex = i, TargetIndex = j };
+                    yield return new Base.AlignedWordPair { SourceIndex = i, TargetIndex = j };
             }
         }
     }
@@ -269,7 +270,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.TranslationCorpus Map(Translation.V1.Corpus source)
+    private static Models.TranslationCorpus Map(Translation.V1.TranslationCorpus source)
     {
         var pretranslateChapters = source.PretranslateChapters.ToDictionary(
             kvp => kvp.Key,
@@ -298,7 +299,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.CorpusFile Map(Translation.V1.CorpusFile source)
+    private static Models.CorpusFile Map(Base.CorpusFile source)
     {
         return new Models.CorpusFile
         {

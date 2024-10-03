@@ -1,3 +1,4 @@
+using Serval.Base;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -21,18 +22,15 @@ public class PlatformServiceTests
             }
         );
         await env.Builds.InsertAsync(new TranslationBuildJob() { Id = "b0", EngineRef = "e0" });
-        await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.JobStarted(new JobStartedRequest() { JobId = "b0" }, env.ServerCallContext);
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Active));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.True);
 
-        await env.PlatformService.BuildCanceled(new BuildCanceledRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.JobCanceled(new JobCanceledRequest() { JobId = "b0" }, env.ServerCallContext);
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Canceled));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        await env.PlatformService.BuildRestarting(
-            new BuildRestartingRequest() { BuildId = "b0" },
-            env.ServerCallContext
-        );
+        await env.PlatformService.JobRestarting(new JobRestartingRequest() { JobId = "b0" }, env.ServerCallContext);
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Pending));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
@@ -40,27 +38,24 @@ public class PlatformServiceTests
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
 
-        await env.PlatformService.BuildFaulted(new BuildFaultedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.JobFaulted(new JobFaultedRequest() { JobId = "b0" }, env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Faulted));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        await env.PlatformService.BuildRestarting(
-            new BuildRestartingRequest() { BuildId = "b0" },
-            env.ServerCallContext
-        );
+        await env.PlatformService.JobRestarting(new JobRestartingRequest() { JobId = "b0" }, env.ServerCallContext);
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
-        await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.JobCompleted(new JobCompletedRequest() { JobId = "b0" }, env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
-        await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.JobStarted(new JobStartedRequest() { JobId = "b0" }, env.ServerCallContext);
         await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
-        await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.JobCompleted(new JobCompletedRequest() { JobId = "b0" }, env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
     }
 
     [Test]
-    public async Task UpdateBuildStatusAsync()
+    public async Task UpdateJobStatusAsync()
     {
         var env = new TestEnvironment();
         await env.Engines.InsertAsync(
@@ -77,10 +72,10 @@ public class PlatformServiceTests
         await env.Builds.InsertAsync(new TranslationBuildJob() { Id = "b0", EngineRef = "e0" });
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.Null);
         Assert.That(env.Builds.Get("b0").PercentCompleted, Is.Null);
-        await env.PlatformService.UpdateBuildStatus(
-            new UpdateBuildStatusRequest()
+        await env.PlatformService.UpdateJobStatus(
+            new UpdateJobStatusRequest()
             {
-                BuildId = "b0",
+                JobId = "b0",
                 QueueDepth = 1,
                 PercentCompleted = 0.5
             },

@@ -357,7 +357,7 @@ public static class IMachineBuilderExtensions
                                 new MethodName
                                 {
                                     Service = "serval.translation.v1.TranslationPlatformApi",
-                                    Method = "UpdateBuildStatus"
+                                    Method = "UpdateJobStatus"
                                 }
                             }
                         },

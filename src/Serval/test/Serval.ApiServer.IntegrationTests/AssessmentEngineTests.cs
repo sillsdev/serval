@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Serval.Assessment.Models;
 using Serval.Assessment.V1;
+using Serval.Base;
 using static Serval.ApiServer.Utils;
 
 namespace Serval.ApiServer;

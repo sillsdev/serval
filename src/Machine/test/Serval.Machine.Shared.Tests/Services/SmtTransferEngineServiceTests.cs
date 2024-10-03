@@ -113,7 +113,7 @@ public class SmtTransferEngineServiceTests
         engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Pending));
-        _ = env.PlatformService.Received().BuildRestartingAsync(BuildId1);
+        _ = env.PlatformService.Received().JobRestartingAsync(BuildId1);
         env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
         env.StartServer();
         await env.WaitForBuildToFinishAsync();

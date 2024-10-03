@@ -1,4 +1,5 @@
 ﻿using Serval.Assessment.V1;
+using Serval.Base;
 
 namespace Serval.Assessment.Services;
 
@@ -194,12 +195,7 @@ public class AssessmentEngineService(
         try
         {
             await client.CancelJobAsync(
-                new CancelJobRequest
-                {
-                    EngineType = engine.Type,
-                    EngineId = engine.Id,
-                    JobId = jobId
-                },
+                new CancelJobRequest { EngineType = engine.Type, EngineId = engine.Id, },
                 cancellationToken: cancellationToken
             );
         }
@@ -225,17 +221,17 @@ public class AssessmentEngineService(
         );
     }
 
-    private V1.Corpus Map(Shared.Models.Corpus source)
+    private Base.Corpus Map(Shared.Models.Corpus source)
     {
-        return new V1.Corpus { Language = source.Language, Files = { source.Files.Select(Map) } };
+        return new Base.Corpus { Language = source.Language, Files = { source.Files.Select(Map) } };
     }
 
-    private V1.CorpusFile Map(Shared.Models.CorpusFile source)
+    private Base.CorpusFile Map(Shared.Models.CorpusFile source)
     {
-        return new V1.CorpusFile
+        return new Base.CorpusFile
         {
             TextId = source.TextId,
-            Format = (V1.FileFormat)source.Format,
+            Format = (Base.FileFormat)source.Format,
             Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
         };
     }

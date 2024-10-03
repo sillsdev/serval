@@ -1,0 +1,65 @@
+﻿syntax = "proto3";
+
+package serval.word_alignment.v1;
+
+import "google/protobuf/empty.proto";
+import "Protos/serval/base/engine.proto";
+
+service WordAlignmentEngineApi {
+    rpc Create(CreateRequest) returns (google.protobuf.Empty);
+    rpc Delete(serval.base.DeleteRequest) returns (google.protobuf.Empty);
+    rpc GetWordAlignment(GetWordAlignmentRequest) returns (GetWordAlignmentResponse);
+    rpc StartJob(StartJobRequest) returns (google.protobuf.Empty);
+    rpc CancelJob(serval.base.CancelJobRequest) returns (google.protobuf.Empty);
+    rpc GetQueueSize(serval.base.GetQueueSizeRequest) returns (serval.base.GetQueueSizeResponse);
+}
+
+message CreateRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    optional string engine_name = 3;
+    string source_language = 4;
+    string target_language = 5;
+}
+
+message StartJobRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string job_id = 3;
+    optional string options = 4;
+    repeated WordAlgnmentCorpus corpora = 5;
+}
+
+message GetWordAlignmentRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string source_segment = 3;
+    string target_segment = 4;
+    int32 n = 5;
+}
+
+message GetWordAlignmentResponse {
+    WordAlignmentResult results = 1;
+}
+
+message WordAlignmentResult {
+    repeated string source_tokens = 1;
+    repeated string target_tokens = 2;
+    repeated double confidences = 3;
+    repeated serval.base.AlignedWordPair alignment = 4;
+}
+
+message WordAlgnmentCorpus {
+    string id = 1;
+    string source_language = 2;
+    string target_language = 3;
+    bool train_on_all = 4;
+    bool word_align_all = 5;
+    map<string, serval.base.ScriptureChapters> train_on_chapters = 6;
+    map<string, serval.base.ScriptureChapters> word_align_chapters = 7;
+    repeated string train_on_text_ids = 8;
+    repeated string word_align_text_ids = 9;
+    repeated serval.base.CorpusFile source_files = 10;
+    repeated serval.base.CorpusFile target_files = 11;
+}
+

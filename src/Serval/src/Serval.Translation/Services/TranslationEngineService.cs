@@ -1,4 +1,5 @@
 ﻿using MassTransit.Mediator;
+using Serval.Base;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -213,7 +214,7 @@ public class TranslationEngineService(
             var trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
             TranslationEngineApi.TranslationEngineApiClient client =
                 _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-            Dictionary<string, List<int>> GetChapters(V1.Corpus corpus, string scriptureRange)
+            Dictionary<string, List<int>> GetChapters(TranslationCorpus corpus, string scriptureRange)
             {
                 try
                 {
@@ -231,16 +232,16 @@ public class TranslationEngineService(
                     );
                 }
             }
-            var request = new StartBuildRequest
+            var request = new StartJobRequest
             {
                 EngineType = engine.Type,
                 EngineId = engine.Id,
-                BuildId = build.Id,
+                JobId = build.Id,
                 Corpora =
                 {
                     engine.Corpora.Select(c =>
                     {
-                        V1.Corpus corpus = Map(c);
+                        TranslationCorpus corpus = Map(c);
                         if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
                         {
                             corpus.PretranslateAll =
@@ -328,24 +329,24 @@ public class TranslationEngineService(
             // Log the build request summary
             try
             {
-                var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
+                var jobRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
                 // correct build options parsing
-                buildRequestSummary.Remove("Options");
+                jobRequestSummary.Remove("Options");
                 try
                 {
-                    buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
+                    jobRequestSummary.Add("Options", JsonNode.Parse(request.Options));
                 }
                 catch (JsonException)
                 {
-                    buildRequestSummary.Add(
+                    jobRequestSummary.Add(
                         "Options",
                         "Build \"Options\" failed parsing: " + (request.Options ?? "null")
                     );
                 }
-                buildRequestSummary.Add("Event", "BuildRequest");
-                buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
-                buildRequestSummary.Add("ClientId", engine.Owner);
-                _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
+                jobRequestSummary.Add("Event", "JobRequest");
+                jobRequestSummary.Add("ModelRevision", engine.ModelRevision);
+                jobRequestSummary.Add("ClientId", engine.Owner);
+                _logger.LogInformation("{request}", jobRequestSummary.ToJsonString());
             }
             catch (JsonException)
             {
@@ -353,7 +354,7 @@ public class TranslationEngineService(
                 _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
             }
 
-            await client.StartBuildAsync(request, cancellationToken: cancellationToken);
+            await client.StartJobAsync(request, cancellationToken: cancellationToken);
         }
         catch
         {
@@ -372,8 +373,8 @@ public class TranslationEngineService(
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         try
         {
-            await client.CancelBuildAsync(
-                new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id },
+            await client.CancelJobAsync(
+                new CancelJobRequest { EngineType = engine.Type, EngineId = engine.Id },
                 cancellationToken: cancellationToken
             );
         }
@@ -542,7 +543,7 @@ public class TranslationEngineService(
         return source.Values.Cast<Contracts.TranslationSource>().ToHashSet();
     }
 
-    private Shared.Models.AlignedWordPair Map(V1.AlignedWordPair source)
+    private Shared.Models.AlignedWordPair Map(Base.AlignedWordPair source)
     {
         return new Shared.Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
     }
@@ -584,9 +585,9 @@ public class TranslationEngineService(
         };
     }
 
-    private V1.Corpus Map(TrainingCorpus source)
+    private TranslationCorpus Map(TrainingCorpus source)
     {
-        return new V1.Corpus
+        return new TranslationCorpus
         {
             Id = source.Id,
             SourceLanguage = source.SourceLanguage,
@@ -596,12 +597,12 @@ public class TranslationEngineService(
         };
     }
 
-    private V1.CorpusFile Map(Shared.Models.CorpusFile source)
+    private Base.CorpusFile Map(Shared.Models.CorpusFile source)
     {
-        return new V1.CorpusFile
+        return new Base.CorpusFile
         {
             TextId = source.TextId,
-            Format = (V1.FileFormat)source.Format,
+            Format = (Base.FileFormat)source.Format,
             Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
         };
     }

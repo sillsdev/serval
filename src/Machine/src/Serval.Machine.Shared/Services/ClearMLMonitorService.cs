@@ -230,7 +230,7 @@ public class ClearMLMonitorService(
             {
                 if (!await buildJobService.BuildJobStartedAsync(engineId, buildId, ct))
                     return false;
-                await platformService.BuildStartedAsync(buildId, CancellationToken.None);
+                await platformService.JobStartedAsync(buildId, CancellationToken.None);
                 return true;
             },
             cancellationToken: cancellationToken
@@ -285,7 +285,7 @@ public class ClearMLMonitorService(
             await dataAccessContext.WithTransactionAsync(
                 async (ct) =>
                 {
-                    await platformService.BuildFaultedAsync(buildId, message, ct);
+                    await platformService.JobFaultedAsync(buildId, message, ct);
                     await buildJobService.BuildJobFinishedAsync(
                         engineId,
                         buildId,
@@ -317,7 +317,7 @@ public class ClearMLMonitorService(
             await dataAccessContext.WithTransactionAsync(
                 async (ct) =>
                 {
-                    await platformService.BuildCanceledAsync(buildId, ct);
+                    await platformService.JobCanceledAsync(buildId, ct);
                     await buildJobService.BuildJobFinishedAsync(
                         engineId,
                         buildId,
@@ -358,7 +358,7 @@ public class ClearMLMonitorService(
         {
             return;
         }
-        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, cancellationToken);
+        await platformService.UpdateJobStatusAsync(buildId, progressStatus, queueDepth, cancellationToken);
         _curBuildStatus[buildId] = progressStatus;
     }
 

@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Serval.Base;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -20,13 +21,13 @@ public class TranslationPlatformServiceV1(
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
-    public override async Task<Empty> BuildStarted(BuildStartedRequest request, ServerCallContext context)
+    public override async Task<Empty> JobStarted(JobStartedRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 TranslationBuildJob? build = await _builds.UpdateAsync(
-                    request.BuildId,
+                    request.JobId,
                     u => u.Set(b => b.State, JobState.Active),
                     cancellationToken: ct
                 );
@@ -56,13 +57,13 @@ public class TranslationPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> BuildCompleted(BuildCompletedRequest request, ServerCallContext context)
+    public override async Task<Empty> JobCompleted(JobCompletedRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 TranslationBuildJob? build = await _builds.UpdateAsync(
-                    request.BuildId,
+                    request.JobId,
                     u =>
                         u.Set(b => b.State, JobState.Completed)
                             .Set(b => b.Message, "Completed")
@@ -109,13 +110,13 @@ public class TranslationPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> BuildCanceled(BuildCanceledRequest request, ServerCallContext context)
+    public override async Task<Empty> JobCanceled(JobCanceledRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 TranslationBuildJob? build = await _builds.UpdateAsync(
-                    request.BuildId,
+                    request.JobId,
                     u =>
                         u.Set(b => b.Message, "Canceled")
                             .Set(b => b.DateFinished, DateTime.UtcNow)
@@ -158,13 +159,13 @@ public class TranslationPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> BuildFaulted(BuildFaultedRequest request, ServerCallContext context)
+    public override async Task<Empty> JobFaulted(JobFaultedRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 TranslationBuildJob? build = await _builds.UpdateAsync(
-                    request.BuildId,
+                    request.JobId,
                     u =>
                         u.Set(b => b.State, JobState.Faulted)
                             .Set(b => b.Message, request.Message)
@@ -207,13 +208,13 @@ public class TranslationPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> BuildRestarting(BuildRestartingRequest request, ServerCallContext context)
+    public override async Task<Empty> JobRestarting(JobRestartingRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 TranslationBuildJob? build = await _builds.UpdateAsync(
-                    request.BuildId,
+                    request.JobId,
                     u =>
                         u.Set(b => b.Message, "Restarting")
                             .Set(b => b.Step, 0)
@@ -240,10 +241,10 @@ public class TranslationPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> UpdateBuildStatus(UpdateBuildStatusRequest request, ServerCallContext context)
+    public override async Task<Empty> UpdateJobStatus(UpdateJobStatusRequest request, ServerCallContext context)
     {
         await _builds.UpdateAsync(
-            b => b.Id == request.BuildId && (b.State == JobState.Active || b.State == JobState.Pending),
+            b => b.Id == request.JobId && (b.State == JobState.Active || b.State == JobState.Pending),
             u =>
             {
                 u.Set(b => b.Step, request.Step);
