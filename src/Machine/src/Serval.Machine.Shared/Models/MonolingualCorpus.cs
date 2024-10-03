@@ -1,0 +1,12 @@
+namespace Serval.Machine.Shared.Models;
+
+public record MonolingualCorpus
+{
+    public required string Id { get; set; }
+    public required string Language { get; set; }
+    public required IReadOnlyList<CorpusFile> Files { get; set; }
+    public HashSet<string>? TrainOnTextIds { get; set; }
+    public Dictionary<string, HashSet<int>>? TrainOnChapters { get; set; }
+    public HashSet<string>? PretranslateTextIds { get; set; }
+    public Dictionary<string, HashSet<int>>? PretranslateChapters { get; set; }
+}

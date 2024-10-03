@@ -56,8 +56,8 @@ public interface IEngineService
     Task<ParallelCorpus> UpdateParallelCorpusAsync(
         string engineId,
         string parallelCorpusId,
-        IReadOnlyList<ParallelCorpusSubcorpus>? sourceCorpora,
-        IReadOnlyList<ParallelCorpusSubcorpus>? targetCorpora,
+        IReadOnlyList<MonolingualCorpus>? sourceCorpora,
+        IReadOnlyList<MonolingualCorpus>? targetCorpora,
         CancellationToken cancellationToken = default
     );
     Task DeleteParallelCorpusAsync(

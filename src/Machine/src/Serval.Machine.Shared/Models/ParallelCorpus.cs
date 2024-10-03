@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Models;
+﻿namespace Serval.Machine.Shared.Models;
 
 public record ParallelCorpus
 {

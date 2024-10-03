@@ -69,7 +69,7 @@ message StartBuildRequest {
     string engine_id = 2;
     string build_id = 3;
     optional string options = 4;
-    repeated Corpus corpora = 5;
+    repeated ParallelCorpus corpora = 5;
 }
 
 message CancelBuildRequest {
@@ -152,18 +152,20 @@ message WordGraph {
     repeated WordGraphArc arcs = 4;
 }
 
-message Corpus {
+message ParallelCorpus {
     string id = 1;
-    string source_language = 2;
-    string target_language = 3;
-    bool train_on_all = 4;
-    bool pretranslate_all = 5;
-    map<string, ScriptureChapters> train_on_chapters = 6;
-    map<string, ScriptureChapters> pretranslate_chapters = 7;
-    repeated string train_on_text_ids = 8;
-    repeated string pretranslate_text_ids = 9;
-    repeated CorpusFile source_files = 10;
-    repeated CorpusFile target_files = 11;
+    repeated MonolingualCorpus source_corpora = 2;
+    repeated MonolingualCorpus target_corpora = 3;
+}
+
+message MonolingualCorpus {
+    string id = 1;
+    string language = 2;
+    map<string, ScriptureChapters> train_on_chapters = 5;
+    map<string, ScriptureChapters> pretranslate_chapters = 6;
+    repeated string train_on_text_ids = 7;
+    repeated string pretranslate_text_ids = 8;
+    repeated CorpusFile files = 9;
 }
 
 message ScriptureChapters {

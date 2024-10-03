@@ -80,21 +80,22 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                             client.InsertPretranslations(cancellationToken: cancellationToken)
                     )
                     {
-                        foreach (Corpus corpus in request.Corpora)
+                        foreach (ParallelCorpus corpus in request.Corpora)
                         {
-                            if (!corpus.PretranslateAll && corpus.PretranslateTextIds.Count == 0)
-                                continue;
-
                             var sourceFiles = corpus
-                                .SourceFiles.Where(f =>
-                                    (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(f.TextId))
-                                    && f.Format == FileFormat.Text
+                                .SourceCorpora.SelectMany(sc =>
+                                    sc.Files.Where(f =>
+                                        (sc.PretranslateTextIds is null || sc.PretranslateTextIds.Contains(f.TextId))
+                                        && f.Format == FileFormat.Text
+                                    )
                                 )
                                 .ToDictionary(f => f.TextId, f => f.Location);
                             var targetFiles = corpus
-                                .TargetFiles.Where(f =>
-                                    (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(f.TextId))
-                                    && f.Format == FileFormat.Text
+                                .TargetCorpora.SelectMany(tc =>
+                                    tc.Files.Where(f =>
+                                        (tc.PretranslateTextIds is null || tc.PretranslateTextIds.Contains(f.TextId))
+                                        && f.Format == FileFormat.Text
+                                    )
                                 )
                                 .ToDictionary(f => f.TextId, f => f.Location);
 
