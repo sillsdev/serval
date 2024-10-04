@@ -4,19 +4,19 @@ namespace Serval.Translation.Contracts;
 
 public record TranslationParallelCorpusUpdateConfigDto : IValidatableObject
 {
-    public IReadOnlyList<string>? SourceCorpusRefs { get; init; }
+    public IReadOnlyList<string>? SourceCorpusIds { get; init; }
 
-    public IReadOnlyList<string>? TargetCorpusRefs { get; init; }
+    public IReadOnlyList<string>? TargetCorpusIds { get; init; }
 
     public IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(
         ValidationContext validationContext
     )
     {
-        if (SourceCorpusRefs is null && TargetCorpusRefs is null)
+        if (SourceCorpusIds is null && TargetCorpusIds is null)
         {
             yield return new System.ComponentModel.DataAnnotations.ValidationResult(
                 "At least one field must be specified.",
-                [nameof(SourceCorpusRefs), nameof(TargetCorpusRefs)]
+                [nameof(SourceCorpusIds), nameof(TargetCorpusIds)]
             );
         }
     }

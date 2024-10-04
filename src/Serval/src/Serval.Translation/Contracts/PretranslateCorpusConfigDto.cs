@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public record PretranslateCorpusConfigDto //TODO do we really need the parallel Translate/Pretranslate corpora classes since identical? Maybe `FilteredCorpus...`?
+public record PretranslateCorpusConfigDto
 {
     public string? CorpusId { get; init; }
 
@@ -10,5 +10,4 @@ public record PretranslateCorpusConfigDto //TODO do we really need the parallel 
 
     public string? ParallelCorpusId { get; init; }
     public IReadOnlyList<ParallelCorpusFilterConfigDto>? SourceFilters { get; init; }
-    public IReadOnlyList<ParallelCorpusFilterConfigDto>? TargetFilters { get; init; }
 }

@@ -4318,7 +4318,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
         /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationCorpus> AddParallelCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationCorpus> AddParallelCorpusAsync(string id, TranslationParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -4341,7 +4341,7 @@ namespace Serval.Client
         /// <param name="parallelCorpusId">The corpus id</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationCorpus> UpdateCorpus2Async(string id, TranslationParallelCorpusUpdateConfig corpusConfig, string corpusId, string? parallelCorpusId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationCorpus> UpdateParallelCorpusAsync(string id, TranslationParallelCorpusUpdateConfig corpusConfig, string corpusId, string? parallelCorpusId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -6154,7 +6154,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
         /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationCorpus> AddParallelCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationCorpus> AddParallelCorpusAsync(string id, TranslationParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -6380,7 +6380,7 @@ namespace Serval.Client
         /// <param name="parallelCorpusId">The corpus id</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationCorpus> UpdateCorpus2Async(string id, TranslationParallelCorpusUpdateConfig corpusConfig, string corpusId, string? parallelCorpusId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationCorpus> UpdateParallelCorpusAsync(string id, TranslationParallelCorpusUpdateConfig corpusConfig, string corpusId, string? parallelCorpusId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -9685,13 +9685,32 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TranslationParallelCorpusConfig
+    {
+        /// <summary>
+        /// The corpus name.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Name { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceCorpusIds", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> SourceCorpusIds { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> TargetCorpusIds { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class TranslationParallelCorpusUpdateConfig
     {
-        [Newtonsoft.Json.JsonProperty("sourceCorpusRefs", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<string>? SourceCorpusRefs { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("sourceCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? SourceCorpusIds { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetCorpusRefs", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<string>? TargetCorpusRefs { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? TargetCorpusIds { get; set; } = default!;
 
     }
 
@@ -9712,31 +9731,11 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceCorpora", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationMonolingualCorpus> SourceCorpora { get; set; } = new System.Collections.ObjectModel.Collection<TranslationMonolingualCorpus>();
+        public System.Collections.Generic.IList<ResourceLink> SourceCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
 
         [Newtonsoft.Json.JsonProperty("targetCorpora", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationMonolingualCorpus> TargetCorpora { get; set; } = new System.Collections.ObjectModel.Collection<TranslationMonolingualCorpus>();
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationMonolingualCorpus
-    {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Id { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Name { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("language", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Language { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("files", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<TranslationCorpusFile> Files { get; set; } = new System.Collections.ObjectModel.Collection<TranslationCorpusFile>();
+        public System.Collections.Generic.IList<ResourceLink> TargetCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
 
     }
 
@@ -9901,9 +9900,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<ParallelCorpusFilter>? SourceFilters { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilter>? TargetFilters { get; set; } = default!;
-
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -9949,9 +9945,9 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class ParallelCorpusFilterConfig
     {
-        [Newtonsoft.Json.JsonProperty("corpusRef", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("corpusId", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string CorpusRef { get; set; } = default!;
+        public string CorpusId { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
@@ -9978,9 +9974,6 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<ParallelCorpusFilterConfig>? SourceFilters { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilterConfig>? TargetFilters { get; set; } = default!;
 
     }
 

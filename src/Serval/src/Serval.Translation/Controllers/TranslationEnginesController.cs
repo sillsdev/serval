@@ -527,7 +527,7 @@ public class TranslationEnginesController(
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
-    /// <param name="getDataFileClient"></param>
+    /// <param name="getCorpusClient"></param>
     /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The added corpus</response>
@@ -546,17 +546,22 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationCorpusDto>> AddParallelCorpusAsync(
         [NotNull] string id,
-        [FromBody] TranslationCorpusConfigDto corpusConfig,
-        [FromServices] IRequestClient<GetDataFile> getDataFileClient,
+        [FromBody] TranslationParallelCorpusConfigDto corpusConfig,
+        [FromServices] IRequestClient<GetCorpus> getCorpusClient,
         [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Corpus corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
-        await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
-        TranslationCorpusDto dto = Map(id, corpus);
+        ParallelCorpus corpus = await MapAsync(
+            getCorpusClient,
+            idGenerator.GenerateId(),
+            corpusConfig,
+            cancellationToken
+        );
+        await _engineService.AddParallelCorpusAsync(id, corpus, cancellationToken);
+        TranslationParallelCorpusDto dto = Map(id, corpus);
         return Created(dto.Url, dto);
     }
 
@@ -585,7 +590,7 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationCorpusDto>> UpdateCorpusAsync(
+    public async Task<ActionResult<TranslationCorpusDto>> UpdateParallelCorpusAsync(
         [NotNull] string id,
         [NotNull] string parallelCorpusId,
         [FromBody] TranslationParallelCorpusUpdateConfigDto corpusConfig,
@@ -597,12 +602,12 @@ public class TranslationEnginesController(
         ParallelCorpus parallelCorpus = await _engineService.UpdateParallelCorpusAsync(
             id,
             parallelCorpusId,
-            corpusConfig.SourceCorpusRefs is null
+            corpusConfig.SourceCorpusIds is null
                 ? null
-                : await MapAsync(getCorpusClient, corpusConfig.SourceCorpusRefs, cancellationToken),
-            corpusConfig.TargetCorpusRefs is null
+                : await MapAsync(getCorpusClient, corpusConfig.SourceCorpusIds, cancellationToken),
+            corpusConfig.TargetCorpusIds is null
                 ? null
-                : await MapAsync(getCorpusClient, corpusConfig.TargetCorpusRefs, cancellationToken),
+                : await MapAsync(getCorpusClient, corpusConfig.TargetCorpusIds, cancellationToken),
             cancellationToken
         );
         return Ok(Map(id, parallelCorpus));
@@ -1176,6 +1181,21 @@ public class TranslationEnginesController(
         };
     }
 
+    private async Task<ParallelCorpus> MapAsync(
+        IRequestClient<GetCorpus> getDataFileClient,
+        string corpusId,
+        TranslationParallelCorpusConfigDto source,
+        CancellationToken cancellationToken
+    )
+    {
+        return new ParallelCorpus
+        {
+            Id = corpusId,
+            SourceCorpora = await MapAsync(getDataFileClient, source.SourceCorpusIds, cancellationToken),
+            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken)
+        };
+    }
+
     private async Task<List<CorpusFile>> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
         IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
@@ -1329,8 +1349,7 @@ public class TranslationEnginesController(
                     new PretranslateCorpus
                     {
                         ParallelCorpusRef = pcc.ParallelCorpusId,
-                        SourceFilters = pcc.SourceFilters?.Select(Map).ToList(),
-                        TargetFilters = pcc.TargetFilters?.Select(Map).ToList()
+                        SourceFilters = pcc.SourceFilters?.Select(Map).ToList()
                     }
                 );
             }
@@ -1405,12 +1424,12 @@ public class TranslationEnginesController(
         if (source.TextIds != null && source.ScriptureRange != null)
         {
             throw new InvalidOperationException(
-                $"The parallel corpus filter for corpus {source.CorpusRef} is not valid: At most, one of TextIds and ScriptureRange can be set."
+                $"The parallel corpus filter for corpus {source.CorpusId} is not valid: At most, one of TextIds and ScriptureRange can be set."
             );
         }
         return new ParallelCorpusFilter
         {
-            CorpusRef = source.CorpusRef,
+            CorpusRef = source.CorpusId,
             TextIds = source.TextIds,
             ScriptureRange = source.ScriptureRange
         };
@@ -1502,8 +1521,7 @@ public class TranslationEnginesController(
                         )
                     }
                     : null,
-            SourceFilters = source.SourceFilters?.Select(Map).ToList(),
-            TargetFilters = source.TargetFilters?.Select(Map).ToList()
+            SourceFilters = source.SourceFilters?.Select(Map).ToList()
         };
     }
 
@@ -1650,19 +1668,20 @@ public class TranslationEnginesController(
                 Id = engineId,
                 Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId })
             },
-            SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
-            TargetCorpora = source.TargetCorpora.Select(Map).ToList()
-        };
-    }
-
-    private TranslationMonolingualCorpusDto Map(MonolingualCorpus source)
-    {
-        return new TranslationMonolingualCorpusDto
-        {
-            Id = source.Id,
-            Language = source.Language,
-            Name = source.Name,
-            Files = source.Files.Select(Map).ToList()
+            SourceCorpora = source
+                .SourceCorpora.Select(c => new ResourceLinkDto
+                {
+                    Id = c.Id,
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id })
+                })
+                .ToList(),
+            TargetCorpora = source
+                .TargetCorpora.Select(c => new ResourceLinkDto
+                {
+                    Id = c.Id,
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id })
+                })
+                .ToList()
         };
     }
 

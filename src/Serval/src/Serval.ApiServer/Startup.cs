@@ -75,13 +75,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 cfg.AddAssessmentRepositories();
                 cfg.AddDataFilesRepositories();
                 cfg.AddWebhooksRepositories();
-                cfg.AddCorporaRepository();
             })
             .AddTranslation()
             .AddAssessment()
             .AddDataFiles()
-            .AddWebhooks()
-            .AddCorpora();
+            .AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
 
         services.AddHangfire(c =>
