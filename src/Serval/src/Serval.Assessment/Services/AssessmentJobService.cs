@@ -3,11 +3,11 @@
 public class AssessmentJobService(
     IDataAccessContext dataAccessContext,
     IRepository<AssessmentJob> jobs,
-    IRepository<Result> results
+    IRepository<AssessmentResult> results
 ) : JobService<AssessmentJob>(jobs)
 {
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
-    private readonly IRepository<Result> _results = results;
+    private readonly IRepository<AssessmentResult> _results = results;
 
     public override Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {

@@ -6,7 +6,7 @@ namespace Serval.Assessment.Services;
 public class AssessmentEngineService(
     IRepository<AssessmentEngine> engines,
     IRepository<AssessmentJob> jobs,
-    IRepository<Result> results,
+    IRepository<AssessmentResult> results,
     GrpcClientFactory grpcClientFactory,
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
@@ -15,7 +15,7 @@ public class AssessmentEngineService(
 ) : OwnedEntityServiceBase<AssessmentEngine>(engines), IAssessmentEngineService
 {
     private readonly IRepository<AssessmentJob> _jobs = jobs;
-    private readonly IRepository<Result> _results = results;
+    private readonly IRepository<AssessmentResult> _results = results;
     private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;

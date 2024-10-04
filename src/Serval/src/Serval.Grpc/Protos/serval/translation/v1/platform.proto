@@ -19,5 +19,8 @@ message TranslationEngineCompletedStatistics {
 }
 
 message TranslationResultContent {
-    string pretranslation = 1;
+    string corpus_id = 1;
+    string text_id = 2;
+    repeated string refs = 3;
+    string pretranslation = 4;
 }

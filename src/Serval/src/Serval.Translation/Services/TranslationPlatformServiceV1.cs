@@ -47,9 +47,9 @@ public class TranslationPlatformServiceV1(
         {
             EngineRef = request.EngineId,
             JobRevision = nextJobRevision,
-            CorpusRef = request.CorpusId,
-            TextId = request.TextId,
-            Refs = request.Refs.ToList(),
+            CorpusRef = content.CorpusId,
+            TextId = content.TextId,
+            Refs = content.Refs.ToList(),
             Translation = content.Pretranslation,
         };
     }

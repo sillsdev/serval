@@ -7,6 +7,8 @@ public record AssessmentEngine : IEngine
     public required string Owner { get; init; }
     public string? Name { get; init; }
     public required string Type { get; init; }
+    public bool IsJobRunning { get; init; }
+    public int JobRevision { get; init; }
     public required Corpus Corpus { get; init; }
     public Corpus? ReferenceCorpus { get; init; }
 }

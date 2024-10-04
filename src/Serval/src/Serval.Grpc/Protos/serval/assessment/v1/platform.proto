@@ -4,14 +4,15 @@ package serval.assessment.v1;
 
 import "google/protobuf/empty.proto";
 
-service AssessmentPlatformApi {
-    rpc InsertResults(stream InsertResultsRequest) returns (google.protobuf.Empty);
+
+message AssessmentEngineCompletedStatistics {
+    float confidence = 1;
+    int32 corpus_size = 2;
 }
 
-message InsertResultsRequest {
-    string job_id = 1;
-    string text_id = 2;
-    string ref = 3;
-    optional double score = 4;
-    optional string description = 5;
+message AssessmentResultContent {
+    string text_id = 1;
+    string ref = 2;
+    float score = 3;
+    string description = 4;
 }

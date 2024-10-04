@@ -73,7 +73,7 @@ public class AssessmentEngineTests
 
         AssessmentEnginesClient client = env.CreateClient();
 
-        IList<AssessmentResult> results = await client.GetAllResultsAsync(job.EngineRef, job.Id);
+        IList<Client.AssessmentResult> results = await client.GetAllResultsAsync(job.EngineRef, job.Id);
         Assert.That(results, Has.Count.EqualTo(2));
 
         results = await client.GetAllResultsAsync(job.EngineRef, job.Id, textId: "text1");
@@ -96,7 +96,7 @@ public class AssessmentEngineTests
             _scope = Factory.Services.CreateScope();
             Engines = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentEngine>>();
             DataFiles = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.DataFile>>();
-            Results = _scope.ServiceProvider.GetRequiredService<IRepository<Result>>();
+            Results = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentResult>>();
             Jobs = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentJob>>();
 
             Client = Substitute.For<AssessmentEngineApi.AssessmentEngineApiClient>();
@@ -120,7 +120,7 @@ public class AssessmentEngineTests
         public ServalWebApplicationFactory Factory { get; }
         public IRepository<Assessment.Models.AssessmentEngine> Engines { get; }
         public IRepository<DataFiles.Models.DataFile> DataFiles { get; }
-        public IRepository<Result> Results { get; }
+        public IRepository<Assessment.Models.AssessmentResult> Results { get; }
         public IRepository<Assessment.Models.AssessmentJob> Jobs { get; }
         public AssessmentEngineApi.AssessmentEngineApiClient Client { get; }
 

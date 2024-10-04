@@ -46,8 +46,5 @@ message JobRestartingRequest {
 
 message InsertResultsRequest {
     string engine_id = 1;
-    string corpus_id = 2;
-    string text_id = 3;
-    repeated string refs = 4;
-    string content_serialized = 5;
+    string content_serialized = 2;
 }

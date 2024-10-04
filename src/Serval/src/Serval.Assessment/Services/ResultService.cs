@@ -1,8 +1,10 @@
 ﻿namespace Serval.Assessment.Services;
 
-public class ResultService(IRepository<Result> results) : EntityServiceBase<Result>(results), IResultService
+public class ResultService(IRepository<AssessmentResult> results)
+    : EntityServiceBase<AssessmentResult>(results),
+        IResultService
 {
-    public async Task<IEnumerable<Result>> GetAllAsync(
+    public async Task<IEnumerable<AssessmentResult>> GetAllAsync(
         string engineId,
         string jobId,
         string? textId = null,

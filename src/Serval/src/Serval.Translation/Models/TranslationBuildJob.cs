@@ -6,6 +6,7 @@ public record TranslationBuildJob : IJob
     public int Revision { get; set; } = 1;
     public string? Name { get; init; }
     public required string EngineRef { get; init; }
+    public int? QueueDepth { get; init; }
     public double? PercentCompleted { get; init; }
     public string? Message { get; init; }
     public JobState State { get; init; } = JobState.Pending;
@@ -14,5 +15,4 @@ public record TranslationBuildJob : IJob
     public IReadOnlyList<FilteredCorpus>? TrainOn { get; init; }
     public IReadOnlyList<PretranslateCorpus>? Pretranslate { get; init; }
     public int Step { get; init; }
-    public int? QueueDepth { get; init; }
 }

@@ -459,7 +459,7 @@ public class AssessmentEnginesController(
     {
         await AuthorizeAsync(id, cancellationToken);
 
-        IEnumerable<Result> results = await _resultService.GetAllAsync(id, jobId, textId, cancellationToken);
+        IEnumerable<AssessmentResult> results = await _resultService.GetAllAsync(id, jobId, textId, cancellationToken);
         return Ok(results.Select(Map));
     }
 
@@ -493,7 +493,7 @@ public class AssessmentEnginesController(
     {
         await AuthorizeAsync(id, cancellationToken);
 
-        IEnumerable<Result> results = await _resultService.GetAllAsync(id, jobId, textId, cancellationToken);
+        IEnumerable<AssessmentResult> results = await _resultService.GetAllAsync(id, jobId, textId, cancellationToken);
         return Ok(results.Select(Map));
     }
 
@@ -536,7 +536,7 @@ public class AssessmentEnginesController(
         };
     }
 
-    private static AssessmentResultDto Map(Result source)
+    private static AssessmentResultDto Map(AssessmentResult source)
     {
         return new AssessmentResultDto
         {
