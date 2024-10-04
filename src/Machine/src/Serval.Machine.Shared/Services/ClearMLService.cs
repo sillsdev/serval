@@ -21,6 +21,7 @@ public class ClearMLService(
 
     private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
     private readonly ILogger<ClearMLService> _logger = logger;
+    private IDictionary<string, string>? _queueNamesToIds = null;
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -145,11 +146,24 @@ public class ClearMLService(
         CancellationToken cancellationToken = default
     )
     {
-        var body = new JsonObject { ["name"] = queue };
-        JsonObject? result = await CallAsync("queues", "get_all_ex", body, cancellationToken);
-        var tasks = (JsonArray?)result?["data"]?["queues"]?[0]?["entries"];
+        await PopulateQueueNamesToIdsAsync(cancellationToken);
+
+        var body = new JsonObject { ["queue"] = _queueNamesToIds![queue] };
+        JsonObject? result = await CallAsync("queues", "get_by_id", body, cancellationToken);
+        var tasks = (JsonArray?)result?["data"]?["queue"]?["entries"];
         IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["id"]!) ?? new List<string>();
         return await GetTasksByIdAsync(taskIds, cancellationToken);
+    }
+
+    private async Task PopulateQueueNamesToIdsAsync(CancellationToken cancellationToken = default)
+    {
+        if (_queueNamesToIds != null)
+            return;
+        JsonObject? result = await CallAsync("queues", "get_all", new JsonObject(), cancellationToken);
+        var queues = (JsonArray?)result?["data"]?["queues"];
+        if (queues is null)
+            throw new InvalidOperationException("Malformed response from ClearML server.");
+        _queueNamesToIds = queues.ToDictionary(q => (string)q!["name"]!, q => (string)q!["id"]!);
     }
 
     public async Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default)
@@ -165,6 +179,8 @@ public class ClearMLService(
         CancellationToken cancellationToken = default
     )
     {
+        if (!ids.Any())
+            return Task.FromResult(Array.Empty<ClearMLTask>() as IReadOnlyList<ClearMLTask>);
         return GetTasksAsync(new JsonObject { ["id"] = JsonValue.Create(ids.ToArray()) }, cancellationToken);
     }
 
