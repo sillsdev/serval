@@ -1,5 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using Serval.Base;
+using Serval.Engine.V1;
 using Serval.Translation.V1;
 
 namespace Serval.Machine.Shared.Services;

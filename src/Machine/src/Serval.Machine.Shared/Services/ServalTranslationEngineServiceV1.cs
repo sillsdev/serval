@@ -1,11 +1,11 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using Serval.Base;
+using Serval.Engine.V1;
 using Serval.Translation.V1;
 
 namespace Serval.Machine.Shared.Services;
 
 public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineService> engineServices)
-    : TranslationEngineApi.TranslationEngineApiBase
+    : EngineApi.EngineApiBase
 {
     private static readonly Empty Empty = new();
 
@@ -248,14 +248,14 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static IEnumerable<Base.AlignedWordPair> Map(WordAlignmentMatrix source)
+    private static IEnumerable<Engine.V1.AlignedWordPair> Map(WordAlignmentMatrix source)
     {
         for (int i = 0; i < source.RowCount; i++)
         {
             for (int j = 0; j < source.ColumnCount; j++)
             {
                 if (source[i, j])
-                    yield return new Base.AlignedWordPair { SourceIndex = i, TargetIndex = j };
+                    yield return new Engine.V1.AlignedWordPair { SourceIndex = i, TargetIndex = j };
             }
         }
     }
@@ -299,7 +299,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.CorpusFile Map(Base.CorpusFile source)
+    private static Models.CorpusFile Map(Engine.V1.CorpusFile source)
     {
         return new Models.CorpusFile
         {

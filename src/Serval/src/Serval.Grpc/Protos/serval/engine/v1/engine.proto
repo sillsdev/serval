@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package serval.engine.v1;
+
+import "google/protobuf/empty.proto";
+
+service EngineApi {
+    rpc Create(CreateRequest) returns (CreateResponse);
+    rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+    rpc StartJob(StartJobRequest) returns (StartJobResponse);
+    rpc CancelJob(CancelJobRequest) returns (google.protobuf.Empty);
+    rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
+}
+
+message CreateRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    optional string engine_name = 3;
+    string parameters_serialized = 4;
+}
+
+message CreateResponse {
+    string results_serialized = 4;
+}
+
+
+message StartJobRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string job_id = 3;
+    string corpora_serialized = 4;
+    string options_serialized = 5;
+}
+
+message StartJobResponse {
+    string results_serialized = 4;
+}
+
+message DeleteRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+}
+
+message CancelJobRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+}
+
+message GetQueueSizeRequest {
+    string engine_type = 1;
+}
+
+message GetQueueSizeResponse {
+    int32 size = 1;
+}
+
+message ScriptureChapters {
+    repeated int32 chapters = 1;
+}
+
+message Corpus {
+    string id = 1;
+    string language = 2;
+    repeated CorpusFile files = 3;
+}
+
+message CorpusFile {
+    string location = 1;
+    FileFormat format = 2;
+    string text_id = 3;
+}
+
+enum FileFormat {
+    FILE_FORMAT_TEXT = 0;
+    FILE_FORMAT_PARATEXT = 1;
+}
+
+message AlignedWordPair {
+    int32 source_index = 1;
+    int32 target_index = 2;
+}

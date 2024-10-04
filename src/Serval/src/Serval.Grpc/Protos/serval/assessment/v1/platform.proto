@@ -3,16 +3,8 @@ syntax = "proto3";
 package serval.assessment.v1;
 
 import "google/protobuf/empty.proto";
-import "Protos/serval/base/platform.proto";
 
 service AssessmentPlatformApi {
-    rpc UpdateJobStatus(serval.base.UpdateJobStatusRequest) returns (google.protobuf.Empty);
-    rpc JobStarted(serval.base.JobStartedRequest) returns (google.protobuf.Empty);
-    rpc JobCompleted(serval.base.JobCompletedRequest) returns (google.protobuf.Empty);
-    rpc JobCanceled(serval.base.JobCanceledRequest) returns (google.protobuf.Empty);
-    rpc JobFaulted(serval.base.JobFaultedRequest) returns (google.protobuf.Empty);
-    rpc JobRestarting(serval.base.JobRestartingRequest) returns (google.protobuf.Empty);
-
     rpc InsertResults(stream InsertResultsRequest) returns (google.protobuf.Empty);
 }
 

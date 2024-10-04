@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Serval.Assessment.V1;
-using Serval.Base;
+using Serval.Engine.V1;
 
 namespace Serval.Assessment.Services;
 

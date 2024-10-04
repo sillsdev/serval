@@ -1,5 +1,5 @@
 using Google.Protobuf.WellKnownTypes;
-using Serval.Base;
+using Serval.Engine.V1;
 using Serval.Translation.V1;
 using static Serval.ApiServer.Utils;
 
@@ -1520,11 +1520,11 @@ public class TranslationEngineTests
                 },
                 Alignment =
                 {
-                    new Base.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                    new Base.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                    new Base.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
-                    new Base.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new Base.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
+                    new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
                 },
                 Phrases =
                 {

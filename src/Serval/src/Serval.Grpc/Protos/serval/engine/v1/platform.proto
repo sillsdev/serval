@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package serval.engine.v1;
+
+import "google/protobuf/empty.proto";
+
+service JobPlatformApi {
+    rpc UpdateJobStatus(UpdateJobStatusRequest) returns (google.protobuf.Empty);
+    rpc JobStarted(JobStartedRequest) returns (google.protobuf.Empty);
+    rpc JobCompleted(JobCompletedRequest) returns (google.protobuf.Empty);
+    rpc JobCanceled(JobCanceledRequest) returns (google.protobuf.Empty);
+    rpc JobFaulted(JobFaultedRequest) returns (google.protobuf.Empty);
+    rpc JobRestarting(JobRestartingRequest) returns (google.protobuf.Empty);
+}
+
+message UpdateJobStatusRequest {
+    string job_id = 1;
+    int32 step = 2;
+    optional double percent_completed = 3;
+    optional string message = 4;
+    optional int32 queue_depth = 5;
+}
+
+message JobStartedRequest {
+    string job_id = 1;
+}
+
+message JobCompletedRequest {
+    string job_id = 1;
+    string statistics_serialized = 2;
+}
+
+message JobCanceledRequest {
+    string job_id = 1;
+}
+
+message JobFaultedRequest {
+    string job_id = 1;
+    string message = 2;
+}
+
+message JobRestartingRequest {
+    string job_id = 1;
+}

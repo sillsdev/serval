@@ -1,5 +1,5 @@
 ﻿using Serval.Assessment.V1;
-using Serval.Base;
+using Serval.Engine.V1;
 
 namespace Serval.Assessment.Services;
 
@@ -221,17 +221,17 @@ public class AssessmentEngineService(
         );
     }
 
-    private Base.Corpus Map(Shared.Models.Corpus source)
+    private Engine.V1.Corpus Map(Shared.Models.Corpus source)
     {
-        return new Base.Corpus { Language = source.Language, Files = { source.Files.Select(Map) } };
+        return new Engine.V1.Corpus { Language = source.Language, Files = { source.Files.Select(Map) } };
     }
 
-    private Base.CorpusFile Map(Shared.Models.CorpusFile source)
+    private Engine.V1.CorpusFile Map(Shared.Models.CorpusFile source)
     {
-        return new Base.CorpusFile
+        return new Engine.V1.CorpusFile
         {
             TextId = source.TextId,
-            Format = (Base.FileFormat)source.Format,
+            Format = (Engine.V1.FileFormat)source.Format,
             Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
         };
     }

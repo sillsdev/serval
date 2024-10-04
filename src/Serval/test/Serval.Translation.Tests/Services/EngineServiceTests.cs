@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using MassTransit.Mediator;
-using Serval.Base;
+using Serval.Engine.V1;
 using Serval.Shared.Models;
 using Serval.Translation.V1;
 
@@ -128,7 +128,7 @@ public class EngineServiceTests
                             TrainOnAll = true,
                             SourceFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.txt",
                                     Format = FileFormat.Text,
@@ -137,7 +137,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.txt",
                                     Format = FileFormat.Text,
@@ -181,7 +181,7 @@ public class EngineServiceTests
                             TrainOnTextIds = { },
                             SourceFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.txt",
                                     Format = FileFormat.Text,
@@ -190,7 +190,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.txt",
                                     Format = FileFormat.Text,
@@ -234,7 +234,7 @@ public class EngineServiceTests
                             TrainOnTextIds = { "text1" },
                             SourceFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.txt",
                                     Format = FileFormat.Text,
@@ -243,7 +243,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.txt",
                                     Format = FileFormat.Text,
@@ -286,7 +286,7 @@ public class EngineServiceTests
                             TrainOnAll = true,
                             SourceFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.txt",
                                     Format = FileFormat.Text,
@@ -295,7 +295,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.txt",
                                     Format = FileFormat.Text,
@@ -367,7 +367,7 @@ public class EngineServiceTests
                             },
                             SourceFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.zip",
                                     Format = FileFormat.Paratext,
@@ -376,7 +376,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.zip",
                                     Format = FileFormat.Paratext,
@@ -419,7 +419,7 @@ public class EngineServiceTests
                             TrainOnAll = false,
                             SourceFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file1.zip",
                                     Format = FileFormat.Paratext,
@@ -428,7 +428,7 @@ public class EngineServiceTests
                             },
                             TargetFiles =
                             {
-                                new Base.CorpusFile
+                                new Engine.V1.CorpusFile
                                 {
                                     Location = "file2.zip",
                                     Format = FileFormat.Paratext,
@@ -508,11 +508,11 @@ public class EngineServiceTests
                 },
                 Alignment =
                 {
-                    new Base.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                    new Base.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                    new Base.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
-                    new Base.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new Base.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
+                    new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
+                    new Engine.V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
                 },
                 Phrases =
                 {
@@ -542,8 +542,8 @@ public class EngineServiceTests
                         TargetTokens = { "this is".Split() },
                         Alignment =
                         {
-                            new Base.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new Base.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
+                            new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                            new Engine.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
                         },
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 2,
@@ -558,8 +558,8 @@ public class EngineServiceTests
                         TargetTokens = { "a test".Split() },
                         Alignment =
                         {
-                            new Base.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new Base.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
+                            new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                            new Engine.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
                         },
                         SourceSegmentStart = 2,
                         SourceSegmentEnd = 4,
@@ -574,7 +574,7 @@ public class EngineServiceTests
                         TargetTokens = { ".".Split() },
                         Alignment =
                         {
-                            new Base.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
+                            new Engine.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
                         },
                         SourceSegmentStart = 4,
                         SourceSegmentEnd = 5,

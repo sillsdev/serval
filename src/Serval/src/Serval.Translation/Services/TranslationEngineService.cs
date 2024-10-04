@@ -1,5 +1,5 @@
 ﻿using MassTransit.Mediator;
-using Serval.Base;
+using Serval.Engine.V1;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -14,14 +14,15 @@ public class TranslationEngineService(
     IDataAccessContext dataAccessContext,
     ILoggerFactory loggerFactory,
     IScriptureDataFileService scriptureDataFileService
-) : OwnedEntityServiceBase<TranslationEngine>(engines), ITranslationEngineService
+)
+    : EngineServiceBase<TranslationEngine, TranslationBuildJob>(engines, builds, grpcClientFactory, dataAccessContext),
+        ITranslationEngineService
 {
     private readonly IRepository<TranslationBuildJob> _builds = builds;
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
     private readonly IScopedMediator _mediator = mediator;
     private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
-    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<TranslationEngineService> _logger = loggerFactory.CreateLogger<TranslationEngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
@@ -32,7 +33,6 @@ public class TranslationEngineService(
     )
     {
         TranslationEngine engine = await GetAsync(engineId, cancellationToken);
-
         TranslationEngineApi.TranslationEngineApiClient client =
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         TranslateResponse response = await client.TranslateAsync(
@@ -125,266 +125,119 @@ public class TranslationEngineService(
     )
     {
         bool updateIsModelPersisted = engine.IsModelPersisted is null;
-        try
-        {
-            await Entities.InsertAsync(engine, cancellationToken);
-            TranslationEngineApi.TranslationEngineApiClient? client =
-                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-            if (client is null)
-                throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
-            var request = new CreateRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceLanguage = engine.SourceLanguage,
-                TargetLanguage = engine.TargetLanguage
-            };
-            if (engine.IsModelPersisted is not null)
-                request.IsModelPersisted = engine.IsModelPersisted.Value;
+        CreateEngineParameters parameters = new();
+        if (engine.IsModelPersisted is not null)
+            parameters.IsModelPersisted = engine.IsModelPersisted.Value;
 
-            if (engine.Name is not null)
-                request.EngineName = engine.Name;
-            CreateResponse createResponse = await client.CreateAsync(request, cancellationToken: cancellationToken);
-            // IsModelPersisted may be updated by the engine with the respective default.
-            engine = engine with
-            {
-                IsModelPersisted = createResponse.IsModelPersisted
-            };
-        }
-        catch (RpcException rpcex)
+        string results_serialized = await base.CreateAsync(
+            engine,
+            JsonSerializer.Serialize(parameters),
+            cancellationToken
+        );
+        CreateEngineResults results = JsonSerializer.Deserialize<CreateEngineResults>(results_serialized)!;
+        // IsModelPersisted may be updated by the engine with the respective default.
+        engine = engine with
         {
-            await Entities.DeleteAsync(engine, CancellationToken.None);
-            if (rpcex.StatusCode == StatusCode.InvalidArgument)
-            {
-                throw new InvalidOperationException(
-                    $"Unable to create engine {engine.Id} because of an invalid argument: {rpcex.Status.Detail}",
-                    rpcex
-                );
-            }
-            throw;
-        }
-        catch
-        {
-            await Entities.DeleteAsync(engine, CancellationToken.None);
-            throw;
-        }
+            IsModelPersisted = results.IsModelPersisted
+        };
         if (updateIsModelPersisted)
         {
             await Entities.UpdateAsync(
                 engine,
-                u => u.Set(e => e.IsModelPersisted, engine.IsModelPersisted),
+                u => u.Set(e => e.IsModelPersisted, results.IsModelPersisted),
                 cancellationToken: cancellationToken
             );
         }
         return engine;
     }
 
-    public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
-    {
-        TranslationEngine? engine = await Entities.GetAsync(engineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
-
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.DeleteAsync(
-            new DeleteRequest { EngineType = engine.Type, EngineId = engine.Id },
-            cancellationToken: cancellationToken
-        );
-
-        await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
-            {
-                await Entities.DeleteAsync(engineId, ct);
-                await _builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
-                await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
-            },
-            CancellationToken.None
-        );
-    }
-
     public async Task StartJobAsync(TranslationBuildJob build, CancellationToken cancellationToken = default)
     {
-        TranslationEngine engine = await GetAsync(build.EngineRef, cancellationToken);
-        await _builds.InsertAsync(build, cancellationToken);
+        TranslationEngine? engine = await Entities.GetAsync(build.EngineRef, cancellationToken);
+        if (engine is null)
+            throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
 
-        try
+        var pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
+        var trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
+        IEnumerable<TranslationCorpus> corpora = engine.Corpora.Select(c =>
         {
-            var pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
-            var trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
-            TranslationEngineApi.TranslationEngineApiClient client =
-                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-            Dictionary<string, List<int>> GetChapters(TranslationCorpus corpus, string scriptureRange)
+            TranslationCorpus corpus = Map(c);
+            if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
             {
-                try
-                {
-                    return ScriptureRangeParser.GetChapters(
-                        scriptureRange,
-                        _scriptureDataFileService
-                            .GetParatextProjectSettings(corpus.TargetFiles.First().Location)
-                            .Versification
-                    );
-                }
-                catch (ArgumentException ae)
+                corpus.PretranslateAll =
+                    pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null;
+                if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
                 {
                     throw new InvalidOperationException(
-                        $"The scripture range {scriptureRange} is not valid: {ae.Message}"
+                        $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
                     );
                 }
-            }
-            var request = new StartJobRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                JobId = build.Id,
-                Corpora =
+                if (pretranslateCorpus.TextIds is not null)
+                    corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
+                if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
                 {
-                    engine.Corpora.Select(c =>
+                    if (c.TargetFiles.Count > 1 || c.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext)
                     {
-                        TranslationCorpus corpus = Map(c);
-                        if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
-                        {
-                            corpus.PretranslateAll =
-                                pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null;
-                            if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
-                            {
-                                throw new InvalidOperationException(
-                                    $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
-                                );
-                            }
-                            if (pretranslateCorpus.TextIds is not null)
-                                corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
-                            if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
-                            {
-                                if (
-                                    c.TargetFiles.Count > 1
-                                    || c.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext
-                                )
+                        throw new InvalidOperationException(
+                            $"The corpus {c.Id} is not compatible with using a scripture range"
+                        );
+                    }
+                    corpus.PretranslateChapters.Add(
+                        _scriptureDataFileService
+                            .GetChapters(corpus.TargetFiles, pretranslateCorpus.ScriptureRange)
+                            .Select(
+                                (kvp) =>
                                 {
-                                    throw new InvalidOperationException(
-                                        $"The corpus {c.Id} is not compatible with using a scripture range"
-                                    );
+                                    var scriptureChapters = new ScriptureChapters();
+                                    scriptureChapters.Chapters.Add(kvp.Value);
+                                    return (kvp.Key, scriptureChapters);
                                 }
-                                corpus.PretranslateChapters.Add(
-                                    GetChapters(corpus, pretranslateCorpus.ScriptureRange)
-                                        .Select(
-                                            (kvp) =>
-                                            {
-                                                var scriptureChapters = new ScriptureChapters();
-                                                scriptureChapters.Chapters.Add(kvp.Value);
-                                                return (kvp.Key, scriptureChapters);
-                                            }
-                                        )
-                                        .ToDictionary()
-                                );
-                            }
-                        }
-                        if (trainOn?.TryGetValue(c.Id, out FilteredCorpus? filteredCorpus) ?? false)
-                        {
-                            corpus.TrainOnAll = filteredCorpus.TextIds is null && filteredCorpus.ScriptureRange is null;
-                            if (filteredCorpus.TextIds is not null && filteredCorpus.ScriptureRange is not null)
-                            {
-                                throw new InvalidOperationException(
-                                    $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for trainOn"
-                                );
-                            }
-                            if (filteredCorpus.TextIds is not null)
-                                corpus.TrainOnTextIds.Add(filteredCorpus.TextIds);
-                            if (!string.IsNullOrEmpty(filteredCorpus.ScriptureRange))
-                            {
-                                if (
-                                    c.TargetFiles.Count > 1
-                                    || c.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext
-                                )
-                                {
-                                    throw new InvalidOperationException(
-                                        $"The corpus {c.Id} is not compatible with using a scripture range"
-                                    );
-                                }
-                                corpus.TrainOnChapters.Add(
-                                    GetChapters(corpus, filteredCorpus.ScriptureRange)
-                                        .Select(
-                                            (kvp) =>
-                                            {
-                                                var scriptureChapters = new ScriptureChapters();
-                                                scriptureChapters.Chapters.Add(kvp.Value);
-                                                return (kvp.Key, scriptureChapters);
-                                            }
-                                        )
-                                        .ToDictionary()
-                                );
-                            }
-                        }
-                        else if (trainOn is null)
-                        {
-                            corpus.TrainOnAll = true;
-                        }
-                        return corpus;
-                    })
-                }
-            };
-            if (build.Options is not null)
-                request.Options = JsonSerializer.Serialize(build.Options);
-
-            // Log the build request summary
-            try
-            {
-                var jobRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
-                // correct build options parsing
-                jobRequestSummary.Remove("Options");
-                try
-                {
-                    jobRequestSummary.Add("Options", JsonNode.Parse(request.Options));
-                }
-                catch (JsonException)
-                {
-                    jobRequestSummary.Add(
-                        "Options",
-                        "Build \"Options\" failed parsing: " + (request.Options ?? "null")
+                            )
+                            .ToDictionary()
                     );
                 }
-                jobRequestSummary.Add("Event", "JobRequest");
-                jobRequestSummary.Add("ModelRevision", engine.ModelRevision);
-                jobRequestSummary.Add("ClientId", engine.Owner);
-                _logger.LogInformation("{request}", jobRequestSummary.ToJsonString());
             }
-            catch (JsonException)
+            if (trainOn?.TryGetValue(c.Id, out FilteredCorpus? filteredCorpus) ?? false)
             {
-                _logger.LogInformation("Error parsing build request summary.");
-                _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
+                corpus.TrainOnAll = filteredCorpus.TextIds is null && filteredCorpus.ScriptureRange is null;
+                if (filteredCorpus.TextIds is not null && filteredCorpus.ScriptureRange is not null)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for trainOn"
+                    );
+                }
+                if (filteredCorpus.TextIds is not null)
+                    corpus.TrainOnTextIds.Add(filteredCorpus.TextIds);
+                if (!string.IsNullOrEmpty(filteredCorpus.ScriptureRange))
+                {
+                    if (c.TargetFiles.Count > 1 || c.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext)
+                    {
+                        throw new InvalidOperationException(
+                            $"The corpus {c.Id} is not compatible with using a scripture range"
+                        );
+                    }
+                    corpus.TrainOnChapters.Add(
+                        _scriptureDataFileService
+                            .GetChapters(corpus.TargetFiles, filteredCorpus.ScriptureRange)
+                            .Select(
+                                (kvp) =>
+                                {
+                                    var scriptureChapters = new ScriptureChapters();
+                                    scriptureChapters.Chapters.Add(kvp.Value);
+                                    return (kvp.Key, scriptureChapters);
+                                }
+                            )
+                            .ToDictionary()
+                    );
+                }
             }
-
-            await client.StartJobAsync(request, cancellationToken: cancellationToken);
-        }
-        catch
-        {
-            await _builds.DeleteAsync(build, CancellationToken.None);
-            throw;
-        }
-    }
-
-    public async Task<bool> CancelJobAsync(string engineId, CancellationToken cancellationToken = default)
-    {
-        TranslationEngine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
-
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        try
-        {
-            await client.CancelJobAsync(
-                new CancelJobRequest { EngineType = engine.Type, EngineId = engine.Id },
-                cancellationToken: cancellationToken
-            );
-        }
-        catch (RpcException re)
-        {
-            if (re.StatusCode is StatusCode.Aborted)
-                return false;
-            throw;
-        }
-        return true;
+            else if (trainOn is null)
+            {
+                corpus.TrainOnAll = true;
+            }
+            return corpus;
+        });
+        await StartJobAsync(build, JsonSerializer.Serialize(corpora), build.Options, cancellationToken);
     }
 
     public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
@@ -447,7 +300,7 @@ public class TranslationEngineService(
     )
     {
         TranslationEngine? originalEngine = null;
-        await _dataAccessContext.WithTransactionAsync(
+        await DataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
@@ -493,17 +346,6 @@ public class TranslationEngineService(
         );
     }
 
-    public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
-    {
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
-        GetQueueSizeResponse response = await client.GetQueueSizeAsync(
-            new GetQueueSizeRequest { EngineType = engineType },
-            cancellationToken: cancellationToken
-        );
-        return new Queue { Size = response.Size, EngineType = engineType };
-    }
-
     public async Task<LanguageInfo> GetLanguageInfoAsync(
         string engineType,
         string language,
@@ -543,7 +385,7 @@ public class TranslationEngineService(
         return source.Values.Cast<Contracts.TranslationSource>().ToHashSet();
     }
 
-    private Shared.Models.AlignedWordPair Map(Base.AlignedWordPair source)
+    private Shared.Models.AlignedWordPair Map(Engine.V1.AlignedWordPair source)
     {
         return new Shared.Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
     }
@@ -597,12 +439,12 @@ public class TranslationEngineService(
         };
     }
 
-    private Base.CorpusFile Map(Shared.Models.CorpusFile source)
+    private Engine.V1.CorpusFile Map(Shared.Models.CorpusFile source)
     {
-        return new Base.CorpusFile
+        return new Engine.V1.CorpusFile
         {
             TextId = source.TextId,
-            Format = (Base.FileFormat)source.Format,
+            Format = (Engine.V1.FileFormat)source.Format,
             Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
         };
     }
