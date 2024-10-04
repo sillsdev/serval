@@ -20,6 +20,7 @@ public static class Scopes
     public const string ReadFiles = "read:files";
     public const string UpdateFiles = "update:files";
     public const string DeleteFiles = "delete:files";
+
     public const string ReadStatus = "read:status";
 
     public static IEnumerable<string> All =>
