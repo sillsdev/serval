@@ -1,6 +1,6 @@
 ﻿namespace Serval.Shared.Contracts;
 
-public record TranslationBuildFinishedDto
+public record BuildFinishedDto
 {
     public required ResourceLinkDto Build { get; init; }
     public required ResourceLinkDto Engine { get; init; }

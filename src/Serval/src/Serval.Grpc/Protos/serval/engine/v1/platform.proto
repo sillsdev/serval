@@ -4,13 +4,14 @@ package serval.engine.v1;
 
 import "google/protobuf/empty.proto";
 
-service JobPlatformApi {
+service EnginePlatformApi {
     rpc UpdateJobStatus(UpdateJobStatusRequest) returns (google.protobuf.Empty);
     rpc JobStarted(JobStartedRequest) returns (google.protobuf.Empty);
     rpc JobCompleted(JobCompletedRequest) returns (google.protobuf.Empty);
     rpc JobCanceled(JobCanceledRequest) returns (google.protobuf.Empty);
     rpc JobFaulted(JobFaultedRequest) returns (google.protobuf.Empty);
     rpc JobRestarting(JobRestartingRequest) returns (google.protobuf.Empty);
+    rpc InsertResults(stream InsertResultsRequest) returns (google.protobuf.Empty);
 }
 
 message UpdateJobStatusRequest {
@@ -41,4 +42,12 @@ message JobFaultedRequest {
 
 message JobRestartingRequest {
     string job_id = 1;
+}
+
+message InsertResultsRequest {
+    string engine_id = 1;
+    string corpus_id = 2;
+    string text_id = 3;
+    repeated string refs = 4;
+    string content_serialized = 5;
 }

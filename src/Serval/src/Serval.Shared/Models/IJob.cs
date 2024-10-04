@@ -4,6 +4,7 @@ public interface IJob : IEntity
 {
     public string? Name { get; init; }
     public string EngineRef { get; init; }
+    public int? QueueDepth { get; init; }
     public double? PercentCompleted { get; init; }
     public string? Message { get; init; }
     public JobState State { get; init; }

@@ -1,7 +1,7 @@
 ﻿namespace Serval.Shared.Contracts;
 
-public record TranslationBuildStartedDto
+public record JobStartedDto
 {
-    public required ResourceLinkDto Build { get; init; }
+    public required ResourceLinkDto Job { get; init; }
     public required ResourceLinkDto Engine { get; init; }
 }

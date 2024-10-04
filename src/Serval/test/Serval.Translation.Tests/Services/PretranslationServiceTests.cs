@@ -279,7 +279,7 @@ public class PretranslationServiceTests
                         SourceLanguage = "en",
                         TargetLanguage = "en",
                         Type = "nmt",
-                        ModelRevision = 1,
+                        JobRevision = 1,
                         Corpora =
                         [
                             new()

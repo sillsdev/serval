@@ -4,9 +4,8 @@ package serval.translation.v1;
 
 import "google/protobuf/empty.proto";
 
-service TranslationPlatformApi {
+service TranslationPlatformExtensionsApi {
     rpc IncrementTranslationEngineCorpusSize(IncrementTranslationEngineCorpusSizeRequest) returns (google.protobuf.Empty);
-    rpc InsertPretranslations(stream InsertPretranslationsRequest) returns (google.protobuf.Empty);
 }
 
 message IncrementTranslationEngineCorpusSizeRequest {
@@ -14,10 +13,11 @@ message IncrementTranslationEngineCorpusSizeRequest {
     int32 count = 2;
 }
 
-message InsertPretranslationsRequest {
-    string engine_id = 1;
-    string corpus_id = 2;
-    string text_id = 3;
-    repeated string refs = 4;
-    string translation = 5;
+message TranslationEngineCompletedStatistics {
+    float confidence = 1;
+    int32 corpus_size = 2;
+}
+
+message TranslationResultContent {
+    string pretranslation = 1;
 }

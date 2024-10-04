@@ -4,11 +4,11 @@ using Serval.Translation.V1;
 namespace Serval.Machine.Shared.Services;
 
 public class ServalPlatformService(
-    TranslationPlatformApi.TranslationPlatformApiClient client,
+    EnginePlatformApi.EnginePlatformApiClient client,
     IMessageOutboxService outboxService
 ) : IPlatformService
 {
-    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
+    private readonly EnginePlatformApi.EnginePlatformApiClient _client = client;
     private readonly IMessageOutboxService _outboxService = outboxService;
 
     public async Task JobStartedAsync(string buildId, CancellationToken cancellationToken = default)

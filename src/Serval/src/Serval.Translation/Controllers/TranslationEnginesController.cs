@@ -558,12 +558,12 @@ public class TranslationEnginesController(
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
-        if (engine.ModelRevision == 0)
+        if (engine.JobRevision == 0)
             return Conflict();
 
         IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
             id,
-            engine.ModelRevision,
+            engine.JobRevision,
             corpusId,
             textId,
             cancellationToken
@@ -620,12 +620,12 @@ public class TranslationEnginesController(
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
-        if (engine.ModelRevision == 0)
+        if (engine.JobRevision == 0)
             return Conflict();
 
         IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
             id,
-            engine.ModelRevision,
+            engine.JobRevision,
             corpusId,
             textId,
             cancellationToken
@@ -695,12 +695,12 @@ public class TranslationEnginesController(
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
-        if (engine.ModelRevision == 0)
+        if (engine.JobRevision == 0)
             return Conflict();
 
         string usfm = await _pretranslationService.GetUsfmAsync(
             id,
-            engine.ModelRevision,
+            engine.JobRevision,
             corpusId,
             textId,
             textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
@@ -1167,7 +1167,7 @@ public class TranslationEnginesController(
             Type = source.Type.ToKebabCase(),
             IsModelPersisted = source.IsModelPersisted,
             IsBuilding = source.IsBuilding,
-            ModelRevision = source.ModelRevision,
+            ModelRevision = source.JobRevision,
             Confidence = Math.Round(source.Confidence, 8),
             CorpusSize = source.CorpusSize
         };

@@ -824,7 +824,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         Client.TrainingCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
 
-        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.JobRevision, 1));
         var pret = new Translation.Models.Pretranslation
         {
             CorpusRef = addedCorpus.Id,
@@ -883,7 +883,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         Client.TrainingCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
 
-        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.JobRevision, 1));
         var pret = new Translation.Models.Pretranslation
         {
             CorpusRef = addedCorpus.Id,
@@ -909,7 +909,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         Client.TrainingCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
 
-        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.JobRevision, 1));
         var pret = new Translation.Models.Pretranslation
         {
             CorpusRef = addedCorpus.Id,
@@ -1286,7 +1286,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         Client.TrainingCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
 
-        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.JobRevision, 1));
         var pret = new Translation.Models.Pretranslation
         {
             CorpusRef = addedCorpus.Id,
@@ -1319,7 +1319,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         Client.TrainingCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
 
-        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.JobRevision, 1));
 
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(
             () => client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MRK")
