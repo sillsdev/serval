@@ -7,6 +7,6 @@ public record TranslationParallelCorpusConfigDto
     /// </summary>
     public string? Name { get; init; }
 
-    public required IReadOnlyList<string> SourceCorporaRefs { get; init; } = new List<string>();
-    public required IReadOnlyList<string> TargetCorporaRefs { get; init; } = new List<string>();
+    public required IReadOnlyList<string> SourceCorpusIds { get; init; } = new List<string>();
+    public required IReadOnlyList<string> TargetCorpusIds { get; init; } = new List<string>();
 }

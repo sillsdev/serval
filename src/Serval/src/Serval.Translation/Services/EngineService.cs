@@ -416,7 +416,7 @@ public class EngineService(
         }
     }
 
-    public Task AddParallelCorpus(
+    public Task AddParallelCorpusAsync(
         string engineId,
         Models.ParallelCorpus corpus,
         CancellationToken cancellationToken = default
@@ -594,18 +594,12 @@ public class EngineService(
 
     private V1.ParallelCorpus Map(Corpus source, TrainingCorpus? trainingCorpus, PretranslateCorpus? pretranslateCorpus)
     {
-        var sourceFiles = source.SourceFiles.Select(Map);
-        var targetFiles = source.TargetFiles.Select(Map);
-        var sourceCorpus = new V1.MonolingualCorpus
-        {
-            Language = source.SourceLanguage,
-            Files = { source.SourceFiles.Select(Map) }
-        };
-        var targetCorpus = new V1.MonolingualCorpus
-        {
-            Language = source.TargetLanguage,
-            Files = { source.TargetFiles.Select(Map) }
-        };
+        IEnumerable<V1.CorpusFile> sourceFiles = source.SourceFiles.Select(Map);
+        IEnumerable<V1.CorpusFile> targetFiles = source.TargetFiles.Select(Map);
+        V1.MonolingualCorpus sourceCorpus =
+            new() { Language = source.SourceLanguage, Files = { source.SourceFiles.Select(Map) } };
+        V1.MonolingualCorpus targetCorpus =
+            new() { Language = source.TargetLanguage, Files = { source.TargetFiles.Select(Map) } };
 
         if (trainingCorpus != null)
         {
@@ -713,7 +707,7 @@ public class EngineService(
                     Map(
                         tc,
                         trainingCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
-                        pretranslateCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
+                        null,
                         referenceFileLocation
                     )
                 )
@@ -728,35 +722,43 @@ public class EngineService(
         string? referenceFileLocation
     )
     {
-        var trainOnChapters =
-            trainingFilter is not null && trainingFilter.ScriptureRange is not null && referenceFileLocation is not null
-                ? GetChapters(referenceFileLocation, trainingFilter.ScriptureRange)
-                    .Select(
-                        (kvp) =>
-                        {
-                            var scriptureChapters = new ScriptureChapters();
-                            scriptureChapters.Chapters.Add(kvp.Value);
-                            return (kvp.Key, scriptureChapters);
-                        }
-                    )
-                    .ToDictionary()
-                : null;
+        Dictionary<string, ScriptureChapters>? trainOnChapters = null;
+        if (
+            trainingFilter is not null
+            && trainingFilter.ScriptureRange is not null
+            && referenceFileLocation is not null
+        )
+        {
+            trainOnChapters = GetChapters(referenceFileLocation, trainingFilter.ScriptureRange)
+                .Select(
+                    (kvp) =>
+                    {
+                        var scriptureChapters = new ScriptureChapters();
+                        scriptureChapters.Chapters.Add(kvp.Value);
+                        return (kvp.Key, scriptureChapters);
+                    }
+                )
+                .ToDictionary();
+        }
 
-        var pretranslateChapters =
+        Dictionary<string, ScriptureChapters>? pretranslateChapters = null;
+        if (
             pretranslateFilter is not null
             && pretranslateFilter.ScriptureRange is not null
             && referenceFileLocation is not null
-                ? GetChapters(referenceFileLocation, pretranslateFilter.ScriptureRange)
-                    .Select(
-                        (kvp) =>
-                        {
-                            var scriptureChapters = new ScriptureChapters();
-                            scriptureChapters.Chapters.Add(kvp.Value);
-                            return (kvp.Key, scriptureChapters);
-                        }
-                    )
-                    .ToDictionary()
-                : null;
+        )
+        {
+            GetChapters(referenceFileLocation, pretranslateFilter.ScriptureRange)
+                .Select(
+                    (kvp) =>
+                    {
+                        var scriptureChapters = new ScriptureChapters();
+                        scriptureChapters.Chapters.Add(kvp.Value);
+                        return (kvp.Key, scriptureChapters);
+                    }
+                )
+                .ToDictionary();
+        }
 
         var corpus = new V1.MonolingualCorpus
         {

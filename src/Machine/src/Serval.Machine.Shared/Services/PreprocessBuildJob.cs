@@ -132,19 +132,12 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
                     ITextCorpus textCorpus = sc.TextCorpus;
                     if (sc.Corpus.TrainOnTextIds is not null)
                         textCorpus = textCorpus.FilterTexts(sc.Corpus.TrainOnTextIds);
-                    return (sc.Corpus, textCorpus);
-                })
-                .Select(sc =>
-                    sc.Item2.Where(row =>
+                    return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || sc.Corpus.TrainOnChapters is null
-                        || (
-                            sc.Corpus.TrainOnChapters.TryGetValue(sr.Book, out HashSet<int>? chapters)
-                            && chapters != null
-                            && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum))
-                        )
-                    )
-                )
+                        || IsInChapters(sr, sc.Corpus.TrainOnChapters)
+                    );
+                })
                 .ToArray();
             ITextCorpus[] sourcePretranslateCorpora = sourceCorpora
                 .Select(sc =>
@@ -152,29 +145,15 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
                     ITextCorpus textCorpus = sc.TextCorpus;
                     if (sc.Corpus.PretranslateTextIds is not null)
                         textCorpus = textCorpus.FilterTexts(sc.Corpus.PretranslateTextIds);
-                    return (sc.Corpus, textCorpus);
-                })
-                .Select(sc =>
-                    sc.Item2.Where(row =>
+                    return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || sc.Corpus.PretranslateChapters is null
                         || (
-                            sc.Corpus.PretranslateChapters.TryGetValue(sr.Book, out HashSet<int>? chapters)
-                            && chapters != null
-                            && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum))
-                            && !(
-                                (
-                                    (sc.Corpus.TrainOnChapters ?? new()).TryGetValue(
-                                        sr.Book,
-                                        out HashSet<int>? trainChapters
-                                    )
-                                    && trainChapters != null
-                                    && (trainChapters.Count == 0 || trainChapters.Contains(sr.ChapterNum))
-                                )
-                            )
+                            IsInChapters(sr, sc.Corpus.PretranslateChapters)
+                            && !IsInChapters(sr, sc.Corpus.TrainOnChapters ?? new())
                         )
-                    )
-                )
+                    );
+                })
                 .ToArray();
 
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
@@ -186,19 +165,12 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
                     ITextCorpus textCorpus = tc.TextCorpus;
                     if (tc.Corpus.TrainOnTextIds is not null)
                         textCorpus = textCorpus.FilterTexts(tc.Corpus.TrainOnTextIds);
-                    return (tc.Corpus, textCorpus);
-                })
-                .Select(tc =>
-                    tc.Item2.Where(row =>
+                    return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || tc.Corpus.TrainOnChapters is null
-                        || (
-                            (tc.Corpus.TrainOnChapters ?? new()).TryGetValue(sr.Book, out HashSet<int>? chapters)
-                            && chapters != null
-                            && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum))
-                        )
-                    )
-                )
+                        || IsInChapters(sr, tc.Corpus.TrainOnChapters)
+                    );
+                })
                 .ToArray();
 
             if (sourceCorpora.Length == 0)
@@ -282,6 +254,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
         pretranslateWriter.WriteEndArray();
 
         return (trainCount, pretranslateCount);
+    }
+
+    private static bool IsInChapters(ScriptureRef sr, Dictionary<string, HashSet<int>> selection)
+    {
+        return selection.TryGetValue(sr.Book, out HashSet<int>? chapters)
+            && chapters != null
+            && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum));
     }
 
     protected override async Task CleanupAsync(

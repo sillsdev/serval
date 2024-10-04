@@ -52,7 +52,7 @@ public interface IEngineService
         CancellationToken cancellationToken = default
     );
 
-    Task AddParallelCorpus(string engineId, ParallelCorpus corpus, CancellationToken cancellationToken = default);
+    Task AddParallelCorpusAsync(string engineId, ParallelCorpus corpus, CancellationToken cancellationToken = default);
     Task<ParallelCorpus> UpdateParallelCorpusAsync(
         string engineId,
         string parallelCorpusId,

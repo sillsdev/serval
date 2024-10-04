@@ -21,11 +21,6 @@ public static class IMongoDataAccessConfiguratorExtensions
                     new CreateIndexModel<DeletedFile>(Builders<DeletedFile>.IndexKeys.Ascending(p => p.DeletedAt))
                 )
         );
-        return configurator;
-    }
-
-    public static IMongoDataAccessConfigurator AddCorporaRepository(this IMongoDataAccessConfigurator configurator)
-    {
         configurator.AddRepository<Corpus>(
             "corpora.corpus",
             init: c =>
