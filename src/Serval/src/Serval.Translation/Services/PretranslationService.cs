@@ -13,7 +13,7 @@ public class PretranslationService(
 
     public async Task<IEnumerable<Pretranslation>> GetAllAsync(
         string engineId,
-        int modelRevision,
+        int jobRevision,
         string corpusId,
         string? textId = null,
         CancellationToken cancellationToken = default
@@ -22,7 +22,7 @@ public class PretranslationService(
         return await Entities.GetAllAsync(
             pt =>
                 pt.EngineRef == engineId
-                && pt.ModelRevision == modelRevision
+                && pt.BuildRevision == jobRevision
                 && pt.CorpusRef == corpusId
                 && (textId == null || pt.TextId == textId),
             cancellationToken
@@ -31,7 +31,7 @@ public class PretranslationService(
 
     public async Task<string> GetUsfmAsync(
         string engineId,
-        int modelRevision,
+        int jobRevision,
         string corpusId,
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
@@ -57,7 +57,7 @@ public class PretranslationService(
         );
 
         IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = (
-            await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
+            await GetAllAsync(engineId, jobRevision, corpusId, textId, cancellationToken)
         )
             .Select(p =>
                 (

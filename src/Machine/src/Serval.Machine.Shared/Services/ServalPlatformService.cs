@@ -71,7 +71,7 @@ public class ServalPlatformService(
     {
         await _outboxService.EnqueueMessageAsync(
             ServalPlatformOutboxConstants.OutboxId,
-            ServalPlatformOutboxConstants.JobRestarting,
+            ServalPlatformOutboxConstants.BuildRestarting,
             buildId,
             JsonSerializer.Serialize(new JobRestartingRequest { JobId = buildId }),
             cancellationToken: cancellationToken

@@ -1,6 +1,6 @@
 ﻿namespace Serval.WordAlignment.Models;
 
-public record WordAlignmentBuildJob : IJob
+public record WordAlignmentBuildJob : IBuild
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
@@ -8,7 +8,7 @@ public record WordAlignmentBuildJob : IJob
     public required string EngineRef { get; init; }
     public double? PercentCompleted { get; init; }
     public string? Message { get; init; }
-    public JobState State { get; init; } = JobState.Pending;
+    public BuildState State { get; init; } = BuildState.Pending;
     public DateTime? DateFinished { get; init; }
     public IReadOnlyDictionary<string, object>? Options { get; init; }
     public IReadOnlyList<FilteredCorpus>? TrainOn { get; init; }

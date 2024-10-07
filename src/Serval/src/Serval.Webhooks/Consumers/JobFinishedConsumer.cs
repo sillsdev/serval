@@ -1,11 +1,11 @@
 ﻿namespace Serval.Webhooks.Consumers;
 
-public class JobFinishedConsumer(IWebhookService webhookService, IUrlService urlService) : IConsumer<JobFinished>
+public class JobFinishedConsumer(IWebhookService webhookService, IUrlService urlService) : IConsumer<BuildFinished>
 {
     private readonly IWebhookService _webhookService = webhookService;
     private readonly IUrlService _urlService = urlService;
 
-    public async Task Consume(ConsumeContext<JobFinished> context)
+    public async Task Consume(ConsumeContext<BuildFinished> context)
     {
         switch (EngineTypeResolver.GetEngineType(context.Message.Type))
         {
@@ -20,7 +20,7 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
             case EngineType.Assessment:
                 await SendJobWebhookAsync(
                     context,
-                    WebhookEvent.AssessmentJobFinished,
+                    WebhookEvent.AssessmentBuildFinished,
                     Endpoints.GetAssessmentJob,
                     Endpoints.GetAssessmentEngine
                 );
@@ -29,7 +29,7 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
     }
 
     private async Task SendBuildWebhookAsync(
-        ConsumeContext<JobFinished> context,
+        ConsumeContext<BuildFinished> context,
         WebhookEvent eventType,
         string jobEndpoint,
         string engineEndpoint
@@ -42,10 +42,10 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
             {
                 Build = new ResourceLinkDto
                 {
-                    Id = context.Message.JobId,
+                    Id = context.Message.BuildId,
                     Url = _urlService.GetUrl(
                         jobEndpoint,
-                        new { id = context.Message.EngineId, buildId = context.Message.JobId }
+                        new { id = context.Message.EngineId, buildId = context.Message.BuildId }
                     )
                 },
                 Engine = new ResourceLinkDto
@@ -53,7 +53,7 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
                     Id = context.Message.EngineId,
                     Url = _urlService.GetUrl(engineEndpoint, new { id = context.Message.EngineId })
                 },
-                BuildState = context.Message.JobState,
+                BuildState = context.Message.BuildState,
                 Message = context.Message.Message,
                 DateFinished = context.Message.DateFinished
             },
@@ -62,7 +62,7 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
     }
 
     private async Task SendJobWebhookAsync(
-        ConsumeContext<JobFinished> context,
+        ConsumeContext<BuildFinished> context,
         WebhookEvent eventType,
         string jobEndpoint,
         string engineEndpoint
@@ -75,10 +75,10 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
             {
                 Job = new ResourceLinkDto
                 {
-                    Id = context.Message.JobId,
+                    Id = context.Message.BuildId,
                     Url = _urlService.GetUrl(
                         jobEndpoint,
-                        new { id = context.Message.EngineId, buildId = context.Message.JobId }
+                        new { id = context.Message.EngineId, buildId = context.Message.BuildId }
                     )
                 },
                 Engine = new ResourceLinkDto
@@ -86,7 +86,7 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
                     Id = context.Message.EngineId,
                     Url = _urlService.GetUrl(engineEndpoint, new { id = context.Message.EngineId })
                 },
-                JobState = context.Message.JobState,
+                JobState = context.Message.BuildState,
                 Message = context.Message.Message,
                 DateFinished = context.Message.DateFinished
             },

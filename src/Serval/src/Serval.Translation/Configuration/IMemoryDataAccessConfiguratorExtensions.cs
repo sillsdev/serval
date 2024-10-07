@@ -7,7 +7,7 @@ public static class IMemoryDataAccessConfiguratorExtensions
     )
     {
         configurator.AddRepository<TranslationEngine>();
-        configurator.AddRepository<TranslationBuildJob>();
+        configurator.AddRepository<TranslationBuild>();
         configurator.AddRepository<Pretranslation>();
         return configurator;
     }

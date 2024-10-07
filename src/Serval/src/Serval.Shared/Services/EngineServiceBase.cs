@@ -2,38 +2,38 @@
 
 namespace Serval.Shared.Services;
 
-public abstract class EngineServiceBase<TEngine, TJob> : EngineServiceBase<TEngine, TJob, IJobResult>
+public abstract class EngineServiceBase<TEngine, TBuild> : EngineServiceBase<TEngine, TBuild, IBuildResult>
     where TEngine : IEngine
-    where TJob : IJob
+    where TBuild : IBuild
 {
     protected EngineServiceBase(
         IRepository<TEngine> engines,
-        IRepository<TJob> jobs,
+        IRepository<TBuild> builds,
         GrpcClientFactory grpcClientFactory,
         IDataAccessContext dataAccessContext,
         ILoggerFactory loggerFactory
     )
-        : base(engines, jobs, null, grpcClientFactory, dataAccessContext, loggerFactory) { }
+        : base(engines, builds, null, grpcClientFactory, dataAccessContext, loggerFactory) { }
 }
 
-public abstract class EngineServiceBase<TEngine, TJob, TResult>(
+public abstract class EngineServiceBase<TEngine, TBuild, TResult>(
     IRepository<TEngine> engines,
-    IRepository<TJob> jobs,
+    IRepository<TBuild> builds,
     IRepository<TResult>? results,
     GrpcClientFactory grpcClientFactory,
     IDataAccessContext dataAccessContext,
     ILoggerFactory loggerFactory
 ) : OwnedEntityServiceBase<TEngine>(engines)
     where TEngine : IEngine
-    where TJob : IJob
-    where TResult : IJobResult
+    where TBuild : IBuild
+    where TResult : IBuildResult
 {
     protected readonly GrpcClientFactory GrpcClientFactory = grpcClientFactory;
     protected readonly IDataAccessContext DataAccessContext = dataAccessContext;
-    protected readonly IRepository<TJob> Jobs = jobs;
+    protected readonly IRepository<TBuild> Builds = builds;
     protected readonly IRepository<TResult>? Results = results;
-    private readonly ILogger<EngineServiceBase<TEngine, TJob, TResult>> _logger = loggerFactory.CreateLogger<
-        EngineServiceBase<TEngine, TJob, TResult>
+    private readonly ILogger<EngineServiceBase<TEngine, TBuild, TResult>> _logger = loggerFactory.CreateLogger<
+        EngineServiceBase<TEngine, TBuild, TResult>
     >();
 
     public virtual async Task<string> CreateAsync(
@@ -97,7 +97,7 @@ public abstract class EngineServiceBase<TEngine, TJob, TResult>(
             async (ct) =>
             {
                 await Entities.DeleteAsync(engineId, ct);
-                await Jobs.DeleteAllAsync(b => b.EngineRef == engineId, ct);
+                await Builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
                 if (Results is not null)
                     await Results.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
             },
@@ -105,24 +105,24 @@ public abstract class EngineServiceBase<TEngine, TJob, TResult>(
         );
     }
 
-    public async Task StartJobAsync(
-        TJob job,
+    public async Task StartBuildAsync(
+        TBuild build,
         string corpora_serialized,
         IReadOnlyDictionary<string, object>? options,
         CancellationToken cancellationToken = default
     )
     {
-        TEngine engine = await GetAsync(job.EngineRef, cancellationToken);
-        await Jobs.InsertAsync(job, cancellationToken);
+        TEngine engine = await GetAsync(build.EngineRef, cancellationToken);
+        await Builds.InsertAsync(build, cancellationToken);
 
         try
         {
             EngineApi.EngineApiClient client = GrpcClientFactory.CreateClient<EngineApi.EngineApiClient>(engine.Type);
-            var request = new StartJobRequest
+            var request = new StartBuildRequest
             {
                 EngineType = engine.Type,
                 EngineId = engine.Id,
-                JobId = job.Id,
+                BuildId = build.Id,
                 CorporaSerialized = corpora_serialized,
             };
             if (options is not null)
@@ -131,23 +131,23 @@ public abstract class EngineServiceBase<TEngine, TJob, TResult>(
             // Log the build request summary
             try
             {
-                var jobRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
+                var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
                 // correct build options parsing
-                jobRequestSummary.Remove("Options");
+                buildRequestSummary.Remove("Options");
                 try
                 {
-                    jobRequestSummary.Add("Options", JsonNode.Parse(request.OptionsSerialized));
+                    buildRequestSummary.Add("Options", JsonNode.Parse(request.OptionsSerialized));
                 }
                 catch (JsonException)
                 {
-                    jobRequestSummary.Add(
+                    buildRequestSummary.Add(
                         "Options",
                         "Build \"Options\" failed parsing: " + (request.OptionsSerialized ?? "null")
                     );
                 }
-                jobRequestSummary.Add("Event", "JobRequest");
-                jobRequestSummary.Add("ClientId", engine.Owner);
-                _logger.LogInformation("{request}", jobRequestSummary.ToJsonString());
+                buildRequestSummary.Add("Event", "BuildRequest");
+                buildRequestSummary.Add("ClientId", engine.Owner);
+                _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
             }
             catch (JsonException)
             {
@@ -155,16 +155,16 @@ public abstract class EngineServiceBase<TEngine, TJob, TResult>(
                 _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
             }
 
-            await client.StartJobAsync(request, cancellationToken: cancellationToken);
+            await client.StartBuildAsync(request, cancellationToken: cancellationToken);
         }
         catch
         {
-            await Jobs.DeleteAsync(job.Id, CancellationToken.None);
+            await Builds.DeleteAsync(build.Id, CancellationToken.None);
             throw;
         }
     }
 
-    public async Task<bool> CancelJobAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<bool> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
         TEngine? engine = await GetAsync(engineId, cancellationToken);
         if (engine is null)
@@ -173,8 +173,8 @@ public abstract class EngineServiceBase<TEngine, TJob, TResult>(
         EngineApi.EngineApiClient client = GrpcClientFactory.CreateClient<EngineApi.EngineApiClient>(engine.Type);
         try
         {
-            await client.CancelJobAsync(
-                new CancelJobRequest { EngineType = engine.Type, EngineId = engine.Id },
+            await client.CancelBuildAsync(
+                new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id },
                 cancellationToken: cancellationToken
             );
         }

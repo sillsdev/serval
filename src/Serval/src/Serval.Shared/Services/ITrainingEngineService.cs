@@ -1,13 +1,13 @@
 ﻿namespace Serval.Shared.Services;
 
-public interface ITrainingEngineService<TJob, TEngine> : IEngineServiceBase
+public interface ITrainingEngineService<TBuild, TEngine> : IEngineServiceBase
 {
     Task<IEnumerable<TEngine>> GetAllAsync(string owner, CancellationToken cancellationToken = default);
     Task<TEngine> GetAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<TEngine> CreateAsync(TEngine engine, CancellationToken cancellationToken = default);
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
-    Task StartJobAsync(TJob build, CancellationToken cancellationToken = default);
+    Task StartJobAsync(TBuild build, CancellationToken cancellationToken = default);
 
     Task<bool> CancelJobAsync(string engineId, CancellationToken cancellationToken = default);
 

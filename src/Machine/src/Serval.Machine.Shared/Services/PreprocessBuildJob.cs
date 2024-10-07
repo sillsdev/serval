@@ -89,7 +89,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<TranslationCorp
             engine.Type,
             engineId,
             buildId,
-            BuildStage.Train,
+            BuildStage.Process,
             buildOptions: buildOptions,
             cancellationToken: cancellationToken
         );

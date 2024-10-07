@@ -6,7 +6,7 @@
 public class TranslationEnginesController(
     IAuthorizationService authService,
     ITranslationEngineService engineService,
-    IJobService<TranslationBuildJob> buildJobService,
+    IBuildService<TranslationBuild> buildJobService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService,
@@ -17,7 +17,7 @@ public class TranslationEnginesController(
         new() { Converters = { new ObjectToInferredTypesConverter() } };
 
     private readonly ITranslationEngineService _engineService = engineService;
-    private readonly IJobService<TranslationBuildJob> _buildService = buildJobService;
+    private readonly IBuildService<TranslationBuild> _buildService = buildJobService;
     private readonly IPretranslationService _pretranslationService = pretranslationService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
@@ -558,12 +558,12 @@ public class TranslationEnginesController(
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
-        if (engine.JobRevision == 0)
+        if (engine.BuildRevision == 0)
             return Conflict();
 
         IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
             id,
-            engine.JobRevision,
+            engine.BuildRevision,
             corpusId,
             textId,
             cancellationToken
@@ -620,12 +620,12 @@ public class TranslationEnginesController(
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
-        if (engine.JobRevision == 0)
+        if (engine.BuildRevision == 0)
             return Conflict();
 
         IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
             id,
-            engine.JobRevision,
+            engine.BuildRevision,
             corpusId,
             textId,
             cancellationToken
@@ -695,12 +695,12 @@ public class TranslationEnginesController(
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId))
             return NotFound();
-        if (engine.JobRevision == 0)
+        if (engine.BuildRevision == 0)
             return Conflict();
 
         string usfm = await _pretranslationService.GetUsfmAsync(
             id,
-            engine.JobRevision,
+            engine.BuildRevision,
             corpusId,
             textId,
             textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
@@ -785,7 +785,7 @@ public class TranslationEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            (_, EntityChange<TranslationBuildJob> change) = await TaskEx.Timeout(
+            (_, EntityChange<TranslationBuild> change) = await TaskEx.Timeout(
                 ct => _buildService.GetNewerRevisionAsync(buildId, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
@@ -799,7 +799,7 @@ public class TranslationEnginesController(
         }
         else
         {
-            TranslationBuildJob build = await _buildService.GetAsync(buildId, cancellationToken);
+            TranslationBuild build = await _buildService.GetAsync(buildId, cancellationToken);
             return Ok(Map(build));
         }
     }
@@ -852,7 +852,7 @@ public class TranslationEnginesController(
     {
         TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        TranslationBuildJob build = Map(engine, buildConfig);
+        TranslationBuild build = Map(engine, buildConfig);
         await _engineService.StartJobAsync(build, cancellationToken);
 
         TranslationBuildDto dto = Map(build);
@@ -895,7 +895,7 @@ public class TranslationEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            (_, EntityChange<TranslationBuildJob> change) = await TaskEx.Timeout(
+            (_, EntityChange<TranslationBuild> change) = await TaskEx.Timeout(
                 ct => _buildService.GetActiveNewerRevisionAsync(id, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
@@ -909,7 +909,7 @@ public class TranslationEnginesController(
         }
         else
         {
-            TranslationBuildJob? build = await _buildService.GetActiveAsync(id, cancellationToken);
+            TranslationBuild? build = await _buildService.GetActiveAsync(id, cancellationToken);
             if (build == null)
                 return NoContent();
 
@@ -1059,9 +1059,9 @@ public class TranslationEnginesController(
         };
     }
 
-    private static TranslationBuildJob Map(TranslationEngine engine, TranslationBuildConfigDto source)
+    private static TranslationBuild Map(TranslationEngine engine, TranslationBuildConfigDto source)
     {
-        return new TranslationBuildJob
+        return new TranslationBuild
         {
             EngineRef = engine.Id,
             Name = source.Name,
@@ -1167,13 +1167,13 @@ public class TranslationEnginesController(
             Type = source.Type.ToKebabCase(),
             IsModelPersisted = source.IsModelPersisted,
             IsBuilding = source.IsBuilding,
-            ModelRevision = source.JobRevision,
+            ModelRevision = source.BuildRevision,
             Confidence = Math.Round(source.Confidence, 8),
             CorpusSize = source.CorpusSize
         };
     }
 
-    private TranslationBuildDto Map(TranslationBuildJob source)
+    private TranslationBuildDto Map(TranslationBuild source)
     {
         return new TranslationBuildDto
         {

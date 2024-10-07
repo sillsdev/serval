@@ -1,6 +1,6 @@
 ﻿namespace Serval.Shared.Contracts;
 
-public enum JobState
+public enum BuildState
 {
     Pending,
     Active,

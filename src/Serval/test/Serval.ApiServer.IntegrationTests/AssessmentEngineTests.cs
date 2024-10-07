@@ -51,7 +51,7 @@ public class AssessmentEngineTests
     public async Task GetAllResultsAsync()
     {
         using TestEnvironment env = new();
-        Assessment.Models.AssessmentJob job = await env.AddJobAsync();
+        Assessment.Models.AssessmentBuild job = await env.AddJobAsync();
         await env.Results.InsertAllAsync(
             [
                 new()
@@ -97,7 +97,7 @@ public class AssessmentEngineTests
             Engines = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentEngine>>();
             DataFiles = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.DataFile>>();
             Results = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentResult>>();
-            Jobs = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentJob>>();
+            Jobs = _scope.ServiceProvider.GetRequiredService<IRepository<Assessment.Models.AssessmentBuild>>();
 
             Client = Substitute.For<AssessmentEngineApi.AssessmentEngineApiClient>();
             Client
@@ -121,7 +121,7 @@ public class AssessmentEngineTests
         public IRepository<Assessment.Models.AssessmentEngine> Engines { get; }
         public IRepository<DataFiles.Models.DataFile> DataFiles { get; }
         public IRepository<Assessment.Models.AssessmentResult> Results { get; }
-        public IRepository<Assessment.Models.AssessmentJob> Jobs { get; }
+        public IRepository<Assessment.Models.AssessmentBuild> Jobs { get; }
         public AssessmentEngineApi.AssessmentEngineApiClient Client { get; }
 
         public AssessmentEnginesClient CreateClient(IEnumerable<string>? scope = null)
@@ -192,15 +192,15 @@ public class AssessmentEngineTests
             return engine;
         }
 
-        public async Task<Assessment.Models.AssessmentJob> AddJobAsync()
+        public async Task<Assessment.Models.AssessmentBuild> AddJobAsync()
         {
             Assessment.Models.AssessmentEngine engine = await AddEngineAsync();
-            Assessment.Models.AssessmentJob job =
+            Assessment.Models.AssessmentBuild job =
                 new()
                 {
                     Name = "test",
                     EngineRef = engine.Id,
-                    State = Shared.Contracts.JobState.Completed,
+                    State = Shared.Contracts.BuildState.Completed,
                     Message = "Completed",
                     DateFinished = DateTime.UtcNow
                 };

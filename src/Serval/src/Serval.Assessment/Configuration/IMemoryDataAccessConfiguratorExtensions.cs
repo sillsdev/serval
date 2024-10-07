@@ -7,7 +7,7 @@ public static class IMemoryDataAccessConfiguratorExtensions
     )
     {
         configurator.AddRepository<AssessmentEngine>();
-        configurator.AddRepository<AssessmentJob>();
+        configurator.AddRepository<AssessmentBuild>();
         configurator.AddRepository<AssessmentResult>();
         return configurator;
     }

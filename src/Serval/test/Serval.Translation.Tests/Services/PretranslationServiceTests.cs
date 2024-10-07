@@ -279,7 +279,7 @@ public class PretranslationServiceTests
                         SourceLanguage = "en",
                         TargetLanguage = "en",
                         Type = "nmt",
-                        JobRevision = 1,
+                        BuildRevision = 1,
                         Corpora =
                         [
                             new()
@@ -375,7 +375,7 @@ public class PretranslationServiceTests
         {
             string usfm = await Service.GetUsfmAsync(
                 engineId: "engine1",
-                modelRevision: 1,
+                jobRevision: 1,
                 corpusId: "corpus1",
                 textId: "MAT",
                 textOrigin: textOrigin,

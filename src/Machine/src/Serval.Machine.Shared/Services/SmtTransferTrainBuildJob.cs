@@ -55,7 +55,7 @@ public class SmtTransferTrainBuildJob(
 
         bool canceling = !await BuildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Hangfire,
-            TranslationEngineType.SmtTransfer,
+            EngineType.SmtTransfer,
             engineId,
             buildId,
             BuildStage.Postprocess,

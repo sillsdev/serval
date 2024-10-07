@@ -1,22 +1,22 @@
 ﻿namespace Serval.Shared.Services;
 
-public class JobService<TJob>(IRepository<TJob> jobs) : EntityServiceBase<TJob>(jobs), IJobService<TJob>
-    where TJob : IJob
+public class BuildService<TBuild>(IRepository<TBuild> jobs) : EntityServiceBase<TBuild>(jobs), IBuildService<TBuild>
+    where TBuild : IBuild
 {
-    public async Task<IEnumerable<TJob>> GetAllAsync(string parentId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TBuild>> GetAllAsync(string parentId, CancellationToken cancellationToken = default)
     {
         return await Entities.GetAllAsync(e => e.EngineRef == parentId, cancellationToken);
     }
 
-    public Task<TJob?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default)
+    public Task<TBuild?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default)
     {
         return Entities.GetAsync(
-            b => b.EngineRef == parentId && (b.State == JobState.Active || b.State == JobState.Pending),
+            b => b.EngineRef == parentId && (b.State == BuildState.Active || b.State == BuildState.Pending),
             cancellationToken
         );
     }
 
-    public Task<EntityChange<TJob>> GetNewerRevisionAsync(
+    public Task<EntityChange<TBuild>> GetNewerRevisionAsync(
         string id,
         long minRevision,
         CancellationToken cancellationToken = default
@@ -25,27 +25,27 @@ public class JobService<TJob>(IRepository<TJob> jobs) : EntityServiceBase<TJob>(
         return GetNewerRevisionAsync(e => e.Id == id, minRevision, cancellationToken);
     }
 
-    public Task<EntityChange<TJob>> GetActiveNewerRevisionAsync(
+    public Task<EntityChange<TBuild>> GetActiveNewerRevisionAsync(
         string parentId,
         long minRevision,
         CancellationToken cancellationToken = default
     )
     {
         return GetNewerRevisionAsync(
-            b => b.EngineRef == parentId && (b.State == JobState.Active || b.State == JobState.Pending),
+            b => b.EngineRef == parentId && (b.State == BuildState.Active || b.State == BuildState.Pending),
             minRevision,
             cancellationToken
         );
     }
 
-    private async Task<EntityChange<TJob>> GetNewerRevisionAsync(
-        Expression<Func<TJob, bool>> filter,
+    private async Task<EntityChange<TBuild>> GetNewerRevisionAsync(
+        Expression<Func<TBuild, bool>> filter,
         long minRevision,
         CancellationToken cancellationToken = default
     )
     {
-        using ISubscription<TJob> subscription = await Entities.SubscribeAsync(filter, cancellationToken);
-        EntityChange<TJob> curChange = subscription.Change;
+        using ISubscription<TBuild> subscription = await Entities.SubscribeAsync(filter, cancellationToken);
+        EntityChange<TBuild> curChange = subscription.Change;
         if (curChange.Type == EntityChangeType.Delete && minRevision > 1)
             return curChange;
         while (true)

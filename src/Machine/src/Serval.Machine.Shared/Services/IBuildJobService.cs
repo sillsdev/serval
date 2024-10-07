@@ -15,7 +15,7 @@ public interface IBuildJobService
 
     Task<bool> StartBuildJobAsync(
         BuildJobRunnerType runnerType,
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,

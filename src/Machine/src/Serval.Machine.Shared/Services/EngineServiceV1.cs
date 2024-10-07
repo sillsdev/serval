@@ -4,38 +4,36 @@ using Serval.Translation.V1;
 
 namespace Serval.Machine.Shared.Services;
 
-public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineService> engineServices)
-    : EngineApi.EngineApiBase
+public class EngineServiceV1(IEnumerable<IEngineService> engineServices) : EngineApi.EngineApiBase
 {
     private static readonly Empty Empty = new();
 
-    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices =
-        engineServices.ToDictionary(es => es.Type);
+    private readonly Dictionary<EngineType, IEngineService> _engineServices = engineServices.ToDictionary(es =>
+        es.Type
+    );
 
     public override async Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        TranslationEngine translationEngine = await engineService.CreateAsync(
+        IEngineService engineService = GetEngineService(request.EngineType);
+        IEngine translationEngine = await engineService.CreateAsync(
             request.EngineId,
             request.HasEngineName ? request.EngineName : null,
-            request.SourceLanguage,
-            request.TargetLanguage,
-            request.HasIsModelPersisted ? request.IsModelPersisted : null,
+            request.ParametersSerialized,
             context.CancellationToken
         );
-        return new CreateResponse { IsModelPersisted = translationEngine.IsModelPersisted };
+        return new CreateResponse { ResultsSerialized = "" };
     }
 
     public override async Task<Empty> Delete(DeleteRequest request, ServerCallContext context)
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        IEngineService engineService = GetEngineService(request.EngineType);
         await engineService.DeleteAsync(request.EngineId, context.CancellationToken);
         return Empty;
     }
 
     public override async Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        IEngineService engineService = GetEngineService(request.EngineType);
         IEnumerable<SIL.Machine.Translation.TranslationResult> results;
         try
         {
@@ -59,7 +57,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         ServerCallContext context
     )
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        IEngineService engineService = GetEngineService(request.EngineType);
         SIL.Machine.Translation.WordGraph wordGraph;
         try
         {
@@ -78,7 +76,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 
     public override async Task<Empty> TrainSegmentPair(TrainSegmentPairRequest request, ServerCallContext context)
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        IEngineService engineService = GetEngineService(request.EngineType);
         await engineService.TrainSegmentPairAsync(
             request.EngineId,
             request.SourceSegment,
@@ -91,7 +89,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 
     public override async Task<Empty> StartJob(StartJobRequest request, ServerCallContext context)
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        IEngineService engineService = GetEngineService(request.EngineType);
         Models.TranslationCorpus[] corpora = request.Corpora.Select(Map).ToArray();
         try
         {
@@ -112,7 +110,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 
     public override async Task<Empty> CancelJob(CancelJobRequest request, ServerCallContext context)
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        IEngineService engineService = GetEngineService(request.EngineType);
         try
         {
             await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
@@ -131,7 +129,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     {
         try
         {
-            ITranslationEngineService engineService = GetEngineService(request.EngineType);
+            IEngineService engineService = GetEngineService(request.EngineType);
             ModelDownloadUrl modelDownloadUrl = await engineService.GetModelDownloadUrlAsync(
                 request.EngineId,
                 context.CancellationToken
@@ -155,7 +153,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 
     public override Task<GetQueueSizeResponse> GetQueueSize(GetQueueSizeRequest request, ServerCallContext context)
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        IEngineService engineService = GetEngineService(request.EngineType);
         return Task.FromResult(new GetQueueSizeResponse { Size = engineService.GetQueueSize() });
     }
 
@@ -164,22 +162,22 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         ServerCallContext context
     )
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        IEngineService engineService = GetEngineService(request.EngineType);
         bool isNative = engineService.IsLanguageNativeToModel(request.Language, out string internalCode);
         return Task.FromResult(new GetLanguageInfoResponse { InternalCode = internalCode, IsNative = isNative, });
     }
 
-    private ITranslationEngineService GetEngineService(string engineTypeStr)
+    private IEngineService GetEngineService(string engineTypeStr)
     {
-        if (_engineServices.TryGetValue(GetEngineType(engineTypeStr), out ITranslationEngineService? service))
+        if (_engineServices.TryGetValue(GetEngineType(engineTypeStr), out IEngineService? service))
             return service;
         throw new RpcException(new Status(StatusCode.InvalidArgument, "The engine type is invalid."));
     }
 
-    private static TranslationEngineType GetEngineType(string engineTypeStr)
+    private static EngineType GetEngineType(string engineTypeStr)
     {
         engineTypeStr = engineTypeStr[0].ToString().ToUpperInvariant() + engineTypeStr[1..];
-        if (System.Enum.TryParse(engineTypeStr, out TranslationEngineType engineType))
+        if (System.Enum.TryParse(engineTypeStr, out EngineType engineType))
             return engineType;
         throw new RpcException(new Status(StatusCode.InvalidArgument, "The engine type is invalid."));
     }

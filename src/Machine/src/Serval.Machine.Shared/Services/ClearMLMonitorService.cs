@@ -26,15 +26,14 @@ public class ClearMLMonitorService(
     private readonly ILogger<IClearMLQueueService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
-    private readonly IReadOnlyDictionary<TranslationEngineType, string> _queuePerEngineType =
+    private readonly IReadOnlyDictionary<EngineType, string> _queuePerEngineType =
         buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => x.Queue);
 
-    private readonly IDictionary<TranslationEngineType, int> _queueSizePerEngineType = new ConcurrentDictionary<
-        TranslationEngineType,
-        int
-    >(buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => 0));
+    private readonly IDictionary<EngineType, int> _queueSizePerEngineType = new ConcurrentDictionary<EngineType, int>(
+        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => 0)
+    );
 
-    public int GetQueueSize(TranslationEngineType engineType)
+    public int GetQueueSize(EngineType engineType)
     {
         return _queueSizePerEngineType[engineType];
     }
@@ -54,7 +53,7 @@ public class ClearMLMonitorService(
             Dictionary<string, ClearMLTask> tasks = new();
             Dictionary<string, int> queuePositions = new();
 
-            foreach (TranslationEngineType engineType in _queuePerEngineType.Keys)
+            foreach (EngineType engineType in _queuePerEngineType.Keys)
             {
                 var tasksPerEngineType = (
                     await _clearMLService.GetTasksByIdAsync(
@@ -105,7 +104,7 @@ public class ClearMLMonitorService(
                     );
                 }
 
-                if (engine.CurrentBuild.Stage == BuildStage.Train)
+                if (engine.CurrentBuild.Stage == BuildStage.Process)
                 {
                     if (
                         engine.CurrentBuild.JobState is BuildJobState.Pending
@@ -242,7 +241,7 @@ public class ClearMLMonitorService(
 
     private async Task<bool> TrainJobCompletedAsync(
         IBuildJobService buildJobService,
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         int corpusSize,

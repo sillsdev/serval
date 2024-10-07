@@ -26,32 +26,32 @@ public class ServalPlatformOutboxMessageHandler(
         switch (method)
         {
             case ServalPlatformOutboxConstants.BuildStarted:
-                await _engineClient.JobStartedAsync(
-                    JsonSerializer.Deserialize<JobStartedRequest>(content!),
+                await _engineClient.BuildStartedAsync(
+                    JsonSerializer.Deserialize<BuildStartedRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalPlatformOutboxConstants.BuildCompleted:
-                await _engineClient.JobCompletedAsync(
-                    JsonSerializer.Deserialize<JobCompletedRequest>(content!),
+                await _engineClient.BuildCompletedAsync(
+                    JsonSerializer.Deserialize<BuildCompletedRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalPlatformOutboxConstants.BuildCanceled:
-                await _engineClient.JobCanceledAsync(
-                    JsonSerializer.Deserialize<JobCanceledRequest>(content!),
+                await _engineClient.BuildCanceledAsync(
+                    JsonSerializer.Deserialize<BuildCanceledRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalPlatformOutboxConstants.BuildFaulted:
-                await _engineClient.JobFaultedAsync(
-                    JsonSerializer.Deserialize<JobFaultedRequest>(content!),
+                await _engineClient.BuildFaultedAsync(
+                    JsonSerializer.Deserialize<BuildFaultedRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;
-            case ServalPlatformOutboxConstants.JobRestarting:
-                await _engineClient.JobRestartingAsync(
-                    JsonSerializer.Deserialize<JobRestartingRequest>(content!),
+            case ServalPlatformOutboxConstants.BuildRestarting:
+                await _engineClient.BuildRestartingAsync(
+                    JsonSerializer.Deserialize<BuildRestartingRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;

@@ -7,7 +7,7 @@
 public class AssessmentEnginesController(
     IAuthorizationService authService,
     IAssessmentEngineService engineService,
-    IJobService<AssessmentJob> jobService,
+    IBuildService<AssessmentBuild> jobService,
     IResultService resultService,
     IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService
@@ -17,7 +17,7 @@ public class AssessmentEnginesController(
         new() { Converters = { new ObjectToInferredTypesConverter() } };
 
     private readonly IAssessmentEngineService _engineService = engineService;
-    private readonly IJobService<AssessmentJob> _jobService = jobService;
+    private readonly IBuildService<AssessmentBuild> _jobService = jobService;
     private readonly IResultService _resultService = resultService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
@@ -311,7 +311,7 @@ public class AssessmentEnginesController(
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
-            (_, EntityChange<AssessmentJob> change) = await TaskEx.Timeout(
+            (_, EntityChange<AssessmentBuild> change) = await TaskEx.Timeout(
                 ct => _jobService.GetNewerRevisionAsync(jobId, minRevision.Value, ct),
                 _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken: cancellationToken
@@ -325,7 +325,7 @@ public class AssessmentEnginesController(
         }
         else
         {
-            AssessmentJob job = await _jobService.GetAsync(jobId, cancellationToken);
+            AssessmentBuild job = await _jobService.GetAsync(jobId, cancellationToken);
             return Ok(Map(job));
         }
     }
@@ -358,7 +358,7 @@ public class AssessmentEnginesController(
     {
         AssessmentEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        AssessmentJob job = Map(engine, jobConfig);
+        AssessmentBuild job = Map(engine, jobConfig);
         await _engineService.StartJobAsync(job, cancellationToken);
 
         AssessmentJobDto dto = Map(job);
@@ -547,7 +547,7 @@ public class AssessmentEnginesController(
         };
     }
 
-    private AssessmentJobDto Map(AssessmentJob source)
+    private AssessmentJobDto Map(AssessmentBuild source)
     {
         return new AssessmentJobDto
         {
@@ -570,12 +570,12 @@ public class AssessmentEnginesController(
         };
     }
 
-    private static AssessmentJob Map(AssessmentEngine engine, AssessmentJobConfigDto source)
+    private static AssessmentBuild Map(AssessmentEngine engine, AssessmentJobConfigDto source)
     {
         if (source.TextIds is not null && source.ScriptureRange is not null)
             throw new InvalidOperationException("Set at most one of TextIds and ScriptureRange.");
 
-        return new AssessmentJob
+        return new AssessmentBuild
         {
             EngineRef = engine.Id,
             Name = source.Name,

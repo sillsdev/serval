@@ -1,11 +1,11 @@
 ﻿namespace Serval.Webhooks.Consumers;
 
-public class JobStartedConsumer(IWebhookService webhookService, IUrlService urlService) : IConsumer<JobStarted>
+public class JobStartedConsumer(IWebhookService webhookService, IUrlService urlService) : IConsumer<BuildStarted>
 {
     private readonly IWebhookService _webhookService = webhookService;
     private readonly IUrlService _urlService = urlService;
 
-    public async Task Consume(ConsumeContext<JobStarted> context)
+    public async Task Consume(ConsumeContext<BuildStarted> context)
     {
         switch (EngineTypeResolver.GetEngineType(context.Message.Type))
         {
@@ -18,9 +18,9 @@ public class JobStartedConsumer(IWebhookService webhookService, IUrlService urlS
                 );
                 break;
             case EngineType.Assessment:
-                await SendJobWebhookAsync(
+                await SendBuildWebhookAsync(
                     context,
-                    WebhookEvent.AssessmentJobStarted,
+                    WebhookEvent.AssessmentBuildStarted,
                     Endpoints.GetAssessmentJob,
                     Endpoints.GetAssessmentEngine
                 );
@@ -29,7 +29,7 @@ public class JobStartedConsumer(IWebhookService webhookService, IUrlService urlS
     }
 
     private async Task SendBuildWebhookAsync(
-        ConsumeContext<JobStarted> context,
+        ConsumeContext<BuildStarted> context,
         WebhookEvent eventType,
         string jobEndpoint,
         string engineEndpoint
@@ -41,36 +41,6 @@ public class JobStartedConsumer(IWebhookService webhookService, IUrlService urlS
             new BuildStartedDto
             {
                 Build = new ResourceLinkDto
-                {
-                    Id = context.Message.BuildId,
-                    Url = _urlService.GetUrl(
-                        jobEndpoint,
-                        new { id = context.Message.EngineId, buildId = context.Message.BuildId }
-                    )
-                },
-                Engine = new ResourceLinkDto
-                {
-                    Id = context.Message.EngineId,
-                    Url = _urlService.GetUrl(engineEndpoint, new { id = context.Message.EngineId })
-                }
-            },
-            context.CancellationToken
-        );
-    }
-
-    private async Task SendJobWebhookAsync(
-        ConsumeContext<JobStarted> context,
-        WebhookEvent eventType,
-        string jobEndpoint,
-        string engineEndpoint
-    )
-    {
-        await _webhookService.SendEventAsync(
-            eventType,
-            context.Message.Owner,
-            new JobStartedDto
-            {
-                Job = new ResourceLinkDto
                 {
                     Id = context.Message.BuildId,
                     Url = _urlService.GetUrl(

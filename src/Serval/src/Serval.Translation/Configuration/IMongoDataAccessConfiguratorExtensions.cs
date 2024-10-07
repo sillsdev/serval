@@ -19,12 +19,12 @@ public static class IMongoDataAccessConfiguratorExtensions
                 );
             }
         );
-        configurator.AddRepository<TranslationBuildJob>(
+        configurator.AddRepository<TranslationBuild>(
             "translation.builds",
             init: c =>
                 c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<TranslationBuildJob>(
-                        Builders<TranslationBuildJob>.IndexKeys.Ascending(b => b.EngineRef)
+                    new CreateIndexModel<TranslationBuild>(
+                        Builders<TranslationBuild>.IndexKeys.Ascending(b => b.EngineRef)
                     )
                 )
         );

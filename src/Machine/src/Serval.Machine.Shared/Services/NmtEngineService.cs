@@ -8,7 +8,7 @@ public class NmtEngineService(
     ILanguageTagService languageTagService,
     IClearMLQueueService clearMLQueueService,
     ISharedFileService sharedFileService
-) : ITranslationEngineService
+) : IEngineService
 {
     private readonly IPlatformService _platformService = platformService;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
@@ -24,7 +24,7 @@ public class NmtEngineService(
         return $"{ModelDirectory}{engineId}_{buildRevision}.tar.gz";
     }
 
-    public TranslationEngineType Type => TranslationEngineType.Nmt;
+    public EngineType Type => EngineType.Nmt;
 
     private const int MinutesToExpire = 60;
 
@@ -45,7 +45,7 @@ public class NmtEngineService(
                     EngineId = engineId,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
                 };
                 await _engines.InsertAsync(translationEngine, ct);
@@ -75,7 +75,7 @@ public class NmtEngineService(
     {
         bool building = !await _buildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Hangfire,
-            TranslationEngineType.Nmt,
+            EngineType.Nmt,
             engineId,
             buildId,
             BuildStage.Preprocess,

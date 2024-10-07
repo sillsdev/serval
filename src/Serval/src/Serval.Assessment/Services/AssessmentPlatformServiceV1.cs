@@ -4,13 +4,13 @@ using Serval.Engine.V1;
 namespace Serval.Assessment.Services;
 
 public class AssessmentPlatformServiceV1(
-    IRepository<AssessmentJob> jobs,
+    IRepository<AssessmentBuild> jobs,
     IRepository<AssessmentEngine> engines,
     IRepository<AssessmentResult> results,
     IDataAccessContext dataAccessContext,
     IPublishEndpoint publishEndpoint
 )
-    : EnginePlatformServiceBaseV1<AssessmentJob, AssessmentEngine, AssessmentResult>(
+    : EnginePlatformServiceBaseV1<AssessmentBuild, AssessmentEngine, AssessmentResult>(
         jobs,
         engines,
         results,
@@ -19,7 +19,7 @@ public class AssessmentPlatformServiceV1(
     )
 {
     protected override async Task<AssessmentEngine?> UpdateEngineAfterJobCompleted(
-        AssessmentJob build,
+        AssessmentBuild build,
         string engineId,
         JobCompletedRequest request,
         CancellationToken ct
@@ -28,7 +28,7 @@ public class AssessmentPlatformServiceV1(
         var parameters = JsonSerializer.Deserialize<AssessmentEngineCompletedStatistics>(request.StatisticsSerialized)!;
         return await Engines.UpdateAsync(
             engineId,
-            u => u.Set(e => e.IsJobRunning, false).Inc(e => e.JobRevision),
+            u => u.Set(e => e.IsBuildRunning, false).Inc(e => e.BuildRevision),
             cancellationToken: ct
         );
     }
@@ -39,7 +39,7 @@ public class AssessmentPlatformServiceV1(
         return new AssessmentResult
         {
             EngineRef = request.EngineId,
-            JobRevision = nextJobRevision,
+            BuildRevision = nextJobRevision,
             TextId = content.TextId,
             Ref = content.Ref,
             Score = content.Score,

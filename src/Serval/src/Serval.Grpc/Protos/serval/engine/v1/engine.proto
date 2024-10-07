@@ -7,8 +7,8 @@ import "google/protobuf/empty.proto";
 service EngineApi {
     rpc Create(CreateRequest) returns (CreateResponse);
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
-    rpc StartJob(StartJobRequest) returns (StartJobResponse);
-    rpc CancelJob(CancelJobRequest) returns (google.protobuf.Empty);
+    rpc StartBuild(StartBuildRequest) returns (StartBuildResponse);
+    rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
     rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
 }
 
@@ -24,15 +24,15 @@ message CreateResponse {
 }
 
 
-message StartJobRequest {
+message StartBuildRequest {
     string engine_type = 1;
     string engine_id = 2;
-    string job_id = 3;
+    string build_id = 3;
     string corpora_serialized = 4;
     string options_serialized = 5;
 }
 
-message StartJobResponse {
+message StartBuildResponse {
     string results_serialized = 4;
 }
 
@@ -41,7 +41,7 @@ message DeleteRequest {
     string engine_id = 2;
 }
 
-message CancelJobRequest {
+message CancelBuildRequest {
     string engine_type = 1;
     string engine_id = 2;
 }

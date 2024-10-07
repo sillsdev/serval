@@ -223,7 +223,7 @@ public class SmtTransferEngineServiceTests
                 {
                     Id = EngineId1,
                     EngineId = EngineId1,
-                    Type = TranslationEngineType.SmtTransfer,
+                    Type = EngineType.SmtTransfer,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -262,14 +262,14 @@ public class SmtTransferEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            TranslationEngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            TranslationEngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -583,7 +583,7 @@ public class SmtTransferEngineServiceTests
         public Task WaitForTrainingToStartAsync()
         {
             return WaitForBuildState(e =>
-                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage is BuildStage.Train
+                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage is BuildStage.Process
             );
         }
 
@@ -644,7 +644,7 @@ public class SmtTransferEngineServiceTests
 
                 await BuildJobService.StartBuildJobAsync(
                     BuildJobRunnerType.Hangfire,
-                    TranslationEngineType.SmtTransfer,
+                    EngineType.SmtTransfer,
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,

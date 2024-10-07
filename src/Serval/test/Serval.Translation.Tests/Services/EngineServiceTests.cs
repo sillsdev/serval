@@ -110,7 +110,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartJobAsync(new TranslationBuildJob { Id = JOB1_ID, EngineRef = engineId });
+        await env.Service.StartJobAsync(new TranslationBuild { Id = JOB1_ID, EngineRef = engineId });
         _ = env.TranslationServiceClient.Received()
             .StartJobAsync(
                 new StartJobRequest
@@ -156,7 +156,7 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.StartJobAsync(
-            new TranslationBuildJob
+            new TranslationBuild
             {
                 Id = JOB1_ID,
                 EngineRef = engineId,
@@ -209,7 +209,7 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.StartJobAsync(
-            new TranslationBuildJob
+            new TranslationBuild
             {
                 Id = JOB1_ID,
                 EngineRef = engineId,
@@ -262,7 +262,7 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.StartJobAsync(
-            new TranslationBuildJob
+            new TranslationBuild
             {
                 Id = JOB1_ID,
                 EngineRef = engineId,
@@ -316,7 +316,7 @@ public class EngineServiceTests
         Assert.ThrowsAsync<InvalidOperationException>(
             () =>
                 env.Service.StartJobAsync(
-                    new TranslationBuildJob
+                    new TranslationBuild
                     {
                         Id = JOB1_ID,
                         EngineRef = engineId,
@@ -332,7 +332,7 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
         await env.Service.StartJobAsync(
-            new TranslationBuildJob
+            new TranslationBuild
             {
                 Id = JOB1_ID,
                 EngineRef = engineId,
@@ -395,7 +395,7 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
         await env.Service.StartJobAsync(
-            new TranslationBuildJob
+            new TranslationBuild
             {
                 Id = JOB1_ID,
                 EngineRef = engineId,
@@ -628,7 +628,7 @@ public class EngineServiceTests
 
             Service = new TranslationEngineService(
                 Engines,
-                new MemoryRepository<TranslationBuildJob>(),
+                new MemoryRepository<TranslationBuild>(),
                 new MemoryRepository<Pretranslation>(),
                 Substitute.For<IScopedMediator>(),
                 grpcClientFactory,

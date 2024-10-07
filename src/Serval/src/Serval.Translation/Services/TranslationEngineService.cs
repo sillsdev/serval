@@ -6,7 +6,7 @@ namespace Serval.Translation.Services;
 
 public class TranslationEngineService(
     IRepository<TranslationEngine> engines,
-    IRepository<TranslationBuildJob> builds,
+    IRepository<TranslationBuild> builds,
     IRepository<Pretranslation> pretranslations,
     IScopedMediator mediator,
     GrpcClientFactory grpcClientFactory,
@@ -15,7 +15,7 @@ public class TranslationEngineService(
     ILoggerFactory loggerFactory,
     IScriptureDataFileService scriptureDataFileService
 )
-    : EngineServiceBase<TranslationEngine, TranslationBuildJob>(
+    : EngineServiceBase<TranslationEngine, TranslationBuild>(
         engines,
         builds,
         grpcClientFactory,
@@ -155,7 +155,7 @@ public class TranslationEngineService(
         return engine;
     }
 
-    public async Task StartJobAsync(TranslationBuildJob build, CancellationToken cancellationToken = default)
+    public async Task StartJobAsync(TranslationBuild build, CancellationToken cancellationToken = default)
     {
         TranslationEngine? engine = await Entities.GetAsync(build.EngineRef, cancellationToken);
         if (engine is null)

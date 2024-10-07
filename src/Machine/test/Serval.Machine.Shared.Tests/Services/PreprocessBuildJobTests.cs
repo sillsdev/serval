@@ -247,7 +247,7 @@ public class PreprocessBuildJobTests
         using TestEnvironment env = new();
         TranslationCorpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
 
-        await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: TranslationEngineType.SmtTransfer);
+        await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: EngineType.SmtTransfer);
     }
 
     [Test]
@@ -449,7 +449,7 @@ public class PreprocessBuildJobTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -469,7 +469,7 @@ public class PreprocessBuildJobTests
                 {
                     Id = "engine2",
                     EngineId = "engine2",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "xxx",
                     TargetLanguage = "zzz",
                     BuildRevision = 1,
@@ -489,7 +489,7 @@ public class PreprocessBuildJobTests
                 {
                     Id = "engine2",
                     EngineId = "engine2",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "xxx",
                     TargetLanguage = "zzz",
                     BuildRevision = 1,
@@ -521,14 +521,14 @@ public class PreprocessBuildJobTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            TranslationEngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            TranslationEngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -578,11 +578,11 @@ public class PreprocessBuildJobTests
             );
         }
 
-        public PreprocessBuildJob GetBuildJob(TranslationEngineType engineType)
+        public PreprocessBuildJob GetBuildJob(EngineType engineType)
         {
             switch (engineType)
             {
-                case TranslationEngineType.Nmt:
+                case EngineType.Nmt:
                 {
                     return new NmtPreprocessBuildJob(
                         PlatformService,
@@ -598,7 +598,7 @@ public class PreprocessBuildJobTests
                         Seed = 1234
                     };
                 }
-                case TranslationEngineType.SmtTransfer:
+                case EngineType.SmtTransfer:
                 {
                     return new SmtTransferPreprocessBuildJob(
                         PlatformService,
@@ -625,7 +625,7 @@ public class PreprocessBuildJobTests
             TranslationCorpus corpus,
             bool useKeyTerms = true,
             string engineId = "engine1",
-            TranslationEngineType engineType = TranslationEngineType.Nmt
+            EngineType engineType = EngineType.Nmt
         )
         {
             return GetBuildJob(engineType)

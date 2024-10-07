@@ -9,7 +9,7 @@ public class SmtTransferEngineService(
     SmtTransferEngineStateService stateService,
     IBuildJobService buildJobService,
     IClearMLQueueService clearMLQueueService
-) : ITranslationEngineService
+) : IEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
@@ -20,7 +20,7 @@ public class SmtTransferEngineService(
     private readonly IBuildJobService _buildJobService = buildJobService;
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
 
-    public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
+    public EngineType Type => EngineType.SmtTransfer;
 
     public async Task<TranslationEngine> CreateAsync(
         string engineId,
@@ -47,7 +47,7 @@ public class SmtTransferEngineService(
                     EngineId = engineId,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
-                    Type = TranslationEngineType.SmtTransfer,
+                    Type = EngineType.SmtTransfer,
                     IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
                 };
                 await _engines.InsertAsync(translationEngine, ct);
@@ -186,7 +186,7 @@ public class SmtTransferEngineService(
     {
         bool building = !await _buildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Hangfire,
-            TranslationEngineType.SmtTransfer,
+            EngineType.SmtTransfer,
             engineId,
             buildId,
             BuildStage.Preprocess,

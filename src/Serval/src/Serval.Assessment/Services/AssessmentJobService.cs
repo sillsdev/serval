@@ -2,9 +2,9 @@
 
 public class AssessmentJobService(
     IDataAccessContext dataAccessContext,
-    IRepository<AssessmentJob> jobs,
+    IRepository<AssessmentBuild> jobs,
     IRepository<AssessmentResult> results
-) : JobService<AssessmentJob>(jobs)
+) : BuildService<AssessmentBuild>(jobs)
 {
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<AssessmentResult> _results = results;
@@ -14,7 +14,7 @@ public class AssessmentJobService(
         return _dataAccessContext.WithTransactionAsync(
             async ct =>
             {
-                IJob? job = await Entities.DeleteAsync(id, ct);
+                IBuild? job = await Entities.DeleteAsync(id, ct);
                 if (job is null)
                     throw new EntityNotFoundException($"Could not find the Job '{id}'.");
 

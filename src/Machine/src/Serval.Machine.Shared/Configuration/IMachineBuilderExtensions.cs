@@ -216,23 +216,23 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddHangfireJobServer(
         this IMachineBuilder builder,
-        IEnumerable<TranslationEngineType>? engineTypes = null
+        IEnumerable<EngineType>? engineTypes = null
     )
     {
         engineTypes ??=
-            builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
-            ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
+            builder.Configuration?.GetSection("TranslationEngines").Get<EngineType[]?>()
+            ?? [EngineType.SmtTransfer, EngineType.Nmt];
         var queues = new List<string>();
-        foreach (TranslationEngineType engineType in engineTypes.Distinct())
+        foreach (EngineType engineType in engineTypes.Distinct())
         {
             switch (engineType)
             {
-                case TranslationEngineType.SmtTransfer:
+                case EngineType.SmtTransfer:
                     builder.Services.AddSingleton<SmtTransferEngineStateService>();
                     builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
                     queues.Add("smt_transfer");
                     break;
-                case TranslationEngineType.Nmt:
+                case EngineType.Nmt:
                     queues.Add("nmt");
                     break;
             }
@@ -371,7 +371,7 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddServalTranslationEngineService(
         this IMachineBuilder builder,
         string? connectionString = null,
-        IEnumerable<TranslationEngineType>? engineTypes = null
+        IEnumerable<EngineType>? engineTypes = null
     )
     {
         builder.Services.AddGrpc(options =>
@@ -383,20 +383,20 @@ public static class IMachineBuilderExtensions
         builder.AddServalPlatformService(connectionString);
 
         engineTypes ??=
-            builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
-            ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
-        foreach (TranslationEngineType engineType in engineTypes.Distinct())
+            builder.Configuration?.GetSection("TranslationEngines").Get<EngineType[]?>()
+            ?? [EngineType.SmtTransfer, EngineType.Nmt];
+        foreach (EngineType engineType in engineTypes.Distinct())
         {
             switch (engineType)
             {
-                case TranslationEngineType.SmtTransfer:
+                case EngineType.SmtTransfer:
                     builder.Services.AddSingleton<SmtTransferEngineStateService>();
                     builder.Services.AddHostedService<SmtTransferEngineCommitService>();
                     builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
-                    builder.Services.AddScoped<ITranslationEngineService, SmtTransferEngineService>();
+                    builder.Services.AddScoped<IEngineService, SmtTransferEngineService>();
                     break;
-                case TranslationEngineType.Nmt:
-                    builder.Services.AddScoped<ITranslationEngineService, NmtEngineService>();
+                case EngineType.Nmt:
+                    builder.Services.AddScoped<IEngineService, NmtEngineService>();
                     break;
             }
         }

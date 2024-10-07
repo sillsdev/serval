@@ -17,7 +17,7 @@ public enum BuildJobRunnerType
 public enum BuildStage
 {
     Preprocess,
-    Train,
+    Process,
     Postprocess
 }
 

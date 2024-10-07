@@ -3,34 +3,34 @@ using Serval.Engine.V1;
 
 namespace Serval.Shared.Services;
 
-public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
-    IRepository<TJob> jobs,
+public abstract class EnginePlatformServiceBaseV1<TBuild, TEngine, TResults>(
+    IRepository<TBuild> builds,
     IRepository<TEngine> engines,
     IRepository<TResults> results,
     IDataAccessContext dataAccessContext,
     IPublishEndpoint publishEndpoint
 ) : EnginePlatformApi.EnginePlatformApiBase
-    where TJob : IJob
+    where TBuild : IBuild
     where TEngine : IEngine
-    where TResults : Models.IJobResult
+    where TResults : IBuildResult
 {
     private const int ResultInsertBatchSize = 128;
     protected static readonly Empty Empty = new();
 
-    protected readonly IRepository<TJob> Jobs = jobs;
+    protected readonly IRepository<TBuild> Builds = builds;
     protected readonly IRepository<TEngine> Engines = engines;
     protected readonly IRepository<TResults> Results = results;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
-    public override async Task<Empty> JobStarted(JobStartedRequest request, ServerCallContext context)
+    public override async Task<Empty> BuildStarted(BuildStartedRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                TJob? build = await Jobs.UpdateAsync(
-                    request.JobId,
-                    u => u.Set(b => b.State, JobState.Active),
+                TBuild? build = await Builds.UpdateAsync(
+                    request.BuildId,
+                    u => u.Set(b => b.State, BuildState.Active),
                     cancellationToken: ct
                 );
                 if (build is null)
@@ -38,14 +38,14 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
 
                 TEngine? engine = await Engines.UpdateAsync(
                     build.EngineRef,
-                    u => u.Set(e => e.IsJobRunning, true),
+                    u => u.Set(e => e.IsBuildRunning, true),
                     cancellationToken: ct
                 );
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
                 await _publishEndpoint.Publish(
-                    new JobStarted
+                    new BuildStarted
                     {
                         BuildId = build.Id,
                         EngineId = engine.Id,
@@ -60,15 +60,15 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
         return Empty;
     }
 
-    public override async Task<Empty> JobCompleted(JobCompletedRequest request, ServerCallContext context)
+    public override async Task<Empty> BuildCompleted(BuildCompletedRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                TJob? build = await Jobs.UpdateAsync(
-                    request.JobId,
+                TBuild? build = await Builds.UpdateAsync(
+                    request.BuildId,
                     u =>
-                        u.Set(b => b.State, JobState.Completed)
+                        u.Set(b => b.State, BuildState.Completed)
                             .Set(b => b.Message, "Completed")
                             .Set(b => b.DateFinished, DateTime.UtcNow),
                     cancellationToken: ct
@@ -76,22 +76,25 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
-                TEngine? engine = await UpdateEngineAfterJobCompleted(build, build.EngineRef, request, ct);
+                TEngine? engine = await UpdateEngineAfterBuildCompleted(build, build.EngineRef, request, ct);
 
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
                 // delete pretranslations created by the previous build
-                await Results.DeleteAllAsync(p => p.EngineRef == engine.Id && p.JobRevision < engine.JobRevision, ct);
+                await Results.DeleteAllAsync(
+                    p => p.EngineRef == engine.Id && p.BuildRevision < engine.BuildRevision,
+                    ct
+                );
 
                 await _publishEndpoint.Publish(
-                    new JobFinished
+                    new BuildFinished
                     {
-                        JobId = build.Id,
+                        BuildId = build.Id,
                         EngineId = engine.Id,
                         Owner = engine.Owner,
                         Type = engine.Type,
-                        JobState = build.State,
+                        BuildState = build.State,
                         Message = build.Message!,
                         DateFinished = build.DateFinished!.Value
                     },
@@ -104,31 +107,31 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
         return Empty;
     }
 
-    protected virtual async Task<TEngine?> UpdateEngineAfterJobCompleted(
-        TJob build,
+    protected virtual async Task<TEngine?> UpdateEngineAfterBuildCompleted(
+        TBuild build,
         string engineId,
-        JobCompletedRequest request,
+        BuildCompletedRequest request,
         CancellationToken ct
     )
     {
         return await Engines.UpdateAsync(
             engineId,
-            u => u.Set(e => e.IsJobRunning, false).Inc(e => e.JobRevision),
+            u => u.Set(e => e.IsBuildRunning, false).Inc(e => e.BuildRevision),
             cancellationToken: ct
         );
     }
 
-    public override async Task<Empty> JobCanceled(JobCanceledRequest request, ServerCallContext context)
+    public override async Task<Empty> BuildCanceled(BuildCanceledRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                TJob? build = await Jobs.UpdateAsync(
-                    request.JobId,
+                TBuild? build = await Builds.UpdateAsync(
+                    request.BuildId,
                     u =>
                         u.Set(b => b.Message, "Canceled")
                             .Set(b => b.DateFinished, DateTime.UtcNow)
-                            .Set(b => b.State, JobState.Canceled),
+                            .Set(b => b.State, BuildState.Canceled),
                     cancellationToken: ct
                 );
                 if (build is null)
@@ -136,23 +139,26 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
 
                 TEngine? engine = await Engines.UpdateAsync(
                     build.EngineRef,
-                    u => u.Set(e => e.IsJobRunning, false),
+                    u => u.Set(e => e.IsBuildRunning, false),
                     cancellationToken: ct
                 );
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
                 // delete pretranslations that might have been created during the build
-                await Results.DeleteAllAsync(p => p.EngineRef == engine.Id && p.JobRevision > engine.JobRevision, ct);
+                await Results.DeleteAllAsync(
+                    p => p.EngineRef == engine.Id && p.BuildRevision > engine.BuildRevision,
+                    ct
+                );
 
                 await _publishEndpoint.Publish(
-                    new JobFinished
+                    new BuildFinished
                     {
-                        JobId = build.Id,
+                        BuildId = build.Id,
                         EngineId = engine.Id,
                         Owner = engine.Owner,
                         Type = engine.Type,
-                        JobState = build.State,
+                        BuildState = build.State,
                         Message = build.Message!,
                         DateFinished = build.DateFinished!.Value
                     },
@@ -165,15 +171,15 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
         return Empty;
     }
 
-    public override async Task<Empty> JobFaulted(JobFaultedRequest request, ServerCallContext context)
+    public override async Task<Empty> BuildFaulted(BuildFaultedRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                TJob? build = await Jobs.UpdateAsync(
-                    request.JobId,
+                TBuild? build = await Builds.UpdateAsync(
+                    request.BuildId,
                     u =>
-                        u.Set(b => b.State, JobState.Faulted)
+                        u.Set(b => b.State, BuildState.Faulted)
                             .Set(b => b.Message, request.Message)
                             .Set(b => b.DateFinished, DateTime.UtcNow),
                     cancellationToken: ct
@@ -183,23 +189,26 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
 
                 TEngine? engine = await Engines.UpdateAsync(
                     build.EngineRef,
-                    u => u.Set(e => e.IsJobRunning, false),
+                    u => u.Set(e => e.IsBuildRunning, false),
                     cancellationToken: ct
                 );
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
                 // delete pretranslations that might have been created during the build
-                await Results.DeleteAllAsync(p => p.EngineRef == engine.Id && p.JobRevision > engine.JobRevision, ct);
+                await Results.DeleteAllAsync(
+                    p => p.EngineRef == engine.Id && p.BuildRevision > engine.BuildRevision,
+                    ct
+                );
 
                 await _publishEndpoint.Publish(
-                    new JobFinished
+                    new BuildFinished
                     {
-                        JobId = build.Id,
+                        BuildId = build.Id,
                         EngineId = engine.Id,
                         Owner = engine.Owner,
                         Type = engine.Type,
-                        JobState = build.State,
+                        BuildState = build.State,
                         Message = build.Message!,
                         DateFinished = build.DateFinished!.Value
                     },
@@ -212,12 +221,12 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
         return Empty;
     }
 
-    public override async Task<Empty> JobRestarting(JobRestartingRequest request, ServerCallContext context)
+    public override async Task<Empty> BuildRestarting(BuildRestartingRequest request, ServerCallContext context)
     {
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                TJob? build = await UpdateJobUponRestarting(request, ct);
+                TBuild? build = await UpdateBuildUponRestarting(request, ct);
                 if (build is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The build does not exist."));
 
@@ -226,7 +235,10 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
                 // delete pretranslations that might have been created during the build
-                await Results.DeleteAllAsync(p => p.EngineRef == engine.Id && p.JobRevision > engine.JobRevision, ct);
+                await Results.DeleteAllAsync(
+                    p => p.EngineRef == engine.Id && p.BuildRevision > engine.BuildRevision,
+                    ct
+                );
             },
             cancellationToken: context.CancellationToken
         );
@@ -234,21 +246,26 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
         return Empty;
     }
 
-    protected virtual async Task<TJob?> UpdateJobUponRestarting(JobRestartingRequest request, CancellationToken ct)
+    protected virtual async Task<TBuild?> UpdateBuildUponRestarting(
+        BuildRestartingRequest request,
+        CancellationToken ct
+    )
     {
-        TJob? job = await Jobs.UpdateAsync(
-            request.JobId,
+        TBuild? build = await Builds.UpdateAsync(
+            request.BuildId,
             u =>
-                u.Set(b => b.Message, "Restarting").Set(b => b.PercentCompleted, 0).Set(b => b.State, JobState.Pending),
+                u.Set(b => b.Message, "Restarting")
+                    .Set(b => b.PercentCompleted, 0)
+                    .Set(b => b.State, BuildState.Pending),
             cancellationToken: ct
         );
-        return job;
+        return build;
     }
 
-    public override async Task<Empty> UpdateJobStatus(UpdateJobStatusRequest request, ServerCallContext context)
+    public override async Task<Empty> UpdateBuildStatus(UpdateBuildStatusRequest request, ServerCallContext context)
     {
-        await Jobs.UpdateAsync(
-            b => b.Id == request.JobId && (b.State == JobState.Active || b.State == JobState.Pending),
+        await Builds.UpdateAsync(
+            b => b.Id == request.BuildId && (b.State == BuildState.Active || b.State == BuildState.Pending),
             u =>
             {
                 if (request.HasPercentCompleted)
@@ -275,7 +292,7 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
     )
     {
         string engineId = "";
-        int nextJobRevision = 0;
+        int nextBuildRevision = 0;
 
         var batch = new List<TResults>();
         await foreach (InsertResultsRequest request in requestStream.ReadAllAsync(context.CancellationToken))
@@ -285,10 +302,10 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
                 TEngine? engine = await Engines.GetAsync(request.EngineId, context.CancellationToken);
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
-                nextJobRevision = engine.JobRevision + 1;
+                nextBuildRevision = engine.BuildRevision + 1;
                 engineId = request.EngineId;
             }
-            batch.Add(CreateResultFromRequest(request, nextJobRevision));
+            batch.Add(CreateResultFromRequest(request, nextBuildRevision));
             if (batch.Count == ResultInsertBatchSize)
             {
                 await Results.InsertAllAsync(batch, context.CancellationToken);
@@ -301,5 +318,5 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
         return Empty;
     }
 
-    protected abstract TResults CreateResultFromRequest(InsertResultsRequest request, int nextJobRevision);
+    protected abstract TResults CreateResultFromRequest(InsertResultsRequest request, int nextBuildRevision);
 }

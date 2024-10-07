@@ -4,7 +4,7 @@ namespace Serval.Assessment.Services;
 
 public class AssessmentEngineService(
     IRepository<AssessmentEngine> engines,
-    IRepository<AssessmentJob> jobs,
+    IRepository<AssessmentBuild> jobs,
     IRepository<AssessmentResult> results,
     GrpcClientFactory grpcClientFactory,
     IOptionsMonitor<DataFileOptions> dataFileOptions,
@@ -13,7 +13,7 @@ public class AssessmentEngineService(
     IScriptureDataFileService scriptureDataFileService
 ) : OwnedEntityServiceBase<AssessmentEngine>(engines), IAssessmentEngineService
 {
-    private readonly IRepository<AssessmentJob> _jobs = jobs;
+    private readonly IRepository<AssessmentBuild> _jobs = jobs;
     private readonly IRepository<AssessmentResult> _results = results;
     private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
@@ -100,7 +100,7 @@ public class AssessmentEngineService(
         return engine.ReferenceCorpus!;
     }
 
-    public async Task StartJobAsync(AssessmentJob job, CancellationToken cancellationToken = default)
+    public async Task StartJobAsync(AssessmentBuild job, CancellationToken cancellationToken = default)
     {
         AssessmentEngine engine = await GetAsync(job.EngineRef, cancellationToken);
         await _jobs.InsertAsync(job, cancellationToken);

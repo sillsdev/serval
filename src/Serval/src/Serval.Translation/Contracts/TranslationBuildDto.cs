@@ -18,7 +18,7 @@ public record TranslationBuildDto
     /// <summary>
     /// The current build job state.
     /// </summary>
-    public required JobState State { get; init; }
+    public required BuildState State { get; init; }
     public DateTime? DateFinished { get; init; }
 
     /// <example>

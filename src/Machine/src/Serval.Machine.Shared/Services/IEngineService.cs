@@ -1,15 +1,14 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public interface ITranslationEngineService
+public interface IEngineService<TEngine>
+    where TEngine : IEngine
 {
-    TranslationEngineType Type { get; }
+    EngineType Type { get; }
 
     Task<TranslationEngine> CreateAsync(
         string engineId,
         string? engineName,
-        string sourceLanguage,
-        string targetLanguage,
-        bool? isModelPersisted = null,
+        string parametersSerialized,
         CancellationToken cancellationToken = default
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);

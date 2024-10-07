@@ -1,18 +1,18 @@
 ﻿namespace Serval.Shared.Services;
 
-public interface IJobService<TJob>
-    where TJob : IJob
+public interface IBuildService<TBuild>
+    where TBuild : IBuild
 {
-    Task<IEnumerable<TJob>> GetAllAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TBuild>> GetAllAsync(string engineId, CancellationToken cancellationToken = default);
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
-    Task<TJob> GetAsync(string id, CancellationToken cancellationToken = default);
-    Task<TJob?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default);
-    Task<EntityChange<TJob>> GetNewerRevisionAsync(
+    Task<TBuild> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<TBuild?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default);
+    Task<EntityChange<TBuild>> GetNewerRevisionAsync(
         string id,
         long minRevision,
         CancellationToken cancellationToken = default
     );
-    Task<EntityChange<TJob>> GetActiveNewerRevisionAsync(
+    Task<EntityChange<TBuild>> GetActiveNewerRevisionAsync(
         string parentId,
         long minRevision,
         CancellationToken cancellationToken = default

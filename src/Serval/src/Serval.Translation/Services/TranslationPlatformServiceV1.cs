@@ -5,24 +5,24 @@ using Serval.Translation.V1;
 namespace Serval.Translation.Services;
 
 public class TranslationPlatformServiceV1(
-    IRepository<TranslationBuildJob> jobs,
+    IRepository<TranslationBuild> builds,
     IRepository<TranslationEngine> engines,
     IRepository<Pretranslation> pretranslations,
     IDataAccessContext dataAccessContext,
     IPublishEndpoint publishEndpoint
 )
-    : EnginePlatformServiceBaseV1<TranslationBuildJob, TranslationEngine, Pretranslation>(
-        jobs,
+    : EnginePlatformServiceBaseV1<TranslationBuild, TranslationEngine, Pretranslation>(
+        builds,
         engines,
         pretranslations,
         dataAccessContext,
         publishEndpoint
     )
 {
-    protected override async Task<TranslationEngine?> UpdateEngineAfterJobCompleted(
-        TranslationBuildJob build,
+    protected override async Task<TranslationEngine?> UpdateEngineAfterBuildCompleted(
+        TranslationBuild build,
         string engineId,
-        JobCompletedRequest request,
+        BuildCompletedRequest request,
         CancellationToken ct
     )
     {
@@ -32,21 +32,21 @@ public class TranslationPlatformServiceV1(
         return await Engines.UpdateAsync(
             engineId,
             u =>
-                u.Set(e => e.IsJobRunning, false)
+                u.Set(e => e.IsBuildRunning, false)
                     .Set(e => e.Confidence, parameters.Confidence)
                     .Set(e => e.CorpusSize, parameters.CorpusSize)
-                    .Inc(e => e.JobRevision),
+                    .Inc(e => e.BuildRevision),
             cancellationToken: ct
         );
     }
 
-    protected override Pretranslation CreateResultFromRequest(InsertResultsRequest request, int nextJobRevision)
+    protected override Pretranslation CreateResultFromRequest(InsertResultsRequest request, int nextBuildRevision)
     {
         var content = JsonSerializer.Deserialize<TranslationResultContent>(request.ContentSerialized)!;
         return new Pretranslation
         {
             EngineRef = request.EngineId,
-            JobRevision = nextJobRevision,
+            BuildRevision = nextBuildRevision,
             CorpusRef = content.CorpusId,
             TextId = content.TextId,
             Refs = content.Refs.ToList(),

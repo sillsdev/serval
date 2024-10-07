@@ -15,7 +15,7 @@ public record AssessmentJobDto
     /// <summary>
     /// The current job state.
     /// </summary>
-    public required JobState State { get; init; }
+    public required BuildState State { get; init; }
     public DateTime? DateFinished { get; init; }
 
     /// <example>

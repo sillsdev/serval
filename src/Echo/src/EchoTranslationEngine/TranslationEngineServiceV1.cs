@@ -26,15 +26,15 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : EngineA
         return Task.FromResult(Empty);
     }
 
-    public override async Task<StartJobResponse> StartJob(StartJobRequest request, ServerCallContext context)
+    public override async Task<StartBuildResponse> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
         await _taskQueue.QueueBackgroundWorkItemAsync(
             async (services, cancellationToken) =>
             {
                 EnginePlatformApi.EnginePlatformApiClient client =
                     services.GetRequiredService<EnginePlatformApi.EnginePlatformApiClient>();
-                await client.JobStartedAsync(
-                    new JobStartedRequest { JobId = request.JobId },
+                await client.BuildStartedAsync(
+                    new BuildStartedRequest { BuildId = request.BuildId },
                     cancellationToken: cancellationToken
                 );
 
@@ -216,10 +216,10 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : EngineA
                         await call;
                     }
 
-                    await client.JobCompletedAsync(
-                        new JobCompletedRequest
+                    await client.BuildCompletedAsync(
+                        new BuildCompletedRequest
                         {
-                            JobId = request.JobId,
+                            BuildId = request.BuildId,
                             StatisticsSerialized = JsonSerializer.Serialize(
                                 new TranslationEngineCompletedStatistics() { CorpusSize = 0, Confidence = 1.0F }
                             )
@@ -229,22 +229,22 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : EngineA
                 }
                 catch (OperationCanceledException)
                 {
-                    await client.JobCanceledAsync(
-                        new JobCanceledRequest { JobId = request.JobId },
+                    await client.BuildCanceledAsync(
+                        new BuildCanceledRequest { BuildId = request.BuildId },
                         cancellationToken: CancellationToken.None
                     );
                 }
                 catch (Exception e)
                 {
-                    await client.JobFaultedAsync(
-                        new JobFaultedRequest { JobId = request.JobId, Message = e.Message },
+                    await client.BuildFaultedAsync(
+                        new BuildFaultedRequest { BuildId = request.BuildId, Message = e.Message },
                         cancellationToken: CancellationToken.None
                     );
                 }
             }
         );
 
-        return new StartJobResponse();
+        return new StartBuildResponse();
     }
 
     public override Task<GetQueueSizeResponse> GetQueueSize(GetQueueSizeRequest request, ServerCallContext context)

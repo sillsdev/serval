@@ -5,6 +5,6 @@ public enum WebhookEvent
     TranslationBuildStarted,
     TranslationBuildFinished,
 
-    AssessmentJobStarted,
-    AssessmentJobFinished
+    AssessmentBuildStarted,
+    AssessmentBuildFinished
 }

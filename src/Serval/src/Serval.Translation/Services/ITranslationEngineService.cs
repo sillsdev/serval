@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Services;
 
-public interface ITranslationEngineService : ITrainingEngineService<TranslationBuildJob, TranslationEngine>
+public interface ITranslationEngineService : ITrainingEngineService<TranslationBuild, TranslationEngine>
 {
     Task<TranslationResult> TranslateAsync(
         string engineId,

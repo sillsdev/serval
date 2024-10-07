@@ -15,11 +15,13 @@ public static class IMongoDataAccessConfiguratorExtensions
                 );
             }
         );
-        configurator.AddRepository<AssessmentJob>(
+        configurator.AddRepository<AssessmentBuild>(
             "assessment.jobs",
             init: c =>
                 c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<AssessmentJob>(Builders<AssessmentJob>.IndexKeys.Ascending(b => b.EngineRef))
+                    new CreateIndexModel<AssessmentBuild>(
+                        Builders<AssessmentBuild>.IndexKeys.Ascending(b => b.EngineRef)
+                    )
                 )
         );
         configurator.AddRepository<AssessmentResult>(
@@ -33,7 +35,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                 );
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<AssessmentResult>(
-                        Builders<AssessmentResult>.IndexKeys.Ascending(pt => pt.JobRef)
+                        Builders<AssessmentResult>.IndexKeys.Ascending(pt => pt.BuildRevision)
                     )
                 );
                 await c.Indexes.CreateOrUpdateAsync(
