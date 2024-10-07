@@ -7,9 +7,7 @@ public static class IMediatorRegistrationConfiguratorExtensions
     )
     {
         configurator.AddConsumer<JobStartedConsumer>();
-        configurator.AddConsumer<TranslationBuildFinishedConsumer>();
-        configurator.AddConsumer<AssessmentJobStartedConsumer>();
-        configurator.AddConsumer<AssessmentJobFinishedConsumer>();
+        configurator.AddConsumer<JobFinishedConsumer>();
         return configurator;
     }
 }

@@ -50,7 +50,7 @@ public class TranslationPlatformServiceV1(
             CorpusRef = content.CorpusId,
             TextId = content.TextId,
             Refs = content.Refs.ToList(),
-            Translation = content.Pretranslation,
+            Translation = content.Translation,
         };
     }
 }

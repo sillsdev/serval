@@ -1,18 +1,24 @@
 ﻿namespace EchoTranslationEngine;
 
-public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : TranslationEngineApi.TranslationEngineApiBase
+public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : EngineApi.EngineApiBase
 {
     private static readonly Empty Empty = new();
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
 
     public override Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
-        if (request.SourceLanguage != request.TargetLanguage)
+        var parameters = JsonSerializer.Deserialize<CreateEngineParameters>(request.ParametersSerialized)!;
+        if (parameters.SourceLanguage != parameters.TargetLanguage)
         {
             Status status = new Status(StatusCode.InvalidArgument, "Source and target languages must be the same");
             throw new RpcException(status);
         }
-        return Task.FromResult(new CreateResponse { IsModelPersisted = true });
+        return Task.FromResult(
+            new CreateResponse
+            {
+                ResultsSerialized = JsonSerializer.Serialize(new CreateEngineResults() { IsModelPersisted = true })
+            }
+        );
     }
 
     public override Task<Empty> Delete(DeleteRequest request, ServerCallContext context)
@@ -20,54 +26,13 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
         return Task.FromResult(Empty);
     }
 
-    public override Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
-    {
-        string[] tokens = request.Segment.Split();
-        var response = new TranslateResponse
-        {
-            Results =
-            {
-                new TranslationResult
-                {
-                    Translation = request.Segment,
-                    SourceTokens = { tokens },
-                    TargetTokens = { tokens },
-                    Confidences = { Enumerable.Repeat(1.0, tokens.Length) },
-                    Sources =
-                    {
-                        Enumerable.Repeat(
-                            new TranslationSources { Values = { TranslationSource.Primary } },
-                            tokens.Length
-                        )
-                    },
-                    Alignment =
-                    {
-                        Enumerable
-                            .Range(0, tokens.Length)
-                            .Select(i => new AlignedWordPair { SourceIndex = i, TargetIndex = i })
-                    },
-                    Phrases =
-                    {
-                        new Phrase
-                        {
-                            SourceSegmentStart = 0,
-                            SourceSegmentEnd = tokens.Length,
-                            TargetSegmentCut = tokens.Length
-                        }
-                    }
-                }
-            }
-        };
-        return Task.FromResult(response);
-    }
-
-    public override async Task<Empty> StartJob(StartJobRequest request, ServerCallContext context)
+    public override async Task<StartJobResponse> StartJob(StartJobRequest request, ServerCallContext context)
     {
         await _taskQueue.QueueBackgroundWorkItemAsync(
             async (services, cancellationToken) =>
             {
-                TranslationPlatformApi.TranslationPlatformApiClient client =
-                    services.GetRequiredService<TranslationPlatformApi.TranslationPlatformApiClient>();
+                EnginePlatformApi.EnginePlatformApiClient client =
+                    services.GetRequiredService<EnginePlatformApi.EnginePlatformApiClient>();
                 await client.JobStartedAsync(
                     new JobStartedRequest { JobId = request.JobId },
                     cancellationToken: cancellationToken
@@ -76,11 +41,16 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                 try
                 {
                     using (
-                        AsyncClientStreamingCall<InsertPretranslationsRequest, Empty> call =
-                            client.InsertPretranslations(cancellationToken: cancellationToken)
+                        AsyncClientStreamingCall<InsertResultsRequest, Empty> call = client.InsertResults(
+                            cancellationToken: cancellationToken
+                        )
                     )
                     {
-                        foreach (TranslationCorpus corpus in request.Corpora)
+                        foreach (
+                            TranslationCorpus corpus in JsonSerializer.Deserialize<IEnumerable<TranslationCorpus>>(
+                                request.CorporaSerialized
+                            )!
+                        )
                         {
                             if (!corpus.PretranslateAll && corpus.PretranslateTextIds.Count == 0)
                                 continue;
@@ -121,13 +91,18 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             if (sourceLine.Length > 0 && targetLine.Length == 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationsRequest
+                                                    new InsertResultsRequest
                                                     {
                                                         EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{lineNum}" },
-                                                        Translation = sourceLine
+                                                        ContentSerialized = JsonSerializer.Serialize(
+                                                            new TranslationResultContent
+                                                            {
+                                                                CorpusId = corpus.Id,
+                                                                TextId = sourceFile.Key,
+                                                                Refs = { $"{sourceFile.Key}:{lineNum}" },
+                                                                Translation = sourceLine
+                                                            }
+                                                        )
                                                     },
                                                     cancellationToken
                                                 );
@@ -154,13 +129,18 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             if (sourceLine.Length > 0 && targetLine.Length == 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationsRequest
+                                                    new InsertResultsRequest
                                                     {
                                                         EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{targetLineKVPair.Key}" },
-                                                        Translation = sourceLine
+                                                        ContentSerialized = JsonSerializer.Serialize(
+                                                            new TranslationResultContent
+                                                            {
+                                                                CorpusId = corpus.Id,
+                                                                TextId = sourceFile.Key,
+                                                                Refs = { $"{sourceFile.Key}:{targetLineKVPair.Key}" },
+                                                                Translation = sourceLine
+                                                            }
+                                                        )
                                                     },
                                                     cancellationToken
                                                 );
@@ -179,13 +159,18 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             if (sourceLine.Length > 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationsRequest
+                                                    new InsertResultsRequest
                                                     {
                                                         EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{lineNum}" },
-                                                        Translation = sourceLine
+                                                        ContentSerialized = JsonSerializer.Serialize(
+                                                            new TranslationResultContent
+                                                            {
+                                                                CorpusId = corpus.Id,
+                                                                TextId = sourceFile.Key,
+                                                                Refs = { $"{sourceFile.Key}:{lineNum}" },
+                                                                Translation = sourceLine
+                                                            }
+                                                        )
                                                     },
                                                     cancellationToken
                                                 );
@@ -200,15 +185,23 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             if (sourceLine.Length > 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationsRequest
+                                                    new InsertResultsRequest
                                                     {
                                                         EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{sourceLine.Split('\t')[0]}" },
-                                                        Translation = sourceLine.Contains('\t')
-                                                            ? sourceLine.Split('\t')[1].Trim()
-                                                            : string.Empty
+                                                        ContentSerialized = JsonSerializer.Serialize(
+                                                            new TranslationResultContent
+                                                            {
+                                                                CorpusId = corpus.Id,
+                                                                TextId = sourceFile.Key,
+                                                                Refs =
+                                                                {
+                                                                    $"{sourceFile.Key}:{sourceLine.Split('\t')[0]}"
+                                                                },
+                                                                Translation = sourceLine.Contains('\t')
+                                                                    ? sourceLine.Split('\t')[1].Trim()
+                                                                    : string.Empty
+                                                            }
+                                                        )
                                                     },
                                                     cancellationToken
                                                 );
@@ -224,7 +217,13 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                     }
 
                     await client.JobCompletedAsync(
-                        new JobCompletedRequest { JobId = request.JobId, Confidence = 1.0 },
+                        new JobCompletedRequest
+                        {
+                            JobId = request.JobId,
+                            StatisticsSerialized = JsonSerializer.Serialize(
+                                new TranslationEngineCompletedStatistics() { CorpusSize = 0, Confidence = 1.0F }
+                            )
+                        },
                         cancellationToken: CancellationToken.None
                     );
                 }
@@ -245,75 +244,11 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
             }
         );
 
-        return Empty;
-    }
-
-    public override Task<Empty> TrainSegmentPair(TrainSegmentPairRequest request, ServerCallContext context)
-    {
-        return Task.FromResult(Empty);
-    }
-
-    public override Task<GetWordGraphResponse> GetWordGraph(GetWordGraphRequest request, ServerCallContext context)
-    {
-        string[] tokens = request.Segment.Split();
-        return Task.FromResult(
-            new GetWordGraphResponse
-            {
-                WordGraph = new WordGraph
-                {
-                    InitialStateScore = 0.0,
-                    SourceTokens = { tokens },
-                    Arcs =
-                    {
-                        Enumerable
-                            .Range(0, tokens.Length - 1)
-                            .Select(index => new WordGraphArc
-                            {
-                                PrevState = index,
-                                NextState = index + 1,
-                                Score = 1.0,
-                                TargetTokens = { tokens[index] },
-                                Confidences = { 1.0 },
-                                SourceSegmentStart = index,
-                                SourceSegmentEnd = index + 1,
-                                Alignment =
-                                {
-                                    new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
-                                }
-                            })
-                    },
-                    FinalStates = { tokens.Length }
-                }
-            }
-        );
-    }
-
-    public override Task<GetModelDownloadUrlResponse> GetModelDownloadUrl(
-        GetModelDownloadUrlRequest request,
-        ServerCallContext context
-    )
-    {
-        var response = new GetModelDownloadUrlResponse
-        {
-            Url = "https://example.com/model",
-            ModelRevision = 1,
-            ExpiresAt = DateTime.UtcNow.AddHours(1).ToTimestamp()
-        };
-        return Task.FromResult(response);
+        return new StartJobResponse();
     }
 
     public override Task<GetQueueSizeResponse> GetQueueSize(GetQueueSizeRequest request, ServerCallContext context)
     {
         return Task.FromResult(new GetQueueSizeResponse { Size = 0 });
-    }
-
-    public override Task<GetLanguageInfoResponse> GetLanguageInfo(
-        GetLanguageInfoRequest request,
-        ServerCallContext context
-    )
-    {
-        return Task.FromResult(
-            new GetLanguageInfoResponse { InternalCode = request.Language + "_echo", IsNative = true, }
-        );
     }
 }

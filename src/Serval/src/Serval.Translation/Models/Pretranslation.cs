@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Models;
 
-public class Pretranslation : Shared.Models.IResult
+public class Pretranslation : IJobResult
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;

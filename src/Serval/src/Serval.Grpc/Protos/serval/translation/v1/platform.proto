@@ -22,5 +22,5 @@ message TranslationResultContent {
     string corpus_id = 1;
     string text_id = 2;
     repeated string refs = 3;
-    string pretranslation = 4;
+    string translation = 4;
 }

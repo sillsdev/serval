@@ -15,7 +15,9 @@ service TranslationEngineApi {
 }
 
 message CreateEngineParameters {
-    optional bool is_model_persisted = 1;
+    string source_language = 1;
+    string target_language = 2;
+    optional bool is_model_persisted = 3;
 }
 
 message CreateEngineResults {

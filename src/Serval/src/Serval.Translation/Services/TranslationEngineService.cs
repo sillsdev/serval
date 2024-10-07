@@ -15,15 +15,19 @@ public class TranslationEngineService(
     ILoggerFactory loggerFactory,
     IScriptureDataFileService scriptureDataFileService
 )
-    : EngineServiceBase<TranslationEngine, TranslationBuildJob>(engines, builds, grpcClientFactory, dataAccessContext),
+    : EngineServiceBase<TranslationEngine, TranslationBuildJob>(
+        engines,
+        builds,
+        grpcClientFactory,
+        dataAccessContext,
+        loggerFactory
+    ),
         ITranslationEngineService
 {
-    private readonly IRepository<TranslationBuildJob> _builds = builds;
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
     private readonly IScopedMediator _mediator = mediator;
     private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
-    private readonly ILogger<TranslationEngineService> _logger = loggerFactory.CreateLogger<TranslationEngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
     public async Task<Models.TranslationResult> TranslateAsync(

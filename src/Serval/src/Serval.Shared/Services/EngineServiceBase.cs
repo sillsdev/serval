@@ -2,7 +2,7 @@
 
 namespace Serval.Shared.Services;
 
-public abstract class EngineServiceBase<TEngine, TJob> : EngineServiceBase<TEngine, TJob, Models.IResult>
+public abstract class EngineServiceBase<TEngine, TJob> : EngineServiceBase<TEngine, TJob, IJobResult>
     where TEngine : IEngine
     where TJob : IJob
 {
@@ -26,7 +26,7 @@ public abstract class EngineServiceBase<TEngine, TJob, TResult>(
 ) : OwnedEntityServiceBase<TEngine>(engines)
     where TEngine : IEngine
     where TJob : IJob
-    where TResult : Models.IResult
+    where TResult : IJobResult
 {
     protected readonly GrpcClientFactory GrpcClientFactory = grpcClientFactory;
     protected readonly IDataAccessContext DataAccessContext = dataAccessContext;

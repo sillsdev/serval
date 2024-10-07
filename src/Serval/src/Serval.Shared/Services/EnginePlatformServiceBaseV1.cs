@@ -12,7 +12,7 @@ public abstract class EnginePlatformServiceBaseV1<TJob, TEngine, TResults>(
 ) : EnginePlatformApi.EnginePlatformApiBase
     where TJob : IJob
     where TEngine : IEngine
-    where TResults : Models.IResult
+    where TResults : Models.IJobResult
 {
     private const int ResultInsertBatchSize = 128;
     protected static readonly Empty Empty = new();

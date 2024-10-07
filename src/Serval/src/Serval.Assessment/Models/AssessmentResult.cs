@@ -1,6 +1,6 @@
 ﻿namespace Serval.Assessment.Models;
 
-public record AssessmentResult : IEntity
+public record AssessmentResult : IJobResult
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;

@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Serval.Assessment.V1;
+﻿using Serval.Assessment.V1;
 using Serval.Engine.V1;
 
 namespace Serval.Assessment.Services;
@@ -19,8 +18,6 @@ public class AssessmentPlatformServiceV1(
         publishEndpoint
     )
 {
-    private static readonly Empty Empty = new();
-
     protected override async Task<AssessmentEngine?> UpdateEngineAfterJobCompleted(
         AssessmentJob build,
         string engineId,

@@ -1,4 +1,5 @@
-﻿global using System.Threading.Channels;
+﻿global using System.Text.Json;
+global using System.Threading.Channels;
 global using Bugsnag.AspNet.Core;
 global using EchoTranslationEngine;
 global using Google.Protobuf.WellKnownTypes;
