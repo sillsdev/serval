@@ -6,6 +6,7 @@ public static class IMediatorRegistrationConfiguratorExtensions
         this IMediatorRegistrationConfigurator configurator
     )
     {
+        configurator.AddConsumer<GetCorpusConsumer>();
         configurator.AddConsumer<GetDataFileConsumer>();
         configurator.AddConsumer<DeleteDataFileConsumer>();
         return configurator;
