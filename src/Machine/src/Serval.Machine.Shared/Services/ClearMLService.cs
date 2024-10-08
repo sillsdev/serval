@@ -21,7 +21,8 @@ public class ClearMLService(
 
     private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
     private readonly ILogger<ClearMLService> _logger = logger;
-    private readonly IDictionary<string, string> _queueNamesToIds = new ConcurrentDictionary<string, string>();
+    private readonly AsyncLock _lock = new AsyncLock();
+    private ImmutableDictionary<string, string>? _queueNamesToIds = null;
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -152,8 +153,12 @@ public class ClearMLService(
         if (!queueNamesToIds.TryGetValue(queue, out string? queueId))
         {
             queueNamesToIds = await PopulateQueueNamesToIdsAsync(refresh: true, cancellationToken);
+            if (!queueNamesToIds.TryGetValue(queue, out queueId))
+            {
+                throw new InvalidOperationException($"Queue {queue} does not exist");
+            }
         }
-        var body = new JsonObject { ["queue"] = queueId ?? queueNamesToIds[queue] };
+        var body = new JsonObject { ["queue"] = queueId };
         JsonObject? result = await CallAsync("queues", "get_by_id", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["queue"]?["entries"];
         IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["id"]!) ?? new List<string>();
@@ -165,17 +170,16 @@ public class ClearMLService(
         CancellationToken cancellationToken = default
     )
     {
-        if (!refresh && _queueNamesToIds.Count > 0)
-            return _queueNamesToIds;
-        JsonObject? result = await CallAsync("queues", "get_all", new JsonObject(), cancellationToken);
-        var queues = (JsonArray?)result?["data"]?["queues"];
-        if (queues is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
-        foreach (
-            KeyValuePair<string, string> kvp in queues.ToDictionary(q => (string)q!["name"]!, q => (string)q!["id"]!)
-        )
+        using (await _lock.LockAsync(cancellationToken))
         {
-            _queueNamesToIds.TryAdd(kvp.Key, kvp.Value);
+            if (!refresh && _queueNamesToIds != null)
+                return _queueNamesToIds;
+            JsonObject? result = await CallAsync("queues", "get_all", new JsonObject(), cancellationToken);
+            var queues = (JsonArray?)result?["data"]?["queues"];
+            if (queues is null)
+                throw new InvalidOperationException("Malformed response from ClearML server.");
+
+            _queueNamesToIds = queues.ToImmutableDictionary(q => (string)q!["name"]!, q => (string)q!["id"]!);
         }
         return _queueNamesToIds;
     }
