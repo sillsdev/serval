@@ -645,8 +645,8 @@ public class TranslationEngineTests
                 Assert.That(engine, Is.Not.Null);
                 Assert.Multiple(() =>
                 {
-                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
-                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
+                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
+                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
                 });
                 break;
             }
@@ -831,11 +831,11 @@ public class TranslationEngineTests
                 {
                     Assert.That(
                         engine.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename,
-                        Is.EqualTo(FILE2_FILENAME)
+                        Is.EqualTo(FILE1_FILENAME)
                     );
                     Assert.That(
                         engine.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename,
-                        Is.EqualTo(FILE1_FILENAME)
+                        Is.EqualTo(FILE2_FILENAME)
                     );
                 });
                 break;
@@ -898,11 +898,11 @@ public class TranslationEngineTests
                 {
                     Assert.That(
                         engine.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename,
-                        Is.EqualTo(FILE2_FILENAME)
+                        Is.EqualTo(FILE1_FILENAME)
                     );
                     Assert.That(
                         engine.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename,
-                        Is.EqualTo(FILE1_FILENAME)
+                        Is.EqualTo(FILE2_FILENAME)
                     );
                 });
                 break;
