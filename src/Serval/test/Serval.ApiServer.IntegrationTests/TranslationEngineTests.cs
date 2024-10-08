@@ -645,8 +645,8 @@ public class TranslationEngineTests
                 Assert.That(engine, Is.Not.Null);
                 Assert.Multiple(() =>
                 {
-                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
-                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
+                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
+                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
                 });
                 break;
             }
@@ -891,7 +891,7 @@ public class TranslationEngineTests
                     SourceCorpusIds = [SOURCE_CORPUS_ID],
                     TargetCorpusIds = [TARGET_CORPUS_ID]
                 };
-                await client.UpdateParallelCorpusAsync(engineId, updateConfig, result.Id);
+                await client.UpdateParallelCorpusAsync(engineId, result.Id, updateConfig);
                 Engine? engine = await _env.Engines.GetAsync(engineId);
                 Assert.That(engine, Is.Not.Null);
                 Assert.Multiple(() =>
@@ -917,7 +917,7 @@ public class TranslationEngineTests
                         SourceCorpusIds = [SOURCE_CORPUS_ID],
                         TargetCorpusIds = [TARGET_CORPUS_ID]
                     };
-                    await client.UpdateParallelCorpusAsync(engineId, updateConfig, DOES_NOT_EXIST_CORPUS_ID);
+                    await client.UpdateParallelCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
                 });
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;

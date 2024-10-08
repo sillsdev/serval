@@ -4337,11 +4337,11 @@ namespace Serval.Client
         /// Will completely replace corpus' file associations. Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusConfig">The corpus configuration</param>
         /// <param name="parallelCorpusId">The corpus id</param>
+        /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationCorpus> UpdateParallelCorpusAsync(string id, TranslationParallelCorpusUpdateConfig corpusConfig, string corpusId, string? parallelCorpusId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, TranslationParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -6376,17 +6376,17 @@ namespace Serval.Client
         /// Will completely replace corpus' file associations. Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusConfig">The corpus configuration</param>
         /// <param name="parallelCorpusId">The corpus id</param>
+        /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationCorpus> UpdateParallelCorpusAsync(string id, TranslationParallelCorpusUpdateConfig corpusConfig, string corpusId, string? parallelCorpusId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, TranslationParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
-            if (corpusId == null)
-                throw new System.ArgumentNullException("corpusId");
+            if (parallelCorpusId == null)
+                throw new System.ArgumentNullException("parallelCorpusId");
 
             if (corpusConfig == null)
                 throw new System.ArgumentNullException("corpusConfig");
@@ -6406,17 +6406,11 @@ namespace Serval.Client
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "translation/engines/{id}/parallel-corpora/{corpusId}"
+                    // Operation Path: "translation/engines/{id}/parallel-corpora/{parallelCorpusId}"
                     urlBuilder_.Append("translation/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/parallel-corpora/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append('?');
-                    if (parallelCorpusId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("parallelCorpusId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture)));
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
