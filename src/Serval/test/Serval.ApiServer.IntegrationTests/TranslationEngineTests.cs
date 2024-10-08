@@ -24,6 +24,13 @@ public class TranslationEngineTests
                 new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
             }
         };
+    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfig =
+        new()
+        {
+            Name = "TestCorpus",
+            SourceCorpusIds = [],
+            TargetCorpusIds = [],
+        };
     private static readonly TranslationCorpusConfig TestCorpusConfigNonEcho =
         new()
         {
@@ -63,7 +70,8 @@ public class TranslationEngineTests
     private const string FILE3_FILENAME = "file_c";
     private const string FILE4_ID = "f00000000000000000000004";
     private const string FILE4_FILENAME = "file_d";
-
+    private const string SOURCE_CORPUS_ID = "cc0000000000000000000001";
+    private const string TARGET_CORPUS_ID = "cc0000000000000000000002";
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
     private const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
 
@@ -159,6 +167,22 @@ public class TranslationEngineTests
             Format = Shared.Contracts.FileFormat.Paratext
         };
         await _env.DataFiles.InsertAllAsync([srcFile, trgFile, srcParatextFile, trgParatextFile]);
+
+        var srcCorpus = new DataFiles.Models.Corpus
+        {
+            Id = SOURCE_CORPUS_ID,
+            Language = "en",
+            Owner = "client1",
+            Files = [new() { File = srcFile }]
+        };
+        var trgCorpus = new DataFiles.Models.Corpus
+        {
+            Id = TARGET_CORPUS_ID,
+            Language = "en",
+            Owner = "client1",
+            Files = [new() { File = trgFile }]
+        };
+        await _env.Corpora.InsertAllAsync([srcCorpus, trgCorpus]);
     }
 
     [Test]
@@ -778,6 +802,268 @@ public class TranslationEngineTests
     }
 
     [Test]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 201, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    public async Task AddParallelCorpusToEngineByIdAsync(
+        IEnumerable<string> scope,
+        int expectedStatusCode,
+        string engineId
+    )
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+        switch (expectedStatusCode)
+        {
+            case 201:
+            {
+                TranslationParallelCorpus result = await client.AddParallelCorpusAsync(
+                    engineId,
+                    TestParallelCorpusConfig
+                );
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.SourceCorpora.First().Id, Is.EqualTo(SOURCE_CORPUS_ID));
+                    Assert.That(result.TargetCorpora.First().Id, Is.EqualTo(TARGET_CORPUS_ID));
+                });
+                Engine? engine = await _env.Engines.GetAsync(engineId);
+                Assert.That(engine, Is.Not.Null);
+                Assert.Multiple(() =>
+                {
+                    Assert.That(
+                        engine.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename,
+                        Is.EqualTo(FILE2_FILENAME)
+                    );
+                    Assert.That(
+                        engine.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename,
+                        Is.EqualTo(FILE1_FILENAME)
+                    );
+                });
+                break;
+            }
+            case 403:
+            case 404:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.AddParallelCorpusAsync(engineId, TestParallelCorpusConfig);
+                });
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
+    [TestCase(
+        new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
+        200,
+        ECHO_ENGINE1_ID
+    )]
+    [TestCase(
+        new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
+        404,
+        ECHO_ENGINE1_ID
+    )]
+    [TestCase(
+        new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
+        404,
+        DOES_NOT_EXIST_ENGINE_ID
+    )]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    public async Task UpdateParallelCorpusByIdForEngineByIdAsync(
+        IEnumerable<string> scope,
+        int expectedStatusCode,
+        string engineId
+    )
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+        switch (expectedStatusCode)
+        {
+            case 200:
+            {
+                TranslationParallelCorpus result = await client.AddParallelCorpusAsync(
+                    engineId,
+                    TestParallelCorpusConfig
+                );
+                var updateConfig = new TranslationParallelCorpusUpdateConfig
+                {
+                    SourceCorpusIds = [SOURCE_CORPUS_ID],
+                    TargetCorpusIds = [TARGET_CORPUS_ID]
+                };
+                await client.UpdateParallelCorpusAsync(engineId, updateConfig, result.Id);
+                Engine? engine = await _env.Engines.GetAsync(engineId);
+                Assert.That(engine, Is.Not.Null);
+                Assert.Multiple(() =>
+                {
+                    Assert.That(
+                        engine.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename,
+                        Is.EqualTo(FILE2_FILENAME)
+                    );
+                    Assert.That(
+                        engine.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename,
+                        Is.EqualTo(FILE1_FILENAME)
+                    );
+                });
+                break;
+            }
+            case 400:
+            case 403:
+            case 404:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    var updateConfig = new TranslationParallelCorpusUpdateConfig
+                    {
+                        SourceCorpusIds = [SOURCE_CORPUS_ID],
+                        TargetCorpusIds = [TARGET_CORPUS_ID]
+                    };
+                    await client.UpdateParallelCorpusAsync(engineId, updateConfig, DOES_NOT_EXIST_CORPUS_ID);
+                });
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
+    [TestCase(
+        new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
+        200,
+        ECHO_ENGINE1_ID
+    )]
+    [TestCase(
+        new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
+        404,
+        DOES_NOT_EXIST_ENGINE_ID
+    )]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    public async Task GetAllParallelCorporaForEngineByIdAsync(
+        IEnumerable<string> scope,
+        int expectedStatusCode,
+        string engineId
+    )
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+        switch (expectedStatusCode)
+        {
+            case 200:
+                TranslationParallelCorpus result = await client.AddParallelCorpusAsync(
+                    engineId,
+                    TestParallelCorpusConfig
+                );
+                TranslationParallelCorpus resultAfterAdd = (await client.GetAllParallelCorporaAsync(engineId)).First();
+                Assert.Multiple(() =>
+                {
+                    Assert.That(resultAfterAdd.Id, Is.EqualTo(result.Id));
+                    Assert.That(resultAfterAdd.SourceCorpora.First().Id, Is.EqualTo(result.SourceCorpora.First().Id));
+                });
+                break;
+            case 403:
+            case 404:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    TranslationParallelCorpus result = (await client.GetAllParallelCorporaAsync(engineId)).First();
+                });
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID, true)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID, true)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    public async Task GetParallelCorpusByIdForEngineByIdAsync(
+        IEnumerable<string> scope,
+        int expectedStatusCode,
+        string engineId,
+        bool addCorpus = false
+    )
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+        TranslationParallelCorpus? result = null;
+        if (addCorpus)
+            result = await client.AddParallelCorpusAsync(engineId, TestParallelCorpusConfig);
+        switch (expectedStatusCode)
+        {
+            case 200:
+            {
+                Assert.That(result, Is.Not.Null);
+                TranslationParallelCorpus resultAfterAdd = await client.GetParallelCorpusAsync(engineId, result.Id);
+                Assert.Multiple(() =>
+                {
+                    Assert.That(resultAfterAdd.Id, Is.EqualTo(result.Id));
+                    Assert.That(resultAfterAdd.SourceCorpora[0].Id, Is.EqualTo(result.SourceCorpora[0].Id));
+                });
+                break;
+            }
+            case 403:
+            case 404:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    TranslationParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
+                        engineId,
+                        DOES_NOT_EXIST_CORPUS_ID
+                    );
+                });
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines, Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
+    public async Task DeleteParallelCorpusByIdForEngineByIdAsync(
+        IEnumerable<string> scope,
+        int expectedStatusCode,
+        string engineId
+    )
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+        switch (expectedStatusCode)
+        {
+            case 200:
+                TranslationParallelCorpus result = await client.AddParallelCorpusAsync(
+                    engineId,
+                    TestParallelCorpusConfig
+                );
+                await client.DeleteParallelCorpusAsync(engineId, result.Id);
+                ICollection<TranslationParallelCorpus> resultsAfterDelete = await client.GetAllParallelCorporaAsync(
+                    engineId
+                );
+                Assert.That(resultsAfterDelete, Has.Count.EqualTo(0));
+                break;
+            case 403:
+            case 404:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.DeleteParallelCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID);
+                });
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
     public async Task DeleteCorpusAndFilesAsync()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
@@ -1375,6 +1661,7 @@ public class TranslationEngineTests
             _scope = Factory.Services.CreateScope();
             Engines = _scope.ServiceProvider.GetRequiredService<IRepository<Engine>>();
             DataFiles = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.DataFile>>();
+            Corpora = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.Corpus>>();
             Pretranslations = _scope.ServiceProvider.GetRequiredService<
                 IRepository<Translation.Models.Pretranslation>
             >();
@@ -1549,6 +1836,7 @@ public class TranslationEngineTests
         public ServalWebApplicationFactory Factory { get; }
         public IRepository<Engine> Engines { get; }
         public IRepository<DataFiles.Models.DataFile> DataFiles { get; }
+        public IRepository<DataFiles.Models.Corpus> Corpora { get; }
         public IRepository<Translation.Models.Pretranslation> Pretranslations { get; }
         public IRepository<Build> Builds { get; }
         public TranslationEngineApi.TranslationEngineApiClient EchoClient { get; }
