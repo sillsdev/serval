@@ -28,8 +28,8 @@ public class TranslationEngineTests
         new()
         {
             Name = "TestCorpus",
-            SourceCorpusIds = [],
-            TargetCorpusIds = [],
+            SourceCorpusIds = [SOURCE_CORPUS_ID],
+            TargetCorpusIds = [TARGET_CORPUS_ID],
         };
     private static readonly TranslationCorpusConfig TestCorpusConfigNonEcho =
         new()
@@ -1578,6 +1578,44 @@ public class TranslationEngineTests
 ".Replace("\r\n", "\n")
             )
         );
+    }
+
+    [Test]
+    public async Task GetPretranslationsByTextId()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
+
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        var pret = new Translation.Models.Pretranslation
+        {
+            CorpusRef = addedCorpus.Id,
+            TextId = "MAT",
+            EngineRef = ECHO_ENGINE1_ID,
+            Refs = ["MAT 1:1"],
+            Translation = "translation",
+            ModelRevision = 1
+        };
+        await _env.Pretranslations.InsertAsync(pret);
+
+        IList<Client.Pretranslation> pretranslations = await client.GetPretranslationsByTextIdAsync(
+            ECHO_ENGINE1_ID,
+            addedCorpus.Id,
+            "MAT"
+        );
+        Assert.That(pretranslations, Has.Count.EqualTo(1));
+        Assert.That(pretranslations[0].Translation, Is.EqualTo("translation"));
+    }
+
+    [Test]
+    public void GetPretranslationsByTextId_EngineDoesNotExist()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.GetPretranslationsByTextIdAsync(DOES_NOT_EXIST_ENGINE_ID, DOES_NOT_EXIST_CORPUS_ID, "MAT");
+        });
+        Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
