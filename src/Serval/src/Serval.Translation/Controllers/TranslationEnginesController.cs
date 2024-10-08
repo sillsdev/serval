@@ -589,7 +589,7 @@ public class TranslationEnginesController(
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
-    [HttpPatch("{id}/parallel-corpora/{corpusId}")]
+    [HttpPatch("{id}/parallel-corpora/{parallelCorpusId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
