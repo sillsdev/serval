@@ -596,7 +596,7 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationCorpusDto>> UpdateParallelCorpusAsync(
+    public async Task<ActionResult<TranslationParallelCorpusDto>> UpdateParallelCorpusAsync(
         [NotNull] string id,
         [NotNull] string parallelCorpusId,
         [FromBody] TranslationParallelCorpusUpdateConfigDto corpusConfig,

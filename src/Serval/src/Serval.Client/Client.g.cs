@@ -4341,7 +4341,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, TranslationParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationParallelCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, TranslationParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -6380,7 +6380,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, TranslationParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationParallelCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, TranslationParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -6437,7 +6437,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
