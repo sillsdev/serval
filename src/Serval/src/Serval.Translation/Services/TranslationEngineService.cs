@@ -155,7 +155,7 @@ public class TranslationEngineService(
         return engine;
     }
 
-    public async Task StartJobAsync(TranslationBuild build, CancellationToken cancellationToken = default)
+    public async Task StartBuildAsync(TranslationBuild build, CancellationToken cancellationToken = default)
     {
         TranslationEngine? engine = await Entities.GetAsync(build.EngineRef, cancellationToken);
         if (engine is null)
@@ -241,7 +241,7 @@ public class TranslationEngineService(
             }
             return corpus;
         });
-        await StartJobAsync(build, JsonSerializer.Serialize(corpora), build.Options, cancellationToken);
+        await StartBuildAsync(build, JsonSerializer.Serialize(corpora), build.Options, cancellationToken);
     }
 
     public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(

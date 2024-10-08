@@ -1,0 +1,16 @@
+﻿syntax = "proto3";
+
+package serval.assessment.v1;
+import "Protos/serval/engine/v1/engine.proto";
+
+service AssessmentEngineApi {
+}
+
+message AssessmentCorpus {
+    string id = 1;
+    string language = 2;
+    bool include_all = 3;
+    map<string, engine.v1.ScriptureChapters> include_chapters = 4;
+    repeated string include_text_ids = 9;
+    repeated engine.v1.CorpusFile files = 5;
+}

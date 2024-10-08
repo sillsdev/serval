@@ -1,5 +1,4 @@
-﻿using Serval.Assessment.V1;
-using Serval.Health.V1;
+﻿using Serval.Health.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

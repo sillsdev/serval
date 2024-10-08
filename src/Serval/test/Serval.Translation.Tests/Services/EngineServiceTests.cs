@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using System.Text.Json;
+using Google.Protobuf.WellKnownTypes;
 using MassTransit.Mediator;
 using Serval.Engine.V1;
 using Serval.Shared.Models;
@@ -9,7 +10,7 @@ namespace Serval.Translation.Services;
 [TestFixture]
 public class EngineServiceTests
 {
-    const string JOB1_ID = "b00000000000000000000001";
+    const string BUILD1_ID = "b00000000000000000000001";
 
     [Test]
     public void TranslateAsync_EngineDoesNotExist()
@@ -106,20 +107,19 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task StartJobAsync_TrainOnNotSpecified()
+    public async Task StartBuildAsync_TrainOnNotSpecified()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartJobAsync(new TranslationBuild { Id = JOB1_ID, EngineRef = engineId });
-        _ = env.TranslationServiceClient.Received()
-            .StartJobAsync(
-                new StartJobRequest
+        await env.Service.StartBuildAsync(new TranslationBuild { Id = BUILD1_ID, EngineRef = engineId });
+        _ = env.EngineServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
                 {
-                    JobId = JOB1_ID,
+                    BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
+                    CorporaSerialized = JsonSerializer.Serialize(
                         new TranslationCorpus
                         {
                             Id = "corpus1",
@@ -145,33 +145,32 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
 
     [Test]
-    public async Task StartJobAsync_TextIdsEmpty()
+    public async Task StartBuildAsync_TextIdsEmpty()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartJobAsync(
+        await env.Service.StartBuildAsync(
             new TranslationBuild
             {
-                Id = JOB1_ID,
+                Id = BUILD1_ID,
                 EngineRef = engineId,
                 TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", TextIds = [] }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartJobAsync(
-                new StartJobRequest
+        _ = env.EngineServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
                 {
-                    JobId = JOB1_ID,
+                    BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
+                    CorporaSerialized = JsonSerializer.Serialize(
                         new TranslationCorpus
                         {
                             Id = "corpus1",
@@ -198,33 +197,32 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
 
     [Test]
-    public async Task StartJobAsync_TextIdsPopulated()
+    public async Task StartBuildAsync_TextIdsPopulated()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartJobAsync(
+        await env.Service.StartBuildAsync(
             new TranslationBuild
             {
-                Id = JOB1_ID,
+                Id = BUILD1_ID,
                 EngineRef = engineId,
                 TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartJobAsync(
-                new StartJobRequest
+        _ = env.EngineServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
                 {
-                    JobId = JOB1_ID,
+                    BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
+                    CorporaSerialized = JsonSerializer.Serialize(
                         new TranslationCorpus
                         {
                             Id = "corpus1",
@@ -251,33 +249,32 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
 
     [Test]
-    public async Task StartJobAsync_TextIdsNotSpecified()
+    public async Task StartBuildAsync_TextIdsNotSpecified()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartJobAsync(
+        await env.Service.StartBuildAsync(
             new TranslationBuild
             {
-                Id = JOB1_ID,
+                Id = BUILD1_ID,
                 EngineRef = engineId,
                 TrainOn = [new FilteredCorpus { CorpusRef = "corpus1" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartJobAsync(
-                new StartJobRequest
+        _ = env.EngineServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
                 {
-                    JobId = JOB1_ID,
+                    BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
+                    CorporaSerialized = JsonSerializer.Serialize(
                         new TranslationCorpus
                         {
                             Id = "corpus1",
@@ -303,22 +300,22 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
 
     [Test]
-    public async Task StartJobAsync_TextFilesScriptureRangeSpecified()
+    public async Task StartBuildAsync_TextFilesScriptureRangeSpecified()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         Assert.ThrowsAsync<InvalidOperationException>(
             () =>
-                env.Service.StartJobAsync(
+                env.Service.StartBuildAsync(
                     new TranslationBuild
                     {
-                        Id = JOB1_ID,
+                        Id = BUILD1_ID,
                         EngineRef = engineId,
                         TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }]
                     }
@@ -327,27 +324,26 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task StartJobAsync_ScriptureRangeSpecified()
+    public async Task StartBuildAsync_ScriptureRangeSpecified()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
-        await env.Service.StartJobAsync(
+        await env.Service.StartBuildAsync(
             new TranslationBuild
             {
-                Id = JOB1_ID,
+                Id = BUILD1_ID,
                 EngineRef = engineId,
                 TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartJobAsync(
-                new StartJobRequest
+        _ = env.EngineServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
                 {
-                    JobId = JOB1_ID,
+                    BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
+                    CorporaSerialized = JsonSerializer.Serialize(
                         new TranslationCorpus
                         {
                             Id = "corpus1",
@@ -384,33 +380,32 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
 
     [Test]
-    public async Task StartJobAsync_ScriptureRangeEmptyString()
+    public async Task StartBuildAsync_ScriptureRangeEmptyString()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithParatextProjectAsync()).Id;
-        await env.Service.StartJobAsync(
+        await env.Service.StartBuildAsync(
             new TranslationBuild
             {
-                Id = JOB1_ID,
+                Id = BUILD1_ID,
                 EngineRef = engineId,
                 TrainOn = [new FilteredCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartJobAsync(
-                new StartJobRequest
+        _ = env.EngineServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
                 {
-                    JobId = JOB1_ID,
+                    BuildId = BUILD1_ID,
                     EngineId = engineId,
                     EngineType = "Smt",
-                    Corpora =
-                    {
+                    CorporaSerialized = JsonSerializer.Serialize(
                         new TranslationCorpus
                         {
                             Id = "corpus1",
@@ -436,7 +431,7 @@ public class EngineServiceTests
                                 }
                             }
                         }
-                    }
+                    )
                 }
             );
     }
@@ -446,7 +441,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.CancelJobAsync(engineId);
+        await env.Service.CancelBuildAsync(engineId);
     }
 
     [Test]
@@ -492,6 +487,7 @@ public class EngineServiceTests
         {
             Engines = new MemoryRepository<TranslationEngine>();
             TranslationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
+            EngineServiceClient = Substitute.For<EngineApi.EngineApiClient>();
             var translationResult = new V1.TranslationResult
             {
                 Translation = "this is a test.",
@@ -587,16 +583,16 @@ public class EngineServiceTests
             TranslationServiceClient
                 .GetWordGraphAsync(Arg.Any<GetWordGraphRequest>())
                 .Returns(CreateAsyncUnaryCall(getWordGraphResponse));
-            TranslationServiceClient
-                .CancelJobAsync(Arg.Any<CancelJobRequest>())
+            EngineServiceClient
+                .CancelBuildAsync(Arg.Any<CancelBuildRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
-            TranslationServiceClient
+            EngineServiceClient
                 .CreateAsync(Arg.Any<CreateRequest>())
                 .Returns(CreateAsyncUnaryCall(new CreateResponse()));
-            TranslationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
-            TranslationServiceClient
-                .StartJobAsync(Arg.Any<StartJobRequest>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+            EngineServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
+            EngineServiceClient
+                .StartBuildAsync(Arg.Any<StartBuildRequest>())
+                .Returns(CreateAsyncUnaryCall(new StartBuildResponse()));
             TranslationServiceClient
                 .TrainSegmentPairAsync(Arg.Any<TrainSegmentPairRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
@@ -641,6 +637,7 @@ public class EngineServiceTests
 
         public TranslationEngineService Service { get; }
         public IRepository<TranslationEngine> Engines { get; }
+        public EngineApi.EngineApiClient EngineServiceClient { get; }
         public TranslationEngineApi.TranslationEngineApiClient TranslationServiceClient { get; }
 
         public async Task<TranslationEngine> CreateEngineWithTextFilesAsync()

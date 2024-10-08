@@ -34,7 +34,7 @@ public static class IMongoDataAccessConfiguratorExtensions
             {
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.ModelRevision)
+                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.BuildRevision)
                     )
                 );
                 await c.Indexes.CreateOrUpdateAsync(
@@ -49,7 +49,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                     new CreateIndexModel<Pretranslation>(
                         Builders<Pretranslation>
                             .IndexKeys.Ascending(pt => pt.EngineRef)
-                            .Ascending(pt => pt.ModelRevision)
+                            .Ascending(pt => pt.BuildRevision)
                     )
                 );
                 await c.Indexes.CreateOrUpdateAsync(
@@ -57,7 +57,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                         Builders<Pretranslation>
                             .IndexKeys.Ascending(pt => pt.EngineRef)
                             .Ascending(pt => pt.CorpusRef)
-                            .Ascending(pt => pt.ModelRevision)
+                            .Ascending(pt => pt.BuildRevision)
                             .Ascending(pt => pt.TextId)
                     )
                 );

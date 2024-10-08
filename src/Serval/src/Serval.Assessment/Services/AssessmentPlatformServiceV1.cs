@@ -4,42 +4,42 @@ using Serval.Engine.V1;
 namespace Serval.Assessment.Services;
 
 public class AssessmentPlatformServiceV1(
-    IRepository<AssessmentBuild> jobs,
+    IRepository<AssessmentBuild> builds,
     IRepository<AssessmentEngine> engines,
     IRepository<AssessmentResult> results,
     IDataAccessContext dataAccessContext,
     IPublishEndpoint publishEndpoint
 )
     : EnginePlatformServiceBaseV1<AssessmentBuild, AssessmentEngine, AssessmentResult>(
-        jobs,
+        builds,
         engines,
         results,
         dataAccessContext,
         publishEndpoint
     )
 {
-    protected override async Task<AssessmentEngine?> UpdateEngineAfterJobCompleted(
+    protected override async Task<AssessmentEngine?> UpdateEngineAfterBuildCompleted(
         AssessmentBuild build,
         string engineId,
-        JobCompletedRequest request,
+        BuildCompletedRequest request,
         CancellationToken ct
     )
     {
         var parameters = JsonSerializer.Deserialize<AssessmentEngineCompletedStatistics>(request.StatisticsSerialized)!;
         return await Engines.UpdateAsync(
             engineId,
-            u => u.Set(e => e.IsBuildRunning, false).Inc(e => e.BuildRevision),
+            u => u.Set(e => e.IsBuilding, false).Inc(e => e.BuildRevision),
             cancellationToken: ct
         );
     }
 
-    protected override AssessmentResult CreateResultFromRequest(InsertResultsRequest request, int nextJobRevision)
+    protected override AssessmentResult CreateResultFromRequest(InsertResultsRequest request, int nextBuildRevision)
     {
         var content = JsonSerializer.Deserialize<AssessmentResultContent>(request.ContentSerialized)!;
         return new AssessmentResult
         {
             EngineRef = request.EngineId,
-            BuildRevision = nextJobRevision,
+            BuildRevision = nextBuildRevision,
             TextId = content.TextId,
             Ref = content.Ref,
             Score = content.Score,

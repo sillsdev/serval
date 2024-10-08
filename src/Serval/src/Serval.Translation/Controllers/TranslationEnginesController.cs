@@ -853,7 +853,7 @@ public class TranslationEnginesController(
         TranslationEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         TranslationBuild build = Map(engine, buildConfig);
-        await _engineService.StartJobAsync(build, cancellationToken);
+        await _engineService.StartBuildAsync(build, cancellationToken);
 
         TranslationBuildDto dto = Map(build);
         return Created(dto.Url, dto);
@@ -943,7 +943,7 @@ public class TranslationEnginesController(
     public async Task<ActionResult> CancelBuildAsync([NotNull] string id, CancellationToken cancellationToken)
     {
         await AuthorizeAsync(id, cancellationToken);
-        if (!await _engineService.CancelJobAsync(id, cancellationToken))
+        if (!await _engineService.CancelBuildAsync(id, cancellationToken))
             return NoContent();
         return Ok();
     }

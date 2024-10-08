@@ -34,13 +34,13 @@ public class AssessmentEngineTests
     }
 
     [Test]
-    public async Task StartJobAsync()
+    public async Task StartBuildAsync()
     {
         using TestEnvironment env = new();
         Assessment.Models.AssessmentEngine engine = await env.AddEngineAsync();
 
         AssessmentEnginesClient client = env.CreateClient();
-        Client.AssessmentJob result = await client.StartJobAsync(engine.Id, new() { Name = "test" });
+        Client.AssessmentJob result = await client.StartBuildAsync(engine.Id, new() { Name = "test" });
         Assert.That(result.Name, Is.EqualTo("test"));
         Client.AssessmentJob? job = await client.GetJobAsync(engine.Id, result.Id);
         Assert.That(job, Is.Not.Null);
@@ -107,10 +107,10 @@ public class AssessmentEngineTests
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             Client
-                .StartJobAsync(Arg.Any<StartJobRequest>(), null, null, Arg.Any<CancellationToken>())
+                .StartBuildAsync(Arg.Any<StartJobRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             Client
-                .CancelJobAsync(Arg.Any<CancelJobRequest>(), null, null, Arg.Any<CancellationToken>())
+                .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             Client
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())

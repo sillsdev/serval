@@ -12,7 +12,7 @@ public class ResultService(IRepository<AssessmentResult> results)
     )
     {
         return await Entities.GetAllAsync(
-            r => r.EngineRef == engineId && r.JobRef == jobId && (textId == null || r.TextId == textId),
+            r => r.EngineRef == engineId && r.BuildRevision == jobId && (textId == null || r.TextId == textId),
             cancellationToken
         );
     }

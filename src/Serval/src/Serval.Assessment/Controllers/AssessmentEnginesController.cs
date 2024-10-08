@@ -350,7 +350,7 @@ public class AssessmentEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<AssessmentJobDto>> StartJobAsync(
+    public async Task<ActionResult<AssessmentJobDto>> StartBuildAsync(
         [NotNull] string id,
         [FromBody] AssessmentJobConfigDto jobConfig,
         CancellationToken cancellationToken
@@ -359,7 +359,7 @@ public class AssessmentEnginesController(
         AssessmentEngine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         AssessmentBuild job = Map(engine, jobConfig);
-        await _engineService.StartJobAsync(job, cancellationToken);
+        await _engineService.StartBuildAsync(job, cancellationToken);
 
         AssessmentJobDto dto = Map(job);
         return Created(dto.Url, dto);
@@ -417,14 +417,14 @@ public class AssessmentEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult> CancelJobAsync(
+    public async Task<ActionResult> CancelBuildAsync(
         [NotNull] string id,
         [NotNull] string jobId,
         CancellationToken cancellationToken
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        if (!await _engineService.CancelJobAsync(id, jobId, cancellationToken))
+        if (!await _engineService.CancelBuildAsync(id, jobId, cancellationToken))
             return NoContent();
         return Ok();
     }

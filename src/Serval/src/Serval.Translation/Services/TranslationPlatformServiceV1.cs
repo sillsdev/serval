@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Serval.Engine.V1;
+﻿using Serval.Engine.V1;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -32,7 +31,7 @@ public class TranslationPlatformServiceV1(
         return await Engines.UpdateAsync(
             engineId,
             u =>
-                u.Set(e => e.IsBuildRunning, false)
+                u.Set(e => e.IsBuilding, false)
                     .Set(e => e.Confidence, parameters.Confidence)
                     .Set(e => e.CorpusSize, parameters.CorpusSize)
                     .Inc(e => e.BuildRevision),

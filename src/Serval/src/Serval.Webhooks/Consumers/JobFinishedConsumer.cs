@@ -18,7 +18,7 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
                 );
                 break;
             case EngineType.Assessment:
-                await SendJobWebhookAsync(
+                await SendBuildWebhookAsync(
                     context,
                     WebhookEvent.AssessmentBuildFinished,
                     Endpoints.GetAssessmentJob,
@@ -54,39 +54,6 @@ public class JobFinishedConsumer(IWebhookService webhookService, IUrlService url
                     Url = _urlService.GetUrl(engineEndpoint, new { id = context.Message.EngineId })
                 },
                 BuildState = context.Message.BuildState,
-                Message = context.Message.Message,
-                DateFinished = context.Message.DateFinished
-            },
-            context.CancellationToken
-        );
-    }
-
-    private async Task SendJobWebhookAsync(
-        ConsumeContext<BuildFinished> context,
-        WebhookEvent eventType,
-        string jobEndpoint,
-        string engineEndpoint
-    )
-    {
-        await _webhookService.SendEventAsync(
-            eventType,
-            context.Message.Owner,
-            new JobFinishedDto
-            {
-                Job = new ResourceLinkDto
-                {
-                    Id = context.Message.BuildId,
-                    Url = _urlService.GetUrl(
-                        jobEndpoint,
-                        new { id = context.Message.EngineId, buildId = context.Message.BuildId }
-                    )
-                },
-                Engine = new ResourceLinkDto
-                {
-                    Id = context.Message.EngineId,
-                    Url = _urlService.GetUrl(engineEndpoint, new { id = context.Message.EngineId })
-                },
-                JobState = context.Message.BuildState,
                 Message = context.Message.Message,
                 DateFinished = context.Message.DateFinished
             },

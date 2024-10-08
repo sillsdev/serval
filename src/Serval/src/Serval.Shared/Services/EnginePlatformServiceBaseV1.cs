@@ -38,7 +38,7 @@ public abstract class EnginePlatformServiceBaseV1<TBuild, TEngine, TResults>(
 
                 TEngine? engine = await Engines.UpdateAsync(
                     build.EngineRef,
-                    u => u.Set(e => e.IsBuildRunning, true),
+                    u => u.Set(e => e.IsBuilding, true),
                     cancellationToken: ct
                 );
                 if (engine is null)
@@ -116,7 +116,7 @@ public abstract class EnginePlatformServiceBaseV1<TBuild, TEngine, TResults>(
     {
         return await Engines.UpdateAsync(
             engineId,
-            u => u.Set(e => e.IsBuildRunning, false).Inc(e => e.BuildRevision),
+            u => u.Set(e => e.IsBuilding, false).Inc(e => e.BuildRevision),
             cancellationToken: ct
         );
     }
@@ -139,7 +139,7 @@ public abstract class EnginePlatformServiceBaseV1<TBuild, TEngine, TResults>(
 
                 TEngine? engine = await Engines.UpdateAsync(
                     build.EngineRef,
-                    u => u.Set(e => e.IsBuildRunning, false),
+                    u => u.Set(e => e.IsBuilding, false),
                     cancellationToken: ct
                 );
                 if (engine is null)
@@ -189,7 +189,7 @@ public abstract class EnginePlatformServiceBaseV1<TBuild, TEngine, TResults>(
 
                 TEngine? engine = await Engines.UpdateAsync(
                     build.EngineRef,
-                    u => u.Set(e => e.IsBuildRunning, false),
+                    u => u.Set(e => e.IsBuilding, false),
                     cancellationToken: ct
                 );
                 if (engine is null)

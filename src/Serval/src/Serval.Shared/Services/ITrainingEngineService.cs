@@ -7,9 +7,9 @@ public interface ITrainingEngineService<TBuild, TEngine> : IEngineServiceBase
 
     Task<TEngine> CreateAsync(TEngine engine, CancellationToken cancellationToken = default);
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
-    Task StartJobAsync(TBuild build, CancellationToken cancellationToken = default);
+    Task StartBuildAsync(TBuild build, CancellationToken cancellationToken = default);
 
-    Task<bool> CancelJobAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<bool> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default);
     Task AddCorpusAsync(string engineId, TrainingCorpus corpus, CancellationToken cancellationToken = default);
