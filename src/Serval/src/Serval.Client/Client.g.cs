@@ -4318,7 +4318,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
         /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationCorpus> AddParallelCorpusAsync(string id, TranslationParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationParallelCorpus> AddParallelCorpusAsync(string id, TranslationParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -6154,7 +6154,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
         /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationCorpus> AddParallelCorpusAsync(string id, TranslationParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationParallelCorpus> AddParallelCorpusAsync(string id, TranslationParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -6207,7 +6207,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 201)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<TranslationCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -9685,6 +9685,31 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TranslationParallelCorpus
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Id { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Url { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public ResourceLink Engine { get; set; } = new ResourceLink();
+
+        [Newtonsoft.Json.JsonProperty("sourceCorpora", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<ResourceLink> SourceCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
+
+        [Newtonsoft.Json.JsonProperty("targetCorpora", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<ResourceLink> TargetCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class TranslationParallelCorpusConfig
     {
         /// <summary>
@@ -9711,31 +9736,6 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<string>? TargetCorpusIds { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationParallelCorpus
-    {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Id { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Url { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public ResourceLink Engine { get; set; } = new ResourceLink();
-
-        [Newtonsoft.Json.JsonProperty("sourceCorpora", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<ResourceLink> SourceCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
-
-        [Newtonsoft.Json.JsonProperty("targetCorpora", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<ResourceLink> TargetCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
 
     }
 
