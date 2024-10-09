@@ -1,0 +1,39 @@
+﻿namespace Serval.WordAlignment.Services;
+
+public interface IEngineService
+{
+    Task<IEnumerable<Engine>> GetAllAsync(string owner, CancellationToken cancellationToken = default);
+    Task<Engine> GetAsync(string engineId, CancellationToken cancellationToken = default);
+
+    Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default);
+    Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
+
+    Task<WordAlignmentResult> GetWordAlignmentAsync(
+        string engineId,
+        string segment,
+        CancellationToken cancellationToken = default
+    );
+
+    Task StartBuildAsync(Build build, CancellationToken cancellationToken = default);
+
+    Task<bool> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
+
+    Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default);
+    Task<Corpus> UpdateCorpusAsync(
+        string engineId,
+        string corpusId,
+        IReadOnlyList<CorpusFile>? sourceFiles,
+        IReadOnlyList<CorpusFile>? targetFiles,
+        CancellationToken cancellationToken = default
+    );
+    Task DeleteCorpusAsync(
+        string engineId,
+        string corpusId,
+        bool deleteFiles,
+        CancellationToken cancellationToken = default
+    );
+
+    Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default);
+
+    Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default);
+}

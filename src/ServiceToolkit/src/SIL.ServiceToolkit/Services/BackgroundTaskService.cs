@@ -1,4 +1,4 @@
-﻿namespace EchoTranslationEngine;
+﻿namespace SIL.ServiceToolkit.Services;
 
 public class BackgroundTaskService(
     BackgroundTaskQueue taskQueue,

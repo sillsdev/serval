@@ -1,12 +1,12 @@
 ﻿using MassTransit.Mediator;
-using Serval.Translation.V1;
+using Serval.WordAlignment.V1;
 
-namespace Serval.Translation.Services;
+namespace Serval.WordAlignment.Services;
 
 public class EngineService(
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    IRepository<Pretranslation> pretranslations,
+    IRepository<Models.WordAlignment> wordAlignments,
     IScopedMediator mediator,
     GrpcClientFactory grpcClientFactory,
     IOptionsMonitor<DataFileOptions> dataFileOptions,
@@ -16,7 +16,7 @@ public class EngineService(
 ) : OwnedEntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Build> _builds = builds;
-    private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
+    private readonly IRepository<Models.WordAlignment> _wordAlignments = wordAlignments;
     private readonly IScopedMediator _mediator = mediator;
     private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
@@ -24,7 +24,7 @@ public class EngineService(
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
-    public async Task<Models.TranslationResult> TranslateAsync(
+    public async Task<Models.WordAlignmentResult> GetWordAlignmentAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -32,57 +32,10 @@ public class EngineService(
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
 
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        TranslateResponse response = await client.TranslateAsync(
-            new TranslateRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                N = 1,
-                Segment = segment
-            },
-            cancellationToken: cancellationToken
-        );
-        return Map(response.Results[0]);
-    }
-
-    public async Task<IEnumerable<Models.TranslationResult>> TranslateAsync(
-        string engineId,
-        int n,
-        string segment,
-        CancellationToken cancellationToken = default
-    )
-    {
-        Engine engine = await GetAsync(engineId, cancellationToken);
-
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        TranslateResponse response = await client.TranslateAsync(
-            new TranslateRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                N = n,
-                Segment = segment
-            },
-            cancellationToken: cancellationToken
-        );
-        return response.Results.Select(Map);
-    }
-
-    public async Task<Models.WordGraph> GetWordGraphAsync(
-        string engineId,
-        string segment,
-        CancellationToken cancellationToken = default
-    )
-    {
-        Engine engine = await GetAsync(engineId, cancellationToken);
-
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        GetWordGraphResponse response = await client.GetWordGraphAsync(
-            new GetWordGraphRequest
+        WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
+            _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
+        GetWordAlignmentResponse response = await client.GetWordAlignmentAsync(
+            new GetWordAlignmentRequest
             {
                 EngineType = engine.Type,
                 EngineId = engine.Id,
@@ -90,32 +43,7 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
-        return Map(response.WordGraph);
-    }
-
-    public async Task TrainSegmentPairAsync(
-        string engineId,
-        string sourceSegment,
-        string targetSegment,
-        bool sentenceStart,
-        CancellationToken cancellationToken = default
-    )
-    {
-        Engine engine = await GetAsync(engineId, cancellationToken);
-
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.TrainSegmentPairAsync(
-            new TrainSegmentPairRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceSegment = sourceSegment,
-                TargetSegment = targetSegment,
-                SentenceStart = sentenceStart
-            },
-            cancellationToken: cancellationToken
-        );
+        return Map(response.Result);
     }
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
@@ -124,8 +52,8 @@ public class EngineService(
         try
         {
             await Entities.InsertAsync(engine, cancellationToken);
-            TranslationEngineApi.TranslationEngineApiClient? client =
-                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            WordAlignmentEngineApi.WordAlignmentEngineApiClient? client =
+                _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
             if (client is null)
                 throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
             var request = new CreateRequest
@@ -135,17 +63,10 @@ public class EngineService(
                 SourceLanguage = engine.SourceLanguage,
                 TargetLanguage = engine.TargetLanguage
             };
-            if (engine.IsModelPersisted is not null)
-                request.IsModelPersisted = engine.IsModelPersisted.Value;
 
             if (engine.Name is not null)
                 request.EngineName = engine.Name;
-            CreateResponse createResponse = await client.CreateAsync(request, cancellationToken: cancellationToken);
-            // IsModelPersisted may be updated by the engine with the respective default.
-            engine = engine with
-            {
-                IsModelPersisted = createResponse.IsModelPersisted
-            };
+            await client.CreateAsync(request, cancellationToken: cancellationToken);
         }
         catch (RpcException rpcex)
         {
@@ -181,8 +102,8 @@ public class EngineService(
         if (engine is null)
             throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
+            _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
         await client.DeleteAsync(
             new DeleteRequest { EngineType = engine.Type, EngineId = engine.Id },
             cancellationToken: cancellationToken
@@ -193,7 +114,7 @@ public class EngineService(
             {
                 await Entities.DeleteAsync(engineId, ct);
                 await _builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
-                await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
+                await _wordAlignments.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
             },
             CancellationToken.None
         );
@@ -206,10 +127,10 @@ public class EngineService(
 
         try
         {
-            var pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
+            var wordAlignOn = build.WordAlignOn?.ToDictionary(c => c.CorpusRef);
             var trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
-            TranslationEngineApi.TranslationEngineApiClient client =
-                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
+                _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
             Dictionary<string, List<int>> GetChapters(V1.Corpus corpus, string scriptureRange)
             {
                 try
@@ -238,19 +159,22 @@ public class EngineService(
                     engine.Corpora.Select(c =>
                     {
                         V1.Corpus corpus = Map(c);
-                        if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
+                        if (wordAlignOn?.TryGetValue(c.Id, out WordAlignmentCorpus? wordAlignmentCorpus) ?? false)
                         {
-                            corpus.PretranslateAll =
-                                pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null;
-                            if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
+                            corpus.WordAlignOnAll =
+                                wordAlignmentCorpus.TextIds is null && wordAlignmentCorpus.ScriptureRange is null;
+                            if (
+                                wordAlignmentCorpus.TextIds is not null
+                                && wordAlignmentCorpus.ScriptureRange is not null
+                            )
                             {
                                 throw new InvalidOperationException(
                                     $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
                                 );
                             }
-                            if (pretranslateCorpus.TextIds is not null)
-                                corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
-                            if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
+                            if (wordAlignmentCorpus.TextIds is not null)
+                                corpus.WordAlignOnTextIds.Add(wordAlignmentCorpus.TextIds);
+                            if (!string.IsNullOrEmpty(wordAlignmentCorpus.ScriptureRange))
                             {
                                 if (
                                     c.TargetFiles.Count > 1
@@ -261,8 +185,8 @@ public class EngineService(
                                         $"The corpus {c.Id} is not compatible with using a scripture range"
                                     );
                                 }
-                                corpus.PretranslateChapters.Add(
-                                    GetChapters(corpus, pretranslateCorpus.ScriptureRange)
+                                corpus.WordAlignOnChapters.Add(
+                                    GetChapters(corpus, wordAlignmentCorpus.ScriptureRange)
                                         .Select(
                                             (kvp) =>
                                             {
@@ -365,8 +289,8 @@ public class EngineService(
         if (engine is null)
             throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
+            _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
         try
         {
             await client.CancelBuildAsync(
@@ -381,29 +305,6 @@ public class EngineService(
             throw;
         }
         return true;
-    }
-
-    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
-        string engineId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        Engine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
-
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        GetModelDownloadUrlResponse result = await client.GetModelDownloadUrlAsync(
-            new GetModelDownloadUrlRequest { EngineType = engine.Type, EngineId = engine.Id },
-            cancellationToken: cancellationToken
-        );
-        return new ModelDownloadUrl
-        {
-            Url = result.Url,
-            ModelRevision = result.ModelRevision,
-            ExpiresAt = result.ExpiresAt.ToDateTime()
-        };
     }
 
     public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
@@ -458,7 +359,7 @@ public class EngineService(
                         $"Could not find the Corpus '{corpusId}' in Engine '{engineId}'."
                     );
                 }
-                await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, ct);
+                await _wordAlignments.DeleteAllAsync(pt => pt.CorpusRef == corpusId, ct);
             },
             cancellationToken: cancellationToken
         );
@@ -491,8 +392,8 @@ public class EngineService(
 
     public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
     {
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
+        WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
+            _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engineType);
         GetQueueSizeResponse response = await client.GetQueueSizeAsync(
             new GetQueueSizeRequest { EngineType = engineType },
             cancellationToken: cancellationToken
@@ -500,85 +401,20 @@ public class EngineService(
         return new Queue { Size = response.Size, EngineType = engineType };
     }
 
-    public async Task<LanguageInfo> GetLanguageInfoAsync(
-        string engineType,
-        string language,
-        CancellationToken cancellationToken = default
-    )
+    private Models.WordAlignmentResult Map(V1.WordAlignmentResult source)
     {
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engineType);
-        GetLanguageInfoResponse response = await client.GetLanguageInfoAsync(
-            new GetLanguageInfoRequest { EngineType = engineType, Language = language },
-            cancellationToken: cancellationToken
-        );
-        return new LanguageInfo
+        return new Models.WordAlignmentResult
         {
-            InternalCode = response.InternalCode,
-            IsNative = response.IsNative,
-            EngineType = engineType
-        };
-    }
-
-    private Models.TranslationResult Map(V1.TranslationResult source)
-    {
-        return new Models.TranslationResult
-        {
-            Translation = source.Translation,
             SourceTokens = source.SourceTokens.ToList(),
             TargetTokens = source.TargetTokens.ToList(),
             Confidences = source.Confidences.ToList(),
-            Sources = source.Sources.Select(Map).ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
-            Phrases = source.Phrases.Select(Map).ToList()
         };
-    }
-
-    private IReadOnlySet<Contracts.TranslationSource> Map(TranslationSources source)
-    {
-        return source.Values.Cast<Contracts.TranslationSource>().ToHashSet();
     }
 
     private Shared.Models.AlignedWordPair Map(V1.AlignedWordPair source)
     {
         return new Shared.Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
-    }
-
-    private Models.Phrase Map(V1.Phrase source)
-    {
-        return new Models.Phrase
-        {
-            SourceSegmentStart = source.SourceSegmentStart,
-            SourceSegmentEnd = source.SourceSegmentEnd,
-            TargetSegmentCut = source.TargetSegmentCut
-        };
-    }
-
-    private Models.WordGraph Map(V1.WordGraph source)
-    {
-        return new Models.WordGraph
-        {
-            SourceTokens = source.SourceTokens.ToList(),
-            InitialStateScore = source.InitialStateScore,
-            FinalStates = source.FinalStates.ToHashSet(),
-            Arcs = source.Arcs.Select(Map).ToList()
-        };
-    }
-
-    private Models.WordGraphArc Map(V1.WordGraphArc source)
-    {
-        return new Models.WordGraphArc
-        {
-            PrevState = source.PrevState,
-            NextState = source.NextState,
-            Score = source.Score,
-            TargetTokens = source.TargetTokens.ToList(),
-            Confidences = source.Confidences.ToList(),
-            SourceSegmentStart = source.SourceSegmentStart,
-            SourceSegmentEnd = source.SourceSegmentEnd,
-            Alignment = source.Alignment.Select(Map).ToList(),
-            Sources = source.Sources.Select(Map).ToList()
-        };
     }
 
     private V1.Corpus Map(Models.Corpus source)

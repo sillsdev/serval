@@ -1,0 +1,105 @@
+﻿syntax = "proto3";
+
+package serval.word_alignment.v1;
+
+import "google/protobuf/empty.proto";
+
+service WordAlignmentEngineApi {
+    rpc Create(CreateRequest) returns (google.protobuf.Empty);
+    rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+    rpc GetWordAlignment(GetWordAlignmentRequest) returns (GetWordAlignmentResponse);
+    rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
+    rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
+    rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
+}
+
+message CreateRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    optional string engine_name = 3;
+    string source_language = 4;
+    string target_language = 5;
+}
+
+message DeleteRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+}
+
+message GetWordAlignmentRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string segment = 3;
+}
+
+message GetWordAlignmentResponse {
+    WordAlignmentResult result = 1;
+}
+
+message StartBuildRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+    string build_id = 3;
+    optional string options = 4;
+    repeated Corpus corpora = 5;
+}
+
+message CancelBuildRequest {
+    string engine_type = 1;
+    string engine_id = 2;
+}
+
+message GetQueueSizeRequest {
+    string engine_type = 1;
+}
+
+message GetQueueSizeResponse {
+    int32 size = 1;
+}
+
+message AlignedWordPair {
+    int32 source_index = 1;
+    int32 target_index = 2;
+}
+
+message WordAlignmentResult {
+    repeated string source_tokens = 1;
+    repeated string target_tokens = 2;
+    repeated double confidences = 3;
+    repeated AlignedWordPair alignment = 4;
+}
+
+message Corpus {
+    string id = 1;
+    string source_language = 2;
+    string target_language = 3;
+    bool train_on_all = 4;
+    bool word_align_on_all = 5;
+    map<string, ScriptureChapters> train_on_chapters = 6;
+    map<string, ScriptureChapters> word_align_on_chapters = 7;
+    repeated string train_on_text_ids = 8;
+    repeated string word_align_on_text_ids = 9;
+    repeated CorpusFile source_files = 10;
+    repeated CorpusFile target_files = 11;
+}
+
+message ScriptureChapters {
+    repeated int32 chapters = 1;
+}
+
+message CorpusFile {
+    string location = 1;
+    FileFormat format = 2;
+    string text_id = 3;
+}
+
+enum FileFormat {
+    FILE_FORMAT_TEXT = 0;
+    FILE_FORMAT_PARATEXT = 1;
+}
+
+enum TranslationSource {
+    TRANSLATION_SOURCE_PRIMARY = 0;
+    TRANSLATION_SOURCE_SECONDARY = 1;
+    TRANSLATION_SOURCE_HUMAN = 2;
+}

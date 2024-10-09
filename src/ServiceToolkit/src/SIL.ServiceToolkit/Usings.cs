@@ -1,6 +1,7 @@
 ﻿global using System.Diagnostics.CodeAnalysis;
 global using System.Text.Json.Nodes;
 global using System.Text.RegularExpressions;
+global using System.Threading.Channels;
 global using Grpc.Core;
 global using Grpc.Core.Interceptors;
 global using Hangfire;

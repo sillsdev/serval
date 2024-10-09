@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Models;
+﻿namespace Serval.Shared.Models;
 
 public record AlignedWordPair
 {

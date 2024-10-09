@@ -1,16 +1,16 @@
-﻿namespace Serval.Translation.Controllers;
+﻿namespace Serval.WordAlignment.Controllers;
 
 [ApiVersion(1.0)]
-[Route("api/v{version:apiVersion}/translation/engines")]
-[OpenApiTag("Translation Engines")]
-public class TranslationEnginesController(
+[Route("api/v{version:apiVersion}/word-alignment/engines")]
+[OpenApiTag("Word Alignment Engines")]
+public class WordAlignmentEnginesController(
     IAuthorizationService authService,
     IEngineService engineService,
     IBuildService buildService,
-    IPretranslationService pretranslationService,
+    IWordAlignmentService wordAlignmentService,
     IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService,
-    ILogger<TranslationEnginesController> logger
+    ILogger<WordAlignmentEnginesController> logger
 ) : ServalControllerBase(authService)
 {
     private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
@@ -18,49 +18,49 @@ public class TranslationEnginesController(
 
     private readonly IEngineService _engineService = engineService;
     private readonly IBuildService _buildService = buildService;
-    private readonly IPretranslationService _pretranslationService = pretranslationService;
+    private readonly IWordAlignmentService _wordAlignmentService = wordAlignmentService;
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
-    private readonly ILogger<TranslationEnginesController> _logger = logger;
+    private readonly ILogger<WordAlignmentEnginesController> _logger = logger;
 
     /// <summary>
-    /// Get all translation engines
+    /// Get all word alignment engines
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The engines</response>
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client cannot perform the operation.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<IEnumerable<TranslationEngineDto>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IEnumerable<WordAlignmentEngineDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         return (await _engineService.GetAllAsync(Owner, cancellationToken)).Select(Map);
     }
 
     /// <summary>
-    /// Get a translation engine by unique id
+    /// Get a word alignment engine by unique id
     /// </summary>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The translation engine</response>
+    /// <response code="200">The engine</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
 
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}", Name = Endpoints.GetTranslationEngine)]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
+    [HttpGet("{id}", Name = Endpoints.GetWordAlignmentEngine)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationEngineDto>> GetAsync(
+    public async Task<ActionResult<WordAlignmentEngineDto>> GetAsync(
         [NotNull] string id,
         CancellationToken cancellationToken
     )
@@ -71,7 +71,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Create a new translation engine
+    /// Create a new word alignment engine
     /// </summary>
     /// <remarks>
     /// ## Parameters
@@ -80,68 +80,59 @@ public class TranslationEnginesController(
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
     /// * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-    /// * **type**: **smt-transfer** or **nmt** or **echo**
-    /// * **isModelPersisted**: (optional) - see below
-    /// ### smt-transfer
-    /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-    /// * **IsModelPersisted**: (default to true) All models are persistent and can be updated with train-segment.  False is not supported.
-    /// ### nmt
-    /// The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-    /// * **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
-    ///
-    /// If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
-    ///
-    /// Typical endpoints: pretranslate
+    /// * **type**: **statistical** or **echo**
+    /// ### statistical
+    /// The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
     /// ### echo
-    /// The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+    /// The echo engine has full coverage of all endpoints. Endpoints like create and build return empty responses.
+    /// Endpoints like get-word-alignment echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
     /// ## Sample request:
     ///
     ///     {
     ///       "name": "myTeam:myProject:myEngine",
     ///       "sourceLanguage": "el",
     ///       "targetLanguage": "en",
-    ///       "type": "nmt"
-    ///       "IsModelPersisted": true
+    ///       "type": "statistical"
     ///     }
     ///
     /// </remarks>
-    /// <param name="engineConfig">The translation engine configuration (see above)</param>
+    /// <param name="engineConfig">The engine configuration (see above)</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="201">The new translation engine</response>
+    /// <response code="201">The new engine</response>
     /// <response code="400">Bad request. Is the engine type correct?</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.CreateTranslationEngines)]
+    [Authorize(Scopes.CreateWordAlignmentEngines)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationEngineDto>> CreateAsync(
-        [FromBody] TranslationEngineConfigDto engineConfig,
+    public async Task<ActionResult<WordAlignmentEngineDto>> CreateAsync(
+        [FromBody] WordAlignmentEngineConfigDto engineConfig,
         CancellationToken cancellationToken
     )
     {
         Engine engine = Map(engineConfig);
         Engine updatedEngine = await _engineService.CreateAsync(engine, cancellationToken);
-        TranslationEngineDto dto = Map(updatedEngine);
+        WordAlignmentEngineDto dto = Map(updatedEngine);
         return Created(dto.Url, dto);
     }
 
     /// <summary>
-    /// Delete a translation engine
+    /// Delete a word alignment engine
     /// </summary>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The engine was successfully deleted.</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine does not exist and therefore cannot be deleted.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.DeleteTranslationEngines)]
+    [Authorize(Scopes.DeleteWordAlignmentEngines)]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -156,21 +147,21 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Translate a segment of text
+    /// Align words on a segment of text
     /// </summary>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="segment">The source segment</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The translation result</response>
+    /// <response code="200">The word alignment result</response>
     /// <response code="400">Bad request</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="405">The method is not supported.</response>
-    /// <response code="409">The engine needs to be built before it can translate segments.</response>
+    /// <response code="409">The engine needs to be built before it can alignment segments.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpPost("{id}/translate")]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
+    [HttpPost("{id}/get-word-alignment")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -179,161 +170,38 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationResultDto>> TranslateAsync(
+    public async Task<ActionResult<WordAlignmentResultDto>> GetWordAlignmentAsync(
         [NotNull] string id,
         [FromBody] string segment,
         CancellationToken cancellationToken
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        TranslationResult result = await _engineService.TranslateAsync(id, segment, cancellationToken);
-        _logger.LogInformation("Translated segment for engine {EngineId}", id);
+        WordAlignmentResult result = await _engineService.GetWordAlignmentAsync(id, segment, cancellationToken);
+        _logger.LogInformation("Got word alignment for engine {EngineId}", id);
         return Ok(Map(result));
     }
 
     /// <summary>
-    /// Translates a segment of text into the top N results
-    /// </summary>
-    /// <param name="id">The translation engine id</param>
-    /// <param name="n">The number of translations to generate</param>
-    /// <param name="segment">The source segment</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">The translation results</response>
-    /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
-    /// <response code="404">The engine does not exist.</response>
-    /// <response code="405">The method is not supported.</response>
-    /// <response code="409">The engine needs to be built before it can translate segments.</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpPost("{id}/translate/{n}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateNAsync(
-        [NotNull] string id,
-        [NotNull] int n,
-        [FromBody] string segment,
-        CancellationToken cancellationToken
-    )
-    {
-        await AuthorizeAsync(id, cancellationToken);
-        IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(id, n, segment, cancellationToken);
-        _logger.LogInformation("Translated {n} segments for engine {EngineId}", n, id);
-        return Ok(results.Select(Map));
-    }
-
-    /// <summary>
-    /// Get the word graph that represents all possible translations of a segment of text
-    /// </summary>
-    /// <param name="id">The translation engine id</param>
-    /// <param name="segment">The source segment</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">The word graph result</response>
-    /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
-    /// <response code="404">The engine does not exist.</response>
-    /// <response code="405">The method is not supported.</response>
-    /// <response code="409">The engine needs to be built first.</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpPost("{id}/get-word-graph")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<WordGraphDto>> GetWordGraphAsync(
-        [NotNull] string id,
-        [FromBody] string segment,
-        CancellationToken cancellationToken
-    )
-    {
-        await AuthorizeAsync(id, cancellationToken);
-        WordGraph wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
-        _logger.LogInformation("Got word graph for engine {EngineId}", id);
-        return Ok(Map(wordGraph));
-    }
-
-    /// <summary>
-    /// Incrementally train a translation engine with a segment pair
-    /// </summary>
-    /// <remarks>
-    /// A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
-    /// that should be set to true if this segment pair forms the beginning of a sentence. (This information
-    /// will be used to reconstruct proper capitalization when training/inferencing).
-    /// </remarks>
-    /// <param name="id">The translation engine id</param>
-    /// <param name="segmentPair">The segment pair</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">The engine was trained successfully.</response>
-    /// <response code="400">Bad request</response>
-    /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
-    /// <response code="404">The engine does not exist.</response>
-    /// <response code="405">The method is not supported.</response>
-    /// <response code="409">The engine needs to be built first.</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.UpdateTranslationEngines)]
-    [HttpPost("{id}/train-segment")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult> TrainSegmentAsync(
-        [NotNull] string id,
-        [FromBody] SegmentPairDto segmentPair,
-        CancellationToken cancellationToken
-    )
-    {
-        await AuthorizeAsync(id, cancellationToken);
-        await _engineService.TrainSegmentPairAsync(
-            id,
-            segmentPair.SourceSegment,
-            segmentPair.TargetSegment,
-            segmentPair.SentenceStart,
-            cancellationToken
-        );
-        _logger.LogInformation("Trained segment pair for engine {EngineId}", id);
-        return Ok();
-    }
-
-    /// <summary>
-    /// Add a corpus to a translation engine
+    /// Add a corpus to a engine
     /// </summary>
     /// <remarks>
     /// ## Parameters
     /// * **name**: A name to help identify and distinguish the corpus from other corpora
     ///   * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-    /// * **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+    /// * **sourceLanguage**: The source language code (See documentation on endpoint /word-alignment/engines/ - "Create a new engine" for details on language codes).
     ///   * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-    /// * **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+    /// * **targetLanguage**: The target language code (See documentation on endpoint /word-alignment/engines/ - "Create a new engine" for details on language codes).
     /// * **SourceFiles**: The source files associated with the corpus
     ///   * **FileId**: The unique id referencing the uploaded file
     ///   * **TextId**: The client-defined name to associate source and target files.
     ///     * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-    ///     * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
     ///     * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
-    ///     * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
     ///     * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
     /// * **TargetFiles**: The target files associated with the corpus
     ///   * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
     /// </remarks>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
     /// <param name="getDataFileClient"></param>
     /// <param name="idGenerator"></param>
@@ -341,10 +209,10 @@ public class TranslationEnginesController(
     /// <response code="201">The added corpus</response>
     /// <response code="400">Bad request</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.UpdateTranslationEngines)]
+    [Authorize(Scopes.UpdateWordAlignmentEngines)]
     [HttpPost("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -352,9 +220,9 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
+    public async Task<ActionResult<WordAlignmentCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
-        [FromBody] TranslationCorpusConfigDto corpusConfig,
+        [FromBody] WordAlignmentCorpusConfigDto corpusConfig,
         [FromServices] IRequestClient<GetDataFile> getDataFileClient,
         [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
@@ -364,7 +232,7 @@ public class TranslationEnginesController(
         await AuthorizeAsync(engine);
         Corpus corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
         await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
-        TranslationCorpusDto dto = Map(id, corpus);
+        WordAlignmentCorpusDto dto = Map(id, corpus);
         return Created(dto.Url, dto);
     }
 
@@ -373,9 +241,9 @@ public class TranslationEnginesController(
     /// </summary>
     /// <remarks>
     /// See posting a new corpus for details of use. Will completely replace corpus' file associations.
-    /// Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
+    /// Will not affect jobs already queued or running. Will not affect existing word alignments until new build is complete.
     /// </remarks>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="corpusId">The corpus id</param>
     /// <param name="corpusConfig">The corpus configuration</param>
     /// <param name="getDataFileClient">The data file client</param>
@@ -383,10 +251,10 @@ public class TranslationEnginesController(
     /// <response code="200">The corpus was updated successfully</response>
     /// <response code="400">Bad request</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.UpdateTranslationEngines)]
+    [Authorize(Scopes.UpdateWordAlignmentEngines)]
     [HttpPatch("{id}/corpora/{corpusId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -394,10 +262,10 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationCorpusDto>> UpdateCorpusAsync(
+    public async Task<ActionResult<WordAlignmentCorpusDto>> UpdateCorpusAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
-        [FromBody] TranslationCorpusUpdateConfigDto corpusConfig,
+        [FromBody] WordAlignmentCorpusUpdateConfigDto corpusConfig,
         [FromServices] IRequestClient<GetDataFile> getDataFileClient,
         CancellationToken cancellationToken
     )
@@ -418,23 +286,23 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get all corpora for a translation engine
+    /// Get all corpora for a engine
     /// </summary>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The files</response>
     /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine</response>
     /// <response code="404">The engine does not exist</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
-    [Authorize(Scopes.ReadTranslationEngines)]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
     [HttpGet("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<IEnumerable<TranslationCorpusDto>>> GetAllCorporaAsync(
+    public async Task<ActionResult<IEnumerable<WordAlignmentCorpusDto>>> GetAllCorporaAsync(
         [NotNull] string id,
         CancellationToken cancellationToken
     )
@@ -445,24 +313,24 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get the configuration of a corpus for a translation engine
+    /// Get the configuration of a corpus for a engine
     /// </summary>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="corpusId">The corpus id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus configuration</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/corpora/{corpusId}", Name = Endpoints.GetTranslationCorpus)]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
+    [HttpGet("{id}/corpora/{corpusId}", Name = Endpoints.GetWordAlignmentCorpus)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationCorpusDto>> GetCorpusAsync(
+    public async Task<ActionResult<WordAlignmentCorpusDto>> GetCorpusAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
         CancellationToken cancellationToken
@@ -477,21 +345,21 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Remove a corpus from a translation engine
+    /// Remove a corpus from a engine
     /// </summary>
     /// <remarks>
-    /// Removing a corpus will remove all pretranslations associated with that corpus.
+    /// Removing a corpus will remove all word alignments associated with that corpus.
     /// </remarks>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="corpusId">The corpus id</param>
     /// <param name="deleteFiles">If true, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus was deleted successfully.</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.UpdateTranslationEngines)]
+    [Authorize(Scopes.UpdateWordAlignmentEngines)]
     [HttpDelete("{id}/corpora/{corpusId}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -511,38 +379,41 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get all pretranslations in a corpus of a translation engine
+    /// Get all word alignments in a corpus of a engine
     /// </summary>
     /// <remarks>
-    /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+    /// Word alignments are arranged in a list of dictionaries with the following fields per word alignment:
     /// * **TextId**: The TextId of the SourceFile defined when the corpus was created.
     /// * **Refs** (a list of strings): A list of references including:
     ///   * The references defined in the SourceFile per line, if any.
     ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-    /// * **Translation**: the text of the pretranslation
+    /// * **SourceTokens**: the tokenized source segment
+    /// * **TargetTokens**: the tokenized target segment
+    /// * **Confidences**: the confidence of the alignment ona scale from 0 to 1
+    /// * **Alignment**: the word alignment, 0 indexed for source and target positions
     ///
-    /// Pretranslations can be filtered by text id if provided.
-    /// Only pretranslations for the most recent successful build of the engine are returned.
+    /// Word alignments can be filtered by text id if provided.
+    /// Only word alignments for the most recent successful build of the engine are returned.
     /// </remarks>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="corpusId">The corpus id</param>
     /// <param name="textId">The text id (optional)</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The pretranslations</response>
+    /// <response code="200">The word alignments</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="409">The engine needs to be built first.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/corpora/{corpusId}/pretranslations")]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
+    [HttpGet("{id}/corpora/{corpusId}/word-alignments")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetAllPretranslationsAsync(
+    public async Task<ActionResult<IEnumerable<WordAlignmentDto>>> GetAllWordAlignmentsAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
         [FromQuery] string? textId,
@@ -556,7 +427,7 @@ public class TranslationEnginesController(
         if (engine.ModelRevision == 0)
             return Conflict();
 
-        IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
+        IEnumerable<Models.WordAlignment> wordAlignments = await _wordAlignmentService.GetAllAsync(
             id,
             engine.ModelRevision,
             corpusId,
@@ -564,173 +435,33 @@ public class TranslationEnginesController(
             cancellationToken
         );
         _logger.LogInformation(
-            "Returning {Count} pretranslations for engine {EngineId}, corpus {CorpusId}, and query {TextId}",
-            pretranslations.Count(),
+            "Returning {Count} word alignments for engine {EngineId}, corpus {CorpusId}, and query {TextId}",
+            wordAlignments.Count(),
             id,
             corpusId,
             textId
         );
-        return Ok(pretranslations.Select(Map));
+        return Ok(wordAlignments.Select(Map));
     }
 
     /// <summary>
-    /// Get all pretranslations for the specified text in a corpus of a translation engine
+    /// Get all build jobs for a engine
     /// </summary>
-    /// <remarks>
-    /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
-    /// * **TextId**: The TextId of the SourceFile defined when the corpus was created.
-    /// * **Refs** (a list of strings): A list of references including:
-    ///   * The references defined in the SourceFile per line, if any.
-    ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-    /// * **Translation**: the text of the pretranslation
-    ///
-    /// Only pretranslations for the most recent successful build of the engine are returned.
-    /// </remarks>
-    /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
-    /// <param name="textId">The text id</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">The pretranslations</response>
-    /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
-    /// <response code="404">The engine or corpus does not exist.</response>
-    /// <response code="409">The engine needs to be built first.</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/corpora/{corpusId}/pretranslations/{textId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetPretranslationsByTextIdAsync(
-        [NotNull] string id,
-        [NotNull] string corpusId,
-        [NotNull] string textId,
-        CancellationToken cancellationToken
-    )
-    {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
-        await AuthorizeAsync(engine);
-        if (!engine.Corpora.Any(c => c.Id == corpusId))
-            return NotFound();
-        if (engine.ModelRevision == 0)
-            return Conflict();
-
-        IEnumerable<Pretranslation> pretranslations = await _pretranslationService.GetAllAsync(
-            id,
-            engine.ModelRevision,
-            corpusId,
-            textId,
-            cancellationToken
-        );
-        _logger.LogInformation(
-            "Returning {Count} pretranslations for engine {EngineId}, corpus {CorpusId}, and textId {TextId}",
-            pretranslations.Count(),
-            id,
-            corpusId,
-            textId
-        );
-        return Ok(pretranslations.Select(Map));
-    }
-
-    /// <summary>
-    /// Get a pretranslated Scripture book in USFM format.
-    /// </summary>
-    /// <remarks>
-    /// The text that populates the USFM structure can be controlled by the `textOrigin` parameter:
-    /// * `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
-    /// * `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
-    /// * `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
-    /// * `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
-    ///
-    /// The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
-    /// * `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
-    /// * `Source`: The source book is used as the template.
-    /// * `Target`: The target book is used as the template.
-    ///
-    /// Only pretranslations for the most recent successful build of the engine are returned.
-    /// Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
-    /// </remarks>
-    /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
-    /// <param name="textId">The text id</param>
-    /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">The book in USFM format</response>
-    /// <response code="204">The specified book does not exist in the source or target corpus.</response>
-    /// <response code="400">The corpus is not a valid Scripture corpus.</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
-    /// <response code="404">The engine or corpus does not exist.</response>
-    /// <response code="409">The engine needs to be built first.</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/corpora/{corpusId}/pretranslations/{textId}/usfm")]
-    [Produces("text/plain")]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/plain")]
-    [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<IActionResult> GetPretranslatedUsfmAsync(
-        [NotNull] string id,
-        [NotNull] string corpusId,
-        [NotNull] string textId,
-        [FromQuery(Name = "text-origin")] PretranslationUsfmTextOrigin? textOrigin,
-        [FromQuery] PretranslationUsfmTemplate? template,
-        CancellationToken cancellationToken
-    )
-    {
-        Engine engine = await _engineService.GetAsync(id, cancellationToken);
-        await AuthorizeAsync(engine);
-        if (!engine.Corpora.Any(c => c.Id == corpusId))
-            return NotFound();
-        if (engine.ModelRevision == 0)
-            return Conflict();
-
-        string usfm = await _pretranslationService.GetUsfmAsync(
-            id,
-            engine.ModelRevision,
-            corpusId,
-            textId,
-            textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
-            template ?? PretranslationUsfmTemplate.Auto,
-            cancellationToken
-        );
-        if (usfm == "")
-            return NoContent();
-        _logger.LogInformation(
-            "Returning USFM for {TextId} in engine {EngineId} for corpus {corpusId}",
-            textId,
-            id,
-            corpusId
-        );
-        return Content(usfm, "text/plain");
-    }
-
-    /// <summary>
-    /// Get all build jobs for a translation engine
-    /// </summary>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The build jobs</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
     [HttpGet("{id}/builds")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<IEnumerable<TranslationBuildDto>>> GetAllBuildsAsync(
+    public async Task<ActionResult<IEnumerable<WordAlignmentBuildDto>>> GetAllBuildsAsync(
         [NotNull] string id,
         CancellationToken cancellationToken
     )
@@ -752,25 +483,25 @@ public class TranslationEnginesController(
     /// This method should use request throttling.
     /// Note: Within the returned build, percentCompleted is a value between 0 and 1.
     /// </remarks>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="buildId">The build job id</param>
     /// <param name="minRevision">The minimum revision</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The build job</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="403">The authenticated client does not own the engine.</response>
     /// <response code="404">The engine or build does not exist.</response>
     /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/builds/{buildId}", Name = Endpoints.GetTranslationBuild)]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
+    [HttpGet("{id}/builds/{buildId}", Name = Endpoints.GetWordAlignmentBuild)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationBuildDto>> GetBuildAsync(
+    public async Task<ActionResult<WordAlignmentBuildDto>> GetBuildAsync(
         [NotNull] string id,
         [NotNull] string buildId,
         [FromQuery] long? minRevision,
@@ -800,7 +531,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Starts a build job for a translation engine.
+    /// Starts a build job for a engine.
     /// </summary>
     /// <remarks>
     /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
@@ -809,29 +540,24 @@ public class TranslationEnginesController(
     /// Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
     /// All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
     ///
-    /// Specify the corpora or textIds to pretranslate.  When a corpus or textId is selected for pretranslation,
-    /// the following text will be pretranslated:
-    /// * Text segments that are in the source and not the target (untranslated)
-    /// * Text segments that are in the source and the target, but where that target segment is not trained on.
-    /// If the engine does not support pretranslation, these fields have no effect.
-    /// Pretranslating has the same filtering as training.
+    /// Specify the corpora or textIds to word align on.
+    /// When a corpus or textId is selected for word align on, only text segments that are in both the source and the target will be aligned.
     ///
     /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-    /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
-    /// See [smt-transfer job settings documentation](https://github.com/sillsdev/serval/wiki/SMT-Transfer-Build-Options) about configuring job parameters.
+    /// See [statistical alignment job settings documentation](https://github.com/sillsdev/serval/wiki/Statistical-Alignment-Build-Options) about configuring job parameters.
     /// See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
     /// </remarks>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The new build job</response>
     /// <response code="400">The build configuration was invalid.</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="403">The authenticated client does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="409">There is already an active or pending build or a build in the process of being canceled.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.UpdateTranslationEngines)]
+    [Authorize(Scopes.UpdateWordAlignmentEngines)]
     [HttpPost("{id}/builds")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -840,9 +566,9 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationBuildDto>> StartBuildAsync(
+    public async Task<ActionResult<WordAlignmentBuildDto>> StartBuildAsync(
         [NotNull] string id,
-        [FromBody] TranslationBuildConfigDto buildConfig,
+        [FromBody] WordAlignmentBuildConfigDto buildConfig,
         CancellationToken cancellationToken
     )
     {
@@ -851,28 +577,28 @@ public class TranslationEnginesController(
         Build build = Map(engine, buildConfig);
         await _engineService.StartBuildAsync(build, cancellationToken);
 
-        TranslationBuildDto dto = Map(build);
+        WordAlignmentBuildDto dto = Map(build);
         return Created(dto.Url, dto);
     }
 
     /// <summary>
-    /// Get the currently running build job for a translation engine
+    /// Get the currently running build job for a engine
     /// </summary>
     /// <remarks>
-    /// See documentation on endpoint /translation/engines/{id}/builds/{id} - "Get a Build Job" for details on using `minRevision`.
+    /// See documentation on endpoint /word-alignment/engines/{id}/builds/{id} - "Get a Build Job" for details on using `minRevision`.
     /// </remarks>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="minRevision">The minimum revision</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The build job</response>
     /// <response code="204">There is no build currently running.</response>
     /// <response code="400">Bad request</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="403">The authenticated client does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="408">The long polling request timed out. This is expected behavior if you're using long-polling with the minRevision strategy specified in the docs.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
     [HttpGet("{id}/current-build")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -882,7 +608,7 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationBuildDto>> GetCurrentBuildAsync(
+    public async Task<ActionResult<WordAlignmentBuildDto>> GetCurrentBuildAsync(
         [NotNull] string id,
         [FromQuery] long? minRevision,
         CancellationToken cancellationToken
@@ -914,20 +640,20 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Cancel the current build job (whether pending or active) for a translation engine
+    /// Cancel the current build job (whether pending or active) for a engine
     /// </summary>
     /// <remarks>
     /// </remarks>
-    /// <param name="id">The translation engine id</param>
+    /// <param name="id">The engine id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The build job was cancelled successfully.</response>
     /// <response code="204">There is no active build job.</response>
     /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client does not own the translation engine.</response>
+    /// <response code="403">The authenticated client does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
-    /// <response code="405">The translation engine does not support cancelling builds.</response>
+    /// <response code="405">The engine does not support cancelling builds.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.UpdateTranslationEngines)]
+    [Authorize(Scopes.UpdateWordAlignmentEngines)]
     [HttpPost("{id}/current-build/cancel")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
@@ -944,46 +670,6 @@ public class TranslationEnginesController(
         return Ok();
     }
 
-    /// <summary>
-    /// Let a link to download the NMT translation model of the last build that was successfully saved.
-    /// </summary>
-    /// <remarks>
-    /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
-    /// then the model from the most recent successful build can be downloaded.
-    ///
-    /// The endpoint will return a URL that can be used to download the model for up to 1 hour
-    /// after the request is made.  If the URL is not used within that time, a new request will need to be made.
-    ///
-    /// The download itself is created by g-zipping together the folder containing the fine tuned model
-    /// with all necessary supporting files.  This zipped folder is then named by the pattern:
-    ///  * &lt;engine_id&gt;_&lt;model_revision&gt;.tar.gz
-    /// </remarks>
-    /// <param name="id">The translation engine id</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">The url to download the model.</response>
-    /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client does not own the translation engine.</response>
-    /// <response code="404">The engine does not exist or there is no saved model.</response>
-    /// <response code="405">The translation engine does not support downloading builds.</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/model-download-url")]
-    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<ModelDownloadUrlDto>> GetModelDownloadUrlAsync(
-        [NotNull] string id,
-        CancellationToken cancellationToken
-    )
-    {
-        await AuthorizeAsync(id, cancellationToken);
-        ModelDownloadUrl modelInfo = await _engineService.GetModelDownloadUrlAsync(id, cancellationToken);
-        return Ok(Map(modelInfo));
-    }
-
     private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
@@ -993,7 +679,7 @@ public class TranslationEnginesController(
     private async Task<Corpus> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
         string corpusId,
-        TranslationCorpusConfigDto source,
+        WordAlignmentCorpusConfigDto source,
         CancellationToken cancellationToken
     )
     {
@@ -1010,12 +696,12 @@ public class TranslationEnginesController(
 
     private async Task<List<CorpusFile>> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
-        IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
+        IEnumerable<WordAlignmentCorpusFileConfigDto> fileConfigs,
         CancellationToken cancellationToken
     )
     {
         var files = new List<CorpusFile>();
-        foreach (TranslationCorpusFileConfigDto fileConfig in fileConfigs)
+        foreach (WordAlignmentCorpusFileConfigDto fileConfig in fileConfigs)
         {
             Response<DataFileResult, DataFileNotFound> response = await getDataFileClient.GetResponse<
                 DataFileResult,
@@ -1041,7 +727,7 @@ public class TranslationEnginesController(
         return files;
     }
 
-    private Engine Map(TranslationEngineConfigDto source)
+    private Engine Map(WordAlignmentEngineConfigDto source)
     {
         return new Engine
         {
@@ -1051,30 +737,29 @@ public class TranslationEnginesController(
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
             Corpora = [],
-            IsModelPersisted = source.IsModelPersisted
         };
     }
 
-    private static Build Map(Engine engine, TranslationBuildConfigDto source)
+    private static Build Map(Engine engine, WordAlignmentBuildConfigDto source)
     {
         return new Build
         {
             EngineRef = engine.Id,
             Name = source.Name,
-            Pretranslate = Map(engine, source.Pretranslate),
+            WordAlignOn = Map(engine, source.WordAlignOn),
             TrainOn = Map(engine, source.TrainOn),
             Options = Map(source.Options)
         };
     }
 
-    private static List<PretranslateCorpus>? Map(Engine engine, IReadOnlyList<PretranslateCorpusConfigDto>? source)
+    private static List<WordAlignmentCorpus>? Map(Engine engine, IReadOnlyList<WordAlignOnCorpusConfigDto>? source)
     {
         if (source is null)
             return null;
 
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
-        var pretranslateCorpora = new List<PretranslateCorpus>();
-        foreach (PretranslateCorpusConfigDto ptcc in source)
+        var wordAlignmentCorpora = new List<WordAlignmentCorpus>();
+        foreach (WordAlignOnCorpusConfigDto ptcc in source)
         {
             if (!corpusIds.Contains(ptcc.CorpusId))
             {
@@ -1088,8 +773,8 @@ public class TranslationEnginesController(
                     $"The corpus {ptcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
                 );
             }
-            pretranslateCorpora.Add(
-                new PretranslateCorpus
+            wordAlignmentCorpora.Add(
+                new WordAlignmentCorpus
                 {
                     CorpusRef = ptcc.CorpusId,
                     TextIds = ptcc.TextIds?.ToList(),
@@ -1097,7 +782,7 @@ public class TranslationEnginesController(
                 }
             );
         }
-        return pretranslateCorpora;
+        return wordAlignmentCorpora;
     }
 
     private static List<TrainingCorpus>? Map(Engine engine, IReadOnlyList<TrainingCorpusConfigDto>? source)
@@ -1148,17 +833,16 @@ public class TranslationEnginesController(
         }
     }
 
-    private TranslationEngineDto Map(Engine source)
+    private WordAlignmentEngineDto Map(Engine source)
     {
-        return new TranslationEngineDto
+        return new WordAlignmentEngineDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.Id }),
+            Url = _urlService.GetUrl(Endpoints.GetWordAlignmentEngine, new { id = source.Id }),
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
             Type = source.Type.ToKebabCase(),
-            IsModelPersisted = source.IsModelPersisted,
             IsBuilding = source.IsBuilding,
             ModelRevision = source.ModelRevision,
             Confidence = Math.Round(source.Confidence, 8),
@@ -1166,21 +850,24 @@ public class TranslationEnginesController(
         };
     }
 
-    private TranslationBuildDto Map(Build source)
+    private WordAlignmentBuildDto Map(Build source)
     {
-        return new TranslationBuildDto
+        return new WordAlignmentBuildDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl(Endpoints.GetTranslationBuild, new { id = source.EngineRef, buildId = source.Id }),
+            Url = _urlService.GetUrl(
+                Endpoints.GetWordAlignmentBuild,
+                new { id = source.EngineRef, buildId = source.Id }
+            ),
             Revision = source.Revision,
             Name = source.Name,
             Engine = new ResourceLinkDto
             {
                 Id = source.EngineRef,
-                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.EngineRef })
+                Url = _urlService.GetUrl(Endpoints.GetWordAlignmentEngine, new { id = source.EngineRef })
             },
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
-            Pretranslate = source.Pretranslate?.Select(s => Map(source.EngineRef, s)).ToList(),
+            WordAlignOn = source.WordAlignOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             Step = source.Step,
             PercentCompleted = source.PercentCompleted,
             Message = source.Message,
@@ -1191,15 +878,15 @@ public class TranslationEnginesController(
         };
     }
 
-    private PretranslateCorpusDto Map(string engineId, PretranslateCorpus source)
+    private WordAlignOnCorpusDto Map(string engineId, WordAlignmentCorpus source)
     {
-        return new PretranslateCorpusDto
+        return new WordAlignOnCorpusDto
         {
             Corpus = new ResourceLinkDto
             {
                 Id = source.CorpusRef,
                 Url = _urlService.GetUrl(
-                    Endpoints.GetTranslationCorpus,
+                    Endpoints.GetWordAlignmentCorpus,
                     new { id = engineId, corpusId = source.CorpusRef }
                 )
             },
@@ -1216,7 +903,7 @@ public class TranslationEnginesController(
             {
                 Id = source.CorpusRef,
                 Url = _urlService.GetUrl(
-                    Endpoints.GetTranslationCorpus,
+                    Endpoints.GetWordAlignmentCorpus,
                     new { id = engineId, corpusId = source.CorpusRef }
                 )
             },
@@ -1225,82 +912,51 @@ public class TranslationEnginesController(
         };
     }
 
-    private TranslationResultDto Map(TranslationResult source)
+    private WordAlignmentResultDto Map(WordAlignmentResult source)
     {
-        return new TranslationResultDto
+        return new WordAlignmentResultDto
         {
-            Translation = source.Translation,
             SourceTokens = source.SourceTokens.ToList(),
             TargetTokens = source.TargetTokens.ToList(),
             Confidences = source.Confidences.Select(c => Math.Round(c, 8)).ToList(),
-            Sources = source.Sources.ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
-            Phrases = source.Phrases.Select(Map).ToList()
         };
     }
 
     private AlignedWordPairDto Map(AlignedWordPair source)
     {
-        return new AlignedWordPairDto { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
+        return new AlignedWordPairDto() { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
     }
 
-    private static PhraseDto Map(Phrase source)
+    private static WordAlignmentDto Map(Models.WordAlignment source)
     {
-        return new PhraseDto
-        {
-            SourceSegmentStart = source.SourceSegmentStart,
-            SourceSegmentEnd = source.SourceSegmentEnd,
-            TargetSegmentCut = source.TargetSegmentCut
-        };
-    }
-
-    private WordGraphDto Map(WordGraph source)
-    {
-        return new WordGraphDto
-        {
-            SourceTokens = source.SourceTokens.ToList(),
-            InitialStateScore = (float)source.InitialStateScore,
-            FinalStates = source.FinalStates.ToHashSet(),
-            Arcs = source.Arcs.Select(Map).ToList()
-        };
-    }
-
-    private WordGraphArcDto Map(WordGraphArc source)
-    {
-        return new WordGraphArcDto
-        {
-            PrevState = source.PrevState,
-            NextState = source.NextState,
-            Score = Math.Round(source.Score, 8),
-            TargetTokens = source.TargetTokens.ToList(),
-            Confidences = source.Confidences.Select(c => Math.Round(c, 8)).ToList(),
-            SourceSegmentStart = source.SourceSegmentStart,
-            SourceSegmentEnd = source.SourceSegmentEnd,
-            Alignment = source.Alignment.Select(Map).ToList(),
-            Sources = source.Sources.ToList()
-        };
-    }
-
-    private static PretranslationDto Map(Pretranslation source)
-    {
-        return new PretranslationDto
+        return new WordAlignmentDto
         {
             TextId = source.TextId,
             Refs = source.Refs,
-            Translation = source.Translation
+            SourceTokens = source.SourceTokens.ToList(),
+            TargetTokens = source.TargetTokens.ToList(),
+            Confidences = source.Confidences.Select(c => Math.Round(c, 8)).ToList(),
+            Alignment = source
+                .Alignment.Select(c => new AlignedWordPairDto()
+                {
+                    SourceIndex = c.SourceIndex,
+                    TargetIndex = c.TargetIndex
+                })
+                .ToList(),
         };
     }
 
-    private TranslationCorpusDto Map(string engineId, Corpus source)
+    private WordAlignmentCorpusDto Map(string engineId, Corpus source)
     {
-        return new TranslationCorpusDto
+        return new WordAlignmentCorpusDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl(Endpoints.GetTranslationCorpus, new { id = engineId, corpusId = source.Id }),
+            Url = _urlService.GetUrl(Endpoints.GetWordAlignmentCorpus, new { id = engineId, corpusId = source.Id }),
             Engine = new ResourceLinkDto
             {
                 Id = engineId,
-                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId })
+                Url = _urlService.GetUrl(Endpoints.GetWordAlignmentEngine, new { id = engineId })
             },
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
@@ -1310,9 +966,9 @@ public class TranslationEnginesController(
         };
     }
 
-    private TranslationCorpusFileDto Map(CorpusFile source)
+    private WordAlignmentCorpusFileDto Map(CorpusFile source)
     {
-        return new TranslationCorpusFileDto
+        return new WordAlignmentCorpusFileDto
         {
             File = new ResourceLinkDto
             {
@@ -1320,16 +976,6 @@ public class TranslationEnginesController(
                 Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id })
             },
             TextId = source.TextId
-        };
-    }
-
-    private static ModelDownloadUrlDto Map(ModelDownloadUrl source)
-    {
-        return new ModelDownloadUrlDto
-        {
-            Url = source.Url,
-            ModelRevision = source.ModelRevision,
-            ExpiresAt = source.ExpiresAt
         };
     }
 }
