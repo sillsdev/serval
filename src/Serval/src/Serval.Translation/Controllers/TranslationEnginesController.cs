@@ -1543,7 +1543,7 @@ public class TranslationEnginesController(
                         Id = source.ParallelCorpusRef,
                         Url = _urlService.GetUrl(
                             Endpoints.GetParallelTranslationCorpus,
-                            new { id = source.ParallelCorpusRef }
+                            new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
                         )
                     }
                     : null,
@@ -1575,7 +1575,7 @@ public class TranslationEnginesController(
                         Id = source.ParallelCorpusRef,
                         Url = _urlService.GetUrl(
                             Endpoints.GetParallelTranslationCorpus,
-                            new { id = source.ParallelCorpusRef }
+                            new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
                         )
                     }
                     : null,
