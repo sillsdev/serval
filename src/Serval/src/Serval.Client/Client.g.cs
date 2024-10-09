@@ -8496,6 +8496,12 @@ namespace Serval.Client
         [System.Runtime.Serialization.EnumMember(Value = @"AssessmentJobFinished")]
         AssessmentJobFinished = 3,
 
+        [System.Runtime.Serialization.EnumMember(Value = @"WordAlignmentBuildStarted")]
+        WordAlignmentBuildStarted = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"WordAlignmentBuildFinished")]
+        WordAlignmentBuildFinished = 5,
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]

@@ -10,6 +10,8 @@ public static class IMediatorRegistrationConfiguratorExtensions
         configurator.AddConsumer<TranslationBuildFinishedConsumer>();
         configurator.AddConsumer<AssessmentJobStartedConsumer>();
         configurator.AddConsumer<AssessmentJobFinishedConsumer>();
+        configurator.AddConsumer<WordAlignmentBuildStartedConsumer>();
+        configurator.AddConsumer<WordAlignmentBuildFinishedConsumer>();
         return configurator;
     }
 }
