@@ -21,6 +21,13 @@ public static class IMongoDataAccessConfiguratorExtensions
                     new CreateIndexModel<DeletedFile>(Builders<DeletedFile>.IndexKeys.Ascending(p => p.DeletedAt))
                 )
         );
+        configurator.AddRepository<Corpus>(
+            "corpora.corpus",
+            init: c =>
+                c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
+                )
+        );
         return configurator;
     }
 }

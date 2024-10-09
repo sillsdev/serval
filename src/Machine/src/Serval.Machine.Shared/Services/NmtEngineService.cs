@@ -69,7 +69,7 @@ public class NmtEngineService(
         string engineId,
         string buildId,
         string? buildOptions,
-        IReadOnlyList<Corpus> corpora,
+        IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken = default
     )
     {

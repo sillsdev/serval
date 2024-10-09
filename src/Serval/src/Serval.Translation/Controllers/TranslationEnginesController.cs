@@ -422,7 +422,7 @@ public class TranslationEnginesController(
     /// </summary>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The files</response>
+    /// <response code="200">The corpora</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
@@ -507,6 +507,206 @@ public class TranslationEnginesController(
     {
         await AuthorizeAsync(id, cancellationToken);
         await _engineService.DeleteCorpusAsync(id, corpusId, deleteFiles ?? false, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Add a corpus to a translation engine
+    /// </summary>
+    /// <remarks>
+    /// ## Parameters
+    /// * **name**: A name to help identify and distinguish the corpus from other corpora
+    ///   * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
+    /// * **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+    ///   * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
+    /// * **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+    /// * **SourceFiles**: The source files associated with the corpus
+    ///   * **FileId**: The unique id referencing the uploaded file
+    ///   * **TextId**: The client-defined name to associate source and target files.
+    ///     * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
+    ///     * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
+    ///     * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
+    ///     * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
+    ///     * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
+    /// * **TargetFiles**: The target files associated with the corpus
+    ///   * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
+    /// </remarks>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
+    /// <param name="getCorpusClient"></param>
+    /// <param name="idGenerator"></param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="201">The added corpus</response>
+    /// <response code="400">Bad request</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.UpdateTranslationEngines)]
+    [HttpPost("{id}/parallel-corpora")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<TranslationParallelCorpusDto>> AddParallelCorpusAsync(
+        [NotNull] string id,
+        [FromBody] TranslationParallelCorpusConfigDto corpusConfig,
+        [FromServices] IRequestClient<GetCorpus> getCorpusClient,
+        [FromServices] IIdGenerator idGenerator,
+        CancellationToken cancellationToken
+    )
+    {
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
+        ParallelCorpus corpus = await MapAsync(
+            getCorpusClient,
+            idGenerator.GenerateId(),
+            corpusConfig,
+            cancellationToken
+        );
+        await _engineService.AddParallelCorpusAsync(id, corpus, cancellationToken);
+        TranslationParallelCorpusDto dto = Map(id, corpus);
+        return Created(dto.Url, dto);
+    }
+
+    /// <summary>
+    /// Update a corpus with a new set of files
+    /// </summary>
+    /// <remarks>
+    /// Will completely replace corpus' file associations. Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
+    /// </remarks>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="parallelCorpusId">The corpus id</param>
+    /// <param name="corpusConfig">The corpus configuration</param>
+    /// <param name="getCorpusClient">The data file client</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The corpus was updated successfully</response>
+    /// <response code="400">Bad request</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or corpus does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.UpdateTranslationEngines)]
+    [HttpPatch("{id}/parallel-corpora/{parallelCorpusId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<TranslationParallelCorpusDto>> UpdateParallelCorpusAsync(
+        [NotNull] string id,
+        [NotNull] string parallelCorpusId,
+        [FromBody] TranslationParallelCorpusUpdateConfigDto corpusConfig,
+        [FromServices] IRequestClient<GetCorpus> getCorpusClient,
+        CancellationToken cancellationToken
+    )
+    {
+        await AuthorizeAsync(id, cancellationToken);
+        ParallelCorpus parallelCorpus = await _engineService.UpdateParallelCorpusAsync(
+            id,
+            parallelCorpusId,
+            corpusConfig.SourceCorpusIds is null
+                ? null
+                : await MapAsync(getCorpusClient, corpusConfig.SourceCorpusIds, cancellationToken),
+            corpusConfig.TargetCorpusIds is null
+                ? null
+                : await MapAsync(getCorpusClient, corpusConfig.TargetCorpusIds, cancellationToken),
+            cancellationToken
+        );
+        return Ok(Map(id, parallelCorpus));
+    }
+
+    /// <summary>
+    /// Get all parallel corpora for a translation engine
+    /// </summary>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The parallel corpora</response>
+    /// <response code="401">The client is not authenticated</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
+    /// <response code="404">The engine does not exist</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    [Authorize(Scopes.ReadTranslationEngines)]
+    [HttpGet("{id}/parallel-corpora")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<IEnumerable<TranslationParallelCorpusDto>>> GetAllParallelCorporaAsync(
+        [NotNull] string id,
+        CancellationToken cancellationToken
+    )
+    {
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
+        return Ok(engine.ParallelCorpora.Select(c => Map(id, c)));
+    }
+
+    /// <summary>
+    /// Get the configuration of a parallel corpus for a translation engine
+    /// </summary>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="parallelCorpusId">The parallel corpus id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The parallel corpus configuration</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or parallel corpus does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.ReadTranslationEngines)]
+    [HttpGet("{id}/parallel-corpora/{parallelCorpusId}", Name = Endpoints.GetParallelTranslationCorpus)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<TranslationParallelCorpusDto>> GetParallelCorpusAsync(
+        [NotNull] string id,
+        [NotNull] string parallelCorpusId,
+        CancellationToken cancellationToken
+    )
+    {
+        Engine engine = await _engineService.GetAsync(id, cancellationToken);
+        await AuthorizeAsync(engine);
+        ParallelCorpus? corpus = engine.ParallelCorpora.FirstOrDefault(f => f.Id == parallelCorpusId);
+        if (corpus == null)
+            return NotFound();
+        return Ok(Map(id, corpus));
+    }
+
+    /// <summary>
+    /// Remove a parallel corpus from a translation engine
+    /// </summary>
+    /// <remarks>
+    /// Removing a parallel corpus will remove all pretranslations associated with that corpus.
+    /// </remarks>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="parallelCorpusId">The parallel corpus id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The parallel corpus was deleted successfully.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine or parallel corpus does not exist.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.UpdateTranslationEngines)]
+    [HttpDelete("{id}/parallel-corpora/{parallelCorpusId}")]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult> DeleteParallelCorpusAsync(
+        [NotNull] string id,
+        [NotNull] string parallelCorpusId,
+        CancellationToken cancellationToken
+    )
+    {
+        await AuthorizeAsync(id, cancellationToken);
+        await _engineService.DeleteParallelCorpusAsync(id, parallelCorpusId, cancellationToken);
         return Ok();
     }
 
@@ -1007,6 +1207,21 @@ public class TranslationEnginesController(
         };
     }
 
+    private async Task<ParallelCorpus> MapAsync(
+        IRequestClient<GetCorpus> getDataFileClient,
+        string corpusId,
+        TranslationParallelCorpusConfigDto source,
+        CancellationToken cancellationToken
+    )
+    {
+        return new ParallelCorpus
+        {
+            Id = corpusId,
+            SourceCorpora = await MapAsync(getDataFileClient, source.SourceCorpusIds, cancellationToken),
+            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken)
+        };
+    }
+
     private async Task<List<CorpusFile>> MapAsync(
         IRequestClient<GetDataFile> getDataFileClient,
         IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
@@ -1038,6 +1253,47 @@ public class TranslationEnginesController(
             }
         }
         return files;
+    }
+
+    private async Task<List<MonolingualCorpus>> MapAsync(
+        IRequestClient<GetCorpus> getCorpusClient,
+        IEnumerable<string> corpusIds,
+        CancellationToken cancellationToken
+    )
+    {
+        var corpora = new List<MonolingualCorpus>();
+        foreach (string corpusId in corpusIds)
+        {
+            Response<CorpusResult, CorpusNotFound> response = await getCorpusClient.GetResponse<
+                CorpusResult,
+                CorpusNotFound
+            >(new GetCorpus { CorpusId = corpusId, Owner = Owner }, cancellationToken);
+            if (response.Is(out Response<CorpusResult>? result))
+            {
+                corpora.Add(
+                    new MonolingualCorpus
+                    {
+                        Id = corpusId,
+                        Name = result.Message.Name ?? "",
+                        Language = result.Message.Language,
+                        Files = result
+                            .Message.Files.Select(f => new CorpusFile
+                            {
+                                Id = f.File.DataFileId,
+                                Filename = f.File.Filename,
+                                Format = f.File.Format,
+                                TextId = f.TextId
+                            })
+                            .ToList(),
+                    }
+                );
+            }
+            else if (response.Is(out Response<CorpusNotFound>? _))
+            {
+                throw new InvalidOperationException($"The corpus {corpusId} cannot be found.");
+            }
+        }
+        return corpora;
     }
 
     private Engine Map(TranslationEngineConfigDto source)
@@ -1072,29 +1328,57 @@ public class TranslationEnginesController(
             return null;
 
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
+        var parallelCorpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
         var pretranslateCorpora = new List<PretranslateCorpus>();
-        foreach (PretranslateCorpusConfigDto ptcc in source)
+        foreach (PretranslateCorpusConfigDto pcc in source)
         {
-            if (!corpusIds.Contains(ptcc.CorpusId))
+            if (pcc.CorpusId != null)
             {
-                throw new InvalidOperationException(
-                    $"The corpus {ptcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
-                );
-            }
-            if (ptcc.TextIds != null && ptcc.ScriptureRange != null)
-            {
-                throw new InvalidOperationException(
-                    $"The corpus {ptcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
-                );
-            }
-            pretranslateCorpora.Add(
-                new PretranslateCorpus
+                if (pcc.ParallelCorpusId != null)
                 {
-                    CorpusRef = ptcc.CorpusId,
-                    TextIds = ptcc.TextIds?.ToList(),
-                    ScriptureRange = ptcc.ScriptureRange
+                    throw new InvalidOperationException($"Only one of ParallelCorpusId and CorpusId can be set.");
                 }
-            );
+                if (!corpusIds.Contains(pcc.CorpusId))
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {pcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                if (pcc.TextIds != null && pcc.ScriptureRange != null)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {pcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
+                    );
+                }
+                pretranslateCorpora.Add(
+                    new PretranslateCorpus
+                    {
+                        CorpusRef = pcc.CorpusId,
+                        TextIds = pcc.TextIds?.ToList(),
+                        ScriptureRange = pcc.ScriptureRange
+                    }
+                );
+            }
+            else
+            {
+                if (pcc.ParallelCorpusId == null)
+                {
+                    throw new InvalidOperationException($"One of ParallelCorpusId and CorpusId must be set.");
+                }
+                if (!parallelCorpusIds.Contains(pcc.ParallelCorpusId))
+                {
+                    throw new InvalidOperationException(
+                        $"The parallel corpus {pcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                pretranslateCorpora.Add(
+                    new PretranslateCorpus
+                    {
+                        ParallelCorpusRef = pcc.ParallelCorpusId,
+                        SourceFilters = pcc.SourceFilters?.Select(Map).ToList()
+                    }
+                );
+            }
         }
         return pretranslateCorpora;
     }
@@ -1105,31 +1389,76 @@ public class TranslationEnginesController(
             return null;
 
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
+        var parallelCorpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
         var trainOnCorpora = new List<TrainingCorpus>();
         foreach (TrainingCorpusConfigDto tcc in source)
         {
-            if (!corpusIds.Contains(tcc.CorpusId))
+            if (tcc.CorpusId != null)
             {
-                throw new InvalidOperationException(
-                    $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
-                );
-            }
-            if (tcc.TextIds != null && tcc.ScriptureRange != null)
-            {
-                throw new InvalidOperationException(
-                    $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
-                );
-            }
-            trainOnCorpora.Add(
-                new TrainingCorpus
+                if (tcc.ParallelCorpusId != null)
                 {
-                    CorpusRef = tcc.CorpusId,
-                    TextIds = tcc.TextIds?.ToList(),
-                    ScriptureRange = tcc.ScriptureRange
+                    throw new InvalidOperationException($"Only one of ParallelCorpusId and CorpusId can be set.");
                 }
-            );
+                if (!corpusIds.Contains(tcc.CorpusId))
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                if (tcc.TextIds != null && tcc.ScriptureRange != null)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: Set at most one of TextIds and ScriptureRange."
+                    );
+                }
+                trainOnCorpora.Add(
+                    new TrainingCorpus
+                    {
+                        CorpusRef = tcc.CorpusId,
+                        TextIds = tcc.TextIds?.ToList(),
+                        ScriptureRange = tcc.ScriptureRange
+                    }
+                );
+            }
+            else
+            {
+                if (tcc.ParallelCorpusId == null)
+                {
+                    throw new InvalidOperationException($"One of ParallelCorpusId and CorpusId must be set.");
+                }
+                if (!parallelCorpusIds.Contains(tcc.ParallelCorpusId))
+                {
+                    throw new InvalidOperationException(
+                        $"The parallel corpus {tcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                trainOnCorpora.Add(
+                    new TrainingCorpus
+                    {
+                        ParallelCorpusRef = tcc.ParallelCorpusId,
+                        SourceFilters = tcc.SourceFilters?.Select(Map).ToList(),
+                        TargetFilters = tcc.TargetFilters?.Select(Map).ToList()
+                    }
+                );
+            }
         }
         return trainOnCorpora;
+    }
+
+    private static ParallelCorpusFilter Map(ParallelCorpusFilterConfigDto source)
+    {
+        if (source.TextIds != null && source.ScriptureRange != null)
+        {
+            throw new InvalidOperationException(
+                $"The parallel corpus filter for corpus {source.CorpusId} is not valid: At most, one of TextIds and ScriptureRange can be set."
+            );
+        }
+        return new ParallelCorpusFilter
+        {
+            CorpusRef = source.CorpusId,
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange
+        };
     }
 
     private static Dictionary<string, object>? Map(object? source)
@@ -1194,16 +1523,31 @@ public class TranslationEnginesController(
     {
         return new PretranslateCorpusDto
         {
-            Corpus = new ResourceLinkDto
-            {
-                Id = source.CorpusRef,
-                Url = _urlService.GetUrl(
-                    Endpoints.GetTranslationCorpus,
-                    new { id = engineId, corpusId = source.CorpusRef }
-                )
-            },
+            Corpus =
+                source.CorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.CorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetTranslationCorpus,
+                            new { id = engineId, corpusId = source.CorpusRef }
+                        )
+                    }
+                    : null,
             TextIds = source.TextIds,
-            ScriptureRange = source.ScriptureRange
+            ScriptureRange = source.ScriptureRange,
+            ParallelCorpus =
+                source.ParallelCorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.ParallelCorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetParallelTranslationCorpus,
+                            new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
+                        )
+                    }
+                    : null,
+            SourceFilters = source.SourceFilters?.Select(Map).ToList()
         };
     }
 
@@ -1211,13 +1555,43 @@ public class TranslationEnginesController(
     {
         return new TrainingCorpusDto
         {
+            Corpus =
+                source.CorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.CorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetTranslationCorpus,
+                            new { id = engineId, corpusId = source.CorpusRef }
+                        )
+                    }
+                    : null,
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange,
+            ParallelCorpus =
+                source.ParallelCorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.ParallelCorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetParallelTranslationCorpus,
+                            new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
+                        )
+                    }
+                    : null,
+            SourceFilters = source.SourceFilters?.Select(Map).ToList(),
+            TargetFilters = source.TargetFilters?.Select(Map).ToList()
+        };
+    }
+
+    private ParallelCorpusFilterDto Map(ParallelCorpusFilter source)
+    {
+        return new ParallelCorpusFilterDto
+        {
             Corpus = new ResourceLinkDto
             {
                 Id = source.CorpusRef,
-                Url = _urlService.GetUrl(
-                    Endpoints.GetTranslationCorpus,
-                    new { id = engineId, corpusId = source.CorpusRef }
-                )
+                Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.CorpusRef })
             },
             TextIds = source.TextIds,
             ScriptureRange = source.ScriptureRange
@@ -1306,6 +1680,34 @@ public class TranslationEnginesController(
             TargetLanguage = source.TargetLanguage,
             SourceFiles = source.SourceFiles.Select(Map).ToList(),
             TargetFiles = source.TargetFiles.Select(Map).ToList()
+        };
+    }
+
+    private TranslationParallelCorpusDto Map(string engineId, ParallelCorpus source)
+    {
+        return new TranslationParallelCorpusDto
+        {
+            Id = source.Id,
+            Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = engineId, corpusId = source.Id }),
+            Engine = new ResourceLinkDto
+            {
+                Id = engineId,
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId })
+            },
+            SourceCorpora = source
+                .SourceCorpora.Select(c => new ResourceLinkDto
+                {
+                    Id = c.Id,
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id })
+                })
+                .ToList(),
+            TargetCorpora = source
+                .TargetCorpora.Select(c => new ResourceLinkDto
+                {
+                    Id = c.Id,
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id })
+                })
+                .ToList()
         };
     }
 

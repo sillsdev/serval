@@ -91,7 +91,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        Models.Corpus[] corpora = request.Corpora.Select(Map).ToArray();
+        Models.ParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
         try
         {
             await engineService.StartBuildAsync(
@@ -269,32 +269,41 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.Corpus Map(Translation.V1.Corpus source)
+    private static Models.ParallelCorpus Map(Translation.V1.ParallelCorpus source)
     {
-        var pretranslateChapters = source.PretranslateChapters.ToDictionary(
-            kvp => kvp.Key,
-            kvp => kvp.Value.Chapters.ToHashSet()
-        );
-        FilterChoice pretranslateFilter = GetFilterChoice(source.PretranslateAll, pretranslateChapters);
+        return new Models.ParallelCorpus
+        {
+            Id = source.Id,
+            SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
+            TargetCorpora = source.TargetCorpora.Select(Map).ToList()
+        };
+    }
 
+    private static Models.MonolingualCorpus Map(Translation.V1.MonolingualCorpus source)
+    {
         var trainOnChapters = source.TrainOnChapters.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value.Chapters.ToHashSet()
         );
-        FilterChoice trainingFilter = GetFilterChoice(source.TrainOnAll, trainOnChapters);
+        var trainOnTextIds = source.TrainOnTextIds.ToHashSet();
+        FilterChoice trainingFilter = GetFilterChoice(trainOnChapters, trainOnTextIds);
 
-        return new Models.Corpus
+        var pretranslateChapters = source.PretranslateChapters.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Chapters.ToHashSet()
+        );
+        var pretranslateTextIds = source.PretranslateTextIds.ToHashSet();
+        FilterChoice pretranslateFilter = GetFilterChoice(pretranslateChapters, pretranslateTextIds);
+
+        return new Models.MonolingualCorpus
         {
             Id = source.Id,
-            SourceLanguage = source.SourceLanguage,
-            TargetLanguage = source.TargetLanguage,
+            Language = source.Language,
+            Files = source.Files.Select(Map).ToList(),
             TrainOnChapters = trainingFilter == FilterChoice.Chapters ? trainOnChapters : null,
+            TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? trainOnTextIds : null,
             PretranslateChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
-            TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? source.TrainOnTextIds.ToHashSet() : null,
-            PretranslateTextIds =
-                pretranslateFilter == FilterChoice.TextIds ? source.PretranslateTextIds.ToHashSet() : null,
-            SourceFiles = source.SourceFiles.Select(Map).ToList(),
-            TargetFiles = source.TargetFiles.Select(Map).ToList()
+            PretranslateTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
         };
     }
 
@@ -315,16 +324,17 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         None
     }
 
-    private static FilterChoice GetFilterChoice(bool all, IReadOnlyDictionary<string, HashSet<int>> chapters)
+    private static FilterChoice GetFilterChoice(
+        IReadOnlyDictionary<string, HashSet<int>> chapters,
+        HashSet<string> textIds
+    )
     {
-        if (all)
-            return FilterChoice.None;
-
         // Only either textIds or Scripture Range will be used at a time
         // TextIds may be an empty array, so prefer that if both are empty (which applies to both scripture and text)
-        if (chapters.Count == 0)
+        if (chapters is null && textIds is null)
+            return FilterChoice.None;
+        if (chapters is null || chapters.Count == 0)
             return FilterChoice.TextIds;
-        else
-            return FilterChoice.Chapters;
+        return FilterChoice.Chapters;
     }
 }

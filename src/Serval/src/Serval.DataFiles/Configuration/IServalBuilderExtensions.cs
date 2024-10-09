@@ -11,6 +11,9 @@ public static class IServalBuilderExtensions
 
         builder.Services.AddScoped<IDataFileService, DataFileService>();
         builder.Services.AddHostedService<DeletedFileCleaner>();
+
+        builder.Services.AddScoped<ICorpusService, CorpusService>();
+
         return builder;
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Serval.DataFiles.Models;
 
-public class DeletedFile : IEntity
+public record DeletedFile : IEntity
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;

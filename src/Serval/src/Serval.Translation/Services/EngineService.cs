@@ -199,126 +199,68 @@ public class EngineService(
         );
     }
 
+    private Dictionary<string, List<int>> GetChapters(string fileLocation, string scriptureRange)
+    {
+        try
+        {
+            return ScriptureRangeParser.GetChapters(
+                scriptureRange,
+                _scriptureDataFileService.GetParatextProjectSettings(fileLocation).Versification
+            );
+        }
+        catch (ArgumentException ae)
+        {
+            throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
+        }
+    }
+
     public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
         Engine engine = await GetAsync(build.EngineRef, cancellationToken);
         await _builds.InsertAsync(build, cancellationToken);
 
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+
         try
         {
-            var pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef);
-            var trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef);
-            TranslationEngineApi.TranslationEngineApiClient client =
-                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-            Dictionary<string, List<int>> GetChapters(V1.Corpus corpus, string scriptureRange)
+            StartBuildRequest request;
+            if (engine.ParallelCorpora.Any())
             {
-                try
+                var trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
+                var pretranslate = build.Pretranslate?.ToDictionary(c => c.ParallelCorpusRef!);
+                request = new StartBuildRequest
                 {
-                    return ScriptureRangeParser.GetChapters(
-                        scriptureRange,
-                        _scriptureDataFileService
-                            .GetParatextProjectSettings(corpus.TargetFiles.First().Location)
-                            .Versification
-                    );
-                }
-                catch (ArgumentException ae)
-                {
-                    throw new InvalidOperationException(
-                        $"The scripture range {scriptureRange} is not valid: {ae.Message}"
-                    );
-                }
-            }
-            var request = new StartBuildRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                BuildId = build.Id,
-                Corpora =
-                {
-                    engine.Corpora.Select(c =>
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    BuildId = build.Id,
+                    Corpora =
                     {
-                        V1.Corpus corpus = Map(c);
-                        if (pretranslate?.TryGetValue(c.Id, out PretranslateCorpus? pretranslateCorpus) ?? false)
-                        {
-                            corpus.PretranslateAll =
-                                pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null;
-                            if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
-                            {
-                                throw new InvalidOperationException(
-                                    $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
-                                );
-                            }
-                            if (pretranslateCorpus.TextIds is not null)
-                                corpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
-                            if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
-                            {
-                                if (
-                                    c.TargetFiles.Count > 1
-                                    || c.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext
-                                )
-                                {
-                                    throw new InvalidOperationException(
-                                        $"The corpus {c.Id} is not compatible with using a scripture range"
-                                    );
-                                }
-                                corpus.PretranslateChapters.Add(
-                                    GetChapters(corpus, pretranslateCorpus.ScriptureRange)
-                                        .Select(
-                                            (kvp) =>
-                                            {
-                                                var scriptureChapters = new ScriptureChapters();
-                                                scriptureChapters.Chapters.Add(kvp.Value);
-                                                return (kvp.Key, scriptureChapters);
-                                            }
-                                        )
-                                        .ToDictionary()
-                                );
-                            }
-                        }
-                        if (trainOn?.TryGetValue(c.Id, out TrainingCorpus? trainingCorpus) ?? false)
-                        {
-                            corpus.TrainOnAll = trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null;
-                            if (trainingCorpus.TextIds is not null && trainingCorpus.ScriptureRange is not null)
-                            {
-                                throw new InvalidOperationException(
-                                    $"The corpus {c.Id} cannot specify both 'textIds' and 'scriptureRange' for trainOn"
-                                );
-                            }
-                            if (trainingCorpus.TextIds is not null)
-                                corpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
-                            if (!string.IsNullOrEmpty(trainingCorpus.ScriptureRange))
-                            {
-                                if (
-                                    c.TargetFiles.Count > 1
-                                    || c.TargetFiles[0].Format != Shared.Contracts.FileFormat.Paratext
-                                )
-                                {
-                                    throw new InvalidOperationException(
-                                        $"The corpus {c.Id} is not compatible with using a scripture range"
-                                    );
-                                }
-                                corpus.TrainOnChapters.Add(
-                                    GetChapters(corpus, trainingCorpus.ScriptureRange)
-                                        .Select(
-                                            (kvp) =>
-                                            {
-                                                var scriptureChapters = new ScriptureChapters();
-                                                scriptureChapters.Chapters.Add(kvp.Value);
-                                                return (kvp.Key, scriptureChapters);
-                                            }
-                                        )
-                                        .ToDictionary()
-                                );
-                            }
-                        }
-                        else if (trainOn is null)
-                        {
-                            corpus.TrainOnAll = true;
-                        }
-                        return corpus;
-                    })
-                }
-            };
+                        engine.ParallelCorpora.Select(c =>
+                            Map(c, trainOn?.GetValueOrDefault(c.Id), pretranslate?.GetValueOrDefault(c.Id))
+                        )
+                    }
+                };
+            }
+            else
+            {
+                var pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef!);
+                var trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
+
+                request = new StartBuildRequest
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    BuildId = build.Id,
+                    Corpora =
+                    {
+                        engine.Corpora.Select(c =>
+                            Map(c, trainOn?.GetValueOrDefault(c.Id), pretranslate?.GetValueOrDefault(c.Id))
+                        )
+                    }
+                };
+            }
+
             if (build.Options is not null)
                 request.Options = JsonSerializer.Serialize(build.Options);
 
@@ -349,7 +291,6 @@ public class EngineService(
                 _logger.LogInformation("Error parsing build request summary.");
                 _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
             }
-
             await client.StartBuildAsync(request, cancellationToken: cancellationToken);
         }
         catch
@@ -475,6 +416,76 @@ public class EngineService(
         }
     }
 
+    public Task AddParallelCorpusAsync(
+        string engineId,
+        Models.ParallelCorpus corpus,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return Entities.UpdateAsync(
+            engineId,
+            u => u.Add(e => e.ParallelCorpora, corpus),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public async Task<Models.ParallelCorpus> UpdateParallelCorpusAsync(
+        string engineId,
+        string parallelCorpusId,
+        IReadOnlyList<Models.MonolingualCorpus>? sourceCorpora,
+        IReadOnlyList<Models.MonolingualCorpus>? targetCorpora,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Engine? engine = await Entities.UpdateAsync(
+            e => e.Id == engineId && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
+            u =>
+            {
+                if (sourceCorpora is not null)
+                    u.Set(c => c.ParallelCorpora[ArrayPosition.FirstMatching].SourceCorpora, sourceCorpora);
+                if (targetCorpora is not null)
+                    u.Set(c => c.ParallelCorpora[ArrayPosition.FirstMatching].TargetCorpora, targetCorpora);
+            },
+            cancellationToken: cancellationToken
+        );
+        if (engine is null)
+        {
+            throw new EntityNotFoundException(
+                $"Could not find the Corpus '{parallelCorpusId}' in Engine '{engineId}'."
+            );
+        }
+
+        return engine.ParallelCorpora.First(c => c.Id == parallelCorpusId);
+    }
+
+    public async Task DeleteParallelCorpusAsync(
+        string engineId,
+        string parallelCorpusId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Engine? originalEngine = null;
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                originalEngine = await Entities.UpdateAsync(
+                    engineId,
+                    u => u.RemoveAll(e => e.ParallelCorpora, c => c.Id == parallelCorpusId),
+                    returnOriginal: true,
+                    cancellationToken: ct
+                );
+                if (originalEngine is null || !originalEngine.ParallelCorpora.Any(c => c.Id == parallelCorpusId))
+                {
+                    throw new EntityNotFoundException(
+                        $"Could not find the Corpus '{parallelCorpusId}' in Engine '{engineId}'."
+                    );
+                }
+                await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == parallelCorpusId, ct);
+            },
+            cancellationToken: cancellationToken
+        );
+    }
+
     public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)
     {
         return Entities.UpdateAllAsync(
@@ -581,16 +592,191 @@ public class EngineService(
         };
     }
 
-    private V1.Corpus Map(Models.Corpus source)
+    private V1.ParallelCorpus Map(Corpus source, TrainingCorpus? trainingCorpus, PretranslateCorpus? pretranslateCorpus)
     {
-        return new V1.Corpus
+        IEnumerable<V1.CorpusFile> sourceFiles = source.SourceFiles.Select(Map);
+        IEnumerable<V1.CorpusFile> targetFiles = source.TargetFiles.Select(Map);
+        V1.MonolingualCorpus sourceCorpus =
+            new() { Language = source.SourceLanguage, Files = { source.SourceFiles.Select(Map) } };
+        V1.MonolingualCorpus targetCorpus =
+            new() { Language = source.TargetLanguage, Files = { source.TargetFiles.Select(Map) } };
+
+        if (trainingCorpus != null)
+        {
+            if (trainingCorpus.TextIds is not null && trainingCorpus.ScriptureRange is not null)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {source.Id} cannot specify both 'textIds' and 'scriptureRange' for trainOn"
+                );
+            }
+            if (trainingCorpus.TextIds is not null)
+            {
+                sourceCorpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
+                targetCorpus.TrainOnTextIds.Add(trainingCorpus.TextIds);
+            }
+            if (!string.IsNullOrEmpty(trainingCorpus.ScriptureRange))
+            {
+                if (targetCorpus.Files.Count > 1 || targetCorpus.Files[0].Format != V1.FileFormat.Paratext)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {source.Id} is not compatible with using a scripture range"
+                    );
+                }
+                var chapters = GetChapters(targetCorpus.Files[0].Location, trainingCorpus.ScriptureRange)
+                    .Select(
+                        (kvp) =>
+                        {
+                            var scriptureChapters = new ScriptureChapters();
+                            scriptureChapters.Chapters.Add(kvp.Value);
+                            return (kvp.Key, scriptureChapters);
+                        }
+                    )
+                    .ToDictionary();
+                sourceCorpus.TrainOnChapters.Add(chapters);
+                targetCorpus.TrainOnChapters.Add(chapters);
+            }
+        }
+        if (pretranslateCorpus != null)
+        {
+            if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {source.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
+                );
+            }
+            if (pretranslateCorpus.TextIds is not null)
+                sourceCorpus.PretranslateTextIds.Add(pretranslateCorpus.TextIds);
+            if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
+            {
+                if (targetCorpus.Files.Count > 1 || targetCorpus.Files[0].Format != V1.FileFormat.Paratext)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {source.Id} is not compatible with using a scripture range"
+                    );
+                }
+                sourceCorpus.PretranslateChapters.Add(
+                    GetChapters(targetCorpus.Files[0].Location, pretranslateCorpus.ScriptureRange)
+                        .Select(
+                            (kvp) =>
+                            {
+                                var scriptureChapters = new ScriptureChapters();
+                                scriptureChapters.Chapters.Add(kvp.Value);
+                                return (kvp.Key, scriptureChapters);
+                            }
+                        )
+                        .ToDictionary()
+                );
+            }
+        }
+        return new V1.ParallelCorpus
         {
             Id = source.Id,
-            SourceLanguage = source.SourceLanguage,
-            TargetLanguage = source.TargetLanguage,
-            SourceFiles = { source.SourceFiles.Select(Map) },
-            TargetFiles = { source.TargetFiles.Select(Map) }
+            SourceCorpora = { sourceCorpus },
+            TargetCorpora = { targetCorpus }
         };
+    }
+
+    private V1.ParallelCorpus Map(
+        Models.ParallelCorpus source,
+        TrainingCorpus? trainingCorpus,
+        PretranslateCorpus? pretranslateCorpus
+    )
+    {
+        string? referenceFileLocation =
+            source.TargetCorpora.Count > 0 && source.TargetCorpora[0].Files.Count > 0
+                ? Map(source.TargetCorpora[0].Files[0]).Location
+                : null;
+
+        return new V1.ParallelCorpus
+        {
+            Id = source.Id,
+            SourceCorpora =
+            {
+                source.SourceCorpora.Select(sc =>
+                    Map(
+                        sc,
+                        trainingCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
+                        pretranslateCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
+                        referenceFileLocation
+                    )
+                )
+            },
+            TargetCorpora =
+            {
+                source.TargetCorpora.Select(tc =>
+                    Map(
+                        tc,
+                        trainingCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
+                        null,
+                        referenceFileLocation
+                    )
+                )
+            }
+        };
+    }
+
+    private V1.MonolingualCorpus Map(
+        Models.MonolingualCorpus source,
+        ParallelCorpusFilter? trainingFilter,
+        ParallelCorpusFilter? pretranslateFilter,
+        string? referenceFileLocation
+    )
+    {
+        Dictionary<string, ScriptureChapters>? trainOnChapters = null;
+        if (
+            trainingFilter is not null
+            && trainingFilter.ScriptureRange is not null
+            && referenceFileLocation is not null
+        )
+        {
+            trainOnChapters = GetChapters(referenceFileLocation, trainingFilter.ScriptureRange)
+                .Select(
+                    (kvp) =>
+                    {
+                        var scriptureChapters = new ScriptureChapters();
+                        scriptureChapters.Chapters.Add(kvp.Value);
+                        return (kvp.Key, scriptureChapters);
+                    }
+                )
+                .ToDictionary();
+        }
+
+        Dictionary<string, ScriptureChapters>? pretranslateChapters = null;
+        if (
+            pretranslateFilter is not null
+            && pretranslateFilter.ScriptureRange is not null
+            && referenceFileLocation is not null
+        )
+        {
+            GetChapters(referenceFileLocation, pretranslateFilter.ScriptureRange)
+                .Select(
+                    (kvp) =>
+                    {
+                        var scriptureChapters = new ScriptureChapters();
+                        scriptureChapters.Chapters.Add(kvp.Value);
+                        return (kvp.Key, scriptureChapters);
+                    }
+                )
+                .ToDictionary();
+        }
+
+        var corpus = new V1.MonolingualCorpus
+        {
+            Id = source.Id,
+            Language = source.Language,
+            Files = { source.Files.Select(Map) }
+        };
+
+        if (trainOnChapters is not null)
+            corpus.TrainOnChapters.Add(trainOnChapters);
+        if (trainingFilter?.TextIds is not null)
+            corpus.TrainOnTextIds.Add(trainingFilter.TextIds);
+        if (pretranslateChapters is not null)
+            corpus.PretranslateChapters.Add(pretranslateChapters);
+        if (pretranslateFilter?.TextIds is not null)
+            corpus.PretranslateTextIds.Add(pretranslateFilter.TextIds);
+
+        return corpus;
     }
 
     private V1.CorpusFile Map(Models.CorpusFile source)

@@ -1,6 +1,6 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
+public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>>
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
@@ -43,7 +43,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<Corpus> data,
+        IReadOnlyList<Models.ParallelCorpus> data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -99,7 +99,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
     private async Task<(int TrainCount, int PretranslateCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<Corpus> corpora,
+        IReadOnlyList<ParallelCorpus> corpora,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -121,17 +121,63 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        foreach (Corpus corpus in corpora)
+        foreach (ParallelCorpus corpus in corpora)
         {
-            ITextCorpus[] sourceTextCorpora = _corpusService.CreateTextCorpora(corpus.SourceFiles).ToArray();
-            ITextCorpus targetTextCorpus =
-                _corpusService.CreateTextCorpora(corpus.TargetFiles).FirstOrDefault() ?? new DictionaryTextCorpus();
+            (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpus
+                .SourceCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
+                .ToArray();
+            ITextCorpus[] sourceTrainingCorpora = sourceCorpora
+                .Select(sc =>
+                {
+                    ITextCorpus textCorpus = sc.TextCorpus;
+                    if (sc.Corpus.TrainOnTextIds is not null)
+                        textCorpus = textCorpus.FilterTexts(sc.Corpus.TrainOnTextIds);
+                    return textCorpus.Where(row =>
+                        row.Ref is not ScriptureRef sr
+                        || sc.Corpus.TrainOnChapters is null
+                        || IsInChapters(sr, sc.Corpus.TrainOnChapters)
+                    );
+                })
+                .ToArray();
+            ITextCorpus[] sourcePretranslateCorpora = sourceCorpora
+                .Select(sc =>
+                {
+                    ITextCorpus textCorpus = sc.TextCorpus;
+                    if (sc.Corpus.PretranslateTextIds is not null)
+                        textCorpus = textCorpus.FilterTexts(sc.Corpus.PretranslateTextIds);
+                    return textCorpus.Where(row =>
+                        row.Ref is not ScriptureRef sr
+                        || sc.Corpus.PretranslateChapters is null
+                        || (
+                            IsInChapters(sr, sc.Corpus.PretranslateChapters)
+                            && !IsInChapters(sr, sc.Corpus.TrainOnChapters ?? new())
+                        )
+                    );
+                })
+                .ToArray();
 
-            if (sourceTextCorpora.Length == 0)
+            (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
+                .TargetCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
+                .ToArray();
+            ITextCorpus[] targetTrainingCorpora = targetCorpora
+                .Select(tc =>
+                {
+                    ITextCorpus textCorpus = tc.TextCorpus;
+                    if (tc.Corpus.TrainOnTextIds is not null)
+                        textCorpus = textCorpus.FilterTexts(tc.Corpus.TrainOnTextIds);
+                    return textCorpus.Where(row =>
+                        row.Ref is not ScriptureRef sr
+                        || tc.Corpus.TrainOnChapters is null
+                        || IsInChapters(sr, tc.Corpus.TrainOnChapters)
+                    );
+                })
+                .ToArray();
+
+            if (sourceCorpora.Length == 0)
                 continue;
 
             int skipCount = 0;
-            foreach (Row?[] rows in AlignTrainCorpus(corpus, sourceTextCorpora, targetTextCorpus))
+            foreach (Row?[] rows in AlignTrainCorpus(sourceTrainingCorpora, targetTrainingCorpora))
             {
                 if (skipCount > 0)
                 {
@@ -139,15 +185,30 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     continue;
                 }
 
-                Row[] trainRows = rows.Where(r => r is not null && IsInTrain(r, corpus)).Cast<Row>().ToArray();
+                Row[] trainRows = rows.Where(r => r is not null).Cast<Row>().ToArray();
                 if (trainRows.Length > 0)
                 {
                     Row row = trainRows[0];
                     if (rows.Length > 1)
                     {
                         Row[] nonEmptyRows = trainRows.Where(r => r.SourceSegment.Length > 0).ToArray();
+                        Row[] targetNonEmptyRows = nonEmptyRows.Where(r => r.TargetSegment.Length > 0).ToArray();
+                        if (targetNonEmptyRows.Length > 0)
+                            nonEmptyRows = targetNonEmptyRows;
                         if (nonEmptyRows.Length > 0)
-                            row = nonEmptyRows[_random.Next(nonEmptyRows.Length)];
+                        {
+                            nonEmptyRows = nonEmptyRows
+                                .GroupBy(r => r.SourceSegment)
+                                .Select(group => group.First())
+                                .ToArray();
+                            {
+                                nonEmptyRows = nonEmptyRows
+                                    .GroupBy(r => r.SourceSegment)
+                                    .Select(group => group.First())
+                                    .ToArray();
+                                row = nonEmptyRows[_random.Next(nonEmptyRows.Length)];
+                            }
+                        }
                     }
 
                     await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
@@ -160,8 +221,12 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
             if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
             {
-                ITextCorpus? sourceTermCorpus = _corpusService.CreateTermCorpora(corpus.SourceFiles).FirstOrDefault();
-                ITextCorpus? targetTermCorpus = _corpusService.CreateTermCorpora(corpus.TargetFiles).FirstOrDefault();
+                ITextCorpus? sourceTermCorpus = _corpusService
+                    .CreateTermCorpora(corpus.SourceCorpora.SelectMany(sc => sc.Files).ToList())
+                    .FirstOrDefault();
+                ITextCorpus? targetTermCorpus = _corpusService
+                    .CreateTermCorpora(corpus.TargetCorpora.SelectMany(tc => tc.Files).ToList())
+                    .FirstOrDefault();
                 if (sourceTermCorpus is not null && targetTermCorpus is not null)
                 {
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
@@ -174,13 +239,9 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 }
             }
 
-            foreach (Row row in AlignPretranslateCorpus(corpus, sourceTextCorpora[0], targetTextCorpus))
+            foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpora[0].TextCorpus))
             {
-                if (
-                    IsInPretranslate(row, corpus)
-                    && row.SourceSegment.Length > 0
-                    && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
-                )
+                if (row.SourceSegment.Length > 0)
                 {
                     pretranslateWriter.WriteStartObject();
                     pretranslateWriter.WriteString("corpusId", corpus.Id);
@@ -201,10 +262,17 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         return (trainCount, pretranslateCount);
     }
 
+    private static bool IsInChapters(ScriptureRef sr, Dictionary<string, HashSet<int>> selection)
+    {
+        return selection.TryGetValue(sr.Book, out HashSet<int>? chapters)
+            && chapters != null
+            && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum));
+    }
+
     protected override async Task CleanupAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<Corpus> data,
+        IReadOnlyList<ParallelCorpus> data,
         JobCompletionStatus completionStatus
     )
     {
@@ -221,62 +289,25 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static bool IsInTrain(Row row, Corpus corpus)
-    {
-        return IsIncluded(row, corpus.TrainOnTextIds, corpus.TrainOnChapters);
-    }
-
-    private static bool IsInPretranslate(Row row, Corpus corpus)
-    {
-        return IsIncluded(row, corpus.PretranslateTextIds, corpus.PretranslateChapters);
-    }
-
-    private static bool IsIncluded(
-        Row? row,
-        IReadOnlySet<string>? textIds,
-        IReadOnlyDictionary<string, HashSet<int>>? chapters
-    )
-    {
-        if (row is null)
-            return false;
-        if (chapters is not null)
-            return row.Refs.Any(r => IsInChapters(chapters, r));
-        if (textIds is not null)
-            return textIds.Contains(row.TextId);
-        return true;
-    }
-
-    private static bool IsInChapters(IReadOnlyDictionary<string, HashSet<int>> bookChapters, object rowRef)
-    {
-        if (rowRef is not ScriptureRef sr)
-            return false;
-        return bookChapters.TryGetValue(sr.Book, out HashSet<int>? chapters)
-            && (chapters.Contains(sr.ChapterNum) || chapters.Count == 0);
-    }
-
     private static IEnumerable<Row?[]> AlignTrainCorpus(
-        Corpus corpus,
         IReadOnlyList<ITextCorpus> srcCorpora,
-        ITextCorpus trgCorpus
+        IReadOnlyList<ITextCorpus> trgCorpora
     )
     {
-        IEnumerable<string>? textIds = corpus.TrainOnChapters is not null
-            ? corpus.TrainOnChapters.Keys
-            : corpus.TrainOnTextIds;
-        srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds).Transform(CleanSegment)).ToArray();
-        trgCorpus = trgCorpus.FilterTexts(textIds).Transform(CleanSegment);
+        srcCorpora = srcCorpora.Select(sc => sc.Transform(CleanSegment)).ToArray();
+        trgCorpora = trgCorpora.Select(tc => tc.Transform(CleanSegment)).ToArray();
 
-        if (trgCorpus.IsScripture())
+        if (trgCorpora.All(tc => tc.IsScripture()))
         {
             return srcCorpora
-                .Select(sc => AlignScripture(sc, trgCorpus))
+                .SelectMany(sc => trgCorpora.Select(tc => AlignScripture(sc, tc)))
                 .ZipMany(rows => rows.ToArray())
                 // filter out every list that only contains completely empty rows
                 .Where(rows => rows.Any(r => r is null || r.SourceSegment.Length > 0 || r.TargetSegment.Length > 0));
         }
 
         IEnumerable<Row[]> sourceOnlyRows = srcCorpora
-            .Select(sc => sc.AlignRows(trgCorpus, allSourceRows: true))
+            .SelectMany(sc => trgCorpora.Select(tc => sc.AlignRows(tc, allSourceRows: true)))
             .ZipMany(rows =>
                 rows.Where(r => r.TargetSegment.Count == 0)
                     .Select(r => new Row(r.TextId, r.Refs, r.SourceText, r.TargetText, 1))
@@ -284,7 +315,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             );
 
         IEnumerable<Row[]> targetRows = srcCorpora
-            .Select(sc => sc.AlignRows(trgCorpus, allTargetRows: true))
+            .SelectMany(sc => trgCorpora.Select(tc => sc.AlignRows(tc, allTargetRows: true)))
             .ZipMany(rows =>
                 rows.Where(r => r.TargetSegment.Count > 0)
                     .Select(r => new Row(r.TextId, r.Refs, r.SourceText, r.TargetText, 1))
@@ -379,19 +410,14 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(Corpus corpus, ITextCorpus srcCorpus, ITextCorpus trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus trgCorpus)
     {
-        IEnumerable<string>? textIds = corpus.PretranslateChapters is not null
-            ? corpus.PretranslateChapters.Keys
-            : corpus.PretranslateTextIds;
-        srcCorpus = srcCorpus.FilterTexts(textIds).Transform(CleanSegment);
-        trgCorpus = trgCorpus.FilterTexts(textIds).Transform(CleanSegment);
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
         List<object> refs = [];
         string textId = "";
-        foreach (ParallelTextRow row in srcCorpus.AlignRows(trgCorpus, allSourceRows: true))
+        foreach (ParallelTextRow row in srcCorpora.SelectMany(sc => sc.AlignRows(trgCorpus, allSourceRows: true)))
         {
             if (!row.IsTargetRangeStart && row.IsTargetInRange)
             {

@@ -9,7 +9,8 @@ public record Engine : IOwnedEntity
     public required string TargetLanguage { get; init; }
     public required string Type { get; init; }
     public required string Owner { get; init; }
-    public required IReadOnlyList<Corpus> Corpora { get; init; }
+    public IReadOnlyList<Corpus> Corpora { get; init; } = new List<Corpus>();
+    public IReadOnlyList<ParallelCorpus> ParallelCorpora { get; init; } = new List<ParallelCorpus>();
     public bool? IsModelPersisted { get; init; }
     public bool IsBuilding { get; init; }
     public int ModelRevision { get; init; }

@@ -6,6 +6,7 @@ public static class Endpoints
 
     public const string GetTranslationEngine = "GetTranslationEngine";
     public const string GetTranslationCorpus = "GetTranslationCorpus";
+    public const string GetParallelTranslationCorpus = "GetParallelTranslationCorpus";
     public const string GetTranslationBuild = "GetTranslationBuild";
 
     public const string GetAssessmentEngine = "GetAssessmentEngine";
@@ -14,4 +15,6 @@ public static class Endpoints
     public const string GetAssessmentJob = "GetAssessmentJob";
 
     public const string GetWebhook = "GetWebhook";
+
+    public const string GetCorpus = "GetCorpus";
 }
