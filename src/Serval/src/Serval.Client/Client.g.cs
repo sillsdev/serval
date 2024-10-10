@@ -4294,25 +4294,12 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Add a corpus to a translation engine
+        /// Add a parallel corpus to a translation engine
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **name**: A name to help identify and distinguish the corpus from other corpora
-        /// <br/>  * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-        /// <br/>  * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-        /// <br/>* **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-        /// <br/>* **SourceFiles**: The source files associated with the corpus
-        /// <br/>  * **FileId**: The unique id referencing the uploaded file
-        /// <br/>  * **TextId**: The client-defined name to associate source and target files.
-        /// <br/>    * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-        /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
-        /// <br/>    * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
-        /// <br/>    * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
-        /// <br/>    * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
-        /// <br/>* **TargetFiles**: The target files associated with the corpus
-        /// <br/>  * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
+        /// <br/>* **SourceCorpusIds**: The source corpora associated with the parallel corpus
+        /// <br/>* **TargetCorpusIds**: The target corpora associated with the parallel corpus
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -4331,13 +4318,13 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Update a corpus with a new set of files
+        /// Update a parallel corpus with a new set of corpora
         /// </summary>
         /// <remarks>
-        /// Will completely replace corpus' file associations. Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
+        /// Will completely replace the parallel corpus' file associations. Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="parallelCorpusId">The corpus id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
         /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -4450,13 +4437,12 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
-        /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
+        /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora). If no "trainOn" field is provided, all corpora will be used.
         /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
         /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
-        /// <br/>Specify the corpora or textIds to pretranslate.  When a corpus or textId is selected for pretranslation,
+        /// <br/>Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
         /// <br/>the following text will be pretranslated:
         /// <br/>* Text segments that are in the source and not the target (untranslated)
         /// <br/>* Text segments that are in the source and the target, but where that target segment is not trained on.
@@ -4466,6 +4452,10 @@ namespace Serval.Client
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
         /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
+        /// <br/>            
+        /// <br/>When using a parallel corpus:
+        /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
+        /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), only the first of the targets that includes that textId/book will be used for that textId/book.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -6130,25 +6120,12 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Add a corpus to a translation engine
+        /// Add a parallel corpus to a translation engine
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **name**: A name to help identify and distinguish the corpus from other corpora
-        /// <br/>  * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-        /// <br/>  * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-        /// <br/>* **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-        /// <br/>* **SourceFiles**: The source files associated with the corpus
-        /// <br/>  * **FileId**: The unique id referencing the uploaded file
-        /// <br/>  * **TextId**: The client-defined name to associate source and target files.
-        /// <br/>    * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-        /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
-        /// <br/>    * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
-        /// <br/>    * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
-        /// <br/>    * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
-        /// <br/>* **TargetFiles**: The target files associated with the corpus
-        /// <br/>  * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
+        /// <br/>* **SourceCorpusIds**: The source corpora associated with the parallel corpus
+        /// <br/>* **TargetCorpusIds**: The target corpora associated with the parallel corpus
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -6370,13 +6347,13 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Update a corpus with a new set of files
+        /// Update a parallel corpus with a new set of corpora
         /// </summary>
         /// <remarks>
-        /// Will completely replace corpus' file associations. Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
+        /// Will completely replace the parallel corpus' file associations. Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="parallelCorpusId">The corpus id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
         /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -7240,13 +7217,12 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
-        /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
+        /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora). If no "trainOn" field is provided, all corpora will be used.
         /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
         /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
-        /// <br/>Specify the corpora or textIds to pretranslate.  When a corpus or textId is selected for pretranslation,
+        /// <br/>Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
         /// <br/>the following text will be pretranslated:
         /// <br/>* Text segments that are in the source and not the target (untranslated)
         /// <br/>* Text segments that are in the source and the target, but where that target segment is not trained on.
@@ -7256,6 +7232,10 @@ namespace Serval.Client
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
         /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
+        /// <br/>            
+        /// <br/>When using a parallel corpus:
+        /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
+        /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), only the first of the targets that includes that textId/book will be used for that textId/book.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
