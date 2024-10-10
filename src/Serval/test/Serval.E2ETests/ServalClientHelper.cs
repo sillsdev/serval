@@ -3,6 +3,7 @@ namespace Serval.E2ETests;
 public class ServalClientHelper : IAsyncDisposable
 {
     public DataFilesClient DataFilesClient { get; }
+    public CorporaClient CorporaClient { get; }
     public TranslationEnginesClient TranslationEnginesClient { get; }
     public TranslationEngineTypesClient TranslationEngineTypesClient { get; }
 
@@ -32,6 +33,7 @@ public class ServalClientHelper : IAsyncDisposable
         _httpClient.BaseAddress = new Uri(hostUrl);
         _httpClient.Timeout = TimeSpan.FromSeconds(60);
         DataFilesClient = new DataFilesClient(_httpClient);
+        CorporaClient = new CorporaClient(_httpClient);
         TranslationEnginesClient = new TranslationEnginesClient(_httpClient);
         TranslationEngineTypesClient = new TranslationEngineTypesClient(_httpClient);
         _prefix = prefix;
@@ -227,6 +229,77 @@ public class ServalClientHelper : IAsyncDisposable
         }
 
         return response.Id;
+    }
+
+    public async Task<string> AddParallelTextCorpusToEngineAsync(
+        string engineId,
+        string[] filesToAdd,
+        string sourceLanguage,
+        string targetLanguage,
+        bool pretranslate
+    )
+    {
+        List<DataFile> sourceFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, sourceLanguage);
+
+        var targetFileConfig = new List<CorpusFileConfig>();
+        if (!pretranslate)
+        {
+            List<DataFile> targetFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, targetLanguage);
+            foreach (var item in targetFiles.Select((file, i) => new { i, file }))
+            {
+                targetFileConfig.Add(new CorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] });
+            }
+        }
+
+        CorpusConfig targetCorpusConfig =
+            new()
+            {
+                Name = "None",
+                Language = targetLanguage,
+                Files = targetFileConfig
+            };
+
+        var targetCorpus = await CorporaClient.CreateAsync(targetCorpusConfig);
+
+        var sourceFileConfig = new List<CorpusFileConfig>();
+
+        if (sourceLanguage == targetLanguage && !pretranslate)
+        {
+            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
+            // if pretranslating, we need to upload the source separately
+            // if different languages, we are not echoing.
+        }
+        else
+        {
+            for (int i = 0; i < sourceFiles.Count; i++)
+            {
+                sourceFileConfig.Add(new CorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] });
+            }
+        }
+
+        CorpusConfig sourceCorpusConfig =
+            new()
+            {
+                Name = "None",
+                Language = sourceLanguage,
+                Files = sourceFileConfig
+            };
+
+        var sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);
+
+        TranslationParallelCorpusConfig parallelCorpusConfig =
+            new() { SourceCorpusIds = { sourceCorpus.Id }, TargetCorpusIds = { targetCorpus.Id } };
+
+        var parallelCorpus = await TranslationEnginesClient.AddParallelCorpusAsync(engineId, parallelCorpusConfig);
+
+        if (pretranslate)
+        {
+            TranslationBuildConfig.Pretranslate!.Add(
+                new PretranslateCorpusConfig { CorpusId = parallelCorpus.Id, TextIds = filesToAdd.ToList() }
+            );
+        }
+
+        return parallelCorpus.Id;
     }
 
     public async Task<List<DataFile>> UploadFilesAsync(
