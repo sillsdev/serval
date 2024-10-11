@@ -601,7 +601,7 @@ public class EngineService(
         V1.MonolingualCorpus targetCorpus =
             new() { Language = source.TargetLanguage, Files = { source.TargetFiles.Select(Map) } };
 
-        if (trainingCorpus == null)
+        if (trainingCorpus == null || (trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null))
         {
             sourceCorpus.TrainOnAll = true;
             targetCorpus.TrainOnAll = true;
@@ -641,7 +641,10 @@ public class EngineService(
                 targetCorpus.TrainOnChapters.Add(chapters);
             }
         }
-        if (pretranslateCorpus == null)
+        if (
+            pretranslateCorpus == null
+            || (pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null)
+        )
         {
             sourceCorpus.PretranslateAll = true;
             targetCorpus.PretranslateAll = true;
@@ -777,7 +780,7 @@ public class EngineService(
             Files = { source.Files.Select(Map) }
         };
 
-        if (trainingFilter is null)
+        if (trainingFilter is null || (trainingFilter.TextIds is null && trainingFilter.ScriptureRange is null))
         {
             corpus.TrainOnAll = true;
         }
@@ -789,7 +792,10 @@ public class EngineService(
                 corpus.TrainOnTextIds.Add(trainingFilter.TextIds);
         }
 
-        if (pretranslateFilter is null)
+        if (
+            pretranslateFilter is null
+            || (pretranslateFilter.TextIds is null && pretranslateFilter.ScriptureRange is null)
+        )
         {
             corpus.PretranslateAll = true;
         }
