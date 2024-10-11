@@ -295,7 +295,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         var pretranslateTextIds = source.PretranslateTextIds.ToHashSet();
         FilterChoice pretranslateFilter = GetFilterChoice(pretranslateChapters, pretranslateTextIds);
 
-        var corpus = new Models.MonolingualCorpus
+        return new Models.MonolingualCorpus
         {
             Id = source.Id,
             Language = source.Language,
@@ -305,17 +305,6 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             PretranslateChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
             PretranslateTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
         };
-        if (source.PretranslateAll)
-        {
-            corpus.PretranslateChapters = null;
-            corpus.PretranslateTextIds = null;
-        }
-        if (source.TrainOnAll)
-        {
-            corpus.TrainOnChapters = null;
-            corpus.TrainOnTextIds = null;
-        }
-        return corpus;
     }
 
     private static Models.CorpusFile Map(Translation.V1.CorpusFile source)

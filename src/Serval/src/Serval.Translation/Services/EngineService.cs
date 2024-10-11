@@ -601,12 +601,7 @@ public class EngineService(
         V1.MonolingualCorpus targetCorpus =
             new() { Language = source.TargetLanguage, Files = { source.TargetFiles.Select(Map) } };
 
-        if (trainingCorpus == null)
-        {
-            sourceCorpus.TrainOnAll = true;
-            targetCorpus.TrainOnAll = true;
-        }
-        else
+        if (trainingCorpus != null)
         {
             if (trainingCorpus.TextIds is not null && trainingCorpus.ScriptureRange is not null)
             {
@@ -641,12 +636,7 @@ public class EngineService(
                 targetCorpus.TrainOnChapters.Add(chapters);
             }
         }
-        if (pretranslateCorpus == null)
-        {
-            sourceCorpus.PretranslateAll = true;
-            targetCorpus.PretranslateAll = true;
-        }
-        else
+        if (pretranslateCorpus != null)
         {
             if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
             {

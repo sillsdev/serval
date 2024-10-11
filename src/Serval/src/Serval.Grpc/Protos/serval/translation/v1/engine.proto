@@ -161,8 +161,6 @@ message ParallelCorpus {
 message MonolingualCorpus {
     string id = 1;
     string language = 2;
-    bool train_on_all = 3;
-    bool pretranslate_all = 4;
     map<string, ScriptureChapters> train_on_chapters = 5;
     map<string, ScriptureChapters> pretranslate_chapters = 6;
     repeated string train_on_text_ids = 7;
