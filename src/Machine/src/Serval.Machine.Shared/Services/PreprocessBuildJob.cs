@@ -238,21 +238,33 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
                     }
                 }
             }
-
-            foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpora[0].TextCorpus))
+            void WriteRow(Utf8JsonWriter writer, string textId, IReadOnlyList<object> refs, string translation)
             {
-                if (row.SourceSegment.Length > 0)
+                writer.WriteStartObject();
+                writer.WriteString("corpusId", corpus.Id);
+                writer.WriteString("textId", textId);
+                writer.WriteStartArray("refs");
+                foreach (object rowRef in refs)
+                    writer.WriteStringValue(rowRef.ToString());
+                writer.WriteEndArray();
+                writer.WriteString("translation", translation);
+                writer.WriteEndObject();
+                pretranslateCount++;
+            }
+            if (targetCorpora.Length == 0)
+            {
+                foreach (Row row in GetPretranslateCorpusNoTarget(sourcePretranslateCorpora))
                 {
-                    pretranslateWriter.WriteStartObject();
-                    pretranslateWriter.WriteString("corpusId", corpus.Id);
-                    pretranslateWriter.WriteString("textId", row.TextId);
-                    pretranslateWriter.WriteStartArray("refs");
-                    foreach (object rowRef in row.Refs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteString("translation", row.SourceSegment);
-                    pretranslateWriter.WriteEndObject();
-                    pretranslateCount++;
+                    if (row.SourceSegment.Length > 0)
+                        WriteRow(pretranslateWriter, row.TextId, row.Refs, row.SourceSegment);
+                }
+            }
+            else
+            {
+                foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpora[0].TextCorpus))
+                {
+                    if (row.SourceSegment.Length > 0)
+                        WriteRow(pretranslateWriter, row.TextId, row.Refs, row.SourceSegment);
                 }
             }
         }
@@ -452,6 +464,47 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
 
         if (rowCount > 0)
             yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+    }
+
+    private static IEnumerable<Row> GetPretranslateCorpusNoTarget(ITextCorpus[] srcCorpora)
+    {
+        int rowCount = 0;
+        StringBuilder srcSegBuffer = new();
+        List<object> refs = [];
+        string textId = "";
+        foreach (TextRow row in srcCorpora.SelectMany(sc => sc))
+        {
+            if (!row.IsRangeStart && row.IsInRange)
+            {
+                refs.Add(row.Ref);
+                if (row.Segment.Count > 0)
+                {
+                    if (srcSegBuffer.Length > 0)
+                        srcSegBuffer.Append(' ');
+                    srcSegBuffer.Append(string.Join(" ", row.Segment));
+                }
+                rowCount++;
+            }
+            else
+            {
+                if (rowCount > 0)
+                {
+                    yield return new(textId, refs, srcSegBuffer.ToString(), "", 1);
+                    textId = "";
+                    srcSegBuffer.Clear();
+                    refs.Clear();
+                    rowCount = 0;
+                }
+
+                textId = row.TextId;
+                refs.Add(row.Ref);
+                srcSegBuffer.Append(string.Join(" ", row.Segment));
+                rowCount++;
+            }
+        }
+
+        if (rowCount > 0)
+            yield return new(textId, refs, srcSegBuffer.ToString(), "", 1);
     }
 
     private record Row(
