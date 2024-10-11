@@ -137,8 +137,8 @@ public class ServalApiTests
             engineIds[i] = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", $"NMT1_{i}");
             string engineId = engineIds[i];
             string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
-            await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
-            await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, books, "es", "en", false);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
             await _helperClient.StartBuildAsync(engineId);
             //Ensure that tasks are enqueued roughly in order
             await Task.Delay(1_000);
@@ -247,7 +247,7 @@ public class ServalApiTests
         Assert.That(ex.StatusCode, Is.EqualTo(409));
 
         //Add corpus
-        string cId = await _helperClient.AddTextCorpusToEngineAsync(
+        string cId = await _helperClient.AddParallelTextCorpusToEngineAsync(
             smtEngineId,
             ["2JN.txt", "3JN.txt"],
             "es",
@@ -259,10 +259,10 @@ public class ServalApiTests
         await _helperClient.BuildEngineAsync(smtEngineId);
 
         //Remove added corpus (shouldn't affect translation)
-        await _helperClient.TranslationEnginesClient.DeleteCorpusAsync(smtEngineId, cId, deleteFiles: false);
+        await _helperClient.TranslationEnginesClient.DeleteParallelCorpusAsync(smtEngineId, cId);
 
         // Add corpus
-        await _helperClient.AddTextCorpusToEngineAsync(
+        await _helperClient.AddParallelTextCorpusToEngineAsync(
             smtEngineId,
             ["1JN.txt", "2JN.txt", "3JN.txt"],
             "es",
