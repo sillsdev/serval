@@ -1661,6 +1661,105 @@ public class TranslationEngineTests
     }
 
     [Test]
+    public async Task StartBuildAsync_Corpus_NoFilter()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(NMT_ENGINE1_ID, TestCorpusConfig);
+        PretranslateCorpusConfig ptcc =
+            new() { CorpusId = addedCorpus.Id, SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID }] };
+        TrainingCorpusConfig tcc =
+            new()
+            {
+                CorpusId = addedCorpus.Id,
+                SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID }],
+                TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID }]
+            };
+        ;
+        TranslationBuildConfig tbc = new TranslationBuildConfig
+        {
+            Pretranslate = [ptcc],
+            TrainOn = [tcc],
+            Options = """
+                {"max_steps":10,
+                "use_key_terms":false,
+                "some_double":10.5,
+                "some_nested": {"more_nested": {"other_double":10.5}},
+                "some_string":"string"}
+                """
+        };
+        TranslationBuild resultAfterStart;
+        Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            resultAfterStart = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
+        });
+
+        TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
+        Assert.That(build, Is.Not.Null);
+        Assert.That(build.TrainOn, Is.Not.Null);
+        Assert.That(build.TrainOn.Count, Is.EqualTo(1));
+        Assert.That(build.TrainOn[0].TextIds, Is.Null);
+        Assert.That(build.TrainOn[0].ScriptureRange, Is.Null);
+        Assert.That(build.Pretranslate, Is.Not.Null);
+        Assert.That(build.Pretranslate.Count, Is.EqualTo(1));
+        Assert.That(build.Pretranslate[0].TextIds, Is.Null);
+        Assert.That(build.Pretranslate[0].ScriptureRange, Is.Null);
+
+        build = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
+        Assert.That(build, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task StartBuildAsync_ParallelCorpus_NoFilter()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            NMT_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
+        PretranslateCorpusConfig ptcc =
+            new() { ParallelCorpusId = addedCorpus.Id, SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID }] };
+        TrainingCorpusConfig tcc =
+            new()
+            {
+                ParallelCorpusId = addedCorpus.Id,
+                SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID }],
+                TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID }]
+            };
+        ;
+        TranslationBuildConfig tbc = new TranslationBuildConfig
+        {
+            Pretranslate = [ptcc],
+            TrainOn = [tcc],
+            Options = """
+                {"max_steps":10,
+                "use_key_terms":false,
+                "some_double":10.5,
+                "some_nested": {"more_nested": {"other_double":10.5}},
+                "some_string":"string"}
+                """
+        };
+        TranslationBuild resultAfterStart;
+        Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            resultAfterStart = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
+        });
+
+        TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
+        Assert.That(build, Is.Not.Null);
+        Assert.That(build.TrainOn, Is.Not.Null);
+        Assert.That(build.TrainOn.Count, Is.EqualTo(1));
+        Assert.That(build.TrainOn[0].TextIds, Is.Null);
+        Assert.That(build.TrainOn[0].ScriptureRange, Is.Null);
+        Assert.That(build.Pretranslate, Is.Not.Null);
+        Assert.That(build.Pretranslate.Count, Is.EqualTo(1));
+        Assert.That(build.Pretranslate[0].TextIds, Is.Null);
+        Assert.That(build.Pretranslate[0].ScriptureRange, Is.Null);
+
+        build = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
+        Assert.That(build, Is.Not.Null);
+    }
+
+    [Test]
     public async Task StartBuildAsync_ParallelCorpus_PretranslateParallelAndNormalCorpus()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
