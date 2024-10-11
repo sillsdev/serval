@@ -777,14 +777,29 @@ public class EngineService(
             Files = { source.Files.Select(Map) }
         };
 
-        if (trainOnChapters is not null)
-            corpus.TrainOnChapters.Add(trainOnChapters);
-        if (trainingFilter?.TextIds is not null)
-            corpus.TrainOnTextIds.Add(trainingFilter.TextIds);
-        if (pretranslateChapters is not null)
-            corpus.PretranslateChapters.Add(pretranslateChapters);
-        if (pretranslateFilter?.TextIds is not null)
-            corpus.PretranslateTextIds.Add(pretranslateFilter.TextIds);
+        if (trainingFilter is null)
+        {
+            corpus.TrainOnAll = true;
+        }
+        else
+        {
+            if (trainOnChapters is not null)
+                corpus.TrainOnChapters.Add(trainOnChapters);
+            if (trainingFilter?.TextIds is not null)
+                corpus.TrainOnTextIds.Add(trainingFilter.TextIds);
+        }
+
+        if (pretranslateFilter is null)
+        {
+            corpus.PretranslateAll = true;
+        }
+        else
+        {
+            if (pretranslateChapters is not null)
+                corpus.PretranslateChapters.Add(pretranslateChapters);
+            if (pretranslateFilter?.TextIds is not null)
+                corpus.PretranslateTextIds.Add(pretranslateFilter.TextIds);
+        }
 
         return corpus;
     }

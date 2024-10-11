@@ -295,7 +295,7 @@ public class ServalClientHelper : IAsyncDisposable
         if (pretranslate)
         {
             TranslationBuildConfig.Pretranslate!.Add(
-                new PretranslateCorpusConfig { CorpusId = parallelCorpus.Id, TextIds = filesToAdd.ToList() }
+                new PretranslateCorpusConfig { ParallelCorpusId = parallelCorpus.Id, TextIds = filesToAdd.ToList() }
             );
         }
 
