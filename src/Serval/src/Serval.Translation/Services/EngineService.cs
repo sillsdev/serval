@@ -24,6 +24,25 @@ public class EngineService(
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
+    public override async Task<Engine> GetAsync(string id, CancellationToken cancellationToken = default)
+    {
+        Engine engine = await base.GetAsync(id, cancellationToken);
+        if (!(engine.IsInitialized ?? true))
+            throw new EntityNotFoundException($"Could not find the {typeof(Engine).Name} '{id}'.");
+        return engine;
+    }
+
+    public override async Task<IEnumerable<Engine>> GetAllAsync(
+        string owner,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await Entities.GetAllAsync(
+            e => e.Owner == owner && (e.IsInitialized == null || e.IsInitialized.Value),
+            cancellationToken
+        );
+    }
+
     public async Task<Models.TranslationResult> TranslateAsync(
         string engineId,
         string segment,
@@ -120,9 +139,9 @@ public class EngineService(
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
-        bool updateIsModelPersisted = engine.IsModelPersisted is null;
         try
         {
+            engine.DateCreated = DateTime.UtcNow;
             await Entities.InsertAsync(engine, cancellationToken);
             TranslationEngineApi.TranslationEngineApiClient? client =
                 _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
@@ -146,6 +165,15 @@ public class EngineService(
             {
                 IsModelPersisted = createResponse.IsModelPersisted
             };
+            await Entities.UpdateAsync(
+                engine,
+                u =>
+                {
+                    u.Set(e => e.IsInitialized, true);
+                    u.Set(e => e.IsModelPersisted, engine.IsModelPersisted);
+                },
+                cancellationToken: CancellationToken.None
+            );
         }
         catch (RpcException rpcex)
         {
@@ -163,14 +191,6 @@ public class EngineService(
         {
             await Entities.DeleteAsync(engine, CancellationToken.None);
             throw;
-        }
-        if (updateIsModelPersisted)
-        {
-            await Entities.UpdateAsync(
-                engine,
-                u => u.Set(e => e.IsModelPersisted, engine.IsModelPersisted),
-                cancellationToken: cancellationToken
-            );
         }
         return engine;
     }
@@ -216,6 +236,7 @@ public class EngineService(
 
     public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
+        build.DateCreated = DateTime.UtcNow;
         Engine engine = await GetAsync(build.EngineRef, cancellationToken);
         await _builds.InsertAsync(build, cancellationToken);
 
@@ -325,6 +346,11 @@ public class EngineService(
                 _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
             }
             await client.StartBuildAsync(request, cancellationToken: cancellationToken);
+            await _builds.UpdateAsync(
+                b => b.Id == build.Id,
+                u => u.Set(e => e.IsInitialized, true),
+                cancellationToken: CancellationToken.None
+            );
         }
         catch
         {
@@ -382,7 +408,11 @@ public class EngineService(
 
     public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
     {
-        return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
+        return Entities.UpdateAsync(
+            e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
+            u => u.Add(e => e.Corpora, corpus),
+            cancellationToken: cancellationToken
+        );
     }
 
     public async Task<Models.Corpus> UpdateCorpusAsync(
@@ -394,7 +424,10 @@ public class EngineService(
     )
     {
         Engine? engine = await Entities.UpdateAsync(
-            e => e.Id == engineId && e.Corpora.Any(c => c.Id == corpusId),
+            e =>
+                e.Id == engineId
+                && (e.IsInitialized == null || e.IsInitialized.Value)
+                && e.Corpora.Any(c => c.Id == corpusId),
             u =>
             {
                 if (sourceFiles is not null)
@@ -421,7 +454,7 @@ public class EngineService(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
-                    engineId,
+                    e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
                     u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
                     returnOriginal: true,
                     cancellationToken: ct
@@ -456,7 +489,7 @@ public class EngineService(
     )
     {
         return Entities.UpdateAsync(
-            engineId,
+            e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
             u => u.Add(e => e.ParallelCorpora, corpus),
             cancellationToken: cancellationToken
         );
@@ -471,7 +504,10 @@ public class EngineService(
     )
     {
         Engine? engine = await Entities.UpdateAsync(
-            e => e.Id == engineId && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
+            e =>
+                e.Id == engineId
+                && (e.IsInitialized == null || e.IsInitialized.Value)
+                && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
             u =>
             {
                 if (sourceCorpora is not null)
@@ -502,7 +538,7 @@ public class EngineService(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
-                    engineId,
+                    e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
                     u => u.RemoveAll(e => e.ParallelCorpora, c => c.Id == parallelCorpusId),
                     returnOriginal: true,
                     cancellationToken: ct
