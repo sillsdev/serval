@@ -146,6 +146,11 @@ public class EngineService(
             {
                 IsModelPersisted = createResponse.IsModelPersisted
             };
+            await Entities.UpdateAsync(
+                engine,
+                u => u.Set(e => e.SuccessfullyCreated, true),
+                cancellationToken: cancellationToken
+            );
         }
         catch (RpcException rpcex)
         {
@@ -292,6 +297,11 @@ public class EngineService(
                 _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
             }
             await client.StartBuildAsync(request, cancellationToken: cancellationToken);
+            await _builds.UpdateAsync(
+                build.Id,
+                u => u.Set(e => e.SuccessfullyStarted, true),
+                cancellationToken: cancellationToken
+            );
         }
         catch
         {

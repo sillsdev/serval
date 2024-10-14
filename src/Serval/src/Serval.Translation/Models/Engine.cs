@@ -16,4 +16,5 @@ public record Engine : IOwnedEntity
     public int ModelRevision { get; init; }
     public double Confidence { get; init; }
     public int CorpusSize { get; init; }
+    public bool SuccessfullyCreated { get; init; }
 }
