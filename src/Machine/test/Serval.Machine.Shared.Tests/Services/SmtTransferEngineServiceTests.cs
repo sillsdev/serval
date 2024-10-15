@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using SIL.ServiceToolkit.Utils;
+
+namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
 public class SmtTransferEngineServiceTests
@@ -687,9 +689,9 @@ public class SmtTransferEngineServiceTests
                         Substitute.For<ILogger<PreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
-                        Substitute.For<ICorpusService>(),
                         _env._lockFactory,
-                        _env.TrainSegmentPairs
+                        _env.TrainSegmentPairs,
+                        new ParallelCorpusPreprocessingService(new CorpusService())
                     )
                     {
                         TrainJobRunnerType = _env._trainJobRunnerType

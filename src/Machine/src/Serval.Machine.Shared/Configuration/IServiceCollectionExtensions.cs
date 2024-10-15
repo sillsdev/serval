@@ -15,7 +15,6 @@ public static class IServiceCollectionExtensions
         services.AddTransient<IFileSystem, FileSystem>();
 
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
-        services.AddSingleton<ICorpusService, CorpusService>();
         services.AddStartupTask(
             (sp, cancellationToken) =>
                 sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
@@ -42,6 +41,7 @@ public static class IServiceCollectionExtensions
                 configuration.GetSection(DistributedReaderWriterLockOptions.Key)
             );
             builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
+            builder.AddServiceToolkitServices();
             builder.AddMessageOutboxOptions(configuration.GetSection(MessageOutboxOptions.Key));
         }
         return builder;
