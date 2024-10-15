@@ -252,7 +252,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
                 pretranslateCount++;
             }
 
-            ITextCorpus? targetCorpus = targetCorpora.Length > 0 ? targetCorpora[0].TextCorpus : null;
+            ITextCorpus targetCorpus =
+                targetCorpora.Length > 0 ? targetCorpora[0].TextCorpus : new DictionaryTextCorpus();
 
             foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpus))
             {
@@ -414,7 +415,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus? trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus trgCorpus)
     {
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
