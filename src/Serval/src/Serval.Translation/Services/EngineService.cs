@@ -601,7 +601,12 @@ public class EngineService(
         V1.MonolingualCorpus targetCorpus =
             new() { Language = source.TargetLanguage, Files = { source.TargetFiles.Select(Map) } };
 
-        if (trainingCorpus != null)
+        if (trainingCorpus is null || (trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null))
+        {
+            sourceCorpus.TrainOnAll = true;
+            targetCorpus.TrainOnAll = true;
+        }
+        else
         {
             if (trainingCorpus.TextIds is not null && trainingCorpus.ScriptureRange is not null)
             {
@@ -636,7 +641,15 @@ public class EngineService(
                 targetCorpus.TrainOnChapters.Add(chapters);
             }
         }
-        if (pretranslateCorpus != null)
+        if (
+            pretranslateCorpus is null
+            || (pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null)
+        )
+        {
+            sourceCorpus.PretranslateAll = true;
+            targetCorpus.PretranslateAll = true;
+        }
+        else
         {
             if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
             {
@@ -767,14 +780,32 @@ public class EngineService(
             Files = { source.Files.Select(Map) }
         };
 
-        if (trainOnChapters is not null)
-            corpus.TrainOnChapters.Add(trainOnChapters);
-        if (trainingFilter?.TextIds is not null)
-            corpus.TrainOnTextIds.Add(trainingFilter.TextIds);
-        if (pretranslateChapters is not null)
-            corpus.PretranslateChapters.Add(pretranslateChapters);
-        if (pretranslateFilter?.TextIds is not null)
-            corpus.PretranslateTextIds.Add(pretranslateFilter.TextIds);
+        if (trainingFilter is null || (trainingFilter.TextIds is null && trainingFilter.ScriptureRange is null))
+        {
+            corpus.TrainOnAll = true;
+        }
+        else
+        {
+            if (trainOnChapters is not null)
+                corpus.TrainOnChapters.Add(trainOnChapters);
+            if (trainingFilter?.TextIds is not null)
+                corpus.TrainOnTextIds.Add(trainingFilter.TextIds);
+        }
+
+        if (
+            pretranslateFilter is null
+            || (pretranslateFilter.TextIds is null && pretranslateFilter.ScriptureRange is null)
+        )
+        {
+            corpus.PretranslateAll = true;
+        }
+        else
+        {
+            if (pretranslateChapters is not null)
+                corpus.PretranslateChapters.Add(pretranslateChapters);
+            if (pretranslateFilter?.TextIds is not null)
+                corpus.PretranslateTextIds.Add(pretranslateFilter.TextIds);
+        }
 
         return corpus;
     }

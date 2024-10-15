@@ -35,8 +35,6 @@ builder.Services.AddBugsnag();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
-
 app.MapServalTranslationEngineService();
 app.MapHangfireDashboard();
 

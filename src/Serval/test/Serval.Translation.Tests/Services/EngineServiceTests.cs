@@ -136,7 +136,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "text1"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             },
@@ -155,7 +157,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "text1"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             }
@@ -206,7 +210,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "text1"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     }
                                 }
                             },
@@ -226,7 +232,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "text1"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     }
                                 }
                             }
@@ -277,7 +285,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "text1"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     }
                                 }
                             },
@@ -297,7 +307,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "text1"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     }
                                 }
                             }
@@ -347,7 +359,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "text1"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             },
@@ -366,7 +380,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "text1"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             }
@@ -445,7 +461,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file1.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     }
                                 }
                             },
@@ -475,7 +493,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file2.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     }
                                 }
                             }
@@ -525,7 +545,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file1.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     }
                                 }
                             },
@@ -544,7 +566,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file2.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     }
                                 }
                             }
@@ -618,7 +642,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "MAT"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     },
                                     new()
                                     {
@@ -632,7 +658,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "MRK"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             },
@@ -653,7 +681,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "MAT"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     },
                                     new()
                                     {
@@ -667,7 +697,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Text,
                                                 TextId = "MRK"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             }
@@ -741,7 +773,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file1.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     },
                                     new()
                                     {
@@ -755,7 +789,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file3.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             },
@@ -776,7 +812,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file2.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     },
                                     new()
                                     {
@@ -790,7 +828,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file4.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             }
@@ -866,7 +906,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file1.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     },
                                     new()
                                     {
@@ -880,7 +922,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file3.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             },
@@ -911,7 +955,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file2.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
                                     },
                                     new()
                                     {
@@ -925,7 +971,9 @@ public class EngineServiceTests
                                                 Format = FileFormat.Paratext,
                                                 TextId = "file4.zip"
                                             }
-                                        }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = true
                                     }
                                 }
                             }
@@ -1001,7 +1049,9 @@ public class EngineServiceTests
                                             "MRK",
                                             new ScriptureChapters { Chapters = { 1, 2 } }
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = false
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1026,7 +1076,9 @@ public class EngineServiceTests
                                             "MRK",
                                             new ScriptureChapters { Chapters = { 1 } }
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = false
                                 }
                             },
                             TargetCorpora =
@@ -1054,7 +1106,9 @@ public class EngineServiceTests
                                             "MRK",
                                             new ScriptureChapters { Chapters = { 2 } }
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = false
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1079,7 +1133,9 @@ public class EngineServiceTests
                                             "MRK",
                                             new ScriptureChapters { Chapters = { 1, 2 } }
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = false
                                 }
                             }
                         }
@@ -1127,7 +1183,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file1.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1141,7 +1199,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file3.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 }
                             },
                             TargetCorpora =
@@ -1158,7 +1218,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file2.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1172,7 +1234,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file4.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 }
                             }
                         }
@@ -1213,7 +1277,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file1.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1227,7 +1293,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file3.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 }
                             },
                             TargetCorpora =
@@ -1244,7 +1312,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file2.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1258,7 +1328,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file4.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 }
                             }
                         }
@@ -1327,7 +1399,9 @@ public class EngineServiceTests
                                             "MRK",
                                             new ScriptureChapters { }
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = false
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1341,7 +1415,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file3.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 }
                             },
                             TargetCorpora =
@@ -1358,7 +1434,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file2.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1372,7 +1450,9 @@ public class EngineServiceTests
                                             Format = FileFormat.Paratext,
                                             TextId = "file4.zip"
                                         }
-                                    }
+                                    },
+                                    PretranslateAll = true,
+                                    TrainOnAll = true
                                 }
                             }
                         }

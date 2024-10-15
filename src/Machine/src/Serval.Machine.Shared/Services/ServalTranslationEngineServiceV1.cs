@@ -286,16 +286,20 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             kvp => kvp.Value.Chapters.ToHashSet()
         );
         var trainOnTextIds = source.TrainOnTextIds.ToHashSet();
-        FilterChoice trainingFilter = GetFilterChoice(trainOnChapters, trainOnTextIds);
+        FilterChoice trainingFilter = GetFilterChoice(trainOnChapters, trainOnTextIds, source.TrainOnAll);
 
         var pretranslateChapters = source.PretranslateChapters.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value.Chapters.ToHashSet()
         );
         var pretranslateTextIds = source.PretranslateTextIds.ToHashSet();
-        FilterChoice pretranslateFilter = GetFilterChoice(pretranslateChapters, pretranslateTextIds);
+        FilterChoice pretranslateFilter = GetFilterChoice(
+            pretranslateChapters,
+            pretranslateTextIds,
+            source.PretranslateAll
+        );
 
-        return new Models.MonolingualCorpus
+        var corpus = new Models.MonolingualCorpus
         {
             Id = source.Id,
             Language = source.Language,
@@ -305,6 +309,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             PretranslateChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
             PretranslateTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
         };
+        return corpus;
     }
 
     private static Models.CorpusFile Map(Translation.V1.CorpusFile source)
@@ -326,12 +331,13 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 
     private static FilterChoice GetFilterChoice(
         IReadOnlyDictionary<string, HashSet<int>> chapters,
-        HashSet<string> textIds
+        HashSet<string> textIds,
+        bool noFilter
     )
     {
         // Only either textIds or Scripture Range will be used at a time
         // TextIds may be an empty array, so prefer that if both are empty (which applies to both scripture and text)
-        if (chapters is null && textIds is null)
+        if (noFilter || (chapters is null && textIds is null))
             return FilterChoice.None;
         if (chapters is null || chapters.Count == 0)
             return FilterChoice.TextIds;
