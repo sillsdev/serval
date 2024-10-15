@@ -1,4 +1,6 @@
-﻿namespace EchoTranslationEngine;
+﻿using Nito.AsyncEx.Synchronous;
+
+namespace EchoTranslationEngine;
 
 public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : TranslationEngineApi.TranslationEngineApiBase
 {
@@ -80,154 +82,29 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                             client.InsertPretranslations(cancellationToken: cancellationToken)
                     )
                     {
-                        foreach (ParallelCorpus corpus in request.Corpora)
-                        {
-                            var sourceFiles = corpus
-                                .SourceCorpora.SelectMany(sc =>
-                                    sc.Files.Where(f =>
-                                        (
-                                            sc.PretranslateAll
-                                            || sc.PretranslateTextIds is null
-                                            || sc.PretranslateTextIds.Contains(f.TextId)
-                                        )
-                                        && f.Format == FileFormat.Text
-                                    )
-                                )
-                                .ToDictionary(f => f.TextId, f => f.Location);
-                            var targetFiles = corpus
-                                .TargetCorpora.SelectMany(tc =>
-                                    tc.Files.Where(f =>
-                                        (
-                                            tc.PretranslateAll
-                                            || tc.PretranslateTextIds is null
-                                            || tc.PretranslateTextIds.Contains(f.TextId)
-                                        )
-                                        && f.Format == FileFormat.Text
-                                    )
-                                )
-                                .ToDictionary(f => f.TextId, f => f.Location);
-
-                            foreach (KeyValuePair<string, string> sourceFile in sourceFiles)
+                        ParallelCorpusPreprocessor.PreprocessCorpora(
+                            request.Corpora.Select(Map).ToList(),
+                            row => { },
+                            (row, corpus) =>
                             {
-                                string[] sourceLines = await File.ReadAllLinesAsync(
-                                    sourceFile.Value,
-                                    cancellationToken
-                                );
-
-                                if (targetFiles.TryGetValue(sourceFile.Key, out string? targetPath))
+                                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
                                 {
-                                    string[] targetLines = await File.ReadAllLinesAsync(targetPath, cancellationToken);
-                                    bool isTabSeparated = (sourceLines.Length > 0) && sourceLines[0].Contains('/');
-                                    if (!isTabSeparated)
-                                    {
-                                        int lineNum = 1;
-                                        foreach (
-                                            (string sourceLine, string targetLine) in sourceLines
-                                                .Select(l => l.Trim())
-                                                .Zip(targetLines.Select(l => l.Trim()))
-                                        )
+                                    call.RequestStream.WriteAsync(
+                                        new InsertPretranslationsRequest
                                         {
-                                            if (sourceLine.Length > 0 && targetLine.Length == 0)
-                                            {
-                                                await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationsRequest
-                                                    {
-                                                        EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{lineNum}" },
-                                                        Translation = sourceLine
-                                                    },
-                                                    cancellationToken
-                                                );
-                                            }
-                                            lineNum++;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var sourceLinesDict = sourceLines.ToDictionary(
-                                            l => l.Split('\t')[0].Trim(),
-                                            l => l.Split('\t')[1].Trim()
-                                        );
-                                        var targetLinesDict = targetLines.ToDictionary(
-                                            l => l.Split('\t')[0].Trim(),
-                                            l => l.Contains('\t') ? l.Split('\t')[1].Trim() : string.Empty
-                                        );
-                                        foreach (KeyValuePair<string, string> targetLineKVPair in targetLinesDict)
-                                        {
-                                            string? sourceLine = null;
-                                            sourceLinesDict.TryGetValue(targetLineKVPair.Key, out sourceLine);
-                                            sourceLine ??= string.Empty;
-                                            string? targetLine = targetLineKVPair.Value;
-                                            if (sourceLine.Length > 0 && targetLine.Length == 0)
-                                            {
-                                                await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationsRequest
-                                                    {
-                                                        EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{targetLineKVPair.Key}" },
-                                                        Translation = sourceLine
-                                                    },
-                                                    cancellationToken
-                                                );
-                                            }
-                                        }
-                                    }
+                                            EngineId = request.EngineId,
+                                            CorpusId = corpus.Id,
+                                            TextId = row.TextId,
+                                            Refs = { row.Refs.Select(r => r.ToString()) },
+                                            Translation = row.SourceSegment
+                                        },
+                                        cancellationToken
+                                    )
+                                        .WaitAndUnwrapException();
                                 }
-                                else
-                                {
-                                    bool isTabSeparated = (sourceLines.Length > 0) && sourceLines[0].Contains('/');
-                                    if (!isTabSeparated)
-                                    {
-                                        int lineNum = 1;
-                                        foreach (string sourceLine in sourceLines.Select(l => l.Trim()))
-                                        {
-                                            if (sourceLine.Length > 0)
-                                            {
-                                                await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationsRequest
-                                                    {
-                                                        EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{lineNum}" },
-                                                        Translation = sourceLine
-                                                    },
-                                                    cancellationToken
-                                                );
-                                            }
-                                            lineNum++;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        foreach (string sourceLine in sourceLines.Select(l => l.Trim()))
-                                        {
-                                            if (sourceLine.Length > 0)
-                                            {
-                                                await call.RequestStream.WriteAsync(
-                                                    new InsertPretranslationsRequest
-                                                    {
-                                                        EngineId = request.EngineId,
-                                                        CorpusId = corpus.Id,
-                                                        TextId = sourceFile.Key,
-                                                        Refs = { $"{sourceFile.Key}:{sourceLine.Split('\t')[0]}" },
-                                                        Translation = sourceLine.Contains('\t')
-                                                            ? sourceLine.Split('\t')[1].Trim()
-                                                            : string.Empty
-                                                    },
-                                                    cancellationToken
-                                                );
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
+                            },
+                            true
+                        );
                         await call.RequestStream.CompleteAsync();
                         await call;
                     }
@@ -324,5 +201,74 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
         return Task.FromResult(
             new GetLanguageInfoResponse { InternalCode = request.Language + "_echo", IsNative = true, }
         );
+    }
+
+    private static SIL.ServiceToolkit.Models.ParallelCorpus Map(ParallelCorpus source)
+    {
+        return new SIL.ServiceToolkit.Models.ParallelCorpus
+        {
+            Id = source.Id,
+            SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
+            TargetCorpora = source.TargetCorpora.Select(Map).ToList()
+        };
+    }
+
+    private static SIL.ServiceToolkit.Models.MonolingualCorpus Map(MonolingualCorpus source)
+    {
+        var trainOnChapters = source.TrainOnChapters.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Chapters.ToHashSet()
+        );
+        var trainOnTextIds = source.TrainOnTextIds.ToHashSet();
+        FilterChoice trainingFilter = GetFilterChoice(trainOnChapters, trainOnTextIds);
+
+        var pretranslateChapters = source.PretranslateChapters.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Chapters.ToHashSet()
+        );
+        var pretranslateTextIds = source.PretranslateTextIds.ToHashSet();
+        FilterChoice pretranslateFilter = GetFilterChoice(pretranslateChapters, pretranslateTextIds);
+
+        return new SIL.ServiceToolkit.Models.MonolingualCorpus
+        {
+            Id = source.Id,
+            Language = source.Language,
+            Files = source.Files.Select(Map).ToList(),
+            TrainOnChapters = trainingFilter == FilterChoice.Chapters ? trainOnChapters : null,
+            TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? trainOnTextIds : null,
+            PretranslateChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
+            PretranslateTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
+        };
+    }
+
+    private static SIL.ServiceToolkit.Models.CorpusFile Map(CorpusFile source)
+    {
+        return new SIL.ServiceToolkit.Models.CorpusFile
+        {
+            Location = source.Location,
+            Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
+            TextId = source.TextId
+        };
+    }
+
+    private enum FilterChoice
+    {
+        Chapters,
+        TextIds,
+        None
+    }
+
+    private static FilterChoice GetFilterChoice(
+        IReadOnlyDictionary<string, HashSet<int>> chapters,
+        HashSet<string> textIds
+    )
+    {
+        // Only either textIds or Scripture Range will be used at a time
+        // TextIds may be an empty array, so prefer that if both are empty (which applies to both scripture and text)
+        if (chapters is null && textIds is null)
+            return FilterChoice.None;
+        if (chapters is null || chapters.Count == 0)
+            return FilterChoice.TextIds;
+        return FilterChoice.Chapters;
     }
 }

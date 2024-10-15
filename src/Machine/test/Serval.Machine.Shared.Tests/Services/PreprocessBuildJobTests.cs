@@ -781,11 +781,10 @@ Target one, chapter one, verse nine and ten.
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
-                        CorpusService,
                         new LanguageTagService()
                     )
                     {
-                        Seed = 1234
+                        CorpusService = CorpusService
                     };
                 }
                 case TranslationEngineType.SmtTransfer:
@@ -797,12 +796,11 @@ Target one, chapter one, verse nine and ten.
                         Substitute.For<ILogger<PreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
-                        CorpusService,
                         LockFactory,
                         TrainSegmentPairs
                     )
                     {
-                        Seed = 1234
+                        CorpusService = CorpusService
                     };
                 }
                 default:

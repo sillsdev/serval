@@ -16,6 +16,11 @@
 	  <PackageReference Include="Hangfire.Core" Version="1.8.14" />
 	  <PackageReference Include="SIL.WritingSystems" Version="14.1.1" />
 	  <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+	  <PackageReference Include="SIL.Machine" Version="3.2.8" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 	</ItemGroup>
 
 </Project>
