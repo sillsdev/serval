@@ -55,6 +55,7 @@ global using SIL.Machine.Translation;
 global using SIL.Machine.Translation.Thot;
 global using SIL.Machine.Utils;
 global using SIL.Scripture;
+global using SIL.ServiceToolkit.Models;
 global using SIL.ServiceToolkit.Services;
 global using SIL.ServiceToolkit.Utils;
 global using SIL.WritingSystems;

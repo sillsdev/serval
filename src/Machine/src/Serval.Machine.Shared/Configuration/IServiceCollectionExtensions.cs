@@ -15,7 +15,6 @@ public static class IServiceCollectionExtensions
         services.AddTransient<IFileSystem, FileSystem>();
 
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
-        services.AddSingleton<ICorpusService, CorpusService>();
         services.AddStartupTask(
             (sp, cancellationToken) =>
                 sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
