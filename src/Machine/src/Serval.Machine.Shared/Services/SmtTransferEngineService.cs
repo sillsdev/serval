@@ -9,7 +9,7 @@ public class SmtTransferEngineService(
     SmtTransferEngineStateService stateService,
     IBuildJobService buildJobService,
     IClearMLQueueService clearMLQueueService
-) : ITranslationEngineService
+) : ITranslationEngineService, IWordAlignmentEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
@@ -21,6 +21,7 @@ public class SmtTransferEngineService(
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
+    public WordAlignmentEngineType WordAlignmentType => WordAlignmentEngineType.Statistical;
 
     public async Task<TranslationEngine> CreateAsync(
         string engineId,

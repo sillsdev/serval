@@ -11,7 +11,7 @@ public class ClearMLBuildJobRunner(
         buildJobFactories.ToDictionary(f => f.EngineType);
 
     private readonly Dictionary<TranslationEngineType, ClearMLBuildQueue> _options =
-        options.CurrentValue.ClearML.ToDictionary(o => o.TranslationEngineType);
+        options.CurrentValue.ClearML.ToDictionary(o => o.EngineType);
 
     public BuildJobRunnerType Type => BuildJobRunnerType.ClearML;
 
