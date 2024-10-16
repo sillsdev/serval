@@ -154,7 +154,10 @@ public class ParallelCorpusPreprocessor
                 }
             }
 
-            foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpora[0].TextCorpus))
+            ITextCorpus textCorpus =
+                targetCorpora.Length > 0 ? targetCorpora[0].TextCorpus : new DictionaryTextCorpus();
+
+            foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, textCorpus))
             {
                 if (row.SourceSegment.Length > 0)
                 {

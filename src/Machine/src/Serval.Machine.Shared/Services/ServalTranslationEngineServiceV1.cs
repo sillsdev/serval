@@ -309,7 +309,6 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             PretranslateChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
             PretranslateTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
         };
-        return corpus;
     }
 
     private static SIL.ServiceToolkit.Models.CorpusFile Map(Translation.V1.CorpusFile source)
