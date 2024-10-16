@@ -22,6 +22,8 @@ public class PreprocessBuildJob(
 
     private readonly ISharedFileService _sharedFileService = sharedFileService;
 
+    public ICorpusService CorpusService { get; set; } = new CorpusService();
+
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
