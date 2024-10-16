@@ -221,15 +221,19 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
 
             if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
             {
-                ITextCorpus? sourceTermCorpus = _corpusService
-                    .CreateTermCorpora(corpus.SourceCorpora.SelectMany(sc => sc.Files).ToList())
+                ITextCorpus? sourceTermCorpora = _corpusService
+                    .CreateTermCorpora(
+                        corpus.SourceCorpora.SelectMany(sc => sc.Files.Select(f => (f, sc.TrainOnChapters))).ToList()
+                    )
                     .FirstOrDefault();
-                ITextCorpus? targetTermCorpus = _corpusService
-                    .CreateTermCorpora(corpus.TargetCorpora.SelectMany(tc => tc.Files).ToList())
+                ITextCorpus? targetTermCorpora = _corpusService
+                    .CreateTermCorpora(
+                        corpus.TargetCorpora.SelectMany(tc => tc.Files.Select(f => (f, tc.TrainOnChapters))).ToList()
+                    )
                     .FirstOrDefault();
-                if (sourceTermCorpus is not null && targetTermCorpus is not null)
+                if (sourceTermCorpora is not null && targetTermCorpora is not null)
                 {
-                    IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
+                    IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora.AlignRows(targetTermCorpora);
                     foreach (ParallelTextRow row in parallelKeyTermsCorpus)
                     {
                         await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
