@@ -105,7 +105,7 @@ public class PreprocessBuildJob(
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        ParallelCorpusPreprocessor.PreprocessCorpora(
+        new ParallelCorpusPreprocessor() { CorpusService = CorpusService }.Preprocess(
             corpora,
             row =>
             {

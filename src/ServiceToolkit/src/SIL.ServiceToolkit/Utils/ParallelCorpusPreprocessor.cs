@@ -2,13 +2,13 @@ namespace SIL.ServiceToolkit.Utils;
 
 public class ParallelCorpusPreprocessor
 {
-    private readonly ICorpusService _corpusService;
+    public ICorpusService CorpusService { get; init; }
     private int _seed = 1234;
     private Random _random;
 
     public ParallelCorpusPreprocessor()
     {
-        _corpusService = new CorpusService();
+        CorpusService = new CorpusService();
         _random = new Random(_seed);
     }
 
@@ -45,7 +45,7 @@ public class ParallelCorpusPreprocessor
         foreach (ParallelCorpus corpus in corpora)
         {
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpus
-                .SourceCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
+                .SourceCorpora.SelectMany(c => CorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
                 .ToArray();
             ITextCorpus[] sourceTrainingCorpora = sourceCorpora
                 .Select(sc =>
@@ -78,7 +78,7 @@ public class ParallelCorpusPreprocessor
                 .ToArray();
 
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
-                .TargetCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
+                .TargetCorpora.SelectMany(c => CorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
                 .ToArray();
             ITextCorpus[] targetTrainingCorpora = targetCorpora
                 .Select(tc =>
@@ -138,10 +138,10 @@ public class ParallelCorpusPreprocessor
 
             if (useKeyTerms)
             {
-                ITextCorpus? sourceTermCorpus = _corpusService
+                ITextCorpus? sourceTermCorpus = CorpusService
                     .CreateTermCorpora(corpus.SourceCorpora.SelectMany(sc => sc.Files).ToList())
                     .FirstOrDefault();
-                ITextCorpus? targetTermCorpus = _corpusService
+                ITextCorpus? targetTermCorpus = CorpusService
                     .CreateTermCorpora(corpus.TargetCorpora.SelectMany(tc => tc.Files).ToList())
                     .FirstOrDefault();
                 if (sourceTermCorpus is not null && targetTermCorpus is not null)
