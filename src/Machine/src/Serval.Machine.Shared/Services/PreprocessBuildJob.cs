@@ -107,10 +107,10 @@ public class PreprocessBuildJob(
         pretranslateWriter.WriteStartArray();
         ParallelCorpusPreprocessor.PreprocessCorpora(
             corpora,
-            async row =>
+            row =>
             {
-                await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+                sourceTrainWriter.Write($"{row.SourceSegment}\n");
+                targetTrainWriter.Write($"{row.TargetSegment}\n");
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
             },

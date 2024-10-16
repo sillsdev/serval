@@ -1,4 +1,6 @@
-﻿namespace EchoTranslationEngine;
+﻿using Nito.AsyncEx.Synchronous;
+
+namespace EchoTranslationEngine;
 
 public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : TranslationEngineApi.TranslationEngineApiBase
 {
@@ -83,11 +85,11 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                         ParallelCorpusPreprocessor.PreprocessCorpora(
                             request.Corpora.Select(Map).ToList(),
                             row => { },
-                            async (row, corpus) =>
+                            (row, corpus) =>
                             {
                                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
                                 {
-                                    await call.RequestStream.WriteAsync(
+                                    call.RequestStream.WriteAsync(
                                         new InsertPretranslationsRequest
                                         {
                                             EngineId = request.EngineId,
@@ -97,7 +99,8 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             Translation = row.SourceSegment
                                         },
                                         cancellationToken
-                                    );
+                                    )
+                                        .WaitAndUnwrapException();
                                 }
                             },
                             true
