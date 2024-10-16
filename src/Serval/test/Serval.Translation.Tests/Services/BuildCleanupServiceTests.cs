@@ -25,7 +25,8 @@ public class BuildCleanupServiceTests
                 {
                     Id = "build1",
                     EngineRef = "engine1",
-                    SuccessfullyStarted = false
+                    IsInitialized = false,
+                    DateCreated = DateTime.UtcNow.Subtract(TimeSpan.FromHours(10))
                 }
             );
             Builds.Add(
@@ -33,7 +34,8 @@ public class BuildCleanupServiceTests
                 {
                     Id = "build2",
                     EngineRef = "engine2",
-                    SuccessfullyStarted = true
+                    IsInitialized = true,
+                    DateCreated = DateTime.UtcNow.Subtract(TimeSpan.FromHours(10))
                 }
             );
 
@@ -48,7 +50,7 @@ public class BuildCleanupServiceTests
 
         public async Task CheckBuildsAsync()
         {
-            await Service.CheckBuildsAsync(Builds, CancellationToken.None);
+            await Service.CheckEntitiesAsync(Builds, CancellationToken.None);
         }
     }
 }

@@ -1297,7 +1297,7 @@ public class TranslationEnginesController(
             Owner = Owner,
             Corpora = [],
             IsModelPersisted = source.IsModelPersisted,
-            SuccessfullyCreated = false
+            IsInitialized = false
         };
     }
 
@@ -1310,7 +1310,7 @@ public class TranslationEnginesController(
             Pretranslate = Map(engine, source.Pretranslate),
             TrainOn = Map(engine, source.TrainOn),
             Options = Map(source.Options),
-            SuccessfullyStarted = false
+            IsInitialized = false
         };
     }
 

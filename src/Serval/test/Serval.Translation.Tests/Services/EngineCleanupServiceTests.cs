@@ -32,7 +32,8 @@ public class EngineCleanupServiceTests
                     TargetLanguage = "es",
                     Type = "Nmt",
                     Owner = "client1",
-                    SuccessfullyCreated = false
+                    IsInitialized = false,
+                    DateCreated = DateTime.UtcNow.Subtract(TimeSpan.FromHours(10))
                 }
             );
             Engines.Add(
@@ -43,7 +44,8 @@ public class EngineCleanupServiceTests
                     TargetLanguage = "es",
                     Type = "Nmt",
                     Owner = "client1",
-                    SuccessfullyCreated = true
+                    IsInitialized = true,
+                    DateCreated = DateTime.UtcNow.Subtract(TimeSpan.FromHours(10))
                 }
             );
 
@@ -61,7 +63,7 @@ public class EngineCleanupServiceTests
                 .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
                 .Returns(translationServiceClient);
 
-            _engineService = new EngineService(
+            var engineService = new EngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 new MemoryRepository<Pretranslation>(),
@@ -72,15 +74,15 @@ public class EngineCleanupServiceTests
                 new LoggerFactory(),
                 Substitute.For<IScriptureDataFileService>()
             );
+
+            Service.EngineService = engineService;
         }
 
         public EngineCleanupService Service { get; }
 
-        private readonly EngineService _engineService;
-
         public async Task CheckEnginesAsync()
         {
-            await Service.CheckEnginesAsync(Engines, _engineService, CancellationToken.None);
+            await Service.CheckEntitiesAsync(Engines, CancellationToken.None);
         }
 
         private static AsyncUnaryCall<TResponse> CreateAsyncUnaryCall<TResponse>(TResponse response)
