@@ -23,9 +23,8 @@ public abstract class UninitializedCleanupService<T>(
 
     public async Task CheckEntitiesAsync(IRepository<T> entities, CancellationToken cancellationToken)
     {
-        IReadOnlyList<T> allEntities = await entities.GetAllAsync(cancellationToken);
         var now = DateTime.UtcNow;
-        IEnumerable<T> uninitializedEntities = allEntities.Where(b =>
+        IEnumerable<T> uninitializedEntities = (await entities.GetAllAsync(cancellationToken)).Where(b =>
             !(b.IsInitialized ?? true) && (now - (b.DateCreated ?? DateTime.UtcNow)) > _timeout
         );
         foreach (T entity in uninitializedEntities)
