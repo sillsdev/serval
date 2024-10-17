@@ -161,7 +161,9 @@ public class ParallelCorpusPreprocessor
             foreach (
                 Row row in AlignPretranslateCorpus(
                     sourcePretranslateCorpora,
-                    targetCorpora.Select(tc => tc.TextCorpus).ToArray()
+                    targetCorpora.Length > 0
+                        ? targetCorpora.Select(tc => tc.TextCorpus).ToArray()
+                        : [new DictionaryTextCorpus()]
                 )
             )
             {
