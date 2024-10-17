@@ -302,6 +302,24 @@ public class ParallelCorpusPreprocessor
 
     private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus[] trgCorpora)
     {
+        if (srcCorpora.All(sc => sc.IsScripture()))
+        {
+            var alignedCorpora = srcCorpora.SelectMany(sc => trgCorpora.Select(tc => AlignScripture(sc, tc)));
+            var zippedCorpora = alignedCorpora.ZipMany(rows => rows.ToArray());
+            var filteredZippedCorpora = zippedCorpora.Where(rows =>
+                rows.All(r => r is null || r.TargetSegment.Length == 0)
+            );
+            var rows = filteredZippedCorpora.Select(row =>
+                row.Where(r => r is not null && r.SourceSegment.Length > 0).FirstOrDefault()
+            );
+            foreach (Row? r in rows)
+            {
+                if (r is not null)
+                    yield return r;
+            }
+            yield break;
+        }
+
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
