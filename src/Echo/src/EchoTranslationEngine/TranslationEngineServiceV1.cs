@@ -1,6 +1,4 @@
-﻿using Nito.AsyncEx.Synchronous;
-
-namespace EchoTranslationEngine;
+﻿namespace EchoTranslationEngine;
 
 public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : TranslationEngineApi.TranslationEngineApiBase
 {
@@ -85,25 +83,21 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                         ParallelCorpusPreprocessor.PreprocessCorpora(
                             request.Corpora.Select(Map).ToList(),
                             row => { },
-                            (row, corpus) =>
+                            async (row, corpus) =>
                             {
-                                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
-                                {
-                                    call.RequestStream.WriteAsync(
-                                        new InsertPretranslationsRequest
-                                        {
-                                            EngineId = request.EngineId,
-                                            CorpusId = corpus.Id,
-                                            TextId = row.TextId,
-                                            Refs = { row.Refs.Select(r => r.ToString()) },
-                                            Translation = row.SourceSegment
-                                        },
-                                        cancellationToken
-                                    )
-                                        .WaitAndUnwrapException();
-                                }
+                                await call.RequestStream.WriteAsync(
+                                    new InsertPretranslationsRequest
+                                    {
+                                        EngineId = request.EngineId,
+                                        CorpusId = corpus.Id,
+                                        TextId = row.TextId,
+                                        Refs = { row.Refs.Select(r => r.ToString()) },
+                                        Translation = row.SourceSegment
+                                    },
+                                    cancellationToken
+                                );
                             },
-                            true
+                            false
                         );
                         await call.RequestStream.CompleteAsync();
                         await call;

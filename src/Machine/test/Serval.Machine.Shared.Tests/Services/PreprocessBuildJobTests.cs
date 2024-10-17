@@ -91,6 +91,23 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
+    public async Task RunAsync_PretranslateTextIdsOverlapWithTrainOnTextIds()
+    {
+        using TestEnvironment env = new();
+        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(
+            pretranslateTextIds: ["textId1"],
+            trainOnTextIds: ["textId1"]
+        );
+
+        await env.RunBuildJobAsync(corpus1);
+        Assert.Multiple(async () =>
+        {
+            Assert.That((await env.GetTrainCountAsync()).Source1Count, Is.EqualTo(4));
+            Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(0));
+        });
+    }
+
+    [Test]
     public async Task RunAsync_EnableKeyTerms()
     {
         using TestEnvironment env = new();

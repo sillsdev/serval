@@ -65,7 +65,12 @@ public class ParallelCorpusPreprocessor
                 {
                     ITextCorpus textCorpus = sc.TextCorpus;
                     if (sc.Corpus.PretranslateTextIds is not null)
-                        textCorpus = textCorpus.FilterTexts(sc.Corpus.PretranslateTextIds);
+                    {
+                        return textCorpus.FilterTexts(
+                            sc.Corpus.PretranslateTextIds.Except(sc.Corpus.TrainOnTextIds ?? new())
+                        );
+                    }
+
                     return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || sc.Corpus.PretranslateChapters is null
@@ -154,15 +159,14 @@ public class ParallelCorpusPreprocessor
                 }
             }
 
-            ITextCorpus textCorpus =
-                targetCorpora.Length > 0 ? targetCorpora[0].TextCorpus : new DictionaryTextCorpus();
-
-            foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, textCorpus))
+            foreach (
+                Row row in AlignPretranslateCorpus(
+                    sourcePretranslateCorpora,
+                    targetCorpora.Select(tc => tc.TextCorpus).ToArray()
+                )
+            )
             {
-                if (row.SourceSegment.Length > 0)
-                {
-                    pretranslate(row, corpus);
-                }
+                pretranslate(row, corpus);
             }
         }
     }
@@ -295,15 +299,23 @@ public class ParallelCorpusPreprocessor
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus[] trgCorpora)
     {
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
         List<object> refs = [];
         string textId = "";
-        foreach (ParallelTextRow row in srcCorpora.SelectMany(sc => sc.AlignRows(trgCorpus, allSourceRows: true)))
+        foreach (
+            ParallelTextRow? row in srcCorpora
+                .SelectMany(sc => trgCorpora.Select(tc => sc.AlignRows(tc, allSourceRows: true)))
+                .ZipMany(rows =>
+                    rows.Where(r => r.SourceSegment.Count > 0 && r.TargetSegment.Count == 0).FirstOrDefault()
+                )
+        )
         {
+            if (row is null)
+                continue;
             if (!row.IsTargetRangeStart && row.IsTargetInRange)
             {
                 refs.AddRange(row.TargetRefs);
