@@ -70,7 +70,6 @@ public class ParallelCorpusPreprocessor
                             sc.Corpus.PretranslateTextIds.Except(sc.Corpus.TrainOnTextIds ?? new())
                         );
                     }
-
                     return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || sc.Corpus.PretranslateChapters is null

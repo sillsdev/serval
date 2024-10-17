@@ -75,30 +75,34 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
 
                 try
                 {
+                    List<InsertPretranslationsRequest> pretranslationsRequests = [];
+                    ParallelCorpusPreprocessor.PreprocessCorpora(
+                        request.Corpora.Select(Map).ToList(),
+                        row => { },
+                        (row, corpus) =>
+                        {
+                            pretranslationsRequests.Add(
+                                new InsertPretranslationsRequest
+                                {
+                                    EngineId = request.EngineId,
+                                    CorpusId = corpus.Id,
+                                    TextId = row.TextId,
+                                    Refs = { row.Refs.Select(r => r.ToString()) },
+                                    Translation = row.SourceSegment
+                                }
+                            );
+                        },
+                        false
+                    );
                     using (
                         AsyncClientStreamingCall<InsertPretranslationsRequest, Empty> call =
                             client.InsertPretranslations(cancellationToken: cancellationToken)
                     )
                     {
-                        ParallelCorpusPreprocessor.PreprocessCorpora(
-                            request.Corpora.Select(Map).ToList(),
-                            row => { },
-                            async (row, corpus) =>
-                            {
-                                await call.RequestStream.WriteAsync(
-                                    new InsertPretranslationsRequest
-                                    {
-                                        EngineId = request.EngineId,
-                                        CorpusId = corpus.Id,
-                                        TextId = row.TextId,
-                                        Refs = { row.Refs.Select(r => r.ToString()) },
-                                        Translation = row.SourceSegment
-                                    },
-                                    cancellationToken
-                                );
-                            },
-                            false
-                        );
+                        foreach (InsertPretranslationsRequest request in pretranslationsRequests)
+                        {
+                            await call.RequestStream.WriteAsync(request, cancellationToken);
+                        }
                         await call.RequestStream.CompleteAsync();
                         await call;
                     }
@@ -214,14 +218,18 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
             kvp => kvp.Value.Chapters.ToHashSet()
         );
         var trainOnTextIds = source.TrainOnTextIds.ToHashSet();
-        FilterChoice trainingFilter = GetFilterChoice(trainOnChapters, trainOnTextIds);
+        FilterChoice trainingFilter = GetFilterChoice(trainOnChapters, trainOnTextIds, source.TrainOnAll);
 
         var pretranslateChapters = source.PretranslateChapters.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value.Chapters.ToHashSet()
         );
         var pretranslateTextIds = source.PretranslateTextIds.ToHashSet();
-        FilterChoice pretranslateFilter = GetFilterChoice(pretranslateChapters, pretranslateTextIds);
+        FilterChoice pretranslateFilter = GetFilterChoice(
+            pretranslateChapters,
+            pretranslateTextIds,
+            source.PretranslateAll
+        );
 
         return new SIL.ServiceToolkit.Models.MonolingualCorpus
         {
@@ -254,12 +262,13 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
 
     private static FilterChoice GetFilterChoice(
         IReadOnlyDictionary<string, HashSet<int>> chapters,
-        HashSet<string> textIds
+        HashSet<string> textIds,
+        bool noFilter
     )
     {
         // Only either textIds or Scripture Range will be used at a time
         // TextIds may be an empty array, so prefer that if both are empty (which applies to both scripture and text)
-        if (chapters is null && textIds is null)
+        if (noFilter || (chapters is null && textIds is null))
             return FilterChoice.None;
         if (chapters is null || chapters.Count == 0)
             return FilterChoice.TextIds;
