@@ -91,7 +91,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        Models.ParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
+        SIL.ServiceToolkit.Models.ParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
         try
         {
             await engineService.StartBuildAsync(
@@ -269,9 +269,9 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.ParallelCorpus Map(Translation.V1.ParallelCorpus source)
+    private static SIL.ServiceToolkit.Models.ParallelCorpus Map(Translation.V1.ParallelCorpus source)
     {
-        return new Models.ParallelCorpus
+        return new SIL.ServiceToolkit.Models.ParallelCorpus
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
@@ -279,7 +279,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.MonolingualCorpus Map(Translation.V1.MonolingualCorpus source)
+    private static SIL.ServiceToolkit.Models.MonolingualCorpus Map(Translation.V1.MonolingualCorpus source)
     {
         var trainOnChapters = source.TrainOnChapters.ToDictionary(
             kvp => kvp.Key,
@@ -299,7 +299,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             source.PretranslateAll
         );
 
-        var corpus = new Models.MonolingualCorpus
+        return new SIL.ServiceToolkit.Models.MonolingualCorpus
         {
             Id = source.Id,
             Language = source.Language,
@@ -309,15 +309,14 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             PretranslateChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
             PretranslateTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
         };
-        return corpus;
     }
 
-    private static Models.CorpusFile Map(Translation.V1.CorpusFile source)
+    private static SIL.ServiceToolkit.Models.CorpusFile Map(Translation.V1.CorpusFile source)
     {
-        return new Models.CorpusFile
+        return new SIL.ServiceToolkit.Models.CorpusFile
         {
             Location = source.Location,
-            Format = (Models.FileFormat)source.Format,
+            Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
             TextId = source.TextId
         };
     }

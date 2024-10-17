@@ -301,7 +301,6 @@ public class NmtEngineServiceTests
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
-                        Substitute.For<ICorpusService>(),
                         new LanguageTagService()
                     );
                 }
