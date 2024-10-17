@@ -52,7 +52,7 @@ public class ParallelCorpusPreprocessor
                 {
                     ITextCorpus textCorpus = sc.TextCorpus;
                     if (sc.Corpus.TrainOnTextIds is not null)
-                        textCorpus = textCorpus.FilterTexts(sc.Corpus.TrainOnTextIds);
+                        return textCorpus = textCorpus.FilterTexts(sc.Corpus.TrainOnTextIds);
                     return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || sc.Corpus.TrainOnChapters is null
@@ -66,7 +66,7 @@ public class ParallelCorpusPreprocessor
                     ITextCorpus textCorpus = sc.TextCorpus;
                     if (sc.Corpus.PretranslateTextIds is not null)
                     {
-                        return textCorpus.FilterTexts(
+                        return textCorpus = textCorpus.FilterTexts(
                             sc.Corpus.PretranslateTextIds.Except(sc.Corpus.TrainOnTextIds ?? new())
                         );
                     }
@@ -90,7 +90,7 @@ public class ParallelCorpusPreprocessor
                 {
                     ITextCorpus textCorpus = tc.TextCorpus;
                     if (tc.Corpus.TrainOnTextIds is not null)
-                        textCorpus = textCorpus.FilterTexts(tc.Corpus.TrainOnTextIds);
+                        return textCorpus = textCorpus.FilterTexts(tc.Corpus.TrainOnTextIds);
                     return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || tc.Corpus.TrainOnChapters is null
@@ -309,9 +309,9 @@ public class ParallelCorpusPreprocessor
         foreach (
             ParallelTextRow? row in srcCorpora
                 .SelectMany(sc => trgCorpora.Select(tc => sc.AlignRows(tc, allSourceRows: true)))
-                .ZipMany(rows =>
-                    rows.Where(r => r.SourceSegment.Count > 0 && r.TargetSegment.Count == 0).FirstOrDefault()
-                )
+                .ZipMany(rows => rows.ToArray())
+                .Where(rows => rows.All(r => r.TargetSegment.Count == 0))
+                .Select(rows => rows.Where(r => r.SourceSegment.Count > 0).FirstOrDefault())
         )
         {
             if (row is null)
