@@ -1,9 +1,15 @@
 ﻿namespace EchoTranslationEngine;
 
-public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : TranslationEngineApi.TranslationEngineApiBase
+public class TranslationEngineServiceV1(
+    BackgroundTaskQueue taskQueue,
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+) : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
+
+    private readonly IParallelCorpusPreprocessingService _parallelCorpusPreprocessingService =
+        parallelCorpusPreprocessingService;
 
     public override Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
@@ -76,7 +82,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                 try
                 {
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
-                    ParallelCorpusPreprocessor.PreprocessCorpora(
+                    _parallelCorpusPreprocessingService.Preprocess(
                         request.Corpora.Select(Map).ToList(),
                         row => { },
                         (row, corpus) =>

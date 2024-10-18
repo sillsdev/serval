@@ -1,14 +1,14 @@
 namespace SIL.ServiceToolkit.Utils;
 
-public class ParallelCorpusPreprocessor
+public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingService
 {
-    public ICorpusService CorpusService { get; init; }
+    private readonly ICorpusService _corpusService;
     private int _seed = 1234;
     private Random _random;
 
-    public ParallelCorpusPreprocessor()
+    public ParallelCorpusPreprocessingService(ICorpusService corpusService)
     {
-        CorpusService = new CorpusService();
+        _corpusService = corpusService;
         _random = new Random(_seed);
     }
 
@@ -25,16 +25,6 @@ public class ParallelCorpusPreprocessor
         }
     }
 
-    public static void PreprocessCorpora(
-        IReadOnlyList<ParallelCorpus> corpora,
-        Action<Row> train,
-        Action<Row, ParallelCorpus> pretranslate,
-        bool useKeyTerms = false
-    )
-    {
-        new ParallelCorpusPreprocessor().Preprocess(corpora, train, pretranslate, useKeyTerms);
-    }
-
     public void Preprocess(
         IReadOnlyList<ParallelCorpus> corpora,
         Action<Row> train,
@@ -45,14 +35,14 @@ public class ParallelCorpusPreprocessor
         foreach (ParallelCorpus corpus in corpora)
         {
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpus
-                .SourceCorpora.SelectMany(c => CorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
+                .SourceCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
                 .ToArray();
             ITextCorpus[] sourceTrainingCorpora = sourceCorpora
                 .Select(sc =>
                 {
                     ITextCorpus textCorpus = sc.TextCorpus;
                     if (sc.Corpus.TrainOnTextIds is not null)
-                        return textCorpus = textCorpus.FilterTexts(sc.Corpus.TrainOnTextIds);
+                        return textCorpus.FilterTexts(sc.Corpus.TrainOnTextIds);
                     return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || sc.Corpus.TrainOnChapters is null
@@ -66,7 +56,7 @@ public class ParallelCorpusPreprocessor
                     ITextCorpus textCorpus = sc.TextCorpus;
                     if (sc.Corpus.PretranslateTextIds is not null)
                     {
-                        return textCorpus = textCorpus.FilterTexts(
+                        return textCorpus.FilterTexts(
                             sc.Corpus.PretranslateTextIds.Except(sc.Corpus.TrainOnTextIds ?? new())
                         );
                     }
@@ -82,7 +72,7 @@ public class ParallelCorpusPreprocessor
                 .ToArray();
 
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
-                .TargetCorpora.SelectMany(c => CorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
+                .TargetCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
                 .ToArray();
             ITextCorpus[] targetTrainingCorpora = targetCorpora
                 .Select(tc =>
@@ -122,17 +112,7 @@ public class ParallelCorpusPreprocessor
                             nonEmptyRows = targetNonEmptyRows;
                         if (nonEmptyRows.Length > 0)
                         {
-                            nonEmptyRows = nonEmptyRows
-                                .GroupBy(r => r.SourceSegment)
-                                .Select(group => group.First())
-                                .ToArray();
-                            {
-                                nonEmptyRows = nonEmptyRows
-                                    .GroupBy(r => r.SourceSegment)
-                                    .Select(group => group.First())
-                                    .ToArray();
-                                row = nonEmptyRows[_random.Next(nonEmptyRows.Length)];
-                            }
+                            row = nonEmptyRows[_random.Next(nonEmptyRows.Length)];
                         }
                     }
                     skipCount = row.RowCount - 1;
@@ -142,10 +122,10 @@ public class ParallelCorpusPreprocessor
 
             if (useKeyTerms)
             {
-                ITextCorpus? sourceTermCorpus = CorpusService
+                ITextCorpus? sourceTermCorpus = _corpusService
                     .CreateTermCorpora(corpus.SourceCorpora.SelectMany(sc => sc.Files).ToList())
                     .FirstOrDefault();
-                ITextCorpus? targetTermCorpus = CorpusService
+                ITextCorpus? targetTermCorpus = _corpusService
                     .CreateTermCorpora(corpus.TargetCorpora.SelectMany(tc => tc.Files).ToList())
                     .FirstOrDefault();
                 if (sourceTermCorpus is not null && targetTermCorpus is not null)
@@ -300,74 +280,85 @@ public class ParallelCorpusPreprocessor
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus[] trgCorpora)
+    private IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus[] trgCorpora)
     {
         if (srcCorpora.All(sc => sc.IsScripture()))
         {
-            var alignedCorpora = srcCorpora.SelectMany(sc => trgCorpora.Select(tc => AlignScripture(sc, tc)));
-            var zippedCorpora = alignedCorpora.ZipMany(rows => rows.ToArray());
-            var filteredZippedCorpora = zippedCorpora.Where(rows =>
-                rows.All(r => r is null || r.TargetSegment.Length == 0)
-            );
-            var rows = filteredZippedCorpora.Select(row =>
-                row.Where(r => r is not null && r.SourceSegment.Length > 0).FirstOrDefault()
-            );
-            foreach (Row? r in rows)
-            {
-                if (r is not null)
-                    yield return r;
-            }
-            yield break;
-        }
-
-        int rowCount = 0;
-        StringBuilder srcSegBuffer = new();
-        StringBuilder trgSegBuffer = new();
-        List<object> refs = [];
-        string textId = "";
-        foreach (
-            ParallelTextRow? row in srcCorpora
-                .SelectMany(sc => trgCorpora.Select(tc => sc.AlignRows(tc, allSourceRows: true)))
+            int skipCount = 0;
+            var corpora = srcCorpora
+                .SelectMany(sc => trgCorpora.Select(tc => AlignScripture(sc, tc)))
                 .ZipMany(rows => rows.ToArray())
-                .Where(rows => rows.All(r => r.TargetSegment.Count == 0))
-                .Select(rows => rows.Where(r => r.SourceSegment.Count > 0).FirstOrDefault())
-        )
-        {
-            if (row is null)
-                continue;
-            if (!row.IsTargetRangeStart && row.IsTargetInRange)
+                .Where(rows => rows.All(r => r is null || r.TargetSegment.Length == 0))
+                .Select(rows => rows.Where(r => r is not null && r.SourceSegment.Length > 0).Select(r => r!).ToArray())
+                .Where(rows => rows.Length > 0);
+            foreach (Row[] rows in corpora)
             {
-                refs.AddRange(row.TargetRefs);
-                if (row.SourceText.Length > 0)
+                if (skipCount > 0)
                 {
-                    if (srcSegBuffer.Length > 0)
-                        srcSegBuffer.Append(' ');
-                    srcSegBuffer.Append(row.SourceText);
+                    skipCount--;
+                    continue;
                 }
-                rowCount++;
-            }
-            else
-            {
-                if (rowCount > 0)
+                Row row = rows.First();
+                if (rows.Length > 1)
                 {
-                    yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
-                    textId = "";
-                    srcSegBuffer.Clear();
-                    trgSegBuffer.Clear();
-                    refs.Clear();
-                    rowCount = 0;
+                    row = rows[_random.Next(rows.Length)];
                 }
-
-                textId = row.TextId;
-                refs.AddRange(row.TargetRefs);
-                srcSegBuffer.Append(row.SourceText);
-                trgSegBuffer.Append(row.TargetText);
-                rowCount++;
+                if (rows.Select(r => r.Refs.Count).Distinct().Count() > 1)
+                    skipCount = row.RowCount - 1;
+                yield return row;
             }
         }
+        else
+        {
+            int rowCount = 0;
+            StringBuilder srcSegBuffer = new();
+            StringBuilder trgSegBuffer = new();
+            List<object> refs = [];
+            string textId = "";
+            foreach (
+                ParallelTextRow row in srcCorpora
+                    .SelectMany(sc => trgCorpora.Select(tc => sc.AlignRows(tc, allSourceRows: true)))
+                    .ZipMany(rows => rows.ToArray())
+                    .Where(rows => rows.All(r => r.TargetSegment.Count == 0))
+                    .Select(rows => rows.Where(r => r.SourceSegment.Count > 0).FirstOrDefault())
+                    .Where(r => r is not null)
+                    .Select(r => r!)
+            )
+            {
+                if (!row.IsTargetRangeStart && row.IsTargetInRange)
+                {
+                    refs.AddRange(row.TargetRefs);
+                    if (row.SourceText.Length > 0)
+                    {
+                        if (srcSegBuffer.Length > 0)
+                            srcSegBuffer.Append(' ');
+                        srcSegBuffer.Append(row.SourceText);
+                    }
+                    rowCount++;
+                }
+                else
+                {
+                    if (rowCount > 0)
+                    {
+                        yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+                        textId = "";
+                        srcSegBuffer.Clear();
+                        trgSegBuffer.Clear();
+                        refs.Clear();
+                        rowCount = 0;
+                    }
 
-        if (rowCount > 0)
-            yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+                    textId = row.TextId;
+                    refs.AddRange(row.TargetRefs);
+                    srcSegBuffer.Append(row.SourceText);
+                    trgSegBuffer.Append(row.TargetText);
+                    rowCount++;
+                }
+            }
+
+            if (rowCount > 0)
+                yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+        }
     }
 
     private static TextRow CleanSegment(TextRow row)

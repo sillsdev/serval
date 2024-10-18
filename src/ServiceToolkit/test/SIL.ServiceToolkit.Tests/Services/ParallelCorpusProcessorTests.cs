@@ -1,3 +1,5 @@
+using SIL.ServiceToolkit.Services;
+
 namespace SIL.ServiceToolkit.Utils;
 
 [TestFixture]
@@ -15,7 +17,7 @@ public class ParallelCorpusPreprocessorTests
     [Test]
     public void TestParallelCorpusPreprocessor()
     {
-        var processor = new ParallelCorpusPreprocessor();
+        var processor = new ParallelCorpusPreprocessingService(new CorpusService());
         List<ParallelCorpus> corpora =
             new()
             {

@@ -6,7 +6,8 @@ public class PreprocessBuildJob(
     IDataAccessContext dataAccessContext,
     ILogger<PreprocessBuildJob> logger,
     IBuildJobService buildJobService,
-    ISharedFileService sharedFileService
+    ISharedFileService sharedFileService,
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
     : HangfireBuildJob<IReadOnlyList<ParallelCorpus>>(
         platformService,
@@ -22,7 +23,8 @@ public class PreprocessBuildJob(
 
     private readonly ISharedFileService _sharedFileService = sharedFileService;
 
-    public ICorpusService CorpusService { get; set; } = new CorpusService();
+    private readonly IParallelCorpusPreprocessingService _parallelCorpusPreprocessingService =
+        parallelCorpusPreprocessingService;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -105,7 +107,7 @@ public class PreprocessBuildJob(
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        new ParallelCorpusPreprocessor() { CorpusService = CorpusService }.Preprocess(
+        _parallelCorpusPreprocessingService.Preprocess(
             corpora,
             row =>
             {

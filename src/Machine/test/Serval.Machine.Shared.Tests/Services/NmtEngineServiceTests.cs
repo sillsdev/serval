@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using SIL.ServiceToolkit.Utils;
+
+namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
 public class NmtEngineServiceTests
@@ -301,7 +303,8 @@ public class NmtEngineServiceTests
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
-                        new LanguageTagService()
+                        new LanguageTagService(),
+                        new ParallelCorpusPreprocessingService(new CorpusService())
                     );
                 }
                 if (jobType == typeof(PostprocessBuildJob))

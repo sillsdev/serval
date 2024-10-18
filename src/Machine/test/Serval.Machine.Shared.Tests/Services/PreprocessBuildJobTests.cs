@@ -1,3 +1,5 @@
+using SIL.ServiceToolkit.Utils;
+
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
@@ -160,7 +162,11 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
+        Assert.That(
+            await env.GetPretranslateCountAsync(),
+            Is.EqualTo(4),
+            JsonSerializer.Serialize(await env.GetPretranslationsAsync())
+        );
     }
 
     [Test]
@@ -208,7 +214,7 @@ public class PreprocessBuildJobTests
         });
         Assert.That(
             await env.GetPretranslateCountAsync(),
-            Is.EqualTo(11),
+            Is.EqualTo(14),
             JsonSerializer.Serialize(await env.GetPretranslationsAsync())
         );
     }
@@ -409,6 +415,13 @@ public class PreprocessBuildJobTests
                                 new() { }
                             }
                         },
+                        PretranslateChapters = new()
+                        {
+                            {
+                                "1CH",
+                                new() { }
+                            }
+                        }
                     },
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -455,10 +468,12 @@ public class PreprocessBuildJobTests
             }
         };
         await env.RunBuildJobAsync(corpora, useKeyTerms: false);
+        JsonArray? pretranslations = await env.GetPretranslationsAsync();
         Assert.Multiple(async () =>
         {
+            string src = await env.GetSourceExtractAsync();
             Assert.That(
-                await env.GetSourceExtractAsync(),
+                src,
                 Is.EqualTo(
                     @"Source one, chapter fourteen, verse fifty-five. Segment b.
 Source one, chapter fourteen, verse fifty-six.
@@ -471,32 +486,35 @@ Source two, chapter one, verse seven. Source two, chapter one, verse eight.
 Source two, chapter one, verse nine. Source two, chapter one, verse ten.
 Source two, chapter one, verse one.
 "
-                )
+                ),
+                src
             );
+            string trg = await env.GetTargetExtractAsync();
             Assert.That(
-                await env.GetTargetExtractAsync(),
+                trg,
                 Is.EqualTo(
                     @"Target two, chapter fourteen, verse fifty-five.
 Target two, chapter fourteen, verse fifty-six.
-Target one, chapter one, verse one.
-Target one, chapter one, verse two.
+Target two, chapter one, verse one.
+Target two, chapter one, verse two.
 Target one, chapter one, verse three.
 
-Target one, chapter one, verse five and six.
+Target two, chapter one, verse five and six.
 Target one, chapter one, verse seven and eight.
-Target one, chapter one, verse nine and ten.
+Target two, chapter one, verse nine and ten.
 
 "
-                )
+                ),
+                trg
+            );
+            Assert.That(pretranslations, Is.Not.Null);
+            Assert.That(pretranslations!.Count, Is.EqualTo(9), pretranslations.ToJsonString());
+            Assert.That(
+                pretranslations[0]!["translation"]!.ToString(),
+                Is.EqualTo("Source one, chapter twelve, verse one."),
+                pretranslations.ToJsonString()
             );
         });
-        JsonArray? pretranslations = await env.GetPretranslationsAsync();
-        Assert.That(pretranslations, Is.Not.Null);
-        Assert.That(pretranslations!.Count, Is.EqualTo(3), pretranslations.ToJsonString());
-        Assert.That(
-            pretranslations[2]!["translation"]!.ToString(),
-            Is.EqualTo("Source one, chapter thirteen, verse one.")
-        );
     }
 
     private class TestEnvironment : DisposableBase
@@ -802,11 +820,9 @@ Target one, chapter one, verse nine and ten.
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
-                        new LanguageTagService()
-                    )
-                    {
-                        CorpusService = CorpusService
-                    };
+                        new LanguageTagService(),
+                        new ParallelCorpusPreprocessingService(CorpusService)
+                    );
                 }
                 case TranslationEngineType.SmtTransfer:
                 {
@@ -818,11 +834,9 @@ Target one, chapter one, verse nine and ten.
                         BuildJobService,
                         SharedFileService,
                         LockFactory,
-                        TrainSegmentPairs
-                    )
-                    {
-                        CorpusService = CorpusService
-                    };
+                        TrainSegmentPairs,
+                        new ParallelCorpusPreprocessingService(CorpusService)
+                    );
                 }
                 default:
                     throw new InvalidOperationException("Unknown engine type.");

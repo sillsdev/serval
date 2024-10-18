@@ -41,6 +41,7 @@ public static class IServiceCollectionExtensions
                 configuration.GetSection(DistributedReaderWriterLockOptions.Key)
             );
             builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
+            builder.AddServiceToolkitServices();
             builder.AddMessageOutboxOptions(configuration.GetSection(MessageOutboxOptions.Key));
         }
         return builder;
