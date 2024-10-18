@@ -27,4 +27,11 @@ public interface IPlatformService
         Stream pretranslationsStream,
         CancellationToken cancellationToken = default
     );
+
+    Task UpdateBuildExecutionDataAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyDictionary<string, string> executionData,
+        CancellationToken cancellationToken = default
+    );
 }
