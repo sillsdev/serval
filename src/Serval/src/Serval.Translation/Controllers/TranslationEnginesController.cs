@@ -1,4 +1,6 @@
-﻿namespace Serval.Translation.Controllers;
+namespace Serval.Translation.Controllers;
+
+#pragma warning disable CS0612 // Type or member is obsolete
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
@@ -1547,7 +1549,8 @@ public class TranslationEnginesController(
             State = source.State,
             DateFinished = source.DateFinished,
             Options = source.Options,
-            DeploymentVersion = source.DeploymentVersion
+            DeploymentVersion = source.DeploymentVersion,
+            ExecutionData = source.ExecutionData
         };
     }
 
