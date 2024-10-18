@@ -213,6 +213,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 .AddOpenTelemetry()
                 .WithMetrics(opts => opts.AddAspNetCoreInstrumentation().AddPrometheusExporter());
         }
+        services.Configure<Serval.Shared.Configuration.ServalSettings>(Configuration.GetSection("ServalSettings"));
         services.Configure<Bugsnag.Configuration>(Configuration.GetSection("Bugsnag"));
         services.AddBugsnag();
     }
