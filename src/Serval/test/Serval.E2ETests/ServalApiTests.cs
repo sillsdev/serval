@@ -47,6 +47,35 @@ public class ServalApiTests
     }
 
     [Test]
+    public async Task GetServalReleaseVersion()
+    {
+        string engineId = await _helperClient.CreateNewEngineAsync("Echo", "es", "es", "Echo2");
+        string[] books = ["1JN.txt", "2JN.txt"];
+        await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "es", false);
+        books = ["3JN.txt"];
+        string corpusId = await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "es", true);
+        await _helperClient.BuildEngineAsync(engineId);
+        IList<Pretranslation> pretranslations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            corpusId
+        );
+        Assert.That(pretranslations, Has.Count.GreaterThan(1));
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetCurrentBuildAsync(engineId);
+        Assert.That(
+            build.ServalReleaseVersion,
+            Is.Not.Null.And.Not.Empty,
+            "Serval release version should not be null or empty."
+        );
+
+        var hasServalReleaseVersionProperty = typeof(TranslationBuild).GetProperty("ServalReleaseVersion") != null;
+        Assert.That(
+            hasServalReleaseVersionProperty,
+            Is.True,
+            "ServalReleaseVersion property should exist in the build."
+        );
+    }
+
+    [Test]
     public async Task GetSmtTranslation()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT1");
