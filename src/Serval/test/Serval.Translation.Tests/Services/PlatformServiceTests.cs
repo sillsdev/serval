@@ -1,3 +1,4 @@
+using System.Globalization;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -88,6 +89,61 @@ public class PlatformServiceTests
         );
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.EqualTo(1));
         Assert.That(env.Builds.Get("b0").PercentCompleted, Is.EqualTo(0.5));
+    }
+
+    [Test]
+    public async Task UpdateBuildExecutionData()
+    {
+        var env = new TestEnvironment();
+
+        var engine = new Engine()
+        {
+            Id = "e0",
+            Owner = "owner1",
+            Type = "nmt",
+            SourceLanguage = "en",
+            TargetLanguage = "es",
+            Corpora = []
+        };
+        await env.Engines.InsertAsync(engine);
+
+        // Add build to mongo DB with some execution data, some fields that will not be overwritten and some that will
+        var build = new Build()
+        {
+            Id = "123",
+            EngineRef = "e0",
+            ExecutionData = new Dictionary<string, string>
+            {
+                { "trainCount", "0" },
+                { "pretranslateCount", "0" },
+                { "staticCount", "0" }
+            }
+        };
+        await env.Builds.InsertAsync(build);
+
+        Assert.That(build.ExecutionData, Is.Not.Null);
+
+        var executionData = build.ExecutionData!;
+
+        Assert.That(executionData, Contains.Key("trainCount"));
+        Assert.That(executionData, Contains.Key("pretranslateCount"));
+
+        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
+        int pretranslateCount = Convert.ToInt32(executionData["pretranslateCount"], CultureInfo.InvariantCulture);
+        int staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
+
+        Assert.That(trainCount, Is.EqualTo(0));
+        Assert.That(pretranslateCount, Is.EqualTo(0));
+        Assert.That(staticCount, Is.EqualTo(0));
+
+        await env.PlatformService.UpdateBuildExecutionData(
+            new UpdateBuildExecutionDataRequest() { BuildId = "b0", EngineId = engine.Id },
+            env.ServerCallContext
+        );
+
+        Assert.That(trainCount, Is.GreaterThan(0));
+        Assert.That(pretranslateCount, Is.GreaterThan(0));
+        Assert.That(staticCount, Is.EqualTo(0));
     }
 
     [Test]

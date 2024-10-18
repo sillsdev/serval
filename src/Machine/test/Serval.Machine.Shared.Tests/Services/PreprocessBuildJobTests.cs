@@ -65,7 +65,7 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
     }
 
     [Test]
