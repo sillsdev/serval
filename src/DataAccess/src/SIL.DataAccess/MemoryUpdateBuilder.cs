@@ -204,7 +204,23 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
         (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(entity, filter, field);
         object[]? indices = index == null ? null : [index];
         foreach (object owner in owners)
-            prop.SetValue(owner, value, indices);
+        {
+            if (owner is IDictionary dictionary)
+            {
+                if (index != null)
+                {
+                    dictionary[index] = value;
+                }
+                else
+                {
+                    throw new ArgumentException("Cannot set a field on a dictionary without an index.", nameof(field));
+                }
+            }
+            else
+            {
+                prop.SetValue(owner, value, indices);
+            }
+        }
     }
 
     private static bool IsAnyMethod(MethodInfo mi)

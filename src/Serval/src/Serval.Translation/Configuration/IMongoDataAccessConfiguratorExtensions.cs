@@ -35,6 +35,11 @@ public static class IMongoDataAccessConfiguratorExtensions
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.DateCreated))
                 );
+                // migrate by adding ExecutionData field
+                await c.UpdateManyAsync(
+                    Builders<Build>.Filter.Exists(b => b.ExecutionData, false),
+                    Builders<Build>.Update.Set(b => b.ExecutionData, new Dictionary<string, string>())
+                );
             }
         );
         configurator.AddRepository<Pretranslation>(
