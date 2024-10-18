@@ -1,7 +1,3 @@
-using Google.Protobuf.WellKnownTypes;
-using MassTransit.Mediator;
-using Serval.Translation.V1;
-
 namespace Serval.Translation.Services;
 
 [TestFixture]
@@ -54,28 +50,6 @@ public class EngineCleanupServiceTests
                 Substitute.For<ILogger<EngineCleanupService>>(),
                 TimeSpan.Zero
             );
-
-            var translationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
-            translationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
-
-            GrpcClientFactory grpcClientFactory = Substitute.For<GrpcClientFactory>();
-            grpcClientFactory
-                .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
-                .Returns(translationServiceClient);
-
-            var engineService = new EngineService(
-                Engines,
-                new MemoryRepository<Build>(),
-                new MemoryRepository<Pretranslation>(),
-                Substitute.For<IScopedMediator>(),
-                grpcClientFactory,
-                Substitute.For<IOptionsMonitor<DataFileOptions>>(),
-                new MemoryDataAccessContext(),
-                new LoggerFactory(),
-                Substitute.For<IScriptureDataFileService>()
-            );
-
-            Service.EngineService = engineService;
         }
 
         public EngineCleanupService Service { get; }
@@ -83,17 +57,6 @@ public class EngineCleanupServiceTests
         public async Task CheckEnginesAsync()
         {
             await Service.CheckEntitiesAsync(Engines, CancellationToken.None);
-        }
-
-        private static AsyncUnaryCall<TResponse> CreateAsyncUnaryCall<TResponse>(TResponse response)
-        {
-            return new AsyncUnaryCall<TResponse>(
-                Task.FromResult(response),
-                Task.FromResult(new Metadata()),
-                () => Status.DefaultSuccess,
-                () => new Metadata(),
-                () => { }
-            );
         }
     }
 }

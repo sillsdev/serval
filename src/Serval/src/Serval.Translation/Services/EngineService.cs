@@ -24,6 +24,14 @@ public class EngineService(
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
+    public override async Task<Engine> GetAsync(string id, CancellationToken cancellationToken = default)
+    {
+        Engine engine = await base.GetAsync(id, cancellationToken);
+        if (!(engine.IsInitialized ?? true))
+            throw new EntityNotFoundException($"Could not find the {typeof(Engine).Name} '{id}'.");
+        return engine;
+    }
+
     public async Task<Models.TranslationResult> TranslateAsync(
         string engineId,
         string segment,
@@ -153,7 +161,7 @@ public class EngineService(
                     u.Set(e => e.IsInitialized, true);
                     u.Set(e => e.IsModelPersisted, engine.IsModelPersisted);
                 },
-                cancellationToken: cancellationToken
+                cancellationToken: CancellationToken.None
             );
         }
         catch (RpcException rpcex)

@@ -24,13 +24,15 @@ public abstract class UninitializedCleanupService<T>(
     public async Task CheckEntitiesAsync(IRepository<T> entities, CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
-        IEnumerable<T> uninitializedEntities = (await entities.GetAllAsync(cancellationToken)).Where(b =>
-            !(b.IsInitialized ?? true) && (now - (b.DateCreated ?? DateTime.UtcNow)) > _timeout
+        IEnumerable<T> uninitializedEntities = await entities.GetAllAsync(
+            e => !(e.IsInitialized ?? true) && e.DateCreated != null && (now - e.DateCreated) > _timeout,
+            cancellationToken
         );
+
         foreach (T entity in uninitializedEntities)
         {
             _logger.LogInformation(
-                "Deleting {type} {id} because it was never successfully started",
+                "Deleting {type} {id} because it was never successfully initialized.",
                 typeof(T),
                 entity.Id
             );
