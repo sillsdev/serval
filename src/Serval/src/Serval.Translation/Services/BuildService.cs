@@ -4,7 +4,10 @@ public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(
 {
     public async Task<IEnumerable<Build>> GetAllAsync(string parentId, CancellationToken cancellationToken = default)
     {
-        return await Entities.GetAllAsync(e => e.EngineRef == parentId && (e.IsInitialized ?? true), cancellationToken);
+        return await Entities.GetAllAsync(
+            e => e.EngineRef == parentId && (e.IsInitialized == null || e.IsInitialized.Value),
+            cancellationToken
+        );
     }
 
     public Task<Build?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default)
