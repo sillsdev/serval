@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Shared.Services;
 
 public class PreprocessBuildJob(
     IPlatformService platformService,
@@ -67,6 +67,13 @@ public class PreprocessBuildJob(
                 $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
             );
         }
+
+        var executionData = new Dictionary<string, string>()
+        {
+            { "trainCount", trainCount.ToString(CultureInfo.InvariantCulture) },
+            { "pretranslateCount", pretranslateCount.ToString(CultureInfo.InvariantCulture) }
+        };
+        await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
 
         cancellationToken.ThrowIfCancellationRequested();
 

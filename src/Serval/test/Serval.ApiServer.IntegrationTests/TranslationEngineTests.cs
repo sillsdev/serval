@@ -259,6 +259,29 @@ public class TranslationEngineTests
     }
 
     [Test]
+    public async Task UpdateBuildExecutionData(IEnumerable<string> scope, string engineId)
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+        // Add build to mongo DB with some execution data, some fields that will not be overwritten and some that will
+        var build = new Build()
+        {
+            Id = "123",
+            EngineRef = "456",
+            ExecutionData = new Dictionary<string, string> { { "trainCount", "0" }, { "pretransalteCount", "0" } }
+        };
+        await _env.Builds.InsertAsync(build);
+        // Call client.UpdateBuildExecutionData with the new data
+        // Assert.That(build, Is.Not.Null);
+        TranslationBuild result = await client.GetBuildAsync(engineId, build.Id);
+        var k = await client.GetAsync(engineId);
+
+        Assert.ThrowsAsync<NotImplementedException>(async () => {
+            // await _env.Engines.GetAsync
+        });
+        // check the build in the mongo DB to ensure that the data was written properly.
+    }
+
+    [Test]
     [TestCase(new[] { Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines }, 201, "Echo")]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 400, "NotARealKindOfMT")]
     [TestCase(new[] { Scopes.ReadFiles }, 403, "Echo")] //Arbitrary unrelated privilege
