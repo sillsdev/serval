@@ -12,7 +12,7 @@ public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(
         return Entities.GetAsync(
             b =>
                 b.EngineRef == parentId
-                && (b.IsInitialized ?? true)
+                && (b.IsInitialized == null || b.IsInitialized.Value)
                 && (b.State == JobState.Active || b.State == JobState.Pending),
             cancellationToken
         );
@@ -24,7 +24,11 @@ public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(
         CancellationToken cancellationToken = default
     )
     {
-        return GetNewerRevisionAsync(e => e.Id == id && (e.IsInitialized ?? true), minRevision, cancellationToken);
+        return GetNewerRevisionAsync(
+            e => e.Id == id && (e.IsInitialized == null || e.IsInitialized.Value),
+            minRevision,
+            cancellationToken
+        );
     }
 
     public Task<EntityChange<Build>> GetActiveNewerRevisionAsync(
@@ -36,7 +40,7 @@ public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(
         return GetNewerRevisionAsync(
             b =>
                 b.EngineRef == parentId
-                && (b.IsInitialized ?? true)
+                && (b.IsInitialized == null || b.IsInitialized.Value)
                 && (b.State == JobState.Active || b.State == JobState.Pending),
             minRevision,
             cancellationToken

@@ -25,7 +25,11 @@ public abstract class UninitializedCleanupService<T>(
     {
         var now = DateTime.UtcNow;
         IEnumerable<T> uninitializedEntities = await entities.GetAllAsync(
-            e => !(e.IsInitialized ?? true) && e.DateCreated != null && (now - e.DateCreated) > _timeout,
+            e =>
+                e.IsInitialized != null
+                && !e.IsInitialized.Value
+                && e.DateCreated != null
+                && (now - e.DateCreated) > _timeout,
             cancellationToken
         );
 
