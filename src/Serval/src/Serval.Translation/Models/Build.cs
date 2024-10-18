@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Models;
+namespace Serval.Translation.Models;
 
 public record Build : IEntity
 {
@@ -13,7 +13,9 @@ public record Build : IEntity
     public string? Message { get; init; }
     public int? QueueDepth { get; init; }
     public JobState State { get; init; } = JobState.Pending;
+    public DateTime DateCreated { get; init; } = DateTime.UtcNow;
     public DateTime? DateFinished { get; init; }
     public IReadOnlyDictionary<string, object>? Options { get; init; }
     public string? DeploymentVersion { get; init; }
+    public IReadOnlyDictionary<string, string> ExecutionData { get; init; } = new Dictionary<string, string>();
 }
