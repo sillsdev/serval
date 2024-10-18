@@ -25,6 +25,9 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
 
+        builder.Services.AddSingleton<EngineCleanupService>();
+        builder.Services.AddSingleton<BuildCleanupService>();
+
         var translationOptions = new TranslationOptions();
         builder.Configuration?.GetSection(TranslationOptions.Key).Bind(translationOptions);
         if (configure is not null)
