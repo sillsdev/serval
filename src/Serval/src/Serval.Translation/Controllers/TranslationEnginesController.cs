@@ -10,8 +10,7 @@ public class TranslationEnginesController(
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
     IUrlService urlService,
-    ILogger<TranslationEnginesController> logger,
-    IOptions<ServalSettings> servalSettingsOptions
+    ILogger<TranslationEnginesController> logger
 ) : ServalControllerBase(authService)
 {
     private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
@@ -23,7 +22,8 @@ public class TranslationEnginesController(
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
     private readonly ILogger<TranslationEnginesController> _logger = logger;
-    private readonly ServalSettings _servalSettings = servalSettingsOptions.Value;
+
+    // private readonly ServalSettings _servalSettings = apiOptions.Value;
 
     /// <summary>
     /// Get all translation engines
@@ -1508,7 +1508,7 @@ public class TranslationEnginesController(
             State = source.State,
             DateFinished = source.DateFinished,
             Options = source.Options,
-            ServalReleaseVersion = _servalSettings.ReleaseVersion
+            ServalVersion = _apiOptions.CurrentValue.ServalVersion
         };
     }
 

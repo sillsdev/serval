@@ -7,7 +7,7 @@ namespace Serval.ApiServer;
 
 [TestFixture]
 [Category("Integration")]
-public class TranslationEngineTests
+public class TranslationEngineTests(IOptionsMonitor<ApiOptions> apiOptions, TranslationEngineTests.TestEnvironment env)
 {
     private static readonly TranslationCorpusConfig TestCorpusConfig =
         new()
@@ -74,8 +74,9 @@ public class TranslationEngineTests
     private const string TARGET_CORPUS_ID = "cc0000000000000000000002";
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
     private const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
+    private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
 
-    private TestEnvironment _env;
+    private TestEnvironment _env = env;
 
     [SetUp]
     public async Task SetUp()
@@ -1391,6 +1392,12 @@ public class TranslationEngineTests
 
                 build = await client.GetCurrentBuildAsync(engineId);
                 Assert.That(build, Is.Not.Null);
+
+                // Fetch and assert ServalVersion from ApiOptions
+                // ApiOptions apiOptions = _env.GetRequiredService<IOptionsMonitor<ApiOptions>>().CurrentValue;
+                Assert.That(_apiOptions.CurrentValue.ServalVersion, Is.Not.Null);
+                // Assert.That(apiOptions.ServalVersion, Is.EqualTo("expected_version")); // Replace with the actual expected version
+
                 break;
             case 400:
             case 403:
@@ -1891,7 +1898,7 @@ public class TranslationEngineTests
         _env.Dispose();
     }
 
-    private class TestEnvironment : DisposableBase
+    public class TestEnvironment : DisposableBase
     {
         private readonly IServiceScope _scope;
         private readonly MongoClient _mongoClient;

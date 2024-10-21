@@ -27,5 +27,5 @@ public record TranslationBuildDto
     /// }
     /// </example>
     public object? Options { get; init; }
-    public string? ServalReleaseVersion { get; init; }
+    public string? ServalVersion { get; init; }
 }
