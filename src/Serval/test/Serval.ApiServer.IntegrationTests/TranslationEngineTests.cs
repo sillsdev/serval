@@ -7,7 +7,7 @@ namespace Serval.ApiServer;
 
 [TestFixture]
 [Category("Integration")]
-public class TranslationEngineTests(IOptionsMonitor<ApiOptions> apiOptions, TranslationEngineTests.TestEnvironment env)
+public class TranslationEngineTests
 {
     private static readonly TranslationCorpusConfig TestCorpusConfig =
         new()
@@ -74,9 +74,8 @@ public class TranslationEngineTests(IOptionsMonitor<ApiOptions> apiOptions, Tran
     private const string TARGET_CORPUS_ID = "cc0000000000000000000002";
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
     private const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
-    private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
 
-    private TestEnvironment _env = env;
+    private TestEnvironment _env;
 
     [SetUp]
     public async Task SetUp()
@@ -1395,7 +1394,7 @@ public class TranslationEngineTests(IOptionsMonitor<ApiOptions> apiOptions, Tran
 
                 // Fetch and assert ServalVersion from ApiOptions
                 // ApiOptions apiOptions = _env.GetRequiredService<IOptionsMonitor<ApiOptions>>().CurrentValue;
-                Assert.That(_apiOptions.CurrentValue.ServalVersion, Is.Not.Null);
+                Assert.That(_env.ApiOptions.CurrentValue.ServalVersion, Is.Not.Null);
                 // Assert.That(apiOptions.ServalVersion, Is.EqualTo("expected_version")); // Replace with the actual expected version
 
                 break;
@@ -2001,6 +2000,7 @@ public class TranslationEngineTests(IOptionsMonitor<ApiOptions> apiOptions, Tran
     {
         private readonly IServiceScope _scope;
         private readonly MongoClient _mongoClient;
+        public readonly IOptionsMonitor<ApiOptions> ApiOptions;
 
         public TestEnvironment()
         {
@@ -2011,6 +2011,7 @@ public class TranslationEngineTests(IOptionsMonitor<ApiOptions> apiOptions, Tran
             Factory = new ServalWebApplicationFactory();
             _scope = Factory.Services.CreateScope();
             Engines = _scope.ServiceProvider.GetRequiredService<IRepository<Engine>>();
+            ApiOptions = _scope.ServiceProvider.GetRequiredService<IOptionsMonitor<ApiOptions>>();
             DataFiles = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.DataFile>>();
             Corpora = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.Corpus>>();
             Pretranslations = _scope.ServiceProvider.GetRequiredService<
