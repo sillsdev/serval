@@ -17,9 +17,6 @@ builder.Services.AddBugsnag();
 
 WebApplication app = builder.Build();
 
-// Configure the HTTP request pipeline.
-app.UseHttpsRedirection();
-
 app.MapGrpcService<TranslationEngineServiceV1>();
 app.MapGrpcService<HealthServiceV1>();
 

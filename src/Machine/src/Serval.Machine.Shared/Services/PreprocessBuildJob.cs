@@ -238,22 +238,27 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
                     }
                 }
             }
+            void WriteRow(Utf8JsonWriter writer, string textId, IReadOnlyList<object> refs, string translation)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("corpusId", corpus.Id);
+                writer.WriteString("textId", textId);
+                writer.WriteStartArray("refs");
+                foreach (object rowRef in refs)
+                    writer.WriteStringValue(rowRef.ToString());
+                writer.WriteEndArray();
+                writer.WriteString("translation", translation);
+                writer.WriteEndObject();
+                pretranslateCount++;
+            }
 
-            foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpora[0].TextCorpus))
+            ITextCorpus targetCorpus =
+                targetCorpora.Length > 0 ? targetCorpora[0].TextCorpus : new DictionaryTextCorpus();
+
+            foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpus))
             {
                 if (row.SourceSegment.Length > 0)
-                {
-                    pretranslateWriter.WriteStartObject();
-                    pretranslateWriter.WriteString("corpusId", corpus.Id);
-                    pretranslateWriter.WriteString("textId", row.TextId);
-                    pretranslateWriter.WriteStartArray("refs");
-                    foreach (object rowRef in row.Refs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteString("translation", row.SourceSegment);
-                    pretranslateWriter.WriteEndObject();
-                    pretranslateCount++;
-                }
+                    WriteRow(pretranslateWriter, row.TextId, row.Refs, row.SourceSegment);
             }
         }
 
