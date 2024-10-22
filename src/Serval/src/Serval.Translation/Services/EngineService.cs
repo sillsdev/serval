@@ -681,12 +681,12 @@ public class EngineService(
                 );
             }
         }
-        return new V1.ParallelCorpus
-        {
-            Id = source.Id,
-            SourceCorpora = { sourceCorpus },
-            TargetCorpora = { targetCorpus }
-        };
+        V1.ParallelCorpus corpus = new() { Id = source.Id };
+        if (sourceCorpus.Files.Count > 0)
+            corpus.SourceCorpora.Add(sourceCorpus);
+        if (targetCorpus.Files.Count > 0)
+            corpus.TargetCorpora.Add(targetCorpus);
+        return corpus;
     }
 
     private V1.ParallelCorpus Map(

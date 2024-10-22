@@ -177,12 +177,22 @@ public class ServalClientHelper : IAsyncDisposable
         bool pretranslate
     )
     {
-        List<DataFile> sourceFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, sourceLanguage);
+        List<DataFile> sourceFiles = await UploadFilesAsync(
+            filesToAdd,
+            FileFormat.Text,
+            sourceLanguage,
+            isTarget: false
+        );
 
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
         if (!pretranslate)
         {
-            List<DataFile> targetFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, targetLanguage);
+            List<DataFile> targetFiles = await UploadFilesAsync(
+                filesToAdd,
+                FileFormat.Text,
+                targetLanguage,
+                isTarget: true
+            );
             foreach (var item in targetFiles.Select((file, i) => new { i, file }))
             {
                 targetFileConfig.Add(
@@ -193,20 +203,11 @@ public class ServalClientHelper : IAsyncDisposable
 
         var sourceFileConfig = new List<TranslationCorpusFileConfig>();
 
-        if (sourceLanguage == targetLanguage && !pretranslate)
+        for (int i = 0; i < sourceFiles.Count; i++)
         {
-            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
-            // if pretranslating, we need to upload the source separately
-            // if different languages, we are not echoing.
-        }
-        else
-        {
-            for (int i = 0; i < sourceFiles.Count; i++)
-            {
-                sourceFileConfig.Add(
-                    new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
-                );
-            }
+            sourceFileConfig.Add(
+                new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
+            );
         }
 
         TranslationCorpus response = await TranslationEnginesClient.AddCorpusAsync(
@@ -239,12 +240,22 @@ public class ServalClientHelper : IAsyncDisposable
         bool pretranslate
     )
     {
-        List<DataFile> sourceFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, sourceLanguage);
+        List<DataFile> sourceFiles = await UploadFilesAsync(
+            filesToAdd,
+            FileFormat.Text,
+            sourceLanguage,
+            isTarget: false
+        );
 
         var targetFileConfig = new List<CorpusFileConfig>();
         if (!pretranslate)
         {
-            List<DataFile> targetFiles = await UploadFilesAsync(filesToAdd, FileFormat.Text, targetLanguage);
+            List<DataFile> targetFiles = await UploadFilesAsync(
+                filesToAdd,
+                FileFormat.Text,
+                targetLanguage,
+                isTarget: true
+            );
             foreach (var item in targetFiles.Select((file, i) => new { i, file }))
             {
                 targetFileConfig.Add(new CorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] });
@@ -263,18 +274,9 @@ public class ServalClientHelper : IAsyncDisposable
 
         var sourceFileConfig = new List<CorpusFileConfig>();
 
-        if (sourceLanguage == targetLanguage && !pretranslate)
+        for (int i = 0; i < sourceFiles.Count; i++)
         {
-            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
-            // if pretranslating, we need to upload the source separately
-            // if different languages, we are not echoing.
-        }
-        else
-        {
-            for (int i = 0; i < sourceFiles.Count; i++)
-            {
-                sourceFileConfig.Add(new CorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] });
-            }
+            sourceFileConfig.Add(new CorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] });
         }
 
         CorpusConfig sourceCorpusConfig =
@@ -305,7 +307,8 @@ public class ServalClientHelper : IAsyncDisposable
     public async Task<List<DataFile>> UploadFilesAsync(
         IEnumerable<string> filesToAdd,
         FileFormat fileFormat,
-        string language
+        string language,
+        bool isTarget
     )
     {
         string languageFolder = Path.GetFullPath(
@@ -325,7 +328,7 @@ public class ServalClientHelper : IAsyncDisposable
 
         foreach (string fileName in filesToAdd)
         {
-            string fullName = _prefix + language + "_" + fileName;
+            string fullName = _prefix + language + "_" + fileName + (isTarget ? "_trg" : "_src");
 
             //delete files that have the name name
             if (filenameToId.Contains(fullName))
