@@ -1,4 +1,4 @@
-namespace SIL.ServiceToolkit.Utils;
+namespace SIL.ServiceToolkit.Services;
 
 public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingService
 {
@@ -63,10 +63,8 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                     return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || sc.Corpus.PretranslateChapters is null
-                        || (
-                            IsInChapters(sr, sc.Corpus.PretranslateChapters)
+                        || IsInChapters(sr, sc.Corpus.PretranslateChapters)
                             && !IsInChapters(sr, sc.Corpus.TrainOnChapters ?? new())
-                        )
                     );
                 })
                 .ToArray();
@@ -111,9 +109,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                         if (targetNonEmptyRows.Length > 0)
                             nonEmptyRows = targetNonEmptyRows;
                         if (nonEmptyRows.Length > 0)
-                        {
                             row = nonEmptyRows[_random.Next(nonEmptyRows.Length)];
-                        }
                     }
                     skipCount = row.RowCount - 1;
                     train(row);
@@ -300,9 +296,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                 }
                 Row row = rows.First();
                 if (rows.Length > 1)
-                {
                     row = rows[_random.Next(rows.Length)];
-                }
                 if (rows.Select(r => r.Refs.Count).Distinct().Count() > 1)
                     skipCount = row.RowCount - 1;
                 yield return row;

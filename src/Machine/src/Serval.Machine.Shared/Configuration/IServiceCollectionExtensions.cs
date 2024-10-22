@@ -19,6 +19,7 @@ public static class IServiceCollectionExtensions
             (sp, cancellationToken) =>
                 sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
         );
+        services.AddParallelCorpusPreprocessor();
 
         var builder = new MachineBuilder(services, configuration);
         if (configuration is null)
@@ -41,7 +42,6 @@ public static class IServiceCollectionExtensions
                 configuration.GetSection(DistributedReaderWriterLockOptions.Key)
             );
             builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
-            builder.AddServiceToolkitServices();
             builder.AddMessageOutboxOptions(configuration.GetSection(MessageOutboxOptions.Key));
         }
         return builder;

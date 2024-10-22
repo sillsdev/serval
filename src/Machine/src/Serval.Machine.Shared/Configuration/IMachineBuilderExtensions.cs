@@ -112,12 +112,6 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddServiceToolkitServices(this IMachineBuilder builder)
-    {
-        builder.Services.AddParallelCorpusPreprocessor();
-        return builder;
-    }
-
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
         if (builder.Configuration is null)
