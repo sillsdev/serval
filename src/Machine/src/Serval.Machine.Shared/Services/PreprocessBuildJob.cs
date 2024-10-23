@@ -439,7 +439,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
             {
                 if (rowCount > 0)
                 {
-                    yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+                    if (trgSegBuffer.Length == 0)
+                        yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
                     textId = "";
                     srcSegBuffer.Clear();
                     trgSegBuffer.Clear();
