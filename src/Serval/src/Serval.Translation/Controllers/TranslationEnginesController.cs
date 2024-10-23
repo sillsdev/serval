@@ -9,6 +9,7 @@ public class TranslationEnginesController(
     IBuildService buildService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
+    IConfiguration configuration,
     IUrlService urlService,
     ILogger<TranslationEnginesController> logger
 ) : ServalControllerBase(authService)
@@ -22,6 +23,7 @@ public class TranslationEnginesController(
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
     private readonly ILogger<TranslationEnginesController> _logger = logger;
+    private readonly IConfiguration _configuration = configuration;
 
     // private readonly ServalSettings _servalSettings = apiOptions.Value;
 
@@ -1537,7 +1539,8 @@ public class TranslationEnginesController(
             State = source.State,
             DateFinished = source.DateFinished,
             Options = source.Options,
-            ServalVersion = _apiOptions.CurrentValue.ServalVersion
+            // ServalVersion = _apiOptions.CurrentValue.ServalVersion
+            DeploymentVersion = _configuration.GetValue<string>("DeploymentVersion")
         };
     }
 
