@@ -28,5 +28,4 @@ public record TranslationBuildDto
     /// </example>
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
-    // public string? ServalVersion { get; init; }
 }
