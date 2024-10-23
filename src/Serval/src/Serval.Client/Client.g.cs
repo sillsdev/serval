@@ -9816,8 +9816,8 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public object? Options { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("servalVersion", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? ServalVersion { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("deploymentVersion", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? DeploymentVersion { get; set; } = default!;
 
     }
 
