@@ -5,7 +5,7 @@ public abstract class EntityServiceBase<T>(IRepository<T> entities)
 {
     protected IRepository<T> Entities { get; } = entities;
 
-    public async Task<T> GetAsync(string id, CancellationToken cancellationToken = default)
+    public virtual async Task<T> GetAsync(string id, CancellationToken cancellationToken = default)
     {
         T? entity = await Entities.GetAsync(id, cancellationToken);
         if (entity is null)

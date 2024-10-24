@@ -24,6 +24,14 @@ public class EngineService(
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
+    public override async Task<Engine> GetAsync(string id, CancellationToken cancellationToken = default)
+    {
+        Engine engine = await base.GetAsync(id, cancellationToken);
+        if (!(engine.IsInitialized ?? true))
+            throw new EntityNotFoundException($"Could not find the {typeof(Engine).Name} '{id}'.");
+        return engine;
+    }
+
     public async Task<Models.TranslationResult> TranslateAsync(
         string engineId,
         string segment,
@@ -120,9 +128,9 @@ public class EngineService(
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
-        bool updateIsModelPersisted = engine.IsModelPersisted is null;
         try
         {
+            engine.DateCreated = DateTime.UtcNow;
             await Entities.InsertAsync(engine, cancellationToken);
             TranslationEngineApi.TranslationEngineApiClient? client =
                 _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
@@ -146,6 +154,15 @@ public class EngineService(
             {
                 IsModelPersisted = createResponse.IsModelPersisted
             };
+            await Entities.UpdateAsync(
+                engine,
+                u =>
+                {
+                    u.Set(e => e.IsInitialized, true);
+                    u.Set(e => e.IsModelPersisted, engine.IsModelPersisted);
+                },
+                cancellationToken: CancellationToken.None
+            );
         }
         catch (RpcException rpcex)
         {
@@ -163,14 +180,6 @@ public class EngineService(
         {
             await Entities.DeleteAsync(engine, CancellationToken.None);
             throw;
-        }
-        if (updateIsModelPersisted)
-        {
-            await Entities.UpdateAsync(
-                engine,
-                u => u.Set(e => e.IsModelPersisted, engine.IsModelPersisted),
-                cancellationToken: cancellationToken
-            );
         }
         return engine;
     }
@@ -216,6 +225,7 @@ public class EngineService(
 
     public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
+        build.DateCreated = DateTime.UtcNow;
         Engine engine = await GetAsync(build.EngineRef, cancellationToken);
         await _builds.InsertAsync(build, cancellationToken);
 
@@ -292,6 +302,11 @@ public class EngineService(
                 _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
             }
             await client.StartBuildAsync(request, cancellationToken: cancellationToken);
+            await _builds.UpdateAsync(
+                b => b.Id == build.Id,
+                u => u.Set(e => e.IsInitialized, true),
+                cancellationToken: CancellationToken.None
+            );
         }
         catch
         {
