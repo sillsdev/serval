@@ -26,20 +26,27 @@ public class ClearMLMonitorService(
     private readonly ILogger<IClearMLQueueService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
-    private readonly IReadOnlyDictionary<TranslationEngineType, string> _queuePerEngineType =
-        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => x.Queue);
+    private readonly IReadOnlyDictionary<string, string> _queuePerEngineType =
+        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.EngineType, x => x.Queue);
 
-    private readonly IDictionary<TranslationEngineType, int> _queueSizePerEngineType = new ConcurrentDictionary<
-        TranslationEngineType,
-        int
-    >(buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => 0));
+    private readonly IDictionary<string, int> _queueSizePerEngineType = new ConcurrentDictionary<string, int>(
+        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.EngineType, x => 0)
+    );
 
-    public int GetQueueSize(TranslationEngineType engineType)
+    public int GetQueueSize<TEnum>(TEnum engineType)
+        where TEnum : Enum
     {
-        return _queueSizePerEngineType[engineType];
+        return _queueSizePerEngineType[engineType.ToString()];
     }
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
+    {
+        await MonitorClearMLTasksPerDomain<TranslationEngineType>(scope, cancellationToken);
+        await MonitorClearMLTasksPerDomain<WordAlignmentEngineType>(scope, cancellationToken);
+    }
+
+    private async Task MonitorClearMLTasksPerDomain<TEngine>(IServiceScope scope, CancellationToken cancellationToken)
+        where TEngine : Enum
     {
         try
         {
@@ -57,13 +64,13 @@ public class ClearMLMonitorService(
                     cancellationToken
                 )
             ).ToDictionary(t => t.Id);
-            Dictionary<TranslationEngineType, Dictionary<string, int>> queuePositionsPerEngineType = new();
+            Dictionary<string, Dictionary<string, int>> queuePositionsPerEngineType = new();
 
-            foreach ((TranslationEngineType engineType, string queueName) in _queuePerEngineType)
+            foreach ((string engineType, string queueName) in _queuePerEngineType)
             {
                 var tasksPerEngineType = tasks
                     .Where(kvp =>
-                        trainingEngines.Where(te => te.CurrentBuild?.JobId == kvp.Key).FirstOrDefault()?.Type
+                        trainingEngines.Where(te => te.CurrentBuild?.JobId == kvp.Key).FirstOrDefault()?.Type.ToString()
                         == engineType
                     )
                     .Select(kvp => kvp.Value)
@@ -96,7 +103,7 @@ public class ClearMLMonitorService(
                         engine.CurrentBuild.BuildId,
                         new ProgressStatus(step: 0, percentCompleted: 0.0),
                         //CurrentBuild.BuildId should always equal the corresponding task.Name
-                        queuePositionsPerEngineType[engine.Type][engine.CurrentBuild.BuildId] + 1,
+                        queuePositionsPerEngineType[engine.Type.ToString()][engine.CurrentBuild.BuildId] + 1,
                         cancellationToken
                     );
                 }
