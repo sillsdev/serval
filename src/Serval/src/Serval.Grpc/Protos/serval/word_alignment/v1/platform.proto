@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package serval.word_alignment.v1;
+
+import "google/protobuf/empty.proto";
+import "Protos/serval/word_alignment/v1/engine.proto";
+
+
+service WordAlignmentPlatformApi {
+    rpc UpdateBuildStatus(UpdateBuildStatusRequest) returns (google.protobuf.Empty);
+    rpc BuildStarted(BuildStartedRequest) returns (google.protobuf.Empty);
+    rpc BuildCompleted(BuildCompletedRequest) returns (google.protobuf.Empty);
+    rpc BuildCanceled(BuildCanceledRequest) returns (google.protobuf.Empty);
+    rpc BuildFaulted(BuildFaultedRequest) returns (google.protobuf.Empty);
+    rpc BuildRestarting(BuildRestartingRequest) returns (google.protobuf.Empty);
+
+    rpc IncrementWordAlignmentEngineCorpusSize(IncrementWordAlignmentEngineCorpusSizeRequest) returns (google.protobuf.Empty);
+    rpc InsertWordAlignments(stream InsertWordAlignmentsRequest) returns (google.protobuf.Empty);
+}
+
+message UpdateBuildStatusRequest {
+    string build_id = 1;
+    int32 step = 2;
+    optional double percent_completed = 3;
+    optional string message = 4;
+    optional int32 queue_depth = 5;
+}
+
+message BuildStartedRequest {
+    string build_id = 1;
+}
+
+message BuildCompletedRequest {
+    string build_id = 1;
+    int32 corpus_size = 2;
+    double confidence = 3;
+}
+
+message BuildCanceledRequest {
+    string build_id = 1;
+}
+
+message BuildFaultedRequest {
+    string build_id = 1;
+    string message = 2;
+}
+
+message BuildRestartingRequest {
+    string build_id = 1;
+}
+
+message IncrementWordAlignmentEngineCorpusSizeRequest {
+    string engine_id = 1;
+    int32 count = 2;
+}
+
+message InsertWordAlignmentsRequest {
+    string engine_id = 1;
+    string corpus_id = 2;
+    string text_id = 3;
+    repeated string refs = 4;
+    repeated string source_tokens = 5;
+    repeated string target_tokens = 6;
+    repeated double confidences = 7;
+    repeated AlignedWordPair alignment = 8;
+}

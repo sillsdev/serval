@@ -6,6 +6,10 @@ public interface ICorpusService
     Task<Corpus> GetAsync(string id, CancellationToken cancellationToken = default);
     Task<Corpus> GetAsync(string id, string owner, CancellationToken cancellationToken = default);
     Task<Corpus> CreateAsync(Corpus corpus, CancellationToken cancellationToken = default);
-    Task<Corpus> UpdateAsync(string id, IReadOnlyList<CorpusFile> files, CancellationToken cancellationToken = default);
+    Task<Corpus> UpdateAsync(
+        string id,
+        IReadOnlyList<Models.CorpusFile> files,
+        CancellationToken cancellationToken = default
+    );
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 }

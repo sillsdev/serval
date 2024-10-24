@@ -133,7 +133,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "text1"
                                             }
                                         },
@@ -154,7 +154,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "text1"
                                             }
                                         },
@@ -207,7 +207,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "text1"
                                             }
                                         },
@@ -229,7 +229,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "text1"
                                             }
                                         },
@@ -282,7 +282,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "text1"
                                             }
                                         },
@@ -304,7 +304,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "text1"
                                             }
                                         },
@@ -356,7 +356,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "text1"
                                             }
                                         },
@@ -377,7 +377,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "text1"
                                             }
                                         },
@@ -458,7 +458,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file1.zip"
                                             }
                                         },
@@ -490,7 +490,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file2.zip"
                                             }
                                         },
@@ -542,7 +542,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file1.zip"
                                             }
                                         },
@@ -563,7 +563,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file2.zip"
                                             }
                                         },
@@ -639,7 +639,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "MAT"
                                             }
                                         },
@@ -655,7 +655,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file3.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "MRK"
                                             }
                                         },
@@ -678,7 +678,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "MAT"
                                             }
                                         },
@@ -694,7 +694,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file4.txt",
-                                                Format = FileFormat.Text,
+                                                Format = V1.FileFormat.Text,
                                                 TextId = "MRK"
                                             }
                                         },
@@ -770,7 +770,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file1.zip"
                                             }
                                         },
@@ -786,7 +786,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file3.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file3.zip"
                                             }
                                         },
@@ -809,7 +809,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file2.zip"
                                             }
                                         },
@@ -825,7 +825,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file4.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file4.zip"
                                             }
                                         },
@@ -903,7 +903,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file1.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file1.zip"
                                             }
                                         },
@@ -919,7 +919,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file3.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file3.zip"
                                             }
                                         },
@@ -952,7 +952,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file2.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file2.zip"
                                             }
                                         },
@@ -968,7 +968,7 @@ public class EngineServiceTests
                                             new V1.CorpusFile
                                             {
                                                 Location = "file4.zip",
-                                                Format = FileFormat.Paratext,
+                                                Format = V1.FileFormat.Paratext,
                                                 TextId = "file4.zip"
                                             }
                                         },
@@ -1035,7 +1035,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file1.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file1.zip"
                                         }
                                     },
@@ -1062,7 +1062,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file3.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file3.zip"
                                         }
                                     },
@@ -1092,7 +1092,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file2.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file2.zip"
                                         }
                                     },
@@ -1119,7 +1119,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file4.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file4.zip"
                                         }
                                     },
@@ -1180,7 +1180,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file1.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file1.zip"
                                         }
                                     },
@@ -1196,7 +1196,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file3.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file3.zip"
                                         }
                                     },
@@ -1215,7 +1215,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file2.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file2.zip"
                                         }
                                     },
@@ -1231,7 +1231,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file4.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file4.zip"
                                         }
                                     },
@@ -1274,7 +1274,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file1.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file1.zip"
                                         }
                                     },
@@ -1290,7 +1290,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file3.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file3.zip"
                                         }
                                     },
@@ -1309,7 +1309,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file2.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file2.zip"
                                         }
                                     },
@@ -1325,7 +1325,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file4.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file4.zip"
                                         }
                                     },
@@ -1385,7 +1385,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file1.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file1.zip"
                                         }
                                     },
@@ -1412,7 +1412,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file3.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file3.zip"
                                         }
                                     },
@@ -1431,7 +1431,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file2.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file2.zip"
                                         }
                                     },
@@ -1447,7 +1447,7 @@ public class EngineServiceTests
                                         new V1.CorpusFile
                                         {
                                             Location = "file4.zip",
-                                            Format = FileFormat.Paratext,
+                                            Format = V1.FileFormat.Paratext,
                                             TextId = "file4.zip"
                                         }
                                     },
@@ -1763,7 +1763,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "parallel-corpus1",
-                        SourceCorpora = new List<Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1798,7 +1798,7 @@ public class EngineServiceTests
                                 ]
                             }
                         },
-                        TargetCorpora = new List<Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1854,7 +1854,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "parallel-corpus1",
-                        SourceCorpora = new List<Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1889,7 +1889,7 @@ public class EngineServiceTests
                                 ]
                             }
                         },
-                        TargetCorpora = new List<Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
                             new()
                             {

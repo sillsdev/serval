@@ -9,7 +9,7 @@ COPY . ./
 RUN dotnet restore
 # Build and publish a release
 RUN dotnet publish ./src/Serval/src/Serval.ApiServer/Serval.ApiServer.csproj -c Release -o out_api_server
-RUN dotnet publish ./src/Echo/src/EchoTranslationEngine/EchoTranslationEngine.csproj -c Release -o out_echo_server
+RUN dotnet publish ./src/Echo/src/EchoEngine/EchoEngine.csproj -c Release -o out_echo_server
 RUN dotnet publish ./src/Machine/src/Serval.Machine.EngineServer/Serval.Machine.EngineServer.csproj -c Release -o out_machine_engine_server
 RUN dotnet publish ./src/Machine/src/Serval.Machine.JobServer/Serval.Machine.JobServer.csproj -c Release -o out_machine_job_server
 
