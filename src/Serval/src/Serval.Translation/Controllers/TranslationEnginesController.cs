@@ -9,6 +9,7 @@ public class TranslationEnginesController(
     IBuildService buildService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
+    IConfiguration configuration,
     IUrlService urlService,
     ILogger<TranslationEnginesController> logger
 ) : ServalControllerBase(authService)
@@ -1300,15 +1301,18 @@ public class TranslationEnginesController(
         };
     }
 
-    private static Build Map(Engine engine, TranslationBuildConfigDto source)
+    private Build Map(Engine engine, TranslationBuildConfigDto source)
     {
+        string deploymentVersion = configuration.GetValue<string>("DeploymentVersion") ?? "Unknown";
+
         return new Build
         {
             EngineRef = engine.Id,
             Name = source.Name,
             Pretranslate = Map(engine, source.Pretranslate),
             TrainOn = Map(engine, source.TrainOn),
-            Options = Map(source.Options)
+            Options = Map(source.Options),
+            DeploymentVersion = deploymentVersion
         };
     }
 
@@ -1505,7 +1509,8 @@ public class TranslationEnginesController(
             QueueDepth = source.QueueDepth,
             State = source.State,
             DateFinished = source.DateFinished,
-            Options = source.Options
+            Options = source.Options,
+            DeploymentVersion = source.DeploymentVersion
         };
     }
 

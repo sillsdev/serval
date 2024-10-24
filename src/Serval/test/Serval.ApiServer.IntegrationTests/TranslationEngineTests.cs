@@ -1391,6 +1391,9 @@ public class TranslationEngineTests
 
                 build = await client.GetCurrentBuildAsync(engineId);
                 Assert.That(build, Is.Not.Null);
+
+                Assert.That(build.DeploymentVersion, Is.Not.Null);
+
                 break;
             case 400:
             case 403:
@@ -1990,7 +1993,7 @@ public class TranslationEngineTests
         _env.Dispose();
     }
 
-    private class TestEnvironment : DisposableBase
+    public class TestEnvironment : DisposableBase
     {
         private readonly IServiceScope _scope;
         private readonly MongoClient _mongoClient;
