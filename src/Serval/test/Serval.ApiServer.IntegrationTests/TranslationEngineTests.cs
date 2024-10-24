@@ -2039,7 +2039,8 @@ public class TranslationEngineTests
     {
         private readonly IServiceScope _scope;
         private readonly MongoClient _mongoClient;
-        public readonly IOptionsMonitor<ApiOptions> ApiOptions;
+
+        // public readonly IOptionsMonitor<ApiOptions> ApiOptions;
 
         public TestEnvironment()
         {
@@ -2050,7 +2051,7 @@ public class TranslationEngineTests
             Factory = new ServalWebApplicationFactory();
             _scope = Factory.Services.CreateScope();
             Engines = _scope.ServiceProvider.GetRequiredService<IRepository<Engine>>();
-            ApiOptions = _scope.ServiceProvider.GetRequiredService<IOptionsMonitor<ApiOptions>>();
+            // ApiOptions = _scope.ServiceProvider.GetRequiredService<IOptionsMonitor<ApiOptions>>();
             DataFiles = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.DataFile>>();
             Corpora = _scope.ServiceProvider.GetRequiredService<IRepository<DataFiles.Models.Corpus>>();
             Pretranslations = _scope.ServiceProvider.GetRequiredService<
