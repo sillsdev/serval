@@ -13,6 +13,9 @@ public static class Endpoints
     public const string GetAssessmentCorpus = "GetAssessmentCorpus";
     public const string GetAssessmentReferenceCorpus = "GetAssessmentReferenceCorpus";
     public const string GetAssessmentJob = "GetAssessmentJob";
+    public const string GetWordAlignmentEngine = "GetWordAlignmentEngine";
+    public const string GetParallelWordAlignmentCorpus = "GetParallelWordAlignmentCorpus";
+    public const string GetWordAlignmentBuild = "GetWordAlignmentBuild";
 
     public const string GetWebhook = "GetWebhook";
 
