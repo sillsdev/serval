@@ -115,14 +115,21 @@ public class ServalApiTests
         string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
         string cId1 = await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
         _helperClient.TranslationBuildConfig.TrainOn = [new() { CorpusId = cId1, TextIds = ["1JN.txt"] }];
-        string cId2 = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+        string cId2 = await _helperClient.AddTextCorpusToEngineAsync(
+            engineId,
+            ["2JN.txt", "3JN.txt"],
+            "es",
+            "en",
+            true
+        );
+        _helperClient.TranslationBuildConfig.Pretranslate = [new() { CorpusId = cId2, TextIds = ["2JN.txt"] }];
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
             cId2
         );
-        Assert.That(lTrans, Has.Count.EqualTo(14));
+        Assert.That(lTrans, Has.Count.EqualTo(13)); // just 2 John
     }
 
     [Test]

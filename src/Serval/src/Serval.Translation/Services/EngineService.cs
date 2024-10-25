@@ -1,4 +1,4 @@
-﻿using MassTransit.Mediator;
+using MassTransit.Mediator;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -227,25 +227,18 @@ public class EngineService(
             StartBuildRequest request;
             if (engine.ParallelCorpora.Any())
             {
-                var trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
-                var pretranslate = build.Pretranslate?.ToDictionary(c => c.ParallelCorpusRef!);
-                request = new StartBuildRequest
-                {
-                    EngineType = engine.Type,
-                    EngineId = engine.Id,
-                    BuildId = build.Id,
-                    Corpora =
-                    {
-                        engine.ParallelCorpora.Select(c =>
-                            Map(c, trainOn?.GetValueOrDefault(c.Id), pretranslate?.GetValueOrDefault(c.Id))
-                        )
-                    }
-                };
-            }
-            else
-            {
-                var pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef!);
-                var trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
+                Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
+                Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c =>
+                    c.ParallelCorpusRef!
+                );
+                IReadOnlyList<Models.ParallelCorpus> parallelCorpora = engine
+                    .ParallelCorpora.Where(pc =>
+                        trainOn == null
+                        || trainOn.ContainsKey(pc.Id)
+                        || pretranslate == null
+                        || pretranslate.ContainsKey(pc.Id)
+                    )
+                    .ToList();
 
                 request = new StartBuildRequest
                 {
@@ -254,7 +247,35 @@ public class EngineService(
                     BuildId = build.Id,
                     Corpora =
                     {
-                        engine.Corpora.Select(c =>
+                        parallelCorpora.Select(c =>
+                            Map(c, trainOn?.GetValueOrDefault(c.Id), pretranslate?.GetValueOrDefault(c.Id))
+                        )
+                    }
+                };
+            }
+            else
+            {
+                Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
+                Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c =>
+                    c.CorpusRef!
+                );
+                IReadOnlyList<Corpus> corpora = engine
+                    .Corpora.Where(c =>
+                        trainOn == null
+                        || trainOn.ContainsKey(c.Id)
+                        || pretranslate == null
+                        || pretranslate.ContainsKey(c.Id)
+                    )
+                    .ToList();
+
+                request = new StartBuildRequest
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    BuildId = build.Id,
+                    Corpora =
+                    {
+                        corpora.Select(c =>
                             Map(c, trainOn?.GetValueOrDefault(c.Id), pretranslate?.GetValueOrDefault(c.Id))
                         )
                     }
