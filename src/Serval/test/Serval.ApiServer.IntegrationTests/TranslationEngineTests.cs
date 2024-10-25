@@ -2035,7 +2035,7 @@ public class TranslationEngineTests
         _env.Dispose();
     }
 
-    public class TestEnvironment : DisposableBase
+    private class TestEnvironment : DisposableBase
     {
         private readonly IServiceScope _scope;
         private readonly MongoClient _mongoClient;

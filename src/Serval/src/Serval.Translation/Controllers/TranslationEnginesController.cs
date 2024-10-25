@@ -1047,9 +1047,12 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
+        string deploymentVersion = configuration.GetValue<string>("deploymentVersion") ?? "Unknown";
+
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Build build = Map(engine, buildConfig);
+        Build build = Map(engine, buildConfig, deploymentVersion);
+
         await _engineService.StartBuildAsync(build, cancellationToken);
 
         TranslationBuildDto dto = Map(build);
@@ -1312,10 +1315,8 @@ public class TranslationEnginesController(
         };
     }
 
-    private Build Map(Engine engine, TranslationBuildConfigDto source)
+    private static Build Map(Engine engine, TranslationBuildConfigDto source, string deploymentVersion)
     {
-        string deploymentVersion = configuration.GetValue<string>("DeploymentVersion") ?? "Unknown";
-
         return new Build
         {
             EngineRef = engine.Id,
