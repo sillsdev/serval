@@ -627,7 +627,7 @@ public class EngineService(
             sourceCorpus.TrainOnAll = true;
             targetCorpus.TrainOnAll = true;
         }
-        else if (trainingCorpus is not null)
+        else
         {
             if (trainingCorpus.TextIds is not null && trainingCorpus.ScriptureRange is not null)
             {
@@ -670,7 +670,7 @@ public class EngineService(
             sourceCorpus.PretranslateAll = true;
             targetCorpus.PretranslateAll = true;
         }
-        else if (pretranslateCorpus is not null)
+        else
         {
             if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
             {
