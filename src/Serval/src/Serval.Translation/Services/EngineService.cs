@@ -629,8 +629,8 @@ public class EngineService(
         Corpus source,
         TrainingCorpus? trainingCorpus,
         PretranslateCorpus? pretranslateCorpus,
-        bool noTrainingCorpusDefined,
-        bool noPretranslateCorpusDefined
+        bool noTrainingCorpusFilter,
+        bool noPretranslateCorpusFilter
     )
     {
         IEnumerable<V1.CorpusFile> sourceFiles = source.SourceFiles.Select(Map);
@@ -641,7 +641,7 @@ public class EngineService(
             new() { Language = source.TargetLanguage, Files = { source.TargetFiles.Select(Map) } };
 
         if (
-            noTrainingCorpusDefined
+            noTrainingCorpusFilter
             || (trainingCorpus is not null && trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null)
         )
         {
@@ -684,7 +684,7 @@ public class EngineService(
             }
         }
         if (
-            noPretranslateCorpusDefined
+            noPretranslateCorpusFilter
             || (
                 pretranslateCorpus is not null
                 && pretranslateCorpus.TextIds is null
@@ -739,14 +739,23 @@ public class EngineService(
         Models.ParallelCorpus source,
         TrainingCorpus? trainingCorpus,
         PretranslateCorpus? pretranslateCorpus,
-        bool noTrainingCorpusDefined,
-        bool noPretranslateCorpusDefined
+        bool noTrainingCorpusFilter,
+        bool noPretranslateCorpusFilter
     )
     {
         string? referenceFileLocation =
             source.TargetCorpora.Count > 0 && source.TargetCorpora[0].Files.Count > 0
                 ? Map(source.TargetCorpora[0].Files[0]).Location
                 : null;
+
+        bool sourceTrainOnAll =
+            noTrainingCorpusFilter || (trainingCorpus is not null && trainingCorpus.SourceFilters is null);
+        bool sourcePretranslateAll =
+            noPretranslateCorpusFilter || (pretranslateCorpus is not null && pretranslateCorpus.SourceFilters is null);
+
+        bool targetTrainOnAll =
+            noTrainingCorpusFilter || (trainingCorpus is not null && trainingCorpus.TargetFilters is null);
+        bool targetPretranslateAll = noPretranslateCorpusFilter || pretranslateCorpus is not null; // there is no pretranslate Target filter.
 
         return new V1.ParallelCorpus
         {
@@ -759,9 +768,8 @@ public class EngineService(
                         trainingCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
                         pretranslateCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
                         referenceFileLocation,
-                        noTrainingCorpusDefined || (trainingCorpus is not null && trainingCorpus.SourceFilters is null),
-                        noPretranslateCorpusDefined
-                            || (pretranslateCorpus is not null && pretranslateCorpus.SourceFilters is null)
+                        sourceTrainOnAll,
+                        sourcePretranslateAll
                     )
                 )
             },
@@ -773,8 +781,8 @@ public class EngineService(
                         trainingCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
                         null,
                         referenceFileLocation,
-                        noTrainingCorpusDefined || (trainingCorpus is not null && trainingCorpus.TargetFilters is null),
-                        noPretranslateCorpusDefined || pretranslateCorpus is not null // there is no pretranslate Target filter.
+                        targetTrainOnAll,
+                        targetPretranslateAll
                     )
                 )
             }

@@ -467,7 +467,7 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task StartBuildAsync_OneEachOfMultipleCorpora()
+    public async Task StartBuildAsync_TrainOnOnePretranslateOnTheOther()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateMultipleCorporaEngineWithTextFilesAsync()).Id;
@@ -1004,7 +1004,7 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task StartBuildAsync_ParallelCorpus_OneOfEachMultipleCorpora()
+    public async Task StartBuildAsync_ParallelCorpus_TrainOnOnePretranslateOnTheOther()
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateMultipleParallelCorpusEngineWithTextFilesAsync()).Id;
