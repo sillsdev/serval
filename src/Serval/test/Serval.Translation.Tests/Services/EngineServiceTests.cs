@@ -467,6 +467,126 @@ public class EngineServiceTests
     }
 
     [Test]
+    public async Task StartBuildAsync_OneEachOfMultipleCorpora()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateMultipleCorporaEngineWithTextFilesAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }],
+                Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus2" }]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.ParallelCorpus
+                        {
+                            Id = "corpus1",
+                            SourceCorpora =
+                            {
+                                new List<V1.MonolingualCorpus>
+                                {
+                                    new()
+                                    {
+                                        Language = "es",
+                                        Files =
+                                        {
+                                            new V1.CorpusFile
+                                            {
+                                                Location = "file1.txt",
+                                                Format = FileFormat.Text,
+                                                TextId = "text1"
+                                            }
+                                        },
+                                        PretranslateAll = false,
+                                        TrainOnAll = true
+                                    }
+                                }
+                            },
+                            TargetCorpora =
+                            {
+                                new List<V1.MonolingualCorpus>
+                                {
+                                    new()
+                                    {
+                                        Language = "en",
+                                        Files =
+                                        {
+                                            new V1.CorpusFile
+                                            {
+                                                Location = "file2.txt",
+                                                Format = FileFormat.Text,
+                                                TextId = "text1"
+                                            }
+                                        },
+                                        PretranslateAll = false,
+                                        TrainOnAll = true
+                                    }
+                                }
+                            }
+                        },
+                        new V1.ParallelCorpus
+                        {
+                            Id = "corpus2",
+                            SourceCorpora =
+                            {
+                                new List<V1.MonolingualCorpus>
+                                {
+                                    new()
+                                    {
+                                        Language = "es",
+                                        Files =
+                                        {
+                                            new V1.CorpusFile
+                                            {
+                                                Location = "file3.txt",
+                                                Format = FileFormat.Text,
+                                                TextId = "text1"
+                                            }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
+                                    }
+                                }
+                            },
+                            TargetCorpora =
+                            {
+                                new List<V1.MonolingualCorpus>
+                                {
+                                    new()
+                                    {
+                                        Language = "en",
+                                        Files =
+                                        {
+                                            new V1.CorpusFile
+                                            {
+                                                Location = "file4.txt",
+                                                Format = FileFormat.Text,
+                                                TextId = "text1"
+                                            }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
     public async Task StartBuildAsync_TextFilesScriptureRangeSpecified()
     {
         var env = new TestEnvironment();
@@ -734,7 +854,7 @@ public class EngineServiceTests
                                             }
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
+                                        TrainOnAll = false
                                     }
                                 }
                             },
@@ -773,7 +893,7 @@ public class EngineServiceTests
                                             }
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
+                                        TrainOnAll = false
                                     }
                                 }
                             }
@@ -884,6 +1004,154 @@ public class EngineServiceTests
     }
 
     [Test]
+    public async Task StartBuildAsync_ParallelCorpus_OneOfEachMultipleCorpora()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateMultipleParallelCorpusEngineWithTextFilesAsync()).Id;
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                TrainOn =
+                [
+                    new TrainingCorpus
+                    {
+                        ParallelCorpusRef = "parallel-corpus1",
+                        SourceFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new()
+                            {
+                                CorpusRef = "parallel-corpus1-source1",
+                                TextIds = new List<string> { "MAT" }
+                            }
+                        },
+                        TargetFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new()
+                            {
+                                CorpusRef = "parallel-corpus1-target1",
+                                TextIds = new List<string> { "MAT" }
+                            }
+                        }
+                    }
+                ],
+                Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus2" }]
+            }
+        );
+        _ = env.TranslationServiceClient.Received()
+            .StartBuildAsync(
+                new StartBuildRequest
+                {
+                    BuildId = BUILD1_ID,
+                    EngineId = engineId,
+                    EngineType = "Smt",
+                    Corpora =
+                    {
+                        new V1.ParallelCorpus
+                        {
+                            Id = "parallel-corpus1",
+                            SourceCorpora =
+                            {
+                                new List<V1.MonolingualCorpus>
+                                {
+                                    new()
+                                    {
+                                        Id = "parallel-corpus1-source1",
+                                        Language = "es",
+                                        TrainOnTextIds = { "MAT" },
+                                        Files =
+                                        {
+                                            new V1.CorpusFile
+                                            {
+                                                Location = "file1.txt",
+                                                Format = FileFormat.Text,
+                                                TextId = "MAT"
+                                            }
+                                        },
+                                        PretranslateAll = false,
+                                        TrainOnAll = false
+                                    }
+                                }
+                            },
+                            TargetCorpora =
+                            {
+                                new List<V1.MonolingualCorpus>
+                                {
+                                    new()
+                                    {
+                                        Id = "parallel-corpus1-target1",
+                                        Language = "en",
+                                        TrainOnTextIds = { "MAT" },
+                                        Files =
+                                        {
+                                            new V1.CorpusFile
+                                            {
+                                                Location = "file2.txt",
+                                                Format = FileFormat.Text,
+                                                TextId = "MAT"
+                                            }
+                                        },
+                                        PretranslateAll = false,
+                                        TrainOnAll = false
+                                    }
+                                }
+                            }
+                        },
+                        new V1.ParallelCorpus
+                        {
+                            Id = "parallel-corpus2",
+                            SourceCorpora =
+                            {
+                                new List<V1.MonolingualCorpus>
+                                {
+                                    new()
+                                    {
+                                        Id = "parallel-corpus2-source1",
+                                        Language = "es",
+                                        Files =
+                                        {
+                                            new V1.CorpusFile
+                                            {
+                                                Location = "file3.txt",
+                                                Format = FileFormat.Text,
+                                                TextId = "MRK"
+                                            }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
+                                    }
+                                }
+                            },
+                            TargetCorpora =
+                            {
+                                new List<V1.MonolingualCorpus>
+                                {
+                                    new()
+                                    {
+                                        Id = "parallel-corpus2-target1",
+                                        Language = "en",
+                                        Files =
+                                        {
+                                            new V1.CorpusFile
+                                            {
+                                                Location = "file4.txt",
+                                                Format = FileFormat.Text,
+                                                TextId = "MRK"
+                                            }
+                                        },
+                                        PretranslateAll = true,
+                                        TrainOnAll = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+    }
+
+    [Test]
     public async Task StartBuildAsync_TextIds_ParallelCorpus()
     {
         var env = new TestEnvironment();
@@ -965,7 +1233,7 @@ public class EngineServiceTests
                                             }
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
+                                        TrainOnAll = false
                                     }
                                 }
                             },
@@ -1004,7 +1272,7 @@ public class EngineServiceTests
                                             }
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
+                                        TrainOnAll = false
                                     }
                                 }
                             }
@@ -1098,7 +1366,7 @@ public class EngineServiceTests
                                             }
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
+                                        TrainOnAll = false
                                     }
                                 }
                             },
@@ -1147,7 +1415,7 @@ public class EngineServiceTests
                                             }
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
+                                        TrainOnAll = false
                                     }
                                 }
                             }
@@ -1531,7 +1799,7 @@ public class EngineServiceTests
                         SourceFilters = new List<ParallelCorpusFilter>()
                         {
                             new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" }
-                        }
+                        },
                     }
                 ]
             }
@@ -1591,7 +1859,7 @@ public class EngineServiceTests
                                         }
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
+                                    TrainOnAll = false
                                 }
                             },
                             TargetCorpora =

@@ -248,7 +248,13 @@ public class EngineService(
                     Corpora =
                     {
                         parallelCorpora.Select(c =>
-                            Map(c, trainOn?.GetValueOrDefault(c.Id), pretranslate?.GetValueOrDefault(c.Id))
+                            Map(
+                                c,
+                                trainOn?.GetValueOrDefault(c.Id),
+                                pretranslate?.GetValueOrDefault(c.Id),
+                                trainOn is null,
+                                pretranslate is null
+                            )
                         )
                     }
                 };
@@ -276,7 +282,13 @@ public class EngineService(
                     Corpora =
                     {
                         corpora.Select(c =>
-                            Map(c, trainOn?.GetValueOrDefault(c.Id), pretranslate?.GetValueOrDefault(c.Id))
+                            Map(
+                                c,
+                                trainOn?.GetValueOrDefault(c.Id),
+                                pretranslate?.GetValueOrDefault(c.Id),
+                                trainOn is null,
+                                pretranslate is null
+                            )
                         )
                     }
                 };
@@ -613,7 +625,13 @@ public class EngineService(
         };
     }
 
-    private V1.ParallelCorpus Map(Corpus source, TrainingCorpus? trainingCorpus, PretranslateCorpus? pretranslateCorpus)
+    private V1.ParallelCorpus Map(
+        Corpus source,
+        TrainingCorpus? trainingCorpus,
+        PretranslateCorpus? pretranslateCorpus,
+        bool noTrainingCorpusDefined,
+        bool noPretranslateCorpusDefined
+    )
     {
         IEnumerable<V1.CorpusFile> sourceFiles = source.SourceFiles.Select(Map);
         IEnumerable<V1.CorpusFile> targetFiles = source.TargetFiles.Select(Map);
@@ -622,12 +640,15 @@ public class EngineService(
         V1.MonolingualCorpus targetCorpus =
             new() { Language = source.TargetLanguage, Files = { source.TargetFiles.Select(Map) } };
 
-        if (trainingCorpus is null || (trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null))
+        if (
+            noTrainingCorpusDefined
+            || (trainingCorpus is not null && trainingCorpus.TextIds is null && trainingCorpus.ScriptureRange is null)
+        )
         {
             sourceCorpus.TrainOnAll = true;
             targetCorpus.TrainOnAll = true;
         }
-        else
+        else if (trainingCorpus is not null)
         {
             if (trainingCorpus.TextIds is not null && trainingCorpus.ScriptureRange is not null)
             {
@@ -663,14 +684,18 @@ public class EngineService(
             }
         }
         if (
-            pretranslateCorpus is null
-            || (pretranslateCorpus.TextIds is null && pretranslateCorpus.ScriptureRange is null)
+            noPretranslateCorpusDefined
+            || (
+                pretranslateCorpus is not null
+                && pretranslateCorpus.TextIds is null
+                && pretranslateCorpus.ScriptureRange is null
+            )
         )
         {
             sourceCorpus.PretranslateAll = true;
             targetCorpus.PretranslateAll = true;
         }
-        else
+        else if (pretranslateCorpus is not null)
         {
             if (pretranslateCorpus.TextIds is not null && pretranslateCorpus.ScriptureRange is not null)
             {
@@ -713,7 +738,9 @@ public class EngineService(
     private V1.ParallelCorpus Map(
         Models.ParallelCorpus source,
         TrainingCorpus? trainingCorpus,
-        PretranslateCorpus? pretranslateCorpus
+        PretranslateCorpus? pretranslateCorpus,
+        bool noTrainingCorpusDefined,
+        bool noPretranslateCorpusDefined
     )
     {
         string? referenceFileLocation =
@@ -731,7 +758,10 @@ public class EngineService(
                         sc,
                         trainingCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
                         pretranslateCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
-                        referenceFileLocation
+                        referenceFileLocation,
+                        noTrainingCorpusDefined || (trainingCorpus is not null && trainingCorpus.SourceFilters is null),
+                        noPretranslateCorpusDefined
+                            || (pretranslateCorpus is not null && pretranslateCorpus.SourceFilters is null)
                     )
                 )
             },
@@ -742,7 +772,9 @@ public class EngineService(
                         tc,
                         trainingCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
                         null,
-                        referenceFileLocation
+                        referenceFileLocation,
+                        noTrainingCorpusDefined || (trainingCorpus is not null && trainingCorpus.TargetFilters is null),
+                        noPretranslateCorpusDefined || pretranslateCorpus is not null // there is no pretranslate Target filter.
                     )
                 )
             }
@@ -753,7 +785,9 @@ public class EngineService(
         Models.MonolingualCorpus source,
         ParallelCorpusFilter? trainingFilter,
         ParallelCorpusFilter? pretranslateFilter,
-        string? referenceFileLocation
+        string? referenceFileLocation,
+        bool trainOnAll,
+        bool pretranslateOnAll
     )
     {
         Dictionary<string, ScriptureChapters>? trainOnChapters = null;
@@ -801,7 +835,10 @@ public class EngineService(
             Files = { source.Files.Select(Map) }
         };
 
-        if (trainingFilter is null || (trainingFilter.TextIds is null && trainingFilter.ScriptureRange is null))
+        if (
+            trainOnAll
+            || (trainingFilter is not null && trainingFilter.TextIds is null && trainingFilter.ScriptureRange is null)
+        )
         {
             corpus.TrainOnAll = true;
         }
@@ -814,8 +851,12 @@ public class EngineService(
         }
 
         if (
-            pretranslateFilter is null
-            || (pretranslateFilter.TextIds is null && pretranslateFilter.ScriptureRange is null)
+            pretranslateOnAll
+            || (
+                pretranslateFilter is not null
+                && pretranslateFilter.TextIds is null
+                && pretranslateFilter.ScriptureRange is null
+            )
         )
         {
             corpus.PretranslateAll = true;
