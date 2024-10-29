@@ -1306,6 +1306,17 @@ public class EngineServiceTests
                             new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 1;MRK" }
                         }
                     }
+                ],
+                Pretranslate =
+                [
+                    new PretranslateCorpus
+                    {
+                        ParallelCorpusRef = "parallel-corpus1",
+                        SourceFilters = new List<ParallelCorpusFilter>()
+                        {
+                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 2" }
+                        }
+                    }
                 ]
             }
         );
@@ -1340,6 +1351,13 @@ public class EngineServiceTests
                                                 new ScriptureChapters { Chapters = { } }
                                             }
                                         },
+                                        PretranslateChapters =
+                                        {
+                                            {
+                                                "MAT",
+                                                new ScriptureChapters { Chapters = { 2 } }
+                                            }
+                                        },
                                         Files =
                                         {
                                             new V1.CorpusFile
@@ -1349,7 +1367,7 @@ public class EngineServiceTests
                                                 TextId = "file1.zip"
                                             }
                                         },
-                                        PretranslateAll = true,
+                                        PretranslateAll = false,
                                         TrainOnAll = false
                                     },
                                     new()
@@ -1365,7 +1383,7 @@ public class EngineServiceTests
                                                 TextId = "file3.zip"
                                             }
                                         },
-                                        PretranslateAll = true,
+                                        PretranslateAll = false,
                                         TrainOnAll = false
                                     }
                                 }

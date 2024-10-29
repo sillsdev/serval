@@ -824,7 +824,7 @@ public class EngineService(
             && referenceFileLocation is not null
         )
         {
-            GetChapters(referenceFileLocation, pretranslateFilter.ScriptureRange)
+            pretranslateChapters = GetChapters(referenceFileLocation, pretranslateFilter.ScriptureRange)
                 .Select(
                     (kvp) =>
                     {
