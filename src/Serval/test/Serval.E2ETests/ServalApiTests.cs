@@ -125,11 +125,16 @@ public class ServalApiTests
         _helperClient.TranslationBuildConfig.Pretranslate = [new() { CorpusId = cId2, TextIds = ["2JN.txt"] }];
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
-        IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
+        IList<Pretranslation> lTrans1 = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            cId1
+        );
+        Assert.That(lTrans1, Has.Count.EqualTo(0)); // should be nothing
+        IList<Pretranslation> lTrans2 = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
             cId2
         );
-        Assert.That(lTrans, Has.Count.EqualTo(13)); // just 2 John
+        Assert.That(lTrans2, Has.Count.EqualTo(13)); // just 2 John
     }
 
     [Test]

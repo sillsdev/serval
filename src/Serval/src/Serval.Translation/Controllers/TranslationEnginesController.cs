@@ -990,10 +990,21 @@ public class TranslationEnginesController(
     /// Starts a build job for a translation engine.
     /// </summary>
     /// <remarks>
-    /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora). If no "trainOn" field is provided, all corpora will be used.
-    /// Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-    /// Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
-    /// All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+    /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
+    /// Specifying a corpus:
+    /// * A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
+    /// * A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
+    ///
+    /// Filtering by textID or chapter:
+    /// * Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
+    /// * Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+    /// * All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+    ///
+    /// Filter - train on all or none
+    /// * If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
+    /// * If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
+    /// * If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
+    /// * If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
     ///
     /// Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
     /// the following text will be pretranslated:
