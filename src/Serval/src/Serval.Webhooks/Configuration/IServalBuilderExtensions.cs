@@ -6,8 +6,12 @@ public static class IServalBuilderExtensions
     {
         builder
             .Services.AddHttpClient<WebhookJob>()
+            // Add retry policy; fail after approx. 1.5 + 2.25 ... 1.5^6 ~= 31 seconds
             .AddTransientHttpErrorPolicy(b =>
-                b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+                b.WaitAndRetryAsync(
+                    6,
+                    retryAttempt => TimeSpan.FromSeconds(new[] { 2, 4, 8, 12, 14, 16 }[retryAttempt]) // total 56 seconds, under the 1 minute https limit
+                )
             );
         builder.Services.AddScoped<IWebhookService, WebhookService>();
         return builder;
