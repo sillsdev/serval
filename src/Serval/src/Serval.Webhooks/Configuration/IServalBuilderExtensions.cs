@@ -7,7 +7,10 @@ public static class IServalBuilderExtensions
         builder
             .Services.AddHttpClient<WebhookJob>()
             .AddTransientHttpErrorPolicy(b =>
-                b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+                b.WaitAndRetryAsync(
+                    7,
+                    retryAttempt => TimeSpan.FromSeconds(2 * retryAttempt) // total 56, less than the 1 minute limit
+                )
             );
         builder.Services.AddScoped<IWebhookService, WebhookService>();
         return builder;

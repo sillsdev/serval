@@ -158,9 +158,26 @@ public static class IMachineBuilderExtensions
         builder
             .Services.AddHttpClient("ClearML")
             .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!))
-            // Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
             .AddTransientHttpErrorPolicy(b =>
-                b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+                b.WaitAndRetryAsync(
+                    7,
+                    retryAttempt => TimeSpan.FromSeconds(2 * retryAttempt), // total 56, less than the 1 minute limit
+                    onRetryAsync: (outcome, timespan, retryAttempt, context) =>
+                    {
+                        if (retryAttempt < 3)
+                            return Task.CompletedTask;
+                        // Log the retry attempt
+                        var serviceProvider = builder.Services.BuildServiceProvider();
+                        var logger = serviceProvider.GetService<ILogger<ClearMLService>>();
+                        logger?.LogInformation(
+                            "Retry {RetryAttempt} encountered an error. Waiting {Timespan} before next retry. Error: {ErrorMessage}",
+                            retryAttempt,
+                            timespan,
+                            outcome.Exception?.Message
+                        );
+                        return Task.CompletedTask;
+                    }
+                )
             );
 
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
