@@ -160,8 +160,8 @@ public static class IMachineBuilderExtensions
             .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!))
             .AddTransientHttpErrorPolicy(b =>
                 b.WaitAndRetryAsync(
-                    6,
-                    retryAttempt => TimeSpan.FromSeconds(new[] { 2, 4, 8, 12, 14, 16 }[retryAttempt]), // total 56 seconds, under the 1 minute https limit
+                    7,
+                    retryAttempt => TimeSpan.FromSeconds(2 * retryAttempt), // total 56, less than the 1 minute limit
                     onRetryAsync: (outcome, timespan, retryAttempt, context) =>
                     {
                         if (retryAttempt < 3)
