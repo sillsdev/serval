@@ -60,15 +60,13 @@ There are 3 different environments that Serval is deployed to:
 - Run `kubectl config use-context dallas-rke`
 - First, startup the storage (using internal qa for example)
 - `helm install serval-pvc deploy/serval-pvc -n nlp -f deploy/qa-int-values.yaml`
-- Then, startup the database (give it 60 seconds)
-- `helm install mongo deploy/mongo -n nlp -f deploy/qa-int-values.yaml`
 - Now you can turn on Serval
 - `helm install serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
 
 ### To update the cluster
 - To upgrade Serval:
   - For QA internal Run:
-    - `kubectl config use-context dallas-rke`
+    - `kubectl config use-context dallas-stage`
     - `helm upgrade serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
   - For QA external Run:
     - `kubectl config use-context dallas-rke`
