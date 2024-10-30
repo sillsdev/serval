@@ -213,8 +213,8 @@ public class ServalApiTests
         TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
         Assert.That(engine.IsModelPersisted, Is.True);
         string[] books = ["bible_LARGEFILE.txt"];
-        await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
-        string cId = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, books, "es", "en", false);
+        string cId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(

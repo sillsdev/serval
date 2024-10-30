@@ -738,7 +738,7 @@ public class TranslationEnginesController(
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        if (!engine.Corpora.Any(c => c.Id == corpusId))
+        if (!engine.Corpora.Any(c => c.Id == corpusId) && !engine.ParallelCorpora.Any(c => c.Id == corpusId))
             return NotFound();
         if (engine.ModelRevision == 0)
             return Conflict();
@@ -800,7 +800,7 @@ public class TranslationEnginesController(
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        if (!engine.Corpora.Any(c => c.Id == corpusId))
+        if (!engine.Corpora.Any(c => c.Id == corpusId) && !engine.ParallelCorpora.Any(c => c.Id == corpusId))
             return NotFound();
         if (engine.ModelRevision == 0)
             return Conflict();
@@ -875,7 +875,7 @@ public class TranslationEnginesController(
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        if (!engine.Corpora.Any(c => c.Id == corpusId))
+        if (!engine.Corpora.Any(c => c.Id == corpusId) && !engine.ParallelCorpora.Any(c => c.Id == corpusId))
             return NotFound();
         if (engine.ModelRevision == 0)
             return Conflict();
