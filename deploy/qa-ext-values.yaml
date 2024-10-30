@@ -1,6 +1,6 @@
 externalHost: qa.serval-api.org
 environment: Production
-deploymentVersion: '1.7.QA5'
+deploymentVersion: '1.7.QA6'
 alertEmail: ext-qa-serval-alerts@languagetechnology.org
 emailsToAlert: john_lambert@sil.org
 enableTls: true
@@ -8,7 +8,7 @@ namespace: serval
 auth0Domain: dev-sillsdev.auth0.com
 lokiTenent: serval-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
-servalImage: ghcr.io/sillsdev/serval:1.7.5
+servalImage: ghcr.io/sillsdev/serval:1.7.6
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.7.2
 ClearMLQueue: production
 MongoConnectionPrefix: qa_
