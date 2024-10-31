@@ -1372,6 +1372,24 @@ public class TranslationEnginesController(
                         $"The parallel corpus {pcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                     );
                 }
+                if (
+                    pcc.SourceFilters != null
+                    && pcc.SourceFilters.Count > 0
+                    && (
+                        pcc.SourceFilters.Select(sf => sf.CorpusId).Distinct().Count() > 1
+                        || pcc.SourceFilters[0].CorpusId
+                            != engine
+                                .ParallelCorpora.Where(pc => pc.Id == pcc.ParallelCorpusId)
+                                .First()
+                                .SourceCorpora[0]
+                                .Id
+                    )
+                )
+                {
+                    throw new InvalidOperationException(
+                        $"Only the first source corpus in a parallel corpus may be filtered for pretranslation."
+                    );
+                }
                 pretranslateCorpora.Add(
                     new PretranslateCorpus
                     {
