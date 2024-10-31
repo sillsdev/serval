@@ -139,12 +139,16 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
                     );
                 })
                 .ToArray();
-            ITextCorpus[] sourcePretranslateCorpora = sourceCorpora
+            ITextCorpus? sourcePretranslateCorpus = sourceCorpora
                 .Select(sc =>
                 {
                     ITextCorpus textCorpus = sc.TextCorpus;
                     if (sc.Corpus.PretranslateTextIds is not null)
-                        textCorpus = textCorpus.FilterTexts(sc.Corpus.PretranslateTextIds);
+                    {
+                        textCorpus = textCorpus.FilterTexts(
+                            sc.Corpus.PretranslateTextIds.Except(sc.Corpus.TrainOnTextIds ?? new())
+                        );
+                    }
                     return textCorpus.Where(row =>
                         row.Ref is not ScriptureRef sr
                         || sc.Corpus.PretranslateChapters is null
@@ -154,7 +158,8 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
                         )
                     );
                 })
-                .ToArray();
+                .ToArray()
+                .FirstOrDefault();
 
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
                 .TargetCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
@@ -254,11 +259,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
 
             ITextCorpus targetCorpus =
                 targetCorpora.Length > 0 ? targetCorpora[0].TextCorpus : new DictionaryTextCorpus();
-
-            foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpora, targetCorpus))
+            if (sourcePretranslateCorpus != null)
             {
-                if (row.SourceSegment.Length > 0)
-                    WriteRow(pretranslateWriter, row.TextId, row.Refs, row.SourceSegment);
+                foreach (Row row in AlignPretranslateCorpus(sourcePretranslateCorpus, targetCorpus))
+                {
+                    if (row.SourceSegment.Length > 0 && (row.TargetSegment.Length == 0 || !targetCorpus.Any()))
+                        WriteRow(pretranslateWriter, row.TextId, row.Refs, row.SourceSegment);
+                }
             }
         }
 
@@ -415,14 +422,18 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus[] srcCorpora, ITextCorpus trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
     {
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
         List<object> refs = [];
         string textId = "";
-        foreach (ParallelTextRow row in srcCorpora.SelectMany(sc => sc.AlignRows(trgCorpus, allSourceRows: true)))
+
+        srcCorpus = srcCorpus.Transform(CleanSegment);
+        trgCorpus = trgCorpus.Transform(CleanSegment);
+
+        foreach (ParallelTextRow row in srcCorpus.AlignRows(trgCorpus, allSourceRows: true))
         {
             if (!row.IsTargetRangeStart && row.IsTargetInRange)
             {
