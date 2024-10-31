@@ -76,7 +76,6 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        // FIXME This should be 4, but the "don't pretranslate things trained on" logic is not implemented yet.
         Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
     }
 
@@ -190,7 +189,6 @@ public class PreprocessBuildJobTests
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        // FIXME - this should be 56 (or double check)
         Assert.That(
             await env.GetPretranslateCountAsync(),
             Is.EqualTo(13),
@@ -214,7 +212,6 @@ public class PreprocessBuildJobTests
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        // FIXME this should be 9.
         Assert.That(
             await env.GetPretranslateCountAsync(),
             Is.EqualTo(2),
@@ -482,7 +479,6 @@ Target one, chapter one, verse nine and ten.
         });
         JsonArray? pretranslations = await env.GetPretranslationsAsync();
         Assert.That(pretranslations, Is.Not.Null);
-        // FIXME this should be 37.
         Assert.That(pretranslations!.Count, Is.EqualTo(7), pretranslations.ToJsonString());
         Assert.That(
             pretranslations[2]!["translation"]!.ToString(),
