@@ -221,7 +221,7 @@ public class ServalApiTests
             engineId,
             cId
         );
-        TestContext.WriteLine(lTrans[0].Translation);
+        Assert.That(lTrans, Has.Count.EqualTo(14));
         // Download the model from the s3 bucket
         ModelDownloadUrl url = await _helperClient.TranslationEnginesClient.GetModelDownloadUrlAsync(engineId);
         using Task<Stream> s = new HttpClient().GetStreamAsync(url.Url);
@@ -436,6 +436,12 @@ public class ServalApiTests
             corpus.Id
         );
         Assert.That(lTrans, Is.Not.Empty);
+        string usfm = await _helperClient.TranslationEnginesClient.GetPretranslatedUsfmAsync(
+            engineId,
+            corpus.Id,
+            "JHN"
+        );
+        Assert.That(usfm, Does.Contain("\\v 1"));
     }
 
     [TearDown]

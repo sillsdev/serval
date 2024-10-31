@@ -41,11 +41,24 @@ public class PretranslationService(
     {
         Engine? engine = await _engines.GetAsync(engineId, cancellationToken);
         Corpus? corpus = engine?.Corpora.SingleOrDefault(c => c.Id == corpusId);
-        if (corpus is null)
-            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
+        ParallelCorpus? parallelCorpus = engine?.ParallelCorpora.SingleOrDefault(c => c.Id == corpusId);
 
-        CorpusFile sourceFile = corpus.SourceFiles[0];
-        CorpusFile targetFile = corpus.TargetFiles[0];
+        CorpusFile sourceFile;
+        CorpusFile targetFile;
+        if (corpus is not null)
+        {
+            sourceFile = corpus.SourceFiles[0];
+            targetFile = corpus.TargetFiles[0];
+        }
+        else if (parallelCorpus is not null)
+        {
+            sourceFile = parallelCorpus.SourceCorpora[0].Files[0];
+            targetFile = parallelCorpus.TargetCorpora[0].Files[0];
+        }
+        else
+        {
+            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
+        }
         if (sourceFile.Format is not FileFormat.Paratext || targetFile.Format is not FileFormat.Paratext)
             throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
 
