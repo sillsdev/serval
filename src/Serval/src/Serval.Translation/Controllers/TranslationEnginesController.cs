@@ -313,7 +313,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Add a corpus to a translation engine
+    /// Add a corpus to a translation engine (obsolete - use parallel corpora instead)
     /// </summary>
     /// <remarks>
     /// ## Parameters
@@ -344,6 +344,7 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -369,7 +370,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Update a corpus with a new set of files
+    /// Update a corpus with a new set of files (obsolete - use parallel corpora instead)
     /// </summary>
     /// <remarks>
     /// See posting a new corpus for details of use. Will completely replace corpus' file associations.
@@ -386,6 +387,7 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPatch("{id}/corpora/{corpusId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -418,7 +420,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get all corpora for a translation engine
+    /// Get all corpora for a translation engine (obsolete - use parallel corpora instead)
     /// </summary>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
@@ -427,6 +429,7 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -445,7 +448,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get the configuration of a corpus for a translation engine
+    /// Get the configuration of a corpus for a translation engine (obsolete - use parallel corpora instead)
     /// </summary>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -455,6 +458,7 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/corpora/{corpusId}", Name = Endpoints.GetTranslationCorpus)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -698,7 +702,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get all pretranslations in a corpus of a translation engine
+    /// Get all pretranslations in a corpus or parallel corpus of a translation engine
     /// </summary>
     /// <remarks>
     /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -712,7 +716,7 @@ public class TranslationEnginesController(
     /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
+    /// <param name="corpusId">The corpus id or parallel corpus id</param>
     /// <param name="textId">The text id (optional)</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The pretranslations</response>
@@ -761,7 +765,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get all pretranslations for the specified text in a corpus of a translation engine
+    /// Get all pretranslations for the specified text in a corpus or parallel corpus of a translation engine
     /// </summary>
     /// <remarks>
     /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -774,7 +778,7 @@ public class TranslationEnginesController(
     /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
+    /// <param name="corpusId">The corpus id or parallel corpus id</param>
     /// <param name="textId">The text id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The pretranslations</response>
@@ -841,7 +845,7 @@ public class TranslationEnginesController(
     /// Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
     /// </remarks>
     /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
+    /// <param name="corpusId">The corpus id or parallel corpus id</param>
     /// <param name="textId">The text id</param>
     /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
     /// <param name="cancellationToken"></param>
