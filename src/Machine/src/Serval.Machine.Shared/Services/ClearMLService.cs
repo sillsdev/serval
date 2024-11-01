@@ -161,8 +161,9 @@ public class ClearMLService(
         var body = new JsonObject { ["queue"] = queueId };
         JsonObject? result = await CallAsync("queues", "get_by_id", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["queue"]?["entries"];
-        IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["id"]!) ?? new List<string>();
-        return await GetTasksByIdAsync(taskIds, cancellationToken);
+        IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["task"]!) ?? new List<string>();
+        var tasksById = await GetTasksByIdAsync(taskIds, cancellationToken);
+        return tasksById;
     }
 
     private async Task<IDictionary<string, string>> PopulateQueueNamesToIdsAsync(
