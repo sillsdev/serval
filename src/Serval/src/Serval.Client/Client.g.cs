@@ -4526,6 +4526,16 @@ namespace Serval.Client
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get a build summary for a given build ID.
+        /// </summary>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="buildId">The build job id</param>
+        /// <returns>The build summary</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<TranslationBuildSummary> GetBuildSummaryAsync(string id, string buildId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -7852,6 +7862,116 @@ namespace Serval.Client
             }
         }
 
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get a build summary for a given build ID.
+        /// </summary>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="buildId">The build job id</param>
+        /// <returns>The build summary</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<TranslationBuildSummary> GetBuildSummaryAsync(string id, string buildId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (buildId == null)
+                throw new System.ArgumentNullException("buildId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "translation/engines/{id}/builds/{buildId}/summary"
+                    urlBuilder_.Append("translation/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/builds/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(buildId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/summary");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<TranslationBuildSummary>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client does not own the translation engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine or build does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
         protected struct ObjectResponseResult<T>
         {
             public ObjectResponseResult(T responseObject, string responseText)
@@ -9967,6 +10087,59 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("expiresAt", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public System.DateTimeOffset ExpiresAt { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TranslationBuildSummary
+    {
+        [Newtonsoft.Json.JsonProperty("linesTrainedOn", Required = Newtonsoft.Json.Required.Always)]
+        public int LinesTrainedOn { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("linesPretranslated", Required = Newtonsoft.Json.Required.Always)]
+        public int LinesPretranslated { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("totalBuildTime", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.TimeSpan TotalBuildTime { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("pretranslate", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<PretranslateCorpus2>? Pretranslate { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PretranslateCorpus2
+    {
+        [Newtonsoft.Json.JsonProperty("corpusRef", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? CorpusRef { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ScriptureRange { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("parallelCorpusRef", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ParallelCorpusRef { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<ParallelCorpusFilter2>? SourceFilters { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ParallelCorpusFilter2
+    {
+        [Newtonsoft.Json.JsonProperty("corpusRef", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string CorpusRef { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ScriptureRange { get; set; } = default!;
 
     }
 

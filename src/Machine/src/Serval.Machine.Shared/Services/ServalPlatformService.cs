@@ -137,4 +137,7 @@ public class ServalPlatformService(
             cancellationToken: cancellationToken
         );
     }
+
+    // populate this function
+    public async Task UpdateBuildStatisticsAsync() { }
 }

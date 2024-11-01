@@ -82,6 +82,9 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
             );
         }
 
+        // might want to inject the platform service and create a new platform call, insert build statistics that takes string-string pairs
+        // and the send it up
+
         cancellationToken.ThrowIfCancellationRequested();
 
         bool canceling = !await BuildJobService.StartBuildJobAsync(
