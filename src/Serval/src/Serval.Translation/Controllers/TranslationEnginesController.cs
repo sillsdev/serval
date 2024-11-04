@@ -9,6 +9,7 @@ public class TranslationEnginesController(
     IBuildService buildService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
+    IConfiguration configuration,
     IUrlService urlService,
     ILogger<TranslationEnginesController> logger
 ) : ServalControllerBase(authService)
@@ -22,6 +23,7 @@ public class TranslationEnginesController(
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
     private readonly ILogger<TranslationEnginesController> _logger = logger;
+    private readonly IConfiguration _configuration = configuration;
 
     /// <summary>
     /// Get all translation engines
@@ -1046,9 +1048,12 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
+        string deploymentVersion = _configuration.GetValue<string>("deploymentVersion") ?? "Unknown";
+
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Build build = Map(engine, buildConfig);
+        Build build = Map(engine, buildConfig, deploymentVersion);
+
         await _engineService.StartBuildAsync(build, cancellationToken);
 
         TranslationBuildDto dto = Map(build);
@@ -1311,7 +1316,7 @@ public class TranslationEnginesController(
         };
     }
 
-    private static Build Map(Engine engine, TranslationBuildConfigDto source)
+    private static Build Map(Engine engine, TranslationBuildConfigDto source, string deploymentVersion)
     {
         return new Build
         {
@@ -1319,7 +1324,8 @@ public class TranslationEnginesController(
             Name = source.Name,
             Pretranslate = Map(engine, source.Pretranslate),
             TrainOn = Map(engine, source.TrainOn),
-            Options = Map(source.Options)
+            Options = Map(source.Options),
+            DeploymentVersion = deploymentVersion
         };
     }
 
@@ -1534,7 +1540,8 @@ public class TranslationEnginesController(
             QueueDepth = source.QueueDepth,
             State = source.State,
             DateFinished = source.DateFinished,
-            Options = source.Options
+            Options = source.Options,
+            DeploymentVersion = source.DeploymentVersion
         };
     }
 

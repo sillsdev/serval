@@ -1407,6 +1407,9 @@ public class TranslationEngineTests
 
                 build = await client.GetCurrentBuildAsync(engineId);
                 Assert.That(build, Is.Not.Null);
+
+                Assert.That(build.DeploymentVersion, Is.Not.Null);
+
                 break;
             case 400:
             case 403:
