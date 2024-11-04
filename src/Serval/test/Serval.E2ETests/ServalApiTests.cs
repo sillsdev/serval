@@ -144,8 +144,18 @@ public class ServalApiTests
         const int NUM_WORKERS = 8;
         string[] engineIds = new string[NUM_ENGINES];
         string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
-        var train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
-        var pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(["3JN.txt"], "es", "en", true);
+        TranslationParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(
+            books,
+            "es",
+            "en",
+            false
+        );
+        TranslationParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
+            ["3JN.txt"],
+            "es",
+            "en",
+            true
+        );
         for (int i = 0; i < NUM_ENGINES; i++)
         {
             _helperClient.InitTranslationBuildConfig();
@@ -215,8 +225,18 @@ public class ServalApiTests
         TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
         Assert.That(engine.IsModelPersisted, Is.True);
         string[] books = ["bible_LARGEFILE.txt"];
-        var train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
-        var pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(["3JN.txt"], "es", "en", true);
+        TranslationParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(
+            books,
+            "es",
+            "en",
+            false
+        );
+        TranslationParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
+            ["3JN.txt"],
+            "es",
+            "en",
+            true
+        );
         await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
         string cId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, pretranslate_corpus, true);
         await _helperClient.BuildEngineAsync(engineId);
