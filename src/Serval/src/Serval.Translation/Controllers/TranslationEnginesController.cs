@@ -1,5 +1,7 @@
 ﻿namespace Serval.Translation.Controllers;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
 [OpenApiTag("Translation Engines")]
@@ -1757,3 +1759,5 @@ public class TranslationEnginesController(
         };
     }
 }
+
+#pragma warning restore CS0612 // Type or member is obsolete

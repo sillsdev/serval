@@ -9852,12 +9852,15 @@ namespace Serval.Client
     public partial class TrainingCorpus
     {
         [Newtonsoft.Json.JsonProperty("corpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public ResourceLink? Corpus { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? ScriptureRange { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("parallelCorpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -9890,12 +9893,15 @@ namespace Serval.Client
     public partial class PretranslateCorpus
     {
         [Newtonsoft.Json.JsonProperty("corpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public ResourceLink? Corpus { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? ScriptureRange { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("parallelCorpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -9927,12 +9933,15 @@ namespace Serval.Client
     public partial class TrainingCorpusConfig
     {
         [Newtonsoft.Json.JsonProperty("corpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? CorpusId { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? ScriptureRange { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -9965,12 +9974,15 @@ namespace Serval.Client
     public partial class PretranslateCorpusConfig
     {
         [Newtonsoft.Json.JsonProperty("corpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? CorpusId { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? ScriptureRange { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
