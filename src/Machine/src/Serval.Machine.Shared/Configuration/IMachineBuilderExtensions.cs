@@ -52,10 +52,7 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
-        if (builder.Configuration is null)
-            throw new InvalidOperationException("Configuration is required");
-        else
-            return builder.AddThotSmtModel(builder.Configuration.GetSection(ThotSmtModelOptions.Key));
+        return builder.AddThotSmtModel(builder.Configuration.GetSection(ThotSmtModelOptions.Key));
     }
 
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder, IConfiguration config)

@@ -2,7 +2,7 @@
 
 public static class IServiceCollectionExtensions
 {
-    public static IMachineBuilder AddMachine(this IServiceCollection services, IConfiguration? configuration = null)
+    public static IMachineBuilder AddMachine(this IServiceCollection services, IConfiguration configuration)
     {
         if (!Sldr.IsInitialized)
             Sldr.Initialize();
@@ -22,22 +22,13 @@ public static class IServiceCollectionExtensions
         );
 
         var builder = new MachineBuilder(services, configuration);
-        if (configuration is null)
-        {
-            throw new InvalidOperationException("Configuration is required");
-        }
-        else
-        {
-            builder.AddServiceOptions(configuration.GetSection(ServiceOptions.Key));
-            builder.AddSharedFileOptions(configuration.GetSection(SharedFileOptions.Key));
-            builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
-            builder.AddClearMLOptions(configuration.GetSection(ClearMLOptions.Key));
-            builder.AddDistributedReaderWriterLockOptions(
-                configuration.GetSection(DistributedReaderWriterLockOptions.Key)
-            );
-            builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
-            builder.AddMessageOutboxOptions(configuration.GetSection(MessageOutboxOptions.Key));
-        }
+        builder.AddServiceOptions(configuration.GetSection(ServiceOptions.Key));
+        builder.AddSharedFileOptions(configuration.GetSection(SharedFileOptions.Key));
+        builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
+        builder.AddClearMLOptions(configuration.GetSection(ClearMLOptions.Key));
+        builder.AddDistributedReaderWriterLockOptions(configuration.GetSection(DistributedReaderWriterLockOptions.Key));
+        builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
+        builder.AddMessageOutboxOptions(configuration.GetSection(MessageOutboxOptions.Key));
         return builder;
     }
 

@@ -7,15 +7,8 @@ public static class IServalBuilderExtensions
 {
     public static IServalBuilder AddTranslation(this IServalBuilder builder)
     {
-        if (builder.Configuration is null)
-        {
-            throw new InvalidOperationException("Configuration is required");
-        }
-        else
-        {
-            builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
-            builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
-        }
+        builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
+        builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
 
         builder.Services.AddScoped<IBuildService, BuildService>();
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
