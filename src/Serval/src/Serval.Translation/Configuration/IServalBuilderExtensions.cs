@@ -5,15 +5,11 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
 {
-    public static IServalBuilder AddTranslation(
-        this IServalBuilder builder,
-        Action<TranslationOptions>? configure = null
-    )
+    public static IServalBuilder AddTranslation(this IServalBuilder builder)
     {
         if (builder.Configuration is null)
         {
-            builder.AddApiOptions(o => { });
-            builder.AddDataFileOptions(o => { });
+            throw new InvalidOperationException("Configuration is required");
         }
         else
         {
@@ -27,8 +23,6 @@ public static class IServalBuilderExtensions
 
         var translationOptions = new TranslationOptions();
         builder.Configuration?.GetSection(TranslationOptions.Key).Bind(translationOptions);
-        if (configure is not null)
-            configure(translationOptions);
 
         foreach (EngineInfo engine in translationOptions.Engines)
         {

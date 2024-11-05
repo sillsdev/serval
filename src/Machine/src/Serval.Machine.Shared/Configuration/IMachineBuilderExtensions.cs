@@ -5,42 +5,15 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IMachineBuilderExtensions
 {
-    public static IMachineBuilder AddServiceOptions(
-        this IMachineBuilder builder,
-        Action<ServiceOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
-    }
-
     public static IMachineBuilder AddServiceOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<ServiceOptions>(config);
         return builder;
     }
 
-    public static IMachineBuilder AddSmtTransferEngineOptions(
-        this IMachineBuilder builder,
-        Action<SmtTransferEngineOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
-    }
-
     public static IMachineBuilder AddSmtTransferEngineOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<SmtTransferEngineOptions>(config);
-        return builder;
-    }
-
-    public static IMachineBuilder AddClearMLOptions(
-        this IMachineBuilder builder,
-        Action<ClearMLOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
         return builder;
     }
 
@@ -52,29 +25,11 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddDistributedReaderWriterLockOptions(
         this IMachineBuilder build,
-        Action<DistributedReaderWriterLockOptions> configureOptions
-    )
-    {
-        build.Services.Configure(configureOptions);
-        return build;
-    }
-
-    public static IMachineBuilder AddDistributedReaderWriterLockOptions(
-        this IMachineBuilder build,
         IConfiguration config
     )
     {
         build.Services.Configure<DistributedReaderWriterLockOptions>(config);
         return build;
-    }
-
-    public static IMachineBuilder AddMessageOutboxOptions(
-        this IMachineBuilder builder,
-        Action<MessageOutboxOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
     }
 
     public static IMachineBuilder AddMessageOutboxOptions(this IMachineBuilder builder, IConfiguration config)
@@ -83,27 +38,9 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddSharedFileOptions(
-        this IMachineBuilder builder,
-        Action<SharedFileOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
-    }
-
     public static IMachineBuilder AddSharedFileOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<SharedFileOptions>(config);
-        return builder;
-    }
-
-    public static IMachineBuilder AddBuildJobOptions(
-        this IMachineBuilder builder,
-        Action<BuildJobOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
         return builder;
     }
 
@@ -116,19 +53,9 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
         if (builder.Configuration is null)
-            return builder.AddThotSmtModel(o => { });
+            throw new InvalidOperationException("Configuration is required");
         else
             return builder.AddThotSmtModel(builder.Configuration.GetSection(ThotSmtModelOptions.Key));
-    }
-
-    public static IMachineBuilder AddThotSmtModel(
-        this IMachineBuilder builder,
-        Action<ThotSmtModelOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
-        return builder;
     }
 
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder, IConfiguration config)

@@ -24,13 +24,7 @@ public static class IServiceCollectionExtensions
         var builder = new MachineBuilder(services, configuration);
         if (configuration is null)
         {
-            builder.AddServiceOptions(o => { });
-            builder.AddSharedFileOptions(o => { });
-            builder.AddSmtTransferEngineOptions(o => { });
-            builder.AddClearMLOptions(o => { });
-            builder.AddDistributedReaderWriterLockOptions(o => { });
-            builder.AddBuildJobOptions(o => { });
-            builder.AddMessageOutboxOptions(o => { });
+            throw new InvalidOperationException("Configuration is required");
         }
         else
         {

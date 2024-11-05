@@ -5,12 +5,11 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
 {
-    public static IServalBuilder AddAssessment(this IServalBuilder builder, Action<AssessmentOptions>? configure = null)
+    public static IServalBuilder AddAssessment(this IServalBuilder builder)
     {
         if (builder.Configuration is null)
         {
-            builder.AddApiOptions(o => { });
-            builder.AddDataFileOptions(o => { });
+            throw new InvalidOperationException("Configuration is required");
         }
         else
         {
@@ -24,8 +23,6 @@ public static class IServalBuilderExtensions
 
         var assessmentOptions = new AssessmentOptions();
         builder.Configuration?.GetSection(AssessmentOptions.Key).Bind(assessmentOptions);
-        if (configure is not null)
-            configure(assessmentOptions);
 
         foreach (EngineInfo engine in assessmentOptions.Engines)
         {

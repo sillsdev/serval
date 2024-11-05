@@ -2,24 +2,9 @@
 
 public static class IServalBuilderExtensions
 {
-    public static IServalBuilder AddDataFileOptions(
-        this IServalBuilder builder,
-        Action<DataFileOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
-    }
-
     public static IServalBuilder AddDataFileOptions(this IServalBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<DataFileOptions>(config);
-        return builder;
-    }
-
-    public static IServalBuilder AddApiOptions(this IServalBuilder builder, Action<ApiOptions> configureOptions)
-    {
-        builder.Services.Configure(configureOptions);
         return builder;
     }
 
