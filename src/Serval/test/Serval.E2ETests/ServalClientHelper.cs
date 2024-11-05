@@ -1,5 +1,7 @@
 namespace Serval.E2ETests;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
 public class ServalClientHelper : IAsyncDisposable
 {
     public DataFilesClient DataFilesClient { get; }
@@ -416,3 +418,5 @@ public class ServalClientHelper : IAsyncDisposable
         return new ValueTask(Task.CompletedTask);
     }
 }
+
+#pragma warning restore CS0612 // Type or member is obsolete
