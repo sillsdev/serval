@@ -5,6 +5,8 @@ using static Serval.ApiServer.Utils;
 
 namespace Serval.ApiServer;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
 [TestFixture]
 [Category("Integration")]
 public class TranslationEngineTests
@@ -2376,3 +2378,5 @@ public class TranslationEngineTests
         }
     }
 }
+
+#pragma warning restore CS0612 // Type or member is obsolete

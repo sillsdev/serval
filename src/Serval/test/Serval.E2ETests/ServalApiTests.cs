@@ -1,5 +1,7 @@
 namespace Serval.E2ETests;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
 [TestFixture]
 [Category("E2E")]
 public class ServalApiTests
@@ -456,3 +458,5 @@ public class ServalApiTests
         await _helperClient.DisposeAsync();
     }
 }
+
+#pragma warning restore CS0612 // Type or member is obsolete
