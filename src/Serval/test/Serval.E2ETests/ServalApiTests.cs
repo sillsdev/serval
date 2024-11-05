@@ -143,14 +143,26 @@ public class ServalApiTests
         const int NUM_ENGINES = 10;
         const int NUM_WORKERS = 8;
         string[] engineIds = new string[NUM_ENGINES];
+        string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
+        TranslationParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(
+            books,
+            "es",
+            "en",
+            false
+        );
+        TranslationParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
+            ["3JN.txt"],
+            "es",
+            "en",
+            true
+        );
         for (int i = 0; i < NUM_ENGINES; i++)
         {
             _helperClient.InitTranslationBuildConfig();
             engineIds[i] = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", $"NMT1_{i}");
             string engineId = engineIds[i];
-            string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
-            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, books, "es", "en", false);
-            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, pretranslate_corpus, true);
             await _helperClient.StartBuildAsync(engineId);
             //Ensure that tasks are enqueued roughly in order
             await Task.Delay(1_000);
@@ -213,8 +225,20 @@ public class ServalApiTests
         TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
         Assert.That(engine.IsModelPersisted, Is.True);
         string[] books = ["bible_LARGEFILE.txt"];
-        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, books, "es", "en", false);
-        string cId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+        TranslationParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(
+            books,
+            "es",
+            "en",
+            false
+        );
+        TranslationParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
+            ["3JN.txt"],
+            "es",
+            "en",
+            true
+        );
+        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
+        string cId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, pretranslate_corpus, true);
         await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
@@ -259,13 +283,8 @@ public class ServalApiTests
         Assert.That(ex.StatusCode, Is.EqualTo(409));
 
         //Add corpus
-        string cId = await _helperClient.AddParallelTextCorpusToEngineAsync(
-            smtEngineId,
-            ["2JN.txt", "3JN.txt"],
-            "es",
-            "en",
-            false
-        );
+        var corpus1 = await _helperClient.MakeParallelTextCorpus(["2JN.txt", "3JN.txt"], "es", "en", false);
+        string cId = await _helperClient.AddParallelTextCorpusToEngineAsync(smtEngineId, corpus1, false);
 
         //Build the new engine
         await _helperClient.BuildEngineAsync(smtEngineId);
@@ -274,13 +293,8 @@ public class ServalApiTests
         await _helperClient.TranslationEnginesClient.DeleteParallelCorpusAsync(smtEngineId, cId);
 
         // Add corpus
-        await _helperClient.AddParallelTextCorpusToEngineAsync(
-            smtEngineId,
-            ["1JN.txt", "2JN.txt", "3JN.txt"],
-            "es",
-            "en",
-            false
-        );
+        var corpus2 = await _helperClient.MakeParallelTextCorpus(["1JN.txt", "2JN.txt", "3JN.txt"], "es", "en", false);
+        await _helperClient.AddParallelTextCorpusToEngineAsync(smtEngineId, corpus2, false);
 
         //Build the new engine
         await _helperClient.BuildEngineAsync(smtEngineId);
