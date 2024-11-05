@@ -5,12 +5,12 @@ public class NmtPreprocessBuildJob(
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
     ILogger<NmtPreprocessBuildJob> logger,
-    IBuildJobService buildJobService,
+    IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     ICorpusService corpusService,
     ILanguageTagService languageTagService
 )
-    : PreprocessBuildJob(
+    : PreprocessBuildJob<TranslationEngine>(
         platformService,
         engines,
         dataAccessContext,

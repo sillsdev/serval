@@ -88,7 +88,7 @@ public class NmtEngineServiceTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -132,14 +132,14 @@ public class NmtEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            EngineType = EngineType.Nmt.ToString(),
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            EngineType = EngineType.SmtTransfer.ToString(),
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -147,7 +147,7 @@ public class NmtEngineServiceTests
                     ]
                 }
             );
-            BuildJobService = new BuildJobService(
+            BuildJobService = new BuildJobService<TranslationEngine>(
                 [
                     new HangfireBuildJobRunner(_jobClient, [new NmtHangfireBuildJobFactory()]),
                     new ClearMLBuildJobRunner(
@@ -184,7 +184,7 @@ public class NmtEngineServiceTests
         public IPlatformService PlatformService { get; }
         public IClearMLService ClearMLService { get; }
         public ISharedFileService SharedFileService { get; }
-        public IBuildJobService BuildJobService { get; }
+        public IBuildJobService<TranslationEngine> BuildJobService { get; }
 
         public void StopServer()
         {
@@ -262,7 +262,7 @@ public class NmtEngineServiceTests
 
             await BuildJobService.StartBuildJobAsync(
                 BuildJobRunnerType.Hangfire,
-                TranslationEngineType.Nmt,
+                EngineType.Nmt,
                 "engine1",
                 "build1",
                 BuildStage.Postprocess,

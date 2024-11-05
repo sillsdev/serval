@@ -80,11 +80,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             {
                 cfg.AddTranslationRepositories();
                 cfg.AddAssessmentRepositories();
+                cfg.AddWordAlignmentRepositories();
                 cfg.AddDataFilesRepositories();
                 cfg.AddWebhooksRepositories();
             })
             .AddTranslation()
             .AddAssessment()
+            .AddWordAlignment()
             .AddDataFiles()
             .AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
@@ -113,6 +115,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         {
             cfg.AddTranslationConsumers();
             cfg.AddAssessmentConsumers();
+            cfg.AddWordAlignmentConsumers();
             cfg.AddDataFilesConsumers();
             cfg.AddWebhooksConsumers();
         });
@@ -232,6 +235,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             x.MapControllers();
             x.MapServalTranslationServices();
             x.MapServalAssessmentServices();
+            x.MapServalWordAlignmentServices();
             x.MapHangfireDashboard();
         });
 

@@ -4,11 +4,18 @@ public class PostprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
-    IBuildJobService buildJobService,
+    IBuildJobService<TranslationEngine> buildJobService,
     ILogger<PostprocessBuildJob> logger,
     ISharedFileService sharedFileService,
     IOptionsMonitor<BuildJobOptions> options
-) : HangfireBuildJob<(int, double)>(platformService, engines, dataAccessContext, buildJobService, logger)
+)
+    : HangfireBuildJob<TranslationEngine, (int, double)>(
+        platformService,
+        engines,
+        dataAccessContext,
+        buildJobService,
+        logger
+    )
 {
     protected ISharedFileService SharedFileService { get; } = sharedFileService;
     private readonly BuildJobOptions _buildJobOptions = options.CurrentValue;

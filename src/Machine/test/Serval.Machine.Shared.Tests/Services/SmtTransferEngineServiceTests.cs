@@ -238,7 +238,7 @@ public class SmtTransferEngineServiceTests
                 {
                     Id = EngineId1,
                     EngineId = EngineId1,
-                    Type = TranslationEngineType.SmtTransfer,
+                    Type = EngineType.SmtTransfer,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -277,14 +277,14 @@ public class SmtTransferEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            EngineType = EngineType.Nmt.ToString().ToString(),
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            EngineType = EngineType.SmtTransfer.ToString(),
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -319,7 +319,7 @@ public class SmtTransferEngineServiceTests
                 buildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
-            BuildJobService = new BuildJobService(
+            BuildJobService = new BuildJobService<TranslationEngine>(
                 [
                     new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
                     new ClearMLBuildJobRunner(
@@ -352,7 +352,7 @@ public class SmtTransferEngineServiceTests
 
         public ISharedFileService SharedFileService { get; }
 
-        public IBuildJobService BuildJobService { get; }
+        public IBuildJobService<TranslationEngine> BuildJobService { get; }
 
         public async Task CommitAsync(TimeSpan inactiveTimeout)
         {
@@ -659,7 +659,7 @@ public class SmtTransferEngineServiceTests
 
                 await BuildJobService.StartBuildJobAsync(
                     BuildJobRunnerType.Hangfire,
-                    TranslationEngineType.SmtTransfer,
+                    EngineType.SmtTransfer,
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,
@@ -684,7 +684,7 @@ public class SmtTransferEngineServiceTests
                         _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
-                        Substitute.For<ILogger<PreprocessBuildJob>>(),
+                        Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
                         Substitute.For<ICorpusService>(),

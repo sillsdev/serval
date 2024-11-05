@@ -1,6 +1,7 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>>
+public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>
+    where TEngine : ITrainingEngine
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
@@ -13,10 +14,10 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
 
     public PreprocessBuildJob(
         IPlatformService platformService,
-        IRepository<TranslationEngine> engines,
+        IRepository<TEngine> engines,
         IDataAccessContext dataAccessContext,
-        ILogger<PreprocessBuildJob> logger,
-        IBuildJobService buildJobService,
+        ILogger<PreprocessBuildJob<TEngine>> logger,
+        IBuildJobService<TEngine> buildJobService,
         ISharedFileService sharedFileService,
         ICorpusService corpusService
     )
@@ -48,7 +49,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<ParallelCorpus>
         CancellationToken cancellationToken
     )
     {
-        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        TEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 

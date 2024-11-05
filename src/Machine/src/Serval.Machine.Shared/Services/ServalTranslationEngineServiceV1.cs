@@ -8,8 +8,9 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 {
     private static readonly Empty Empty = new();
 
-    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices =
-        engineServices.ToDictionary(es => es.Type);
+    private readonly Dictionary<EngineType, ITranslationEngineService> _engineServices = engineServices.ToDictionary(
+        es => es.Type
+    );
 
     public override async Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
@@ -175,10 +176,10 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         throw new RpcException(new Status(StatusCode.InvalidArgument, "The engine type is invalid."));
     }
 
-    private static TranslationEngineType GetEngineType(string engineTypeStr)
+    private static EngineType GetEngineType(string engineTypeStr)
     {
         engineTypeStr = engineTypeStr[0].ToString().ToUpperInvariant() + engineTypeStr[1..];
-        if (System.Enum.TryParse(engineTypeStr, out TranslationEngineType engineType))
+        if (System.Enum.TryParse(engineTypeStr, out EngineType engineType))
             return engineType;
         throw new RpcException(new Status(StatusCode.InvalidArgument, "The engine type is invalid."));
     }

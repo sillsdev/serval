@@ -4,13 +4,13 @@ public class SmtTransferTrainBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
-    IBuildJobService buildJobService,
+    IBuildJobService<TranslationEngine> buildJobService,
     ILogger<SmtTransferTrainBuildJob> logger,
     ISharedFileService sharedFileService,
     ITruecaserFactory truecaserFactory,
     ISmtModelFactory smtModelFactory,
     ITransferEngineFactory transferEngineFactory
-) : HangfireBuildJob(platformService, engines, dataAccessContext, buildJobService, logger)
+) : HangfireBuildJob<TranslationEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
     private static readonly JsonSerializerOptions JsonSerializerOptions =
@@ -55,7 +55,7 @@ public class SmtTransferTrainBuildJob(
 
         bool canceling = !await BuildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Hangfire,
-            TranslationEngineType.SmtTransfer,
+            EngineType.SmtTransfer,
             engineId,
             buildId,
             BuildStage.Postprocess,

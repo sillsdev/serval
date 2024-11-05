@@ -237,7 +237,7 @@ public class PreprocessBuildJobTests
         using TestEnvironment env = new();
         ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
 
-        await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: TranslationEngineType.SmtTransfer);
+        await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: EngineType.SmtTransfer);
     }
 
     [Test]
@@ -505,7 +505,7 @@ Target one, chapter one, verse nine and ten.
         public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
         public IDistributedReaderWriterLockFactory LockFactory { get; }
-        public IBuildJobService BuildJobService { get; }
+        public IBuildJobService<TranslationEngine> BuildJobService { get; }
         public IClearMLService ClearMLService { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
@@ -647,7 +647,7 @@ Target one, chapter one, verse nine and ten.
                 {
                     Id = "engine1",
                     EngineId = "engine1",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -667,7 +667,7 @@ Target one, chapter one, verse nine and ten.
                 {
                     Id = "engine2",
                     EngineId = "engine2",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "xxx",
                     TargetLanguage = "zzz",
                     BuildRevision = 1,
@@ -687,7 +687,7 @@ Target one, chapter one, verse nine and ten.
                 {
                     Id = "engine2",
                     EngineId = "engine2",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "xxx",
                     TargetLanguage = "zzz",
                     BuildRevision = 1,
@@ -719,14 +719,14 @@ Target one, chapter one, verse nine and ten.
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            EngineType = EngineType.Nmt.ToString(),
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            EngineType = EngineType.SmtTransfer.ToString(),
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -754,7 +754,7 @@ Target one, chapter one, verse nine and ten.
                 )
                 .Returns(Task.FromResult("job1"));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            BuildJobService = new BuildJobService(
+            BuildJobService = new BuildJobService<TranslationEngine>(
                 [
                     new HangfireBuildJobRunner(
                         Substitute.For<IBackgroundJobClient>(),
@@ -776,11 +776,11 @@ Target one, chapter one, verse nine and ten.
             );
         }
 
-        public PreprocessBuildJob GetBuildJob(TranslationEngineType engineType)
+        public PreprocessBuildJob<TranslationEngine> GetBuildJob(EngineType engineType)
         {
             switch (engineType)
             {
-                case TranslationEngineType.Nmt:
+                case EngineType.Nmt:
                 {
                     return new NmtPreprocessBuildJob(
                         PlatformService,
@@ -796,13 +796,13 @@ Target one, chapter one, verse nine and ten.
                         Seed = 1234
                     };
                 }
-                case TranslationEngineType.SmtTransfer:
+                case EngineType.SmtTransfer:
                 {
                     return new SmtTransferPreprocessBuildJob(
                         PlatformService,
                         Engines,
                         new MemoryDataAccessContext(),
-                        Substitute.For<ILogger<PreprocessBuildJob>>(),
+                        Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
                         CorpusService,
@@ -945,7 +945,7 @@ Target one, chapter one, verse nine and ten.
             ParallelCorpus corpus,
             bool useKeyTerms = true,
             string engineId = "engine1",
-            TranslationEngineType engineType = TranslationEngineType.Nmt
+            EngineType engineType = EngineType.Nmt
         )
         {
             return RunBuildJobAsync([corpus], useKeyTerms, engineId, engineType);
@@ -955,7 +955,7 @@ Target one, chapter one, verse nine and ten.
             IEnumerable<ParallelCorpus> corpora,
             bool useKeyTerms = true,
             string engineId = "engine1",
-            TranslationEngineType engineType = TranslationEngineType.Nmt
+            EngineType engineType = EngineType.Nmt
         )
         {
             return GetBuildJob(engineType)

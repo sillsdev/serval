@@ -166,18 +166,18 @@ public class CorporaController(
         };
     }
 
-    private async Task<IReadOnlyList<CorpusFile>> MapAsync(
+    private async Task<IReadOnlyList<Models.CorpusFile>> MapAsync(
         IReadOnlyList<CorpusFileConfigDto> files,
         CancellationToken cancellationToken
     )
     {
-        var dataFiles = new List<CorpusFile>();
+        var dataFiles = new List<Models.CorpusFile>();
         foreach (CorpusFileConfigDto file in files)
         {
             DataFile? dataFile = await _dataFileService.GetAsync(file.FileId, cancellationToken);
             if (dataFile == null)
                 throw new InvalidOperationException($"DataFile with id {file.FileId} does not exist.");
-            dataFiles.Add(new CorpusFile { File = dataFile, TextId = file.TextId });
+            dataFiles.Add(new Models.CorpusFile { File = dataFile, TextId = file.TextId });
         }
         return dataFiles;
     }
@@ -195,7 +195,7 @@ public class CorporaController(
         };
     }
 
-    private CorpusFileDto Map(CorpusFile source)
+    private CorpusFileDto Map(Models.CorpusFile source)
     {
         return new CorpusFileDto { File = Map(source.File), TextId = source.TextId };
     }

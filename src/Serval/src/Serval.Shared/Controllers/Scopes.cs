@@ -12,6 +12,11 @@ public static class Scopes
     public const string UpdateAssessmentEngines = "update:assessment_engines";
     public const string DeleteAssessmentEngines = "delete:assessment_engines";
 
+    public const string CreateWordAlignmentEngines = "create:word_alignment_engines";
+    public const string ReadWordAlignmentEngines = "read:word_alignment_engines";
+    public const string UpdateWordAlignmentEngines = "update:word_alignment_engines";
+    public const string DeleteWordAlignmentEngines = "delete:word_alignment_engines";
+
     public const string CreateHooks = "create:hooks";
     public const string ReadHooks = "read:hooks";
     public const string DeleteHooks = "delete:hooks";
@@ -33,6 +38,10 @@ public static class Scopes
             ReadAssessmentEngines,
             UpdateAssessmentEngines,
             DeleteAssessmentEngines,
+            CreateWordAlignmentEngines,
+            ReadWordAlignmentEngines,
+            UpdateWordAlignmentEngines,
+            DeleteWordAlignmentEngines,
             CreateHooks,
             ReadHooks,
             DeleteHooks,

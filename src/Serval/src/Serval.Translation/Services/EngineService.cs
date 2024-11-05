@@ -388,8 +388,8 @@ public class EngineService(
     public async Task<Models.Corpus> UpdateCorpusAsync(
         string engineId,
         string corpusId,
-        IReadOnlyList<Models.CorpusFile>? sourceFiles,
-        IReadOnlyList<Models.CorpusFile>? targetFiles,
+        IReadOnlyList<Shared.Models.CorpusFile>? sourceFiles,
+        IReadOnlyList<Shared.Models.CorpusFile>? targetFiles,
         CancellationToken cancellationToken = default
     )
     {
@@ -465,8 +465,8 @@ public class EngineService(
     public async Task<Models.ParallelCorpus> UpdateParallelCorpusAsync(
         string engineId,
         string parallelCorpusId,
-        IReadOnlyList<Models.MonolingualCorpus>? sourceCorpora,
-        IReadOnlyList<Models.MonolingualCorpus>? targetCorpora,
+        IReadOnlyList<Shared.Models.MonolingualCorpus>? sourceCorpora,
+        IReadOnlyList<Shared.Models.MonolingualCorpus>? targetCorpora,
         CancellationToken cancellationToken = default
     )
     {
@@ -583,9 +583,9 @@ public class EngineService(
         return source.Values.Cast<Contracts.TranslationSource>().ToHashSet();
     }
 
-    private Models.AlignedWordPair Map(V1.AlignedWordPair source)
+    private Shared.Models.AlignedWordPair Map(V1.AlignedWordPair source)
     {
-        return new Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
+        return new Shared.Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
     }
 
     private Models.Phrase Map(V1.Phrase source)
@@ -790,7 +790,7 @@ public class EngineService(
     }
 
     private V1.MonolingualCorpus Map(
-        Models.MonolingualCorpus inputCorpus,
+        Shared.Models.MonolingualCorpus inputCorpus,
         ParallelCorpusFilter? trainingFilter,
         ParallelCorpusFilter? pretranslateFilter,
         string? referenceFileLocation,
@@ -844,6 +844,17 @@ public class EngineService(
         };
 
         if (
+            trainingFilter is not null
+            && trainingFilter.TextIds is not null
+            && trainingFilter.ScriptureRange is not null
+        )
+        {
+            throw new InvalidOperationException(
+                "Cannot specify both TextIds and ScriptureRange in the training filter."
+            );
+        }
+
+        if (
             trainOnAll
             || (trainingFilter is not null && trainingFilter.TextIds is null && trainingFilter.ScriptureRange is null)
         )
@@ -856,6 +867,17 @@ public class EngineService(
                 returnCorpus.TrainOnChapters.Add(trainOnChapters);
             if (trainingFilter?.TextIds is not null)
                 returnCorpus.TrainOnTextIds.Add(trainingFilter.TextIds);
+        }
+
+        if (
+            pretranslateFilter is not null
+            && pretranslateFilter.TextIds is not null
+            && pretranslateFilter.ScriptureRange is not null
+        )
+        {
+            throw new InvalidOperationException(
+                "Cannot specify both TextIds and ScriptureRange in the pretranslation filter."
+            );
         }
 
         if (
@@ -880,7 +902,7 @@ public class EngineService(
         return returnCorpus;
     }
 
-    private V1.CorpusFile Map(Models.CorpusFile source)
+    private V1.CorpusFile Map(Shared.Models.CorpusFile source)
     {
         return new V1.CorpusFile
         {

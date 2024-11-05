@@ -4,14 +4,14 @@ public class SmtTransferPreprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
-    ILogger<PreprocessBuildJob> logger,
-    IBuildJobService buildJobService,
+    ILogger<SmtTransferPreprocessBuildJob> logger,
+    IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     ICorpusService corpusService,
     IDistributedReaderWriterLockFactory lockFactory,
     IRepository<TrainSegmentPair> trainSegmentPairs
 )
-    : PreprocessBuildJob(
+    : PreprocessBuildJob<TranslationEngine>(
         platformService,
         engines,
         dataAccessContext,

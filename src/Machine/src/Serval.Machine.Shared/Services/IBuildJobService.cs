@@ -1,8 +1,9 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public interface IBuildJobService
+public interface IBuildJobService<TEngine>
+    where TEngine : ITrainingEngine
 {
-    Task<IReadOnlyList<TranslationEngine>> GetBuildingEnginesAsync(
+    Task<IReadOnlyList<TEngine>> GetBuildingEnginesAsync(
         BuildJobRunnerType runner,
         CancellationToken cancellationToken = default
     );
@@ -15,7 +16,7 @@ public interface IBuildJobService
 
     Task<bool> StartBuildJobAsync(
         BuildJobRunnerType runnerType,
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,

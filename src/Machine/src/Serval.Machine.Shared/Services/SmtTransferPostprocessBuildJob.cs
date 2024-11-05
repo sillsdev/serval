@@ -4,7 +4,7 @@ public class SmtTransferPostprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
-    IBuildJobService buildJobService,
+    IBuildJobService<TranslationEngine> buildJobService,
     ILogger<SmtTransferPostprocessBuildJob> logger,
     ISharedFileService sharedFileService,
     IDistributedReaderWriterLockFactory lockFactory,
