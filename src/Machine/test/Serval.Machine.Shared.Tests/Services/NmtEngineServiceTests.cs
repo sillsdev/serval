@@ -1,6 +1,4 @@
-﻿using SIL.ServiceToolkit.Utils;
-
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
 public class NmtEngineServiceTests

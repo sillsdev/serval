@@ -1,5 +1,3 @@
-using SIL.ServiceToolkit.Utils;
-
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
