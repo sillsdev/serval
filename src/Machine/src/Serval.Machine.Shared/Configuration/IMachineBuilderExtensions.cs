@@ -76,7 +76,7 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddClearMLService(this IMachineBuilder builder, string? connectionString = null)
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("ClearML");
+        connectionString ??= builder.Configuration.GetConnectionString("ClearML");
         if (connectionString is null)
             throw new InvalidOperationException("ClearML connection string is required");
 
@@ -145,7 +145,7 @@ public static class IMachineBuilderExtensions
         string? connectionString = null
     )
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("Hangfire");
+        connectionString ??= builder.Configuration.GetConnectionString("Hangfire");
         if (connectionString is null)
             throw new InvalidOperationException("Hangfire connection string is required");
 
@@ -166,7 +166,7 @@ public static class IMachineBuilderExtensions
     )
     {
         engineTypes ??=
-            builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
+            builder.Configuration.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
         var queues = new List<string>();
         foreach (TranslationEngineType engineType in engineTypes.Distinct())
@@ -207,7 +207,7 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder, string? connectionString = null)
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("Mongo");
+        connectionString ??= builder.Configuration.GetConnectionString("Mongo");
         if (connectionString is null)
             throw new InvalidOperationException("Mongo connection string is required");
         builder.Services.AddMongoDataAccess(
@@ -262,7 +262,7 @@ public static class IMachineBuilderExtensions
         string? connectionString = null
     )
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("Serval");
+        connectionString ??= builder.Configuration.GetConnectionString("Serval");
         if (connectionString is null)
             throw new InvalidOperationException("Serval connection string is required");
 
@@ -329,7 +329,7 @@ public static class IMachineBuilderExtensions
         builder.AddServalPlatformService(connectionString);
 
         engineTypes ??=
-            builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
+            builder.Configuration.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
         foreach (TranslationEngineType engineType in engineTypes.Distinct())
         {
@@ -368,7 +368,7 @@ public static class IMachineBuilderExtensions
         if (smtTransferEngineDir is null)
         {
             var smtTransferEngineOptions = new SmtTransferEngineOptions();
-            builder.Configuration?.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
+            builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
             smtTransferEngineDir = smtTransferEngineOptions.EnginesDir;
         }
         string? driveLetter = Path.GetPathRoot(smtTransferEngineDir)?[..1];

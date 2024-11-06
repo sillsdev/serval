@@ -28,7 +28,7 @@ public static class IServalBuilderExtensions
         Action<IMongoDataAccessConfigurator> configure
     )
     {
-        string? mongoConnectionString = builder.Configuration?.GetConnectionString("Mongo");
+        string? mongoConnectionString = builder.Configuration.GetConnectionString("Mongo");
         if (mongoConnectionString is null)
             throw new InvalidOperationException("Mongo connection string not configured");
         builder.Services.AddMongoDataAccess(mongoConnectionString, "Serval", configure);

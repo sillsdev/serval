@@ -15,7 +15,7 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IEngineService, EngineService>();
 
         var assessmentOptions = new AssessmentOptions();
-        builder.Configuration?.GetSection(AssessmentOptions.Key).Bind(assessmentOptions);
+        builder.Configuration.GetSection(AssessmentOptions.Key).Bind(assessmentOptions);
 
         foreach (EngineInfo engine in assessmentOptions.Engines)
         {
