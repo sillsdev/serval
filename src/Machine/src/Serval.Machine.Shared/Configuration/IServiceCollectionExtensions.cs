@@ -19,6 +19,7 @@ public static class IServiceCollectionExtensions
             (sp, cancellationToken) =>
                 sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
         );
+        services.AddParallelCorpusPreprocessor();
 
         var builder = new MachineBuilder(services, configuration);
         if (configuration is null)
