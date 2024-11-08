@@ -11,8 +11,6 @@ global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using SIL.Machine.Corpora;
-global using SIL.Machine.Utils;
-global using SIL.Scripture;
 global using SIL.ServiceToolkit.Models;
 global using SIL.ServiceToolkit.Services;
 global using SIL.ServiceToolkit.Utils;

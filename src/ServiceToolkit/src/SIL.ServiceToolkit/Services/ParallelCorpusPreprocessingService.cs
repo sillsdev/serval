@@ -91,21 +91,21 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             if (sourceCorpora.Length == 0)
                 continue;
 
-            NParallelTextCorpus alignedSourceTrainingCorpora = new NParallelTextCorpus(sourceTrainingCorpora)
-            {
-                AllRowsList = Enumerable.Repeat(true, sourceTrainingCorpora.Length).ToArray()
-            };
-            ITextCorpus sourceTrainingCorpus = alignedSourceTrainingCorpora.SelectRandom(Seed);
+            NParallelTextCorpus alignedSourceTrainingCorpora = CorporaExtensions.AlignMany(
+                sourceTrainingCorpora,
+                Enumerable.Repeat(true, sourceTrainingCorpora.Length).ToArray()
+            );
+            ITextCorpus sourceTrainingCorpus = alignedSourceTrainingCorpora.ChooseRandom(Seed);
             if (sourceTrainingCorpus.IsScripture())
             {
                 sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
             }
 
-            NParallelTextCorpus alignedTargetCorpora = new NParallelTextCorpus(targetTrainingCorpora)
-            {
-                AllRowsList = Enumerable.Repeat(true, targetTrainingCorpora.Length).ToArray()
-            };
-            ITextCorpus targetCorpus = alignedTargetCorpora.SelectFirst();
+            NParallelTextCorpus alignedTargetCorpora = CorporaExtensions.AlignMany(
+                targetTrainingCorpora,
+                Enumerable.Repeat(true, targetTrainingCorpora.Length).ToArray()
+            );
+            ITextCorpus targetCorpus = alignedTargetCorpora.ChooseFirst();
 
             ITextCorpus targetTrainingCorpus = targetCorpus;
             if (targetTrainingCorpus.IsScripture())
@@ -140,11 +140,11 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                 }
             }
 
-            NParallelTextCorpus alignedSourcePretranslateCorpora = new NParallelTextCorpus(sourcePretranslateCorpora)
-            {
-                AllRowsList = Enumerable.Repeat(true, sourcePretranslateCorpora.Length).ToArray()
-            };
-            ITextCorpus sourcePretranslateCorpus = alignedSourcePretranslateCorpora.SelectFirst();
+            NParallelTextCorpus alignedSourcePretranslateCorpora = CorporaExtensions.AlignMany(
+                sourcePretranslateCorpora,
+                Enumerable.Repeat(true, sourcePretranslateCorpora.Length).ToArray()
+            );
+            ITextCorpus sourcePretranslateCorpus = alignedSourcePretranslateCorpora.ChooseFirst();
 
             IParallelTextCorpus pretranslateCorpus = sourcePretranslateCorpus.AlignRows(
                 targetCorpus,
