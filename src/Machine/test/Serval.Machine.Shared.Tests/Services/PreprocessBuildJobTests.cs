@@ -65,7 +65,11 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
+        Assert.That(
+            await env.GetPretranslateCountAsync(),
+            Is.EqualTo(2),
+            (await env.GetPretranslationsAsync())?.ToJsonString()
+        );
     }
 
     [Test]
@@ -76,7 +80,7 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
     }
 
     [Test]
@@ -205,14 +209,14 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(5));
-            Assert.That(src2Count, Is.EqualTo(12));
+            Assert.That(src1Count, Is.EqualTo(7));
+            Assert.That(src2Count, Is.EqualTo(13));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
         Assert.That(
             await env.GetPretranslateCountAsync(),
-            Is.EqualTo(14),
+            Is.EqualTo(15),
             JsonSerializer.Serialize(await env.GetPretranslationsAsync())
         );
     }
@@ -228,8 +232,8 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(3));
-            Assert.That(src2Count, Is.EqualTo(2));
+            Assert.That(src1Count, Is.EqualTo(1));
+            Assert.That(src2Count, Is.EqualTo(4));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
@@ -475,13 +479,12 @@ public class PreprocessBuildJobTests
                 Is.EqualTo(
                     @"Source one, chapter fourteen, verse fifty-five. Segment b.
 Source one, chapter fourteen, verse fifty-six.
-Source one, chapter one, verse one.
+Source two, chapter one, verse one.
 Source two, chapter one, verse two.
 Source two, chapter one, verse three.
-Source two, chapter one, verse four.
+Source one, chapter one, verse four.
 Source two, chapter one, verse five. Source two, chapter one, verse six.
-Source two, chapter one, verse seven. Source two, chapter one, verse eight.
-Source two, chapter one, verse nine. Source two, chapter one, verse ten.
+Source one, chapter one, verse seven, eight, and nine. Source one, chapter one, verse ten.
 Source two, chapter one, verse one.
 "
                 ),
@@ -493,22 +496,21 @@ Source two, chapter one, verse one.
                 Is.EqualTo(
                     @"Target two, chapter fourteen, verse fifty-five.
 Target two, chapter fourteen, verse fifty-six.
-Target two, chapter one, verse one.
-Target two, chapter one, verse two.
+Target one, chapter one, verse one.
+Target one, chapter one, verse two.
 Target one, chapter one, verse three.
 
-Target two, chapter one, verse five and six.
-Target one, chapter one, verse seven and eight.
-Target two, chapter one, verse nine and ten.
+Target one, chapter one, verse five and six.
+Target one, chapter one, verse seven and eight. Target one, chapter one, verse nine and ten.
 
 "
                 ),
                 trg
             );
             Assert.That(pretranslations, Is.Not.Null);
-            Assert.That(pretranslations!.Count, Is.EqualTo(9), pretranslations.ToJsonString());
+            Assert.That(pretranslations!.Count, Is.EqualTo(7), pretranslations.ToJsonString());
             Assert.That(
-                pretranslations[0]!["translation"]!.ToString(),
+                pretranslations[2]!["translation"]!.ToString(),
                 Is.EqualTo("Source one, chapter twelve, verse one."),
                 pretranslations.ToJsonString()
             );

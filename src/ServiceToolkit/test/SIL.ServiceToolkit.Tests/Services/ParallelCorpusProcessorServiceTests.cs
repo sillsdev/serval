@@ -80,9 +80,10 @@ public class ParallelCorpusPreprocessorServiceTests
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
             },
-            (row, corpus) =>
+            (row, _) =>
             {
-                pretranslateCount++;
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
+                    pretranslateCount++;
             },
             false
         );

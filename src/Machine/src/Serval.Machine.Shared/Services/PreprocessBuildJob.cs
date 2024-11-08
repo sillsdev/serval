@@ -111,23 +111,29 @@ public class PreprocessBuildJob(
             corpora,
             row =>
             {
-                sourceTrainWriter.Write($"{row.SourceSegment}\n");
-                targetTrainWriter.Write($"{row.TargetSegment}\n");
+                if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
+                {
+                    sourceTrainWriter.Write($"{row.SourceSegment}\n");
+                    targetTrainWriter.Write($"{row.TargetSegment}\n");
+                }
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
             },
             (row, corpus) =>
             {
-                pretranslateWriter.WriteStartObject();
-                pretranslateWriter.WriteString("corpusId", corpus.Id);
-                pretranslateWriter.WriteString("textId", row.TextId);
-                pretranslateWriter.WriteStartArray("refs");
-                foreach (object rowRef in row.Refs)
-                    pretranslateWriter.WriteStringValue(rowRef.ToString());
-                pretranslateWriter.WriteEndArray();
-                pretranslateWriter.WriteString("translation", row.SourceSegment);
-                pretranslateWriter.WriteEndObject();
-                pretranslateCount++;
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
+                {
+                    pretranslateWriter.WriteStartObject();
+                    pretranslateWriter.WriteString("corpusId", corpus.Id);
+                    pretranslateWriter.WriteString("textId", row.TextId);
+                    pretranslateWriter.WriteStartArray("refs");
+                    foreach (object rowRef in row.Refs)
+                        pretranslateWriter.WriteStringValue(rowRef.ToString());
+                    pretranslateWriter.WriteEndArray();
+                    pretranslateWriter.WriteString("translation", row.SourceSegment);
+                    pretranslateWriter.WriteEndObject();
+                    pretranslateCount++;
+                }
             },
             (bool?)buildOptionsObject?["use_key_terms"] ?? true
         );
