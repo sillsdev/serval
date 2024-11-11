@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using ApiExample;
 using IdentityModel.Client;
 using Microsoft.Extensions.Configuration;
@@ -95,9 +96,12 @@ async Task CreatePreTranslationEngineAsync(CancellationToken cancellationToken)
     {
         // 1a. Create the source data file
         Console.WriteLine("Create a source data file");
-        const string SourceFileName = "TEA.zip";
-        await using (Stream sourceFileStream = File.OpenRead(Path.Combine("data", SourceFileName)))
+        const string SourceDirectory = "TEA";
+        const string SourceFileName = $"{SourceDirectory}.zip";
+        await using (var sourceFileStream = new MemoryStream())
         {
+            ZipFile.CreateFromDirectory(Path.Combine("data", SourceDirectory), sourceFileStream);
+            sourceFileStream.Seek(0, SeekOrigin.Begin);
             DataFile sourceDataFile = await dataFilesClient.CreateAsync(
                 new FileParameter(sourceFileStream, SourceFileName),
                 FileFormat.Paratext,
@@ -109,9 +113,12 @@ async Task CreatePreTranslationEngineAsync(CancellationToken cancellationToken)
 
         // 1b. Create the target data file
         Console.WriteLine("Create a target data file");
-        const string TargetFileName = "TMA.zip";
-        await using (Stream targetFileStream = File.OpenRead(Path.Combine("data", TargetFileName)))
+        const string TargetDirectory = "TMA";
+        const string TargetFileName = $"{TargetDirectory}.zip";
+        await using (var targetFileStream = new MemoryStream())
         {
+            ZipFile.CreateFromDirectory(Path.Combine("data", TargetDirectory), targetFileStream);
+            targetFileStream.Seek(0, SeekOrigin.Begin);
             DataFile targetDataFile = await dataFilesClient.CreateAsync(
                 new FileParameter(targetFileStream, TargetFileName),
                 FileFormat.Paratext,
