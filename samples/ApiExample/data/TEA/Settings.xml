@@ -1,0 +1,32 @@
+﻿<ScriptureText>
+  <StyleSheet>usfm.sty</StyleSheet>
+  <Versification>4</Versification>
+  <Language>English</Language>
+  <MinParatextVersion>8.0.100.76</MinParatextVersion>
+  <FullName>Test English Apocrypha</FullName>
+  <Encoding>65001</Encoding>
+  <Editable>T</Editable>
+  <Copyright />
+  <NormalizationForm>NFC</NormalizationForm>
+  <Name>TEA</Name>
+  <Guid>a7e9f1c362e728a143bb5eef7f6c79bcab2478fa</Guid>
+  <DefaultFont>Charis SIL</DefaultFont>
+  <DefaultFontSize>12</DefaultFontSize>
+  <FontFeatures />
+  <HtmlLanguage />
+  <LanguageIsoCode>en:::</LanguageIsoCode>
+  <FileNameBookNameForm>41MAT</FileNameBookNameForm>
+  <FileNamePrePart />
+  <FileNamePostPart>TEA.SFM</FileNamePostPart>
+  <BiblicalTermsListSetting>Major::BiblicalTerms.xml</BiblicalTermsListSetting>
+  <MatchBasedOnStems>F</MatchBasedOnStems>
+  <AllowReadAccess>F</AllowReadAccess>
+  <AllowSharingWithSLDR>F</AllowSharingWithSLDR>
+  <Visibility>Public</Visibility>
+  <TranslationInfo>Standard::</TranslationInfo>
+  <EncodingConverter />
+  <UsfmVersion>3</UsfmVersion>
+  <ParallelPassagesBooks>000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000</ParallelPassagesBooks>
+  <BooksPresent>000000000000000000000000000000000000000000000000000000000000000000000000000000000011000000000000000000000000000000000000001</BooksPresent>
+  <Naming PrePart="" PostPart="TEA.SFM" BookNameForm="41MAT" />
+</ScriptureText>
