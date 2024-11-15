@@ -91,21 +91,13 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             if (sourceCorpora.Length == 0)
                 continue;
 
-            NParallelTextCorpus alignedSourceTrainingCorpora = CorporaExtensions.AlignMany(
-                sourceTrainingCorpora,
-                Enumerable.Repeat(true, sourceTrainingCorpora.Length).ToArray()
-            );
-            ITextCorpus sourceTrainingCorpus = alignedSourceTrainingCorpora.ChooseRandom(Seed);
+            ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
             if (sourceTrainingCorpus.IsScripture())
             {
                 sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
             }
 
-            NParallelTextCorpus alignedTargetCorpora = CorporaExtensions.AlignMany(
-                targetTrainingCorpora,
-                Enumerable.Repeat(true, targetTrainingCorpora.Length).ToArray()
-            );
-            ITextCorpus targetCorpus = alignedTargetCorpora.ChooseFirst();
+            ITextCorpus targetCorpus = targetTrainingCorpora.ChooseFirst();
 
             ITextCorpus targetTrainingCorpus = targetCorpus;
             if (targetTrainingCorpus.IsScripture())
@@ -139,12 +131,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                     }
                 }
             }
-
-            NParallelTextCorpus alignedSourcePretranslateCorpora = CorporaExtensions.AlignMany(
-                sourcePretranslateCorpora,
-                Enumerable.Repeat(true, sourcePretranslateCorpora.Length).ToArray()
-            );
-            ITextCorpus sourcePretranslateCorpus = alignedSourcePretranslateCorpora.ChooseFirst();
+            ITextCorpus sourcePretranslateCorpus = sourcePretranslateCorpora.ChooseFirst();
 
             IParallelTextCorpus pretranslateCorpus = sourcePretranslateCorpus.AlignRows(
                 targetCorpus,
