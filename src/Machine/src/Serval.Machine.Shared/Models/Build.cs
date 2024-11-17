@@ -29,4 +29,5 @@ public record Build
     public required BuildJobRunnerType BuildJobRunner { get; init; }
     public required BuildStage Stage { get; init; }
     public string? Options { get; set; }
+    public Dictionary<string, int>? Statistics { get; set; }
 }

@@ -85,6 +85,12 @@ public class ServalPlatformOutboxMessageHandler(TranslationPlatformApi.Translati
                     cancellationToken: cancellationToken
                 );
                 break;
+            case ServalPlatformOutboxConstants.UpdateBuildStatistics:
+                await _client.UpdateBuildStatisticsAsync(
+                    JsonSerializer.Deserialize<UpdateBuildStatisticsRequest>(content!),
+                    cancellationToken: cancellationToken
+                );
+                break;
             default:
                 throw new InvalidOperationException($"Encountered a message with the unrecognized method '{method}'.");
         }

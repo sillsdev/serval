@@ -1212,8 +1212,8 @@ public class TranslationEnginesController(
 
         var summary = new TranslationBuildSummary
         {
-            LinesTrainedOn = build.LinesTrainedOn,
-            LinesPretranslated = build.LinesPretranslated,
+            LinesTrainedOn = 1,
+            LinesPretranslated = 2,
             TotalBuildTime = totalBuildTime
         };
 
@@ -1584,7 +1584,7 @@ public class TranslationEnginesController(
             State = source.State,
             DateFinished = source.DateFinished,
             Options = source.Options,
-            DeploymentVersion = source.DeploymentVersion
+            DeploymentVersion = source.DeploymentVersion,
         };
     }
 

@@ -138,6 +138,21 @@ public class ServalPlatformService(
         );
     }
 
-    // populate this function
-    public async Task UpdateBuildStatisticsAsync() { }
+    public async Task UpdateBuildStatisticsAsync(
+        string engineId,
+        string buildId,
+        IDictionary<string, string> statistics,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var request = new UpdateBuildStatisticsRequest { EngineId = engineId, BuildId = buildId };
+        request.Statistics.Add(statistics);
+        await _outboxService.EnqueueMessageAsync(
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.UpdateBuildStatistics,
+            engineId,
+            JsonSerializer.Serialize(request),
+            cancellationToken: cancellationToken
+        );
+    }
 }

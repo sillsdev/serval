@@ -62,5 +62,7 @@ message InsertPretranslationsRequest {
 }
 
 message UpdateBuildStatisticsRequest {
-    map<string, string> Statistics = 1;
+    string engine_id = 1;
+    string build_id = 2;
+    map<string, string> Statistics = 3;
 }

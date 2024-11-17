@@ -123,6 +123,10 @@ public class ServalApiTests
             cId2
         );
         Assert.That(lTrans, Has.Count.EqualTo(14));
+
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetCurrentBuildAsync(engineId);
+        Assert.That(build.Statistics, Is.Not.Null);
+        Assert.That(build.Statistics, Contains.Key("trainCount"));
     }
 
     [Test]
