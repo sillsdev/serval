@@ -6,6 +6,32 @@ public class WebhookJob(IRepository<Webhook> hooks, HttpClient httpClient, IOpti
     private readonly HttpClient _httpClient = httpClient;
     private readonly JsonOptions _jsonOptions = jsonOptions.Value;
 
+    [AutomaticRetry(
+        Attempts = 20,
+        DelaysInSeconds = new[]
+        {
+            1,
+            2,
+            4,
+            8,
+            16,
+            32,
+            64,
+            128,
+            256,
+            512,
+            1024,
+            2048,
+            2048,
+            2048,
+            2048,
+            2048,
+            2048,
+            2048,
+            2048
+        },
+        LogEvents = true
+    )]
     public async Task RunAsync(
         WebhookEvent webhookEvent,
         string owner,
