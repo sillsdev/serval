@@ -80,7 +80,7 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
     }
 
     [Test]
@@ -296,7 +296,7 @@ public class PreprocessBuildJobTests
         );
         JsonArray? pretranslations = await env.GetPretranslationsAsync();
         Assert.That(pretranslations, Is.Not.Null);
-        Assert.That(pretranslations.Count, Is.EqualTo(0));
+        Assert.That(pretranslations!.Count, Is.EqualTo(0));
     }
 
     [Test]
