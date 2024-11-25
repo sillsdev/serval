@@ -1,5 +1,7 @@
 namespace Serval.E2ETests;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
 public class ServalClientHelper : IAsyncDisposable
 {
     public DataFilesClient DataFilesClient { get; }
@@ -232,8 +234,7 @@ public class ServalClientHelper : IAsyncDisposable
         return response.Id;
     }
 
-    public async Task<string> AddParallelTextCorpusToEngineAsync(
-        string engineId,
+    public async Task<TranslationParallelCorpusConfig> MakeParallelTextCorpus(
         string[] filesToAdd,
         string sourceLanguage,
         string targetLanguage,
@@ -292,12 +293,21 @@ public class ServalClientHelper : IAsyncDisposable
         TranslationParallelCorpusConfig parallelCorpusConfig =
             new() { SourceCorpusIds = { sourceCorpus.Id }, TargetCorpusIds = { targetCorpus.Id } };
 
+        return parallelCorpusConfig;
+    }
+
+    public async Task<string> AddParallelTextCorpusToEngineAsync(
+        string engineId,
+        TranslationParallelCorpusConfig parallelCorpusConfig,
+        bool pretranslate
+    )
+    {
         var parallelCorpus = await TranslationEnginesClient.AddParallelCorpusAsync(engineId, parallelCorpusConfig);
 
         if (pretranslate)
         {
             TranslationBuildConfig.Pretranslate!.Add(
-                new PretranslateCorpusConfig { ParallelCorpusId = parallelCorpus.Id, TextIds = filesToAdd.ToList() }
+                new PretranslateCorpusConfig { ParallelCorpusId = parallelCorpus.Id }
             );
         }
 
@@ -411,3 +421,5 @@ public class ServalClientHelper : IAsyncDisposable
         return new ValueTask(Task.CompletedTask);
     }
 }
+
+#pragma warning restore CS0612 // Type or member is obsolete

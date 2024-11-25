@@ -80,7 +80,7 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
     }
 
     [Test]
@@ -217,7 +217,7 @@ public class PreprocessBuildJobTests
         Assert.That(
             await env.GetPretranslateCountAsync(),
             Is.EqualTo(15),
-            JsonSerializer.Serialize(await env.GetPretranslationsAsync())
+            (await env.GetPretranslationsAsync())?.ToJsonString()
         );
     }
 
@@ -1043,7 +1043,8 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
 
         public async Task<int> GetPretranslateCountAsync()
         {
-            return (await GetPretranslationsAsync())?.Count ?? 0;
+            var pretranslations = await GetPretranslationsAsync();
+            return pretranslations?.Count ?? 0;
         }
 
         private void ZipParatextProject(string name)

@@ -1,8 +1,0 @@
-name: mongo-repl
-description: A mongo deployment to support serval
-version: 0.0.1
-apiVersion: v1
-keywords:
-  - mongo
-sources:
-home:
