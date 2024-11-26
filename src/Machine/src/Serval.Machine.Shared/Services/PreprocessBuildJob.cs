@@ -94,25 +94,27 @@ public class PreprocessBuildJob(
         if (buildOptions is not null)
             buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
 
-        using MemoryStream sourceStream = new();
-        using MemoryStream targetStream = new();
-        using MemoryStream pretranslationStream = new();
-
-        using StreamWriter targetTrainWriter = new(targetStream, Encoding.Default);
-        using StreamWriter sourceTrainWriter = new(sourceStream, Encoding.Default);
-        await using Utf8JsonWriter pretranslateWriter = new(pretranslationStream, PretranslateWriterOptions);
+        await using StreamWriter sourceTrainWriter =
+            new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken));
+        await using StreamWriter targetTrainWriter =
+            new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
+        await using Utf8JsonWriter pretranslateWriter =
+            new(
+                await _sharedFileService.OpenWriteAsync($"builds/{buildId}/pretranslate.src.json", cancellationToken),
+                PretranslateWriterOptions
+            );
 
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        _parallelCorpusPreprocessingService.Preprocess(
+        await _parallelCorpusPreprocessingService.Preprocess(
             corpora,
-            row =>
+            async row =>
             {
                 if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
                 {
-                    sourceTrainWriter.WriteLine(row.SourceSegment);
-                    targetTrainWriter.WriteLine(row.TargetSegment);
+                    await sourceTrainWriter.WriteLineAsync(row.SourceSegment);
+                    await targetTrainWriter.WriteLineAsync(row.TargetSegment);
                 }
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
@@ -137,22 +139,6 @@ public class PreprocessBuildJob(
         );
 
         pretranslateWriter.WriteEndArray();
-
-        await sourceTrainWriter.FlushAsync(cancellationToken);
-        await targetTrainWriter.FlushAsync(cancellationToken);
-        await pretranslateWriter.FlushAsync(cancellationToken);
-
-        async Task WriteStreamAsync(MemoryStream stream, string path)
-        {
-            stream.Position = 0;
-            await using StreamWriter writer = new(await _sharedFileService.OpenWriteAsync(path, cancellationToken));
-            await writer.WriteAsync(Encoding.Default.GetString(stream.ToArray()));
-            await writer.FlushAsync(cancellationToken);
-        }
-
-        await WriteStreamAsync(sourceStream, $"builds/{buildId}/train.src.txt");
-        await WriteStreamAsync(targetStream, $"builds/{buildId}/train.trg.txt");
-        await WriteStreamAsync(pretranslationStream, $"builds/{buildId}/pretranslate.src.json");
 
         return (trainCount, pretranslateCount);
     }

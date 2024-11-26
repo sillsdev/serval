@@ -79,6 +79,7 @@ public class ParallelCorpusPreprocessingServiceTests
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
+                return Task.CompletedTask;
             },
             (row, _) =>
             {

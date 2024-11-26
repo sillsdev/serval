@@ -25,9 +25,9 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
         }
     }
 
-    public void Preprocess(
+    public async Task Preprocess(
         IReadOnlyList<ParallelCorpus> corpora,
-        Action<Row> train,
+        Func<Row, Task> train,
         Action<Row, ParallelCorpus> pretranslate,
         bool useKeyTerms = false
     )
@@ -77,7 +77,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
 
             foreach (Row row in CollapseRanges(trainingRows))
             {
-                train(row);
+                await train(row);
             }
 
             if (useKeyTerms)
@@ -93,7 +93,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
                     foreach (ParallelTextRow row in parallelKeyTermsCorpus)
                     {
-                        train(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
+                        await train(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
                     }
                 }
             }
