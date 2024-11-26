@@ -113,8 +113,8 @@ public class PreprocessBuildJob(
             {
                 if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
                 {
-                    await sourceTrainWriter.WriteLineAsync(row.SourceSegment);
-                    await targetTrainWriter.WriteLineAsync(row.TargetSegment);
+                    await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                    await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
                 }
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
