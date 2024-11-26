@@ -65,11 +65,7 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(
-            await env.GetPretranslateCountAsync(),
-            Is.EqualTo(2),
-            (await env.GetPretranslationsAsync())?.ToJsonString()
-        );
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
     }
 
     [Test]
@@ -107,7 +103,7 @@ public class PreprocessBuildJobTests
         Assert.Multiple(async () =>
         {
             Assert.That((await env.GetTrainCountAsync()).Source1Count, Is.EqualTo(4));
-            Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(0));
+            Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
         });
     }
 
@@ -214,11 +210,7 @@ public class PreprocessBuildJobTests
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        Assert.That(
-            await env.GetPretranslateCountAsync(),
-            Is.EqualTo(15),
-            (await env.GetPretranslationsAsync())?.ToJsonString()
-        );
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(15));
     }
 
     [Test]
@@ -296,7 +288,7 @@ public class PreprocessBuildJobTests
         );
         JsonArray? pretranslations = await env.GetPretranslationsAsync();
         Assert.That(pretranslations, Is.Not.Null);
-        Assert.That(pretranslations!.Count, Is.EqualTo(0));
+        Assert.That(pretranslations!.Count, Is.EqualTo(1));
     }
 
     [Test]
@@ -508,11 +500,10 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                 trg
             );
             Assert.That(pretranslations, Is.Not.Null);
-            Assert.That(pretranslations!.Count, Is.EqualTo(7), pretranslations.ToJsonString());
+            Assert.That(pretranslations!.Count, Is.EqualTo(7));
             Assert.That(
                 pretranslations[2]!["translation"]!.ToString(),
-                Is.EqualTo("Source one, chapter twelve, verse one."),
-                pretranslations.ToJsonString()
+                Is.EqualTo("Source one, chapter twelve, verse one.")
             );
         });
     }

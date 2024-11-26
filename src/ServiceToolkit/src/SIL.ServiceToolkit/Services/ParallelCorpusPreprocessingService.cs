@@ -116,19 +116,13 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
         textCorpus = textCorpus.Transform(CleanSegment);
         if (corpus.PretranslateTextIds is not null)
         {
-            return textCorpus.FilterTexts(corpus.PretranslateTextIds.Except(corpus.TrainOnTextIds ?? new()));
+            return textCorpus.FilterTexts(corpus.PretranslateTextIds);
         }
         if (corpus.PretranslateChapters is not null)
         {
             return textCorpus
                 .FilterTexts(corpus.PretranslateChapters.Keys)
-                .Where(row =>
-                    row.Ref is not ScriptureRef sr
-                    || (
-                        IsInChapters(sr, corpus.PretranslateChapters)
-                        && !IsInChapters(sr, corpus.TrainOnChapters ?? new())
-                    )
-                );
+                .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.PretranslateChapters));
         }
         return textCorpus;
     }
@@ -137,7 +131,9 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
     {
         textCorpus = textCorpus.Transform(CleanSegment);
         if (corpus.TrainOnTextIds is not null)
+        {
             return textCorpus.FilterTexts(corpus.TrainOnTextIds);
+        }
         if (corpus.TrainOnChapters is not null)
         {
             return textCorpus
