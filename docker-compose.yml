@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_DeploymentVersion=docker-compose
       - Auth__Domain=sil-appbuilder.auth0.com
       - Auth__Audience=https://serval-api.org/
@@ -49,7 +49,7 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval-api:81
@@ -81,7 +81,7 @@ services:
       dockerfile: dockerfile.development
 
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
@@ -127,7 +127,7 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
@@ -137,9 +137,9 @@ services:
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - BuildJob__ClearML__0__Queue=lambert_24gb
+      - BuildJob__ClearML__0__Queue=${CLEARML_GPU_QUEUE:lambert_24gb}
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
-      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
+      - BuildJob__ClearML__1__Queue=${CLEARML_CPU_QUEUE:lambert_24gb.cpu_only}
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://silnlp/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
