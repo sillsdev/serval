@@ -37,59 +37,25 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpus
                 .SourceCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
                 .ToArray();
+
+            if (sourceCorpora.Length == 0)
+                continue;
+
             ITextCorpus[] sourceTrainingCorpora = sourceCorpora
-                .Select(sc =>
-                {
-                    ITextCorpus textCorpus = sc.TextCorpus.Transform(CleanSegment);
-                    if (sc.Corpus.TrainOnTextIds is not null)
-                        return textCorpus.FilterTexts(sc.Corpus.TrainOnTextIds);
-                    return textCorpus.Where(row =>
-                        row.Ref is not ScriptureRef sr
-                        || sc.Corpus.TrainOnChapters is null
-                        || IsInChapters(sr, sc.Corpus.TrainOnChapters)
-                    );
-                })
+                .Select(sc => FilterTrainingCorpora(sc.Corpus, sc.TextCorpus))
                 .ToArray();
+
             ITextCorpus[] sourcePretranslateCorpora = sourceCorpora
-                .Select(sc =>
-                {
-                    ITextCorpus textCorpus = sc.TextCorpus.Transform(CleanSegment);
-                    if (sc.Corpus.PretranslateTextIds is not null)
-                    {
-                        return textCorpus.FilterTexts(
-                            sc.Corpus.PretranslateTextIds.Except(sc.Corpus.TrainOnTextIds ?? new())
-                        );
-                    }
-                    return textCorpus.Where(row =>
-                        row.Ref is not ScriptureRef sr
-                        || sc.Corpus.PretranslateChapters is null
-                        || (
-                            IsInChapters(sr, sc.Corpus.PretranslateChapters)
-                            && !IsInChapters(sr, sc.Corpus.TrainOnChapters ?? new())
-                        )
-                    );
-                })
+                .Select(sc => FilterPretranslateCorpora(sc.Corpus, sc.TextCorpus))
                 .ToArray();
 
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
                 .TargetCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
                 .ToArray();
-            ITextCorpus[] targetTrainingCorpora = targetCorpora
-                .Select(tc =>
-                {
-                    ITextCorpus textCorpus = tc.TextCorpus.Transform(CleanSegment);
-                    if (tc.Corpus.TrainOnTextIds is not null)
-                        return textCorpus = textCorpus.FilterTexts(tc.Corpus.TrainOnTextIds);
-                    return textCorpus.Where(row =>
-                        row.Ref is not ScriptureRef sr
-                        || tc.Corpus.TrainOnChapters is null
-                        || IsInChapters(sr, tc.Corpus.TrainOnChapters)
-                    );
-                })
-                .ToArray();
 
-            if (sourceCorpora.Length == 0)
-                continue;
+            ITextCorpus[] targetTrainingCorpora = targetCorpora
+                .Select(tc => FilterTrainingCorpora(tc.Corpus, tc.TextCorpus))
+                .ToArray();
 
             ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
             if (sourceTrainingCorpus.IsScripture())
@@ -143,6 +109,42 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                 pretranslate(row, corpus);
             }
         }
+    }
+
+    private static ITextCorpus FilterPretranslateCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
+    {
+        textCorpus = textCorpus.Transform(CleanSegment);
+        if (corpus.PretranslateTextIds is not null)
+        {
+            return textCorpus.FilterTexts(corpus.PretranslateTextIds.Except(corpus.TrainOnTextIds ?? new()));
+        }
+        if (corpus.PretranslateChapters is not null)
+        {
+            return textCorpus
+                .FilterTexts(corpus.PretranslateChapters.Keys)
+                .Where(row =>
+                    row.Ref is not ScriptureRef sr
+                    || (
+                        IsInChapters(sr, corpus.PretranslateChapters)
+                        && !IsInChapters(sr, corpus.TrainOnChapters ?? new())
+                    )
+                );
+        }
+        return textCorpus;
+    }
+
+    private static ITextCorpus FilterTrainingCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
+    {
+        textCorpus = textCorpus.Transform(CleanSegment);
+        if (corpus.TrainOnTextIds is not null)
+            return textCorpus.FilterTexts(corpus.TrainOnTextIds);
+        if (corpus.TrainOnChapters is not null)
+        {
+            return textCorpus
+                .FilterTexts(corpus.TrainOnChapters.Keys)
+                .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.TrainOnChapters));
+        }
+        return textCorpus;
     }
 
     private static IEnumerable<Row> CollapseRanges(ParallelTextRow[] rows)
