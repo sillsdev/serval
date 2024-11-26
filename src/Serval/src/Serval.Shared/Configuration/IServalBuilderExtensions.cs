@@ -2,24 +2,9 @@
 
 public static class IServalBuilderExtensions
 {
-    public static IServalBuilder AddDataFileOptions(
-        this IServalBuilder builder,
-        Action<DataFileOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
-    }
-
     public static IServalBuilder AddDataFileOptions(this IServalBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<DataFileOptions>(config);
-        return builder;
-    }
-
-    public static IServalBuilder AddApiOptions(this IServalBuilder builder, Action<ApiOptions> configureOptions)
-    {
-        builder.Services.Configure(configureOptions);
         return builder;
     }
 
@@ -43,7 +28,7 @@ public static class IServalBuilderExtensions
         Action<IMongoDataAccessConfigurator> configure
     )
     {
-        string? mongoConnectionString = builder.Configuration?.GetConnectionString("Mongo");
+        string? mongoConnectionString = builder.Configuration.GetConnectionString("Mongo");
         if (mongoConnectionString is null)
             throw new InvalidOperationException("Mongo connection string not configured");
         builder.Services.AddMongoDataAccess(mongoConnectionString, "Serval", configure);

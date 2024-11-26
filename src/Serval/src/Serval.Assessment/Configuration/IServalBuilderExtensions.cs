@@ -5,27 +5,17 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
 {
-    public static IServalBuilder AddAssessment(this IServalBuilder builder, Action<AssessmentOptions>? configure = null)
+    public static IServalBuilder AddAssessment(this IServalBuilder builder)
     {
-        if (builder.Configuration is null)
-        {
-            builder.AddApiOptions(o => { });
-            builder.AddDataFileOptions(o => { });
-        }
-        else
-        {
-            builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
-            builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
-        }
+        builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
+        builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
 
         builder.Services.AddScoped<IJobService, JobService>();
         builder.Services.AddScoped<IResultService, ResultService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
 
         var assessmentOptions = new AssessmentOptions();
-        builder.Configuration?.GetSection(AssessmentOptions.Key).Bind(assessmentOptions);
-        if (configure is not null)
-            configure(assessmentOptions);
+        builder.Configuration.GetSection(AssessmentOptions.Key).Bind(assessmentOptions);
 
         foreach (EngineInfo engine in assessmentOptions.Engines)
         {

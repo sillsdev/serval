@@ -2,7 +2,7 @@
 import json
 import os
 import pickle
-from datetime import datetime, timezone
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -47,6 +47,13 @@ class clearml_stats:
     def __init__(self):
         self._client: APIClient = APIClient()
         self._tasks: dict[str, dict] = self._read_tasks()
+        self._project_id_to_task_id: dict[str, list[str]] = {}
+        for task_id in self._tasks.keys():
+            project_id = self._tasks[task_id]["project"]
+            if project_id in self._project_id_to_task_id:
+                self._project_id_to_task_id[project_id].append(task_id)
+            else:
+                self._project_id_to_task_id[project_id] = [task_id]
         self._projects: dict[str, dict] = self._read_projects()
         self._languages: pd.DataFrame = pd.read_excel(
             language_database_filename, index_col=0
@@ -306,24 +313,14 @@ class clearml_stats:
             else:
                 langs_by_occurrence[lang] = 1
 
-        num_of_tasks_found = 0
-        num_of_tasks_not_found = 0
         for project_id in self._projects:
             self._projects[project_id]["src_lang"] = "unknown"
             self._projects[project_id]["trg_lang"] = "unknown"
             self._projects[project_id]["lang_candidates"] = []
 
             project = self._projects[project_id]
-            if len(project["tasks"]) > 0:
-                task_not_found = True
-                for task_id in project["tasks"]:
-                    if task_id in self._tasks.keys():
-                        task_not_found = False
-                        break
-                if task_not_found:
-                    num_of_tasks_not_found += 1
-                    continue
-                num_of_tasks_found += 1
+            if project_id in self._project_id_to_task_id:
+                project["tasks"] = self._project_id_to_task_id[project_id]
                 task = self._tasks[project["tasks"][0]]
                 args = task["script_args"]
                 if "src_lang" in args and "trg_lang" in args:
@@ -491,3 +488,6 @@ def violin_task_delay_time_per_week(
     axes.set_ylim(0, 8)
     axes.set_ylabel("hours")
     axes.grid(True)
+
+
+# %%

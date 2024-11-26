@@ -1,45 +1,19 @@
-﻿using Serval.Translation.V1;
+﻿using Polly.Extensions.Http;
+using Serval.Translation.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IMachineBuilderExtensions
 {
-    public static IMachineBuilder AddServiceOptions(
-        this IMachineBuilder builder,
-        Action<ServiceOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
-    }
-
     public static IMachineBuilder AddServiceOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<ServiceOptions>(config);
         return builder;
     }
 
-    public static IMachineBuilder AddSmtTransferEngineOptions(
-        this IMachineBuilder builder,
-        Action<SmtTransferEngineOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
-    }
-
     public static IMachineBuilder AddSmtTransferEngineOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<SmtTransferEngineOptions>(config);
-        return builder;
-    }
-
-    public static IMachineBuilder AddClearMLOptions(
-        this IMachineBuilder builder,
-        Action<ClearMLOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
         return builder;
     }
 
@@ -51,29 +25,11 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddDistributedReaderWriterLockOptions(
         this IMachineBuilder build,
-        Action<DistributedReaderWriterLockOptions> configureOptions
-    )
-    {
-        build.Services.Configure(configureOptions);
-        return build;
-    }
-
-    public static IMachineBuilder AddDistributedReaderWriterLockOptions(
-        this IMachineBuilder build,
         IConfiguration config
     )
     {
         build.Services.Configure<DistributedReaderWriterLockOptions>(config);
         return build;
-    }
-
-    public static IMachineBuilder AddMessageOutboxOptions(
-        this IMachineBuilder builder,
-        Action<MessageOutboxOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
     }
 
     public static IMachineBuilder AddMessageOutboxOptions(this IMachineBuilder builder, IConfiguration config)
@@ -82,27 +38,9 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddSharedFileOptions(
-        this IMachineBuilder builder,
-        Action<SharedFileOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        return builder;
-    }
-
     public static IMachineBuilder AddSharedFileOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<SharedFileOptions>(config);
-        return builder;
-    }
-
-    public static IMachineBuilder AddBuildJobOptions(
-        this IMachineBuilder builder,
-        Action<BuildJobOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
         return builder;
     }
 
@@ -114,20 +52,7 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
-        if (builder.Configuration is null)
-            return builder.AddThotSmtModel(o => { });
-        else
-            return builder.AddThotSmtModel(builder.Configuration.GetSection(ThotSmtModelOptions.Key));
-    }
-
-    public static IMachineBuilder AddThotSmtModel(
-        this IMachineBuilder builder,
-        Action<ThotSmtModelOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
-        return builder;
+        return builder.AddThotSmtModel(builder.Configuration.GetSection(ThotSmtModelOptions.Key));
     }
 
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder, IConfiguration config)
@@ -151,17 +76,38 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddClearMLService(this IMachineBuilder builder, string? connectionString = null)
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("ClearML");
+        connectionString ??= builder.Configuration.GetConnectionString("ClearML");
         if (connectionString is null)
             throw new InvalidOperationException("ClearML connection string is required");
+
+        var policy = Policy
+            .Handle<HttpRequestException>()
+            .OrTransientHttpStatusCode()
+            .OrResult(msg => msg.StatusCode == HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(
+                7,
+                retryAttempt => TimeSpan.FromSeconds(2 * retryAttempt), // total 56, less than the 1 minute limit
+                onRetryAsync: (outcome, timespan, retryAttempt, context) =>
+                {
+                    if (retryAttempt < 3)
+                        return Task.CompletedTask;
+                    // Log the retry attempt
+                    var serviceProvider = builder.Services.BuildServiceProvider();
+                    var logger = serviceProvider.GetService<ILogger<ClearMLService>>();
+                    logger?.LogInformation(
+                        "Retry {RetryAttempt} encountered an error. Waiting {Timespan} before next retry. Error: {ErrorMessage}",
+                        retryAttempt,
+                        timespan,
+                        outcome.Exception?.Message
+                    );
+                    return Task.CompletedTask;
+                }
+            );
 
         builder
             .Services.AddHttpClient("ClearML")
             .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!))
-            // Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
-            .AddTransientHttpErrorPolicy(b =>
-                b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
-            );
+            .AddPolicyHandler(policy);
 
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
 
@@ -199,7 +145,7 @@ public static class IMachineBuilderExtensions
         string? connectionString = null
     )
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("Hangfire");
+        connectionString ??= builder.Configuration.GetConnectionString("Hangfire");
         if (connectionString is null)
             throw new InvalidOperationException("Hangfire connection string is required");
 
@@ -220,7 +166,7 @@ public static class IMachineBuilderExtensions
     )
     {
         engineTypes ??=
-            builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
+            builder.Configuration.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
         var queues = new List<string>();
         foreach (TranslationEngineType engineType in engineTypes.Distinct())
@@ -261,7 +207,7 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder, string? connectionString = null)
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("Mongo");
+        connectionString ??= builder.Configuration.GetConnectionString("Mongo");
         if (connectionString is null)
             throw new InvalidOperationException("Mongo connection string is required");
         builder.Services.AddMongoDataAccess(
@@ -316,7 +262,7 @@ public static class IMachineBuilderExtensions
         string? connectionString = null
     )
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("Serval");
+        connectionString ??= builder.Configuration.GetConnectionString("Serval");
         if (connectionString is null)
             throw new InvalidOperationException("Serval connection string is required");
 
@@ -383,7 +329,7 @@ public static class IMachineBuilderExtensions
         builder.AddServalPlatformService(connectionString);
 
         engineTypes ??=
-            builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
+            builder.Configuration.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
         foreach (TranslationEngineType engineType in engineTypes.Distinct())
         {
@@ -422,7 +368,7 @@ public static class IMachineBuilderExtensions
         if (smtTransferEngineDir is null)
         {
             var smtTransferEngineOptions = new SmtTransferEngineOptions();
-            builder.Configuration?.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
+            builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
             smtTransferEngineDir = smtTransferEngineOptions.EnginesDir;
         }
         string? driveLetter = Path.GetPathRoot(smtTransferEngineDir)?[..1];
