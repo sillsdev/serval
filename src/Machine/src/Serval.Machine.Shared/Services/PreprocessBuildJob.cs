@@ -140,6 +140,7 @@ public class PreprocessBuildJob(
 
         await sourceTrainWriter.FlushAsync(cancellationToken);
         await targetTrainWriter.FlushAsync(cancellationToken);
+        await pretranslateWriter.FlushAsync(cancellationToken);
 
         async Task WriteStreamAsync(MemoryStream stream, string path)
         {
