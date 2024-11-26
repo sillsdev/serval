@@ -83,10 +83,10 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             if (useKeyTerms)
             {
                 ITextCorpus[]? sourceTermCorpora = _corpusService
-                    .CreateTermCorpora(corpus.SourceCorpora.SelectMany(GetChapters).ToArray())
+                    .CreateTermCorpora(corpus.SourceCorpora.SelectMany(GetChaptersPerFile).ToArray())
                     .ToArray();
                 ITextCorpus[]? targetTermCorpora = _corpusService
-                    .CreateTermCorpora(corpus.TargetCorpora.SelectMany(GetChapters).ToArray())
+                    .CreateTermCorpora(corpus.TargetCorpora.SelectMany(GetChaptersPerFile).ToArray())
                     .ToArray();
                 if (sourceTermCorpora is not null && targetTermCorpora is not null)
                 {
@@ -113,7 +113,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
         }
     }
 
-    private static IEnumerable<(CorpusFile File, Dictionary<string, HashSet<int>> Chapters)> GetChapters(
+    private static IEnumerable<(CorpusFile File, Dictionary<string, HashSet<int>> Chapters)> GetChaptersPerFile(
         MonolingualCorpus mc
     )
     {
