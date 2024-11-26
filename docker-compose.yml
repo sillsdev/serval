@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_DeploymentVersion=docker-compose
       - Auth__Domain=sil-appbuilder.auth0.com
       - Auth__Audience=https://serval-api.org/
@@ -49,7 +49,7 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval-api:81
@@ -81,7 +81,7 @@ services:
       dockerfile: dockerfile.development
 
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
@@ -127,7 +127,7 @@ services:
       context: .
       dockerfile: dockerfile.development
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
