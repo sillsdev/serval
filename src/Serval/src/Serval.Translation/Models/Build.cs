@@ -13,10 +13,9 @@ public record Build : IEntity
     public string? Message { get; init; }
     public int? QueueDepth { get; init; }
     public JobState State { get; init; } = JobState.Pending;
-    public DateTime DateStarted { get; init; } = DateTime.UtcNow;
+    public DateTime DateCreated { get; init; } = DateTime.UtcNow;
     public DateTime? DateFinished { get; init; }
     public IReadOnlyDictionary<string, object>? Options { get; init; }
     public string? DeploymentVersion { get; init; }
-    public Dictionary<string, string> Statistics { get; init; } =
-        new Dictionary<string, string>() { { "trainCount", "0" } };
+    public Dictionary<string, string>[] Statistics { get; init; } = [];
 }

@@ -1177,79 +1177,6 @@ public class TranslationEnginesController(
         return Ok(Map(modelInfo));
     }
 
-    /// <summary>
-    /// Get a build summary for a given build ID.
-    /// </summary>
-    /// <param name="id">The translation engine id</param>
-    /// <param name="buildId">The build job id</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">The build summary</response>
-    /// <response code="401">The client is not authenticated.</response>
-    /// <response code="403">The authenticated client does not own the translation engine.</response>
-    /// <response code="404">The engine or build does not exist.</response>
-    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
-    [HttpGet("{id}/builds/{buildId}/summary")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationBuildSummary>> GetBuildSummaryAsync(
-        [NotNull] string id,
-        [NotNull] string buildId,
-        CancellationToken cancellationToken
-    )
-    {
-        await AuthorizeAsync(id, cancellationToken);
-
-        Build build = await _buildService.GetAsync(buildId, cancellationToken);
-
-        // Calculate total time for build
-        TimeSpan totalBuildTime = build.DateFinished.HasValue
-            ? build.DateFinished.Value - build.DateStarted
-            : TimeSpan.Zero;
-
-        var summary = new TranslationBuildSummary
-        {
-            LinesTrainedOn = 1,
-            LinesPretranslated = 2,
-            TotalBuildTime = totalBuildTime
-        };
-
-        return Ok(summary);
-    }
-
-    // private async Task<(int TrainCount, int PretranslateCount)> GetBuildCountsFromLogAsync(
-    //     string buildId,
-    //     CancellationToken cancellationToken
-    // )
-    // {
-    //     // 1. Access the logs for the given buildId.
-    //     //    - This depends on how you store and access your logs (e.g., file system, database, logging service).
-    //     //    - Replace this with your actual log access logic.
-    //     string logContent = await GetLogContentAsync(buildId, cancellationToken);
-
-    //     // 2. Parse the log content to find the relevant log entry.
-    //     //    - This assumes the log entry format you provided in the PreprocessBuildJob.
-    //     //    - Adjust the parsing logic if your log format is different.
-    //     int trainCount = 0;
-    //     int pretranslateCount = 0;
-
-    //     // Example parsing using regular expressions (adjust as needed):
-    //     Match match = Regex.Match(
-    //         logContent,
-    //         @"{""Event"",""BuildPreprocess""},{""EngineId"",""\w+""},{""BuildId"",""\w+""},{""NumTrainRows"",(\d+)},{""NumPretranslateRows"",(\d+)},"
-    //     );
-    //     if (match.Success)
-    //     {
-    //         trainCount = int.Parse(match.Groups[1].Value);
-    //         pretranslateCount = int.Parse(match.Groups[2].Value);
-    //     }
-
-    //     return (trainCount, pretranslateCount);
-    // }
-
     private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
@@ -1585,6 +1512,7 @@ public class TranslationEnginesController(
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
+            Statistics = source.Statistics
         };
     }
 

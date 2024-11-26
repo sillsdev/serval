@@ -276,18 +276,21 @@ public class TranslationPlatformServiceV1(
             throw new RpcException(new Status(StatusCode.NotFound, "Build not found."));
         }
 
+        var newStatistics = new Dictionary<string, string>();
         foreach (var entry in request.Statistics)
         {
-            build.Statistics[entry.Key] = entry.Value;
+            newStatistics[entry.Key] = entry.Value;
         }
+
+        var updatedStatistics = build.Statistics.Concat(new[] { newStatistics }).ToArray();
 
         await _builds.UpdateAsync(
             b => b.Id == request.BuildId,
-            u => u.Set(b => b.Statistics, build.Statistics),
+            u => u.Set(b => b.Statistics, updatedStatistics),
             cancellationToken: context.CancellationToken
         );
 
-        return Empty;
+        return new Empty();
     }
 
     public override async Task<Empty> IncrementTranslationEngineCorpusSize(
