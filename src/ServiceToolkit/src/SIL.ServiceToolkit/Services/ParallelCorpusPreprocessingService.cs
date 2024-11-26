@@ -82,15 +82,21 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
 
             if (useKeyTerms)
             {
-                ITextCorpus? sourceTermCorpus = _corpusService
-                    .CreateTermCorpora(corpus.SourceCorpora.SelectMany(sc => sc.Files).ToList())
-                    .FirstOrDefault();
-                ITextCorpus? targetTermCorpus = _corpusService
-                    .CreateTermCorpora(corpus.TargetCorpora.SelectMany(tc => tc.Files).ToList())
-                    .FirstOrDefault();
-                if (sourceTermCorpus is not null && targetTermCorpus is not null)
+                ITextCorpus[]? sourceTermCorpora = _corpusService
+                    .CreateTermCorpora(
+                        corpus.SourceCorpora.SelectMany(sc => sc.Files.Select(f => (f, sc.TrainOnChapters))).ToArray()
+                    )
+                    .ToArray();
+                ITextCorpus[]? targetTermCorpora = _corpusService
+                    .CreateTermCorpora(
+                        corpus.TargetCorpora.SelectMany(tc => tc.Files.Select(f => (f, tc.TrainOnChapters))).ToArray()
+                    )
+                    .ToArray();
+                if (sourceTermCorpora is not null && targetTermCorpora is not null)
                 {
-                    IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
+                    IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora
+                        .ChooseRandom(Seed)
+                        .AlignRows(targetTermCorpora.ChooseFirst());
                     foreach (ParallelTextRow row in parallelKeyTermsCorpus)
                     {
                         await train(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
