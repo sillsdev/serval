@@ -37,10 +37,10 @@ public class CorpusService : ICorpusService
     }
 
     public IEnumerable<ITextCorpus> CreateTermCorpora(
-        IReadOnlyList<(CorpusFile File, Dictionary<string, HashSet<int>>? Chapters)> corpora
+        IReadOnlyList<(CorpusFile File, Dictionary<string, HashSet<int>> Chapters)> corpora
     )
     {
-        foreach ((CorpusFile file, Dictionary<string, HashSet<int>>? chapters) in corpora)
+        foreach ((CorpusFile file, Dictionary<string, HashSet<int>> chapters) in corpora)
         {
             switch (file.Format)
             {

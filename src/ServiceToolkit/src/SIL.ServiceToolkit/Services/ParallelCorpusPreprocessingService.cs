@@ -83,14 +83,10 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             if (useKeyTerms)
             {
                 ITextCorpus[]? sourceTermCorpora = _corpusService
-                    .CreateTermCorpora(
-                        corpus.SourceCorpora.SelectMany(sc => sc.Files.Select(f => (f, sc.TrainOnChapters))).ToArray()
-                    )
+                    .CreateTermCorpora(corpus.SourceCorpora.SelectMany(GetChapters).ToArray())
                     .ToArray();
                 ITextCorpus[]? targetTermCorpora = _corpusService
-                    .CreateTermCorpora(
-                        corpus.TargetCorpora.SelectMany(tc => tc.Files.Select(f => (f, tc.TrainOnChapters))).ToArray()
-                    )
+                    .CreateTermCorpora(corpus.TargetCorpora.SelectMany(GetChapters).ToArray())
                     .ToArray();
                 if (sourceTermCorpora is not null && targetTermCorpora is not null)
                 {
@@ -115,6 +111,19 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                 await pretranslate(row, corpus);
             }
         }
+    }
+
+    private static IEnumerable<(CorpusFile File, Dictionary<string, HashSet<int>> Chapters)> GetChapters(
+        MonolingualCorpus mc
+    )
+    {
+        Dictionary<string, HashSet<int>>? chapters = mc.TrainOnChapters;
+        if (chapters is null && mc.TrainOnTextIds is not null)
+        {
+            chapters = mc.TrainOnTextIds.Select(tid => (tid, new HashSet<int> { })).ToDictionary();
+        }
+        chapters ??= [];
+        return mc.Files.Select(f => (f, chapters));
     }
 
     private static ITextCorpus FilterPretranslateCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
