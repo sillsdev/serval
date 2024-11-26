@@ -10,6 +10,8 @@ builder.Services.AddGrpc();
 builder.Services.AddHostedService<BackgroundTaskService>();
 builder.Services.AddSingleton<BackgroundTaskQueue>();
 
+builder.Services.AddParallelCorpusPreprocessor();
+
 builder.Services.AddHealthChecks().AddCheck("Live", () => HealthCheckResult.Healthy());
 
 builder.Services.Configure<Bugsnag.Configuration>(builder.Configuration.GetSection("Bugsnag"));
