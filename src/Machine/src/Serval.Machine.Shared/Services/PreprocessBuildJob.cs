@@ -98,11 +98,11 @@ public class PreprocessBuildJob(
             new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken));
         await using StreamWriter targetTrainWriter =
             new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
-        await using Utf8JsonWriter pretranslateWriter =
-            new(
-                await _sharedFileService.OpenWriteAsync($"builds/{buildId}/pretranslate.src.json", cancellationToken),
-                PretranslateWriterOptions
-            );
+        await using Stream pretranslateStream = await _sharedFileService.OpenWriteAsync(
+            $"builds/{buildId}/pretranslate.src.json",
+            cancellationToken
+        );
+        await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, PretranslateWriterOptions);
 
         int trainCount = 0;
         int pretranslateCount = 0;
