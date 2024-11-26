@@ -1,7 +1,7 @@
 namespace SIL.ServiceToolkit.Services;
 
 [TestFixture]
-public class ParallelCorpusPreprocessorServiceTests
+public class ParallelCorpusPreprocessingServiceTests
 {
     private static readonly string TestDataPath = Path.Combine(
         AppContext.BaseDirectory,
