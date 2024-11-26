@@ -28,4 +28,6 @@ global using SIL.Machine.Translation;
 global using SIL.Machine.Utils;
 global using SIL.ObjectModel;
 global using SIL.Scripture;
+global using SIL.ServiceToolkit.Models;
+global using SIL.ServiceToolkit.Services;
 global using SIL.WritingSystems;

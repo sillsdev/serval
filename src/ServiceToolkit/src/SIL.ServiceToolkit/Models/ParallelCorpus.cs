@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Models;
+﻿namespace SIL.ServiceToolkit.Models;
 
 public record ParallelCorpus
 {

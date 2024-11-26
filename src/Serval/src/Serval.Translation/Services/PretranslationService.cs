@@ -100,8 +100,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: true
+                            behavior: UpdateUsfmBehavior.PreferExisting
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -110,8 +109,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: false
+                            behavior: UpdateUsfmBehavior.PreferNew
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -120,8 +118,7 @@ public class PretranslationService(
                             textId,
                             [], // don't put any pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: false
+                            behavior: UpdateUsfmBehavior.PreferNew
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -130,8 +127,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: false
+                            behavior: UpdateUsfmBehavior.StripExisting
                         ) ?? "";
                     break;
             }
@@ -155,16 +151,14 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: true
+                            behavior: UpdateUsfmBehavior.StripExisting
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
                             textId,
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: true
+                            behavior: UpdateUsfmBehavior.StripExisting
                         ) ?? "";
             }
         }

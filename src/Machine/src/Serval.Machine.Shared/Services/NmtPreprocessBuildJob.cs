@@ -7,8 +7,8 @@ public class NmtPreprocessBuildJob(
     ILogger<NmtPreprocessBuildJob> logger,
     IBuildJobService buildJobService,
     ISharedFileService sharedFileService,
-    ICorpusService corpusService,
-    ILanguageTagService languageTagService
+    ILanguageTagService languageTagService,
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
     : PreprocessBuildJob(
         platformService,
@@ -17,7 +17,7 @@ public class NmtPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        corpusService
+        parallelCorpusPreprocessingService
     )
 {
     private readonly ILanguageTagService _languageTagService = languageTagService;
