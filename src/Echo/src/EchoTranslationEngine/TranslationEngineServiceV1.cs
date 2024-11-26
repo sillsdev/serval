@@ -82,9 +82,9 @@ public class TranslationEngineServiceV1(
                 try
                 {
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
-                    _parallelCorpusPreprocessingService.Preprocess(
+                    await _parallelCorpusPreprocessingService.Preprocess(
                         request.Corpora.Select(Map).ToList(),
-                        row => { },
+                        row => Task.CompletedTask,
                         (row, corpus) =>
                         {
                             pretranslationsRequests.Add(
