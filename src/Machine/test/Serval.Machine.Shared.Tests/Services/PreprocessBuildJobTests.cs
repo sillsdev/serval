@@ -118,10 +118,10 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(0));
+            Assert.That(src1Count, Is.EqualTo(14));
             Assert.That(src2Count, Is.EqualTo(0));
-            Assert.That(trgCount, Is.EqualTo(0));
-            Assert.That(termCount, Is.EqualTo(5726));
+            Assert.That(trgCount, Is.EqualTo(1));
+            Assert.That(termCount, Is.EqualTo(166));
         });
     }
 
@@ -136,9 +136,9 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(0));
+            Assert.That(src1Count, Is.EqualTo(14));
             Assert.That(src2Count, Is.EqualTo(0));
-            Assert.That(trgCount, Is.EqualTo(0));
+            Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
     }
@@ -359,7 +359,7 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public async Task ParallelCorpusLogic()
+    public async Task ParallelCorpusAsync()
     {
         using TestEnvironment env = new();
         var corpora = new List<ParallelCorpus>()
@@ -508,6 +508,246 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
         });
     }
 
+    [Test]
+    public async Task ParallelCorpusAsync_UseKeyTerms()
+    {
+        using TestEnvironment env = new();
+        var corpora = new List<ParallelCorpus>()
+        {
+            new ParallelCorpus()
+            {
+                Id = "1",
+                SourceCorpora = new List<MonolingualCorpus>()
+                {
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-source1") },
+                        TrainOnChapters = new()
+                        {
+                            {
+                                "MAT",
+                                new() { 1 }
+                            },
+                            {
+                                "LEV",
+                                new() { }
+                            }
+                        },
+                        PretranslateChapters = new()
+                        {
+                            {
+                                "1CH",
+                                new() { }
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-source2") },
+                        TrainOnChapters = new()
+                        {
+                            {
+                                "MAT",
+                                new() { 1 }
+                            },
+                            {
+                                "MRK",
+                                new() { }
+                            }
+                        },
+                        PretranslateChapters = new() { }
+                    },
+                },
+                TargetCorpora = new List<MonolingualCorpus>()
+                {
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-target1") },
+                        TrainOnChapters = new()
+                        {
+                            {
+                                "MAT",
+                                new() { 1 }
+                            },
+                            {
+                                "MRK",
+                                new() { }
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Id = "_2",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-target2") },
+                        TrainOnChapters = new()
+                        {
+                            {
+                                "MAT",
+                                new() { 1 }
+                            },
+                            {
+                                "MRK",
+                                new() { }
+                            },
+                            {
+                                "LEV",
+                                new() { }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        await env.RunBuildJobAsync(corpora, useKeyTerms: true);
+        string source = await env.GetSourceExtractAsync();
+        string target = await env.GetTargetExtractAsync();
+        Assert.Multiple(() =>
+        {
+            StringAssert.StartsWith(
+                @"Source one, chapter fourteen, verse fifty-five. Segment b.
+Source one, chapter fourteen, verse fifty-six.
+Source two, chapter one, verse one.
+Source two, chapter one, verse two.
+Source two, chapter one, verse three.
+Source one, chapter one, verse four.
+Source two, chapter one, verse five. Source two, chapter one, verse six.
+Source one, chapter one, verse seven, eight, and nine. Source one, chapter one, verse ten.
+Source two, chapter one, verse one.
+",
+                source
+            );
+            StringAssert.StartsWith(
+                @"Target two, chapter fourteen, verse fifty-five.
+Target two, chapter fourteen, verse fifty-six.
+Target one, chapter one, verse one.
+Target one, chapter one, verse two.
+Target one, chapter one, verse three.
+
+Target one, chapter one, verse five and six.
+Target one, chapter one, verse seven and eight. Target one, chapter one, verse nine and ten.
+
+",
+                target
+            );
+            StringAssert.Contains("Abraham", source);
+            StringAssert.Contains("Abraham", target);
+            StringAssert.DoesNotContain("Zedekiah", source);
+            StringAssert.DoesNotContain("Zedekiah", target);
+        });
+        JsonArray? pretranslations = await env.GetPretranslationsAsync();
+        Assert.That(pretranslations, Is.Not.Null);
+        Assert.That(pretranslations!.Count, Is.EqualTo(7), pretranslations.ToJsonString());
+        Assert.That(
+            pretranslations[2]!["translation"]!.ToString(),
+            Is.EqualTo("Source one, chapter twelve, verse one.")
+        );
+    }
+
+    [Test]
+    public async Task ParallelCorpusAsync_UseKeyTerms_TextIds()
+    {
+        using TestEnvironment env = new();
+        var corpora = new List<ParallelCorpus>()
+        {
+            new ParallelCorpus()
+            {
+                Id = "1",
+                SourceCorpora = new List<MonolingualCorpus>()
+                {
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-source1") },
+                        TrainOnTextIds = ["MAT", "LEV"],
+                        PretranslateTextIds = ["1CH"]
+                    },
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-source2") },
+                        TrainOnTextIds = ["MAT", "MRK"],
+                        PretranslateTextIds = []
+                    },
+                },
+                TargetCorpora = new List<MonolingualCorpus>()
+                {
+                    new()
+                    {
+                        Id = "_1",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-target1") },
+                        TrainOnTextIds = ["MAT", "MRK"]
+                    },
+                    new()
+                    {
+                        Id = "_2",
+                        Language = "en",
+                        Files = new List<CorpusFile> { env.ParatextFile("pt-target2") },
+                        TrainOnTextIds = ["MAT", "MRK", "LEV"]
+                    }
+                }
+            }
+        };
+        await env.RunBuildJobAsync(corpora, useKeyTerms: true);
+        string source = await env.GetSourceExtractAsync();
+        string target = await env.GetTargetExtractAsync();
+        Assert.Multiple(() =>
+        {
+            StringAssert.StartsWith(
+                @"Source one, chapter fourteen, verse fifty-five. Segment b.
+Source one, chapter fourteen, verse fifty-six.
+Source two, chapter one, verse one.
+Source two, chapter one, verse two.
+Source two, chapter one, verse three.
+Source one, chapter one, verse four.
+Source two, chapter one, verse five. Source two, chapter one, verse six.
+Source one, chapter one, verse seven, eight, and nine. Source one, chapter one, verse ten.
+Source one, chapter two, verse one.
+Source one, chapter two, verse two.
+
+Source two, chapter one, verse one.
+",
+                source
+            );
+            StringAssert.StartsWith(
+                @"Target two, chapter fourteen, verse fifty-five.
+Target two, chapter fourteen, verse fifty-six.
+Target one, chapter one, verse one.
+Target one, chapter one, verse two.
+Target one, chapter one, verse three.
+
+Target one, chapter one, verse five and six.
+Target one, chapter one, verse seven and eight. Target one, chapter one, verse nine and ten.
+Target one, chapter two, verse one.
+
+Target one, chapter two, verse three.
+
+",
+                target
+            );
+            StringAssert.Contains("Abraham", source);
+            StringAssert.Contains("Abraham", target);
+            StringAssert.DoesNotContain("Zedekiah", source);
+            StringAssert.DoesNotContain("Zedekiah", target);
+        });
+        JsonArray? pretranslations = await env.GetPretranslationsAsync();
+        Assert.That(pretranslations, Is.Not.Null);
+        Assert.That(pretranslations!.Count, Is.EqualTo(7), pretranslations.ToJsonString());
+        Assert.That(
+            pretranslations[2]!["translation"]!.ToString(),
+            Is.EqualTo("Source one, chapter twelve, verse one.")
+        );
+    }
+
     private class TestEnvironment : DisposableBase
     {
         private static readonly string TestDataPath = Path.Combine(
@@ -613,8 +853,8 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                         Id = "src_1",
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
-                        TrainOnTextIds = [],
-                        PretranslateTextIds = []
+                        TrainOnTextIds = null,
+                        PretranslateTextIds = null
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -624,7 +864,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                         Id = "trg_1",
                         Language = "en",
                         Files = [ParatextFile("pt-target1")],
-                        TrainOnTextIds = []
+                        TrainOnTextIds = null
                     }
                 }
             };
