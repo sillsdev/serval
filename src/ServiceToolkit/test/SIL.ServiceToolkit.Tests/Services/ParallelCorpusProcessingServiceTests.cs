@@ -13,7 +13,7 @@ public class ParallelCorpusPreprocessingServiceTests
     );
 
     [Test]
-    public void TestParallelCorpusPreprocessor()
+    public async Task TestParallelCorpusPreprocessor()
     {
         ParallelCorpusPreprocessingService processor = new(new CorpusService());
         List<ParallelCorpus> corpora =
@@ -73,17 +73,19 @@ public class ParallelCorpusPreprocessingServiceTests
         ];
         int trainCount = 0;
         int pretranslateCount = 0;
-        processor.Preprocess(
+        await processor.Preprocess(
             corpora,
             row =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
+                return Task.CompletedTask;
             },
             (row, _) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
                     pretranslateCount++;
+                return Task.CompletedTask;
             },
             false
         );

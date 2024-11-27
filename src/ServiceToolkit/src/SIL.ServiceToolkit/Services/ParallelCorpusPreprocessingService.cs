@@ -25,10 +25,10 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
         }
     }
 
-    public void Preprocess(
+    public async Task Preprocess(
         IReadOnlyList<ParallelCorpus> corpora,
-        Action<Row> train,
-        Action<Row, ParallelCorpus> pretranslate,
+        Func<Row, Task> train,
+        Func<Row, ParallelCorpus, Task> pretranslate,
         bool useKeyTerms = false
     )
     {
@@ -77,7 +77,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
 
             foreach (Row row in CollapseRanges(trainingRows))
             {
-                train(row);
+                await train(row);
             }
 
             if (useKeyTerms)
@@ -103,7 +103,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                         .AlignRows(targetTermCorpora.ChooseFirst());
                     foreach (ParallelTextRow row in parallelKeyTermsCorpus)
                     {
-                        train(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
+                        await train(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
                     }
                 }
             }
@@ -116,7 +116,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
 
             foreach (Row row in CollapseRanges(pretranslateCorpus.ToArray()))
             {
-                pretranslate(row, corpus);
+                await pretranslate(row, corpus);
             }
         }
     }
