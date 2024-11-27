@@ -8,8 +8,9 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 {
     private static readonly Empty Empty = new();
 
-    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices =
-        engineServices.ToDictionary(es => es.Type);
+    private readonly Dictionary<EngineType, ITranslationEngineService> _engineServices = engineServices.ToDictionary(
+        es => es.Type
+    );
 
     public override async Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
@@ -172,15 +173,19 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     {
         if (_engineServices.TryGetValue(GetEngineType(engineTypeStr), out ITranslationEngineService? service))
             return service;
-        throw new RpcException(new Status(StatusCode.InvalidArgument, "The engine type is invalid."));
+        throw new RpcException(
+            new Status(StatusCode.InvalidArgument, $"The engine type {engineTypeStr} is not supported.")
+        );
     }
 
-    private static TranslationEngineType GetEngineType(string engineTypeStr)
+    private static EngineType GetEngineType(string engineTypeStr)
     {
         engineTypeStr = engineTypeStr[0].ToString().ToUpperInvariant() + engineTypeStr[1..];
-        if (System.Enum.TryParse(engineTypeStr, out TranslationEngineType engineType))
+        if (System.Enum.TryParse(engineTypeStr, out EngineType engineType))
             return engineType;
-        throw new RpcException(new Status(StatusCode.InvalidArgument, "The engine type is invalid."));
+        throw new RpcException(
+            new Status(StatusCode.InvalidArgument, $"The engine type {engineTypeStr} is not supported.")
+        );
     }
 
     private static Translation.V1.TranslationResult Map(SIL.Machine.Translation.TranslationResult source)
@@ -306,8 +311,8 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             Files = source.Files.Select(Map).ToList(),
             TrainOnChapters = trainingFilter == FilterChoice.Chapters ? trainOnChapters : null,
             TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? trainOnTextIds : null,
-            PretranslateChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
-            PretranslateTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
+            InferenceChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
+            InferenceTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
         };
     }
 

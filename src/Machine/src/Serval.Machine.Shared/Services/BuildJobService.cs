@@ -1,22 +1,24 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<TranslationEngine> engines)
-    : IBuildJobService
+public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRepository<TEngine> engines)
+    : IBuildJobService<TEngine>
+    where TEngine : ITrainingEngine
 {
-    private readonly Dictionary<BuildJobRunnerType, IBuildJobRunner> _runners = runners.ToDictionary(r => r.Type);
-    private readonly IRepository<TranslationEngine> _engines = engines;
+    // TODO: make some sort of service to get the engine repos.
+    protected readonly Dictionary<BuildJobRunnerType, IBuildJobRunner> Runners = runners.ToDictionary(r => r.Type);
+    protected readonly IRepository<TEngine> Engines = engines;
 
     public Task<bool> IsEngineBuilding(string engineId, CancellationToken cancellationToken = default)
     {
-        return _engines.ExistsAsync(e => e.EngineId == engineId && e.CurrentBuild != null, cancellationToken);
+        return Engines.ExistsAsync(e => e.EngineId == engineId && e.CurrentBuild != null, cancellationToken);
     }
 
-    public Task<IReadOnlyList<TranslationEngine>> GetBuildingEnginesAsync(
+    public async Task<IReadOnlyList<TEngine>> GetBuildingEnginesAsync(
         BuildJobRunnerType runner,
         CancellationToken cancellationToken = default
     )
     {
-        return _engines.GetAllAsync(
+        return await Engines.GetAllAsync(
             e => e.CurrentBuild != null && e.CurrentBuild.BuildJobRunner == runner,
             cancellationToken
         );
@@ -28,7 +30,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await _engines.GetAsync(
+        TEngine? engine = await Engines.GetAsync(
             e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.BuildId == buildId,
             cancellationToken
         );
@@ -41,25 +43,25 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         CancellationToken cancellationToken = default
     )
     {
-        foreach (BuildJobRunnerType runnerType in _runners.Keys)
+        foreach (BuildJobRunnerType runnerType in Runners.Keys)
         {
-            IBuildJobRunner runner = _runners[runnerType];
+            IBuildJobRunner runner = Runners[runnerType];
             await runner.CreateEngineAsync(engineId, name, cancellationToken);
         }
     }
 
     public async Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        foreach (BuildJobRunnerType runnerType in _runners.Keys)
+        foreach (BuildJobRunnerType runnerType in Runners.Keys)
         {
-            IBuildJobRunner runner = _runners[runnerType];
+            IBuildJobRunner runner = Runners[runnerType];
             await runner.DeleteEngineAsync(engineId, cancellationToken);
         }
     }
 
     public async Task<bool> StartBuildJobAsync(
         BuildJobRunnerType runnerType,
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,
@@ -68,7 +70,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         CancellationToken cancellationToken = default
     )
     {
-        IBuildJobRunner runner = _runners[runnerType];
+        IBuildJobRunner runner = Runners[runnerType];
         string jobId = await runner.CreateJobAsync(
             engineType,
             engineId,
@@ -80,7 +82,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         );
         try
         {
-            TranslationEngine? engine = await _engines.UpdateAsync(
+            TEngine? engine = await Engines.UpdateAsync(
                 e =>
                     e.EngineId == engineId
                     && (
@@ -121,18 +123,17 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         }
     }
 
-    public async Task<(string? BuildId, BuildJobState State)> CancelBuildJobAsync(
+    public virtual async Task<(string? BuildId, BuildJobState State)> CancelBuildJobAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
     {
         // cancel a job that hasn't started yet
-        TranslationEngine? engine = await _engines.UpdateAsync(
+        TEngine? engine = await Engines.UpdateAsync(
             e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Pending,
             u =>
             {
                 u.Unset(b => b.CurrentBuild);
-                u.Set(e => e.CollectTrainSegmentPairs, false);
             },
             returnOriginal: true,
             cancellationToken: cancellationToken
@@ -140,20 +141,20 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         if (engine is not null && engine.CurrentBuild is not null)
         {
             // job will be deleted from the queue
-            IBuildJobRunner runner = _runners[engine.CurrentBuild.BuildJobRunner];
+            IBuildJobRunner runner = Runners[engine.CurrentBuild.BuildJobRunner];
             await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
             return (engine.CurrentBuild.BuildId, BuildJobState.None);
         }
 
         // cancel a job that is already running
-        engine = await _engines.UpdateAsync(
+        engine = await Engines.UpdateAsync(
             e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Active,
             u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Canceling),
             cancellationToken: cancellationToken
         );
         if (engine is not null && engine.CurrentBuild is not null)
         {
-            IBuildJobRunner runner = _runners[engine.CurrentBuild.BuildJobRunner];
+            IBuildJobRunner runner = Runners[engine.CurrentBuild.BuildJobRunner];
             await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
             return (engine.CurrentBuild.BuildId, BuildJobState.Canceling);
         }
@@ -167,7 +168,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         CancellationToken cancellationToken = default
     )
     {
-        TranslationEngine? engine = await _engines.UpdateAsync(
+        TEngine? engine = await Engines.UpdateAsync(
             e =>
                 e.EngineId == engineId
                 && e.CurrentBuild != null
@@ -179,19 +180,18 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
         return engine is not null;
     }
 
-    public Task BuildJobFinishedAsync(
+    public virtual Task BuildJobFinishedAsync(
         string engineId,
         string buildId,
         bool buildComplete,
         CancellationToken cancellationToken = default
     )
     {
-        return _engines.UpdateAsync(
+        return Engines.UpdateAsync(
             e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.BuildId == buildId,
             u =>
             {
                 u.Unset(e => e.CurrentBuild);
-                u.Set(e => e.CollectTrainSegmentPairs, false);
                 if (buildComplete)
                     u.Inc(e => e.BuildRevision);
             },
@@ -201,7 +201,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
 
     public Task BuildJobRestartingAsync(string engineId, string buildId, CancellationToken cancellationToken = default)
     {
-        return _engines.UpdateAsync(
+        return Engines.UpdateAsync(
             e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.BuildId == buildId,
             u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Pending),
             cancellationToken: cancellationToken

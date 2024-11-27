@@ -2,7 +2,7 @@
 
 public interface IClearMLBuildJobFactory
 {
-    TranslationEngineType EngineType { get; }
+    EngineType EngineType { get; }
 
     Task<string> CreateJobScriptAsync(
         string engineId,

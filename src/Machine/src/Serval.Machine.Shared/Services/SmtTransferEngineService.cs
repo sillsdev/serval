@@ -2,25 +2,27 @@
 
 public class SmtTransferEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
-    IPlatformService platformService,
+    IEnumerable<IPlatformService> platformServices,
     IDataAccessContext dataAccessContext,
     IRepository<TranslationEngine> engines,
     IRepository<TrainSegmentPair> trainSegmentPairs,
     SmtTransferEngineStateService stateService,
-    IBuildJobService buildJobService,
+    IBuildJobService<TranslationEngine> buildJobService,
     IClearMLQueueService clearMLQueueService
 ) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
-    private readonly IPlatformService _platformService = platformService;
+    private readonly IPlatformService _platformService = platformServices.First(ps =>
+        ps.EngineGroup == EngineGroup.Translation
+    );
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
     private readonly SmtTransferEngineStateService _stateService = stateService;
-    private readonly IBuildJobService _buildJobService = buildJobService;
+    private readonly IBuildJobService<TranslationEngine> _buildJobService = buildJobService;
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
 
-    public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
+    public EngineType Type => EngineType.SmtTransfer;
 
     public async Task<TranslationEngine> CreateAsync(
         string engineId,
@@ -47,7 +49,7 @@ public class SmtTransferEngineService(
                     EngineId = engineId,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
-                    Type = TranslationEngineType.SmtTransfer,
+                    Type = EngineType.SmtTransfer,
                     IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
                 };
                 await _engines.InsertAsync(translationEngine, ct);
@@ -186,7 +188,7 @@ public class SmtTransferEngineService(
     {
         bool building = !await _buildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Hangfire,
-            TranslationEngineType.SmtTransfer,
+            EngineType.SmtTransfer,
             engineId,
             buildId,
             BuildStage.Preprocess,
