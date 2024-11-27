@@ -118,10 +118,10 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(0));
+            Assert.That(src1Count, Is.EqualTo(14));
             Assert.That(src2Count, Is.EqualTo(0));
-            Assert.That(trgCount, Is.EqualTo(0));
-            Assert.That(termCount, Is.EqualTo(5726));
+            Assert.That(trgCount, Is.EqualTo(1));
+            Assert.That(termCount, Is.EqualTo(166));
         });
     }
 
@@ -136,9 +136,9 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(0));
+            Assert.That(src1Count, Is.EqualTo(14));
             Assert.That(src2Count, Is.EqualTo(0));
-            Assert.That(trgCount, Is.EqualTo(0));
+            Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
     }
@@ -853,8 +853,8 @@ Target one, chapter two, verse three.
                         Id = "src_1",
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
-                        TrainOnTextIds = [],
-                        PretranslateTextIds = []
+                        TrainOnTextIds = null,
+                        PretranslateTextIds = null
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -864,7 +864,7 @@ Target one, chapter two, verse three.
                         Id = "trg_1",
                         Language = "en",
                         Files = [ParatextFile("pt-target1")],
-                        TrainOnTextIds = []
+                        TrainOnTextIds = null
                     }
                 }
             };
