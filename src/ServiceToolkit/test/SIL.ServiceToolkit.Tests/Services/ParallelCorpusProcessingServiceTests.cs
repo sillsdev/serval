@@ -13,7 +13,7 @@ public class ParallelCorpusPreprocessingServiceTests
     );
 
     [Test]
-    public void TestParallelCorpusPreprocessor()
+    public async Task TestParallelCorpusPreprocessor()
     {
         ParallelCorpusPreprocessingService processor = new(new CorpusService());
         List<ParallelCorpus> corpora =
@@ -73,7 +73,7 @@ public class ParallelCorpusPreprocessingServiceTests
         ];
         int trainCount = 0;
         int pretranslateCount = 0;
-        processor.Preprocess(
+        await processor.Preprocess(
             corpora,
             row =>
             {

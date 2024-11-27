@@ -134,6 +134,8 @@ public class PreprocessBuildJob(
                     pretranslateWriter.WriteEndObject();
                     pretranslateCount++;
                 }
+                if (pretranslateWriter.BytesPending > 1024 * 1024)
+                    pretranslateWriter.FlushAsync();
             },
             (bool?)buildOptionsObject?["use_key_terms"] ?? true
         );

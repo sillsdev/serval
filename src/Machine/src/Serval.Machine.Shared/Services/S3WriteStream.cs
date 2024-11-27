@@ -15,6 +15,9 @@ public class S3WriteStream(
     private readonly List<UploadPartResponse> _uploadResponses = new List<UploadPartResponse>();
     private readonly ILogger<S3WriteStream> _logger = loggerFactory.CreateLogger<S3WriteStream>();
 
+    private readonly Stream _stream = new MemoryStream();
+    private int _bytesWritten = 0;
+
     public const int MaxPartSize = 5 * 1024 * 1024;
 
     public override bool CanRead => false;
@@ -23,7 +26,7 @@ public class S3WriteStream(
 
     public override bool CanWrite => true;
 
-    public override long Length => 0;
+    public override long Length => _stream.Length;
 
     public override long Position
     {
@@ -48,13 +51,16 @@ public class S3WriteStream(
         CancellationToken cancellationToken = default
     )
     {
+        await _stream.WriteAsync(buffer, cancellationToken);
+        await UploadPartsAsync(cancellationToken);
+    }
+
+    private async Task UploadPartsAsync(CancellationToken cancellationToken = default)
+    {
         try
         {
-            using Stream stream = buffer.AsStream();
-
-            int bytesWritten = 0;
-
-            while (stream.Length > bytesWritten)
+            _stream.Position = _bytesWritten;
+            while (_stream.Length > _bytesWritten)
             {
                 int partNumber = _uploadResponses.Count + 1;
                 UploadPartRequest request =
@@ -64,7 +70,7 @@ public class S3WriteStream(
                         Key = _key,
                         UploadId = _uploadId,
                         PartNumber = partNumber,
-                        InputStream = stream,
+                        InputStream = _stream,
                         PartSize = MaxPartSize
                     };
                 request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
@@ -87,7 +93,7 @@ public class S3WriteStream(
 
                 _uploadResponses.Add(response);
 
-                bytesWritten += MaxPartSize;
+                _bytesWritten += MaxPartSize;
             }
         }
         catch (Exception e)
@@ -104,6 +110,7 @@ public class S3WriteStream(
 
     protected override void Dispose(bool disposing)
     {
+        UploadPartsAsync().WaitAndUnwrapException();
         try
         {
             if (disposing)
@@ -164,6 +171,7 @@ public class S3WriteStream(
 
     public override async ValueTask DisposeAsync()
     {
+        await UploadPartsAsync();
         try
         {
             if (_uploadResponses.Count == 0)
