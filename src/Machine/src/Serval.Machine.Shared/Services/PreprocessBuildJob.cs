@@ -93,11 +93,11 @@ public class PreprocessBuildJob(
         JsonObject? buildOptionsObject = null;
         if (buildOptions is not null)
             buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
+
         await using StreamWriter sourceTrainWriter =
             new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken));
         await using StreamWriter targetTrainWriter =
             new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
-
         await using Stream pretranslateStream = await _sharedFileService.OpenWriteAsync(
             $"builds/{buildId}/pretranslate.src.json",
             cancellationToken
@@ -107,19 +107,19 @@ public class PreprocessBuildJob(
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        _parallelCorpusPreprocessingService.Preprocess(
+        await _parallelCorpusPreprocessingService.Preprocess(
             corpora,
-            row =>
+            async row =>
             {
                 if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
                 {
-                    sourceTrainWriter.Write($"{row.SourceSegment}\n");
-                    targetTrainWriter.Write($"{row.TargetSegment}\n");
+                    await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                    await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
                 }
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
             },
-            (row, corpus) =>
+            async (row, corpus) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
                 {
@@ -134,6 +134,8 @@ public class PreprocessBuildJob(
                     pretranslateWriter.WriteEndObject();
                     pretranslateCount++;
                 }
+                if (pretranslateWriter.BytesPending > 1024 * 1024)
+                    await pretranslateWriter.FlushAsync();
             },
             (bool?)buildOptionsObject?["use_key_terms"] ?? true
         );
