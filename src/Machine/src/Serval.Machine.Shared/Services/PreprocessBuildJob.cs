@@ -119,7 +119,7 @@ public class PreprocessBuildJob(
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
             },
-            (row, corpus) =>
+            async (row, corpus) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
                 {
@@ -135,7 +135,7 @@ public class PreprocessBuildJob(
                     pretranslateCount++;
                 }
                 if (pretranslateWriter.BytesPending > 1024 * 1024)
-                    pretranslateWriter.FlushAsync();
+                    await pretranslateWriter.FlushAsync();
             },
             (bool?)buildOptionsObject?["use_key_terms"] ?? true
         );

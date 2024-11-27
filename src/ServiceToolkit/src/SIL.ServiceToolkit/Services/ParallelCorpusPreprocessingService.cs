@@ -28,7 +28,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
     public async Task Preprocess(
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
-        Action<Row, ParallelCorpus> pretranslate,
+        Func<Row, ParallelCorpus, Task> pretranslate,
         bool useKeyTerms = false
     )
     {
@@ -106,7 +106,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
 
             foreach (Row row in CollapseRanges(pretranslateCorpus.ToArray()))
             {
-                pretranslate(row, corpus);
+                await pretranslate(row, corpus);
             }
         }
     }

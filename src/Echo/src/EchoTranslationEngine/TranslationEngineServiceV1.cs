@@ -97,6 +97,7 @@ public class TranslationEngineServiceV1(
                                     Translation = row.SourceSegment
                                 }
                             );
+                            return Task.CompletedTask;
                         },
                         false
                     );

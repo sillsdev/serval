@@ -85,6 +85,7 @@ public class ParallelCorpusPreprocessingServiceTests
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
                     pretranslateCount++;
+                return Task.CompletedTask;
             },
             false
         );

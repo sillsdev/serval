@@ -7,7 +7,7 @@ public interface IParallelCorpusPreprocessingService
     Task Preprocess(
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
-        Action<Row, ParallelCorpus> pretranslate,
+        Func<Row, ParallelCorpus, Task> pretranslate,
         bool useKeyTerms = false
     );
 }
