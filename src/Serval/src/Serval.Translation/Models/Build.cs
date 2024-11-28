@@ -17,5 +17,5 @@ public record Build : IEntity
     public DateTime? DateFinished { get; init; }
     public IReadOnlyDictionary<string, object>? Options { get; init; }
     public string? DeploymentVersion { get; init; }
-    public Dictionary<string, string>[] Statistics { get; init; } = [];
+    public IReadOnlyDictionary<string, string> ExecutionData { get; init; } = new Dictionary<string, string>();
 }

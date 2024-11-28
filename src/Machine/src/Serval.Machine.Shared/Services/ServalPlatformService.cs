@@ -138,18 +138,18 @@ public class ServalPlatformService(
         );
     }
 
-    public async Task UpdateBuildStatisticsAsync(
+    public async Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        IDictionary<string, string> statistics,
+        IReadOnlyDictionary<string, string> executionData,
         CancellationToken cancellationToken = default
     )
     {
-        var request = new UpdateBuildStatisticsRequest { EngineId = engineId, BuildId = buildId };
-        request.Statistics.Add(statistics);
+        var request = new UpdateBuildExecutionDataRequest { EngineId = engineId, BuildId = buildId };
+        request.ExecutionData.Add((IDictionary<string, string>)executionData);
         await _outboxService.EnqueueMessageAsync(
             ServalPlatformOutboxConstants.OutboxId,
-            ServalPlatformOutboxConstants.UpdateBuildStatistics,
+            ServalPlatformOutboxConstants.UpdateBuildExecutionData,
             engineId,
             JsonSerializer.Serialize(request),
             cancellationToken: cancellationToken

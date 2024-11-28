@@ -28,10 +28,10 @@ public interface IPlatformService
         CancellationToken cancellationToken = default
     );
 
-    Task UpdateBuildStatisticsAsync(
+    Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        IDictionary<string, string> statistics,
+        IReadOnlyDictionary<string, string> executionData,
         CancellationToken cancellationToken = default
     );
 }

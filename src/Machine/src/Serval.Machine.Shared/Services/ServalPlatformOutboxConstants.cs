@@ -11,5 +11,5 @@ public static class ServalPlatformOutboxConstants
     public const string BuildRestarting = "BuildRestarting";
     public const string InsertPretranslations = "InsertPretranslations";
     public const string IncrementTranslationEngineCorpusSize = "IncrementTranslationEngineCorpusSize";
-    public const string UpdateBuildStatistics = "UpdateBuildStatistics";
+    public const string UpdateBuildExecutionData = "UpdateBuildExecutionData";
 }

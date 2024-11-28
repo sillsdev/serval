@@ -13,6 +13,6 @@ ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.6.3
 ClearMLQueue: lambert_24gb
 MongoConnectionPrefix: qa_int_
 SharedFileLocation: s3://silnlp/int-qa/
-servalClaimSize: 1Gi
-machineClaimSize: 2Gi
+servalClaimSize: 5Gi
+machineClaimSize: 20Gi
 enableEcho: true

@@ -3,5 +3,5 @@
 public interface IMachineBuilder
 {
     IServiceCollection Services { get; }
-    IConfiguration? Configuration { get; }
+    IConfiguration Configuration { get; }
 }

@@ -22,7 +22,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Source_PreferExisting()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferExisting,
@@ -46,7 +46,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Source_PreferPretranslated()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferPretranslated,
@@ -70,7 +70,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Source_OnlyExisting()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.OnlyExisting,
@@ -94,7 +94,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Source_OnlyPretranslated()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.OnlyPretranslated,
@@ -118,7 +118,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_PreferExisting()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
         env.AddMatthewToTarget();
 
         string usfm = await env.GetUsfmAsync(
@@ -143,7 +143,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_PreferPretranslated()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
         env.AddMatthewToTarget();
 
         string usfm = await env.GetUsfmAsync(
@@ -168,7 +168,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_TargetBookDoesNotExist()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferPretranslated,
@@ -181,7 +181,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Auto_TargetBookDoesNotExist()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferPretranslated,
@@ -205,7 +205,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Auto_TargetBookExists()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
         env.AddMatthewToTarget();
 
         string usfm = await env.GetUsfmAsync(
@@ -230,7 +230,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_OnlyExisting()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
         env.AddMatthewToTarget();
 
         string usfm = await env.GetUsfmAsync(
@@ -244,7 +244,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_OnlyPretranslated()
     {
-        TestEnvironment env = new();
+        using TestEnvironment env = new();
         env.AddMatthewToTarget();
 
         string usfm = await env.GetUsfmAsync(
@@ -266,10 +266,26 @@ public class PretranslationServiceTests
         );
     }
 
-    private class TestEnvironment
+    private class TestEnvironment : IDisposable
     {
         public TestEnvironment()
         {
+            CorpusFile file1 =
+                new()
+                {
+                    Id = "file1",
+                    Filename = "file1.zip",
+                    Format = Shared.Contracts.FileFormat.Paratext,
+                    TextId = "project1"
+                };
+            CorpusFile file2 =
+                new()
+                {
+                    Id = "file2",
+                    Filename = "file2.zip",
+                    Format = Shared.Contracts.FileFormat.Paratext,
+                    TextId = "project1"
+                };
             Engines = new MemoryRepository<Engine>(
                 [
                     new()
@@ -287,29 +303,45 @@ public class PretranslationServiceTests
                                 Id = "corpus1",
                                 SourceLanguage = "en",
                                 TargetLanguage = "en",
-                                SourceFiles =
-                                [
-                                    new()
-                                    {
-                                        Id = "file1",
-                                        Filename = "file1.zip",
-                                        Format = Shared.Contracts.FileFormat.Paratext,
-                                        TextId = "project1"
-                                    }
-                                ],
-                                TargetFiles =
-                                [
-                                    new()
-                                    {
-                                        Id = "file2",
-                                        Filename = "file2.zip",
-                                        Format = Shared.Contracts.FileFormat.Paratext,
-                                        TextId = "project1"
-                                    }
-                                ],
+                                SourceFiles = [file1],
+                                TargetFiles = [file2],
                             }
                         ]
-                    }
+                    },
+                    new()
+                    {
+                        Id = "parallel_engine1",
+                        Owner = "owner1",
+                        SourceLanguage = "en",
+                        TargetLanguage = "en",
+                        Type = "nmt",
+                        ModelRevision = 1,
+                        ParallelCorpora =
+                        [
+                            new()
+                            {
+                                Id = "parallel_corpus1",
+                                SourceCorpora = new List<MonolingualCorpus>()
+                                {
+                                    new()
+                                    {
+                                        Id = "src_1",
+                                        Language = "en",
+                                        Files = [file1],
+                                    }
+                                },
+                                TargetCorpora = new List<MonolingualCorpus>()
+                                {
+                                    new()
+                                    {
+                                        Id = "trg_1",
+                                        Language = "es",
+                                        Files = [file2],
+                                    }
+                                }
+                            }
+                        ]
+                    },
                 ]
             );
 
@@ -334,6 +366,26 @@ public class PretranslationServiceTests
                         TextId = "MAT",
                         Refs = ["MAT 1:2"],
                         Translation = "Chapter 1, verse 2."
+                    },
+                    new()
+                    {
+                        Id = "pt3",
+                        EngineRef = "parallel_engine1",
+                        ModelRevision = 1,
+                        CorpusRef = "parallel_corpus1",
+                        TextId = "MAT",
+                        Refs = ["MAT 1:1"],
+                        Translation = "Chapter 1, verse 1."
+                    },
+                    new()
+                    {
+                        Id = "pt4",
+                        EngineRef = "parallel_engine1",
+                        ModelRevision = 1,
+                        CorpusRef = "parallel_corpus1",
+                        TextId = "MAT",
+                        Refs = ["MAT 1:2"],
+                        Translation = "Chapter 1, verse 2."
                     }
                 ]
             );
@@ -342,23 +394,37 @@ public class PretranslationServiceTests
             ScriptureDataFileService.GetParatextProjectSettings("file2.zip").Returns(CreateProjectSettings("TRG"));
             var zipSubstituteSource = Substitute.For<IZipContainer>();
             var zipSubstituteTarget = Substitute.For<IZipContainer>();
-            zipSubstituteSource.OpenEntry("MATSRC.SFM").Returns(new MemoryStream(Encoding.UTF8.GetBytes(SourceUsfm)));
-            zipSubstituteTarget.OpenEntry("MATTRG.SFM").Returns(new MemoryStream(Encoding.UTF8.GetBytes("")));
+            zipSubstituteSource
+                .OpenEntry("MATSRC.SFM")
+                .Returns(x => new MemoryStream(Encoding.UTF8.GetBytes(SourceUsfm)));
+            zipSubstituteTarget.OpenEntry("MATTRG.SFM").Returns(x => new MemoryStream(Encoding.UTF8.GetBytes("")));
             zipSubstituteSource.EntryExists(Arg.Any<string>()).Returns(false);
             zipSubstituteTarget.EntryExists(Arg.Any<string>()).Returns(false);
             zipSubstituteSource.EntryExists("MATSRC.SFM").Returns(true);
             zipSubstituteTarget.EntryExists("MATTRG.SFM").Returns(true);
             TargetZipContainer = zipSubstituteTarget;
-            using var textUpdaterSource = new Shared.Services.ZipParatextProjectTextUpdater(
-                zipSubstituteSource,
-                CreateProjectSettings("SRC")
-            );
-            using var textUpdaterTarget = new Shared.Services.ZipParatextProjectTextUpdater(
-                zipSubstituteTarget,
-                CreateProjectSettings("TRG")
-            );
-            ScriptureDataFileService.GetZipParatextProjectTextUpdater("file1.zip").Returns(textUpdaterSource);
-            ScriptureDataFileService.GetZipParatextProjectTextUpdater("file2.zip").Returns(textUpdaterTarget);
+            TextUpdaters = new List<Shared.Services.ZipParatextProjectTextUpdater>();
+            Shared.Services.ZipParatextProjectTextUpdater GetTextUpdater(string type)
+            {
+                var updater = type switch
+                {
+                    "SRC"
+                        => new Shared.Services.ZipParatextProjectTextUpdater(
+                            zipSubstituteSource,
+                            CreateProjectSettings("SRC")
+                        ),
+                    "TRG"
+                        => new Shared.Services.ZipParatextProjectTextUpdater(
+                            zipSubstituteTarget,
+                            CreateProjectSettings("TRG")
+                        ),
+                    _ => throw new ArgumentException()
+                };
+                TextUpdaters.Add(updater);
+                return updater;
+            }
+            ScriptureDataFileService.GetZipParatextProjectTextUpdater("file1.zip").Returns(x => GetTextUpdater("SRC"));
+            ScriptureDataFileService.GetZipParatextProjectTextUpdater("file2.zip").Returns(x => GetTextUpdater("TRG"));
             Service = new PretranslationService(Pretranslations, Engines, ScriptureDataFileService);
         }
 
@@ -367,6 +433,7 @@ public class PretranslationServiceTests
         public MemoryRepository<Engine> Engines { get; }
         public IScriptureDataFileService ScriptureDataFileService { get; }
         public IZipContainer TargetZipContainer { get; }
+        public IList<Shared.Services.ZipParatextProjectTextUpdater> TextUpdaters { get; }
 
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
@@ -381,12 +448,25 @@ public class PretranslationServiceTests
                 textOrigin: textOrigin,
                 template: template
             );
-            return usfm.Replace("\r\n", "\n");
+            usfm = usfm.Replace("\r\n", "\n");
+            string parallel_usfm = await Service.GetUsfmAsync(
+                engineId: "parallel_engine1",
+                modelRevision: 1,
+                corpusId: "parallel_corpus1",
+                textId: "MAT",
+                textOrigin: textOrigin,
+                template: template
+            );
+            parallel_usfm = parallel_usfm.Replace("\r\n", "\n");
+            Assert.That(parallel_usfm, Is.EqualTo(usfm));
+            return usfm;
         }
 
         public void AddMatthewToTarget()
         {
-            TargetZipContainer.OpenEntry("MATTRG.SFM").Returns(new MemoryStream(Encoding.UTF8.GetBytes(TargetUsfm)));
+            TargetZipContainer
+                .OpenEntry("MATTRG.SFM")
+                .Returns(x => new MemoryStream(Encoding.UTF8.GetBytes(TargetUsfm)));
         }
 
         private static ParatextProjectSettings CreateProjectSettings(string name)
@@ -405,6 +485,14 @@ public class PretranslationServiceTests
                 biblicalTermsFileName: "BiblicalTerms.xml",
                 languageCode: "en"
             );
+        }
+
+        public void Dispose()
+        {
+            foreach (var updater in TextUpdaters)
+            {
+                updater.Dispose();
+            }
         }
     }
 }

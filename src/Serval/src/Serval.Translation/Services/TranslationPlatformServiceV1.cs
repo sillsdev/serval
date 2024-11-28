@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using System.Collections.ObjectModel;
+using Google.Protobuf.WellKnownTypes;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -265,8 +266,8 @@ public class TranslationPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> UpdateBuildStatistics(
-        UpdateBuildStatisticsRequest request,
+    public override async Task<Empty> UpdateBuildExecutionData(
+        UpdateBuildExecutionDataRequest request,
         ServerCallContext context
     )
     {
@@ -276,17 +277,16 @@ public class TranslationPlatformServiceV1(
             throw new RpcException(new Status(StatusCode.NotFound, "Build not found."));
         }
 
-        var newStatistics = new Dictionary<string, string>();
-        foreach (var entry in request.Statistics)
-        {
-            newStatistics[entry.Key] = entry.Value;
-        }
+        var updatedExecutionData = new Dictionary<string, string>(build.ExecutionData);
 
-        var updatedStatistics = build.Statistics.Concat(new[] { newStatistics }).ToArray();
+        foreach (var entry in request.ExecutionData)
+        {
+            updatedExecutionData[entry.Key] = entry.Value;
+        }
 
         await _builds.UpdateAsync(
             b => b.Id == request.BuildId,
-            u => u.Set(b => b.Statistics, updatedStatistics),
+            u => u.Set(b => b.ExecutionData, new ReadOnlyDictionary<string, string>(updatedExecutionData)),
             cancellationToken: context.CancellationToken
         );
 

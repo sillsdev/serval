@@ -4218,7 +4218,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Add a corpus to a translation engine
+        /// Add a corpus to a translation engine (obsolete - use parallel corpora instead)
         /// </summary>
         /// <remarks>
         /// ## Parameters
@@ -4242,20 +4242,22 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
         /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all corpora for a translation engine
+        /// Get all corpora for a translation engine (obsolete - use parallel corpora instead)
         /// </summary>
         /// <param name="id">The translation engine id</param>
         /// <returns>The corpora</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Update a corpus with a new set of files
+        /// Update a corpus with a new set of files (obsolete - use parallel corpora instead)
         /// </summary>
         /// <remarks>
         /// See posting a new corpus for details of use. Will completely replace corpus' file associations.
@@ -4266,16 +4268,18 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         System.Threading.Tasks.Task<TranslationCorpus> UpdateCorpusAsync(string id, string corpusId, TranslationCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get the configuration of a corpus for a translation engine
+        /// Get the configuration of a corpus for a translation engine (obsolete - use parallel corpora instead)
         /// </summary>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
         /// <returns>The corpus configuration</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -4355,7 +4359,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all pretranslations in a corpus of a translation engine
+        /// Get all pretranslations in a corpus or parallel corpus of a translation engine
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -4369,7 +4373,7 @@ namespace Serval.Client
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -4377,7 +4381,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all pretranslations for the specified text in a corpus of a translation engine
+        /// Get all pretranslations for the specified text in a corpus or parallel corpus of a translation engine
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -4390,7 +4394,7 @@ namespace Serval.Client
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
         /// <param name="textId">The text id</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -4416,7 +4420,7 @@ namespace Serval.Client
         /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
         /// <param name="textId">The text id</param>
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
@@ -4437,10 +4441,21 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora). If no "trainOn" field is provided, all corpora will be used.
-        /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-        /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
-        /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
+        /// <br/>Specifying a corpus:
+        /// <br/>* A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
+        /// <br/>* A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
+        /// <br/>            
+        /// <br/>Filtering by textID or chapter:
+        /// <br/>* Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
+        /// <br/>* Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// <br/>* All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// <br/>            
+        /// <br/>Filter - train on all or none
+        /// <br/>* If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
+        /// <br/>* If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
+        /// <br/>* If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
+        /// <br/>* If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
         /// <br/>            
         /// <br/>Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
         /// <br/>the following text will be pretranslated:
@@ -5531,7 +5546,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Add a corpus to a translation engine
+        /// Add a corpus to a translation engine (obsolete - use parallel corpora instead)
         /// </summary>
         /// <remarks>
         /// ## Parameters
@@ -5555,6 +5570,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
         /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         public virtual async System.Threading.Tasks.Task<TranslationCorpus> AddCorpusAsync(string id, TranslationCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
@@ -5667,11 +5683,12 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all corpora for a translation engine
+        /// Get all corpora for a translation engine (obsolete - use parallel corpora instead)
         /// </summary>
         /// <param name="id">The translation engine id</param>
         /// <returns>The corpora</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationCorpus>> GetAllCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
@@ -5771,7 +5788,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Update a corpus with a new set of files
+        /// Update a corpus with a new set of files (obsolete - use parallel corpora instead)
         /// </summary>
         /// <remarks>
         /// See posting a new corpus for details of use. Will completely replace corpus' file associations.
@@ -5782,6 +5799,7 @@ namespace Serval.Client
         /// <param name="corpusConfig">The corpus configuration</param>
         /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         public virtual async System.Threading.Tasks.Task<TranslationCorpus> UpdateCorpusAsync(string id, string corpusId, TranslationCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
@@ -5898,12 +5916,13 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get the configuration of a corpus for a translation engine
+        /// Get the configuration of a corpus for a translation engine (obsolete - use parallel corpora instead)
         /// </summary>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
         /// <returns>The corpus configuration</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         public virtual async System.Threading.Tasks.Task<TranslationCorpus> GetCorpusAsync(string id, string corpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
@@ -6688,7 +6707,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all pretranslations in a corpus of a translation engine
+        /// Get all pretranslations in a corpus or parallel corpus of a translation engine
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -6702,7 +6721,7 @@ namespace Serval.Client
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -6822,7 +6841,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all pretranslations for the specified text in a corpus of a translation engine
+        /// Get all pretranslations for the specified text in a corpus or parallel corpus of a translation engine
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -6835,7 +6854,7 @@ namespace Serval.Client
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
         /// <param name="textId">The text id</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -6971,7 +6990,7 @@ namespace Serval.Client
         /// <br/>Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
         /// <param name="textId">The text id</param>
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
@@ -7217,10 +7236,21 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora). If no "trainOn" field is provided, all corpora will be used.
-        /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-        /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
-        /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
+        /// <br/>Specifying a corpus:
+        /// <br/>* A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
+        /// <br/>* A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
+        /// <br/>            
+        /// <br/>Filtering by textID or chapter:
+        /// <br/>* Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
+        /// <br/>* Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// <br/>* All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        /// <br/>            
+        /// <br/>Filter - train on all or none
+        /// <br/>* If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
+        /// <br/>* If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
+        /// <br/>* If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
+        /// <br/>* If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
         /// <br/>            
         /// <br/>Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
         /// <br/>the following text will be pretranslated:
@@ -9819,8 +9849,8 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("deploymentVersion", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? DeploymentVersion { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("statistics", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<System.Collections.Generic.IDictionary<string, string>>? Statistics { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IDictionary<string, string>? ExecutionData { get; set; } = default!;
 
     }
 
@@ -9828,12 +9858,15 @@ namespace Serval.Client
     public partial class TrainingCorpus
     {
         [Newtonsoft.Json.JsonProperty("corpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public ResourceLink? Corpus { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? ScriptureRange { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("parallelCorpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -9866,12 +9899,15 @@ namespace Serval.Client
     public partial class PretranslateCorpus
     {
         [Newtonsoft.Json.JsonProperty("corpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public ResourceLink? Corpus { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? ScriptureRange { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("parallelCorpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -9903,12 +9939,15 @@ namespace Serval.Client
     public partial class TrainingCorpusConfig
     {
         [Newtonsoft.Json.JsonProperty("corpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? CorpusId { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? ScriptureRange { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -9941,12 +9980,15 @@ namespace Serval.Client
     public partial class PretranslateCorpusConfig
     {
         [Newtonsoft.Json.JsonProperty("corpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? CorpusId { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public string? ScriptureRange { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]

@@ -85,9 +85,9 @@ public class ServalPlatformOutboxMessageHandler(TranslationPlatformApi.Translati
                     cancellationToken: cancellationToken
                 );
                 break;
-            case ServalPlatformOutboxConstants.UpdateBuildStatistics:
-                await _client.UpdateBuildStatisticsAsync(
-                    JsonSerializer.Deserialize<UpdateBuildStatisticsRequest>(content!),
+            case ServalPlatformOutboxConstants.UpdateBuildExecutionData:
+                await _client.UpdateBuildExecutionDataAsync(
+                    JsonSerializer.Deserialize<UpdateBuildExecutionDataRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;

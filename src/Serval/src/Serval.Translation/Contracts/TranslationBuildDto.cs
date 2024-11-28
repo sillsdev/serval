@@ -28,5 +28,5 @@ public record TranslationBuildDto
     /// </example>
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
-    public Dictionary<string, string>[]? Statistics { get; init; }
+    public IReadOnlyDictionary<string, string>? ExecutionData { get; init; }
 }

@@ -26,21 +26,3 @@ spec:
           - echo
         hosts: []
         labels: {}
----
-apiVersion: logging.banzaicloud.io/v1beta1
-kind: Flow
-metadata:
-  name: mongo-flow
-  namespace: {{ .Values.namespace }}
-spec:
-  globalOutputRefs: []
-  localOutputRefs:
-    - {{ .Values.namespace }}-loki-output
-  match:
-    - select:
-        container_names:
-          - mongo
-        hosts: []
-        labels: {}
-status:
-  active: true
