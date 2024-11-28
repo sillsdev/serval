@@ -2,7 +2,6 @@
 global using System.Security.Claims;
 global using System.Text.Json.Serialization;
 global using Asp.Versioning;
-global using Bugsnag.AspNet.Core;
 global using Hangfire;
 global using Hangfire.Mongo;
 global using Hangfire.Mongo.Migration.Strategies;
