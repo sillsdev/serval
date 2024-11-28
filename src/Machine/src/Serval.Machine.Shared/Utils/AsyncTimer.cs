@@ -57,6 +57,7 @@ public class AsyncTimer : AsyncDisposableBase
 
     protected override async ValueTask DisposeAsyncCore()
     {
+        await base.DisposeAsyncCore();
         await StopAsync();
         _timer.Dispose();
     }

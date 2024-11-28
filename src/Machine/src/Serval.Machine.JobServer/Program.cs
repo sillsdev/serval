@@ -1,4 +1,3 @@
-using Bugsnag.AspNet.Core;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);

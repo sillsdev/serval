@@ -1,4 +1,3 @@
-using Bugsnag.AspNet.Core;
 using Hangfire;
 using OpenTelemetry.Trace;
 
