@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿namespace SIL.ServiceToolkit.Services;
 
 public class CorpusService : ICorpusService
 {
@@ -36,14 +36,16 @@ public class CorpusService : ICorpusService
         return corpora;
     }
 
-    public IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> files)
+    public IEnumerable<ITextCorpus> CreateTermCorpora(
+        IReadOnlyList<(CorpusFile File, Dictionary<string, HashSet<int>> Chapters)> corpora
+    )
     {
-        foreach (CorpusFile file in files)
+        foreach ((CorpusFile file, Dictionary<string, HashSet<int>> chapters) in corpora)
         {
             switch (file.Format)
             {
                 case FileFormat.Paratext:
-                    yield return new ParatextBackupTermsCorpus(file.Location, ["PN"]);
+                    yield return new ParatextBackupTermsCorpus(file.Location, ["PN"], chapters: chapters);
                     break;
             }
         }
