@@ -181,7 +181,6 @@ public class AssessmentEngineTests
                             {
                                 Id = dataFile.Id,
                                 Format = Shared.Contracts.FileFormat.Paratext,
-                                Filename = dataFile.Filename,
                                 TextId = "all"
                             }
                         ]

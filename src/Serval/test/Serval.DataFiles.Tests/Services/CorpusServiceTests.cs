@@ -5,13 +5,11 @@ public class CorpusServiceTests
 {
     private const string CorpusId = "c00000000000000000000001";
 
-    private static readonly DataFile DefaultDataFile =
+    private static readonly DataFileReference DefaultDataFile =
         new()
         {
             Id = "df0000000000000000000001",
-            Owner = "owner1",
             Name = "file1",
-            Filename = "file1.txt",
             Format = FileFormat.Text
         };
     private static readonly Corpus DefaultCorpus =
@@ -21,7 +19,7 @@ public class CorpusServiceTests
             Owner = "owner1",
             Name = "corpus1",
             Language = "en",
-            Files = new List<CorpusFile>() { new() { File = DefaultDataFile } }
+            Files = new List<CorpusFile>() { new() { FileReference = DefaultDataFile } }
         };
 
     [Test]

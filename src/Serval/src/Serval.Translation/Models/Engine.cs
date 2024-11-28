@@ -16,4 +16,17 @@ public record Engine : IOwnedEntity
     public int ModelRevision { get; init; }
     public double Confidence { get; init; }
     public int CorpusSize { get; init; }
+
+    public async Task PopulateFilenamesAsync(
+        IRequestClient<GetDataFile> getDataFileClient,
+        CancellationToken cancellationToken
+    )
+    {
+        await Task.WhenAll(
+            Corpora.Select(corpus => corpus.PopulateFilenamesAsync(getDataFileClient, Owner, cancellationToken))
+        );
+        await Task.WhenAll(
+            ParallelCorpora.Select(corpus => corpus.PopulateFilenamesAsync(getDataFileClient, Owner, cancellationToken))
+        );
+    }
 }

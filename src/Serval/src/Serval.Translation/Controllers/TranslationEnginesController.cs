@@ -1220,7 +1220,7 @@ public class TranslationEnginesController(
     }
 
     private async Task<ParallelCorpus> MapAsync(
-        IRequestClient<GetCorpus> getDataFileClient,
+        IRequestClient<GetCorpus> getCorpusClient,
         string corpusId,
         TranslationParallelCorpusConfigDto source,
         CancellationToken cancellationToken
@@ -1229,8 +1229,8 @@ public class TranslationEnginesController(
         return new ParallelCorpus
         {
             Id = corpusId,
-            SourceCorpora = await MapAsync(getDataFileClient, source.SourceCorpusIds, cancellationToken),
-            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken)
+            SourceCorpora = await MapAsync(getCorpusClient, source.SourceCorpusIds, cancellationToken),
+            TargetCorpora = await MapAsync(getCorpusClient, source.TargetCorpusIds, cancellationToken)
         };
     }
 
@@ -1253,7 +1253,6 @@ public class TranslationEnginesController(
                     new CorpusFile
                     {
                         Id = fileConfig.FileId,
-                        Filename = result.Message.Filename,
                         TextId = fileConfig.TextId ?? result.Message.Name,
                         Format = result.Message.Format
                     }
@@ -1291,9 +1290,8 @@ public class TranslationEnginesController(
                         Files = result
                             .Message.Files.Select(f => new CorpusFile
                             {
-                                Id = f.File.DataFileId,
-                                Filename = f.File.Filename,
-                                Format = f.File.Format,
+                                Id = f.Id,
+                                Format = f.Format,
                                 TextId = f.TextId
                             })
                             .ToList(),

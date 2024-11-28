@@ -20,16 +20,11 @@ public class GetCorpusConsumer(ICorpusService corpusService) : IConsumer<GetCorp
                     Name = corpus.Name,
                     Language = corpus.Language,
                     Files = corpus
-                        .Files.Select(f => new CorpusFileResult
+                        .Files.Select(f => new Shared.Models.CorpusFile
                         {
+                            Id = f.FileReference.Id,
                             TextId = f.TextId!,
-                            File = new DataFileResult
-                            {
-                                DataFileId = f.File.Id,
-                                Filename = f.File.Filename,
-                                Format = f.File.Format,
-                                Name = f.File.Name
-                            }
+                            Format = f.FileReference.Format
                         })
                         .ToList()
                 }

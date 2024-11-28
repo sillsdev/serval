@@ -184,21 +184,21 @@ public class TranslationEngineTests
             Id = SOURCE_CORPUS_ID_1,
             Language = "en",
             Owner = "client1",
-            Files = [new() { File = srcFile, TextId = "all" }]
+            Files = [new() { FileReference = Map(srcFile), TextId = "all" }]
         };
         var srcCorpus2 = new DataFiles.Models.Corpus
         {
             Id = SOURCE_CORPUS_ID_2,
             Language = "en",
             Owner = "client1",
-            Files = [new() { File = srcFile, TextId = "all" }]
+            Files = [new() { FileReference = Map(srcFile), TextId = "all" }]
         };
         var trgCorpus = new DataFiles.Models.Corpus
         {
             Id = TARGET_CORPUS_ID,
             Language = "en",
             Owner = "client1",
-            Files = [new() { File = trgFile, TextId = "all" }]
+            Files = [new() { FileReference = Map(trgFile), TextId = "all" }]
         };
         await _env.Corpora.InsertAllAsync([srcCorpus, srcCorpus2, trgCorpus]);
     }
@@ -599,11 +599,6 @@ public class TranslationEngineTests
                 });
                 Engine? engine = await _env.Engines.GetAsync(engineId);
                 Assert.That(engine, Is.Not.Null);
-                Assert.Multiple(() =>
-                {
-                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
-                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
-                });
                 break;
             }
             case 403:
@@ -661,11 +656,6 @@ public class TranslationEngineTests
                 await client.UpdateCorpusAsync(engineId, result.Id, updateConfig);
                 Engine? engine = await _env.Engines.GetAsync(engineId);
                 Assert.That(engine, Is.Not.Null);
-                Assert.Multiple(() =>
-                {
-                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
-                    Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
-                });
                 break;
             }
             case 400:
@@ -836,11 +826,6 @@ public class TranslationEngineTests
         });
         Engine? engine = await _env.Engines.GetAsync(ECHO_ENGINE1_ID);
         Assert.That(engine, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(engine.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename, Is.EqualTo(FILE1_FILENAME));
-            Assert.That(engine.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename, Is.EqualTo(FILE2_FILENAME));
-        });
     }
 
     public void AddParallelCorpusToEngineById_NoSuchEngine()
@@ -885,11 +870,6 @@ public class TranslationEngineTests
         await client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, result.Id, updateConfig);
         Engine? engine = await _env.Engines.GetAsync(ECHO_ENGINE1_ID);
         Assert.That(engine, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(engine.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename, Is.EqualTo(FILE1_FILENAME));
-            Assert.That(engine.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename, Is.EqualTo(FILE2_FILENAME));
-        });
     }
 
     [Test]
@@ -2380,6 +2360,14 @@ public class TranslationEngineTests
             ResetDatabases();
         }
     }
+
+    static DataFiles.Models.DataFileReference Map(DataFiles.Models.DataFile file) =>
+        new DataFiles.Models.DataFileReference
+        {
+            Id = file.Id,
+            Name = file.Name,
+            Format = file.Format
+        };
 }
 
 #pragma warning restore CS0612 // Type or member is obsolete

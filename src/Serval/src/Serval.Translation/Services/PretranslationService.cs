@@ -5,11 +5,13 @@ namespace Serval.Translation.Services;
 public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
-    IScriptureDataFileService scriptureDataFileService
+    IScriptureDataFileService scriptureDataFileService,
+    IRequestClient<GetDataFile> getDataFileClient
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
     private readonly IRepository<Engine> _engines = engines;
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
+    private readonly IRequestClient<GetDataFile> _getDataFileClient = getDataFileClient;
 
     public async Task<IEnumerable<Pretranslation>> GetAllAsync(
         string engineId,
@@ -40,6 +42,7 @@ public class PretranslationService(
     )
     {
         Engine? engine = await _engines.GetAsync(engineId, cancellationToken);
+        await engine!.PopulateFilenamesAsync(_getDataFileClient, cancellationToken);
         Corpus? corpus = engine?.Corpora.SingleOrDefault(c => c.Id == corpusId);
         ParallelCorpus? parallelCorpus = engine?.ParallelCorpora.SingleOrDefault(c => c.Id == corpusId);
 
@@ -63,10 +66,10 @@ public class PretranslationService(
             throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
 
         ParatextProjectSettings sourceSettings = _scriptureDataFileService.GetParatextProjectSettings(
-            sourceFile.Filename
+            sourceFile.GetFilename()
         );
         ParatextProjectSettings targetSettings = _scriptureDataFileService.GetParatextProjectSettings(
-            targetFile.Filename
+            targetFile.GetFilename()
         );
 
         IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = (
@@ -90,7 +93,7 @@ public class PretranslationService(
                 ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
             );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
-                _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
+                _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.GetFilename());
             string usfm = "";
             switch (textOrigin)
             {
@@ -139,7 +142,7 @@ public class PretranslationService(
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
         {
             using Shared.Services.ZipParatextProjectTextUpdater updater =
-                _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename);
+                _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.GetFilename());
 
             // Copy and update the source book if it exists
             switch (textOrigin)

@@ -657,7 +657,6 @@ public class AssessmentEnginesController(
                     new CorpusFile
                     {
                         Id = fileConfig.FileId,
-                        Filename = result.Message.Filename,
                         TextId = fileConfig.TextId ?? result.Message.Name,
                         Format = result.Message.Format
                     }

@@ -166,18 +166,18 @@ public class CorporaController(
         };
     }
 
-    private async Task<IReadOnlyList<CorpusFile>> MapAsync(
+    private async Task<IReadOnlyList<Models.CorpusFile>> MapAsync(
         IReadOnlyList<CorpusFileConfigDto> files,
         CancellationToken cancellationToken
     )
     {
-        var dataFiles = new List<CorpusFile>();
+        var dataFiles = new List<Models.CorpusFile>();
         foreach (CorpusFileConfigDto file in files)
         {
             DataFile? dataFile = await _dataFileService.GetAsync(file.FileId, cancellationToken);
             if (dataFile == null)
                 throw new InvalidOperationException($"DataFile with id {file.FileId} does not exist.");
-            dataFiles.Add(new CorpusFile { File = dataFile, TextId = file.TextId });
+            dataFiles.Add(new Models.CorpusFile { FileReference = Map(dataFile), TextId = file.TextId });
         }
         return dataFiles;
     }
@@ -195,20 +195,29 @@ public class CorporaController(
         };
     }
 
-    private CorpusFileDto Map(CorpusFile source)
+    private CorpusFileDto Map(Models.CorpusFile source)
     {
-        return new CorpusFileDto { File = Map(source.File), TextId = source.TextId };
+        return new CorpusFileDto { File = Map(source.FileReference), TextId = source.TextId };
     }
 
-    private DataFileDto Map(DataFile source)
+    private DataFileReferenceDto Map(DataFileReference source)
     {
-        return new DataFileDto
+        return new DataFileReferenceDto
         {
             Id = source.Id,
             Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id }),
             Name = source.Name,
             Format = source.Format,
-            Revision = source.Revision
+        };
+    }
+
+    private static DataFileReference Map(DataFile source)
+    {
+        return new DataFileReference
+        {
+            Id = source.Id,
+            Format = source.Format,
+            Name = source.Name
         };
     }
 }

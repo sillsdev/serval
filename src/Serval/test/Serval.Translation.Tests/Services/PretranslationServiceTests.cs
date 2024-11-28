@@ -270,22 +270,22 @@ public class PretranslationServiceTests
     {
         public TestEnvironment()
         {
-            CorpusFile file1 =
+            Shared.Models.CorpusFile file1 =
                 new()
                 {
                     Id = "file1",
-                    Filename = "file1.zip",
                     Format = Shared.Contracts.FileFormat.Paratext,
                     TextId = "project1"
                 };
-            CorpusFile file2 =
+            file1.SetFilename("file1.zip");
+            Shared.Models.CorpusFile file2 =
                 new()
                 {
                     Id = "file2",
-                    Filename = "file2.zip",
                     Format = Shared.Contracts.FileFormat.Paratext,
                     TextId = "project1"
                 };
+            file2.SetFilename("file2.zip");
             Engines = new MemoryRepository<Engine>(
                 [
                     new()
@@ -321,7 +321,7 @@ public class PretranslationServiceTests
                             new()
                             {
                                 Id = "parallel_corpus1",
-                                SourceCorpora = new List<MonolingualCorpus>()
+                                SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
                                 {
                                     new()
                                     {
@@ -330,7 +330,7 @@ public class PretranslationServiceTests
                                         Files = [file1],
                                     }
                                 },
-                                TargetCorpora = new List<MonolingualCorpus>()
+                                TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                                 {
                                     new()
                                     {
@@ -392,6 +392,7 @@ public class PretranslationServiceTests
             ScriptureDataFileService = Substitute.For<IScriptureDataFileService>();
             ScriptureDataFileService.GetParatextProjectSettings("file1.zip").Returns(CreateProjectSettings("SRC"));
             ScriptureDataFileService.GetParatextProjectSettings("file2.zip").Returns(CreateProjectSettings("TRG"));
+            GetDataFileClient = Substitute.For<IRequestClient<GetDataFile>>();
             var zipSubstituteSource = Substitute.For<IZipContainer>();
             var zipSubstituteTarget = Substitute.For<IZipContainer>();
             zipSubstituteSource
@@ -425,13 +426,15 @@ public class PretranslationServiceTests
             }
             ScriptureDataFileService.GetZipParatextProjectTextUpdater("file1.zip").Returns(x => GetTextUpdater("SRC"));
             ScriptureDataFileService.GetZipParatextProjectTextUpdater("file2.zip").Returns(x => GetTextUpdater("TRG"));
-            Service = new PretranslationService(Pretranslations, Engines, ScriptureDataFileService);
+
+            Service = new PretranslationService(Pretranslations, Engines, ScriptureDataFileService, GetDataFileClient);
         }
 
         public PretranslationService Service { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
         public MemoryRepository<Engine> Engines { get; }
         public IScriptureDataFileService ScriptureDataFileService { get; }
+        public IRequestClient<GetDataFile> GetDataFileClient { get; }
         public IZipContainer TargetZipContainer { get; }
         public IList<Shared.Services.ZipParatextProjectTextUpdater> TextUpdaters { get; }
 

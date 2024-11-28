@@ -227,13 +227,13 @@ public class EngineService(
         return new V1.Corpus { Language = source.Language, Files = { source.Files.Select(Map) } };
     }
 
-    private V1.CorpusFile Map(Models.CorpusFile source)
+    private V1.CorpusFile Map(Shared.Models.CorpusFile source)
     {
         return new V1.CorpusFile
         {
             TextId = source.TextId,
             Format = (V1.FileFormat)source.Format,
-            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
+            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.GetFilename())
         };
     }
 }

@@ -12,7 +12,8 @@ public class EngineService(
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
     ILoggerFactory loggerFactory,
-    IScriptureDataFileService scriptureDataFileService
+    IScriptureDataFileService scriptureDataFileService,
+    IRequestClient<GetDataFile> getDataFileClient
 ) : OwnedEntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Build> _builds = builds;
@@ -23,6 +24,7 @@ public class EngineService(
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
+    private readonly IRequestClient<GetDataFile> _getDataFileClient = getDataFileClient;
 
     public async Task<Models.TranslationResult> TranslateAsync(
         string engineId,
@@ -217,6 +219,7 @@ public class EngineService(
     public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
         Engine engine = await GetAsync(build.EngineRef, cancellationToken);
+        await engine.PopulateFilenamesAsync(_getDataFileClient, cancellationToken);
         await _builds.InsertAsync(build, cancellationToken);
 
         TranslationEngineApi.TranslationEngineApiClient client =
@@ -385,11 +388,11 @@ public class EngineService(
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
     }
 
-    public async Task<Models.Corpus> UpdateCorpusAsync(
+    public async Task<Corpus> UpdateCorpusAsync(
         string engineId,
         string corpusId,
-        IReadOnlyList<Models.CorpusFile>? sourceFiles,
-        IReadOnlyList<Models.CorpusFile>? targetFiles,
+        IReadOnlyList<Shared.Models.CorpusFile>? sourceFiles,
+        IReadOnlyList<Shared.Models.CorpusFile>? targetFiles,
         CancellationToken cancellationToken = default
     )
     {
@@ -465,8 +468,8 @@ public class EngineService(
     public async Task<Models.ParallelCorpus> UpdateParallelCorpusAsync(
         string engineId,
         string parallelCorpusId,
-        IReadOnlyList<Models.MonolingualCorpus>? sourceCorpora,
-        IReadOnlyList<Models.MonolingualCorpus>? targetCorpora,
+        IReadOnlyList<Shared.Models.MonolingualCorpus>? sourceCorpora,
+        IReadOnlyList<Shared.Models.MonolingualCorpus>? targetCorpora,
         CancellationToken cancellationToken = default
     )
     {
@@ -790,7 +793,7 @@ public class EngineService(
     }
 
     private V1.MonolingualCorpus Map(
-        Models.MonolingualCorpus inputCorpus,
+        Shared.Models.MonolingualCorpus inputCorpus,
         ParallelCorpusFilter? trainingFilter,
         ParallelCorpusFilter? pretranslateFilter,
         string? referenceFileLocation,
@@ -880,13 +883,13 @@ public class EngineService(
         return returnCorpus;
     }
 
-    private V1.CorpusFile Map(Models.CorpusFile source)
+    private V1.CorpusFile Map(Shared.Models.CorpusFile source)
     {
         return new V1.CorpusFile
         {
             TextId = source.TextId,
             Format = (V1.FileFormat)source.Format,
-            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
+            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.GetFilename())
         };
     }
 }
