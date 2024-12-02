@@ -101,7 +101,9 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora
                         .ChooseRandom(Seed)
                         .AlignRows(targetTermCorpora.ChooseFirst());
-                    foreach (ParallelTextRow row in parallelKeyTermsCorpus)
+                    foreach (
+                        ParallelTextRow row in parallelKeyTermsCorpus.DistinctBy(row => row.SourceText + row.TargetText)
+                    )
                     {
                         await train(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
                     }
