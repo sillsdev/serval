@@ -33,12 +33,12 @@ public class EngineService(
     }
 
     public override async Task<IEnumerable<Engine>> GetAllAsync(
-        string id,
+        string owner,
         CancellationToken cancellationToken = default
     )
     {
         return await Entities.GetAllAsync(
-            e => e.Id == id && (e.IsInitialized == null || e.IsInitialized.Value),
+            e => e.Owner == owner && (e.IsInitialized == null || e.IsInitialized.Value),
             cancellationToken
         );
     }
