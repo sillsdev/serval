@@ -21,7 +21,7 @@ public class CorpusServiceTests
             Owner = "owner1",
             Name = "corpus1",
             Language = "en",
-            Files = new List<CorpusFile>() { new() { File = DefaultDataFile } }
+            Files = new List<CorpusFile>() { new() { FileId = DefaultDataFile.Id } }
         };
 
     [Test]
@@ -47,11 +47,25 @@ public class CorpusServiceTests
         public TestEnvironment()
         {
             Corpora = new MemoryRepository<Corpus>();
-            Service = new CorpusService(Corpora);
+            DataAccessContext = Substitute.For<IDataAccessContext>();
+            DataAccessContext
+                .WithTransactionAsync(Arg.Any<Func<CancellationToken, Task<Corpus>>>(), Arg.Any<CancellationToken>())
+                .Returns(x =>
+                {
+                    return ((Func<CancellationToken, Task<Corpus>>)x[0])((CancellationToken)x[1]);
+                });
+            Service = new CorpusService(
+                Corpora,
+                DataAccessContext,
+                Substitute.For<IDataFileService>(),
+                Substitute.For<IScopedMediator>()
+            );
         }
 
         public MemoryRepository<Corpus> Corpora { get; }
 
         public CorpusService Service { get; }
+
+        public IDataAccessContext DataAccessContext { get; }
     }
 }

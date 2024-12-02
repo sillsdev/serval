@@ -177,7 +177,7 @@ public class CorporaController(
             DataFile? dataFile = await _dataFileService.GetAsync(file.FileId, cancellationToken);
             if (dataFile == null)
                 throw new InvalidOperationException($"DataFile with id {file.FileId} does not exist.");
-            dataFiles.Add(new CorpusFile { File = dataFile, TextId = file.TextId });
+            dataFiles.Add(new CorpusFile { FileId = file.FileId, TextId = file.TextId });
         }
         return dataFiles;
     }
@@ -197,18 +197,6 @@ public class CorporaController(
 
     private CorpusFileDto Map(CorpusFile source)
     {
-        return new CorpusFileDto { File = Map(source.File), TextId = source.TextId };
-    }
-
-    private DataFileDto Map(DataFile source)
-    {
-        return new DataFileDto
-        {
-            Id = source.Id,
-            Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id }),
-            Name = source.Name,
-            Format = source.Format,
-            Revision = source.Revision
-        };
+        return new CorpusFileDto { FileId = source.FileId, TextId = source.TextId };
     }
 }

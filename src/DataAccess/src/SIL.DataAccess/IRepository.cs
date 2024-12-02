@@ -16,9 +16,17 @@ public interface IRepository<T>
         bool returnOriginal = false,
         CancellationToken cancellationToken = default
     );
+    Task<int> UpdateAllAsync<TFilter>(
+        Expression<Func<T, bool>> filter,
+        Action<IUpdateBuilder<T>> update,
+        string jsonArrayFilterDefinition,
+        CancellationToken cancellationToken = default
+    );
+
     Task<int> UpdateAllAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
+        UpdateOptions? updateOptions = null,
         CancellationToken cancellationToken = default
     );
     Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);

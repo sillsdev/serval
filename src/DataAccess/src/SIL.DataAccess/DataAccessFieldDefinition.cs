@@ -17,6 +17,10 @@ public class DataAccessFieldDefinition<TDocument, TField>(Expression<Func<TDocum
             linqProvider
         );
         string fieldName = rendered.FieldName.Replace(ArrayPosition.All.ToString(CultureInfo.InvariantCulture), "$[]");
+        fieldName = fieldName.Replace(
+            ArrayPosition.ArrayFilter.ToString(CultureInfo.InvariantCulture),
+            "$[arrayFilter]"
+        );
         fieldName = fieldName.Replace(ArrayPosition.FirstMatching.ToString(CultureInfo.InvariantCulture), "$");
         if (fieldName != rendered.FieldName)
         {

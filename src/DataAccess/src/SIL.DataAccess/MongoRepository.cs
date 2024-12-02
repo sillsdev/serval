@@ -151,9 +151,24 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         return entity;
     }
 
+    public async Task<int> UpdateAllAsync<TFilter>(
+        Expression<Func<T, bool>> filter,
+        Action<IUpdateBuilder<T>> update,
+        string jsonArrayFilterDefinition,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var updateOptions = new UpdateOptions
+        {
+            ArrayFilters = [new JsonArrayFilterDefinition<TFilter>(jsonArrayFilterDefinition)]
+        };
+        return await UpdateAllAsync(filter, update, updateOptions, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<int> UpdateAllAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
+        UpdateOptions? updateOptions = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -167,13 +182,19 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
             if (_context.Session is not null)
             {
                 result = await _collection
-                    .UpdateManyAsync(_context.Session, filter, updateDef, cancellationToken: cancellationToken)
+                    .UpdateManyAsync(
+                        _context.Session,
+                        filter,
+                        updateDef,
+                        updateOptions,
+                        cancellationToken: cancellationToken
+                    )
                     .ConfigureAwait(false);
             }
             else
             {
                 result = await _collection
-                    .UpdateManyAsync(filter, updateDef, cancellationToken: cancellationToken)
+                    .UpdateManyAsync(filter, updateDef, updateOptions, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
         }

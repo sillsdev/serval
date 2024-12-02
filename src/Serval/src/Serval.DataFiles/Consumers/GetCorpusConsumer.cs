@@ -1,8 +1,9 @@
 namespace Serval.DataFiles.Consumers;
 
-public class GetCorpusConsumer(ICorpusService corpusService) : IConsumer<GetCorpus>
+public class GetCorpusConsumer(ICorpusService corpusService, IDataFileService dataFileService) : IConsumer<GetCorpus>
 {
     private readonly ICorpusService _corpusService = corpusService;
+    private readonly IDataFileService _dataFileService = dataFileService;
 
     public async Task Consume(ConsumeContext<GetCorpus> context)
     {
@@ -19,19 +20,13 @@ public class GetCorpusConsumer(ICorpusService corpusService) : IConsumer<GetCorp
                     CorpusId = corpus.Id,
                     Name = corpus.Name,
                     Language = corpus.Language,
-                    Files = corpus
-                        .Files.Select(f => new CorpusFileResult
+                    Files = await Task.WhenAll(
+                        corpus.Files.Select(async f => new CorpusFileResult
                         {
                             TextId = f.TextId!,
-                            File = new DataFileResult
-                            {
-                                DataFileId = f.File.Id,
-                                Filename = f.File.Filename,
-                                Format = f.File.Format,
-                                Name = f.File.Name
-                            }
+                            File = Map(await _dataFileService.GetAsync(f.FileId))
                         })
-                        .ToList()
+                    )
                 }
             );
         }
@@ -41,5 +36,16 @@ public class GetCorpusConsumer(ICorpusService corpusService) : IConsumer<GetCorp
                 new CorpusNotFound { CorpusId = context.Message.CorpusId, Owner = context.Message.Owner }
             );
         }
+    }
+
+    private static DataFileResult Map(DataFile dataFile)
+    {
+        return new DataFileResult
+        {
+            DataFileId = dataFile.Id,
+            Name = dataFile.Name,
+            Filename = dataFile.Filename,
+            Format = dataFile.Format,
+        };
     }
 }

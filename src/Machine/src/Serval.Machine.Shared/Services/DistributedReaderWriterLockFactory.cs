@@ -55,7 +55,7 @@ public class DistributedReaderWriterLockFactory(
         await _locks.UpdateAllAsync(
             rwl => rwl.WriterLock != null && rwl.WriterLock.HostId == _serviceOptions.ServiceId,
             u => u.Unset(rwl => rwl.WriterLock),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 
@@ -64,7 +64,7 @@ public class DistributedReaderWriterLockFactory(
         await _locks.UpdateAllAsync(
             rwl => rwl.ReaderLocks.Any(l => l.HostId == _serviceOptions.ServiceId),
             u => u.RemoveAll(rwl => rwl.ReaderLocks, l => l.HostId == _serviceOptions.ServiceId),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 
@@ -73,7 +73,7 @@ public class DistributedReaderWriterLockFactory(
         await _locks.UpdateAllAsync(
             rwl => rwl.WriterQueue.Any(l => l.HostId == _serviceOptions.ServiceId),
             u => u.RemoveAll(rwl => rwl.WriterQueue, l => l.HostId == _serviceOptions.ServiceId),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 }

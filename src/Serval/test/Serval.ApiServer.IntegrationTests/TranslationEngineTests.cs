@@ -19,11 +19,11 @@ public class TranslationEngineTests
             TargetLanguage = "en",
             SourceFiles =
             {
-                new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
+                new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" }
             },
             TargetFiles =
             {
-                new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
+                new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" }
             }
         };
     private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfig =
@@ -49,11 +49,11 @@ public class TranslationEngineTests
             TargetLanguage = "es",
             SourceFiles =
             {
-                new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
+                new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" }
             },
             TargetFiles =
             {
-                new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
+                new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" }
             }
         };
 
@@ -63,8 +63,8 @@ public class TranslationEngineTests
             Name = "TestCorpus",
             SourceLanguage = "en",
             TargetLanguage = "en",
-            SourceFiles = { new TranslationCorpusFileConfig { FileId = FILE3_ID } },
-            TargetFiles = { new TranslationCorpusFileConfig { FileId = FILE4_ID } }
+            SourceFiles = { new TranslationCorpusFileConfig { FileId = FILE3_SRC_ZIP_ID } },
+            TargetFiles = { new TranslationCorpusFileConfig { FileId = FILE4_TRG_ZIP_ID } }
         };
 
     private const string ECHO_ENGINE1_ID = "e00000000000000000000001";
@@ -72,13 +72,13 @@ public class TranslationEngineTests
     private const string ECHO_ENGINE3_ID = "e00000000000000000000003";
     private const string SMT_ENGINE1_ID = "be0000000000000000000001";
     private const string NMT_ENGINE1_ID = "ce0000000000000000000001";
-    private const string FILE1_ID = "f00000000000000000000001";
+    private const string FILE1_SRC_ID = "f00000000000000000000001";
     private const string FILE1_FILENAME = "file_a";
-    private const string FILE2_ID = "f00000000000000000000002";
+    private const string FILE2_TRG_ID = "f00000000000000000000002";
     private const string FILE2_FILENAME = "file_b";
-    private const string FILE3_ID = "f00000000000000000000003";
+    private const string FILE3_SRC_ZIP_ID = "f00000000000000000000003";
     private const string FILE3_FILENAME = "file_c";
-    private const string FILE4_ID = "f00000000000000000000004";
+    private const string FILE4_TRG_ZIP_ID = "f00000000000000000000004";
     private const string FILE4_FILENAME = "file_d";
     private const string SOURCE_CORPUS_ID_1 = "cc0000000000000000000001";
     private const string SOURCE_CORPUS_ID_2 = "cc0000000000000000000002";
@@ -147,7 +147,7 @@ public class TranslationEngineTests
 
         var srcFile = new DataFiles.Models.DataFile
         {
-            Id = FILE1_ID,
+            Id = FILE1_SRC_ID,
             Owner = "client1",
             Name = "src.txt",
             Filename = FILE1_FILENAME,
@@ -155,7 +155,7 @@ public class TranslationEngineTests
         };
         var trgFile = new DataFiles.Models.DataFile
         {
-            Id = FILE2_ID,
+            Id = FILE2_TRG_ID,
             Owner = "client1",
             Name = "trg.txt",
             Filename = FILE2_FILENAME,
@@ -163,7 +163,7 @@ public class TranslationEngineTests
         };
         var srcParatextFile = new DataFiles.Models.DataFile
         {
-            Id = FILE3_ID,
+            Id = FILE3_SRC_ZIP_ID,
             Owner = "client1",
             Name = "src.zip",
             Filename = FILE3_FILENAME,
@@ -171,7 +171,7 @@ public class TranslationEngineTests
         };
         var trgParatextFile = new DataFiles.Models.DataFile
         {
-            Id = FILE4_ID,
+            Id = FILE4_TRG_ZIP_ID,
             Owner = "client1",
             Name = "trg.zip",
             Filename = FILE4_FILENAME,
@@ -184,21 +184,21 @@ public class TranslationEngineTests
             Id = SOURCE_CORPUS_ID_1,
             Language = "en",
             Owner = "client1",
-            Files = [new() { File = srcFile, TextId = "all" }]
+            Files = [new() { FileId = srcFile.Id, TextId = "all" }]
         };
         var srcCorpus2 = new DataFiles.Models.Corpus
         {
             Id = SOURCE_CORPUS_ID_2,
             Language = "en",
             Owner = "client1",
-            Files = [new() { File = srcFile, TextId = "all" }]
+            Files = [new() { FileId = srcFile.Id, TextId = "all" }]
         };
         var trgCorpus = new DataFiles.Models.Corpus
         {
             Id = TARGET_CORPUS_ID,
             Language = "en",
             Owner = "client1",
-            Files = [new() { File = trgFile, TextId = "all" }]
+            Files = [new() { FileId = trgFile.Id, TextId = "all" }]
         };
         await _env.Corpora.InsertAllAsync([srcCorpus, srcCorpus2, trgCorpus]);
     }
@@ -594,8 +594,8 @@ public class TranslationEngineTests
                 Assert.Multiple(() =>
                 {
                     Assert.That(result.Name, Is.EqualTo("TestCorpus"));
-                    Assert.That(result.SourceFiles.First().File.Id, Is.EqualTo(FILE1_ID));
-                    Assert.That(result.TargetFiles.First().File.Id, Is.EqualTo(FILE2_ID));
+                    Assert.That(result.SourceFiles.First().File.Id, Is.EqualTo(FILE1_SRC_ID));
+                    Assert.That(result.TargetFiles.First().File.Id, Is.EqualTo(FILE2_TRG_ID));
                 });
                 Engine? engine = await _env.Engines.GetAsync(engineId);
                 Assert.That(engine, Is.Not.Null);
@@ -651,11 +651,11 @@ public class TranslationEngineTests
                 TranslationCorpus result = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 TranslationCorpusFileConfig[] src = new[]
                 {
-                    new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
+                    new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" }
                 };
                 TranslationCorpusFileConfig[] trg = new[]
                 {
-                    new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
+                    new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" }
                 };
                 var updateConfig = new TranslationCorpusUpdateConfig { SourceFiles = src, TargetFiles = trg };
                 await client.UpdateCorpusAsync(engineId, result.Id, updateConfig);
@@ -675,11 +675,11 @@ public class TranslationEngineTests
                 {
                     TranslationCorpusFileConfig[] src = new[]
                     {
-                        new TranslationCorpusFileConfig { FileId = FILE2_ID, TextId = "all" }
+                        new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" }
                     };
                     TranslationCorpusFileConfig[] trg = new[]
                     {
-                        new TranslationCorpusFileConfig { FileId = FILE1_ID, TextId = "all" }
+                        new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" }
                     };
                     var updateConfig = new TranslationCorpusUpdateConfig { SourceFiles = src, TargetFiles = trg };
                     await client.UpdateCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
@@ -2031,6 +2031,56 @@ public class TranslationEngineTests
         Assert.That(ex.StatusCode, Is.EqualTo(403));
     }
 
+    [Test]
+    public async Task DataFileUpdate_Propagated()
+    {
+        TranslationEnginesClient translationClient = _env.CreateTranslationEnginesClient();
+        DataFilesClient dataFilesClient = _env.CreateDataFilesClient();
+        CorporaClient corporaClient = _env.CreateCorporaClient();
+        await translationClient.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        await translationClient.AddParallelCorpusAsync(ECHO_ENGINE2_ID, TestParallelCorpusConfig);
+
+        // Get the original files
+        DataFile orgFileFromClient = await dataFilesClient.GetAsync(FILE1_SRC_ID);
+        DataFiles.Models.DataFile orgFileFromRepo = (await _env.DataFiles.GetAsync(FILE1_SRC_ID))!;
+        DataFiles.Models.Corpus orgCorpusFromRepo = (await _env.Corpora.GetAsync(TARGET_CORPUS_ID))!;
+        Assert.That(orgFileFromClient.Name, Is.EqualTo(orgFileFromRepo.Name));
+        Assert.That(orgCorpusFromRepo.Files[0].FileId, Is.EqualTo(FILE2_TRG_ID));
+
+        // Update the file
+        await dataFilesClient.UpdateAsync(
+            FILE1_SRC_ID,
+            new FileParameter(new MemoryStream(new byte[] { 1, 2, 3 }), "test.txt")
+        );
+        await corporaClient.UpdateAsync(
+            TARGET_CORPUS_ID,
+            [new CorpusFileConfig { FileId = FILE4_TRG_ZIP_ID, TextId = "all" }]
+        );
+
+        // Confirm the change is propagated everywhere
+        DataFiles.Models.DataFile newFileFromRepo = (await _env.DataFiles.GetAsync(FILE1_SRC_ID))!;
+        Assert.That(newFileFromRepo.Filename, Is.Not.EqualTo(orgFileFromRepo.Filename));
+
+        Engine newEngine1 = (await _env.Engines.GetAsync(ECHO_ENGINE1_ID))!;
+        Engine newEngine2 = (await _env.Engines.GetAsync(ECHO_ENGINE2_ID))!;
+
+        // Updated (legacy) Corpus file filename
+        Assert.That(newEngine1.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(newFileFromRepo.Filename));
+        Assert.That(newEngine1.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
+
+        // Updated parallel corpus file filename
+        Assert.That(
+            newEngine2.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename,
+            Is.EqualTo(newFileFromRepo.Filename)
+        );
+
+        // Updated set of new corpus files
+        Assert.That(newEngine2.ParallelCorpora[0].TargetCorpora[0].Id, Is.EqualTo(TARGET_CORPUS_ID));
+        Assert.That(newEngine2.ParallelCorpora[0].TargetCorpora[0].Files[0].Id, Is.EqualTo(FILE4_TRG_ZIP_ID));
+        Assert.That(newEngine2.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename, Is.EqualTo(FILE4_FILENAME));
+        Assert.That(newEngine2.ParallelCorpora[0].TargetCorpora[0].Files.Count, Is.EqualTo(1));
+    }
+
     [TearDown]
     public void TearDown()
     {
@@ -2235,13 +2285,13 @@ public class TranslationEngineTests
 
         public TranslationEnginesClient CreateTranslationEnginesClient(IEnumerable<string>? scope = null)
         {
-            scope ??= new[]
-            {
+            scope ??=
+            [
                 Scopes.CreateTranslationEngines,
                 Scopes.ReadTranslationEngines,
                 Scopes.UpdateTranslationEngines,
                 Scopes.DeleteTranslationEngines
-            };
+            ];
             HttpClient httpClient = Factory
                 .WithWebHostBuilder(builder =>
                 {
@@ -2265,13 +2315,13 @@ public class TranslationEngineTests
 
         public TranslationEngineTypesClient CreateTranslationEngineTypesClient(IEnumerable<string>? scope = null)
         {
-            scope ??= new[]
-            {
+            scope ??=
+            [
                 Scopes.CreateTranslationEngines,
                 Scopes.ReadTranslationEngines,
                 Scopes.UpdateTranslationEngines,
                 Scopes.DeleteTranslationEngines
-            };
+            ];
             HttpClient httpClient = Factory
                 .WithWebHostBuilder(builder =>
                 {
@@ -2298,6 +2348,32 @@ public class TranslationEngineTests
                 );
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new TranslationEngineTypesClient(httpClient);
+        }
+
+        public DataFilesClient CreateDataFilesClient()
+        {
+            IEnumerable<string> scope = [Scopes.DeleteFiles, Scopes.ReadFiles, Scopes.UpdateFiles, Scopes.CreateFiles];
+            HttpClient httpClient = Factory
+                .WithWebHostBuilder(builder =>
+                {
+                    builder.ConfigureTestServices(services =>
+                    {
+                        services.AddTransient(CreateFileSystem);
+                    });
+                })
+                .CreateClient();
+            if (scope is not null)
+                httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
+            return new DataFilesClient(httpClient);
+        }
+
+        public CorporaClient CreateCorporaClient()
+        {
+            IEnumerable<string> scope = [Scopes.DeleteFiles, Scopes.ReadFiles, Scopes.UpdateFiles, Scopes.CreateFiles];
+            HttpClient httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
+            if (scope is not null)
+                httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
+            return new CorporaClient(httpClient);
         }
 
         public void ResetDatabases()
@@ -2337,6 +2413,7 @@ public class TranslationEngineTests
                     target.EntryExists("MATTRG.SFM").Returns(false);
                     return target;
                 });
+            fileSystem.OpenWrite(Arg.Any<string>()).Returns(ci => new MemoryStream());
             return fileSystem;
         }
 
