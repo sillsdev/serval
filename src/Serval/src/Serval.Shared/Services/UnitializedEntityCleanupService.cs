@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SIL.ServiceToolkit.Services;
 
-namespace Serval.Translation.Services;
+namespace Serval.Shared.Services;
 
 public abstract class UninitializedCleanupService<T>(
     IServiceProvider services,
