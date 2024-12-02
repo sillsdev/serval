@@ -32,6 +32,17 @@ public class EngineService(
         return engine;
     }
 
+    public override async Task<IEnumerable<Engine>> GetAllAsync(
+        string id,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await Entities.GetAllAsync(
+            e => e.Id == id && (e.IsInitialized == null || e.IsInitialized.Value),
+            cancellationToken
+        );
+    }
+
     public async Task<Models.TranslationResult> TranslateAsync(
         string engineId,
         string segment,
@@ -397,7 +408,11 @@ public class EngineService(
 
     public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
     {
-        return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus), cancellationToken: cancellationToken);
+        return Entities.UpdateAsync(
+            e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
+            u => u.Add(e => e.Corpora, corpus),
+            cancellationToken: cancellationToken
+        );
     }
 
     public async Task<Models.Corpus> UpdateCorpusAsync(
@@ -409,7 +424,10 @@ public class EngineService(
     )
     {
         Engine? engine = await Entities.UpdateAsync(
-            e => e.Id == engineId && e.Corpora.Any(c => c.Id == corpusId),
+            e =>
+                e.Id == engineId
+                && (e.IsInitialized == null || e.IsInitialized.Value)
+                && e.Corpora.Any(c => c.Id == corpusId),
             u =>
             {
                 if (sourceFiles is not null)
@@ -436,7 +454,7 @@ public class EngineService(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
-                    engineId,
+                    e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
                     u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
                     returnOriginal: true,
                     cancellationToken: ct
@@ -471,7 +489,7 @@ public class EngineService(
     )
     {
         return Entities.UpdateAsync(
-            engineId,
+            e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
             u => u.Add(e => e.ParallelCorpora, corpus),
             cancellationToken: cancellationToken
         );
@@ -486,7 +504,10 @@ public class EngineService(
     )
     {
         Engine? engine = await Entities.UpdateAsync(
-            e => e.Id == engineId && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
+            e =>
+                e.Id == engineId
+                && (e.IsInitialized == null || e.IsInitialized.Value)
+                && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
             u =>
             {
                 if (sourceCorpora is not null)
@@ -517,7 +538,7 @@ public class EngineService(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
-                    engineId,
+                    e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
                     u => u.RemoveAll(e => e.ParallelCorpora, c => c.Id == parallelCorpusId),
                     returnOriginal: true,
                     cancellationToken: ct

@@ -15,14 +15,22 @@ public static class IMongoDataAccessConfiguratorExtensions
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
                 );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.DateCreated))
+                );
             }
         );
         configurator.AddRepository<Build>(
             "translation.builds",
-            init: c =>
-                c.Indexes.CreateOrUpdateAsync(
+            init: async c =>
+            {
+                await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
-                )
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.DateCreated))
+                );
+            }
         );
         configurator.AddRepository<Pretranslation>(
             "translation.pretranslations",

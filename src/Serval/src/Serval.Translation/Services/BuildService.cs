@@ -10,6 +10,17 @@ public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(
         );
     }
 
+    public override async Task<Build> GetAsync(string id, CancellationToken cancellationToken = default)
+    {
+        Build? build = await Entities.GetAsync(
+            e => e.Id == id && (e.IsInitialized == null || e.IsInitialized.Value),
+            cancellationToken
+        );
+        if (build == null)
+            throw new EntityNotFoundException($"Could not find the {typeof(Build).Name} '{id}'.");
+        return build;
+    }
+
     public Task<Build?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default)
     {
         return Entities.GetAsync(
