@@ -82,7 +82,7 @@ public class TranslationEngineServiceV1(
                 try
                 {
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
-                    await _parallelCorpusPreprocessingService.Preprocess(
+                    await _parallelCorpusPreprocessingService.PreprocessAsync(
                         request.Corpora.Select(Map).ToList(),
                         row => Task.CompletedTask,
                         (row, corpus) =>
