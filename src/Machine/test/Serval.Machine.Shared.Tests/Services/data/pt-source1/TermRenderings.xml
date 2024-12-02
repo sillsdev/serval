@@ -6,4 +6,11 @@
     <Notes />
     <Denials />
   </TermRendering>
+  <TermRendering Id="צִדְקִיָּהוּ-2" Guess="false">
+    <Renderings>Zedekiah</Renderings>
+    <Glossary />
+    <Changes />
+    <Notes />
+    <Denials />
+  </TermRendering>
 </TermRenderingsList>

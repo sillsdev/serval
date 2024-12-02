@@ -15,11 +15,11 @@ public static class IServiceCollectionExtensions
         services.AddTransient<IFileSystem, FileSystem>();
 
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
-        services.AddSingleton<ICorpusService, CorpusService>();
         services.AddStartupTask(
             (sp, cancellationToken) =>
                 sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
         );
+        services.AddParallelCorpusPreprocessor();
 
         var builder = new MachineBuilder(services, configuration);
         builder.AddServiceOptions(configuration.GetSection(ServiceOptions.Key));

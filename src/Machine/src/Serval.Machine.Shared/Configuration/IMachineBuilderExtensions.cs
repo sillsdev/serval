@@ -50,6 +50,12 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddServiceToolkitServices(this IMachineBuilder builder)
+    {
+        builder.Services.AddParallelCorpusPreprocessor();
+        return builder;
+    }
+
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
         return builder.AddThotSmtModel(builder.Configuration.GetSection(ThotSmtModelOptions.Key));
