@@ -17,7 +17,7 @@ public class ScriptureDataFileServiceTests
         TestEnvironment env = new();
         using ZipParatextProjectTextUpdater updater = env.Service.GetZipParatextProjectTextUpdater("file1.zip");
         Assert.That(
-            updater.UpdateUsfm("MAT", [], preferExistingText: true).ReplaceLineEndings("\n"),
+            updater.UpdateUsfm("MAT", [], behavior: UpdateUsfmBehavior.PreferExisting).ReplaceLineEndings("\n"),
             Is.EqualTo(
                     $@"\id MAT - PROJ
 \h {Canon.BookIdToEnglishName("MAT")}

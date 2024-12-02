@@ -65,7 +65,7 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
     }
 
     [Test]
@@ -87,7 +87,24 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task RunAsync_PretranslateTextIdsOverlapWithTrainOnTextIds()
+    {
+        using TestEnvironment env = new();
+        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(
+            pretranslateTextIds: ["textId1"],
+            trainOnTextIds: ["textId1"]
+        );
+
+        await env.RunBuildJobAsync(corpus1);
+        Assert.Multiple(async () =>
+        {
+            Assert.That((await env.GetTrainCountAsync()).Source1Count, Is.EqualTo(4));
+            Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
+        });
     }
 
     [Test]
@@ -143,7 +160,11 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1);
 
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
+        Assert.That(
+            await env.GetPretranslateCountAsync(),
+            Is.EqualTo(4),
+            JsonSerializer.Serialize(await env.GetPretranslationsAsync())
+        );
     }
 
     [Test]
@@ -184,12 +205,12 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(5));
-            Assert.That(src2Count, Is.EqualTo(12));
+            Assert.That(src1Count, Is.EqualTo(7));
+            Assert.That(src2Count, Is.EqualTo(13));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(56));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(15));
     }
 
     [Test]
@@ -203,12 +224,12 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(3));
-            Assert.That(src2Count, Is.EqualTo(2));
+            Assert.That(src1Count, Is.EqualTo(1));
+            Assert.That(src2Count, Is.EqualTo(4));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(9));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(3));
     }
 
     [Test]
@@ -267,7 +288,7 @@ public class PreprocessBuildJobTests
         );
         JsonArray? pretranslations = await env.GetPretranslationsAsync();
         Assert.That(pretranslations, Is.Not.Null);
-        Assert.That(pretranslations.Count, Is.EqualTo(0));
+        Assert.That(pretranslations!.Count, Is.EqualTo(1));
     }
 
     [Test]
@@ -388,6 +409,13 @@ public class PreprocessBuildJobTests
                                 new() { }
                             }
                         },
+                        PretranslateChapters = new()
+                        {
+                            {
+                                "1CH",
+                                new() { }
+                            }
+                        }
                     },
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -434,26 +462,29 @@ public class PreprocessBuildJobTests
             }
         };
         await env.RunBuildJobAsync(corpora, useKeyTerms: false);
+        JsonArray? pretranslations = await env.GetPretranslationsAsync();
         Assert.Multiple(async () =>
         {
+            string src = await env.GetSourceExtractAsync();
             Assert.That(
-                await env.GetSourceExtractAsync(),
+                src,
                 Is.EqualTo(
                     @"Source one, chapter fourteen, verse fifty-five. Segment b.
 Source one, chapter fourteen, verse fifty-six.
-Source one, chapter one, verse one.
+Source two, chapter one, verse one.
 Source two, chapter one, verse two.
 Source two, chapter one, verse three.
-Source two, chapter one, verse four.
+Source one, chapter one, verse four.
 Source two, chapter one, verse five. Source two, chapter one, verse six.
-Source two, chapter one, verse seven. Source two, chapter one, verse eight.
-Source two, chapter one, verse nine. Source two, chapter one, verse ten.
+Source one, chapter one, verse seven, eight, and nine. Source one, chapter one, verse ten.
 Source two, chapter one, verse one.
 "
-                )
+                ),
+                src
             );
+            string trg = await env.GetTargetExtractAsync();
             Assert.That(
-                await env.GetTargetExtractAsync(),
+                trg,
                 Is.EqualTo(
                     @"Target two, chapter fourteen, verse fifty-five.
 Target two, chapter fourteen, verse fifty-six.
@@ -462,20 +493,19 @@ Target one, chapter one, verse two.
 Target one, chapter one, verse three.
 
 Target one, chapter one, verse five and six.
-Target one, chapter one, verse seven and eight.
-Target one, chapter one, verse nine and ten.
+Target one, chapter one, verse seven and eight. Target one, chapter one, verse nine and ten.
 
 "
-                )
+                ),
+                trg
+            );
+            Assert.That(pretranslations, Is.Not.Null);
+            Assert.That(pretranslations!.Count, Is.EqualTo(7));
+            Assert.That(
+                pretranslations[2]!["translation"]!.ToString(),
+                Is.EqualTo("Source one, chapter twelve, verse one.")
             );
         });
-        JsonArray? pretranslations = await env.GetPretranslationsAsync();
-        Assert.That(pretranslations, Is.Not.Null);
-        Assert.That(pretranslations!.Count, Is.EqualTo(37), pretranslations.ToJsonString());
-        Assert.That(
-            pretranslations[2]!["translation"]!.ToString(),
-            Is.EqualTo("Source one, chapter twelve, verse one.")
-        );
     }
 
     private class TestEnvironment : DisposableBase
@@ -781,12 +811,9 @@ Target one, chapter one, verse nine and ten.
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
-                        CorpusService,
-                        new LanguageTagService()
-                    )
-                    {
-                        Seed = 1234
-                    };
+                        new LanguageTagService(),
+                        new ParallelCorpusPreprocessingService(CorpusService)
+                    );
                 }
                 case TranslationEngineType.SmtTransfer:
                 {
@@ -797,13 +824,10 @@ Target one, chapter one, verse nine and ten.
                         Substitute.For<ILogger<PreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
-                        CorpusService,
                         LockFactory,
-                        TrainSegmentPairs
-                    )
-                    {
-                        Seed = 1234
-                    };
+                        TrainSegmentPairs,
+                        new ParallelCorpusPreprocessingService(CorpusService)
+                    );
                 }
                 default:
                     throw new InvalidOperationException("Unknown engine type.");
@@ -1010,7 +1034,8 @@ Target one, chapter one, verse nine and ten.
 
         public async Task<int> GetPretranslateCountAsync()
         {
-            return (await GetPretranslationsAsync())?.Count ?? 0;
+            var pretranslations = await GetPretranslationsAsync();
+            return pretranslations?.Count ?? 0;
         }
 
         private void ZipParatextProject(string name)

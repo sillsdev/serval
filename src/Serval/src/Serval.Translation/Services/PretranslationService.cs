@@ -41,11 +41,24 @@ public class PretranslationService(
     {
         Engine? engine = await _engines.GetAsync(engineId, cancellationToken);
         Corpus? corpus = engine?.Corpora.SingleOrDefault(c => c.Id == corpusId);
-        if (corpus is null)
-            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
+        ParallelCorpus? parallelCorpus = engine?.ParallelCorpora.SingleOrDefault(c => c.Id == corpusId);
 
-        CorpusFile sourceFile = corpus.SourceFiles[0];
-        CorpusFile targetFile = corpus.TargetFiles[0];
+        CorpusFile sourceFile;
+        CorpusFile targetFile;
+        if (corpus is not null)
+        {
+            sourceFile = corpus.SourceFiles[0];
+            targetFile = corpus.TargetFiles[0];
+        }
+        else if (parallelCorpus is not null)
+        {
+            sourceFile = parallelCorpus.SourceCorpora[0].Files[0];
+            targetFile = parallelCorpus.TargetCorpora[0].Files[0];
+        }
+        else
+        {
+            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
+        }
         if (sourceFile.Format is not FileFormat.Paratext || targetFile.Format is not FileFormat.Paratext)
             throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
 
@@ -87,8 +100,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: true
+                            behavior: UpdateUsfmBehavior.PreferExisting
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -97,8 +109,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: false
+                            behavior: UpdateUsfmBehavior.PreferNew
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -107,8 +118,7 @@ public class PretranslationService(
                             textId,
                             [], // don't put any pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                            stripAllText: false,
-                            preferExistingText: false
+                            behavior: UpdateUsfmBehavior.PreferNew
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -117,8 +127,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: false
+                            behavior: UpdateUsfmBehavior.StripExisting
                         ) ?? "";
                     break;
             }
@@ -142,16 +151,14 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: true
+                            behavior: UpdateUsfmBehavior.StripExisting
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
                             textId,
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                            stripAllText: true,
-                            preferExistingText: true
+                            behavior: UpdateUsfmBehavior.StripExisting
                         ) ?? "";
             }
         }

@@ -91,7 +91,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        Models.ParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
+        SIL.ServiceToolkit.Models.ParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
         try
         {
             await engineService.StartBuildAsync(
@@ -269,9 +269,9 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.ParallelCorpus Map(Translation.V1.ParallelCorpus source)
+    private static SIL.ServiceToolkit.Models.ParallelCorpus Map(Translation.V1.ParallelCorpus source)
     {
-        return new Models.ParallelCorpus
+        return new SIL.ServiceToolkit.Models.ParallelCorpus
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
@@ -279,23 +279,27 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.MonolingualCorpus Map(Translation.V1.MonolingualCorpus source)
+    private static SIL.ServiceToolkit.Models.MonolingualCorpus Map(Translation.V1.MonolingualCorpus source)
     {
         var trainOnChapters = source.TrainOnChapters.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value.Chapters.ToHashSet()
         );
         var trainOnTextIds = source.TrainOnTextIds.ToHashSet();
-        FilterChoice trainingFilter = GetFilterChoice(trainOnChapters, trainOnTextIds);
+        FilterChoice trainingFilter = GetFilterChoice(trainOnChapters, trainOnTextIds, source.TrainOnAll);
 
         var pretranslateChapters = source.PretranslateChapters.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value.Chapters.ToHashSet()
         );
         var pretranslateTextIds = source.PretranslateTextIds.ToHashSet();
-        FilterChoice pretranslateFilter = GetFilterChoice(pretranslateChapters, pretranslateTextIds);
+        FilterChoice pretranslateFilter = GetFilterChoice(
+            pretranslateChapters,
+            pretranslateTextIds,
+            source.PretranslateAll
+        );
 
-        return new Models.MonolingualCorpus
+        return new SIL.ServiceToolkit.Models.MonolingualCorpus
         {
             Id = source.Id,
             Language = source.Language,
@@ -307,12 +311,12 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         };
     }
 
-    private static Models.CorpusFile Map(Translation.V1.CorpusFile source)
+    private static SIL.ServiceToolkit.Models.CorpusFile Map(Translation.V1.CorpusFile source)
     {
-        return new Models.CorpusFile
+        return new SIL.ServiceToolkit.Models.CorpusFile
         {
             Location = source.Location,
-            Format = (Models.FileFormat)source.Format,
+            Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
             TextId = source.TextId
         };
     }
@@ -326,12 +330,13 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 
     private static FilterChoice GetFilterChoice(
         IReadOnlyDictionary<string, HashSet<int>> chapters,
-        HashSet<string> textIds
+        HashSet<string> textIds,
+        bool noFilter
     )
     {
         // Only either textIds or Scripture Range will be used at a time
         // TextIds may be an empty array, so prefer that if both are empty (which applies to both scripture and text)
-        if (chapters is null && textIds is null)
+        if (noFilter || (chapters is null && textIds is null))
             return FilterChoice.None;
         if (chapters is null || chapters.Count == 0)
             return FilterChoice.TextIds;

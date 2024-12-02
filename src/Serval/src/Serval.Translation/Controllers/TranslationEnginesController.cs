@@ -1,5 +1,7 @@
 ﻿namespace Serval.Translation.Controllers;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engines")]
 [OpenApiTag("Translation Engines")]
@@ -9,6 +11,7 @@ public class TranslationEnginesController(
     IBuildService buildService,
     IPretranslationService pretranslationService,
     IOptionsMonitor<ApiOptions> apiOptions,
+    IConfiguration configuration,
     IUrlService urlService,
     ILogger<TranslationEnginesController> logger
 ) : ServalControllerBase(authService)
@@ -22,6 +25,7 @@ public class TranslationEnginesController(
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
     private readonly ILogger<TranslationEnginesController> _logger = logger;
+    private readonly IConfiguration _configuration = configuration;
 
     /// <summary>
     /// Get all translation engines
@@ -313,7 +317,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Add a corpus to a translation engine
+    /// Add a corpus to a translation engine (obsolete - use parallel corpora instead)
     /// </summary>
     /// <remarks>
     /// ## Parameters
@@ -344,6 +348,7 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -369,7 +374,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Update a corpus with a new set of files
+    /// Update a corpus with a new set of files (obsolete - use parallel corpora instead)
     /// </summary>
     /// <remarks>
     /// See posting a new corpus for details of use. Will completely replace corpus' file associations.
@@ -386,6 +391,7 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPatch("{id}/corpora/{corpusId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -418,7 +424,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get all corpora for a translation engine
+    /// Get all corpora for a translation engine (obsolete - use parallel corpora instead)
     /// </summary>
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
@@ -427,6 +433,7 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine</response>
     /// <response code="404">The engine does not exist</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details. </response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/corpora")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -445,7 +452,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get the configuration of a corpus for a translation engine
+    /// Get the configuration of a corpus for a translation engine (obsolete - use parallel corpora instead)
     /// </summary>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
@@ -455,6 +462,7 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/corpora/{corpusId}", Name = Endpoints.GetTranslationCorpus)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -698,7 +706,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get all pretranslations in a corpus of a translation engine
+    /// Get all pretranslations in a corpus or parallel corpus of a translation engine
     /// </summary>
     /// <remarks>
     /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -712,7 +720,7 @@ public class TranslationEnginesController(
     /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
+    /// <param name="corpusId">The corpus id or parallel corpus id</param>
     /// <param name="textId">The text id (optional)</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The pretranslations</response>
@@ -738,7 +746,7 @@ public class TranslationEnginesController(
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        if (!engine.Corpora.Any(c => c.Id == corpusId))
+        if (!engine.Corpora.Any(c => c.Id == corpusId) && !engine.ParallelCorpora.Any(c => c.Id == corpusId))
             return NotFound();
         if (engine.ModelRevision == 0)
             return Conflict();
@@ -761,7 +769,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Get all pretranslations for the specified text in a corpus of a translation engine
+    /// Get all pretranslations for the specified text in a corpus or parallel corpus of a translation engine
     /// </summary>
     /// <remarks>
     /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -774,7 +782,7 @@ public class TranslationEnginesController(
     /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
+    /// <param name="corpusId">The corpus id or parallel corpus id</param>
     /// <param name="textId">The text id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The pretranslations</response>
@@ -800,7 +808,7 @@ public class TranslationEnginesController(
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        if (!engine.Corpora.Any(c => c.Id == corpusId))
+        if (!engine.Corpora.Any(c => c.Id == corpusId) && !engine.ParallelCorpora.Any(c => c.Id == corpusId))
             return NotFound();
         if (engine.ModelRevision == 0)
             return Conflict();
@@ -841,7 +849,7 @@ public class TranslationEnginesController(
     /// Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
     /// </remarks>
     /// <param name="id">The translation engine id</param>
-    /// <param name="corpusId">The corpus id</param>
+    /// <param name="corpusId">The corpus id or parallel corpus id</param>
     /// <param name="textId">The text id</param>
     /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
     /// <param name="cancellationToken"></param>
@@ -875,7 +883,7 @@ public class TranslationEnginesController(
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        if (!engine.Corpora.Any(c => c.Id == corpusId))
+        if (!engine.Corpora.Any(c => c.Id == corpusId) && !engine.ParallelCorpora.Any(c => c.Id == corpusId))
             return NotFound();
         if (engine.ModelRevision == 0)
             return Conflict();
@@ -990,10 +998,21 @@ public class TranslationEnginesController(
     /// Starts a build job for a translation engine.
     /// </summary>
     /// <remarks>
-    /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora). If no "trainOn" field is provided, all corpora will be used.
-    /// Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-    /// Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
-    /// All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+    /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
+    /// Specifying a corpus:
+    /// * A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
+    /// * A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
+    ///
+    /// Filtering by textID or chapter:
+    /// * Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
+    /// * Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+    /// * All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+    ///
+    /// Filter - train on all or none
+    /// * If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
+    /// * If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
+    /// * If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
+    /// * If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
     ///
     /// Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
     /// the following text will be pretranslated:
@@ -1035,9 +1054,12 @@ public class TranslationEnginesController(
         CancellationToken cancellationToken
     )
     {
+        string deploymentVersion = _configuration.GetValue<string>("deploymentVersion") ?? "Unknown";
+
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Build build = Map(engine, buildConfig);
+        Build build = Map(engine, buildConfig, deploymentVersion);
+
         await _engineService.StartBuildAsync(build, cancellationToken);
 
         TranslationBuildDto dto = Map(build);
@@ -1301,7 +1323,7 @@ public class TranslationEnginesController(
         };
     }
 
-    private static Build Map(Engine engine, TranslationBuildConfigDto source)
+    private static Build Map(Engine engine, TranslationBuildConfigDto source, string deploymentVersion)
     {
         return new Build
         {
@@ -1310,7 +1332,8 @@ public class TranslationEnginesController(
             Pretranslate = Map(engine, source.Pretranslate),
             TrainOn = Map(engine, source.TrainOn),
             Options = Map(source.Options),
-            IsInitialized = false
+            IsInitialized = false,
+            DeploymentVersion = deploymentVersion
         };
     }
 
@@ -1361,6 +1384,24 @@ public class TranslationEnginesController(
                 {
                     throw new InvalidOperationException(
                         $"The parallel corpus {pcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
+                    );
+                }
+                if (
+                    pcc.SourceFilters != null
+                    && pcc.SourceFilters.Count > 0
+                    && (
+                        pcc.SourceFilters.Select(sf => sf.CorpusId).Distinct().Count() > 1
+                        || pcc.SourceFilters[0].CorpusId
+                            != engine
+                                .ParallelCorpora.Where(pc => pc.Id == pcc.ParallelCorpusId)
+                                .First()
+                                .SourceCorpora[0]
+                                .Id
+                    )
+                )
+                {
+                    throw new InvalidOperationException(
+                        $"Only the first source corpus in a parallel corpus may be filtered for pretranslation."
                     );
                 }
                 pretranslateCorpora.Add(
@@ -1507,7 +1548,8 @@ public class TranslationEnginesController(
             QueueDepth = source.QueueDepth,
             State = source.State,
             DateFinished = source.DateFinished,
-            Options = source.Options
+            Options = source.Options,
+            DeploymentVersion = source.DeploymentVersion
         };
     }
 
@@ -1726,3 +1768,5 @@ public class TranslationEnginesController(
         };
     }
 }
+
+#pragma warning restore CS0612 // Type or member is obsolete

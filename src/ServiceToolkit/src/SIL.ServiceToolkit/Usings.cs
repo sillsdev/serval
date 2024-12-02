@@ -1,4 +1,5 @@
 ﻿global using System.Diagnostics.CodeAnalysis;
+global using System.Text;
 global using System.Text.Json.Nodes;
 global using System.Text.RegularExpressions;
 global using Grpc.Core;
@@ -9,4 +10,8 @@ global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
+global using SIL.Machine.Corpora;
+global using SIL.ServiceToolkit.Models;
+global using SIL.ServiceToolkit.Services;
+global using SIL.ServiceToolkit.Utils;
 global using SIL.WritingSystems;

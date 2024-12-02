@@ -35,17 +35,4 @@ spec:
       - ReadWriteMany
   resources:
     requests:
-      storage: 50M
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: serval-mongo-claim
-  namespace: {{ .Values.namespace}}
-spec:
-  storageClassName: "longhorn"
-  accessModes:
-      - ReadWriteMany
-  resources:
-    requests:
-      storage: 10Gi
+      storage: 55M

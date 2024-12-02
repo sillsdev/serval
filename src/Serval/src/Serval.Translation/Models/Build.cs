@@ -17,4 +17,5 @@ public record Build : IInitializableEntity
     public IReadOnlyDictionary<string, object>? Options { get; init; }
     public bool? IsInitialized { get; set; }
     public DateTime? DateCreated { get; set; }
+    public string? DeploymentVersion { get; init; }
 }

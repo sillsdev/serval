@@ -5,21 +5,10 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
 {
-    public static IServalBuilder AddTranslation(
-        this IServalBuilder builder,
-        Action<TranslationOptions>? configure = null
-    )
+    public static IServalBuilder AddTranslation(this IServalBuilder builder)
     {
-        if (builder.Configuration is null)
-        {
-            builder.AddApiOptions(o => { });
-            builder.AddDataFileOptions(o => { });
-        }
-        else
-        {
-            builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
-            builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
-        }
+        builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
+        builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
 
         builder.Services.AddScoped<IBuildService, BuildService>();
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
@@ -29,9 +18,7 @@ public static class IServalBuilderExtensions
         builder.Services.AddSingleton<BuildCleanupService>();
 
         var translationOptions = new TranslationOptions();
-        builder.Configuration?.GetSection(TranslationOptions.Key).Bind(translationOptions);
-        if (configure is not null)
-            configure(translationOptions);
+        builder.Configuration.GetSection(TranslationOptions.Key).Bind(translationOptions);
 
         foreach (EngineInfo engine in translationOptions.Engines)
         {
