@@ -64,5 +64,5 @@ message InsertPretranslationsRequest {
 message UpdateBuildExecutionDataRequest {
     string engine_id = 1;
     string build_id = 2;
-    map<string, string> ExecutionData = 3;
+    map<string, string> execution_data = 3;
 }

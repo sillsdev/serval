@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Models;
+namespace Serval.Translation.Models;
 
 public record Build : IEntity
 {

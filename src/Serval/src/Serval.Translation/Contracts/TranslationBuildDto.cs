@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Contracts;
+namespace Serval.Translation.Contracts;
 
 public record TranslationBuildDto
 {

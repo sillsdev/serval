@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Controllers;
+namespace Serval.Translation.Controllers;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
