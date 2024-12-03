@@ -17,7 +17,6 @@ global using Microsoft.AspNetCore.OutputCaching;
 global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.FeatureManagement;
 global using Microsoft.IdentityModel.Tokens;
-global using Nito.AsyncEx.Synchronous;
 global using NJsonSchema;
 global using NJsonSchema.Generation;
 global using NSwag;

@@ -79,12 +79,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddMongoDataAccess(cfg =>
             {
                 cfg.AddTranslationRepositories();
-                cfg.AddAssessmentRepositories();
                 cfg.AddDataFilesRepositories();
                 cfg.AddWebhooksRepositories();
             })
             .AddTranslation()
-            .AddAssessment()
             .AddDataFiles()
             .AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
@@ -112,7 +110,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddMediator(cfg =>
         {
             cfg.AddTranslationConsumers();
-            cfg.AddAssessmentConsumers();
             cfg.AddDataFilesConsumers();
             cfg.AddWebhooksConsumers();
         });
@@ -150,12 +147,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                     o.Version = version.Major + "." + version.Minor;
 
                     var featureManager = sp.GetRequiredService<IFeatureManager>();
-                    if (!featureManager.IsEnabledAsync("Assessment").WaitAndUnwrapException())
-                    {
-                        o.AddOperationFilter(ctxt =>
-                            !(ctxt.ControllerType.Namespace?.StartsWith("Serval.Assessment") ?? true)
-                        );
-                    }
 
                     o.SchemaSettings.SchemaNameGenerator = new ServalSchemaNameGenerator();
                     o.UseControllerSummaryAsTagDescription = true;
@@ -231,7 +222,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         {
             x.MapControllers();
             x.MapServalTranslationServices();
-            x.MapServalAssessmentServices();
             x.MapHangfireDashboard();
         });
 
