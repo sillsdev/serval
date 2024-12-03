@@ -107,7 +107,7 @@ public class PreprocessBuildJob(
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        await _parallelCorpusPreprocessingService.Preprocess(
+        await _parallelCorpusPreprocessingService.PreprocessAsync(
             corpora,
             async row =>
             {

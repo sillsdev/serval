@@ -1,10 +1,8 @@
-using Nito.AsyncEx;
-
 namespace SIL.ServiceToolkit.Utils;
 
 public interface IParallelCorpusPreprocessingService
 {
-    Task Preprocess(
+    Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
         Func<Row, ParallelCorpus, Task> pretranslate,

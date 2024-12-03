@@ -73,7 +73,7 @@ public class ParallelCorpusPreprocessingServiceTests
         ];
         int trainCount = 0;
         int pretranslateCount = 0;
-        await processor.Preprocess(
+        await processor.PreprocessAsync(
             corpora,
             row =>
             {

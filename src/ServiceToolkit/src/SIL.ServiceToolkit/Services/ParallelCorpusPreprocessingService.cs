@@ -25,7 +25,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
         }
     }
 
-    public async Task Preprocess(
+    public async Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
         Func<Row, ParallelCorpus, Task> pretranslate,
