@@ -2048,10 +2048,7 @@ public class TranslationEngineTests
         Assert.That(orgCorpusFromRepo.Files[0].FileId, Is.EqualTo(FILE2_TRG_ID));
 
         // Update the file
-        await dataFilesClient.UpdateAsync(
-            FILE1_SRC_ID,
-            new FileParameter(new MemoryStream(new byte[] { 1, 2, 3 }), "test.txt")
-        );
+        await dataFilesClient.UpdateAsync(FILE1_SRC_ID, new FileParameter(new MemoryStream([1, 2, 3]), "test.txt"));
         await corporaClient.UpdateAsync(
             TARGET_CORPUS_ID,
             [new CorpusFileConfig { FileId = FILE4_TRG_ZIP_ID, TextId = "all" }]

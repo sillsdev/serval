@@ -9,23 +9,20 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
 
     public IUpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> field, TField value)
     {
-        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(field);
-        object[]? indices = index == null ? null : [index];
-        foreach (object owner in owners)
-            prop.SetValue(owner, value, indices);
+        Set(_entity, _filter, field, value);
         return this;
     }
 
     public IUpdateBuilder<T> SetOnInsert<TField>(Expression<Func<T, TField>> field, TField value)
     {
         if (_isInsert)
-            Set(field, value);
+            Set(_entity, _filter, field, value);
         return this;
     }
 
     public IUpdateBuilder<T> Unset<TField>(Expression<Func<T, TField>> field)
     {
-        (IEnumerable<object> owners, PropertyInfo prop, object? index) = GetFieldOwners(field);
+        (IEnumerable<object> owners, PropertyInfo prop, object? index) = GetFieldOwners(_entity, _filter, field);
         if (index != null)
         {
             // remove value from a dictionary
@@ -49,7 +46,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
 
     public IUpdateBuilder<T> Inc(Expression<Func<T, int>> field, int value = 1)
     {
-        (IEnumerable<object> owners, PropertyInfo prop, object? index) = GetFieldOwners(field);
+        (IEnumerable<object> owners, PropertyInfo prop, object? index) = GetFieldOwners(_entity, _filter, field);
         object[]? indices = index == null ? null : [index];
         foreach (object owner in owners)
         {
@@ -62,12 +59,12 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
 
     public IUpdateBuilder<T> RemoveAll<TItem>(
         Expression<Func<T, IEnumerable<TItem>?>> field,
-        Expression<Func<TItem, bool>> predicate
+        Expression<Func<TItem, bool>>? predicate = null
     )
     {
-        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(field);
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(_entity, _filter, field);
         object[]? indices = index == null ? null : [index];
-        Func<TItem, bool> predicateFunc = predicate.Compile();
+        Func<TItem, bool>? predicateFunc = predicate?.Compile();
         foreach (object owner in owners)
         {
             var collection = (IEnumerable<TItem>?)prop.GetValue(owner, indices);
@@ -75,7 +72,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
             if (collection is not null && removeMethod is not null)
             {
                 // the collection is mutable, so use Remove method to remove item
-                TItem[] toRemove = collection.Where(predicateFunc).ToArray();
+                TItem[] toRemove = collection.Where(i => predicateFunc?.Invoke(i) ?? true).ToArray();
                 foreach (TItem item in toRemove)
                     removeMethod.Invoke(collection, [item]);
             }
@@ -84,14 +81,17 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
                 if (prop.PropertyType.IsArray || prop.PropertyType.IsInterface)
                 {
                     // the collection type is an array or interface, so construct a new array and set property
-                    TItem[] newValue = collection.Where(i => !predicateFunc(i)).ToArray();
+                    TItem[] newValue = collection.Where(i => !(predicateFunc?.Invoke(i) ?? false)).ToArray();
                     prop.SetValue(owner, newValue, indices);
                 }
                 else
                 {
                     // the collection type is a collection class, so construct a new collection and set property
                     var newValue = (IEnumerable<TItem>?)
-                        Activator.CreateInstance(prop.PropertyType, collection.Where(i => !predicateFunc(i)).ToArray());
+                        Activator.CreateInstance(
+                            prop.PropertyType,
+                            collection.Where(i => !(predicateFunc?.Invoke(i) ?? false)).ToArray()
+                        );
                     prop.SetValue(owner, newValue, indices);
                 }
             }
@@ -101,7 +101,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
 
     public IUpdateBuilder<T> Remove<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value)
     {
-        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(field);
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(_entity, _filter, field);
         object[]? indices = index == null ? null : [index];
         foreach (object owner in owners)
         {
@@ -134,7 +134,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
 
     public IUpdateBuilder<T> Add<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value)
     {
-        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(field);
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(_entity, _filter, field);
         object[]? indices = index == null ? null : [index];
         foreach (object owner in owners)
         {
@@ -147,7 +147,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
             }
             else
             {
-                collection ??= Array.Empty<TItem>();
+                collection ??= [];
                 if (prop.PropertyType.IsArray || prop.PropertyType.IsInterface)
                 {
                     // the collection type is an array or interface, so construct a new array and set property
@@ -166,6 +166,47 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
         return this;
     }
 
+    public IUpdateBuilder<T> SetAll<TItem, TField>(
+        Expression<Func<T, IEnumerable<TItem>?>> collectionField,
+        Expression<Func<TItem, TField>> itemField,
+        TField value,
+        Expression<Func<TItem, bool>>? predicate = null
+    )
+    {
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(
+            _entity,
+            _filter,
+            collectionField
+        );
+        object[]? indices = index == null ? null : [index];
+        Func<TItem, bool>? predicateFunc = predicate?.Compile();
+        foreach (object owner in owners)
+        {
+            var collection = (IEnumerable<TItem>?)prop.GetValue(owner, indices);
+            if (collection is null)
+                continue;
+            foreach (TItem item in collection)
+            {
+                if (predicateFunc == null || predicateFunc(item))
+                    Set(item, i => true, itemField, value);
+            }
+        }
+        return this;
+    }
+
+    private static void Set<TEntity, TField>(
+        TEntity entity,
+        Expression<Func<TEntity, bool>> filter,
+        Expression<Func<TEntity, TField>> field,
+        TField value
+    )
+    {
+        (IEnumerable<object> owners, PropertyInfo? prop, object? index) = GetFieldOwners(entity, filter, field);
+        object[]? indices = index == null ? null : [index];
+        foreach (object owner in owners)
+            prop.SetValue(owner, value, indices);
+    }
+
     private static bool IsAnyMethod(MethodInfo mi)
     {
         return mi.DeclaringType == typeof(Enumerable) && mi.Name == "Any";
@@ -180,8 +221,10 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
             .MakeGenericMethod(type);
     }
 
-    private (IEnumerable<object> Owners, PropertyInfo Property, object? Index) GetFieldOwners<TField>(
-        Expression<Func<T, TField>> field
+    private static (IEnumerable<object> Owners, PropertyInfo Property, object? Index) GetFieldOwners<TEntity, TField>(
+        TEntity entity,
+        Expression<Func<TEntity, bool>> filter,
+        Expression<Func<TEntity, TField>> field
     )
     {
         List<object>? owners = null;
@@ -192,8 +235,8 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
             var newOwners = new List<object>();
             if (owners == null)
             {
-                if (_entity != null)
-                    newOwners.Add(_entity);
+                if (entity != null)
+                    newOwners.Add(entity);
             }
             else
             {
@@ -206,17 +249,14 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
                             switch (index)
                             {
                                 case ArrayPosition.FirstMatching:
-                                    foreach (Expression expression in ExpressionHelper.Flatten(_filter))
+                                    foreach (Expression expression in ExpressionHelper.Flatten(filter))
                                     {
                                         if (expression is MethodCallExpression callExpr && IsAnyMethod(callExpr.Method))
                                         {
                                             var predicate = (LambdaExpression)callExpr.Arguments[1];
                                             Type itemType = predicate.Parameters[0].Type;
                                             MethodInfo firstOrDefault = GetFirstOrDefaultMethod(itemType);
-                                            newOwner = firstOrDefault.Invoke(
-                                                null,
-                                                new object[] { owner, predicate.Compile() }
-                                            );
+                                            newOwner = firstOrDefault.Invoke(null, [owner, predicate.Compile()]);
                                             if (newOwner != null)
                                                 newOwners.Add(newOwner);
                                             break;
@@ -247,7 +287,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
                                     }
                                     else
                                     {
-                                        newOwner = method.Invoke(owner, new object[] { index });
+                                        newOwner = method.Invoke(owner, [index]);
                                         if (newOwner != null)
                                             newOwners.Add(newOwner);
                                     }

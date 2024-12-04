@@ -233,20 +233,9 @@ public class MemoryRepository<T> : IRepository<T>
         return returnOriginal ? original : entity;
     }
 
-    public async Task<int> UpdateAllAsync<TFilter>(
-        Expression<Func<T, bool>> filter,
-        Action<IUpdateBuilder<T>> update,
-        string jsonArrayFilterDefinition,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await UpdateAllAsync(filter, update, null, cancellationToken);
-    }
-
     public async Task<int> UpdateAllAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
-        UpdateOptions? updateOptions = null,
         CancellationToken cancellationToken = default
     )
     {

@@ -294,6 +294,30 @@ public class MemoryRepositoryTests
     }
 
     [Test]
+    public async Task UpdateAsync_SetAll()
+    {
+        MemoryRepository<TestEntity> repo = new();
+        repo.Add(
+            new TestEntity()
+            {
+                Id = "1",
+                Children = [new Child { Field = 1 }, new Child { Field = 2 }, new Child { Field = 3 }]
+            }
+        );
+
+        TestEntity? entity = await repo.UpdateAsync(
+            "1",
+            u => u.SetAll(e => e.Children, c => c.Field, 0, c => c.Field >= 2)
+        );
+
+        Assert.That(entity, Is.Not.Null);
+        Assert.That(entity.Children, Is.Not.Null);
+        Assert.That(entity.Children[0].Field, Is.EqualTo(1));
+        Assert.That(entity.Children[1].Field, Is.EqualTo(0));
+        Assert.That(entity.Children[2].Field, Is.EqualTo(0));
+    }
+
+    [Test]
     public async Task DeleteAsync_DoesNotExist()
     {
         MemoryRepository<TestEntity> repo = new();
@@ -349,5 +373,11 @@ public class MemoryRepositoryTests
         public List<int>? List { get; init; }
         public int[]? Array { get; init; }
         public ReadOnlyCollection<int>? ReadOnlyCollection { get; init; }
+        public IReadOnlyList<Child>? Children { get; init; }
+    }
+
+    private record Child
+    {
+        public int Field { get; init; }
     }
 }

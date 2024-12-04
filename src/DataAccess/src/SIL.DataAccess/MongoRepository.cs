@@ -122,7 +122,7 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         var updateBuilder = new MongoUpdateBuilder<T>();
         update(updateBuilder);
         updateBuilder.Inc(e => e.Revision, 1);
-        UpdateDefinition<T> updateDef = updateBuilder.Build();
+        (UpdateDefinition<T> updateDef, IReadOnlyList<ArrayFilterDefinition> arrayFilters) = updateBuilder.Build();
         var options = new FindOneAndUpdateOptions<T>
         {
             IsUpsert = upsert,
@@ -151,50 +151,32 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         return entity;
     }
 
-    public async Task<int> UpdateAllAsync<TFilter>(
-        Expression<Func<T, bool>> filter,
-        Action<IUpdateBuilder<T>> update,
-        string jsonArrayFilterDefinition,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var updateOptions = new UpdateOptions
-        {
-            ArrayFilters = [new JsonArrayFilterDefinition<TFilter>(jsonArrayFilterDefinition)]
-        };
-        return await UpdateAllAsync(filter, update, updateOptions, cancellationToken).ConfigureAwait(false);
-    }
-
     public async Task<int> UpdateAllAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
-        UpdateOptions? updateOptions = null,
         CancellationToken cancellationToken = default
     )
     {
         var updateBuilder = new MongoUpdateBuilder<T>();
         update(updateBuilder);
         updateBuilder.Inc(e => e.Revision, 1);
-        UpdateDefinition<T> updateDef = updateBuilder.Build();
+        (UpdateDefinition<T> updateDef, IReadOnlyList<ArrayFilterDefinition> arrayFilters) = updateBuilder.Build();
+        UpdateOptions? updateOptions = null;
+        if (arrayFilters.Count > 0)
+            updateOptions = new UpdateOptions { ArrayFilters = arrayFilters };
         UpdateResult result;
         try
         {
             if (_context.Session is not null)
             {
                 result = await _collection
-                    .UpdateManyAsync(
-                        _context.Session,
-                        filter,
-                        updateDef,
-                        updateOptions,
-                        cancellationToken: cancellationToken
-                    )
+                    .UpdateManyAsync(_context.Session, filter, updateDef, updateOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
                 result = await _collection
-                    .UpdateManyAsync(filter, updateDef, updateOptions, cancellationToken: cancellationToken)
+                    .UpdateManyAsync(filter, updateDef, updateOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
         }

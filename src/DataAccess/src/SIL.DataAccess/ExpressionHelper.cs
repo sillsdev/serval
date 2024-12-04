@@ -38,4 +38,14 @@ public static class ExpressionHelper
         finder.Visit(expression);
         return finder.Value;
     }
+
+    public static Expression<Func<TIn, TOut>> Concatenate<TIn, TInter, TOut>(
+        Expression<Func<TIn, TInter>> left,
+        Expression<Func<TInter, TOut>> right
+    )
+    {
+        ParameterReplacer replacer = new(right.Parameters[0], left.Body);
+        Expression merged = replacer.Visit(right.Body);
+        return Expression.Lambda<Func<TIn, TOut>>(merged, left.Parameters[0]);
+    }
 }

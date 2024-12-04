@@ -1,9 +1,12 @@
 namespace SIL.DataAccess;
 
-public class DataAccessFieldDefinition<TDocument, TField>(Expression<Func<TDocument, TField>> expression)
-    : FieldDefinition<TDocument, TField>
+public class DataAccessFieldDefinition<TDocument, TField>(
+    Expression<Func<TDocument, TField>> expression,
+    string arrayFilterId = ""
+) : FieldDefinition<TDocument, TField>
 {
     private readonly ExpressionFieldDefinition<TDocument, TField> _internalDef = new(expression);
+    private readonly string _arrayFilterId = arrayFilterId;
 
     public override RenderedFieldDefinition<TField> Render(
         IBsonSerializer<TDocument> documentSerializer,
@@ -17,11 +20,11 @@ public class DataAccessFieldDefinition<TDocument, TField>(Expression<Func<TDocum
             linqProvider
         );
         string fieldName = rendered.FieldName.Replace(ArrayPosition.All.ToString(CultureInfo.InvariantCulture), "$[]");
+        fieldName = fieldName.Replace(ArrayPosition.FirstMatching.ToString(CultureInfo.InvariantCulture), "$");
         fieldName = fieldName.Replace(
             ArrayPosition.ArrayFilter.ToString(CultureInfo.InvariantCulture),
-            "$[arrayFilter]"
+            $"$[{_arrayFilterId}]"
         );
-        fieldName = fieldName.Replace(ArrayPosition.FirstMatching.ToString(CultureInfo.InvariantCulture), "$");
         if (fieldName != rendered.FieldName)
         {
             return new RenderedFieldDefinition<TField>(

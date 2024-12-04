@@ -567,16 +567,18 @@ public class EngineService(
                     || c.TargetCorpora.Any(mc => mc.Files.Any(f => f.Id == dataFileId))
                 ),
             u =>
-                u.RemoveAll(e => e.Corpora[ArrayPosition.All].SourceFiles, f => f.Id == dataFileId)
-                    .RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId)
-                    .RemoveAll(
-                        e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
-                        f => f.Id == dataFileId
-                    )
-                    .RemoveAll(
-                        e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
-                        f => f.Id == dataFileId
-                    ),
+            {
+                u.RemoveAll(e => e.Corpora[ArrayPosition.All].SourceFiles, f => f.Id == dataFileId);
+                u.RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId);
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+            },
             cancellationToken: cancellationToken
         );
     }
@@ -587,7 +589,7 @@ public class EngineService(
         CancellationToken cancellationToken = default
     )
     {
-        return Entities.UpdateAllAsync<Models.CorpusFile>(
+        return Entities.UpdateAllAsync(
             e =>
                 e.Corpora.Any(c =>
                     c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
@@ -597,25 +599,32 @@ public class EngineService(
                     || c.TargetCorpora.Any(mc => mc.Files.Any(f => f.Id == dataFileId))
                 ),
             u =>
-                u.Set(e => e.Corpora[ArrayPosition.All].SourceFiles[ArrayPosition.ArrayFilter].Filename, filename)
-                    .Set(e => e.Corpora[ArrayPosition.All].TargetFiles[ArrayPosition.ArrayFilter].Filename, filename)
-                    .Set(
-                        e =>
-                            e.ParallelCorpora[ArrayPosition.All]
-                                .SourceCorpora[ArrayPosition.All]
-                                .Files[ArrayPosition.ArrayFilter]
-                                .Filename,
-                        filename
-                    )
-                    .Set(
-                        e =>
-                            e.ParallelCorpora[ArrayPosition.All]
-                                .TargetCorpora[ArrayPosition.All]
-                                .Files[ArrayPosition.ArrayFilter]
-                                .Filename,
-                        filename
-                    ),
-            jsonArrayFilterDefinition: $"{{ \"arrayFilter._id\": {{$eq: ObjectId(\"{dataFileId}\") }} }}",
+            {
+                u.SetAll(
+                    e => e.Corpora[ArrayPosition.All].SourceFiles,
+                    f => f.Filename,
+                    filename,
+                    f => f.Id == dataFileId
+                );
+                u.SetAll(
+                    e => e.Corpora[ArrayPosition.All].TargetFiles,
+                    f => f.Filename,
+                    filename,
+                    f => f.Id == dataFileId
+                );
+                u.SetAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    f => f.Filename,
+                    filename,
+                    f => f.Id == dataFileId
+                );
+                u.SetAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    f => f.Filename,
+                    filename,
+                    f => f.Id == dataFileId
+                );
+            },
             cancellationToken: cancellationToken
         );
     }
@@ -626,18 +635,26 @@ public class EngineService(
         CancellationToken cancellationToken = default
     )
     {
-        return Entities.UpdateAllAsync<Models.MonolingualCorpus>(
+        return Entities.UpdateAllAsync(
             e =>
                 e.ParallelCorpora.Any(c =>
                     c.SourceCorpora.Any(mc => mc.Id == corpusId) || c.TargetCorpora.Any(mc => mc.Id == corpusId)
                 ),
             u =>
-                u.Set(e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.ArrayFilter].Files, files)
-                    .Set(
-                        e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.ArrayFilter].Files,
-                        files
-                    ),
-            jsonArrayFilterDefinition: $"{{ \"arrayFilter._id\": {{$eq: ObjectId(\"{corpusId}\") }} }}",
+            {
+                u.SetAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora,
+                    mc => mc.Files,
+                    files,
+                    mc => mc.Id == corpusId
+                );
+                u.SetAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora,
+                    mc => mc.Files,
+                    files,
+                    mc => mc.Id == corpusId
+                );
+            },
             cancellationToken: cancellationToken
         );
     }
