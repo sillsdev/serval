@@ -1318,7 +1318,8 @@ public class TranslationEnginesController(
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
             Corpora = [],
-            IsModelPersisted = source.IsModelPersisted
+            IsModelPersisted = source.IsModelPersisted,
+            IsInitialized = false
         };
     }
 
@@ -1331,7 +1332,8 @@ public class TranslationEnginesController(
             Pretranslate = Map(engine, source.Pretranslate),
             TrainOn = Map(engine, source.TrainOn),
             Options = Map(source.Options),
-            DeploymentVersion = deploymentVersion
+            DeploymentVersion = deploymentVersion,
+            IsInitialized = false
         };
     }
 
