@@ -12,6 +12,7 @@ global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using Serval.Shared.Configuration;
+global using Serval.Shared.Contracts;
 global using Serval.Shared.Models;
 global using Serval.Shared.Services;
 global using Serval.Shared.Utils;
