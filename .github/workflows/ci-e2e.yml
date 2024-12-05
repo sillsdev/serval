@@ -19,8 +19,8 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       ClearML_AccessKey: ${{ secrets.ClearML_AccessKey }}
       ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
-      GPU_QUEUE: autoscaler
-      CPU_QUEUE: autoscaler.cpu_only
+      CLEARML_GPU_QUEUE: autoscaler
+      CLEARML_CPU_QUEUE: autoscaler.cpu_only
       SERVAL_HOST_URL: http://localhost
       SERVAL_AUTH_URL: https://sil-appbuilder.auth0.com
       # ASPNETCORE_ENVIRONMENT: Development
