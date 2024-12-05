@@ -13,7 +13,7 @@ spec:
           from: {{ .Values.alertEmail }}
           requireTLS: true
           sendResolved: true
-          smarthost: mail.languagetechnology.org:587
+          smarthost: smtppro.zoho.com:587
           tlsConfig: {}
           to: {{ .Values.emailsToAlert }}
       name: alert-serval
