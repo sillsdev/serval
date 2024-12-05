@@ -264,8 +264,6 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
                                     }
                                     break;
                                 case ArrayPosition.All:
-                                // This doesn't filter as it should - but it's good enough for unit testing.
-                                case ArrayPosition.ArrayFilter:
                                     newOwners.AddRange(((IEnumerable)owner).Cast<object>());
                                     break;
                                 default:
