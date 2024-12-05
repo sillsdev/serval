@@ -1,4 +1,4 @@
-﻿using Polly.Extensions.Http;
+using Polly.Extensions.Http;
 using Serval.Translation.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
