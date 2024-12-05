@@ -4,13 +4,30 @@ public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(
 {
     public async Task<IEnumerable<Build>> GetAllAsync(string parentId, CancellationToken cancellationToken = default)
     {
-        return await Entities.GetAllAsync(e => e.EngineRef == parentId, cancellationToken);
+        return await Entities.GetAllAsync(
+            e => e.EngineRef == parentId && (e.IsInitialized == null || e.IsInitialized.Value),
+            cancellationToken
+        );
+    }
+
+    public override async Task<Build> GetAsync(string id, CancellationToken cancellationToken = default)
+    {
+        Build? build = await Entities.GetAsync(
+            e => e.Id == id && (e.IsInitialized == null || e.IsInitialized.Value),
+            cancellationToken
+        );
+        if (build == null)
+            throw new EntityNotFoundException($"Could not find the {typeof(Build).Name} '{id}'.");
+        return build;
     }
 
     public Task<Build?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default)
     {
         return Entities.GetAsync(
-            b => b.EngineRef == parentId && (b.State == JobState.Active || b.State == JobState.Pending),
+            b =>
+                b.EngineRef == parentId
+                && (b.IsInitialized == null || b.IsInitialized.Value)
+                && (b.State == JobState.Active || b.State == JobState.Pending),
             cancellationToken
         );
     }
@@ -21,7 +38,11 @@ public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(
         CancellationToken cancellationToken = default
     )
     {
-        return GetNewerRevisionAsync(e => e.Id == id, minRevision, cancellationToken);
+        return GetNewerRevisionAsync(
+            e => e.Id == id && (e.IsInitialized == null || e.IsInitialized.Value),
+            minRevision,
+            cancellationToken
+        );
     }
 
     public Task<EntityChange<Build>> GetActiveNewerRevisionAsync(
@@ -31,7 +52,10 @@ public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(
     )
     {
         return GetNewerRevisionAsync(
-            b => b.EngineRef == parentId && (b.State == JobState.Active || b.State == JobState.Pending),
+            b =>
+                b.EngineRef == parentId
+                && (b.IsInitialized == null || b.IsInitialized.Value)
+                && (b.State == JobState.Active || b.State == JobState.Pending),
             minRevision,
             cancellationToken
         );
