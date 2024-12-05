@@ -1294,7 +1294,7 @@ public class TranslationEnginesController(
                                 Id = f.File.DataFileId,
                                 Filename = f.File.Filename,
                                 Format = f.File.Format,
-                                TextId = f.TextId
+                                TextId = f.TextId ?? f.File.Name
                             })
                             .ToList(),
                     }

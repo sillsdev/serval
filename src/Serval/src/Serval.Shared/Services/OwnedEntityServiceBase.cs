@@ -7,13 +7,4 @@ public abstract class OwnedEntityServiceBase<T>(IRepository<T> entities) : Entit
     {
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
-
-    public virtual async Task<IEnumerable<T>> GetAllAsync(
-        IEnumerable<string> ids,
-        CancellationToken cancellationToken = default
-    )
-    {
-        HashSet<string> idSet = ids.ToHashSet();
-        return await Entities.GetAllAsync(e => idSet.Contains(e.Id), cancellationToken);
-    }
 }

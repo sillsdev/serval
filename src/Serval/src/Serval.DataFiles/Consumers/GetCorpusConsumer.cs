@@ -28,8 +28,8 @@ public class GetCorpusConsumer(ICorpusService corpusService, IDataFileService da
                     Files = corpus
                         .Files.Select(f => new CorpusFileResult
                         {
-                            TextId = f.TextId!,
-                            File = Map(corpusDataFilesDict[f.FileRef]!)
+                            TextId = f.TextId ?? corpusDataFilesDict[f.FileRef].Name,
+                            File = Map(corpusDataFilesDict[f.FileRef])
                         })
                         .ToList()
                 }
