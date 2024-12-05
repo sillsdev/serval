@@ -128,6 +128,8 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
             IsUpsert = upsert,
             ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After
         };
+        if (arrayFilters.Count > 0)
+            options.ArrayFilters = arrayFilters;
         T? entity;
         try
         {
