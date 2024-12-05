@@ -13,6 +13,15 @@ public abstract class EntityServiceBase<T>(IRepository<T> entities)
         return entity;
     }
 
+    public virtual async Task<IEnumerable<T>> GetAllAsync(
+        IEnumerable<string> ids,
+        CancellationToken cancellationToken = default
+    )
+    {
+        HashSet<string> idSet = ids.ToHashSet();
+        return await Entities.GetAllAsync(e => idSet.Contains(e.Id), cancellationToken);
+    }
+
     public virtual async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
         await Entities.InsertAsync(entity, cancellationToken);

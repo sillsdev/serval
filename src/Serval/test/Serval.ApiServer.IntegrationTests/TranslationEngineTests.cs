@@ -184,21 +184,21 @@ public class TranslationEngineTests
             Id = SOURCE_CORPUS_ID_1,
             Language = "en",
             Owner = "client1",
-            Files = [new() { FileId = srcFile.Id, TextId = "all" }]
+            Files = [new() { FileRef = srcFile.Id, TextId = "all" }]
         };
         var srcCorpus2 = new DataFiles.Models.Corpus
         {
             Id = SOURCE_CORPUS_ID_2,
             Language = "en",
             Owner = "client1",
-            Files = [new() { FileId = srcFile.Id, TextId = "all" }]
+            Files = [new() { FileRef = srcFile.Id, TextId = "all" }]
         };
         var trgCorpus = new DataFiles.Models.Corpus
         {
             Id = TARGET_CORPUS_ID,
             Language = "en",
             Owner = "client1",
-            Files = [new() { FileId = trgFile.Id, TextId = "all" }]
+            Files = [new() { FileRef = trgFile.Id, TextId = "all" }]
         };
         await _env.Corpora.InsertAllAsync([srcCorpus, srcCorpus2, trgCorpus]);
     }
@@ -2045,7 +2045,7 @@ public class TranslationEngineTests
         DataFiles.Models.DataFile orgFileFromRepo = (await _env.DataFiles.GetAsync(FILE1_SRC_ID))!;
         DataFiles.Models.Corpus orgCorpusFromRepo = (await _env.Corpora.GetAsync(TARGET_CORPUS_ID))!;
         Assert.That(orgFileFromClient.Name, Is.EqualTo(orgFileFromRepo.Name));
-        Assert.That(orgCorpusFromRepo.Files[0].FileId, Is.EqualTo(FILE2_TRG_ID));
+        Assert.That(orgCorpusFromRepo.Files[0].FileRef, Is.EqualTo(FILE2_TRG_ID));
 
         // Update the file
         await dataFilesClient.UpdateAsync(FILE1_SRC_ID, new FileParameter(new MemoryStream([1, 2, 3]), "test.txt"));

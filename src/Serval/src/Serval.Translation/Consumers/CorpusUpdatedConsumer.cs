@@ -18,7 +18,7 @@ public class CorpusUpdatedConsumer(IEngineService engineService) : IConsumer<Cor
         return new CorpusFile
         {
             Id = corpusFile.File.DataFileId,
-            TextId = corpusFile.TextId,
+            TextId = corpusFile.TextId ?? corpusFile.File.Name,
             Filename = corpusFile.File.Filename,
             Format = corpusFile.File.Format,
         };

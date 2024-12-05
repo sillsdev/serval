@@ -21,7 +21,7 @@ public class CorpusServiceTests
             Owner = "owner1",
             Name = "corpus1",
             Language = "en",
-            Files = new List<CorpusFile>() { new() { FileId = DefaultDataFile.Id } }
+            Files = new List<CorpusFile>() { new() { FileRef = DefaultDataFile.Id } }
         };
 
     [Test]
@@ -56,8 +56,8 @@ public class CorpusServiceTests
                 });
             Service = new CorpusService(
                 Corpora,
+                Substitute.For<IRepository<DataFile>>(),
                 DataAccessContext,
-                Substitute.For<IDataFileService>(),
                 Substitute.For<IScopedMediator>()
             );
         }
