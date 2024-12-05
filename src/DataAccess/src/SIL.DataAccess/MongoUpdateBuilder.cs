@@ -5,11 +5,13 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
 {
     private readonly UpdateDefinitionBuilder<T> _builder;
     private readonly List<UpdateDefinition<T>> _defs;
+    private readonly Dictionary<BsonDocument, (string Id, ArrayFilterDefinition<BsonValue> FilterDef)> _arrayFilters;
 
     public MongoUpdateBuilder()
     {
         _builder = Builders<T>.Update;
         _defs = new List<UpdateDefinition<T>>();
+        _arrayFilters = new Dictionary<BsonDocument, (string, ArrayFilterDefinition<BsonValue>)>();
     }
 
     public IUpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> field, TField value)
@@ -38,7 +40,7 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
 
     public IUpdateBuilder<T> RemoveAll<TItem>(
         Expression<Func<T, IEnumerable<TItem>?>> field,
-        Expression<Func<TItem, bool>> predicate
+        Expression<Func<TItem, bool>>? predicate = null
     )
     {
         _defs.Add(_builder.PullFilter(ToFieldDefinition(field), Builders<TItem>.Filter.Where(predicate)));
@@ -57,15 +59,67 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
         return this;
     }
 
-    public UpdateDefinition<T> Build()
+    public IUpdateBuilder<T> SetAll<TItem, TField>(
+        Expression<Func<T, IEnumerable<TItem>?>> collectionField,
+        Expression<Func<TItem, TField>> itemField,
+        TField value,
+        Expression<Func<TItem, bool>>? predicate = null
+    )
     {
-        if (_defs.Count == 1)
-            return _defs.Single();
-        return _builder.Combine(_defs);
+        Expression<Func<T, TItem>> itemExpr = ExpressionHelper.Concatenate(
+            collectionField,
+            (collection) => ((IReadOnlyList<TItem>?)collection)![ArrayPosition.ArrayFilter]
+        );
+        Expression<Func<T, TField>> fieldExpr = ExpressionHelper.Concatenate(itemExpr, itemField);
+        if (predicate != null)
+        {
+            ExpressionFilterDefinition<TItem> filter = new(predicate);
+            BsonDocument bsonDoc = filter.Render(
+                BsonSerializer.SerializerRegistry.GetSerializer<TItem>(),
+                BsonSerializer.SerializerRegistry,
+                LinqProvider.V2
+            );
+            string filterId;
+            if (_arrayFilters.TryGetValue(bsonDoc, out var existingArrayFilter))
+            {
+                filterId = existingArrayFilter.Id;
+            }
+            else
+            {
+                filterId = "f" + ObjectId.GenerateNewId().ToString();
+                _arrayFilters.Add(
+                    bsonDoc,
+                    (
+                        filterId,
+                        new BsonDocument(
+                            $"{filterId}.{bsonDoc.Elements.Single().Name}",
+                            bsonDoc.Elements.Single().Value
+                        )
+                    )
+                );
+            }
+            _defs.Add(_builder.Set(ToFieldDefinition(fieldExpr, filterId), value));
+        }
+        else
+        {
+            _defs.Add(_builder.Set(ToFieldDefinition(fieldExpr), value));
+        }
+        return this;
     }
 
-    private static FieldDefinition<T, TField> ToFieldDefinition<TField>(Expression<Func<T, TField>> field)
+    public (UpdateDefinition<T>, IReadOnlyList<ArrayFilterDefinition>) Build()
     {
-        return new DataAccessFieldDefinition<T, TField>(field);
+        ArrayFilterDefinition[] arrayFilters = _arrayFilters.Values.Select(f => f.FilterDef).ToArray();
+        if (_defs.Count == 1)
+            return (_defs.Single(), arrayFilters);
+        return (_builder.Combine(_defs), arrayFilters);
+    }
+
+    private static FieldDefinition<T, TField> ToFieldDefinition<TField>(
+        Expression<Func<T, TField>> field,
+        string arrayFilterId = ""
+    )
+    {
+        return new DataAccessFieldDefinition<T, TField>(field, arrayFilterId);
     }
 }

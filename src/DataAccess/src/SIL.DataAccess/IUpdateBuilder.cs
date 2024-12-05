@@ -13,10 +13,17 @@ public interface IUpdateBuilder<T>
 
     IUpdateBuilder<T> RemoveAll<TItem>(
         Expression<Func<T, IEnumerable<TItem>?>> field,
-        Expression<Func<TItem, bool>> predicate
+        Expression<Func<TItem, bool>>? predicate = null
     );
 
     IUpdateBuilder<T> Remove<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value);
 
     IUpdateBuilder<T> Add<TItem>(Expression<Func<T, IEnumerable<TItem>?>> field, TItem value);
+
+    IUpdateBuilder<T> SetAll<TItem, TField>(
+        Expression<Func<T, IEnumerable<TItem>?>> collectionField,
+        Expression<Func<TItem, TField>> itemField,
+        TField value,
+        Expression<Func<TItem, bool>>? predicate = null
+    );
 }

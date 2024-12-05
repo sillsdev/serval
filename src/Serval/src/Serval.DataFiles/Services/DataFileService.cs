@@ -89,6 +89,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
                             cancellationToken: ct
                         );
                     }
+                    await _mediator.Publish(new DataFileUpdated { DataFileId = id, Filename = filename }, ct);
                 },
                 cancellationToken: cancellationToken
             );

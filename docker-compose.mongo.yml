@@ -15,5 +15,5 @@ services:
       [
         '/bin/sh',
         '-c',
-        'mongod --quiet --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity'
+        'mongod --profile=2 --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity'
       ]

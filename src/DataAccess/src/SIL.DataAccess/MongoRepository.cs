@@ -122,12 +122,14 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         var updateBuilder = new MongoUpdateBuilder<T>();
         update(updateBuilder);
         updateBuilder.Inc(e => e.Revision, 1);
-        UpdateDefinition<T> updateDef = updateBuilder.Build();
+        (UpdateDefinition<T> updateDef, IReadOnlyList<ArrayFilterDefinition> arrayFilters) = updateBuilder.Build();
         var options = new FindOneAndUpdateOptions<T>
         {
             IsUpsert = upsert,
             ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After
         };
+        if (arrayFilters.Count > 0)
+            options.ArrayFilters = arrayFilters;
         T? entity;
         try
         {
@@ -160,20 +162,23 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         var updateBuilder = new MongoUpdateBuilder<T>();
         update(updateBuilder);
         updateBuilder.Inc(e => e.Revision, 1);
-        UpdateDefinition<T> updateDef = updateBuilder.Build();
+        (UpdateDefinition<T> updateDef, IReadOnlyList<ArrayFilterDefinition> arrayFilters) = updateBuilder.Build();
+        UpdateOptions? updateOptions = null;
+        if (arrayFilters.Count > 0)
+            updateOptions = new UpdateOptions { ArrayFilters = arrayFilters };
         UpdateResult result;
         try
         {
             if (_context.Session is not null)
             {
                 result = await _collection
-                    .UpdateManyAsync(_context.Session, filter, updateDef, cancellationToken: cancellationToken)
+                    .UpdateManyAsync(_context.Session, filter, updateDef, updateOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
                 result = await _collection
-                    .UpdateManyAsync(filter, updateDef, cancellationToken: cancellationToken)
+                    .UpdateManyAsync(filter, updateDef, updateOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
         }

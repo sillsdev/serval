@@ -9,6 +9,7 @@ public interface IRepository<T>
 
     Task InsertAsync(T entity, CancellationToken cancellationToken = default);
     Task InsertAllAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default);
+
     Task<T?> UpdateAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
@@ -21,6 +22,7 @@ public interface IRepository<T>
         Action<IUpdateBuilder<T>> update,
         CancellationToken cancellationToken = default
     );
+
     Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
     Task<int> DeleteAllAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
     Task<ISubscription<T>> SubscribeAsync(

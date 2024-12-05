@@ -68,6 +68,18 @@ public interface IEngineService
 
     Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default);
 
+    Task UpdateDataFileFilenameFilesAsync(
+        string dataFileId,
+        string filename,
+        CancellationToken cancellationToken = default
+    );
+
+    Task UpdateCorpusFilesAsync(
+        string corpusId,
+        IReadOnlyList<CorpusFile> files,
+        CancellationToken cancellationToken = default
+    );
+
     Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default);
 
     Task<LanguageInfo> GetLanguageInfoAsync(
