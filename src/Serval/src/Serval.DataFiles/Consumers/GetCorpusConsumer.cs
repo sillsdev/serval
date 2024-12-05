@@ -14,19 +14,24 @@ public class GetCorpusConsumer(ICorpusService corpusService, IDataFileService da
                 context.Message.Owner,
                 context.CancellationToken
             );
+            IEnumerable<string> corpusFileIds = corpus.Files.Select(f => f.FileRef);
+            IDictionary<string, DataFile> corpusDataFilesDict = (
+                await _dataFileService.GetAllAsync(corpusFileIds, context.CancellationToken)
+            ).ToDictionary(f => f.Id);
+
             await context.RespondAsync(
                 new CorpusResult
                 {
                     CorpusId = corpus.Id,
                     Name = corpus.Name,
                     Language = corpus.Language,
-                    Files = await Task.WhenAll(
-                        corpus.Files.Select(async f => new CorpusFileResult
+                    Files = corpus
+                        .Files.Select(f => new CorpusFileResult
                         {
                             TextId = f.TextId!,
-                            File = Map(await _dataFileService.GetAsync(f.FileId))
+                            File = Map(corpusDataFilesDict[f.FileRef]!)
                         })
-                    )
+                        .ToList()
                 }
             );
         }

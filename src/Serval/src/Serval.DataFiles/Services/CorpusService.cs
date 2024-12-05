@@ -2,14 +2,13 @@ namespace Serval.DataFiles.Services;
 
 public class CorpusService(
     IRepository<Corpus> corpora,
+    IRepository<DataFile> dataFiles,
     IDataAccessContext dataAccessContext,
-    IDataFileService dataFileService,
     IScopedMediator mediator
 ) : OwnedEntityServiceBase<Corpus>(corpora), ICorpusService
 {
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
-    private readonly IDataFileService _dataFileService = dataFileService;
-
+    private readonly IRepository<DataFile> _dataFiles = dataFiles;
     private readonly IScopedMediator _mediator = mediator;
 
     public async Task<Corpus> GetAsync(string id, string owner, CancellationToken cancellationToken = default)
@@ -36,17 +35,21 @@ public class CorpusService(
                 );
                 if (corpus is null)
                     throw new EntityNotFoundException($"Could not find Corpus '{id}.");
+                HashSet<string> corpusFileIds = corpus.Files.Select(f => f.FileRef).ToHashSet();
+                IDictionary<string, DataFile> corpusDataFilesDict = (
+                    await _dataFiles.GetAllAsync(f => corpusFileIds.Contains(f.Id), ct)
+                ).ToDictionary(f => f.Id);
                 await _mediator.Publish(
                     new CorpusUpdated
                     {
                         CorpusId = corpus.Id,
-                        Files = await Task.WhenAll(
-                            corpus.Files.Select(async f => new CorpusFileResult
+                        Files = corpus
+                            .Files.Select(f => new CorpusFileResult
                             {
                                 TextId = f.TextId!,
-                                File = Map(await _dataFileService.GetAsync(f.FileId))
+                                File = Map(corpusDataFilesDict[f.FileRef]!)
                             })
-                        )
+                            .ToList()
                     },
                     ct
                 );
