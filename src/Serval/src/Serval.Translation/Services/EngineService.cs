@@ -568,8 +568,8 @@ public class EngineService(
                     c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
                 )
                 || e.ParallelCorpora.Any(c =>
-                    c.SourceCorpora.Any(mc => mc.Files.Any(f => f.Id == dataFileId))
-                    || c.TargetCorpora.Any(mc => mc.Files.Any(f => f.Id == dataFileId))
+                    c.SourceCorpora.Any(sc => sc.Files.Any(f => f.Id == dataFileId))
+                    || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
                 ),
             u =>
             {
@@ -600,8 +600,8 @@ public class EngineService(
                     c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
                 )
                 || e.ParallelCorpora.Any(c =>
-                    c.SourceCorpora.Any(mc => mc.Files.Any(f => f.Id == dataFileId))
-                    || c.TargetCorpora.Any(mc => mc.Files.Any(f => f.Id == dataFileId))
+                    c.SourceCorpora.Any(sc => sc.Files.Any(f => f.Id == dataFileId))
+                    || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
                 ),
             u =>
             {
@@ -643,7 +643,7 @@ public class EngineService(
         return Entities.UpdateAllAsync(
             e =>
                 e.ParallelCorpora.Any(c =>
-                    c.SourceCorpora.Any(mc => mc.Id == corpusId) || c.TargetCorpora.Any(mc => mc.Id == corpusId)
+                    c.SourceCorpora.Any(sc => sc.Id == corpusId) || c.TargetCorpora.Any(tc => tc.Id == corpusId)
                 ),
             u =>
             {

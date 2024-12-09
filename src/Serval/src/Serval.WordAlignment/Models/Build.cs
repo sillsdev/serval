@@ -1,6 +1,6 @@
 ﻿namespace Serval.WordAlignment.Models;
 
-public record Build : IEntity
+public record Build : IInitializableEntity
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
@@ -15,4 +15,7 @@ public record Build : IEntity
     public JobState State { get; init; } = JobState.Pending;
     public DateTime? DateFinished { get; init; }
     public IReadOnlyDictionary<string, object>? Options { get; init; }
+    public string? DeploymentVersion { get; init; }
+    public bool? IsInitialized { get; set; }
+    public DateTime? DateCreated { get; set; }
 }

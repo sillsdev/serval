@@ -951,6 +951,7 @@ public class WordAlignmentEnginesController(
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
             ParallelCorpora = [],
+            IsInitialized = false
         };
     }
 }

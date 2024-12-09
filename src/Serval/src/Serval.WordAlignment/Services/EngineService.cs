@@ -21,6 +21,25 @@ public class EngineService(
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
 
+    public override async Task<Engine> GetAsync(string id, CancellationToken cancellationToken = default)
+    {
+        Engine engine = await base.GetAsync(id, cancellationToken);
+        if (!(engine.IsInitialized ?? true))
+            throw new EntityNotFoundException($"Could not find the {typeof(Engine).Name} '{id}'.");
+        return engine;
+    }
+
+    public override async Task<IEnumerable<Engine>> GetAllAsync(
+        string owner,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await Entities.GetAllAsync(
+            e => e.Owner == owner && (e.IsInitialized == null || e.IsInitialized.Value),
+            cancellationToken
+        );
+    }
+
     public async Task<Models.WordAlignmentResult> GetWordAlignmentAsync(
         string engineId,
         string sourceSegment,
@@ -47,9 +66,9 @@ public class EngineService(
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
-        bool updateIsModelPersisted = engine.IsModelPersisted is null;
         try
         {
+            engine.DateCreated = DateTime.UtcNow;
             await Entities.InsertAsync(engine, cancellationToken);
             WordAlignmentEngineApi.WordAlignmentEngineApiClient client;
             try
@@ -90,14 +109,6 @@ public class EngineService(
         {
             await Entities.DeleteAsync(engine, CancellationToken.None);
             throw;
-        }
-        if (updateIsModelPersisted)
-        {
-            await Entities.UpdateAsync(
-                engine,
-                u => u.Set(e => e.IsModelPersisted, engine.IsModelPersisted),
-                cancellationToken: cancellationToken
-            );
         }
         return engine;
     }
@@ -143,6 +154,7 @@ public class EngineService(
 
     public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
+        build.DateCreated = DateTime.UtcNow;
         Engine engine = await GetAsync(build.EngineRef, cancellationToken);
         await _builds.InsertAsync(build, cancellationToken);
 
@@ -164,6 +176,7 @@ public class EngineService(
                     || wordAlignOn.ContainsKey(pc.Id)
                 )
                 .ToList();
+
             request = new StartBuildRequest
             {
                 EngineType = engine.Type,
@@ -213,8 +226,12 @@ public class EngineService(
                 _logger.LogInformation("Error parsing build request summary.");
                 _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
             }
-
             await client.StartBuildAsync(request, cancellationToken: cancellationToken);
+            await _builds.UpdateAsync(
+                b => b.Id == build.Id,
+                u => u.Set(e => e.IsInitialized, true),
+                cancellationToken: CancellationToken.None
+            );
         }
         catch
         {
@@ -254,7 +271,7 @@ public class EngineService(
     )
     {
         return Entities.UpdateAsync(
-            engineId,
+            e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
             u => u.Add(e => e.ParallelCorpora, corpus),
             cancellationToken: cancellationToken
         );
@@ -269,7 +286,10 @@ public class EngineService(
     )
     {
         Engine? engine = await Entities.UpdateAsync(
-            e => e.Id == engineId && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
+            e =>
+                e.Id == engineId
+                && (e.IsInitialized == null || e.IsInitialized.Value)
+                && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
             u =>
             {
                 if (sourceCorpora is not null)
@@ -300,7 +320,7 @@ public class EngineService(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
-                    engineId,
+                    e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
                     u => u.RemoveAll(e => e.ParallelCorpora, c => c.Id == parallelCorpusId),
                     returnOriginal: true,
                     cancellationToken: ct
@@ -326,15 +346,78 @@ public class EngineService(
                     || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
                 ),
             u =>
+            {
                 u.RemoveAll(
-                        e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
-                        f => f.Id == dataFileId
-                    )
-                    .RemoveAll(
-                        e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
-                        f => f.Id == dataFileId
-                    ),
-            cancellationToken
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+            },
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public Task UpdateDataFileFilenameFilesAsync(
+        string dataFileId,
+        string filename,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return Entities.UpdateAllAsync(
+            e =>
+                e.ParallelCorpora.Any(c =>
+                    c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == dataFileId))
+                    || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                ),
+            u =>
+            {
+                u.SetAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    f => f.Filename,
+                    filename,
+                    f => f.Id == dataFileId
+                );
+                u.SetAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    f => f.Filename,
+                    filename,
+                    f => f.Id == dataFileId
+                );
+            },
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public Task UpdateCorpusFilesAsync(
+        string corpusId,
+        IReadOnlyList<Shared.Models.CorpusFile> files,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return Entities.UpdateAllAsync(
+            e =>
+                e.ParallelCorpora.Any(c =>
+                    c.SourceCorpora.Any(sc => sc.Id == corpusId) || c.TargetCorpora.Any(tc => tc.Id == corpusId)
+                ),
+            u =>
+            {
+                u.SetAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora,
+                    mc => mc.Files,
+                    files,
+                    mc => mc.Id == corpusId
+                );
+                u.SetAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora,
+                    mc => mc.Files,
+                    files,
+                    mc => mc.Id == corpusId
+                );
+            },
+            cancellationToken: cancellationToken
         );
     }
 

@@ -7,12 +7,15 @@ public static class IServalBuilderExtensions
 {
     public static IServalBuilder AddWordAlignment(this IServalBuilder builder)
     {
-        builder.AddApiOptions(builder.Configuration!.GetSection(ApiOptions.Key));
+        builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
         builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
 
         builder.Services.AddScoped<IBuildService, BuildService>();
         builder.Services.AddScoped<IWordAlignmentService, WordAlignmentService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
+
+        builder.Services.AddSingleton<EngineCleanupService>();
+        builder.Services.AddSingleton<BuildCleanupService>();
 
         var wordAlignmentOptions = new WordAlignmentOptions();
         builder.Configuration.GetSection(WordAlignmentOptions.Key).Bind(wordAlignmentOptions);
