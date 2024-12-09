@@ -69,7 +69,7 @@ There are 3 different environments that Serval is deployed to:
     - `kubectl config use-context dallas-stage`
     - `helm upgrade serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
   - For QA external Run:
-    - `kubectl config use-context dallas-rke`
+    - `kubectl config use-context dallas-stage`
     - `helm upgrade serval deploy/serval -n serval -f deploy/qa-ext-values.yaml`
   - For Production Run:
     - `kubectl config use-context aws-rke`
