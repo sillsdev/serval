@@ -2,6 +2,7 @@
 
 public interface IPlatformService
 {
+    EngineGroup EngineGroup { get; }
     Task IncrementTrainSizeAsync(string engineId, int count = 1, CancellationToken cancellationToken = default);
 
     Task UpdateBuildStatusAsync(

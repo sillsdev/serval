@@ -8,7 +8,7 @@ public interface IBuildJobRunner
     Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<string> CreateJobAsync(
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,
@@ -19,11 +19,7 @@ public interface IBuildJobRunner
 
     Task<bool> DeleteJobAsync(string jobId, CancellationToken cancellationToken = default);
 
-    Task<bool> EnqueueJobAsync(
-        string jobId,
-        TranslationEngineType engineType,
-        CancellationToken cancellationToken = default
-    );
+    Task<bool> EnqueueJobAsync(string jobId, EngineType engineType, CancellationToken cancellationToken = default);
 
     Task<bool> StopJobAsync(string jobId, CancellationToken cancellationToken = default);
 }
