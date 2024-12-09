@@ -79,10 +79,12 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddMongoDataAccess(cfg =>
             {
                 cfg.AddTranslationRepositories();
+                cfg.AddWordAlignmentRepositories();
                 cfg.AddDataFilesRepositories();
                 cfg.AddWebhooksRepositories();
             })
             .AddTranslation()
+            .AddWordAlignment()
             .AddDataFiles()
             .AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
@@ -110,6 +112,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddMediator(cfg =>
         {
             cfg.AddTranslationConsumers();
+            cfg.AddWordAlignmentConsumers();
             cfg.AddDataFilesConsumers();
             cfg.AddWebhooksConsumers();
         });
@@ -222,6 +225,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         {
             x.MapControllers();
             x.MapServalTranslationServices();
+            x.MapServalWordAlignmentServices();
             x.MapHangfireDashboard();
         });
 

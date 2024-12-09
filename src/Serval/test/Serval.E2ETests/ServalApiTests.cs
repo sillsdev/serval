@@ -49,6 +49,30 @@ public class ServalApiTests
     }
 
     [Test]
+    public async Task GetEchoWordAlignment()
+    {
+        string engineId = await _helperClient.CreateNewEngineAsync("EchoWordAlignment", "es", "es", "Echo3");
+        string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
+        ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
+        await _helperClient.BuildEngineAsync(engineId);
+        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
+            engineId,
+            new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "espíritu verdad" }
+        );
+        Assert.That(
+            tResult.Alignment,
+            Is.EqualTo(
+                new List<AlignedWordPair>
+                {
+                    new() { SourceIndex = 0, TargetIndex = 0 },
+                    new() { SourceIndex = 1, TargetIndex = 1 }
+                }
+            )
+        );
+    }
+
+    [Test]
     public async Task GetSmtTranslation()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT1");
@@ -65,7 +89,7 @@ public class ServalApiTests
     [Test]
     public async Task GetSmtAddSegment()
     {
-        string engineId = await _helperClient.CreateNewEngineAsync("smt-transfer", "es", "en", "SMT3");
+        string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT3");
         string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
         await _helperClient.BuildEngineAsync(engineId);
@@ -161,13 +185,8 @@ public class ServalApiTests
         const int NUM_WORKERS = 8;
         string[] engineIds = new string[NUM_ENGINES];
         string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
-        TranslationParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(
-            books,
-            "es",
-            "en",
-            false
-        );
-        TranslationParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
+        ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+        ParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
             ["3JN.txt"],
             "es",
             "en",
@@ -184,7 +203,7 @@ public class ServalApiTests
             string engineId = engineIds[i];
             await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
             await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, pretranslate_corpus, true);
-            await _helperClient.StartBuildAsync(engineId);
+            await _helperClient.StartTranslationBuildAsync(engineId);
             //Ensure that tasks are enqueued roughly in order
             await Task.Delay(1_000);
         }
@@ -246,13 +265,8 @@ public class ServalApiTests
         TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
         Assert.That(engine.IsModelPersisted, Is.True);
         string[] books = ["bible_LARGEFILE.txt"];
-        TranslationParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(
-            books,
-            "es",
-            "en",
-            false
-        );
-        TranslationParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
+        ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+        ParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
             ["3JN.txt"],
             "es",
             "en",
@@ -335,7 +349,7 @@ public class ServalApiTests
         const int N = 3;
 
         //Create engine
-        string engineId = await _helperClient.CreateNewEngineAsync("smt-transfer", "en", "fa", "SMT6");
+        string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "en", "fa", "SMT6");
 
         //Retrieve engine
         TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
@@ -374,7 +388,7 @@ public class ServalApiTests
     [Test]
     public async Task GetSmtCancelAndRestartBuild()
     {
-        string engineId = await _helperClient.CreateNewEngineAsync("smt-transfer", "es", "en", "SMT7");
+        string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT7");
         string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
         await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
 
@@ -389,7 +403,7 @@ public class ServalApiTests
     async Task StartAndCancelTwice(string engineId)
     {
         // start and first job
-        TranslationBuild build = await _helperClient.StartBuildAsync(engineId);
+        TranslationBuild build = await _helperClient.StartTranslationBuildAsync(engineId);
         await Task.Delay(1000);
         build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, build.Id);
         Assert.That(build.State == JobState.Active || build.State == JobState.Pending);
@@ -400,7 +414,7 @@ public class ServalApiTests
         Assert.That(build.State == JobState.Canceled);
 
         // do a second job normally and make sure it works.
-        build = await _helperClient.StartBuildAsync(engineId);
+        build = await _helperClient.StartTranslationBuildAsync(engineId);
         await Task.Delay(1000);
         build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, build.Id);
         Assert.That(build.State == JobState.Active || build.State == JobState.Pending);
@@ -477,6 +491,30 @@ public class ServalApiTests
             "JHN"
         );
         Assert.That(usfm, Does.Contain("\\v 1"));
+    }
+
+    [Test]
+    public async Task GetWordAlignment()
+    {
+        string engineId = await _helperClient.CreateNewEngineAsync("Statistical", "es", "en", "STAT1");
+        string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
+        ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
+        await _helperClient.BuildEngineAsync(engineId);
+        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
+            engineId,
+            new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "spirit truth" }
+        );
+        Assert.That(
+            tResult.Alignment,
+            Is.EqualTo(
+                new List<AlignedWordPair>
+                {
+                    new() { SourceIndex = 0, TargetIndex = 0 },
+                    new() { SourceIndex = 1, TargetIndex = 1 }
+                }
+            )
+        );
     }
 
     [TearDown]

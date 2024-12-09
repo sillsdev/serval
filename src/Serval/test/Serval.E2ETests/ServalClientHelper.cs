@@ -2,15 +2,113 @@ namespace Serval.E2ETests;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
+public enum EngineGroup
+{
+    Translation,
+    WordAlignment
+}
+
+public record Build
+{
+    public string Id { get; set; }
+    public int Revision { get; set; }
+    public JobState State { get; set; }
+
+    public Build(TranslationBuild translationBuild)
+    {
+        Id = translationBuild.Id;
+        Revision = translationBuild.Revision;
+        State = translationBuild.State;
+    }
+
+    public Build(WordAlignmentBuild wordAlignmentBuild)
+    {
+        Id = wordAlignmentBuild.Id;
+        Revision = wordAlignmentBuild.Revision;
+        State = wordAlignmentBuild.State;
+    }
+}
+
+public record ParallelCorpus
+{
+    public string Id { get; set; }
+    public string Url { get; set; }
+    public ResourceLink Engine { get; set; }
+    public IList<ResourceLink> SourceCorpora { get; set; }
+    public IList<ResourceLink> TargetCorpora { get; set; }
+
+    public ParallelCorpus(TranslationParallelCorpus translationParallelCorpus)
+    {
+        Id = translationParallelCorpus.Id;
+        Url = translationParallelCorpus.Url;
+        Engine = translationParallelCorpus.Engine;
+        SourceCorpora = translationParallelCorpus.SourceCorpora;
+        TargetCorpora = translationParallelCorpus.TargetCorpora;
+    }
+
+    public ParallelCorpus(WordAlignmentParallelCorpus wordAlignmentParallelCorpus)
+    {
+        Id = wordAlignmentParallelCorpus.Id;
+        Url = wordAlignmentParallelCorpus.Url;
+        Engine = wordAlignmentParallelCorpus.Engine;
+        SourceCorpora = wordAlignmentParallelCorpus.SourceCorpora;
+        TargetCorpora = wordAlignmentParallelCorpus.TargetCorpora;
+    }
+}
+
+public record ParallelCorpusConfig
+{
+    public string? Name { get; set; }
+    public IList<string> SourceCorpusIds { get; set; }
+    public IList<string> TargetCorpusIds { get; set; }
+
+    public TranslationParallelCorpusConfig ToTranslationParallelCorpusConfig()
+    {
+        return new TranslationParallelCorpusConfig
+        {
+            Name = Name,
+            SourceCorpusIds = SourceCorpusIds,
+            TargetCorpusIds = TargetCorpusIds
+        };
+    }
+
+    public WordAlignmentParallelCorpusConfig ToWordAlignmentParallelCorpusConfig()
+    {
+        return new WordAlignmentParallelCorpusConfig
+        {
+            Name = Name,
+            SourceCorpusIds = SourceCorpusIds,
+            TargetCorpusIds = TargetCorpusIds
+        };
+    }
+
+    public ParallelCorpusConfig(TranslationParallelCorpusConfig translationParallelCorpusConfig)
+    {
+        Name = translationParallelCorpusConfig.Name;
+        SourceCorpusIds = translationParallelCorpusConfig.SourceCorpusIds;
+        TargetCorpusIds = translationParallelCorpusConfig.TargetCorpusIds;
+    }
+
+    public ParallelCorpusConfig(WordAlignmentParallelCorpusConfig wordAlignmentParallelCorpusConfig)
+    {
+        Name = wordAlignmentParallelCorpusConfig.Name;
+        SourceCorpusIds = wordAlignmentParallelCorpusConfig.SourceCorpusIds;
+        TargetCorpusIds = wordAlignmentParallelCorpusConfig.TargetCorpusIds;
+    }
+}
+
 public class ServalClientHelper : IAsyncDisposable
 {
     public DataFilesClient DataFilesClient { get; }
     public CorporaClient CorporaClient { get; }
     public TranslationEnginesClient TranslationEnginesClient { get; }
+    public WordAlignmentEnginesClient WordAlignmentEnginesClient { get; }
     public TranslationEngineTypesClient TranslationEngineTypesClient { get; }
 
     public TranslationBuildConfig TranslationBuildConfig { get; set; }
+    public WordAlignmentBuildConfig WordAlignmentBuildConfig { get; set; }
 
+    private IDictionary<string, EngineGroup> EngineIdToEngineGroup { get; } = new Dictionary<string, EngineGroup>();
     private string _authToken = "";
     private readonly HttpClient _httpClient;
     private readonly string _prefix;
@@ -40,6 +138,8 @@ public class ServalClientHelper : IAsyncDisposable
         TranslationEngineTypesClient = new TranslationEngineTypesClient(_httpClient);
         _prefix = prefix;
         TranslationBuildConfig = InitTranslationBuildConfig();
+        WordAlignmentEnginesClient = new WordAlignmentEnginesClient(_httpClient);
+        WordAlignmentBuildConfig = InitWordAlignmentBuildConfig();
     }
 
     public async Task InitAsync()
@@ -65,6 +165,7 @@ public class ServalClientHelper : IAsyncDisposable
     public void Setup()
     {
         InitTranslationBuildConfig();
+        InitWordAlignmentBuildConfig();
     }
 
     public TranslationBuildConfig InitTranslationBuildConfig()
@@ -87,6 +188,17 @@ public class ServalClientHelper : IAsyncDisposable
         return TranslationBuildConfig;
     }
 
+    public WordAlignmentBuildConfig InitWordAlignmentBuildConfig()
+    {
+        WordAlignmentBuildConfig = new WordAlignmentBuildConfig
+        {
+            WordAlignOn = [],
+            TrainOn = null,
+            Options = null
+        };
+        return WordAlignmentBuildConfig;
+    }
+
     public async Task ClearEnginesAsync()
     {
         IList<TranslationEngine> existingTranslationEngines = await TranslationEnginesClient.GetAllAsync();
@@ -95,48 +207,91 @@ public class ServalClientHelper : IAsyncDisposable
             if (translationEngine.Name?.Contains(_prefix) ?? false)
                 await TranslationEnginesClient.DeleteAsync(translationEngine.Id);
         }
+        IList<WordAlignmentEngine> existingWordAlignmentEngines = await WordAlignmentEnginesClient.GetAllAsync();
+        foreach (WordAlignmentEngine wordAlignmentEngine in existingWordAlignmentEngines)
+        {
+            if (wordAlignmentEngine.Name?.Contains(_prefix) ?? false)
+                await WordAlignmentEnginesClient.DeleteAsync(wordAlignmentEngine.Id);
+        }
     }
 
     public async Task<string> CreateNewEngineAsync(
-        string engineTypeString,
-        string source_language,
-        string target_language,
+        string engineType,
+        string sourceLanguage,
+        string targetLanguage,
         string name = "",
         bool? isModelPersisted = null
     )
     {
-        TranslationEngine engine = await TranslationEnginesClient.CreateAsync(
-            new TranslationEngineConfig
-            {
-                Name = _prefix + name,
-                SourceLanguage = source_language,
-                TargetLanguage = target_language,
-                Type = engineTypeString,
-                IsModelPersisted = isModelPersisted
-            }
-        );
-        return engine.Id;
+        EngineGroup engineGroup = GetEngineGroup(engineType);
+        if (engineGroup == EngineGroup.Translation)
+        {
+            TranslationEngine engine = await TranslationEnginesClient.CreateAsync(
+                new TranslationEngineConfig
+                {
+                    Name = name,
+                    SourceLanguage = sourceLanguage,
+                    TargetLanguage = targetLanguage,
+                    Type = engineType,
+                    IsModelPersisted = isModelPersisted
+                }
+            );
+            EngineIdToEngineGroup[engine.Id] = engineGroup;
+            return engine.Id;
+        }
+        else
+        {
+            WordAlignmentEngine engine = await WordAlignmentEnginesClient.CreateAsync(
+                new WordAlignmentEngineConfig
+                {
+                    Name = name,
+                    SourceLanguage = sourceLanguage,
+                    TargetLanguage = targetLanguage,
+                    Type = engineType,
+                }
+            );
+            EngineIdToEngineGroup[engine.Id] = engineGroup;
+            return engine.Id;
+        }
     }
 
-    public async Task<TranslationBuild> StartBuildAsync(string engineId)
+    public async Task<TranslationBuild> StartTranslationBuildAsync(string engineId)
     {
         return await TranslationEnginesClient.StartBuildAsync(engineId, TranslationBuildConfig);
     }
 
     public async Task<string> BuildEngineAsync(string engineId)
     {
-        TranslationBuild newJob = await StartBuildAsync(engineId);
-        int revision = newJob.Revision;
-        await TranslationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
+        EngineGroup engineGroup = EngineIdToEngineGroup[engineId];
+        Build newJob;
+        int revision;
+        if (engineGroup == EngineGroup.Translation)
+        {
+            newJob = new Build(await StartTranslationBuildAsync(engineId));
+            revision = newJob.Revision;
+            await TranslationEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
+        }
+        else
+        {
+            newJob = new Build(await WordAlignmentEnginesClient.StartBuildAsync(engineId, WordAlignmentBuildConfig));
+            revision = newJob.Revision;
+            await WordAlignmentEnginesClient.GetBuildAsync(engineId, newJob.Id, newJob.Revision);
+        }
         while (true)
         {
             try
             {
-                TranslationBuild result = await TranslationEnginesClient.GetBuildAsync(
-                    engineId,
-                    newJob.Id,
-                    revision + 1
-                );
+                Build result;
+                if (engineGroup == EngineGroup.Translation)
+                {
+                    result = new Build(await TranslationEnginesClient.GetBuildAsync(engineId, newJob.Id, revision + 1));
+                }
+                else
+                {
+                    result = new Build(
+                        await WordAlignmentEnginesClient.GetBuildAsync(engineId, newJob.Id, revision + 1)
+                    );
+                }
                 if (!(result.State == JobState.Active || result.State == JobState.Pending))
                     // build completed
                     break;
@@ -156,12 +311,28 @@ public class ServalClientHelper : IAsyncDisposable
 
     public async Task CancelBuildAsync(string engineId, string buildId, int timeoutSeconds = 20)
     {
-        await TranslationEnginesClient.CancelBuildAsync(engineId);
+        EngineGroup engineGroup = EngineIdToEngineGroup[engineId];
+        if (engineGroup == EngineGroup.Translation)
+        {
+            await TranslationEnginesClient.CancelBuildAsync(engineId);
+        }
+        else
+        {
+            await WordAlignmentEnginesClient.CancelBuildAsync(engineId);
+        }
         int pollIntervalMs = 1000;
         int tries = 1;
         while (true)
         {
-            TranslationBuild build = await TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+            Build build;
+            if (engineGroup == EngineGroup.Translation)
+            {
+                build = new Build(await TranslationEnginesClient.GetBuildAsync(engineId, buildId));
+            }
+            else
+            {
+                build = new Build(await WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId));
+            }
             if (build.State != JobState.Pending && build.State != JobState.Active)
                 break;
             if (tries++ > timeoutSeconds)
@@ -177,9 +348,13 @@ public class ServalClientHelper : IAsyncDisposable
         string[] filesToAdd,
         string sourceLanguage,
         string targetLanguage,
-        bool pretranslate
+        bool inference
     )
     {
+        EngineGroup engineGroup = EngineIdToEngineGroup[engineId];
+        if (engineGroup == EngineGroup.WordAlignment)
+            throw new ArgumentException("Word alignment engines do not support non-parallel corpora.");
+
         List<DataFile> sourceFiles = await UploadFilesAsync(
             filesToAdd,
             FileFormat.Text,
@@ -188,7 +363,7 @@ public class ServalClientHelper : IAsyncDisposable
         );
 
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
-        if (!pretranslate)
+        if (!inference)
         {
             List<DataFile> targetFiles = await UploadFilesAsync(
                 filesToAdd,
@@ -206,11 +381,20 @@ public class ServalClientHelper : IAsyncDisposable
 
         var sourceFileConfig = new List<TranslationCorpusFileConfig>();
 
-        for (int i = 0; i < sourceFiles.Count; i++)
+        if (sourceLanguage == targetLanguage && !inference)
         {
-            sourceFileConfig.Add(
-                new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
-            );
+            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
+            // if pretranslating, we need to upload the source separately
+            // if different languages, we are not echoing.
+        }
+        else
+        {
+            for (int i = 0; i < sourceFiles.Count; i++)
+            {
+                sourceFileConfig.Add(
+                    new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
+                );
+            }
         }
 
         TranslationCorpus response = await TranslationEnginesClient.AddCorpusAsync(
@@ -225,7 +409,7 @@ public class ServalClientHelper : IAsyncDisposable
             }
         );
 
-        if (pretranslate)
+        if (inference)
         {
             TranslationBuildConfig.Pretranslate!.Add(
                 new PretranslateCorpusConfig { CorpusId = response.Id, TextIds = filesToAdd.ToList() }
@@ -235,11 +419,11 @@ public class ServalClientHelper : IAsyncDisposable
         return response.Id;
     }
 
-    public async Task<TranslationParallelCorpusConfig> MakeParallelTextCorpus(
+    public async Task<ParallelCorpusConfig> MakeParallelTextCorpus(
         string[] filesToAdd,
         string sourceLanguage,
         string targetLanguage,
-        bool pretranslate
+        bool inference
     )
     {
         List<DataFile> sourceFiles = await UploadFilesAsync(
@@ -250,7 +434,7 @@ public class ServalClientHelper : IAsyncDisposable
         );
 
         var targetFileConfig = new List<CorpusFileConfig>();
-        if (!pretranslate)
+        if (!inference)
         {
             List<DataFile> targetFiles = await UploadFilesAsync(
                 filesToAdd,
@@ -276,9 +460,18 @@ public class ServalClientHelper : IAsyncDisposable
 
         var sourceFileConfig = new List<CorpusFileConfig>();
 
-        for (int i = 0; i < sourceFiles.Count; i++)
+        if (sourceLanguage == targetLanguage && !inference)
         {
-            sourceFileConfig.Add(new CorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] });
+            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
+            // if pretranslating, we need to upload the source separately
+            // if different languages, we are not echoing.
+        }
+        else
+        {
+            for (int i = 0; i < sourceFiles.Count; i++)
+            {
+                sourceFileConfig.Add(new CorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] });
+            }
         }
 
         CorpusConfig sourceCorpusConfig =
@@ -294,22 +487,46 @@ public class ServalClientHelper : IAsyncDisposable
         TranslationParallelCorpusConfig parallelCorpusConfig =
             new() { SourceCorpusIds = { sourceCorpus.Id }, TargetCorpusIds = { targetCorpus.Id } };
 
-        return parallelCorpusConfig;
+        return new ParallelCorpusConfig(parallelCorpusConfig);
     }
 
     public async Task<string> AddParallelTextCorpusToEngineAsync(
         string engineId,
-        TranslationParallelCorpusConfig parallelCorpusConfig,
-        bool pretranslate
+        ParallelCorpusConfig parallelCorpusConfig,
+        bool inference
     )
     {
-        var parallelCorpus = await TranslationEnginesClient.AddParallelCorpusAsync(engineId, parallelCorpusConfig);
-
-        if (pretranslate)
+        EngineGroup engineGroup = EngineIdToEngineGroup[engineId];
+        ParallelCorpus parallelCorpus;
+        if (engineGroup == EngineGroup.Translation)
         {
-            TranslationBuildConfig.Pretranslate!.Add(
-                new PretranslateCorpusConfig { ParallelCorpusId = parallelCorpus.Id }
+            parallelCorpus = new ParallelCorpus(
+                await TranslationEnginesClient.AddParallelCorpusAsync(
+                    engineId,
+                    parallelCorpusConfig.ToTranslationParallelCorpusConfig()
+                )
             );
+            if (inference)
+            {
+                TranslationBuildConfig.Pretranslate!.Add(
+                    new PretranslateCorpusConfig { ParallelCorpusId = parallelCorpus.Id }
+                );
+            }
+        }
+        else
+        {
+            parallelCorpus = new ParallelCorpus(
+                await WordAlignmentEnginesClient.AddParallelCorpusAsync(
+                    engineId,
+                    parallelCorpusConfig.ToWordAlignmentParallelCorpusConfig()
+                )
+            );
+            if (inference)
+            {
+                WordAlignmentBuildConfig.WordAlignOn!.Add(
+                    new TrainingCorpusConfig2 { ParallelCorpusId = parallelCorpus.Id }
+                );
+            }
         }
 
         return parallelCorpus.Id;
@@ -407,6 +624,19 @@ public class ServalClientHelper : IAsyncDisposable
                 }
             };
         return handler;
+    }
+
+    public static EngineGroup GetEngineGroup(string engineType)
+    {
+        return engineType switch
+        {
+            "SmtTransfer" => EngineGroup.Translation,
+            "Nmt" => EngineGroup.Translation,
+            "Echo" => EngineGroup.Translation,
+            "Statistical" => EngineGroup.WordAlignment,
+            "EchoWordAlignment" => EngineGroup.WordAlignment,
+            _ => throw new ArgumentOutOfRangeException(engineType, "Unknown engine type")
+        };
     }
 
     public async ValueTask TearDown()

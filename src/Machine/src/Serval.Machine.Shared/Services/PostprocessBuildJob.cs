@@ -1,14 +1,15 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class PostprocessBuildJob(
+public class PostprocessBuildJob<TEngine>(
     IPlatformService platformService,
-    IRepository<TranslationEngine> engines,
+    IRepository<TEngine> engines,
     IDataAccessContext dataAccessContext,
-    IBuildJobService buildJobService,
-    ILogger<PostprocessBuildJob> logger,
+    IBuildJobService<TEngine> buildJobService,
+    ILogger<PostprocessBuildJob<TEngine>> logger,
     ISharedFileService sharedFileService,
     IOptionsMonitor<BuildJobOptions> options
-) : HangfireBuildJob<(int, double)>(platformService, engines, dataAccessContext, buildJobService, logger)
+) : HangfireBuildJob<TEngine, (int, double)>(platformService, engines, dataAccessContext, buildJobService, logger)
+    where TEngine : ITrainingEngine
 {
     protected ISharedFileService SharedFileService { get; } = sharedFileService;
     private readonly BuildJobOptions _buildJobOptions = options.CurrentValue;
@@ -30,7 +31,7 @@ public class PostprocessBuildJob(
             )
         )
         {
-            await PlatformService.InsertPretranslationsAsync(engineId, pretranslationsStream, cancellationToken);
+            await PlatformService.InsertInferencesAsync(engineId, pretranslationsStream, cancellationToken);
         }
 
         int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
