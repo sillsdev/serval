@@ -1,10 +1,10 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferPostprocessBuildJob(
-    IPlatformService platformService,
+    IEnumerable<IPlatformService> platformServices,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
-    IBuildJobService buildJobService,
+    IBuildJobService<TranslationEngine> buildJobService,
     ILogger<SmtTransferPostprocessBuildJob> logger,
     ISharedFileService sharedFileService,
     IDistributedReaderWriterLockFactory lockFactory,
@@ -14,8 +14,8 @@ public class SmtTransferPostprocessBuildJob(
     IOptionsMonitor<BuildJobOptions> buildOptions,
     IOptionsMonitor<SmtTransferEngineOptions> engineOptions
 )
-    : PostprocessBuildJob(
-        platformService,
+    : PostprocessBuildJob<TranslationEngine>(
+        platformServices.First(ps => ps.EngineGroup == EngineGroup.Translation),
         engines,
         dataAccessContext,
         buildJobService,

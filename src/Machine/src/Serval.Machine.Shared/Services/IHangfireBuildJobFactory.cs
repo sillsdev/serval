@@ -2,7 +2,7 @@
 
 public interface IHangfireBuildJobFactory
 {
-    TranslationEngineType EngineType { get; }
+    EngineType EngineType { get; }
 
     Job CreateJob(string engineId, string buildId, BuildStage stage, object? data, string? buildOptions);
 }

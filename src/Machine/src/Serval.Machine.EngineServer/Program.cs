@@ -10,6 +10,9 @@ builder
     .AddMongoDataAccess()
     .AddMongoHangfireJobClient()
     .AddServalTranslationEngineService()
+    .AddServalWordAlignmentEngineService()
+    .AddServalTranslationPlatformService()
+    .AddServalWordAlignmentPlatformService()
     .AddModelCleanupService()
     .AddMessageOutboxDeliveryService()
     .AddClearMLService();
@@ -35,6 +38,7 @@ builder.Services.AddBugsnag();
 var app = builder.Build();
 
 app.MapServalTranslationEngineService();
+app.MapServalWordAlignmentEngineService();
 app.MapHangfireDashboard();
 
 app.Run();

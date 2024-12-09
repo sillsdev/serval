@@ -2,7 +2,7 @@
 
 public interface ITranslationEngineService
 {
-    TranslationEngineType Type { get; }
+    EngineType Type { get; }
 
     Task<TranslationEngine> CreateAsync(
         string engineId,

@@ -142,15 +142,15 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
     private static ITextCorpus FilterPretranslateCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
     {
         textCorpus = textCorpus.Transform(CleanSegment);
-        if (corpus.PretranslateTextIds is not null)
+        if (corpus.InferenceTextIds is not null)
         {
-            return textCorpus.FilterTexts(corpus.PretranslateTextIds);
+            return textCorpus.FilterTexts(corpus.InferenceTextIds);
         }
-        if (corpus.PretranslateChapters is not null)
+        if (corpus.InferenceChapters is not null)
         {
             return textCorpus
-                .FilterTexts(corpus.PretranslateChapters.Keys)
-                .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.PretranslateChapters));
+                .FilterTexts(corpus.InferenceChapters.Keys)
+                .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.InferenceChapters));
         }
         return textCorpus;
     }
