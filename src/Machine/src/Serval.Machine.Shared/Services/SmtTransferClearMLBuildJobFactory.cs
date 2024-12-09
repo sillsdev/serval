@@ -8,7 +8,7 @@ public class SmtTransferClearMLBuildJobFactory(
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly IRepository<TranslationEngine> _engines = engines;
 
-    public TranslationEngineType EngineType => TranslationEngineType.SmtTransfer;
+    public EngineType EngineType => EngineType.SmtTransfer;
 
     public async Task<string> CreateJobScriptAsync(
         string engineId,

@@ -7,6 +7,6 @@ public record MonolingualCorpus
     public required IReadOnlyList<CorpusFile> Files { get; set; }
     public HashSet<string>? TrainOnTextIds { get; set; }
     public Dictionary<string, HashSet<int>>? TrainOnChapters { get; set; }
-    public HashSet<string>? PretranslateTextIds { get; set; }
-    public Dictionary<string, HashSet<int>>? PretranslateChapters { get; set; }
+    public HashSet<string>? InferenceTextIds { get; set; }
+    public Dictionary<string, HashSet<int>>? InferenceChapters { get; set; }
 }
