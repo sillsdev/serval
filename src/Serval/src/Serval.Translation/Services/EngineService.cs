@@ -636,7 +636,7 @@ public class EngineService(
 
     public Task UpdateCorpusFilesAsync(
         string corpusId,
-        IReadOnlyList<Models.CorpusFile> files,
+        IReadOnlyList<Shared.Models.CorpusFile> files,
         CancellationToken cancellationToken = default
     )
     {
