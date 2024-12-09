@@ -2,6 +2,7 @@
 
 public interface IPlatformService
 {
+    EngineGroup EngineGroup { get; }
     Task IncrementTrainSizeAsync(string engineId, int count = 1, CancellationToken cancellationToken = default);
 
     Task UpdateBuildStatusAsync(
@@ -21,10 +22,5 @@ public interface IPlatformService
     Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default);
     Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default);
     Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default);
-
-    Task InsertPretranslationsAsync(
-        string engineId,
-        Stream pretranslationsStream,
-        CancellationToken cancellationToken = default
-    );
+    Task InsertInferencesAsync(string engineId, Stream inferenceStream, CancellationToken cancellationToken = default);
 }

@@ -8,7 +8,8 @@ builder
     .AddMongoDataAccess()
     .AddMongoHangfireJobClient()
     .AddHangfireJobServer()
-    .AddServalPlatformService()
+    .AddServalTranslationPlatformService()
+    .AddServalWordAlignmentPlatformService()
     .AddClearMLService();
 if (builder.Environment.IsDevelopment())
 {

@@ -88,7 +88,7 @@ public class NmtEngineServiceTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -98,6 +98,7 @@ public class NmtEngineServiceTests
             _memoryStorage = new Hangfire.InMemory.InMemoryStorage();
             _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
+            PlatformService.EngineGroup.Returns(EngineGroup.Translation);
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
                 new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
@@ -132,14 +133,14 @@ public class NmtEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            EngineType = EngineType.Nmt.ToString(),
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            EngineType = EngineType.SmtTransfer.ToString(),
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -147,7 +148,7 @@ public class NmtEngineServiceTests
                     ]
                 }
             );
-            BuildJobService = new BuildJobService(
+            BuildJobService = new BuildJobService<TranslationEngine>(
                 [
                     new HangfireBuildJobRunner(_jobClient, [new NmtHangfireBuildJobFactory()]),
                     new ClearMLBuildJobRunner(
@@ -184,7 +185,7 @@ public class NmtEngineServiceTests
         public IPlatformService PlatformService { get; }
         public IClearMLService ClearMLService { get; }
         public ISharedFileService SharedFileService { get; }
-        public IBuildJobService BuildJobService { get; }
+        public IBuildJobService<TranslationEngine> BuildJobService { get; }
 
         public void StopServer()
         {
@@ -211,7 +212,7 @@ public class NmtEngineServiceTests
         private NmtEngineService CreateService()
         {
             return new NmtEngineService(
-                PlatformService,
+                new[] { PlatformService },
                 new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
@@ -262,7 +263,7 @@ public class NmtEngineServiceTests
 
             await BuildJobService.StartBuildJobAsync(
                 BuildJobRunnerType.Hangfire,
-                TranslationEngineType.Nmt,
+                EngineType.Nmt,
                 "engine1",
                 "build1",
                 BuildStage.Postprocess,
@@ -295,7 +296,7 @@ public class NmtEngineServiceTests
                 if (jobType == typeof(NmtPreprocessBuildJob))
                 {
                     return new NmtPreprocessBuildJob(
-                        _env.PlatformService,
+                        new[] { _env.PlatformService },
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
@@ -305,16 +306,16 @@ public class NmtEngineServiceTests
                         new ParallelCorpusPreprocessingService(new CorpusService())
                     );
                 }
-                if (jobType == typeof(PostprocessBuildJob))
+                if (jobType == typeof(PostprocessBuildJob<TranslationEngine>))
                 {
                     var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
                     buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
-                    return new PostprocessBuildJob(
+                    return new PostprocessBuildJob<TranslationEngine>(
                         _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
-                        Substitute.For<ILogger<PostprocessBuildJob>>(),
+                        Substitute.For<ILogger<PostprocessBuildJob<TranslationEngine>>>(),
                         _env.SharedFileService,
                         buildJobOptions
                     );

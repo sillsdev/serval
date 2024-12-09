@@ -21,6 +21,14 @@ jobs:
         with:
           mongodb-version: "6.0"
           mongodb-replica-set: rs0
+
+        # Pull in a matching machine repo branch if it exists to use it rather than the released version of Machine.
+      - name: Check if there is a corresponding branch in Machine
+        id: find_matching_branch
+        continue-on-error: true
+        if: ${{ github.ref_name }} != "main"
+        run: cd .. && git clone https://github.com/sillsdev/machine.git --branch ${{ github.ref_name }} && dotnet build machine
+
       - name: Restore dotnet tools
         run: dotnet tool restore
       - name: Restore dependencies

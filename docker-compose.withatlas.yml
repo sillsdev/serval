@@ -22,6 +22,11 @@ services:
       - ASPNETCORE_Translation__Engines__1__Address=http://machine-engine
       - ASPNETCORE_Translation__Engines__2__Type=Nmt
       - ASPNETCORE_Translation__Engines__2__Address=http://machine-engine
+      - ASPNETCORE_WordAlignment__Engines__0__Type=EchoWordAlignment
+      - ASPNETCORE_WordAlignment__Engines__0__Address=http://echo
+      - ASPNETCORE_WordAlignment__Engines__1__Type=Statistical
+      - ASPNETCORE_WordAlignment__Engines__1__Address=http://machine-engine
+      - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
       - 81
@@ -51,6 +56,8 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__TranslationPlatformApi=http://serval-api:81
+      - ASPNETCORE_ConnectionStrings__WordAlignmentPlatformApi=http://serval-api:81
+      - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
     ports:
@@ -61,7 +68,7 @@ services:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/Echo/src/EchoTranslationEngine'
+    working_dir: '/app/src/Echo/src/EchoEngine'
     entrypoint:
       - dotnet
       - run
@@ -95,6 +102,7 @@ services:
       - SharedFile__Uri=s3://silnlp/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+      - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
     ports:
@@ -139,6 +147,7 @@ services:
       - SharedFile__Uri=s3://silnlp/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+      - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
     ports:

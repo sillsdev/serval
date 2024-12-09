@@ -21,7 +21,7 @@ spec:
       containers:
         - command:
             - dotnet
-            - /app/echo_server/EchoTranslationEngine.dll
+            - /app/echo_server/EchoEngine.dll
           workingDir: /app/echo_server
           env:
             - name: ASPNETCORE_ENVIRONMENT
