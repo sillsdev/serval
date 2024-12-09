@@ -9,4 +9,11 @@ public static class IEndpointRouteBuilderExtensions
 
         return builder;
     }
+
+    public static IEndpointRouteBuilder MapServalWordAlignmentEngineService(this IEndpointRouteBuilder builder)
+    {
+        builder.MapGrpcService<ServalWordAlignmentEngineServiceV1>();
+
+        return builder;
+    }
 }
