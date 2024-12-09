@@ -546,7 +546,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                                 new() { }
                             }
                         },
-                        PretranslateChapters = new()
+                        InferenceChapters = new()
                         {
                             {
                                 "1CH",
@@ -570,7 +570,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                                 new() { }
                             }
                         },
-                        PretranslateChapters = new() { }
+                        InferenceChapters = new() { }
                     },
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -678,7 +678,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                         Language = "en",
                         Files = new List<CorpusFile> { env.ParatextFile("pt-source1") },
                         TrainOnTextIds = ["MAT", "LEV"],
-                        PretranslateTextIds = ["1CH"]
+                        InferenceTextIds = ["1CH"]
                     },
                     new()
                     {
@@ -686,7 +686,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                         Language = "en",
                         Files = new List<CorpusFile> { env.ParatextFile("pt-source2") },
                         TrainOnTextIds = ["MAT", "MRK"],
-                        PretranslateTextIds = []
+                        InferenceTextIds = []
                     },
                 },
                 TargetCorpora = new List<MonolingualCorpus>()

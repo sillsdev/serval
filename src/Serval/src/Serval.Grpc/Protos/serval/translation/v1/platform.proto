@@ -53,7 +53,7 @@ message IncrementTrainEngineCorpusSizeRequest {
     int32 count = 2;
 }
 
-message InsertPretranslationsRequest {
+message InsertInferencesRequest {
     string engine_id = 1;
     string corpus_id = 2;
     string text_id = 3;
