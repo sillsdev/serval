@@ -13,6 +13,7 @@
     "hmac",
     "HMACSHA",
     "inferencing",
+    "Initializable",
     "keyterms",
     "MATSRC",
     "MATTRG",
@@ -28,6 +29,7 @@
     "ptcc",
     "Rebinder",
     "stylesheet",
+    "thot",
     "timespan",
     "upserted",
     "USFM"

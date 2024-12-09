@@ -25,7 +25,7 @@
             "containerName": "echo_cntr",
             "request": "attach",
             "platform": "netCore",
-            "processName": "EchoTranslationEngine",
+            "processName": "EchoEngine",
             "sourceFileMap": {
                 "/app": "${workspaceFolder}"
             },
@@ -77,9 +77,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Echo/src/EchoTranslationEngine/bin/Debug/net8.0/EchoTranslationEngine.dll",
+            "program": "${workspaceFolder}/src/Echo/src/EchoEngine/bin/Debug/net8.0/EchoEngine.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/Echo/src/EchoTranslationEngine",
+            "cwd": "${workspaceFolder}/src/Echo/src/EchoEngine",
             "stopAtEntry": false,
             "console": "internalConsole",
             "justMyCode": false,

@@ -10,7 +10,7 @@ public class NmtClearMLBuildJobFactory(
     private readonly ILanguageTagService _languageTagService = languageTagService;
     private readonly IRepository<TranslationEngine> _engines = engines;
 
-    public TranslationEngineType EngineType => TranslationEngineType.Nmt;
+    public EngineType EngineType => EngineType.Nmt;
 
     public async Task<string> CreateJobScriptAsync(
         string engineId,

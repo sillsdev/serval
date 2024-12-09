@@ -5,14 +5,15 @@ public class HangfireBuildJobRunner(
     IEnumerable<IHangfireBuildJobFactory> buildJobFactories
 ) : IBuildJobRunner
 {
-    public static Job CreateJob<TJob, TData>(
+    public static Job CreateJob<TEngine, TJob, TData>(
         string engineId,
         string buildId,
         string queue,
         object? data,
         string? buildOptions
     )
-        where TJob : HangfireBuildJob<TData>
+        where TEngine : ITrainingEngine
+        where TJob : HangfireBuildJob<TEngine, TData>
     {
         ArgumentNullException.ThrowIfNull(data);
         // Token "None" is used here because hangfire injects the proper cancellation token
@@ -22,8 +23,9 @@ public class HangfireBuildJobRunner(
         );
     }
 
-    public static Job CreateJob<TJob>(string engineId, string buildId, string queue, string? buildOptions)
-        where TJob : HangfireBuildJob
+    public static Job CreateJob<TEngine, TJob>(string engineId, string buildId, string queue, string? buildOptions)
+        where TEngine : ITrainingEngine
+        where TJob : HangfireBuildJob<TEngine>
     {
         // Token "None" is used here because hangfire injects the proper cancellation token
         return Job.FromExpression<TJob>(
@@ -33,7 +35,7 @@ public class HangfireBuildJobRunner(
     }
 
     private readonly IBackgroundJobClient _jobClient = jobClient;
-    private readonly Dictionary<TranslationEngineType, IHangfireBuildJobFactory> _buildJobFactories =
+    private readonly Dictionary<EngineType, IHangfireBuildJobFactory> _buildJobFactories =
         buildJobFactories.ToDictionary(f => f.EngineType);
 
     public BuildJobRunnerType Type => BuildJobRunnerType.Hangfire;
@@ -49,7 +51,7 @@ public class HangfireBuildJobRunner(
     }
 
     public Task<string> CreateJobAsync(
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,
@@ -70,7 +72,7 @@ public class HangfireBuildJobRunner(
 
     public Task<bool> EnqueueJobAsync(
         string jobId,
-        TranslationEngineType engineType,
+        EngineType engineType,
         CancellationToken cancellationToken = default
     )
     {

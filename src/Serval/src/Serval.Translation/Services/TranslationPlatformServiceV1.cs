@@ -265,8 +265,8 @@ public class TranslationPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> IncrementTranslationEngineCorpusSize(
-        IncrementTranslationEngineCorpusSizeRequest request,
+    public override async Task<Empty> IncrementTrainEngineCorpusSize(
+        IncrementTrainEngineCorpusSizeRequest request,
         ServerCallContext context
     )
     {
@@ -278,8 +278,8 @@ public class TranslationPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> InsertPretranslations(
-        IAsyncStreamReader<InsertPretranslationsRequest> requestStream,
+    public override async Task<Empty> InsertInferences(
+        IAsyncStreamReader<InsertInferencesRequest> requestStream,
         ServerCallContext context
     )
     {
@@ -287,7 +287,7 @@ public class TranslationPlatformServiceV1(
         int nextModelRevision = 0;
 
         var batch = new List<Pretranslation>();
-        await foreach (InsertPretranslationsRequest request in requestStream.ReadAllAsync(context.CancellationToken))
+        await foreach (InsertInferencesRequest request in requestStream.ReadAllAsync(context.CancellationToken))
         {
             if (request.EngineId != engineId)
             {
