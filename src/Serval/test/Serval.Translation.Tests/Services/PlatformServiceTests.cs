@@ -38,7 +38,7 @@ public class PlatformServiceTests
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
-        await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
+        await env.PlatformService.InsertInferences(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
 
         await env.PlatformService.BuildFaulted(new BuildFaultedRequest() { BuildId = "b0" }, env.ServerCallContext);
@@ -50,12 +50,12 @@ public class PlatformServiceTests
             new BuildRestartingRequest() { BuildId = "b0" },
             env.ServerCallContext
         );
-        await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
+        await env.PlatformService.InsertInferences(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        await env.PlatformService.InsertPretranslations(new MockAsyncStreamReader("e0"), env.ServerCallContext);
+        await env.PlatformService.InsertInferences(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
     }
@@ -171,8 +171,8 @@ public class PlatformServiceTests
             }
         );
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(0));
-        await env.PlatformService.IncrementTranslationEngineCorpusSize(
-            new IncrementTranslationEngineCorpusSizeRequest() { EngineId = "e0", Count = 1 },
+        await env.PlatformService.IncrementTrainEngineCorpusSize(
+            new IncrementTrainEngineCorpusSizeRequest() { EngineId = "e0", Count = 1 },
             env.ServerCallContext
         );
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(1));
@@ -220,12 +220,12 @@ public class PlatformServiceTests
         public TranslationPlatformServiceV1 PlatformService { get; }
     }
 
-    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertPretranslationsRequest>
+    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertInferencesRequest>
     {
         private bool _endOfStream = false;
 
         public string EngineId { get; } = engineId;
-        public InsertPretranslationsRequest Current => new() { EngineId = EngineId };
+        public InsertInferencesRequest Current => new() { EngineId = EngineId };
 
         public Task<bool> MoveNext(CancellationToken cancellationToken)
         {

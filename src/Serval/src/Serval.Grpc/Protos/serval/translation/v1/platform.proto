@@ -48,12 +48,12 @@ message BuildRestartingRequest {
     string build_id = 1;
 }
 
-message IncrementTranslationEngineCorpusSizeRequest {
+message IncrementTrainEngineCorpusSizeRequest {
     string engine_id = 1;
     int32 count = 2;
 }
 
-message InsertPretranslationsRequest {
+message InsertInferencesRequest {
     string engine_id = 1;
     string corpus_id = 2;
     string text_id = 3;

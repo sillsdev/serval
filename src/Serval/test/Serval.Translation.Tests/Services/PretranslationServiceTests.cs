@@ -270,7 +270,7 @@ public class PretranslationServiceTests
     {
         public TestEnvironment()
         {
-            CorpusFile file1 =
+            Shared.Models.CorpusFile file1 =
                 new()
                 {
                     Id = "file1",
@@ -278,7 +278,7 @@ public class PretranslationServiceTests
                     Format = Shared.Contracts.FileFormat.Paratext,
                     TextId = "project1"
                 };
-            CorpusFile file2 =
+            Shared.Models.CorpusFile file2 =
                 new()
                 {
                     Id = "file2",
@@ -321,7 +321,7 @@ public class PretranslationServiceTests
                             new()
                             {
                                 Id = "parallel_corpus1",
-                                SourceCorpora = new List<MonolingualCorpus>()
+                                SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
                                 {
                                     new()
                                     {
@@ -330,7 +330,7 @@ public class PretranslationServiceTests
                                         Files = [file1],
                                     }
                                 },
-                                TargetCorpora = new List<MonolingualCorpus>()
+                                TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                                 {
                                     new()
                                     {
