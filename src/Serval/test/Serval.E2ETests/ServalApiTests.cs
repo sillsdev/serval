@@ -136,6 +136,21 @@ public class ServalApiTests
             engineId,
             cId2
         );
+
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetCurrentBuildAsync(engineId);
+        Assert.That(build.ExecutionData, Is.Not.Null);
+
+        var executionData = build.ExecutionData!;
+
+        Assert.That(executionData, Contains.Key("trainCount"));
+        Assert.That(executionData, Contains.Key("pretranslateCount"));
+
+        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
+        int pretranslateCount = Convert.ToInt32(executionData["pretranslateCount"], CultureInfo.InvariantCulture);
+
+        Assert.That(trainCount, Is.GreaterThan(0));
+        Assert.That(pretranslateCount, Is.GreaterThan(0));
+
         Assert.That(lTrans2, Has.Count.EqualTo(13)); // just 2 John
     }
 

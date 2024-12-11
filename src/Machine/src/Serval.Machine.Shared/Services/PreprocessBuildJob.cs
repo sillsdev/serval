@@ -68,6 +68,13 @@ public class PreprocessBuildJob(
             );
         }
 
+        var executionData = new Dictionary<string, string>()
+        {
+            { "trainCount", trainCount.ToString(CultureInfo.InvariantCulture) },
+            { "pretranslateCount", pretranslateCount.ToString(CultureInfo.InvariantCulture) }
+        };
+        await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
+
         cancellationToken.ThrowIfCancellationRequested();
 
         bool canceling = !await BuildJobService.StartBuildJobAsync(

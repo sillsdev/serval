@@ -98,7 +98,7 @@ public class TranslationPlatformServiceV1(
                         Owner = engine.Owner,
                         BuildState = build.State,
                         Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value
+                        DateFinished = build.DateFinished!.Value,
                     },
                     ct
                 );
@@ -263,6 +263,33 @@ public class TranslationPlatformServiceV1(
         );
 
         return Empty;
+    }
+
+    public override async Task<Empty> UpdateBuildExecutionData(
+        UpdateBuildExecutionDataRequest request,
+        ServerCallContext context
+    )
+    {
+        var build = await _builds.GetAsync(request.BuildId, cancellationToken: context.CancellationToken);
+        if (build == null)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, "Build not found."));
+        }
+
+        var updatedExecutionData = new Dictionary<string, string>(build.ExecutionData);
+
+        foreach (var entry in request.ExecutionData)
+        {
+            updatedExecutionData[entry.Key] = entry.Value;
+        }
+
+        await _builds.UpdateAsync(
+            b => b.Id == request.BuildId,
+            u => u.Set(b => b.ExecutionData, updatedExecutionData),
+            cancellationToken: context.CancellationToken
+        );
+
+        return new Empty();
     }
 
     public override async Task<Empty> IncrementTranslationEngineCorpusSize(

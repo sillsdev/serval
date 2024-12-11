@@ -14,6 +14,7 @@ service TranslationPlatformApi {
 
     rpc IncrementTranslationEngineCorpusSize(IncrementTranslationEngineCorpusSizeRequest) returns (google.protobuf.Empty);
     rpc InsertPretranslations(stream InsertPretranslationsRequest) returns (google.protobuf.Empty);
+    rpc UpdateBuildExecutionData(UpdateBuildExecutionDataRequest) returns (google.protobuf.Empty);
 }
 
 message UpdateBuildStatusRequest {
@@ -58,4 +59,10 @@ message InsertPretranslationsRequest {
     string text_id = 3;
     repeated string refs = 4;
     string translation = 5;
+}
+
+message UpdateBuildExecutionDataRequest {
+    string engine_id = 1;
+    string build_id = 2;
+    map<string, string> execution_data = 3;
 }
