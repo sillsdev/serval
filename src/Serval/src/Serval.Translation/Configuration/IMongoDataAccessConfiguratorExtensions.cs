@@ -18,6 +18,11 @@ public static class IMongoDataAccessConfiguratorExtensions
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.DateCreated))
                 );
+                // migrate to new ParallelCorpora scheme by adding ParallelCorpora to existing engines
+                await c.UpdateManyAsync(
+                    Builders<Engine>.Filter.Exists(e => e.ParallelCorpora, false),
+                    Builders<Engine>.Update.Set(e => e.ParallelCorpora, new List<ParallelCorpus>())
+                );
             }
         );
         configurator.AddRepository<Build>(
