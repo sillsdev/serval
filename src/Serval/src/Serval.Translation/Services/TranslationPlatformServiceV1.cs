@@ -285,11 +285,7 @@ public class TranslationPlatformServiceV1(
 
         await _builds.UpdateAsync(
             b => b.Id == request.BuildId,
-            u =>
-            {
-                foreach (KeyValuePair<string, string> entry in request.ExecutionData)
-                    u.Set(b => b.ExecutionData[entry.Key], entry.Value);
-            },
+            u => u.Set(b => b.ExecutionData, updatedExecutionData),
             cancellationToken: context.CancellationToken
         );
 
