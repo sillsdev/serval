@@ -51,7 +51,7 @@ public class SmtTransferEngineServiceTests
                             Language = "es",
                             Files = [],
                             TrainOnTextIds = null,
-                            PretranslateTextIds = null
+                            InferenceTextIds = null
                         }
                     },
                     TargetCorpora = new List<MonolingualCorpus>()
@@ -238,7 +238,7 @@ public class SmtTransferEngineServiceTests
                 {
                     Id = EngineId1,
                     EngineId = EngineId1,
-                    Type = TranslationEngineType.SmtTransfer,
+                    Type = EngineType.SmtTransfer,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -249,6 +249,7 @@ public class SmtTransferEngineServiceTests
             _memoryStorage = new Hangfire.InMemory.InMemoryStorage();
             _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
+            PlatformService.EngineGroup.Returns(EngineGroup.Translation);
             SmtModel = Substitute.For<IInteractiveTranslationModel>();
             SmtBatchTrainer = Substitute.For<ITrainer>();
             SmtBatchTrainer.Stats.Returns(
@@ -277,14 +278,14 @@ public class SmtTransferEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            EngineType = EngineType.Nmt.ToString().ToString(),
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            EngineType = EngineType.SmtTransfer.ToString(),
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -319,7 +320,7 @@ public class SmtTransferEngineServiceTests
                 buildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
-            BuildJobService = new BuildJobService(
+            BuildJobService = new BuildJobService<TranslationEngine>(
                 [
                     new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
                     new ClearMLBuildJobRunner(
@@ -352,7 +353,7 @@ public class SmtTransferEngineServiceTests
 
         public ISharedFileService SharedFileService { get; }
 
-        public IBuildJobService BuildJobService { get; }
+        public IBuildJobService<TranslationEngine> BuildJobService { get; }
 
         public async Task CommitAsync(TimeSpan inactiveTimeout)
         {
@@ -420,7 +421,7 @@ public class SmtTransferEngineServiceTests
         {
             return new SmtTransferEngineService(
                 _lockFactory,
-                PlatformService,
+                new[] { PlatformService },
                 new MemoryDataAccessContext(),
                 Engines,
                 TrainSegmentPairs,
@@ -659,7 +660,7 @@ public class SmtTransferEngineServiceTests
 
                 await BuildJobService.StartBuildJobAsync(
                     BuildJobRunnerType.Hangfire,
-                    TranslationEngineType.SmtTransfer,
+                    EngineType.SmtTransfer,
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,
@@ -681,10 +682,10 @@ public class SmtTransferEngineServiceTests
                 if (jobType == typeof(SmtTransferPreprocessBuildJob))
                 {
                     return new SmtTransferPreprocessBuildJob(
-                        _env.PlatformService,
+                        new[] { _env.PlatformService },
                         _env.Engines,
                         new MemoryDataAccessContext(),
-                        Substitute.For<ILogger<PreprocessBuildJob>>(),
+                        Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
                         _env._lockFactory,
@@ -702,7 +703,7 @@ public class SmtTransferEngineServiceTests
                     var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
                     buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new SmtTransferPostprocessBuildJob(
-                        _env.PlatformService,
+                        new[] { _env.PlatformService },
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
@@ -719,7 +720,7 @@ public class SmtTransferEngineServiceTests
                 if (jobType == typeof(SmtTransferTrainBuildJob))
                 {
                     return new SmtTransferTrainBuildJob(
-                        _env.PlatformService,
+                        new[] { _env.PlatformService },
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,

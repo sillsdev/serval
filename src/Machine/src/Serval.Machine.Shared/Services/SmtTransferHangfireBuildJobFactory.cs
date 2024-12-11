@@ -4,14 +4,14 @@ namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
 {
-    public TranslationEngineType EngineType => TranslationEngineType.SmtTransfer;
+    public EngineType EngineType => EngineType.SmtTransfer;
 
     public Job CreateJob(string engineId, string buildId, BuildStage stage, object? data, string? buildOptions)
     {
         return stage switch
         {
             BuildStage.Preprocess
-                => CreateJob<SmtTransferPreprocessBuildJob, IReadOnlyList<ParallelCorpus>>(
+                => CreateJob<TranslationEngine, SmtTransferPreprocessBuildJob, IReadOnlyList<ParallelCorpus>>(
                     engineId,
                     buildId,
                     "smt_transfer",
@@ -19,14 +19,20 @@ public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
                     buildOptions
                 ),
             BuildStage.Postprocess
-                => CreateJob<SmtTransferPostprocessBuildJob, (int, double)>(
+                => CreateJob<TranslationEngine, SmtTransferPostprocessBuildJob, (int, double)>(
                     engineId,
                     buildId,
                     "smt_transfer",
                     data,
                     buildOptions
                 ),
-            BuildStage.Train => CreateJob<SmtTransferTrainBuildJob>(engineId, buildId, "smt_transfer", buildOptions),
+            BuildStage.Train
+                => CreateJob<TranslationEngine, SmtTransferTrainBuildJob>(
+                    engineId,
+                    buildId,
+                    "smt_transfer",
+                    buildOptions
+                ),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),
         };
     }

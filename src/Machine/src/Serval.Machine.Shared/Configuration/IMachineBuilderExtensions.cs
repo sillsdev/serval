@@ -1,5 +1,6 @@
 ﻿using Polly.Extensions.Http;
 using Serval.Translation.V1;
+using Serval.WordAlignment.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,12 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddSmtTransferEngineOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<SmtTransferEngineOptions>(config);
+        return builder;
+    }
+
+    public static IMachineBuilder AddWordAlignmentEngineOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<WordAlignmentEngineOptions>(config);
         return builder;
     }
 
@@ -168,25 +175,36 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddHangfireJobServer(
         this IMachineBuilder builder,
-        IEnumerable<TranslationEngineType>? engineTypes = null
+        IEnumerable<EngineType>? engineTypes = null
     )
     {
-        engineTypes ??=
-            builder.Configuration.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
-            ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
+        engineTypes ??= (
+            builder.Configuration.GetSection("TranslationEngines").Get<EngineType[]?>()
+            ?? [EngineType.SmtTransfer, EngineType.Nmt]
+        ).Concat(
+            builder.Configuration.GetSection("WordAlignmentEngines").Get<EngineType[]?>() ?? [EngineType.Statistical]
+        );
         var queues = new List<string>();
-        foreach (TranslationEngineType engineType in engineTypes.Distinct())
+        foreach (EngineType engineType in engineTypes.Distinct())
         {
             switch (engineType)
             {
-                case TranslationEngineType.SmtTransfer:
+                case EngineType.SmtTransfer:
                     builder.Services.AddSingleton<SmtTransferEngineStateService>();
-                    builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
+                    builder.Services.AddHostedService<SmtTransferEngineCommitService>();
+                    builder.AddThot();
                     queues.Add("smt_transfer");
                     break;
-                case TranslationEngineType.Nmt:
+                case EngineType.Nmt:
                     queues.Add("nmt");
                     break;
+                case EngineType.Statistical:
+                    builder.Services.AddSingleton<WordAlignmentEngineStateService>();
+                    builder.AddThot();
+                    queues.Add("statistical");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(engineType.ToString());
             }
         }
 
@@ -202,6 +220,7 @@ public static class IMachineBuilderExtensions
         builder.Services.AddMemoryDataAccess(o =>
         {
             o.AddRepository<TranslationEngine>();
+            o.AddRepository<WordAlignmentEngine>();
             o.AddRepository<RWLock>();
             o.AddRepository<TrainSegmentPair>();
             o.AddRepository<OutboxMessage>();
@@ -238,6 +257,23 @@ public static class IMachineBuilderExtensions
                         );
                     }
                 );
+                o.AddRepository<WordAlignmentEngine>(
+                    "word_alignment_engines",
+                    mapSetup: m => m.SetIgnoreExtraElements(true),
+                    init: async c =>
+                    {
+                        await c.Indexes.CreateOrUpdateAsync(
+                            new CreateIndexModel<WordAlignmentEngine>(
+                                Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.EngineId)
+                            )
+                        );
+                        await c.Indexes.CreateOrUpdateAsync(
+                            new CreateIndexModel<WordAlignmentEngine>(
+                                Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
+                            )
+                        );
+                    }
+                );
                 o.AddRepository<RWLock>("locks");
                 o.AddRepository<TrainSegmentPair>(
                     "train_segment_pairs",
@@ -263,7 +299,7 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddServalPlatformService(
+    public static IMachineBuilder AddServalTranslationPlatformService(
         this IMachineBuilder builder,
         string? connectionString = null
     )
@@ -272,9 +308,9 @@ public static class IMachineBuilderExtensions
         if (connectionString is null)
             throw new InvalidOperationException("Serval connection string is required");
 
-        builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
+        builder.Services.AddScoped<IPlatformService, ServalTranslationPlatformService>();
 
-        builder.Services.AddSingleton<IOutboxMessageHandler, ServalPlatformOutboxMessageHandler>();
+        builder.Services.AddSingleton<IOutboxMessageHandler, ServalTranslationPlatformOutboxMessageHandler>();
 
         builder.Services.AddScoped<IMessageOutboxService, MessageOutboxService>();
 
@@ -309,10 +345,67 @@ public static class IMachineBuilderExtensions
                                 new MethodName
                                 {
                                     Service = "serval.translation.v1.TranslationPlatformApi",
-                                    Method = "UpdateBuildStatus"
+                                    Method = "UpdateTranslationBuildStatus"
                                 }
                             }
+                        }
+                    }
+                };
+            });
+
+        return builder;
+    }
+
+    public static IMachineBuilder AddServalWordAlignmentPlatformService(
+        this IMachineBuilder builder,
+        string? connectionString = null
+    )
+    {
+        connectionString ??= builder.Configuration.GetConnectionString("Serval");
+        if (connectionString is null)
+            throw new InvalidOperationException("Serval connection string is required");
+
+        builder.Services.AddScoped<IPlatformService, ServalWordAlignmentPlatformService>();
+
+        builder.Services.AddSingleton<IOutboxMessageHandler, ServalWordAlignmentPlatformOutboxMessageHandler>();
+
+        builder.Services.AddScoped<IMessageOutboxService, MessageOutboxService>();
+
+        builder
+            .Services.AddGrpcClient<WordAlignmentPlatformApi.WordAlignmentPlatformApiClient>(o =>
+            {
+                o.Address = new Uri(connectionString);
+            })
+            .ConfigureChannel(o =>
+            {
+                o.MaxRetryAttempts = null;
+                o.ServiceConfig = new ServiceConfig
+                {
+                    MethodConfigs =
+                    {
+                        new MethodConfig
+                        {
+                            Names = { MethodName.Default },
+                            RetryPolicy = new Grpc.Net.Client.Configuration.RetryPolicy
+                            {
+                                MaxAttempts = 10,
+                                InitialBackoff = TimeSpan.FromSeconds(1),
+                                MaxBackoff = TimeSpan.FromSeconds(5),
+                                BackoffMultiplier = 1.5,
+                                RetryableStatusCodes = { StatusCode.Unavailable }
+                            }
                         },
+                        new MethodConfig
+                        {
+                            Names =
+                            {
+                                new MethodName
+                                {
+                                    Service = "serval.word_alignment.v1.WordAlignmentPlatformApi",
+                                    Method = "UpdateWordAlignmentBuildStatus"
+                                }
+                            }
+                        }
                     }
                 };
             });
@@ -323,7 +416,7 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddServalTranslationEngineService(
         this IMachineBuilder builder,
         string? connectionString = null,
-        IEnumerable<TranslationEngineType>? engineTypes = null
+        IEnumerable<EngineType>? engineTypes = null
     )
     {
         builder.Services.AddGrpc(options =>
@@ -332,37 +425,85 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<UnimplementedInterceptor>();
             options.Interceptors.Add<TimeoutInterceptor>();
         });
-        builder.AddServalPlatformService(connectionString);
 
         engineTypes ??=
-            builder.Configuration.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
-            ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
-        foreach (TranslationEngineType engineType in engineTypes.Distinct())
+            builder.Configuration.GetSection("TranslationEngines").Get<EngineType[]?>()
+            ?? [EngineType.SmtTransfer, EngineType.Nmt];
+        foreach (EngineType engineType in engineTypes.Distinct())
         {
             switch (engineType)
             {
-                case TranslationEngineType.SmtTransfer:
-                    builder.Services.AddSingleton<SmtTransferEngineStateService>();
-                    builder.Services.AddHostedService<SmtTransferEngineCommitService>();
-                    builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
+                case EngineType.SmtTransfer:
+                    builder.AddThot();
                     builder.Services.AddScoped<ITranslationEngineService, SmtTransferEngineService>();
                     break;
-                case TranslationEngineType.Nmt:
+                case EngineType.Nmt:
                     builder.Services.AddScoped<ITranslationEngineService, NmtEngineService>();
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException(engineType.ToString());
             }
         }
 
         return builder;
     }
 
-    public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder, string? smtTransferEngineDir = null)
+    public static IMachineBuilder AddServalWordAlignmentEngineService(
+        this IMachineBuilder builder,
+        string? connectionString = null,
+        IEnumerable<EngineType>? engineTypes = null
+    )
     {
-        builder.Services.AddScoped<IBuildJobService, BuildJobService>();
+        builder.Services.AddGrpc(options =>
+        {
+            options.Interceptors.Add<CancellationInterceptor>();
+            options.Interceptors.Add<UnimplementedInterceptor>();
+            options.Interceptors.Add<TimeoutInterceptor>();
+        });
+
+        engineTypes ??=
+            builder.Configuration.GetSection("WordAlignmentEngines").Get<EngineType[]?>() ?? [EngineType.Statistical];
+
+        foreach (EngineType engineType in engineTypes.Distinct())
+        {
+            switch (engineType)
+            {
+                case EngineType.Statistical:
+                    builder.Services.AddSingleton<WordAlignmentEngineStateService>();
+                    builder.AddThot();
+                    builder.Services.AddScoped<IWordAlignmentEngineService, StatisticalEngineService>();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(engineType.ToString());
+            }
+        }
+
+        return builder;
+    }
+
+    public static IMachineBuilder AddThot(this IMachineBuilder builder)
+    {
+        try
+        {
+            builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
+        }
+        catch (ArgumentException)
+        {
+            // if this has already been run, don't run it again
+        }
+        return builder;
+    }
+
+    public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder)
+    {
+        builder.Services.AddScoped<IBuildJobService<TranslationEngine>, TranslationBuildJobService>();
+        builder.Services.AddScoped<IBuildJobService<WordAlignmentEngine>, BuildJobService<WordAlignmentEngine>>();
 
         builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
         builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
         builder.Services.AddScoped<IClearMLBuildJobFactory, SmtTransferClearMLBuildJobFactory>();
+        builder.Services.AddScoped<IClearMLBuildJobFactory, StatisticalClearMLBuildJobFactory>();
+
         builder.Services.AddSingleton<ClearMLMonitorService>();
         builder.Services.AddSingleton<IClearMLQueueService>(x => x.GetRequiredService<ClearMLMonitorService>());
         builder.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
@@ -370,22 +511,24 @@ public static class IMachineBuilderExtensions
         builder.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();
         builder.Services.AddScoped<IHangfireBuildJobFactory, NmtHangfireBuildJobFactory>();
         builder.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
+        builder.Services.AddScoped<IHangfireBuildJobFactory, StatisticalHangfireBuildJobFactory>();
 
-        if (smtTransferEngineDir is null)
-        {
-            var smtTransferEngineOptions = new SmtTransferEngineOptions();
-            builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
-            smtTransferEngineDir = smtTransferEngineOptions.EnginesDir;
-        }
-        string? driveLetter = Path.GetPathRoot(smtTransferEngineDir)?[..1];
-        if (driveLetter is null)
-            throw new InvalidOperationException("SMT Engine directory is required");
+        var smtTransferEngineOptions = new SmtTransferEngineOptions();
+        builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
+        string? smtDriveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
+        var statisticsEngineOptions = new WordAlignmentEngineOptions();
+        builder.Configuration.GetSection(WordAlignmentEngineOptions.Key).Bind(statisticsEngineOptions);
+        string? statisticsDriveLetter = Path.GetPathRoot(statisticsEngineOptions.EnginesDir)?[..1];
+        if (smtDriveLetter is null || statisticsDriveLetter is null)
+            throw new InvalidOperationException("SMT Engine and Statistical directory is required");
+        if (smtDriveLetter != statisticsDriveLetter)
+            throw new InvalidOperationException("SMT Engine and Statistical directory must be on the same drive");
         // add health check for disk storage capacity
         builder
             .Services.AddHealthChecks()
             .AddDiskStorageHealthCheck(
-                x => x.AddDrive(driveLetter, 1_000), // 1GB
-                "SMT Engine Storage Capacity",
+                x => x.AddDrive(smtDriveLetter, 1_000), // 1GB
+                "SMT and Statistical Engine Storage Capacity",
                 HealthStatus.Degraded
             );
 
