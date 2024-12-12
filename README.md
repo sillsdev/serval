@@ -7,6 +7,38 @@
 Serval is a REST API for natural language processing services for **all languages**.
 For the REST documentation use the Swagger site [here](https://prod.serval-api.org/swagger/index.html).
 
+# Serval Architecture
+
+Serval is designed using a microservice architecture with the following deployments:
+* Serval.APIServer
+  * This is the top level API layer.  All REST calls are made through this layer.
+  * It primarily handles the definition of files and corpora, per-client permissions, validation of requests and assembling NLP requests from files and database entries, such as inserting pretranslations into the USFM structure.
+  * This includes all components under `./src/Serval/src` except for the auto-generated Client and gRPC projects, which are used to handle communication with the API layer.
+* Serval.Machine.EngineServer
+  * Exposes multiple engine types to the APIServer
+  * Can be directly invoked by the APIServer
+  * Handles short-lived NLP requests, including loading SMT models for on-demand word graphs.
+  * Queues up jobs for the JobServer
+  * Primary functionality is defined in Serval.Machine.Shared, with the deployment configuration is defined in Serval.Machine.EngineServer
+  * Reports back status to the APILayer over gRPC
+* Serval.Machine.JobServer
+  * Executes Hangfire NLP jobs
+  * Queues up ClearML NLP jobs, using the ClearML API and the S3 bucket
+  * Preprocesses training and inferencing data
+  * Postprocesses inferencing results and models from the ClearML job
+  * Primary functionality is defined in Serval.Machine.Shared, with the deployment configuration is defined in Serval.Machine.JobServer
+  * Reports back status to the APILayer over gRPC
+* Echo.EchoTranslationEngine
+  * The echo engine is for testing both the API layer and the deployment in general.
+Other components of the microservice are:
+* SIL.DataAccess
+  * Abstracts all MongoDB operations
+  * Enables in-memory database for testing purposes
+  * Replicates the functionality of [EF Core](https://learn.microsoft.com/en-us/ef/core/)
+* ServiceToolkit
+  * Defines common models, configurations and services both used by the Serval.APIServal deployment and the Serval.Machine deployments.
+
+
 # Development
 
 ## Setting up Your Environment
