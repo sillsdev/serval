@@ -238,7 +238,7 @@ public class PreprocessBuildJobTests
         using TestEnvironment env = new();
         ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        Assert.ThrowsAsync<OperationCanceledException>(async () =>
         {
             await env.RunBuildJobAsync(corpus1, engineId: "engine2");
         });

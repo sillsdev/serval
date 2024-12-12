@@ -63,7 +63,7 @@ public class PreprocessBuildJob(
 
         if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
         {
-            throw new InvalidOperationException(
+            throw new OperationCanceledException(
                 $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
             );
         }
