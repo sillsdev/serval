@@ -2,46 +2,32 @@
 [![End-To-End Tests](https://github.com/sillsdev/serval/actions/workflows/ci-e2e.yml/badge.svg)](https://github.com/sillsdev/serval/actions/workflows/ci-e2e.yml)
 [![codecov](https://codecov.io/gh/sillsdev/serval/graph/badge.svg?token=0PEQ9LXPK9)](https://codecov.io/gh/sillsdev/serval)
 
-# Serval
+# Serval - an API supporting Computer Aided Translation for all the languages of the world!
 
-Serval is a REST API for natural language processing services.
+Serval is a REST API for natural language processing services for **all languages**.
+For the REST documentation use the Swagger site [here](https://prod.serval-api.org/swagger/index.html).
 
-## Development
+# Development
 
-### Development in Docker Compose
+## Setting up Your Environment
 
-This is the simplest way to develop.
-First, git clone the repo:
-  ```
-  git clone https://github.com/sillsdev/serval.git
-  ```
-Then build Serval:
-  ```
-  dotnet build serval
-  ```
-Clone the [Machine repo](https://github.com/sillsdev/machine) into an adjacent folder to Serval:
-  ```
-  git clone https://github.com/sillsdev/machine.git
-  ```
-Build the Machine repo:
-  ```
-  dotnet build machine
-  ```
-Now, if you are using a local docker image and have a GPU with at least 12 GB of RAM:
-* Clone the [Machine repo](https://github.com/sillsdev/machine.py) into an adjacent folder to Serval:
-* Build the docker image with `docker build . -t mpy.local`
-* Register your machine as a ClearML agent (see dev team for details)
-* In docker-compose.yml, update `ClearML__Queue` to be the queue that your computer (agent) is listening to
-If you will use the standard Machine.py images:
-* In docker-compose.yml, update `ClearML__Queue` and `ClearML__DockerImage` to the appropriate values
+* Use VS Code with all the recommended extensions
+* Development is supported in Ubuntu and Windows WSL2
+  * For Ubunutu, use [microsoft's distribution of .net](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu)
+  * Ubuntu 22.04 and 24.04 are currently supported
+* Install the repositories:
+  * To develop Serval, you will also likely need to make changes to the [Machine repo](https://github.com/sillsdev/machine) as well - they are intricately tied.
+  * To enable Serval to use your current edits in Machine (rather than the nuget package) you need to install Machine in an adjacent folder to Serval
+    * i.e., if your serval repo is cloned into /home/username/repos/serval, machine should be in /home/username/repos/machine
+  * Make sure that you build Machine using before you build Serval
 
-In the Serval root, run docker compose up
-  ```
-  cd serval && docker compose up
-  ```
-If using vscode, launch "DockerComb" to debug Serval and the for-testing-only Echo Engine.
+## Option 1: Docker Compose local testing deployment
 
-### Development locally
+These instructions are for developing/testing using docker-compose (rather than locally/bare metal)
+With both the serval and machine repos installed, in the serval root folder, run `./docker_deploy.sh`
+To debug in VSCode, launch "DockerComb" after to containers come up (about 5 -10 seconds).  This will allow you to debug all 4 serval containers.
+
+## Option 2: Bare metal local testing deployment
 Alternatively, you can develop without containerizing Serval.
 
 Install MongoDB 6.0 as a replica set run it on localhost:27017. (You can run `docker compose -f docker-compose.mongo.yml up` from the root of the serval repo to do so).
@@ -50,39 +36,21 @@ Make sure that the environment variable ASPNETCORE_ENVIRONMENT is set to "Develo
 
 Open "Serval.sln" and debug the ApiServer.
 
-## Deployment on kubernetes
-There are 3 different environments that Serval is deployed to:
-- Internal QA for testing out the deployment
-- External QA for clients to test new updates before production
-- Production
-### To deploy the cluster
-- Add the dallas-rke KubeConfig to your kubectl configs
-- Run `kubectl config use-context dallas-rke`
-- First, startup the storage (using internal qa for example)
-- `helm install serval-pvc deploy/serval-pvc -n nlp -f deploy/qa-int-values.yaml`
-- Now you can turn on Serval
-- `helm install serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
+## Coding guidelines
 
-### To update the cluster
-- To upgrade Serval:
-  - For QA internal Run:
-    - `kubectl config use-context dallas-stage`
-    - `helm upgrade serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
-  - For QA external Run:
-    - `kubectl config use-context dallas-stage`
-    - `helm upgrade serval deploy/serval -n serval -f deploy/qa-ext-values.yaml`
-  - For Production Run:
-    - `kubectl config use-context aws-rke`
-    - `helm upgrade serval deploy/serval -n serval -f deploy/values.yaml`
+Coding guidelines are documented [on the wiki](https://github.com/sillsdev/serval/wiki/Development-Guide)
 
-### Environments:
-- Production:
-  - Full deployment, full NMT and SMT builds
-- Staging:
-  - Full Deploymnet, dummy NMT building (10 steps, small model)
-  - Also used for Docker-compose local staging
-- Development:
-  - Non-docker use only
+## (Optional) Get your machine.py images setup
+When jobs are run, they are queued up on ClearML.  If you want to have your own agents for integration testing (and you have a GPU with 24GB RAM), you can do the following:
+* clone the [machine.py repo](https://github.com/sillsdev/machine.py)
+* Build the docker image with `docker build . -t local.mpy` for a GPU inamge or `docker build . -f dockerfile.cpu_only -t local.mpy.cpu_only` for a CPU only image.
+* Register your machine as a ClearML agent (see dev team for details)
+  * Make sure you do NOT "always pull the image"!  The images you are building are stored locally.
+* Set the following environment variables:
+```
+export MACHINE_PY_IMAGE=local.mpy
+export MACHINE_PY_CPU_IMAGE=local.mpy.cpu_only
+```
 
 ## Debugging
 ### To access Serval API
@@ -122,18 +90,44 @@ To view files stored in the bucket, run
 * Then, open MongoDB Compass and connect to `mongodb://localhost:28015/?directConnection=true`
 
 
-## Development Notes
-### CSharpier
+# Deployment
+## ASPNETCORE Environments:
+The deployment environment is set by the environment variable `ASPNETCORE_ENVIRONMENT`.
+- `ASPNETCORE_ENVIRONMENT=Production`
+  - Full deployment, full NMT and SMT builds.
+  - Used in all kubernetes deployments
+- `ASPNETCORE_ENVIRONMENT=Staging`:
+  - Full Deploymnet, dummy NMT building (10 steps, small model).
+    - These default build configurations can be overwritten.
+  - Used in Docker-compose local staging
+- `ASPNETCORE_ENVIRONMENT=Development`:
+  - Non-docker use only
 
-All C# code should be formatted using [CSharpier](https://csharpier.com/). The best way to enable support for CSharpier is to install the appropriate [IDE extension](https://csharpier.com/docs/Editors) and configure it to format on save.
+## Kubernetes deployments:
+There are 3 different environments that Serval is deployed to:
+- Internal QA for testing out the deployment
+- External QA for clients to test new updates before production
+- Production
 
-### Coding conventions
+## To deploy the cluster
+- Add the dallas-rke KubeConfig to your kubectl configs
+- Run `kubectl config use-context dallas-rke`
+- First, startup the storage (using internal qa for example)
+- `helm install serval-pvc deploy/serval-pvc -n nlp -f deploy/qa-int-values.yaml`
+- Now you can turn on Serval
+- `helm install serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
 
-[Here](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/identifier-names) is a good overview of naming conventions. [Here](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions) is a good overview of coding conventions. If you want to get in to even more detail, check out the [Framework design guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/).
-
-## Documentation
-
-See the Swagger documentation for Serval [here](https://prod.serval-api.org/swagger/index.html).
+## To update the cluster
+- To upgrade Serval:
+  - For QA internal Run:
+    - `kubectl config use-context dallas-stage`
+    - `helm upgrade serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
+  - For QA external Run:
+    - `kubectl config use-context dallas-stage`
+    - `helm upgrade serval deploy/serval -n serval -f deploy/qa-ext-values.yaml`
+  - For Production Run:
+    - `kubectl config use-context aws-rke`
+    - `helm upgrade serval deploy/serval -n serval -f deploy/values.yaml`
 
 ## Special thanks to
 
