@@ -36,16 +36,14 @@ public class CorpusService : ICorpusService
         return corpora;
     }
 
-    public IEnumerable<ITextCorpus> CreateTermCorpora(
-        IReadOnlyList<(CorpusFile File, Dictionary<string, HashSet<int>> Chapters)> corpora
-    )
+    public IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> corpusFiles)
     {
-        foreach ((CorpusFile file, Dictionary<string, HashSet<int>> chapters) in corpora)
+        foreach (CorpusFile file in corpusFiles)
         {
             switch (file.Format)
             {
                 case FileFormat.Paratext:
-                    yield return new ParatextBackupTermsCorpus(file.Location, ["PN"], chapters: chapters);
+                    yield return new ParatextBackupTermsCorpus(file.Location, ["PN"]);
                     break;
             }
         }
