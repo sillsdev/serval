@@ -143,13 +143,9 @@ public class EngineService(
         {
             engine.DateCreated = DateTime.UtcNow;
             await Entities.InsertAsync(engine, cancellationToken);
-            TranslationEngineApi.TranslationEngineApiClient? client;
-            try
-            {
-                client = _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-            }
-            catch (InvalidOperationException)
-            {
+            TranslationEngineApi.TranslationEngineApiClient? client =
+                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            if (client is null)
                 throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
 
             var request = new CreateRequest
