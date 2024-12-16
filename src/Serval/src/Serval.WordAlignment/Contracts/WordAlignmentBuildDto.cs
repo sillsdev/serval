@@ -8,7 +8,7 @@ public record WordAlignmentBuildDto
     public string? Name { get; init; }
     public required ResourceLinkDto Engine { get; init; }
     public IReadOnlyList<TrainingCorpusDto>? TrainOn { get; init; }
-    public IReadOnlyList<TrainingCorpusDto>? WordAlignOn { get; init; }
+    public IReadOnlyList<WordAlignmentCorpusDto>? WordAlignOn { get; init; }
     public required int Step { get; init; }
     public double? PercentCompleted { get; init; }
     public string? Message { get; init; }

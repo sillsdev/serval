@@ -523,7 +523,7 @@ public class ServalClientHelper : IAsyncDisposable
             if (inference)
             {
                 WordAlignmentBuildConfig.WordAlignOn!.Add(
-                    new TrainingCorpusConfig2 { ParallelCorpusId = parallelCorpus.Id }
+                    new WordAlignmentCorpusConfig { ParallelCorpusId = parallelCorpus.Id }
                 );
             }
         }

@@ -70,17 +70,11 @@ public class EngineService(
         {
             engine.DateCreated = DateTime.UtcNow;
             await Entities.InsertAsync(engine, cancellationToken);
-            WordAlignmentEngineApi.WordAlignmentEngineApiClient client;
-            try
-            {
-                client = _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(
-                    engine.Type
-                );
-            }
-            catch (InvalidOperationException)
-            {
+            WordAlignmentEngineApi.WordAlignmentEngineApiClient? client =
+                _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
+            if (client is null)
                 throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
-            }
+
             var request = new CreateRequest
             {
                 EngineType = engine.Type,
@@ -92,6 +86,11 @@ public class EngineService(
             if (engine.Name is not null)
                 request.EngineName = engine.Name;
             await client.CreateAsync(request, cancellationToken: cancellationToken);
+            await Entities.UpdateAsync(
+                engine,
+                u => u.Set(e => e.IsInitialized, true),
+                cancellationToken: CancellationToken.None
+            );
         }
         catch (RpcException rpcex)
         {
@@ -165,7 +164,7 @@ public class EngineService(
         {
             StartBuildRequest request;
             Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
-            Dictionary<string, TrainingCorpus>? wordAlignOn = build.WordAlignOn?.ToDictionary(c =>
+            Dictionary<string, WordAlignmentCorpus>? wordAlignOn = build.WordAlignOn?.ToDictionary(c =>
                 c.ParallelCorpusRef!
             );
             IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
@@ -451,7 +450,7 @@ public class EngineService(
     private V1.ParallelCorpus Map(
         Shared.Models.ParallelCorpus source,
         TrainingCorpus? trainingCorpus,
-        TrainingCorpus? wordAlignmentCorpus,
+        WordAlignmentCorpus? wordAlignmentCorpus,
         bool trainOnAllCorpora,
         bool wordAlignOnAllCorpora
     )
