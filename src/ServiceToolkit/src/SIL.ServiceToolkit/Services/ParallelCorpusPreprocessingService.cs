@@ -28,7 +28,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
     public async Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
-        Func<Row, ParallelCorpus, Task> pretranslate,
+        Func<Row, bool, ParallelCorpus, Task> inference,
         bool useKeyTerms = false
     )
     {
@@ -59,6 +59,11 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                 .Select(tc => FilterTrainingCorpora(tc.Corpus, tc.TextCorpus))
                 .ToArray();
 
+            ITextCorpus targetPretranslateCorpus = targetCorpora
+                .Select(tc => FilterPretranslateCorpora(tc.Corpus, tc.TextCorpus))
+                .ToArray()
+                .ChooseRandom(Seed);
+
             ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
             if (sourceTrainingCorpus.IsScripture())
             {
@@ -80,7 +85,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             foreach (Row row in CollapseRanges(trainingRows))
             {
                 await train(row);
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                 {
                     parallelTrainingDataPresent = true;
                 }
@@ -111,14 +116,16 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             }
             ITextCorpus sourcePretranslateCorpus = sourcePretranslateCorpora.ChooseFirst();
 
-            IParallelTextCorpus pretranslateCorpus = sourcePretranslateCorpus.AlignRows(
-                targetCorpus,
-                allSourceRows: true
-            );
-
-            foreach (Row row in CollapseRanges(pretranslateCorpus.ToArray()))
+            INParallelTextCorpus pretranslateCorpus = new ITextCorpus[]
             {
-                await pretranslate(row, corpus);
+                sourcePretranslateCorpus,
+                targetPretranslateCorpus,
+                targetCorpus
+            }.AlignMany([true, false, false]);
+
+            foreach ((Row row, bool isInTrainingData) in CollapsePretranslateRanges(pretranslateCorpus.ToArray()))
+            {
+                await inference(row, isInTrainingData, corpus);
             }
         }
         if (useKeyTerms && parallelTrainingDataPresent)
@@ -128,20 +135,6 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                 await train(row);
             }
         }
-    }
-
-    private static IEnumerable<(CorpusFile File, Dictionary<string, HashSet<int>> Chapters)> GetChaptersPerFile(
-        MonolingualCorpus mc,
-        ITextCorpus tc
-    )
-    {
-        Dictionary<string, HashSet<int>>? chapters = mc.TrainOnChapters;
-        if (chapters is null && mc.TrainOnTextIds is not null)
-        {
-            chapters = mc.TrainOnTextIds.Select(tid => (tid, new HashSet<int> { })).ToDictionary();
-        }
-        chapters ??= tc.Texts.Select(t => (t.Id, new HashSet<int>() { })).ToDictionary();
-        return mc.Files.Select(f => (f, chapters));
     }
 
     private static ITextCorpus FilterPretranslateCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
@@ -231,6 +224,73 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
         if (hasUnfinishedRange)
         {
             yield return new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+        }
+    }
+
+    private static IEnumerable<(Row, bool)> CollapsePretranslateRanges(NParallelTextRow[] rows)
+    {
+        StringBuilder srcSegBuffer = new();
+        StringBuilder trgSegBuffer = new();
+        List<object> refs = [];
+        string textId = "";
+        bool hasUnfinishedRange = false;
+        bool isInTrainingData = false;
+
+        foreach (NParallelTextRow row in rows)
+        {
+            //row at 0 is source filtered for pretranslation, row at 1 is target filtered for pretranslation, row at 2 is target filtered for training
+            if (
+                hasUnfinishedRange
+                && (!row.IsInRange(0) || row.IsRangeStart(0))
+                && (!row.IsInRange(1) || row.IsRangeStart(1))
+                && (!row.IsInRange(2) || row.IsRangeStart(2))
+            )
+            {
+                yield return (
+                    new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1),
+                    isInTrainingData
+                );
+
+                srcSegBuffer.Clear();
+                trgSegBuffer.Clear();
+                refs.Clear();
+                isInTrainingData = false;
+                hasUnfinishedRange = false;
+            }
+
+            textId = row.TextId;
+            refs.AddRange(row.NRefs[2].Count > 0 ? row.NRefs[2] : row.NRefs[1]);
+            isInTrainingData = isInTrainingData || row.Text(2).Length > 0;
+
+            if (row.Text(0).Length > 0)
+            {
+                if (srcSegBuffer.Length > 0)
+                    srcSegBuffer.Append(' ');
+                srcSegBuffer.Append(row.Text(0));
+            }
+            if (row.Text(1).Length > 0)
+            {
+                if (trgSegBuffer.Length > 0)
+                    trgSegBuffer.Append(' ');
+                trgSegBuffer.Append(row.Text(1));
+            }
+
+            if (row.IsInRange(0) || row.IsInRange(1) || row.IsInRange(2))
+            {
+                hasUnfinishedRange = true;
+                continue;
+            }
+
+            yield return (new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1), isInTrainingData);
+
+            srcSegBuffer.Clear();
+            trgSegBuffer.Clear();
+            refs.Clear();
+            isInTrainingData = false;
+        }
+        if (hasUnfinishedRange)
+        {
+            yield return (new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1), isInTrainingData);
         }
     }
 

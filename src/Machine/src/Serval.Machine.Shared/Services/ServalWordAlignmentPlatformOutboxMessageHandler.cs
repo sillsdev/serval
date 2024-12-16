@@ -8,11 +8,12 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
 {
     private readonly WordAlignmentPlatformApi.WordAlignmentPlatformApiClient _client = client;
     private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Converters = { new WordAlignmentConverter() } };
 
     public string OutboxId => ServalWordAlignmentPlatformOutboxConstants.OutboxId;
 
     public async Task HandleMessageAsync(
+        string groupId,
         string method,
         string? content,
         Stream? contentStream,
@@ -52,8 +53,6 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.InsertInferences:
-                var jsonSerializerOptions = new JsonSerializerOptions(JsonSerializerOptions);
-                jsonSerializerOptions.Converters.Add(new WordAlignmentJsonConverter());
                 IAsyncEnumerable<Models.WordAlignment> wordAlignments = JsonSerializer
                     .DeserializeAsyncEnumerable<Models.WordAlignment>(
                         contentStream!,
@@ -62,14 +61,14 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                     )
                     .OfType<Models.WordAlignment>();
 
-                using (var call = _client.InsertInferences(cancellationToken: cancellationToken))
+                using (var call = _client.InsertWordAlignments(cancellationToken: cancellationToken))
                 {
                     await foreach (Models.WordAlignment wordAlignment in wordAlignments)
                     {
                         await call.RequestStream.WriteAsync(
-                            new InsertInferencesRequest
+                            new InsertWordAlignmentsRequest
                             {
-                                EngineId = content!,
+                                EngineId = groupId,
                                 CorpusId = wordAlignment.CorpusId,
                                 TextId = wordAlignment.TextId,
                                 Refs = { wordAlignment.Refs },
@@ -109,32 +108,83 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
             };
         }
     }
-}
 
-public class WordAlignmentJsonConverter : JsonConverter<object>
-{
-    public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    internal class WordAlignmentConverter : JsonConverter<Models.WordAlignment>
     {
-        switch (reader.TokenType)
+        public override Models.WordAlignment Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options
+        )
         {
-            case JsonTokenType.True:
-                return true;
-            case JsonTokenType.False:
-                return false;
-            case JsonTokenType.Number when reader.TryGetInt64(out long l):
-                return l;
-            case JsonTokenType.Number:
-                return reader.GetDouble();
-            case JsonTokenType.String:
-                var str = reader.GetString();
-                if (SIL.Machine.Corpora.AlignedWordPair.TryParse(str, out var alignedWordPair))
-                    return alignedWordPair;
-                return str!;
-            default:
-                throw new JsonException();
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException(
+                    $"Expected StartObject token at the beginning of WordAlignment object but instead encountered {reader.TokenType}"
+                );
+            }
+            string corpusId = "",
+                textId = "";
+            IReadOnlyList<double> confidences = [];
+            IReadOnlyList<string> refs = [],
+                sourceTokens = [],
+                targetTokens = [];
+            IReadOnlyList<SIL.Machine.Corpora.AlignedWordPair> alignedWordPairs = [];
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    string s = reader.GetString()!;
+                    switch (s)
+                    {
+                        case "corpus_id":
+                            reader.Read();
+                            corpusId = reader.GetString()!;
+                            break;
+                        case "text_id":
+                            reader.Read();
+                            textId = reader.GetString()!;
+                            break;
+                        case "confidences":
+                            reader.Read();
+                            confidences = JsonSerializer.Deserialize<IList<double>>(ref reader, options)!.ToArray();
+                            break;
+                        case "refs":
+                            reader.Read();
+                            refs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "source_tokens":
+                            reader.Read();
+                            sourceTokens = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "target_tokens":
+                            reader.Read();
+                            targetTokens = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "alignment":
+                            reader.Read();
+                            alignedWordPairs = SIL.Machine.Corpora.AlignedWordPair.Parse(reader.GetString()).ToArray();
+                            break;
+                        default:
+                            throw new JsonException(
+                                $"Unexpected property name {s} when deserializing WordAlignment object"
+                            );
+                    }
+                }
+            }
+            return new Models.WordAlignment()
+            {
+                CorpusId = corpusId,
+                TextId = textId,
+                Refs = refs,
+                Alignment = alignedWordPairs,
+                Confidences = confidences,
+                SourceTokens = sourceTokens,
+                TargetTokens = targetTokens
+            };
         }
-    }
 
-    public override void Write(Utf8JsonWriter writer, object objectToWrite, JsonSerializerOptions options) =>
-        JsonSerializer.Serialize(writer, objectToWrite, objectToWrite.GetType(), options);
+        public override void Write(Utf8JsonWriter writer, Models.WordAlignment value, JsonSerializerOptions options) =>
+            throw new NotSupportedException();
+    }
 }
