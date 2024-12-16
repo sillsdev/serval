@@ -278,8 +278,8 @@ public class WordAlignmentPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> InsertInferences(
-        IAsyncStreamReader<InsertInferencesRequest> requestStream,
+    public override async Task<Empty> InsertWordAlignments(
+        IAsyncStreamReader<InsertWordAlignmentsRequest> requestStream,
         ServerCallContext context
     )
     {
@@ -287,7 +287,7 @@ public class WordAlignmentPlatformServiceV1(
         int nextModelRevision = 0;
 
         var batch = new List<Models.WordAlignment>();
-        await foreach (InsertInferencesRequest request in requestStream.ReadAllAsync(context.CancellationToken))
+        await foreach (InsertWordAlignmentsRequest request in requestStream.ReadAllAsync(context.CancellationToken))
         {
             if (request.EngineId != engineId)
             {
@@ -327,5 +327,24 @@ public class WordAlignmentPlatformServiceV1(
             await _wordAlignments.InsertAllAsync(batch, CancellationToken.None);
 
         return Empty;
+    }
+
+    public override async Task<Empty> UpdateBuildExecutionData(
+        UpdateBuildExecutionDataRequest request,
+        ServerCallContext context
+    )
+    {
+        await _builds.UpdateAsync(
+            b => b.Id == request.BuildId,
+            u =>
+            {
+                // initialize ExecutionData if it's null
+                foreach (KeyValuePair<string, string> entry in request.ExecutionData)
+                    u.Set(b => b.ExecutionData[entry.Key], entry.Value);
+            },
+            cancellationToken: context.CancellationToken
+        );
+
+        return new Empty();
     }
 }

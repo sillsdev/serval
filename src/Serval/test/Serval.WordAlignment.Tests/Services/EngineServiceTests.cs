@@ -414,7 +414,7 @@ public class EngineServiceTests
                 Id = BUILD1_ID,
                 EngineRef = engineId,
                 TrainOn = [new TrainingCorpus { ParallelCorpusRef = "corpus1" }],
-                WordAlignOn = [new TrainingCorpus { ParallelCorpusRef = "corpus1" }]
+                WordAlignOn = [new WordAlignmentCorpus { ParallelCorpusRef = "corpus1" }]
             }
         );
         _ = env.WordAlignmentServiceClient.Received()
@@ -490,7 +490,7 @@ public class EngineServiceTests
                 Id = BUILD1_ID,
                 EngineRef = engineId,
                 TrainOn = [new TrainingCorpus { ParallelCorpusRef = "corpus1" }],
-                WordAlignOn = [new TrainingCorpus { ParallelCorpusRef = "corpus2" }]
+                WordAlignOn = [new WordAlignmentCorpus { ParallelCorpusRef = "corpus2" }]
             }
         );
         _ = env.WordAlignmentServiceClient.Received()

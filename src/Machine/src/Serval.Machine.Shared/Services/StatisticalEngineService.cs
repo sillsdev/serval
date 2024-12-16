@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.WordAlignment.V1;
+
+namespace Serval.Machine.Shared.Services;
 
 public class StatisticalEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
@@ -52,7 +54,7 @@ public class StatisticalEngineService(
         return wordAlignmentEngine;
     }
 
-    public async Task<WordAlignmentResult> GetBestPhraseAlignmentAsync(
+    public async Task<WordAlignmentResult> GetBestWordAlignmentAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -61,6 +63,8 @@ public class StatisticalEngineService(
     {
         WordAlignmentEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
         WordAlignmentEngineState state = _stateService.Get(engineId);
+        if (state.IsMarkedForDeletion)
+            throw new InvalidOperationException("Engine is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         WordAlignmentResult result = await @lock.ReaderLockAsync(
@@ -72,33 +76,30 @@ public class StatisticalEngineService(
                 // there is no way to cancel this call
                 IReadOnlyList<string> sourceTokens = tokenizer.Tokenize(sourceSegment).ToList();
                 IReadOnlyList<string> targetTokens = tokenizer.Tokenize(targetSegment).ToList();
-                IReadOnlyCollection<AlignedWordPair> wordPairs = wordAlignmentEngine.GetBestAlignedWordPairs(
-                    sourceTokens,
-                    targetTokens
-                );
+                IReadOnlyCollection<SIL.Machine.Corpora.AlignedWordPair> wordPairs =
+                    wordAlignmentEngine.GetBestAlignedWordPairs(sourceTokens, targetTokens);
                 wordAlignmentEngine.ComputeAlignedWordPairScores(sourceTokens, targetTokens, wordPairs);
-                return new WordAlignmentResult(
-                    sourceTokens: sourceTokens,
-                    targetTokens: targetTokens,
-                    alignment: new WordAlignmentMatrix(
-                        sourceTokens.Count,
-                        targetTokens.Count,
-                        wordPairs.Select(wp => (wp.SourceIndex, wp.TargetIndex))
-                    ),
-                    confidences: wordPairs.Select(wp => wp.AlignmentScore * wp.TranslationScore).ToList()
-                );
+                return new WordAlignmentResult()
+                {
+                    SourceTokens = { sourceTokens },
+                    TargetTokens = { targetTokens },
+                    Alignment = { wordPairs.Select(Map) },
+                    Confidences = { wordPairs.Select(wp => wp.AlignmentScore).ToList() }
+                };
             },
             cancellationToken: cancellationToken
         );
 
         state.Touch();
         return result;
-
-        throw new NotImplementedException();
     }
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
+        // there is no way to cancel this call
+        WordAlignmentEngineState state = _stateService.Get(engineId);
+        state.IsMarkedForDeletion = true;
+
         await CancelBuildJobAsync(engineId, cancellationToken);
 
         await _dataAccessContext.WithTransactionAsync(
@@ -106,13 +107,11 @@ public class StatisticalEngineService(
             {
                 await _engines.DeleteAsync(e => e.EngineId == engineId, ct);
             },
-            cancellationToken: cancellationToken
+            cancellationToken: CancellationToken.None
         );
         await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
 
-        WordAlignmentEngineState state = _stateService.Get(engineId);
         _stateService.Remove(engineId);
-        // there is no way to cancel this call
         state.DeleteData();
         state.Dispose();
         await _lockFactory.DeleteAsync(engineId, CancellationToken.None);
@@ -122,7 +121,7 @@ public class StatisticalEngineService(
         string engineId,
         string buildId,
         string? buildOptions,
-        IReadOnlyList<ParallelCorpus> corpora,
+        IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus> corpora,
         CancellationToken cancellationToken = default
     )
     {
@@ -188,5 +187,14 @@ public class StatisticalEngineService(
         if (engine.BuildRevision == 0)
             throw new EngineNotBuiltException("The engine must be built first.");
         return engine;
+    }
+
+    private static WordAlignment.V1.AlignedWordPair Map(SIL.Machine.Corpora.AlignedWordPair alignedWordPair)
+    {
+        return new WordAlignment.V1.AlignedWordPair
+        {
+            SourceIndex = alignedWordPair.SourceIndex,
+            TargetIndex = alignedWordPair.TargetIndex
+        };
     }
 }

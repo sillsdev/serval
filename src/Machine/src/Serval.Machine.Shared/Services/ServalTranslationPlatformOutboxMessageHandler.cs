@@ -6,12 +6,12 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
     : IOutboxMessageHandler
 {
     private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private readonly JsonSerializerOptions _jsonSerializerOptions = MessageOutboxOptions.JsonSerializerOptions;
 
     public string OutboxId => ServalTranslationPlatformOutboxConstants.OutboxId;
 
     public async Task HandleMessageAsync(
+        string groupId,
         string method,
         string? content,
         Stream? contentStream,
@@ -22,51 +22,51 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
         {
             case ServalTranslationPlatformOutboxConstants.BuildStarted:
                 await _client.BuildStartedAsync(
-                    JsonSerializer.Deserialize<BuildStartedRequest>(content!),
+                    JsonSerializer.Deserialize<BuildStartedRequest>(content!, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.BuildCompleted:
                 await _client.BuildCompletedAsync(
-                    JsonSerializer.Deserialize<BuildCompletedRequest>(content!),
+                    JsonSerializer.Deserialize<BuildCompletedRequest>(content!, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.BuildCanceled:
                 await _client.BuildCanceledAsync(
-                    JsonSerializer.Deserialize<BuildCanceledRequest>(content!),
+                    JsonSerializer.Deserialize<BuildCanceledRequest>(content!, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.BuildFaulted:
                 await _client.BuildFaultedAsync(
-                    JsonSerializer.Deserialize<BuildFaultedRequest>(content!),
+                    JsonSerializer.Deserialize<BuildFaultedRequest>(content!, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.BuildRestarting:
                 await _client.BuildRestartingAsync(
-                    JsonSerializer.Deserialize<BuildRestartingRequest>(content!),
+                    JsonSerializer.Deserialize<BuildRestartingRequest>(content!, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
-            case ServalTranslationPlatformOutboxConstants.InsertInferences:
+            case ServalTranslationPlatformOutboxConstants.InsertPretranslations:
                 IAsyncEnumerable<Pretranslation> pretranslations = JsonSerializer
                     .DeserializeAsyncEnumerable<Pretranslation>(
                         contentStream!,
-                        JsonSerializerOptions,
+                        _jsonSerializerOptions,
                         cancellationToken
                     )
                     .OfType<Pretranslation>();
 
-                using (var call = _client.InsertInferences(cancellationToken: cancellationToken))
+                using (var call = _client.InsertPretranslations(cancellationToken: cancellationToken))
                 {
                     await foreach (Pretranslation pretranslation in pretranslations)
                     {
                         await call.RequestStream.WriteAsync(
-                            new InsertInferencesRequest
+                            new InsertPretranslationsRequest
                             {
-                                EngineId = content!,
+                                EngineId = groupId,
                                 CorpusId = pretranslation.CorpusId,
                                 TextId = pretranslation.TextId,
                                 Refs = { pretranslation.Refs },

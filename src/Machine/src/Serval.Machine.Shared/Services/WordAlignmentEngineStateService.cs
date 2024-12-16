@@ -27,23 +27,28 @@ public class WordAlignmentEngineStateService(
 
     public async Task CommitAsync(
         IDistributedReaderWriterLockFactory lockFactory,
-        IRepository<TranslationEngine> engines,
+        IRepository<WordAlignmentEngine> engines,
         TimeSpan inactiveTimeout,
         CancellationToken cancellationToken = default
     )
     {
         foreach (WordAlignmentEngineState state in _engineStates.Values)
         {
+            if (!state.IsLoaded || state.IsMarkedForDeletion)
+            {
+                continue;
+            }
+
             try
             {
                 IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(state.EngineId, cancellationToken);
                 await @lock.WriterLockAsync(
                     async ct =>
                     {
-                        TranslationEngine? engine = await engines.GetAsync(state.EngineId, ct);
-                        if (engine is not null && !(engine.CollectTrainSegmentPairs ?? false))
+                        WordAlignmentEngine? engine = await engines.GetAsync(state.EngineId, ct);
+                        if (engine is not null)
                             // there is no way to cancel this call
-                            state.Commit(engine.BuildRevision, inactiveTimeout);
+                            state.Commit(engine!.BuildRevision, inactiveTimeout);
                     },
                     _options.CurrentValue.EngineCommitTimeout,
                     cancellationToken: cancellationToken
