@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Models;
+namespace Serval.Machine.Shared.Models;
 
 public enum BuildJobState
 {
@@ -29,4 +29,5 @@ public record Build
     public required BuildJobRunnerType BuildJobRunner { get; init; }
     public required BuildStage Stage { get; init; }
     public string? Options { get; set; }
+    public IReadOnlyDictionary<string, string> ExecutionData { get; init; } = new Dictionary<string, string>();
 }

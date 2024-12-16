@@ -137,4 +137,22 @@ public class ServalPlatformService(
             cancellationToken: cancellationToken
         );
     }
+
+    public async Task UpdateBuildExecutionDataAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyDictionary<string, string> executionData,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var request = new UpdateBuildExecutionDataRequest { EngineId = engineId, BuildId = buildId };
+        request.ExecutionData.Add((IDictionary<string, string>)executionData);
+        await _outboxService.EnqueueMessageAsync(
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.UpdateBuildExecutionData,
+            engineId,
+            JsonSerializer.Serialize(request),
+            cancellationToken: cancellationToken
+        );
+    }
 }

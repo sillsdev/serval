@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Contracts;
+namespace Serval.Translation.Contracts;
 
 public record TranslationBuildDto
 {
@@ -28,4 +28,5 @@ public record TranslationBuildDto
     /// </example>
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
+    public IReadOnlyDictionary<string, string>? ExecutionData { get; init; }
 }

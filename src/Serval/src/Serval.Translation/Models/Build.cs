@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Models;
+namespace Serval.Translation.Models;
 
 public record Build : IInitializableEntity
 {
@@ -16,6 +16,7 @@ public record Build : IInitializableEntity
     public DateTime? DateFinished { get; init; }
     public IReadOnlyDictionary<string, object>? Options { get; init; }
     public string? DeploymentVersion { get; init; }
+    public IReadOnlyDictionary<string, string> ExecutionData { get; init; } = new Dictionary<string, string>();
     public bool? IsInitialized { get; set; }
     public DateTime? DateCreated { get; set; }
 }
