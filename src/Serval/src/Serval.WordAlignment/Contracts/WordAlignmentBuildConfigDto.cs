@@ -4,7 +4,7 @@ public record WordAlignmentBuildConfigDto
 {
     public string? Name { get; init; }
     public IReadOnlyList<TrainingCorpusConfigDto>? TrainOn { get; init; }
-    public IReadOnlyList<TrainingCorpusConfigDto>? WordAlignOn { get; init; }
+    public IReadOnlyList<WordAlignmentCorpusConfigDto>? WordAlignOn { get; init; }
 
     /// <example>
     /// {

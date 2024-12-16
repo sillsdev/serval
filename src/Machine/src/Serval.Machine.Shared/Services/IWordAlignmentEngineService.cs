@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.WordAlignment.V1;
+
+namespace Serval.Machine.Shared.Services;
 
 public interface IWordAlignmentEngineService
 {
@@ -13,7 +15,7 @@ public interface IWordAlignmentEngineService
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<WordAlignmentResult> GetBestPhraseAlignmentAsync(
+    Task<WordAlignmentResult> GetBestWordAlignmentAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -24,7 +26,7 @@ public interface IWordAlignmentEngineService
         string engineId,
         string buildId,
         string? buildOptions,
-        IReadOnlyList<ParallelCorpus> corpora,
+        IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus> corpora,
         CancellationToken cancellationToken = default
     );
 

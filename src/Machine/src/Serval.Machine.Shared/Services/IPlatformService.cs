@@ -23,7 +23,7 @@ public interface IPlatformService
     Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default);
     Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default);
 
-    Task InsertPretranslationsAsync(
+    Task InsertInferencesAsync(
         string engineId,
         Stream pretranslationsStream,
         CancellationToken cancellationToken = default

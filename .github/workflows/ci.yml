@@ -19,7 +19,7 @@ jobs:
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.8.0
         with:
-          mongodb-version: "6.0"
+          mongodb-version: "8.0"
           mongodb-replica-set: rs0
 
         # Pull in a matching machine repo branch if it exists to use it rather than the released version of Machine.
