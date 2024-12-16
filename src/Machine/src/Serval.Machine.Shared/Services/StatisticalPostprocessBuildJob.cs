@@ -8,7 +8,7 @@ public class StatisticalPostprocessBuildJob(
     ILogger<StatisticalPostprocessBuildJob> logger,
     ISharedFileService sharedFileService,
     IDistributedReaderWriterLockFactory lockFactory,
-    ISmtModelFactory smtModelFactory,
+    IWordAlignmentModelFactory wordAlignmentModelFactory,
     IOptionsMonitor<BuildJobOptions> buildOptions,
     IOptionsMonitor<WordAlignmentEngineOptions> engineOptions
 )
@@ -22,7 +22,7 @@ public class StatisticalPostprocessBuildJob(
         buildOptions
     )
 {
-    private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
+    private readonly IWordAlignmentModelFactory _wordAlignmentModelFactory = wordAlignmentModelFactory;
     private readonly IOptionsMonitor<WordAlignmentEngineOptions> _engineOptions = engineOptions;
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
 
@@ -38,7 +38,7 @@ public class StatisticalPostprocessBuildJob(
 
         await using (
             Stream wordAlignmentStream = await SharedFileService.OpenReadAsync(
-                $"builds/{buildId}/word_alignment_outputs.json",
+                $"builds/{buildId}/word_alignments.outputs.json",
                 cancellationToken
             )
         )
@@ -74,7 +74,7 @@ public class StatisticalPostprocessBuildJob(
                     Stream engineStream = await SharedFileService.OpenReadAsync($"builds/{buildId}/model.tar.gz", ct)
                 )
                 {
-                    await _smtModelFactory.UpdateEngineFromAsync(
+                    await _wordAlignmentModelFactory.UpdateEngineFromAsync(
                         Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId),
                         engineStream,
                         ct

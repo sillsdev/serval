@@ -75,6 +75,15 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddWordAlignmentModel(this IMachineBuilder builder)
+    {
+        builder.Services.Configure<WordAlignmentModelOptions>(
+            builder.Configuration.GetSection(WordAlignmentModelOptions.Key)
+        );
+        builder.Services.AddSingleton<IWordAlignmentModelFactory, WordAlignmentModelFactory>();
+        return builder;
+    }
+
     public static IMachineBuilder AddTransferEngine(this IMachineBuilder builder)
     {
         builder.Services.AddSingleton<ITransferEngineFactory, TransferEngineFactory>();
@@ -485,7 +494,7 @@ public static class IMachineBuilderExtensions
     {
         try
         {
-            builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
+            builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser().AddWordAlignmentModel();
         }
         catch (ArgumentException)
         {
@@ -516,9 +525,9 @@ public static class IMachineBuilderExtensions
         var smtTransferEngineOptions = new SmtTransferEngineOptions();
         builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
         string? smtDriveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
-        var statisticsEngineOptions = new WordAlignmentEngineOptions();
-        builder.Configuration.GetSection(WordAlignmentEngineOptions.Key).Bind(statisticsEngineOptions);
-        string? statisticsDriveLetter = Path.GetPathRoot(statisticsEngineOptions.EnginesDir)?[..1];
+        var statisticalEngineOptions = new WordAlignmentEngineOptions();
+        builder.Configuration.GetSection(WordAlignmentEngineOptions.Key).Bind(statisticalEngineOptions);
+        string? statisticsDriveLetter = Path.GetPathRoot(statisticalEngineOptions.EnginesDir)?[..1];
         if (smtDriveLetter is null || statisticsDriveLetter is null)
             throw new InvalidOperationException("SMT Engine and Statistical directory is required");
         if (smtDriveLetter != statisticsDriveLetter)

@@ -69,7 +69,7 @@ public class WordAlignmentEngineServiceV1(BackgroundTaskQueue taskQueue)
                 try
                 {
                     using (
-                        AsyncClientStreamingCall<InsertInferencesRequest, Empty> call = client.InsertInferences(
+                        AsyncClientStreamingCall<InsertWordAlignmentsRequest, Empty> call = client.InsertWordAlignments(
                             cancellationToken: cancellationToken
                         )
                     )
@@ -128,7 +128,7 @@ public class WordAlignmentEngineServiceV1(BackgroundTaskQueue taskQueue)
                                                     targetLine.Split().Length
                                                 );
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertInferencesRequest
+                                                    new InsertWordAlignmentsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
@@ -168,7 +168,7 @@ public class WordAlignmentEngineServiceV1(BackgroundTaskQueue taskQueue)
                                                     targetLine.Split().Length
                                                 );
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertInferencesRequest
+                                                    new InsertWordAlignmentsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,

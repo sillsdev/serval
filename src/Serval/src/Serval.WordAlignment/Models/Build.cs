@@ -7,7 +7,7 @@ public record Build : IInitializableEntity
     public string? Name { get; init; }
     public required string EngineRef { get; init; }
     public IReadOnlyList<TrainingCorpus>? TrainOn { get; init; }
-    public IReadOnlyList<TrainingCorpus>? WordAlignOn { get; init; }
+    public IReadOnlyList<WordAlignmentCorpus>? WordAlignOn { get; init; }
     public int Step { get; init; }
     public double? PercentCompleted { get; init; }
     public string? Message { get; init; }
@@ -16,6 +16,7 @@ public record Build : IInitializableEntity
     public DateTime? DateFinished { get; init; }
     public IReadOnlyDictionary<string, object>? Options { get; init; }
     public string? DeploymentVersion { get; init; }
+    public IReadOnlyDictionary<string, string> ExecutionData { get; init; } = new Dictionary<string, string>();
     public bool? IsInitialized { get; set; }
     public DateTime? DateCreated { get; set; }
 }
