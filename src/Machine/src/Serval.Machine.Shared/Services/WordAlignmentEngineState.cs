@@ -12,14 +12,15 @@ public class WordAlignmentEngineState(
     private readonly IOptionsMonitor<WordAlignmentEngineOptions> _options = options;
     private readonly AsyncLock _lock = new();
 
-    private IWordAlignmentEngine? _wordAlignmentEngine;
+    private IWordAlignmentModel? _wordAlignmentModel;
 
     public string EngineId { get; } = engineId;
 
     public bool IsUpdated { get; set; }
+    public bool IsMarkedForDeletion { get; set; }
     public int CurrentBuildRevision { get; set; } = -1;
     public DateTime LastUsedTime { get; private set; } = DateTime.UtcNow;
-    public bool IsLoaded => _wordAlignmentEngine != null;
+    public bool IsLoaded => _wordAlignmentModel != null;
 
     private string EngineDir => Path.Combine(_options.CurrentValue.EnginesDir, EngineId);
 
@@ -33,17 +34,20 @@ public class WordAlignmentEngineState(
         CancellationToken cancellationToken = default
     )
     {
+        if (IsMarkedForDeletion)
+            throw new InvalidOperationException("Engine is marked for deletion");
+
         using (await _lock.LockAsync(cancellationToken))
         {
-            if (_wordAlignmentEngine is not null && CurrentBuildRevision != -1 && buildRevision != CurrentBuildRevision)
+            if (_wordAlignmentModel is not null && CurrentBuildRevision != -1 && buildRevision != CurrentBuildRevision)
             {
                 IsUpdated = false;
                 Unload();
             }
 
-            _wordAlignmentEngine ??= _wordAlignmentModelFactory.Create(EngineDir);
+            _wordAlignmentModel ??= _wordAlignmentModelFactory.Create(EngineDir);
             CurrentBuildRevision = buildRevision;
-            return _wordAlignmentEngine;
+            return _wordAlignmentModel;
         }
     }
 
@@ -55,11 +59,14 @@ public class WordAlignmentEngineState(
 
     public void Commit(int buildRevision, TimeSpan inactiveTimeout)
     {
-        if (_wordAlignmentEngine is null)
+        if (_wordAlignmentModel is null)
             return;
 
         if (CurrentBuildRevision == -1)
             CurrentBuildRevision = buildRevision;
+
+        SaveModel();
+
         if (buildRevision != CurrentBuildRevision)
         {
             Unload();
@@ -69,6 +76,10 @@ public class WordAlignmentEngineState(
         {
             Unload();
         }
+        else
+        {
+            SaveModel();
+        }
     }
 
     public void Touch()
@@ -76,14 +87,22 @@ public class WordAlignmentEngineState(
         LastUsedTime = DateTime.UtcNow;
     }
 
+    private void SaveModel()
+    {
+        if (_wordAlignmentModel is not null && IsUpdated && !IsMarkedForDeletion)
+        {
+            _wordAlignmentModel.Save();
+        }
+    }
+
     private void Unload()
     {
-        if (_wordAlignmentEngine is null)
+        if (_wordAlignmentModel is null)
             return;
 
-        _wordAlignmentEngine.Dispose();
+        _wordAlignmentModel.Dispose();
 
-        _wordAlignmentEngine = null;
+        _wordAlignmentModel = null;
         CurrentBuildRevision = -1;
     }
 

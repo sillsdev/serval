@@ -4,7 +4,6 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
     : IBuildJobService<TEngine>
     where TEngine : ITrainingEngine
 {
-    // TODO: make some sort of service to get the engine repos.
     protected readonly Dictionary<BuildJobRunnerType, IBuildJobRunner> Runners = runners.ToDictionary(r => r.Type);
     protected readonly IRepository<TEngine> Engines = engines;
 

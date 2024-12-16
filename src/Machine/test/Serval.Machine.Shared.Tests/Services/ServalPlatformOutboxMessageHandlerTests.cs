@@ -12,8 +12,12 @@ public class ServalPlatformOutboxMessageHandlerTests
         TestEnvironment env = new();
 
         await env.Handler.HandleMessageAsync(
+            "groupId",
             ServalTranslationPlatformOutboxConstants.BuildStarted,
-            JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "C" }),
+            JsonSerializer.Serialize(
+                new BuildStartedRequest { BuildId = "C" },
+                MessageOutboxOptions.JsonSerializerOptions
+            ),
             null
         );
 
@@ -43,6 +47,7 @@ public class ServalPlatformOutboxMessageHandlerTests
             );
             stream.Seek(0, SeekOrigin.Begin);
             await env.Handler.HandleMessageAsync(
+                "engine1",
                 ServalTranslationPlatformOutboxConstants.InsertPretranslations,
                 "engine1",
                 stream

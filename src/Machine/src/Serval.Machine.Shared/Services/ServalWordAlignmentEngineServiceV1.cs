@@ -38,10 +38,10 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
     )
     {
         IWordAlignmentEngineService engineService = GetEngineService(request.EngineType);
-        SIL.Machine.Translation.WordAlignmentResult result;
+        WordAlignmentResult result;
         try
         {
-            result = await engineService.GetBestPhraseAlignmentAsync(
+            result = await engineService.GetBestWordAlignmentAsync(
                 request.EngineId,
                 request.SourceSegment,
                 request.TargetSegment,
@@ -53,7 +53,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
             throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
 
-        return new GetWordAlignmentResponse { Result = Map(result) };
+        return new GetWordAlignmentResponse { Result = result };
     }
 
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
@@ -114,29 +114,6 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         throw new RpcException(
             new Status(StatusCode.InvalidArgument, $"The engine type {engineTypeStr} is not supported.")
         );
-    }
-
-    private static WordAlignment.V1.WordAlignmentResult Map(SIL.Machine.Translation.WordAlignmentResult source)
-    {
-        return new WordAlignment.V1.WordAlignmentResult
-        {
-            SourceTokens = { source.SourceTokens },
-            TargetTokens = { source.TargetTokens },
-            Alignment = { Map(source.Alignment) },
-            Confidences = { source.Confidences }
-        };
-    }
-
-    private static IEnumerable<WordAlignment.V1.AlignedWordPair> Map(WordAlignmentMatrix source)
-    {
-        for (int i = 0; i < source.RowCount; i++)
-        {
-            for (int j = 0; j < source.ColumnCount; j++)
-            {
-                if (source[i, j])
-                    yield return new WordAlignment.V1.AlignedWordPair { SourceIndex = i, TargetIndex = j };
-            }
-        }
     }
 
     private static SIL.ServiceToolkit.Models.ParallelCorpus Map(WordAlignment.V1.ParallelCorpus source)

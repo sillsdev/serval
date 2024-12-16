@@ -6,7 +6,9 @@ namespace Serval.E2ETests;
 [Category("E2E")]
 public class ServalApiTests
 {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private ServalClientHelper _helperClient;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
@@ -167,10 +169,10 @@ public class ServalApiTests
         var executionData = build.ExecutionData!;
 
         Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("pretranslateCount"));
+        Assert.That(executionData, Contains.Key("inferenceCount"));
 
         int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int pretranslateCount = Convert.ToInt32(executionData["pretranslateCount"], CultureInfo.InvariantCulture);
+        int pretranslateCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
 
         Assert.That(trainCount, Is.GreaterThan(0));
         Assert.That(pretranslateCount, Is.GreaterThan(0));
@@ -315,7 +317,7 @@ public class ServalApiTests
             await _helperClient.TranslationEnginesClient.GetWordGraphAsync(smtEngineId, "verdad");
         });
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex.StatusCode, Is.EqualTo(409));
+        Assert.That(ex!.StatusCode, Is.EqualTo(409));
 
         //Add corpus
         var corpus1 = await _helperClient.MakeParallelTextCorpus(["2JN.txt", "3JN.txt"], "es", "en", false);
@@ -497,10 +499,20 @@ public class ServalApiTests
     public async Task GetWordAlignment()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Statistical", "es", "en", "STAT1");
-        string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
-        ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
-        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
-        await _helperClient.BuildEngineAsync(engineId);
+        string[] books = ["1JN.txt", "2JN.txt", "MAT.txt"];
+        ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+        ParallelCorpusConfig testCorpus = await _helperClient.MakeParallelTextCorpus(["3JN.txt"], "es", "en", false);
+        string trainCorpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
+        string corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, testCorpus, true);
+        _helperClient.WordAlignmentBuildConfig.TrainOn =
+        [
+            new TrainingCorpusConfig2() { ParallelCorpusId = trainCorpusId }
+        ];
+        _helperClient.WordAlignmentBuildConfig.WordAlignOn =
+        [
+            new WordAlignmentCorpusConfig() { ParallelCorpusId = corpusId }
+        ];
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
         WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
             engineId,
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "spirit truth" }
@@ -515,6 +527,24 @@ public class ServalApiTests
                 }
             )
         );
+
+        WordAlignmentBuild build = await _helperClient.WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.ExecutionData, Is.Not.Null);
+
+        var executionData = build.ExecutionData!;
+
+        Assert.That(executionData, Contains.Key("trainCount"));
+        Assert.That(executionData, Contains.Key("inferenceCount"));
+
+        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
+        int wordAlignmentCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
+
+        Assert.That(trainCount, Is.GreaterThan(0));
+        Assert.That(wordAlignmentCount, Is.GreaterThan(0));
+
+        IList<Client.WordAlignment> wordAlignments =
+            await _helperClient.WordAlignmentEnginesClient.GetAllWordAlignmentsAsync(engineId, corpusId);
+        Assert.That(wordAlignments, Has.Count.EqualTo(14)); //Number of verses in 3JN
     }
 
     [TearDown]
