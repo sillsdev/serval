@@ -10679,7 +10679,7 @@ namespace Serval.Client
         public System.Collections.Generic.IList<TrainingCorpus2>? TrainOn { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("wordAlignOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<TrainingCorpus2>? WordAlignOn { get; set; } = default!;
+        public System.Collections.Generic.IList<WordAlignmentCorpus>? WordAlignOn { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
         public int Step { get; set; } = default!;
@@ -10742,6 +10742,20 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WordAlignmentCorpus
+    {
+        [Newtonsoft.Json.JsonProperty("parallelCorpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public ResourceLink? ParallelCorpus { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<ParallelCorpusFilter2>? SourceFilters { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<ParallelCorpusFilter2>? TargetFilters { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordAlignmentBuildConfig
     {
         [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -10751,7 +10765,7 @@ namespace Serval.Client
         public System.Collections.Generic.IList<TrainingCorpusConfig2>? TrainOn { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("wordAlignOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<TrainingCorpusConfig2>? WordAlignOn { get; set; } = default!;
+        public System.Collections.Generic.IList<WordAlignmentCorpusConfig>? WordAlignOn { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public object? Options { get; set; } = default!;
@@ -10784,6 +10798,20 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? ScriptureRange { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WordAlignmentCorpusConfig
+    {
+        [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ParallelCorpusId { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<ParallelCorpusFilterConfig2>? SourceFilters { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<ParallelCorpusFilterConfig2>? TargetFilters { get; set; } = default!;
 
     }
 

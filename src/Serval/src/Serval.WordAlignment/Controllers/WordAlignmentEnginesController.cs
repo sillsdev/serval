@@ -9,6 +9,7 @@ public class WordAlignmentEnginesController(
     IBuildService buildService,
     IWordAlignmentService wordAlignmentService,
     IOptionsMonitor<ApiOptions> apiOptions,
+    IConfiguration configuration,
     IUrlService urlService,
     ILogger<WordAlignmentEnginesController> logger
 ) : ServalControllerBase(authService)
@@ -22,6 +23,7 @@ public class WordAlignmentEnginesController(
     private readonly IOptionsMonitor<ApiOptions> _apiOptions = apiOptions;
     private readonly IUrlService _urlService = urlService;
     private readonly ILogger<WordAlignmentEnginesController> _logger = logger;
+    private readonly IConfiguration _configuration = configuration;
 
     /// <summary>
     /// Get all word alignment engines
@@ -568,9 +570,11 @@ public class WordAlignmentEnginesController(
         CancellationToken cancellationToken
     )
     {
+        string deploymentVersion = _configuration.GetValue<string>("deploymentVersion") ?? "Unknown";
+
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Build build = Map(engine, buildConfig);
+        Build build = Map(engine, buildConfig, deploymentVersion);
         await _engineService.StartBuildAsync(build, cancellationToken);
 
         WordAlignmentBuildDto dto = Map(build);
@@ -756,7 +760,7 @@ public class WordAlignmentEnginesController(
         };
     }
 
-    private static Build Map(Engine engine, WordAlignmentBuildConfigDto source)
+    private static Build Map(Engine engine, WordAlignmentBuildConfigDto source, string deploymentVersion)
     {
         return new Build
         {
@@ -764,8 +768,54 @@ public class WordAlignmentEnginesController(
             Name = source.Name,
             WordAlignOn = Map(engine, source.WordAlignOn),
             TrainOn = Map(engine, source.TrainOn),
-            Options = Map(source.Options)
+            Options = Map(source.Options),
+            DeploymentVersion = deploymentVersion
         };
+    }
+
+    private static List<WordAlignmentCorpus>? Map(Engine engine, IReadOnlyList<WordAlignmentCorpusConfigDto>? source)
+    {
+        if (source is null)
+            return null;
+
+        var corpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
+        var wordAlignmentCorpora = new List<WordAlignmentCorpus>();
+        foreach (WordAlignmentCorpusConfigDto cc in source)
+        {
+            if (cc.ParallelCorpusId == null)
+            {
+                throw new InvalidOperationException($"One of ParallelCorpusId and CorpusId must be set.");
+            }
+            if (!corpusIds.Contains(cc.ParallelCorpusId))
+            {
+                throw new InvalidOperationException(
+                    $"The parallel corpus {cc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
+                );
+            }
+            if (
+                cc.SourceFilters != null
+                && cc.SourceFilters.Count > 0
+                && (
+                    cc.SourceFilters.Select(sf => sf.CorpusId).Distinct().Count() > 1
+                    || cc.SourceFilters[0].CorpusId
+                        != engine.ParallelCorpora.Where(pc => pc.Id == cc.ParallelCorpusId).First().SourceCorpora[0].Id
+                )
+            )
+            {
+                throw new InvalidOperationException(
+                    $"Only the first source corpus in a parallel corpus may be filtered for pretranslation."
+                );
+            }
+            wordAlignmentCorpora.Add(
+                new WordAlignmentCorpus
+                {
+                    ParallelCorpusRef = cc.ParallelCorpusId,
+                    SourceFilters = cc.SourceFilters?.Select(Map).ToList(),
+                    TargetFilters = cc.TargetFilters?.Select(Map).ToList()
+                }
+            );
+        }
+        return wordAlignmentCorpora;
     }
 
     private static List<TrainingCorpus>? Map(Engine engine, IReadOnlyList<TrainingCorpusConfigDto>? source)
@@ -876,6 +926,26 @@ public class WordAlignmentEnginesController(
     private TrainingCorpusDto Map(string engineId, TrainingCorpus source)
     {
         return new TrainingCorpusDto
+        {
+            ParallelCorpus =
+                source.ParallelCorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.ParallelCorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetParallelTranslationCorpus,
+                            new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
+                        )
+                    }
+                    : null,
+            SourceFilters = source.SourceFilters?.Select(Map).ToList(),
+            TargetFilters = source.TargetFilters?.Select(Map).ToList()
+        };
+    }
+
+    private WordAlignmentCorpusDto Map(string engineId, WordAlignmentCorpus source)
+    {
+        return new WordAlignmentCorpusDto
         {
             ParallelCorpus =
                 source.ParallelCorpusRef != null
