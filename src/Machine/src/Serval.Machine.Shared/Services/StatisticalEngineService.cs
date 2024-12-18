@@ -52,7 +52,7 @@ public class StatisticalEngineService(
         return wordAlignmentEngine;
     }
 
-    public async Task<WordAlignmentResult> GetBestPhraseAlignmentAsync(
+    public async Task<WordAlignmentResult> GetBestWordAlignmentAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
