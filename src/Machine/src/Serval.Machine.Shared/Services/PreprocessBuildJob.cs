@@ -1,30 +1,45 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class PreprocessBuildJob(
-    IPlatformService platformService,
-    IRepository<TranslationEngine> engines,
-    IDataAccessContext dataAccessContext,
-    ILogger<PreprocessBuildJob> logger,
-    IBuildJobService buildJobService,
-    ISharedFileService sharedFileService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
-)
-    : HangfireBuildJob<IReadOnlyList<ParallelCorpus>>(
-        platformService,
-        engines,
-        dataAccessContext,
-        buildJobService,
-        logger
-    )
+public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>
+    where TEngine : ITrainingEngine
 {
-    private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
+    protected static readonly JsonWriterOptions InferenceWriterOptions = new() { Indented = true };
 
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
 
-    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    protected readonly ISharedFileService SharedFileService;
+    protected readonly IParallelCorpusPreprocessingService ParallelCorpusPreprocessingService;
+    private int _seed = 1234;
+    private Random _random;
 
-    private readonly IParallelCorpusPreprocessingService _parallelCorpusPreprocessingService =
-        parallelCorpusPreprocessingService;
+    public PreprocessBuildJob(
+        IPlatformService platformService,
+        IRepository<TEngine> engines,
+        IDataAccessContext dataAccessContext,
+        ILogger<PreprocessBuildJob<TEngine>> logger,
+        IBuildJobService<TEngine> buildJobService,
+        ISharedFileService sharedFileService,
+        IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+    )
+        : base(platformService, engines, dataAccessContext, buildJobService, logger)
+    {
+        SharedFileService = sharedFileService;
+        this.ParallelCorpusPreprocessingService = parallelCorpusPreprocessingService;
+        _random = new Random(_seed);
+    }
+
+    internal int Seed
+    {
+        get => _seed;
+        set
+        {
+            if (_seed != value)
+            {
+                _seed = value;
+                _random = new Random(_seed);
+            }
+        }
+    }
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -34,7 +49,7 @@ public class PreprocessBuildJob(
         CancellationToken cancellationToken
     )
     {
-        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        TEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
@@ -55,7 +70,7 @@ public class PreprocessBuildJob(
                 { "EngineId", engineId },
                 { "BuildId", buildId },
                 { "NumTrainRows", trainCount },
-                { "NumPretranslateRows", pretranslateCount },
+                { "NumInferenceRows", pretranslateCount },
                 { "SourceLanguageResolved", srcLang },
                 { "TargetLanguageResolved", trgLang }
             };
@@ -83,7 +98,7 @@ public class PreprocessBuildJob(
             throw new OperationCanceledException();
     }
 
-    private async Task<(int TrainCount, int PretranslateCount)> WriteDataFilesAsync(
+    protected virtual async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<ParallelCorpus> corpora,
         string? buildOptions,
@@ -95,19 +110,20 @@ public class PreprocessBuildJob(
             buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
 
         await using StreamWriter sourceTrainWriter =
-            new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken));
+            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken));
         await using StreamWriter targetTrainWriter =
-            new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
-        await using Stream pretranslateStream = await _sharedFileService.OpenWriteAsync(
+            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
+
+        await using Stream pretranslateStream = await SharedFileService.OpenWriteAsync(
             $"builds/{buildId}/pretranslate.src.json",
             cancellationToken
         );
-        await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, PretranslateWriterOptions);
+        await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, InferenceWriterOptions);
 
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        await _parallelCorpusPreprocessingService.PreprocessAsync(
+        await ParallelCorpusPreprocessingService.PreprocessAsync(
             corpora,
             async row =>
             {
@@ -156,7 +172,7 @@ public class PreprocessBuildJob(
         {
             try
             {
-                await _sharedFileService.DeleteAsync($"builds/{buildId}/");
+                await SharedFileService.DeleteAsync($"builds/{buildId}/");
             }
             catch (Exception e)
             {

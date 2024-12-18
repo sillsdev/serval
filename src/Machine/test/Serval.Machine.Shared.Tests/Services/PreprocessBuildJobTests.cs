@@ -25,7 +25,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_TrainOnAll()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, pretranslateTextIds: []);
+        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: []);
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -43,7 +43,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_TrainOnTextIds()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: ["textId1"], pretranslateTextIds: []);
+        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: ["textId1"], inferenceTextIds: []);
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -61,7 +61,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_TrainAndPretranslateAll()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, pretranslateTextIds: null);
+        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: null);
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -72,7 +72,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_PretranslateAll()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: [], pretranslateTextIds: null);
+        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: [], inferenceTextIds: null);
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -80,10 +80,10 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public async Task RunAsync_PretranslateTextIds()
+    public async Task RunAsync_InferenceTextIds()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(pretranslateTextIds: ["textId1"], trainOnTextIds: null);
+        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(inferenceTextIds: ["textId1"], trainOnTextIds: null);
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -91,11 +91,11 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public async Task RunAsync_PretranslateTextIdsOverlapWithTrainOnTextIds()
+    public async Task RunAsync_InferenceTextIdsOverlapWithTrainOnTextIds()
     {
         using TestEnvironment env = new();
         ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(
-            pretranslateTextIds: ["textId1"],
+            inferenceTextIds: ["textId1"],
             trainOnTextIds: ["textId1"]
         );
 
@@ -144,12 +144,12 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public async Task RunAsync_PretranslateChapters()
+    public async Task RunAsync_InferenceChapters()
     {
         using TestEnvironment env = new();
         ParallelCorpus corpus1 = env.ParatextCorpus(
             trainOnChapters: [],
-            pretranslateChapters: new Dictionary<string, HashSet<int>>
+            inferenceChapters: new Dictionary<string, HashSet<int>>
             {
                 {
                     "1CH",
@@ -179,7 +179,7 @@ public class PreprocessBuildJobTests
                     new HashSet<int> { 1 }
                 }
             },
-            pretranslateChapters: []
+            inferenceChapters: []
         );
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: false);
@@ -250,7 +250,7 @@ public class PreprocessBuildJobTests
         using TestEnvironment env = new();
         ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
 
-        await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: TranslationEngineType.SmtTransfer);
+        await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: EngineType.SmtTransfer);
     }
 
     [Test]
@@ -265,7 +265,7 @@ public class PreprocessBuildJobTests
                     new HashSet<int>() { 2 }
                 }
             },
-            pretranslateChapters: new Dictionary<string, HashSet<int>>
+            inferenceChapters: new Dictionary<string, HashSet<int>>
             {
                 {
                     "MAT",
@@ -295,10 +295,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_OnlyParseSelectedBooks_NoBadBooks()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus = env.ParatextCorpus(
-            trainOnTextIds: new() { "LEV" },
-            pretranslateTextIds: new() { "MRK" }
-        );
+        ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: new() { "LEV" }, inferenceTextIds: new() { "MRK" });
 
         env.CorpusService = Substitute.For<ICorpusService>();
         env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
@@ -318,10 +315,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_OnlyParseSelectedBooks_TrainOnBadBook()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus = env.ParatextCorpus(
-            trainOnTextIds: new() { "MAT" },
-            pretranslateTextIds: new() { "MRK" }
-        );
+        ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: new() { "MAT" }, inferenceTextIds: new() { "MRK" });
         env.CorpusService = Substitute.For<ICorpusService>();
         env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
             .Returns(
@@ -340,10 +334,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_OnlyParseSelectedBooks_PretranslateOnBadBook()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus = env.ParatextCorpus(
-            trainOnTextIds: new() { "LEV" },
-            pretranslateTextIds: new() { "MAT" }
-        );
+        ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: new() { "LEV" }, inferenceTextIds: new() { "MAT" });
         env.CorpusService = Substitute.For<ICorpusService>();
         env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
             .Returns(
@@ -385,7 +376,7 @@ public class PreprocessBuildJobTests
                                 new() { }
                             }
                         },
-                        PretranslateChapters = new()
+                        InferenceChapters = new()
                         {
                             {
                                 "1CH",
@@ -409,7 +400,7 @@ public class PreprocessBuildJobTests
                                 new() { }
                             }
                         },
-                        PretranslateChapters = new()
+                        InferenceChapters = new()
                         {
                             {
                                 "1CH",
@@ -535,7 +526,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                                 new() { }
                             }
                         },
-                        PretranslateChapters = new()
+                        InferenceChapters = new()
                         {
                             {
                                 "1CH",
@@ -559,7 +550,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                                 new() { }
                             }
                         },
-                        PretranslateChapters = new() { }
+                        InferenceChapters = new() { }
                     },
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -667,7 +658,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                         Language = "en",
                         Files = new List<CorpusFile> { env.ParatextFile("pt-source1") },
                         TrainOnTextIds = ["MAT", "LEV"],
-                        PretranslateTextIds = ["1CH"]
+                        InferenceTextIds = ["1CH"]
                     },
                     new()
                     {
@@ -675,7 +666,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                         Language = "en",
                         Files = new List<CorpusFile> { env.ParatextFile("pt-source2") },
                         TrainOnTextIds = ["MAT", "MRK"],
-                        PretranslateTextIds = []
+                        InferenceTextIds = []
                     },
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -767,7 +758,7 @@ Target one, chapter two, verse three.
         public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
         public IDistributedReaderWriterLockFactory LockFactory { get; }
-        public IBuildJobService BuildJobService { get; }
+        public IBuildJobService<TranslationEngine> BuildJobService { get; }
         public IClearMLService ClearMLService { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
@@ -799,7 +790,7 @@ Target one, chapter two, verse three.
                         Language = "es",
                         Files = [TextFile("source1")],
                         TrainOnTextIds = [],
-                        PretranslateTextIds = []
+                        InferenceTextIds = []
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -826,8 +817,8 @@ Target one, chapter two, verse three.
                         Files = [TextFile("source1"), TextFile("source2")],
                         TrainOnTextIds = null,
                         TrainOnChapters = null,
-                        PretranslateTextIds = null,
-                        PretranslateChapters = null,
+                        InferenceTextIds = null,
+                        InferenceChapters = null,
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -854,7 +845,7 @@ Target one, chapter two, verse three.
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
                         TrainOnTextIds = null,
-                        PretranslateTextIds = null
+                        InferenceTextIds = null
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -880,7 +871,7 @@ Target one, chapter two, verse three.
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
                         TrainOnTextIds = null,
-                        PretranslateTextIds = null
+                        InferenceTextIds = null
                     },
                     new()
                     {
@@ -888,7 +879,7 @@ Target one, chapter two, verse three.
                         Language = "es",
                         Files = [ParatextFile("pt-source2")],
                         TrainOnTextIds = null,
-                        PretranslateTextIds = null
+                        InferenceTextIds = null
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -909,7 +900,7 @@ Target one, chapter two, verse three.
                 {
                     Id = "engine1",
                     EngineId = "engine1",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -929,7 +920,7 @@ Target one, chapter two, verse three.
                 {
                     Id = "engine2",
                     EngineId = "engine2",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "xxx",
                     TargetLanguage = "zzz",
                     BuildRevision = 1,
@@ -949,7 +940,7 @@ Target one, chapter two, verse three.
                 {
                     Id = "engine2",
                     EngineId = "engine2",
-                    Type = TranslationEngineType.Nmt,
+                    Type = EngineType.Nmt,
                     SourceLanguage = "xxx",
                     TargetLanguage = "zzz",
                     BuildRevision = 1,
@@ -967,6 +958,7 @@ Target one, chapter two, verse three.
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
             CorpusService = new CorpusService();
             PlatformService = Substitute.For<IPlatformService>();
+            PlatformService.EngineGroup.Returns(EngineGroup.Translation);
             LockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
                 new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
@@ -981,14 +973,14 @@ Target one, chapter two, verse three.
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            EngineType = EngineType.Nmt.ToString(),
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            EngineType = EngineType.SmtTransfer.ToString(),
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -1016,7 +1008,7 @@ Target one, chapter two, verse three.
                 )
                 .Returns(Task.FromResult("job1"));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            BuildJobService = new BuildJobService(
+            BuildJobService = new BuildJobService<TranslationEngine>(
                 [
                     new HangfireBuildJobRunner(
                         Substitute.For<IBackgroundJobClient>(),
@@ -1038,14 +1030,14 @@ Target one, chapter two, verse three.
             );
         }
 
-        public PreprocessBuildJob GetBuildJob(TranslationEngineType engineType)
+        public PreprocessBuildJob<TranslationEngine> GetBuildJob(EngineType engineType)
         {
             switch (engineType)
             {
-                case TranslationEngineType.Nmt:
+                case EngineType.Nmt:
                 {
                     return new NmtPreprocessBuildJob(
-                        PlatformService,
+                        new[] { PlatformService },
                         Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
@@ -1055,13 +1047,13 @@ Target one, chapter two, verse three.
                         new ParallelCorpusPreprocessingService(CorpusService)
                     );
                 }
-                case TranslationEngineType.SmtTransfer:
+                case EngineType.SmtTransfer:
                 {
                     return new SmtTransferPreprocessBuildJob(
-                        PlatformService,
+                        new[] { PlatformService },
                         Engines,
                         new MemoryDataAccessContext(),
-                        Substitute.For<ILogger<PreprocessBuildJob>>(),
+                        Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
                         LockFactory,
@@ -1075,10 +1067,7 @@ Target one, chapter two, verse three.
             ;
         }
 
-        public static ParallelCorpus TextFileCorpus(
-            HashSet<string>? trainOnTextIds,
-            HashSet<string>? pretranslateTextIds
-        )
+        public static ParallelCorpus TextFileCorpus(HashSet<string>? trainOnTextIds, HashSet<string>? inferenceTextIds)
         {
             return new()
             {
@@ -1091,7 +1080,7 @@ Target one, chapter two, verse three.
                         Language = "es",
                         Files = [TextFile("source1")],
                         TrainOnTextIds = trainOnTextIds,
-                        PretranslateTextIds = pretranslateTextIds
+                        InferenceTextIds = inferenceTextIds
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -1120,7 +1109,7 @@ Target one, chapter two, verse three.
                         Language = sourceLanguage,
                         Files = [TextFile("source1")],
                         TrainOnTextIds = [],
-                        PretranslateTextIds = []
+                        InferenceTextIds = []
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -1138,7 +1127,7 @@ Target one, chapter two, verse three.
 
         public ParallelCorpus ParatextCorpus(
             Dictionary<string, HashSet<int>>? trainOnChapters,
-            Dictionary<string, HashSet<int>>? pretranslateChapters
+            Dictionary<string, HashSet<int>>? inferenceChapters
         )
         {
             return new()
@@ -1152,7 +1141,7 @@ Target one, chapter two, verse three.
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
                         TrainOnChapters = trainOnChapters,
-                        PretranslateChapters = pretranslateChapters
+                        InferenceChapters = inferenceChapters
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -1168,7 +1157,7 @@ Target one, chapter two, verse three.
             };
         }
 
-        public ParallelCorpus ParatextCorpus(HashSet<string>? trainOnTextIds, HashSet<string>? pretranslateTextIds)
+        public ParallelCorpus ParatextCorpus(HashSet<string>? trainOnTextIds, HashSet<string>? inferenceTextIds)
         {
             return new()
             {
@@ -1181,7 +1170,7 @@ Target one, chapter two, verse three.
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
                         TrainOnTextIds = trainOnTextIds,
-                        PretranslateTextIds = pretranslateTextIds
+                        InferenceTextIds = inferenceTextIds
                     }
                 },
                 TargetCorpora = new List<MonolingualCorpus>()
@@ -1201,7 +1190,7 @@ Target one, chapter two, verse three.
             ParallelCorpus corpus,
             bool useKeyTerms = true,
             string engineId = "engine1",
-            TranslationEngineType engineType = TranslationEngineType.Nmt
+            EngineType engineType = EngineType.Nmt
         )
         {
             return RunBuildJobAsync([corpus], useKeyTerms, engineId, engineType);
@@ -1211,7 +1200,7 @@ Target one, chapter two, verse three.
             IEnumerable<ParallelCorpus> corpora,
             bool useKeyTerms = true,
             string engineId = "engine1",
-            TranslationEngineType engineType = TranslationEngineType.Nmt
+            EngineType engineType = EngineType.Nmt
         )
         {
             return GetBuildJob(engineType)
