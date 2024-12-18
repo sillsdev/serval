@@ -13,7 +13,7 @@ public interface IWordAlignmentEngineService
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<WordAlignmentResult> GetBestPhraseAlignmentAsync(
+    Task<WordAlignmentResult> GetBestWordAlignmentAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,

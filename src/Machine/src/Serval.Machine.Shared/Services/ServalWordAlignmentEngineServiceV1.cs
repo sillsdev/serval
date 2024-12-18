@@ -41,7 +41,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         SIL.Machine.Translation.WordAlignmentResult result;
         try
         {
-            result = await engineService.GetBestPhraseAlignmentAsync(
+            result = await engineService.GetBestWordAlignmentAsync(
                 request.EngineId,
                 request.SourceSegment,
                 request.TargetSegment,
