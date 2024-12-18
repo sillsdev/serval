@@ -1311,7 +1311,7 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public async Task StartBuildAsync_ParallelCorpus_PretranslateNoCorpusSpecified()
+    public async Task StartBuildAsync_ParallelCorpus_WordAlignNoCorpusSpecified()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
         WordAlignmentParallelCorpus addedParallelCorpus = await client.AddParallelCorpusAsync(
@@ -1329,7 +1329,7 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public async Task StartBuildAsync_ParallelCorpus_PretranslateFilterOnMultipleSources()
+    public async Task StartBuildAsync_ParallelCorpus_WordAlignFilterOnMultipleSources()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
         WordAlignmentParallelCorpus addedParallelCorpus = await client.AddParallelCorpusAsync(
@@ -1439,35 +1439,13 @@ public class WordAlignmentEngineTests
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
-    // [Test]
-    // [TestCase("Nmt")]
-    // [TestCase("EchoWordAlignment")]
-    // public async Task GetQueueAsync(string engineType)
-    // {
-    //     TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient();
-    //     Client.Queue queue = await client.GetQueueAsync(engineType);
-    //     Assert.That(queue.Size, Is.EqualTo(0));
-    // }
-
-    // [Test]
-    // public void GetQueueAsync_NotAuthorized()
-    // {
-    //     TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient([Scopes.ReadFiles]);
-    //     ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-    //     {
-    //         Client.Queue queue = await client.GetQueueAsync("EchoWordAlignment");
-    //     });
-    //     Assert.That(ex, Is.Not.Null);
-    //     Assert.That(ex.StatusCode, Is.EqualTo(403));
-    // }
-
     [Test]
     public async Task DataFileUpdate_Propagated()
     {
-        WordAlignmentEnginesClient translationClient = _env.CreateWordAlignmentEnginesClient();
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
         DataFilesClient dataFilesClient = _env.CreateDataFilesClient();
         CorporaClient corporaClient = _env.CreateCorporaClient();
-        await translationClient.AddParallelCorpusAsync(ECHO_ENGINE1_ID, TestParallelCorpusConfig);
+        await client.AddParallelCorpusAsync(ECHO_ENGINE1_ID, TestParallelCorpusConfig);
 
         // Get the original files
         DataFile orgFileFromClient = await dataFilesClient.GetAsync(FILE1_SRC_ID);
