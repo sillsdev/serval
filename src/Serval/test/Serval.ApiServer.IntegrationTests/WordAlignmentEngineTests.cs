@@ -335,7 +335,7 @@ public class WordAlignmentEngineTests
     )]
     [TestCase(new[] { Scopes.ReadWordAlignmentEngines, Scopes.UpdateWordAlignmentEngines }, 409, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
-    public async Task TranslateSegmentWithEngineByIdAsync(
+    public async Task GetWordAlignmentForSegmentPairWithEngineByIdAsync(
         IEnumerable<string> scope,
         int expectedStatusCode,
         string engineId
@@ -350,8 +350,7 @@ public class WordAlignmentEngineTests
                 );
                 Client.WordAlignmentResult result = await client.GetWordAlignmentAsync(
                     engineId,
-                    new WordAlignmentRequest { SourceSegment = "This is a test.", TargetSegment = "This is a test." },
-                    Arg.Any<CancellationToken>()
+                    new WordAlignmentRequest { SourceSegment = "This is a test.", TargetSegment = "This is a test." }
                 );
                 Assert.That(result.SourceTokens, Is.EqualTo("This is a test .".Split()));
                 Assert.That(result.TargetTokens, Is.EqualTo("This is a test .".Split()));
