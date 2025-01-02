@@ -22,6 +22,7 @@ public class SmtTransferEngineState(
     public string EngineId { get; } = engineId;
 
     public bool IsUpdated { get; set; }
+    public bool IsMarkedForDeletion { get; set; }
     public int CurrentBuildRevision { get; set; } = -1;
     public DateTime LastUsedTime { get; private set; } = DateTime.UtcNow;
     public bool IsLoaded => _hybridEngine != null;
@@ -39,6 +40,9 @@ public class SmtTransferEngineState(
         CancellationToken cancellationToken = default
     )
     {
+        if (IsMarkedForDeletion)
+            throw new InvalidOperationException("Engine is marked for deletion");
+
         using (await _lock.LockAsync(cancellationToken))
         {
             if (_hybridEngine is not null && CurrentBuildRevision != -1 && buildRevision != CurrentBuildRevision)
@@ -84,6 +88,9 @@ public class SmtTransferEngineState(
 
         if (CurrentBuildRevision == -1)
             CurrentBuildRevision = buildRevision;
+
+        SaveModel();
+
         if (buildRevision != CurrentBuildRevision)
         {
             Unload();
@@ -92,10 +99,6 @@ public class SmtTransferEngineState(
         else if (DateTime.UtcNow - LastUsedTime > inactiveTimeout)
         {
             Unload();
-        }
-        else
-        {
-            SaveModel();
         }
     }
 
@@ -106,7 +109,7 @@ public class SmtTransferEngineState(
 
     private void SaveModel()
     {
-        if (_smtModel is not null && IsUpdated)
+        if (_smtModel is not null && IsUpdated && !IsMarkedForDeletion)
         {
             _smtModel.Save();
             IsUpdated = false;
@@ -117,8 +120,6 @@ public class SmtTransferEngineState(
     {
         if (_hybridEngine is null)
             return;
-
-        SaveModel();
 
         _hybridEngine.Dispose();
 
