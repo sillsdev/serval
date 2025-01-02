@@ -64,7 +64,11 @@ public class SmtTransferEngineService(
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        await CancelBuildJobAsync(engineId, cancellationToken);
+        // there is no way to cancel this call
+        SmtTransferEngineState state = _stateService.Get(engineId);
+        state.IsMarkedForDeletion = true;
+
+        await CancelBuildJobAsync(engineId, CancellationToken.None);
 
         await _dataAccessContext.WithTransactionAsync(
             async ct =>
@@ -72,13 +76,10 @@ public class SmtTransferEngineService(
                 await _engines.DeleteAsync(e => e.EngineId == engineId, ct);
                 await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, ct);
             },
-            cancellationToken: cancellationToken
+            cancellationToken: CancellationToken.None
         );
         await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
-
-        SmtTransferEngineState state = _stateService.Get(engineId);
         _stateService.Remove(engineId);
-        // there is no way to cancel this call
         state.DeleteData();
         state.Dispose();
         await _lockFactory.DeleteAsync(engineId, CancellationToken.None);
@@ -93,6 +94,8 @@ public class SmtTransferEngineService(
     {
         TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
         SmtTransferEngineState state = _stateService.Get(engineId);
+        if (state.IsMarkedForDeletion)
+            throw new InvalidOperationException("Engine is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         IReadOnlyList<TranslationResult> results = await @lock.ReaderLockAsync(
@@ -117,6 +120,8 @@ public class SmtTransferEngineService(
     {
         TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
         SmtTransferEngineState state = _stateService.Get(engineId);
+        if (state.IsMarkedForDeletion)
+            throw new InvalidOperationException("Engine is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         WordGraph result = await @lock.ReaderLockAsync(
@@ -142,6 +147,8 @@ public class SmtTransferEngineService(
     )
     {
         SmtTransferEngineState state = _stateService.Get(engineId);
+        if (state.IsMarkedForDeletion)
+            throw new InvalidOperationException("Engine is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         await @lock.WriterLockAsync(
