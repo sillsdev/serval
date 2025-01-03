@@ -6,17 +6,18 @@ namespace Serval.Machine.Shared.Services;
 [TestFixture]
 public class ServalPlatformOutboxMessageHandlerTests
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
     [Test]
     public async Task HandleMessageAsync_BuildStarted()
     {
         TestEnvironment env = new();
 
         await env.Handler.HandleMessageAsync(
+            "groupId",
             ServalPlatformOutboxConstants.BuildStarted,
-            JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "C" }),
+            JsonSerializer.Serialize(
+                new BuildStartedRequest { BuildId = "C" },
+                MessageOutboxOptions.JsonSerializerOptions
+            ),
             null
         );
 
@@ -27,6 +28,7 @@ public class ServalPlatformOutboxMessageHandlerTests
     public async Task HandleMessageAsync_InsertPretranslations()
     {
         TestEnvironment env = new();
+
         await using (MemoryStream stream = new())
         {
             await JsonSerializer.SerializeAsync(
@@ -41,10 +43,11 @@ public class ServalPlatformOutboxMessageHandlerTests
                         Translation = "translation"
                     }
                 },
-                JsonSerializerOptions
+                MessageOutboxOptions.JsonSerializerOptions
             );
             stream.Seek(0, SeekOrigin.Begin);
             await env.Handler.HandleMessageAsync(
+                "engine1",
                 ServalPlatformOutboxConstants.InsertPretranslations,
                 "engine1",
                 stream

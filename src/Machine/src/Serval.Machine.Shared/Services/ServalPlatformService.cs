@@ -16,7 +16,7 @@ public class ServalPlatformService(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildStarted,
             buildId,
-            JsonSerializer.Serialize(new BuildStartedRequest { BuildId = buildId }),
+            new BuildStartedRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -32,14 +32,12 @@ public class ServalPlatformService(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildCompleted,
             buildId,
-            JsonSerializer.Serialize(
-                new BuildCompletedRequest
-                {
-                    BuildId = buildId,
-                    CorpusSize = trainSize,
-                    Confidence = confidence
-                }
-            ),
+            new BuildCompletedRequest
+            {
+                BuildId = buildId,
+                CorpusSize = trainSize,
+                Confidence = confidence
+            },
             cancellationToken: cancellationToken
         );
     }
@@ -50,7 +48,7 @@ public class ServalPlatformService(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildCanceled,
             buildId,
-            JsonSerializer.Serialize(new BuildCanceledRequest { BuildId = buildId }),
+            new BuildCanceledRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -61,7 +59,7 @@ public class ServalPlatformService(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildFaulted,
             buildId,
-            JsonSerializer.Serialize(new BuildFaultedRequest { BuildId = buildId, Message = message }),
+            new BuildFaultedRequest { BuildId = buildId, Message = message },
             cancellationToken: cancellationToken
         );
     }
@@ -72,7 +70,7 @@ public class ServalPlatformService(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.BuildRestarting,
             buildId,
-            JsonSerializer.Serialize(new BuildRestartingRequest { BuildId = buildId }),
+            new BuildRestartingRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -111,13 +109,12 @@ public class ServalPlatformService(
         CancellationToken cancellationToken = default
     )
     {
-        await _outboxService.EnqueueMessageAsync(
+        await _outboxService.EnqueueMessageStreamAsync(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.InsertPretranslations,
             engineId,
-            engineId,
             pretranslationsStream,
-            cancellationToken: cancellationToken
+            cancellationToken
         );
     }
 
@@ -131,9 +128,7 @@ public class ServalPlatformService(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.IncrementTranslationEngineCorpusSize,
             engineId,
-            JsonSerializer.Serialize(
-                new IncrementTranslationEngineCorpusSizeRequest { EngineId = engineId, Count = count }
-            ),
+            new IncrementTranslationEngineCorpusSizeRequest { EngineId = engineId, Count = count },
             cancellationToken: cancellationToken
         );
     }
@@ -151,7 +146,7 @@ public class ServalPlatformService(
             ServalPlatformOutboxConstants.OutboxId,
             ServalPlatformOutboxConstants.UpdateBuildExecutionData,
             engineId,
-            JsonSerializer.Serialize(request),
+            request,
             cancellationToken: cancellationToken
         );
     }
