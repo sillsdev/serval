@@ -36,7 +36,7 @@ public class WordAlignmentPreprocessBuildJob(
             new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
 
         await using Stream inferenceStream = await SharedFileService.OpenWriteAsync(
-            $"builds/{buildId}/word_alignment_inputs.json",
+            $"builds/{buildId}/word_alignments.inputs.json",
             cancellationToken
         );
         await using Utf8JsonWriter inferenceWriter = new(inferenceStream, InferenceWriterOptions);
