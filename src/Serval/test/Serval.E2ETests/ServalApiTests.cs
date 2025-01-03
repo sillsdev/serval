@@ -125,7 +125,7 @@ public class ServalApiTests
             true
         );
         _helperClient.TranslationBuildConfig.Pretranslate = [new() { CorpusId = cId2, TextIds = ["2JN.txt"] }];
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans1 = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
@@ -137,7 +137,7 @@ public class ServalApiTests
             cId2
         );
 
-        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetCurrentBuildAsync(engineId);
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
         Assert.That(build.ExecutionData, Is.Not.Null);
 
         var executionData = build.ExecutionData!;

@@ -2,12 +2,19 @@
 
 public interface IMessageOutboxService
 {
-    public Task<string> EnqueueMessageAsync(
+    public Task<string> EnqueueMessageAsync<TValue>(
         string outboxId,
         string method,
         string groupId,
-        string? content = null,
-        Stream? contentStream = null,
+        TValue content,
+        CancellationToken cancellationToken = default
+    );
+
+    public Task<string> EnqueueMessageStreamAsync(
+        string outboxId,
+        string method,
+        string groupId,
+        Stream contentStream,
         CancellationToken cancellationToken = default
     );
 }

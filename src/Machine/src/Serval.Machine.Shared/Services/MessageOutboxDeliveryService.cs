@@ -58,7 +58,13 @@ public class MessageOutboxDeliveryService(
             {
                 try
                 {
-                    await ProcessGroupMessagesAsync(messages, message, outboxMessageHandler, cancellationToken);
+                    await ProcessGroupMessagesAsync(
+                        messages,
+                        message,
+                        messageGroup.Key.GroupId,
+                        outboxMessageHandler,
+                        cancellationToken
+                    );
                 }
                 catch (RpcException e)
                 {
@@ -98,6 +104,7 @@ public class MessageOutboxDeliveryService(
     private async Task ProcessGroupMessagesAsync(
         IRepository<OutboxMessage> messages,
         OutboxMessage message,
+        string groupId,
         IOutboxMessageHandler outboxMessageHandler,
         CancellationToken cancellationToken = default
     )
@@ -109,6 +116,7 @@ public class MessageOutboxDeliveryService(
         try
         {
             await outboxMessageHandler.HandleMessageAsync(
+                groupId,
                 message.Method,
                 message.Content,
                 contentStream,

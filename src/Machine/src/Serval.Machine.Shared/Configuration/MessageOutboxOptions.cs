@@ -6,4 +6,14 @@ public class MessageOutboxOptions
 
     public string OutboxDir { get; set; } = "outbox";
     public TimeSpan MessageExpirationTimeout { get; set; } = TimeSpan.FromHours(48);
+
+    public static JsonSerializerOptions JsonSerializerOptions
+    {
+        get
+        {
+            JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            options.AddProtobufSupport();
+            return options;
+        }
+    }
 }
