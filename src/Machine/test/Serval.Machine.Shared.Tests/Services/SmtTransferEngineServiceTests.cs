@@ -96,7 +96,7 @@ public class SmtTransferEngineServiceTests
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.CancelBuildAsync(EngineId1);
         await env.WaitForBuildToFinishAsync();
         _ = env.SmtBatchTrainer.DidNotReceive().SaveAsync();
@@ -122,12 +122,12 @@ public class SmtTransferEngineServiceTests
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         env.StopServer();
         await env.WaitForBuildToRestartAsync();
         engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Pending));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Pending));
         _ = env.PlatformService.Received().BuildRestartingAsync(BuildId1);
         env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
         env.StartServer();
@@ -147,7 +147,7 @@ public class SmtTransferEngineServiceTests
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.DeleteAsync(EngineId1);
         await env.WaitForBuildToFinishAsync();
         await env.WaitForAllHangfireJobsToFinishAsync();
@@ -167,7 +167,7 @@ public class SmtTransferEngineServiceTests
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.TrainSegmentPairAsync(EngineId1, "esto es una prueba.", "this is a test.", true);
         env.StopTraining();
         await env.WaitForBuildToFinishAsync();
