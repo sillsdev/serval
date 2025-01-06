@@ -15,9 +15,9 @@ public class MessageOutboxDeliveryServiceTests
         await env.ProcessMessagesAsync();
         Received.InOrder(() =>
         {
-            env.Handler.HandleMessageAsync(Method2, "B", null, Arg.Any<CancellationToken>());
-            env.Handler.HandleMessageAsync(Method1, "A", null, Arg.Any<CancellationToken>());
-            env.Handler.HandleMessageAsync(Method2, "C", null, Arg.Any<CancellationToken>());
+            env.Handler.HandleMessageAsync(Arg.Any<string>(), Method2, "B", null, Arg.Any<CancellationToken>());
+            env.Handler.HandleMessageAsync(Arg.Any<string>(), Method1, "A", null, Arg.Any<CancellationToken>());
+            env.Handler.HandleMessageAsync(Arg.Any<string>(), Method2, "C", null, Arg.Any<CancellationToken>());
         });
         Assert.That(env.Messages.Count, Is.EqualTo(0));
     }
@@ -44,9 +44,21 @@ public class MessageOutboxDeliveryServiceTests
         await env.ProcessMessagesAsync();
         Assert.That(env.Messages.Count, Is.EqualTo(0));
         _ = env.Handler.Received(1)
-            .HandleMessageAsync(Method1, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
+            .HandleMessageAsync(
+                Arg.Any<string>(),
+                Method1,
+                Arg.Any<string>(),
+                Arg.Any<Stream>(),
+                Arg.Any<CancellationToken>()
+            );
         _ = env.Handler.Received(4)
-            .HandleMessageAsync(Method2, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
+            .HandleMessageAsync(
+                Arg.Any<string>(),
+                Method2,
+                Arg.Any<string>(),
+                Arg.Any<Stream>(),
+                Arg.Any<CancellationToken>()
+            );
     }
 
     [Test]
@@ -62,7 +74,13 @@ public class MessageOutboxDeliveryServiceTests
         Assert.That(env.Messages.Get("A").Attempts, Is.EqualTo(0));
         Assert.That(env.Messages.Get("C").Attempts, Is.EqualTo(0));
         _ = env.Handler.Received(1)
-            .HandleMessageAsync(Method2, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
+            .HandleMessageAsync(
+                Arg.Any<string>(),
+                Method2,
+                Arg.Any<string>(),
+                Arg.Any<Stream>(),
+                Arg.Any<CancellationToken>()
+            );
 
         env.Handler.ClearReceivedCalls();
         env.EnableHandlerFailure(StatusCode.Internal);
@@ -71,16 +89,34 @@ public class MessageOutboxDeliveryServiceTests
         Assert.That(env.Messages.Get("A").Attempts, Is.EqualTo(0));
         Assert.That(env.Messages.Get("C").Attempts, Is.EqualTo(1));
         _ = env.Handler.Received(2)
-            .HandleMessageAsync(Method2, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
+            .HandleMessageAsync(
+                Arg.Any<string>(),
+                Method2,
+                Arg.Any<string>(),
+                Arg.Any<Stream>(),
+                Arg.Any<CancellationToken>()
+            );
 
         env.Handler.ClearReceivedCalls();
         env.DisableHandlerFailure();
         await env.ProcessMessagesAsync();
         Assert.That(env.Messages.Count, Is.EqualTo(0));
         _ = env.Handler.Received(1)
-            .HandleMessageAsync(Method1, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
+            .HandleMessageAsync(
+                Arg.Any<string>(),
+                Method1,
+                Arg.Any<string>(),
+                Arg.Any<Stream>(),
+                Arg.Any<CancellationToken>()
+            );
         _ = env.Handler.Received(2)
-            .HandleMessageAsync(Method2, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
+            .HandleMessageAsync(
+                Arg.Any<string>(),
+                Method2,
+                Arg.Any<string>(),
+                Arg.Any<Stream>(),
+                Arg.Any<CancellationToken>()
+            );
     }
 
     [Test]
@@ -92,7 +128,13 @@ public class MessageOutboxDeliveryServiceTests
         await env.ProcessMessagesAsync();
         Assert.That(env.Messages.Count, Is.EqualTo(0));
         _ = env.Handler.Received(1)
-            .HandleMessageAsync(Method1, "A", Arg.Is<Stream?>(s => s != null), Arg.Any<CancellationToken>());
+            .HandleMessageAsync(
+                Arg.Any<string>(),
+                Method1,
+                "A",
+                Arg.Is<Stream?>(s => s != null),
+                Arg.Any<CancellationToken>()
+            );
         env.FileSystem.Received().DeleteFile(Path.Combine("outbox", "A"));
     }
 
@@ -194,20 +236,44 @@ public class MessageOutboxDeliveryServiceTests
         public void EnableHandlerFailure(StatusCode code)
         {
             Handler
-                .HandleMessageAsync(Method1, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+                .HandleMessageAsync(
+                    Arg.Any<string>(),
+                    Method1,
+                    Arg.Any<string>(),
+                    Arg.Any<Stream>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .ThrowsAsync(new RpcException(new Status(code, "")));
             Handler
-                .HandleMessageAsync(Method2, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+                .HandleMessageAsync(
+                    Arg.Any<string>(),
+                    Method2,
+                    Arg.Any<string>(),
+                    Arg.Any<Stream>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .ThrowsAsync(new RpcException(new Status(code, "")));
         }
 
         public void DisableHandlerFailure()
         {
             Handler
-                .HandleMessageAsync(Method1, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+                .HandleMessageAsync(
+                    Arg.Any<string>(),
+                    Method1,
+                    Arg.Any<string>(),
+                    Arg.Any<Stream>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(Task.CompletedTask);
             Handler
-                .HandleMessageAsync(Method2, Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+                .HandleMessageAsync(
+                    Arg.Any<string>(),
+                    Method2,
+                    Arg.Any<string>(),
+                    Arg.Any<Stream>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(Task.CompletedTask);
         }
     }

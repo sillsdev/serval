@@ -123,7 +123,7 @@ public class ServalClientHelper : IAsyncDisposable
         return await TranslationEnginesClient.StartBuildAsync(engineId, TranslationBuildConfig);
     }
 
-    public async Task BuildEngineAsync(string engineId)
+    public async Task<string> BuildEngineAsync(string engineId)
     {
         TranslationBuild newJob = await StartBuildAsync(engineId);
         int revision = newJob.Revision;
@@ -151,6 +151,7 @@ public class ServalClientHelper : IAsyncDisposable
                 await Task.Delay(500);
             }
         }
+        return newJob.Id;
     }
 
     public async Task CancelBuildAsync(string engineId, string buildId, int timeoutSeconds = 20)

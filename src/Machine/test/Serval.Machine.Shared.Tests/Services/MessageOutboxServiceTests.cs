@@ -20,7 +20,7 @@ public class MessageOutboxServiceTests
         Assert.That(message.OutboxRef, Is.EqualTo(OutboxId));
         Assert.That(message.Method, Is.EqualTo(Method));
         Assert.That(message.Index, Is.EqualTo(1));
-        Assert.That(message.Content, Is.EqualTo("content"));
+        Assert.That(message.Content, Is.EqualTo("\"content\""));
         Assert.That(message.HasContentStream, Is.False);
     }
 
@@ -39,7 +39,7 @@ public class MessageOutboxServiceTests
         Assert.That(message.OutboxRef, Is.EqualTo(OutboxId));
         Assert.That(message.Method, Is.EqualTo(Method));
         Assert.That(message.Index, Is.EqualTo(2));
-        Assert.That(message.Content, Is.EqualTo("content"));
+        Assert.That(message.Content, Is.EqualTo("\"content\""));
         Assert.That(message.HasContentStream, Is.False);
     }
 
@@ -51,13 +51,13 @@ public class MessageOutboxServiceTests
         env.FileSystem.OpenWrite(Path.Combine("outbox", "1")).Returns(fileStream);
 
         await using MemoryStream stream = new(Encoding.UTF8.GetBytes("content"));
-        await env.Service.EnqueueMessageAsync(OutboxId, Method, "A", "content", stream);
+        await env.Service.EnqueueMessageStreamAsync(OutboxId, Method, "A", stream);
 
         OutboxMessage message = env.Messages.Get("1");
         Assert.That(message.OutboxRef, Is.EqualTo(OutboxId));
         Assert.That(message.Method, Is.EqualTo(Method));
         Assert.That(message.Index, Is.EqualTo(1));
-        Assert.That(message.Content, Is.EqualTo("content"));
+        Assert.That(message.Content, Is.EqualTo(null));
         Assert.That(message.HasContentStream, Is.True);
         Assert.That(fileStream.ToArray(), Is.EqualTo(stream.ToArray()));
     }
