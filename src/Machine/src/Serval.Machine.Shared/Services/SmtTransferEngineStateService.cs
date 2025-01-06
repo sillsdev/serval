@@ -38,6 +38,11 @@ public class SmtTransferEngineStateService(
     {
         foreach (SmtTransferEngineState state in _engineStates.Values)
         {
+            if (!state.IsLoaded || state.IsMarkedForDeletion)
+            {
+                continue;
+            }
+
             try
             {
                 IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(state.EngineId, cancellationToken);
