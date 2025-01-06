@@ -40,7 +40,6 @@ public class SmtTransferEngineStateService(
         {
             if (!state.IsLoaded || state.IsMarkedForDeletion)
             {
-                _engineStates.TryRemove(state.EngineId, out _);
                 continue;
             }
 
