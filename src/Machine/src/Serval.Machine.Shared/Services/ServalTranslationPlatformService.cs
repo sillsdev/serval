@@ -108,7 +108,7 @@ public class ServalTranslationPlatformService(
 
     public async Task InsertInferencesAsync(
         string engineId,
-        Stream pretranslationsStream,
+        Stream inferenceStream,
         CancellationToken cancellationToken = default
     )
     {
@@ -117,7 +117,7 @@ public class ServalTranslationPlatformService(
             ServalTranslationPlatformOutboxConstants.InsertInferences,
             engineId,
             engineId,
-            pretranslationsStream,
+            inferenceStream,
             cancellationToken: cancellationToken
         );
     }

@@ -24,7 +24,7 @@ public class StatisticalEngineServiceTests
         env.WordAlignmentModelFactory.Received().InitNew(engineDir);
     }
 
-    // [TestCase(BuildJobRunnerType.Hangfire)] //TODO Implement hangfire?
+    [TestCase(BuildJobRunnerType.Hangfire)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public async Task StartBuildAsync(BuildJobRunnerType trainJobRunnerType)
     {
@@ -78,7 +78,7 @@ public class StatisticalEngineServiceTests
         env.WordAlignmentModel.Received().Dispose();
     }
 
-    // [TestCase(BuildJobRunnerType.Hangfire)] //TODO implement Hangfire?
+    [TestCase(BuildJobRunnerType.Hangfire)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public async Task CancelBuildAsync_Building(BuildJobRunnerType trainJobRunnerType)
     {
@@ -97,7 +97,7 @@ public class StatisticalEngineServiceTests
         Assert.That(engine.CurrentBuild, Is.Null);
     }
 
-    // [TestCase(BuildJobRunnerType.Hangfire)] //TODO implement Hangfire?
+    [TestCase(BuildJobRunnerType.Hangfire)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public void CancelBuildAsync_NotBuilding(BuildJobRunnerType trainJobRunnerType)
     {
@@ -105,7 +105,7 @@ public class StatisticalEngineServiceTests
         Assert.ThrowsAsync<InvalidOperationException>(() => env.Service.CancelBuildAsync(EngineId1));
     }
 
-    // [TestCase(BuildJobRunnerType.Hangfire)] //TODO implement Hangfire?
+    [TestCase(BuildJobRunnerType.Hangfire)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public async Task DeleteAsync_WhileBuilding(BuildJobRunnerType trainJobRunnerType)
     {
@@ -170,6 +170,7 @@ public class StatisticalEngineServiceTests
             PlatformService.EngineGroup.Returns(EngineGroup.WordAlignment);
             WordAlignmentModel = Substitute.For<IWordAlignmentModel>();
             WordAlignmentBatchTrainer = Substitute.For<ITrainer>();
+            WordAlignmentBatchTrainer.Stats.Returns(new TrainStats { TrainCorpusSize = 0 });
             WordAlignmentModelFactory = CreateWordAlignmentModelFactory();
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
@@ -188,7 +189,7 @@ public class StatisticalEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.Statistical.ToString().ToString(),
+                            EngineType = EngineType.Statistical.ToString(),
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -488,7 +489,9 @@ public class StatisticalEngineServiceTests
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
-                        Substitute.For<ILogger<StatisticalTrainBuildJob>>()
+                        Substitute.For<ILogger<StatisticalTrainBuildJob>>(),
+                        _env.SharedFileService,
+                        _env.WordAlignmentModelFactory
                     );
                 }
                 return base.ActivateJob(jobType);
