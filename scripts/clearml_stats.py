@@ -101,7 +101,7 @@ class clearml_stats:
         return task_df
 
     def get_language_groups(self) -> pd.DataFrame:
-        return self._language_projects_df
+        return self._language_projects_df.copy()
 
     def _get_tasks(self, task_ids: list[str]) -> pd.DataFrame:
         tasks = {task_id: self._tasks[task_id] for task_id in task_ids}
@@ -224,10 +224,10 @@ class clearml_stats:
         projects[task["project"]]["tasks"].append(task["id"])
         self._assign_project_type()
         self._assign_languages()
-        self._create_language_projects()
+        self.create_language_projects()
         self._save_projects(projects)
 
-    def _create_language_projects(self):
+    def create_language_projects(self):
         for project_id in self._projects:
             project = self._projects[project_id]
             if (

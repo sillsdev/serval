@@ -1,11 +1,12 @@
 # %%
 import clearml_stats
+import numpy as np
 import plotly.express as px
 
 # %%
 stats = clearml_stats.clearml_stats()
 stats.update_tasks_and_projects()
-lang_groups_df = stats.get_language_groups()
+stats.create_language_projects()
 
 
 # %%
@@ -38,22 +39,47 @@ lang_groups_df["num_tasks"] = lang_groups_df["tasks"].apply(len)
 mask = ~(lang_groups_df["language_name"] == "unknown") & (
     lang_groups_df["type"] == "production"
 )
-px.scatter(
+fig = px.scatter(
     lang_groups_df[mask],
     x="first_run",
     y="last_run",
     color="continent",
     hover_name="language_name",
 )
+
+counts = lang_groups_df[mask]["continent"].value_counts()
+
+# Update legend labels
+for i, trace in enumerate(fig.data):
+    category = trace.name
+    count = counts[category]
+    fig.data[i].name = f"{category} ({count})"
+
+fig.show()
 # %%
-mask = ~(lang_groups_df["language_name"] == "unknown") & (
-    lang_groups_df["type"] == "research"
-)
-px.scatter(
+lang_groups_df = stats.get_language_groups()
+mask = ~(lang_groups_df["language_name"] == "unknown")
+lang_groups_df.loc[
+    (lang_groups_df["last_run"] - lang_groups_df["first_run"]) < np.timedelta64(1, "W"),
+    "type",
+] = "stale"
+
+fig = px.scatter(
     lang_groups_df[mask],
     x="first_run",
     y="last_run",
-    color="continent",
+    color="type",
     hover_name="language_name",
 )
-# %%
+
+
+# Calculate counts for each type
+counts = lang_groups_df[mask]["type"].value_counts()
+
+# Update legend labels
+for i, trace in enumerate(fig.data):
+    category = trace.name
+    count = counts[category]
+    fig.data[i].name = f"{category} ({count})"
+
+fig.show()
