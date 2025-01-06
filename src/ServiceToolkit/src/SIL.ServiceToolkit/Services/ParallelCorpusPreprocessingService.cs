@@ -32,6 +32,8 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
         bool useKeyTerms = false
     )
     {
+        bool parallelTrainingDataPresent = false;
+        List<Row> keyTermTrainingData = new();
         foreach (ParallelCorpus corpus in corpora)
         {
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpus
@@ -78,23 +80,19 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             foreach (Row row in CollapseRanges(trainingRows))
             {
                 await train(row);
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                {
+                    parallelTrainingDataPresent = true;
+                }
             }
 
             if (useKeyTerms)
             {
                 ITextCorpus[]? sourceTermCorpora = _corpusService
-                    .CreateTermCorpora(
-                        sourceCorpora
-                            .SelectMany(corpus => GetChaptersPerFile(corpus.Corpus, corpus.TextCorpus))
-                            .ToArray()
-                    )
+                    .CreateTermCorpora(sourceCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
                     .ToArray();
                 ITextCorpus[]? targetTermCorpora = _corpusService
-                    .CreateTermCorpora(
-                        targetCorpora
-                            .SelectMany(corpus => GetChaptersPerFile(corpus.Corpus, corpus.TextCorpus))
-                            .ToArray()
-                    )
+                    .CreateTermCorpora(targetCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
                     .ToArray();
                 if (sourceTermCorpora is not null && targetTermCorpora is not null)
                 {
@@ -107,7 +105,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                         )
                     )
                     {
-                        await train(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
+                        keyTermTrainingData.Add(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
                     }
                 }
             }
@@ -121,6 +119,13 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             foreach (Row row in CollapseRanges(pretranslateCorpus.ToArray()))
             {
                 await pretranslate(row, corpus);
+            }
+        }
+        if (useKeyTerms && parallelTrainingDataPresent)
+        {
+            foreach (Row row in keyTermTrainingData)
+            {
+                await train(row);
             }
         }
     }
