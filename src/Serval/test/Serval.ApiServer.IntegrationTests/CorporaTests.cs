@@ -2,7 +2,7 @@ namespace Serval.ApiServer;
 
 [TestFixture]
 [Category("Integration")]
-public class DataCorporaTests
+public class CorporaTests
 {
     TestEnvironment _env;
 
