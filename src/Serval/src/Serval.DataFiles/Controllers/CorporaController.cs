@@ -28,9 +28,9 @@ public class CorporaController(
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<IEnumerable<CorpusDto>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<CorpusDto>>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return (await _corpusService.GetAllAsync(Owner, cancellationToken)).Select(Map);
+        return Ok((await _corpusService.GetAllAsync(Owner, cancellationToken)).Select(Map));
     }
 
     /// <summary>
@@ -157,10 +157,13 @@ public class CorporaController(
 
     private async Task<Corpus> MapAsync(CorpusConfigDto corpusConfig, string id, CancellationToken cancellationToken)
     {
+        if (corpusConfig.Language.Length == 0)
+            throw new InvalidOperationException("Corpus must have a language.");
         return new Corpus
         {
             Id = id,
             Owner = Owner,
+            Name = corpusConfig.Name,
             Language = corpusConfig.Language,
             Files = await MapAsync(corpusConfig.Files, cancellationToken)
         };

@@ -8,4 +8,5 @@ public interface ICorpusService
     Task<Corpus> CreateAsync(Corpus corpus, CancellationToken cancellationToken = default);
     Task<Corpus> UpdateAsync(string id, IReadOnlyList<CorpusFile> files, CancellationToken cancellationToken = default);
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
+    Task DeleteAllCorpusFilesAsync(string fileId, CancellationToken cancellationToken = default);
 }
