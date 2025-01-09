@@ -7137,8 +7137,8 @@ namespace Serval.Client
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **SourceTokens**: the tokenized source segment
         /// <br/>* **TargetTokens**: the tokenized target segment
-        /// <br/>* **Confidences**: the confidence of the alignment ona scale from 0 to 1
-        /// <br/>* **Alignment**: the word alignment, 0 indexed for source and target positions
+        /// <br/>* **Confidences**: the confidence of the alignment on a scale from 0 to 1
+        /// <br/>* **Alignment**: a list of aligned word pairs
         /// <br/>            
         /// <br/>Word alignments can be filtered by text id if provided.
         /// <br/>Only word alignments for the most recent successful build of the engine are returned.
@@ -8406,8 +8406,8 @@ namespace Serval.Client
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **SourceTokens**: the tokenized source segment
         /// <br/>* **TargetTokens**: the tokenized target segment
-        /// <br/>* **Confidences**: the confidence of the alignment ona scale from 0 to 1
-        /// <br/>* **Alignment**: the word alignment, 0 indexed for source and target positions
+        /// <br/>* **Confidences**: the confidence of the alignment on a scale from 0 to 1
+        /// <br/>* **Alignment**: a list of aligned word pairs
         /// <br/>            
         /// <br/>Word alignments can be filtered by text id if provided.
         /// <br/>Only word alignments for the most recent successful build of the engine are returned.

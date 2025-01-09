@@ -80,12 +80,8 @@ public class StatisticalEngineService(
                 return new WordAlignmentResult(
                     sourceTokens: sourceTokens,
                     targetTokens: targetTokens,
-                    alignment: new WordAlignmentMatrix(
-                        sourceTokens.Count,
-                        targetTokens.Count,
-                        wordPairs.Select(wp => (wp.SourceIndex, wp.TargetIndex))
-                    ),
-                    confidences: wordPairs.Select(wp => wp.AlignmentScore * wp.TranslationScore).ToList()
+                    alignedWordPairs: wordPairs,
+                    confidences: wordPairs.Select(wp => wp.AlignmentScore).ToList()
                 );
             },
             cancellationToken: cancellationToken
@@ -93,8 +89,6 @@ public class StatisticalEngineService(
 
         state.Touch();
         return result;
-
-        throw new NotImplementedException();
     }
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
