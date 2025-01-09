@@ -59,6 +59,18 @@ public class CorpusService(
         );
     }
 
+    public Task DeleteAllCorpusFilesAsync(string fileId, CancellationToken cancellationToken = default)
+    {
+        return Entities.UpdateAllAsync(
+            e => e.Files.Any(f => f.FileRef == fileId),
+            u =>
+            {
+                u.RemoveAll(e => e.Files, f => f.FileRef == fileId);
+            },
+            cancellationToken: cancellationToken
+        );
+    }
+
     private static DataFileResult Map(DataFile dataFile)
     {
         return new DataFileResult

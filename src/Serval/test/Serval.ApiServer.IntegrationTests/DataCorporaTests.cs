@@ -157,6 +157,8 @@ public class DataCorporaTests
                 var newCorpus = new CorpusConfig { Language = "es", Files = new List<CorpusFileConfig>() };
                 var created = await corporaClient.CreateAsync(newCorpus);
                 Assert.That(created, Is.Not.Null);
+                var allCorpora = await corporaClient.GetAllAsync();
+                Assert.That(allCorpora.Count, Is.EqualTo(3));
                 break;
             case 403:
             default:
@@ -235,6 +237,19 @@ public class DataCorporaTests
         }
     }
 
+    [Test]
+    public async Task PropagateFileDeletedToCorpus()
+    {
+        var scope = new[] { Scopes.DeleteFiles, Scopes.ReadFiles };
+        var corporaClient = _env.CreateCorporaClient(scope);
+        var dataFilesClient = _env.CreateDataFilesClient(scope);
+        var originalCorpus1 = await corporaClient.GetAsync(CORPUS_ID1);
+        Assert.That(originalCorpus1.Files.Count, Is.EqualTo(1));
+        await dataFilesClient.DeleteAsync(FILE_ID1);
+        var updatedCorpus1 = await corporaClient.GetAsync(CORPUS_ID1);
+        Assert.That(updatedCorpus1.Files.Count, Is.EqualTo(0));
+    }
+
     [TearDown]
     public void TearDown()
     {
@@ -262,7 +277,7 @@ public class DataCorporaTests
         public IRepository<DataFiles.Models.DataFile> DataFiles { get; }
         public IRepository<DataFiles.Models.Corpus> Corpora { get; }
 
-        public DataFilesClient CreateClient(IEnumerable<string> scope)
+        public DataFilesClient CreateDataFilesClient(IEnumerable<string> scope)
         {
             HttpClient httpClient = Factory.WithWebHostBuilder(_ => { }).CreateClient();
             if (scope is not null)
