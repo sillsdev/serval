@@ -48,13 +48,12 @@ public class WordAlignmentPreprocessBuildJob(
             corpora,
             async row =>
             {
-                if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                 {
                     await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
                     await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                }
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
+                }
             },
             async (row, corpus) =>
             {

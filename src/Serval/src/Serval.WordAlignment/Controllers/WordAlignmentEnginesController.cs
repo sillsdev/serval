@@ -387,8 +387,8 @@ public class WordAlignmentEnginesController(
     ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
     /// * **SourceTokens**: the tokenized source segment
     /// * **TargetTokens**: the tokenized target segment
-    /// * **Confidences**: the confidence of the alignment ona scale from 0 to 1
-    /// * **Alignment**: the word alignment, 0 indexed for source and target positions
+    /// * **Confidences**: the confidence of the alignment on a scale from 0 to 1
+    /// * **Alignment**: a list of aligned word pairs
     ///
     /// Word alignments can be filtered by text id if provided.
     /// Only word alignments for the most recent successful build of the engine are returned.

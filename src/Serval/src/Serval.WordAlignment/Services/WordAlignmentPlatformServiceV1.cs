@@ -278,8 +278,8 @@ public class WordAlignmentPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> InsertInferences(
-        IAsyncStreamReader<InsertInferencesRequest> requestStream,
+    public override async Task<Empty> InsertWordAlignments(
+        IAsyncStreamReader<InsertWordAlignmentsRequest> requestStream,
         ServerCallContext context
     )
     {
@@ -287,7 +287,7 @@ public class WordAlignmentPlatformServiceV1(
         int nextModelRevision = 0;
 
         var batch = new List<Models.WordAlignment>();
-        await foreach (InsertInferencesRequest request in requestStream.ReadAllAsync(context.CancellationToken))
+        await foreach (InsertWordAlignmentsRequest request in requestStream.ReadAllAsync(context.CancellationToken))
         {
             if (request.EngineId != engineId)
             {

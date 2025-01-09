@@ -78,9 +78,8 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                 try
                 {
                     using (
-                        AsyncClientStreamingCall<InsertInferencesRequest, Empty> call = client.InsertInferences(
-                            cancellationToken: cancellationToken
-                        )
+                        AsyncClientStreamingCall<InsertPretranslationsRequest, Empty> call =
+                            client.InsertPretranslations(cancellationToken: cancellationToken)
                     )
                     {
                         foreach (ParallelCorpus corpus in request.Corpora)
@@ -133,7 +132,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             if (sourceLine.Length > 0 && targetLine.Length == 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertInferencesRequest
+                                                    new InsertPretranslationsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
@@ -166,7 +165,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             if (sourceLine.Length > 0 && targetLine.Length == 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertInferencesRequest
+                                                    new InsertPretranslationsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
@@ -191,7 +190,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             if (sourceLine.Length > 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertInferencesRequest
+                                                    new InsertPretranslationsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,
@@ -212,7 +211,7 @@ public class TranslationEngineServiceV1(BackgroundTaskQueue taskQueue) : Transla
                                             if (sourceLine.Length > 0)
                                             {
                                                 await call.RequestStream.WriteAsync(
-                                                    new InsertInferencesRequest
+                                                    new InsertPretranslationsRequest
                                                     {
                                                         EngineId = request.EngineId,
                                                         CorpusId = corpus.Id,

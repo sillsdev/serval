@@ -51,10 +51,10 @@ public class ServalPlatformOutboxMessageHandlerTests
             );
         }
 
-        _ = env.Client.Received(1).InsertInferences();
+        _ = env.Client.Received(1).InsertPretranslations();
         _ = env.PretranslationWriter.Received(1)
             .WriteAsync(
-                new InsertInferencesRequest
+                new InsertPretranslationsRequest
                 {
                     EngineId = "engine1",
                     CorpusId = "corpus1",
@@ -78,9 +78,9 @@ public class ServalPlatformOutboxMessageHandlerTests
             Client
                 .IncrementTrainEngineCorpusSizeAsync(Arg.Any<IncrementTrainEngineCorpusSizeRequest>())
                 .Returns(CreateEmptyUnaryCall());
-            PretranslationWriter = Substitute.For<IClientStreamWriter<InsertInferencesRequest>>();
+            PretranslationWriter = Substitute.For<IClientStreamWriter<InsertPretranslationsRequest>>();
             Client
-                .InsertInferences(cancellationToken: Arg.Any<CancellationToken>())
+                .InsertPretranslations(cancellationToken: Arg.Any<CancellationToken>())
                 .Returns(
                     TestCalls.AsyncClientStreamingCall(
                         PretranslationWriter,
@@ -97,7 +97,7 @@ public class ServalPlatformOutboxMessageHandlerTests
 
         public TranslationPlatformApi.TranslationPlatformApiClient Client { get; }
         public ServalTranslationPlatformOutboxMessageHandler Handler { get; }
-        public IClientStreamWriter<InsertInferencesRequest> PretranslationWriter { get; }
+        public IClientStreamWriter<InsertPretranslationsRequest> PretranslationWriter { get; }
 
         private static AsyncUnaryCall<Empty> CreateEmptyUnaryCall()
         {
