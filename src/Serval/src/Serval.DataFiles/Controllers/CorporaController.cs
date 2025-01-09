@@ -157,6 +157,8 @@ public class CorporaController(
 
     private async Task<Corpus> MapAsync(CorpusConfigDto corpusConfig, string id, CancellationToken cancellationToken)
     {
+        if (corpusConfig.Language == null || corpusConfig.Language.Length == 0)
+            throw new InvalidOperationException("Corpus must have a language.");
         return new Corpus
         {
             Id = id,
