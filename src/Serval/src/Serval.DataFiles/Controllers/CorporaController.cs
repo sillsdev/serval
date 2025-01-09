@@ -161,6 +161,7 @@ public class CorporaController(
         {
             Id = id,
             Owner = Owner,
+            Name = corpusConfig.Name,
             Language = corpusConfig.Language,
             Files = await MapAsync(corpusConfig.Files, cancellationToken)
         };
