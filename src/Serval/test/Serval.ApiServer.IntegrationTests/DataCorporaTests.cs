@@ -252,6 +252,18 @@ public class DataCorporaTests
         Assert.That(updatedCorpus2.Files.Count, Is.EqualTo(1));
     }
 
+    [Test]
+    public async Task AddCorpusGetAllCorpora()
+    {
+        var scope = new[] { Scopes.CreateFiles, Scopes.ReadFiles };
+        var corporaClient = _env.CreateCorporaClient(scope);
+        var newCorpus = new CorpusConfig { Language = "es", Files = new List<CorpusFileConfig>() };
+        var created = await corporaClient.CreateAsync(newCorpus);
+        Assert.That(created, Is.Not.Null);
+        var allCorpora = await corporaClient.GetAllAsync();
+        Assert.That(allCorpora.Count, Is.EqualTo(3));
+    }
+
     [TearDown]
     public void TearDown()
     {
