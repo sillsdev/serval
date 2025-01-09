@@ -248,6 +248,8 @@ public class DataCorporaTests
         await dataFilesClient.DeleteAsync(FILE_ID1);
         var updatedCorpus1 = await corporaClient.GetAsync(CORPUS_ID1);
         Assert.That(updatedCorpus1.Files.Count, Is.EqualTo(0));
+        var updatedCorpus2 = await corporaClient.GetAsync(CORPUS_ID2);
+        Assert.That(updatedCorpus2.Files.Count, Is.EqualTo(1));
     }
 
     [TearDown]
