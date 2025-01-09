@@ -13,7 +13,7 @@ service TranslationPlatformApi {
     rpc BuildRestarting(BuildRestartingRequest) returns (google.protobuf.Empty);
 
     rpc IncrementTrainEngineCorpusSize(IncrementTrainEngineCorpusSizeRequest) returns (google.protobuf.Empty);
-    rpc InsertInferences(stream InsertInferencesRequest) returns (google.protobuf.Empty);
+    rpc InsertPretranslations(stream InsertPretranslationsRequest) returns (google.protobuf.Empty);
 }
 
 message UpdateBuildStatusRequest {
@@ -52,7 +52,7 @@ message IncrementTrainEngineCorpusSizeRequest {
     int32 count = 2;
 }
 
-message InsertInferencesRequest {
+message InsertPretranslationsRequest {
     string engine_id = 1;
     string corpus_id = 2;
     string text_id = 3;

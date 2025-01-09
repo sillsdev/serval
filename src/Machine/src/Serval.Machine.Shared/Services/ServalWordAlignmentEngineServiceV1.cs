@@ -122,21 +122,18 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         {
             SourceTokens = { source.SourceTokens },
             TargetTokens = { source.TargetTokens },
-            Alignment = { Map(source.Alignment) },
-            Confidences = { source.Confidences }
+            Confidences = { source.Confidences },
+            Alignment = { source.AlignedWordPairs.Select(Map) }
         };
     }
 
-    private static IEnumerable<WordAlignment.V1.AlignedWordPair> Map(WordAlignmentMatrix source)
+    private static WordAlignment.V1.AlignedWordPair Map(SIL.Machine.Corpora.AlignedWordPair source)
     {
-        for (int i = 0; i < source.RowCount; i++)
+        return new WordAlignment.V1.AlignedWordPair
         {
-            for (int j = 0; j < source.ColumnCount; j++)
-            {
-                if (source[i, j])
-                    yield return new WordAlignment.V1.AlignedWordPair { SourceIndex = i, TargetIndex = j };
-            }
-        }
+            SourceIndex = source.SourceIndex,
+            TargetIndex = source.TargetIndex
+        };
     }
 
     private static SIL.ServiceToolkit.Models.ParallelCorpus Map(WordAlignment.V1.ParallelCorpus source)

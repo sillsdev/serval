@@ -62,12 +62,12 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                     )
                     .OfType<Models.WordAlignment>();
 
-                using (var call = _client.InsertInferences(cancellationToken: cancellationToken))
+                using (var call = _client.InsertWordAlignments(cancellationToken: cancellationToken))
                 {
                     await foreach (Models.WordAlignment wordAlignment in wordAlignments)
                     {
                         await call.RequestStream.WriteAsync(
-                            new InsertInferencesRequest
+                            new InsertWordAlignmentsRequest
                             {
                                 EngineId = content!,
                                 CorpusId = wordAlignment.CorpusId,

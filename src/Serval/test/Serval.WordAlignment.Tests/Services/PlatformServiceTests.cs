@@ -37,7 +37,7 @@ public class PlatformServiceTests
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         Assert.That(env.WordAlignments.Count, Is.EqualTo(0));
-        await env.PlatformService.InsertInferences(new MockAsyncStreamReader("e0"), env.ServerCallContext);
+        await env.PlatformService.InsertWordAlignments(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
 
         await env.PlatformService.BuildFaulted(new BuildFaultedRequest() { BuildId = "b0" }, env.ServerCallContext);
@@ -49,12 +49,12 @@ public class PlatformServiceTests
             new BuildRestartingRequest() { BuildId = "b0" },
             env.ServerCallContext
         );
-        await env.PlatformService.InsertInferences(new MockAsyncStreamReader("e0"), env.ServerCallContext);
+        await env.PlatformService.InsertWordAlignments(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
         await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
         await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        await env.PlatformService.InsertInferences(new MockAsyncStreamReader("e0"), env.ServerCallContext);
+        await env.PlatformService.InsertWordAlignments(new MockAsyncStreamReader("e0"), env.ServerCallContext);
         await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
     }
@@ -155,12 +155,12 @@ public class PlatformServiceTests
         public WordAlignmentPlatformServiceV1 PlatformService { get; }
     }
 
-    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertInferencesRequest>
+    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertWordAlignmentsRequest>
     {
         private bool _endOfStream = false;
 
         public string EngineId { get; } = engineId;
-        public InsertInferencesRequest Current => new() { EngineId = EngineId };
+        public InsertWordAlignmentsRequest Current => new() { EngineId = EngineId };
 
         public Task<bool> MoveNext(CancellationToken cancellationToken)
         {
