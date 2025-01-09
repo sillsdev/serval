@@ -59,12 +59,12 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
                     )
                     .OfType<Pretranslation>();
 
-                using (var call = _client.InsertInferences(cancellationToken: cancellationToken))
+                using (var call = _client.InsertPretranslations(cancellationToken: cancellationToken))
                 {
                     await foreach (Pretranslation pretranslation in pretranslations)
                     {
                         await call.RequestStream.WriteAsync(
-                            new InsertInferencesRequest
+                            new InsertPretranslationsRequest
                             {
                                 EngineId = content!,
                                 CorpusId = pretranslation.CorpusId,
