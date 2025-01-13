@@ -81,6 +81,8 @@ public class CorporaController(
         CancellationToken cancellationToken
     )
     {
+        if (corpusConfig.Language.Length == 0)
+            return BadRequest("Corpus must have a language.");
         Corpus corpus = await MapAsync(corpusConfig, idGenerator.GenerateId(), cancellationToken);
         await _corpusService.CreateAsync(corpus, cancellationToken);
         CorpusDto dto = Map(corpus);
@@ -157,8 +159,6 @@ public class CorporaController(
 
     private async Task<Corpus> MapAsync(CorpusConfigDto corpusConfig, string id, CancellationToken cancellationToken)
     {
-        if (corpusConfig.Language.Length == 0)
-            throw new InvalidOperationException("Corpus must have a language.");
         return new Corpus
         {
             Id = id,
