@@ -142,9 +142,9 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
             },
-            async (row, corpus) =>
+            async (row, isInTrainingData, corpus) =>
             {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
+                if (row.SourceSegment.Length > 0 && !isInTrainingData)
                 {
                     pretranslateWriter.WriteStartObject();
                     pretranslateWriter.WriteString("corpusId", corpus.Id);
