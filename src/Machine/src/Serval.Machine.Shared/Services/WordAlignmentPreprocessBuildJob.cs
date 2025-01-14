@@ -55,9 +55,9 @@ public class WordAlignmentPreprocessBuildJob(
                     trainCount++;
                 }
             },
-            async (row, corpus) =>
+            async (row, isInTrainingData, corpus) =>
             {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0 && !isInTrainingData)
                 {
                     inferenceWriter.WriteStartObject();
                     inferenceWriter.WriteString("corpusId", corpus.Id);
