@@ -480,9 +480,19 @@ public class ServalApiTests
     public async Task GetWordAlignment()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Statistical", "es", "en", "STAT1");
-        string[] books = ["1JN.txt", "2JN.txt", "3JN.txt", "MAT.txt"];
+        string[] books = ["1JN.txt", "2JN.txt", "MAT.txt"];
         ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
-        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
+        ParallelCorpusConfig test_corpus = await _helperClient.MakeParallelTextCorpus(["3JN.txt"], "es", "en", false);
+        string train_corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
+        string corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, test_corpus, true);
+        _helperClient.WordAlignmentBuildConfig.TrainOn =
+        [
+            new TrainingCorpusConfig2() { ParallelCorpusId = train_corpusId }
+        ];
+        _helperClient.WordAlignmentBuildConfig.WordAlignOn =
+        [
+            new WordAlignmentCorpusConfig() { ParallelCorpusId = corpusId }
+        ];
         await _helperClient.BuildEngineAsync(engineId);
         WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
             engineId,

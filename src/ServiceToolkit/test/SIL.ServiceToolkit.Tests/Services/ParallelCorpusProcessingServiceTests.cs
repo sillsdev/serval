@@ -81,14 +81,18 @@ public class ParallelCorpusPreprocessingServiceTests
                     trainCount++;
                 return Task.CompletedTask;
             },
-            (row, _) =>
+            (row, isInTrainingData, _) =>
             {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
+                if (row.SourceSegment.Length > 0 && !isInTrainingData)
+                {
                     pretranslateCount++;
+                }
+
                 return Task.CompletedTask;
             },
             false
         );
+
         Assert.Multiple(() =>
         {
             Assert.That(trainCount, Is.EqualTo(2));
