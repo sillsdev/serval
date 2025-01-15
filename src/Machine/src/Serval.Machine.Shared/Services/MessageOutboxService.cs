@@ -84,10 +84,10 @@ public class MessageOutboxService(
         string filePath = Path.Combine(_options.CurrentValue.OutboxDir, outboxMessage.Id);
         try
         {
-            await using Stream fileStream = _fileSystem.OpenWrite(filePath);
-            await contentStream.CopyToAsync(fileStream, cancellationToken);
-            await fileStream.FlushAsync(cancellationToken);
-            await fileStream.DisposeAsync();
+            using (Stream fileStream = _fileSystem.OpenWrite(filePath))
+            {
+                await contentStream.CopyToAsync(fileStream, cancellationToken);
+            }
             await _messages.InsertAsync(outboxMessage, cancellationToken: cancellationToken);
             return outboxMessage.Id;
         }
