@@ -84,7 +84,7 @@ public class MessageOutboxService(
         string filePath = Path.Combine(_options.CurrentValue.OutboxDir, outboxMessage.Id);
         try
         {
-            using (Stream fileStream = _fileSystem.OpenWrite(filePath))
+            await using (Stream fileStream = _fileSystem.OpenWrite(filePath))
             {
                 await contentStream.CopyToAsync(fileStream, cancellationToken);
             }
