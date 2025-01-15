@@ -50,7 +50,6 @@ public class MessageOutboxService(
                 Content = serializedContent,
                 HasContentStream = false
             };
-        string filePath = Path.Combine(_options.CurrentValue.OutboxDir, outboxMessage.Id);
         await _messages.InsertAsync(outboxMessage, cancellationToken: cancellationToken);
         return outboxMessage.Id;
     }
@@ -87,6 +86,8 @@ public class MessageOutboxService(
         {
             await using Stream fileStream = _fileSystem.OpenWrite(filePath);
             await contentStream.CopyToAsync(fileStream, cancellationToken);
+            await fileStream.FlushAsync(cancellationToken);
+            await fileStream.DisposeAsync();
             await _messages.InsertAsync(outboxMessage, cancellationToken: cancellationToken);
             return outboxMessage.Id;
         }
