@@ -23,10 +23,17 @@ public static class IMongoDataAccessConfiguratorExtensions
         );
         configurator.AddRepository<Corpus>(
             "corpora.corpus",
-            init: c =>
-                c.Indexes.CreateOrUpdateAsync(
+            init: async c =>
+            {
+                await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
-                )
+                );
+                // migrate by adding Name field
+                await c.UpdateManyAsync(
+                    Builders<Corpus>.Filter.Exists(b => b.Name, false),
+                    Builders<Corpus>.Update.Set(b => b.Name, "")
+                );
+            }
         );
         return configurator;
     }

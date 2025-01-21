@@ -173,6 +173,10 @@ public class ServalApiTests
             "en",
             true
         );
+        // Verify the corpora are readable
+        var allCorpora = await _helperClient.CorporaClient.GetAllAsync();
+        Assert.That(allCorpora, Has.Count.GreaterThan(0));
+
         for (int i = 0; i < NUM_ENGINES; i++)
         {
             _helperClient.InitTranslationBuildConfig();
