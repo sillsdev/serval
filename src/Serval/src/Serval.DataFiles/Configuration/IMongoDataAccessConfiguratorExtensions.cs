@@ -31,7 +31,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                 // migrate by adding Name field
                 await c.UpdateManyAsync(
                     Builders<Corpus>.Filter.Exists(b => b.Name, false),
-                    Builders<Corpus>.Update.Set(b => b.Name, "")
+                    Builders<Corpus>.Update.Set(b => b.Name, null)
                 );
             }
         );
