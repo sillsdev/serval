@@ -22,6 +22,7 @@ services:
       - ASPNETCORE_Translation__Engines__1__Address=http://machine-engine
       - ASPNETCORE_Translation__Engines__2__Type=Nmt
       - ASPNETCORE_Translation__Engines__2__Address=http://machine-engine
+      - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
       - 81
@@ -88,13 +89,14 @@ services:
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - BuildJob__ClearML__0__Queue=lambert_24gb
+      - BuildJob__ClearML__0__Queue=${CLEARML_GPU_QUEUE:-lambert_24gb}
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
-      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
+      - BuildJob__ClearML__1__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://silnlp/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+      - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
     ports:
@@ -132,13 +134,14 @@ services:
       - ClearML__Project=docker-compose
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - BuildJob__ClearML__0__Queue=lambert_24gb
+      - BuildJob__ClearML__0__Queue=${CLEARML_GPU_QUEUE:-lambert_24gb}
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
-      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
+      - BuildJob__ClearML__1__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://silnlp/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+      - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
     ports:
