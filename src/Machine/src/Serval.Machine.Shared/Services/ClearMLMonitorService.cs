@@ -74,7 +74,8 @@ public class ClearMLMonitorService(
                     .Values.Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
                     .OrderBy(t => t.Created)
                     .Select((t, i) => (Position: i, Task: t))
-                    .ToDictionary(e => e.Task.Name, e => e.Position);
+                    .GroupBy(e => e.Task.Name)
+                    .ToDictionary(e => e.Key, e => e.First().Position);
 
                 _queueSizePerEngineType[engineType] = queuePositionsPerEngineType[engineType].Count;
             }
