@@ -481,13 +481,13 @@ public class ServalApiTests
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Statistical", "es", "en", "STAT1");
         string[] books = ["1JN.txt", "2JN.txt", "MAT.txt"];
-        ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
-        ParallelCorpusConfig test_corpus = await _helperClient.MakeParallelTextCorpus(["3JN.txt"], "es", "en", false);
-        string train_corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
-        string corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, test_corpus, true);
+        ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+        ParallelCorpusConfig testCorpus = await _helperClient.MakeParallelTextCorpus(["3JN.txt"], "es", "en", false);
+        string trainCorpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
+        string corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, testCorpus, true);
         _helperClient.WordAlignmentBuildConfig.TrainOn =
         [
-            new TrainingCorpusConfig2() { ParallelCorpusId = train_corpusId }
+            new TrainingCorpusConfig2() { ParallelCorpusId = trainCorpusId }
         ];
         _helperClient.WordAlignmentBuildConfig.WordAlignOn =
         [
@@ -508,6 +508,10 @@ public class ServalApiTests
                 }
             )
         );
+
+        IList<Client.WordAlignment> wordAlignments =
+            await _helperClient.WordAlignmentEnginesClient.GetAllWordAlignmentsAsync(engineId, corpusId);
+        Assert.That(wordAlignments, Has.Count.EqualTo(14)); //Number of verses in 3JN
     }
 
     [TearDown]
