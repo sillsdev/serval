@@ -252,6 +252,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
 
         foreach (NParallelTextRow row in rows)
         {
+            //row at 0 is source filtered for pretranslation, row at 1 is target filtered for pretranslation, row at 2 is target filtered for training
             if (
                 hasUnfinishedRange
                 && (!row.IsInRange(0) || row.IsRangeStart(0))
@@ -272,7 +273,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             }
 
             textId = row.TextId;
-            refs.AddRange(row.NRefs[2]);
+            refs.AddRange(row.NRefs[2].Count > 0 ? row.NRefs[2] : row.NRefs[1]);
             isInTrainingData = isInTrainingData || row.Text(2).Length > 0;
 
             if (row.Text(0).Length > 0)
