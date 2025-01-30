@@ -12,7 +12,7 @@ service TranslationPlatformApi {
     rpc BuildFaulted(BuildFaultedRequest) returns (google.protobuf.Empty);
     rpc BuildRestarting(BuildRestartingRequest) returns (google.protobuf.Empty);
 
-    rpc IncrementTranslationEngineCorpusSize(IncrementTranslationEngineCorpusSizeRequest) returns (google.protobuf.Empty);
+    rpc IncrementTrainEngineCorpusSize(IncrementTrainEngineCorpusSizeRequest) returns (google.protobuf.Empty);
     rpc InsertPretranslations(stream InsertPretranslationsRequest) returns (google.protobuf.Empty);
     rpc UpdateBuildExecutionData(UpdateBuildExecutionDataRequest) returns (google.protobuf.Empty);
 }

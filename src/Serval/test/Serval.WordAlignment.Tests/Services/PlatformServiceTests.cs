@@ -1,3 +1,4 @@
+using System.Globalization;
 using Serval.WordAlignment.V1;
 
 namespace Serval.WordAlignment.Services;
@@ -88,6 +89,70 @@ public class PlatformServiceTests
         );
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.EqualTo(1));
         Assert.That(env.Builds.Get("b0").PercentCompleted, Is.EqualTo(0.5));
+    }
+
+    [Test]
+    public async Task UpdateBuildExecutionData()
+    {
+        var env = new TestEnvironment();
+
+        var engine = new Engine()
+        {
+            Id = "e0",
+            Owner = "owner1",
+            Type = "nmt",
+            SourceLanguage = "en",
+            TargetLanguage = "es",
+            ParallelCorpora = []
+        };
+        await env.Engines.InsertAsync(engine);
+
+        var build = new Build()
+        {
+            Id = "123",
+            EngineRef = "e0",
+            ExecutionData = new Dictionary<string, string>
+            {
+                { "trainCount", "0" },
+                { "inferenceCount", "0" },
+                { "staticCount", "0" }
+            }
+        };
+        await env.Builds.InsertAsync(build);
+
+        Assert.That(build.ExecutionData, Is.Not.Null);
+
+        var executionData = build.ExecutionData;
+
+        Assert.That(executionData, Contains.Key("trainCount"));
+        Assert.That(executionData, Contains.Key("inferenceCount"));
+
+        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
+        int wordAlignmentCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
+        int staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
+
+        Assert.That(trainCount, Is.EqualTo(0));
+        Assert.That(wordAlignmentCount, Is.EqualTo(0));
+        Assert.That(staticCount, Is.EqualTo(0));
+
+        var updateRequest = new UpdateBuildExecutionDataRequest() { BuildId = "123", EngineId = engine.Id };
+        updateRequest.ExecutionData.Add(
+            new Dictionary<string, string> { { "trainCount", "4" }, { "inferenceCount", "5" } }
+        );
+
+        await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
+
+        build = await env.Builds.GetAsync(c => c.Id == build.Id);
+
+        executionData = build!.ExecutionData;
+
+        trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
+        wordAlignmentCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
+        staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
+
+        Assert.That(trainCount, Is.GreaterThan(0));
+        Assert.That(wordAlignmentCount, Is.GreaterThan(0));
+        Assert.That(staticCount, Is.EqualTo(0));
     }
 
     [Test]

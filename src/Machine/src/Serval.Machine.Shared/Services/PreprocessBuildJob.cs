@@ -56,7 +56,7 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
         bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.SourceLanguage, out string srcLang);
         bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.TargetLanguage, out string trgLang);
 
-        (int trainCount, int pretranslateCount) = await WriteDataFilesAsync(
+        (int trainCount, int inferenceCount) = await WriteDataFilesAsync(
             buildId,
             data,
             buildOptions,
@@ -70,7 +70,7 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
                 { "EngineId", engineId },
                 { "BuildId", buildId },
                 { "NumTrainRows", trainCount },
-                { "NumInferenceRows", pretranslateCount },
+                { "NumInferenceRows", inferenceCount },
                 { "SourceLanguageResolved", srcLang },
                 { "TargetLanguageResolved", trgLang }
             };
@@ -86,7 +86,7 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
         var executionData = new Dictionary<string, string>()
         {
             { "trainCount", trainCount.ToString(CultureInfo.InvariantCulture) },
-            { "pretranslateCount", pretranslateCount.ToString(CultureInfo.InvariantCulture) }
+            { "inference", inferenceCount.ToString(CultureInfo.InvariantCulture) }
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
 
@@ -105,6 +105,7 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
             throw new OperationCanceledException();
     }
 
+    //TODO: Move this method to translation-specific PreprocessBuildJob
     protected virtual async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<ParallelCorpus> corpora,

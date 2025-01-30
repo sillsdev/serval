@@ -72,7 +72,7 @@ public class ParallelCorpusPreprocessingServiceTests
             }
         ];
         int trainCount = 0;
-        int pretranslateCount = 0;
+        int inferenceCount = 0;
         await processor.PreprocessAsync(
             corpora,
             row =>
@@ -85,7 +85,7 @@ public class ParallelCorpusPreprocessingServiceTests
             {
                 if (row.SourceSegment.Length > 0 && !isInTrainingData)
                 {
-                    pretranslateCount++;
+                    inferenceCount++;
                 }
 
                 return Task.CompletedTask;
@@ -96,7 +96,7 @@ public class ParallelCorpusPreprocessingServiceTests
         Assert.Multiple(() =>
         {
             Assert.That(trainCount, Is.EqualTo(2));
-            Assert.That(pretranslateCount, Is.EqualTo(3));
+            Assert.That(inferenceCount, Is.EqualTo(3));
         });
     }
 }

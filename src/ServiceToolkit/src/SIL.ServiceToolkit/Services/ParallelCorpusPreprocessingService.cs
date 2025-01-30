@@ -85,7 +85,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             foreach (Row row in CollapseRanges(trainingRows))
             {
                 await train(row);
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                 {
                     parallelTrainingDataPresent = true;
                 }

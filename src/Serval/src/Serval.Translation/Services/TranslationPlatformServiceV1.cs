@@ -284,8 +284,8 @@ public class TranslationPlatformServiceV1(
         return new Empty();
     }
 
-    public override async Task<Empty> IncrementTranslationEngineCorpusSize(
-        IncrementTranslationEngineCorpusSizeRequest request,
+    public override async Task<Empty> IncrementTrainEngineCorpusSize(
+        IncrementTrainEngineCorpusSizeRequest request,
         ServerCallContext context
     )
     {

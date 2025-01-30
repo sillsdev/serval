@@ -919,7 +919,8 @@ public class WordAlignmentEnginesController(
             State = source.State,
             DateFinished = source.DateFinished,
             Options = source.Options,
-            DeploymentVersion = source.DeploymentVersion
+            DeploymentVersion = source.DeploymentVersion,
+            ExecutionData = source.ExecutionData
         };
     }
 

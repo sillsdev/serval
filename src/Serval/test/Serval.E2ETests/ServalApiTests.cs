@@ -169,10 +169,10 @@ public class ServalApiTests
         var executionData = build.ExecutionData!;
 
         Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("pretranslateCount"));
+        Assert.That(executionData, Contains.Key("inferenceCount"));
 
         int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int pretranslateCount = Convert.ToInt32(executionData["pretranslateCount"], CultureInfo.InvariantCulture);
+        int pretranslateCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
 
         Assert.That(trainCount, Is.GreaterThan(0));
         Assert.That(pretranslateCount, Is.GreaterThan(0));
@@ -512,7 +512,7 @@ public class ServalApiTests
         [
             new WordAlignmentCorpusConfig() { ParallelCorpusId = corpusId }
         ];
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
         WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
             engineId,
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "spirit truth" }
@@ -527,6 +527,20 @@ public class ServalApiTests
                 }
             )
         );
+
+        WordAlignmentBuild build = await _helperClient.WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.ExecutionData, Is.Not.Null);
+
+        var executionData = build.ExecutionData!;
+
+        Assert.That(executionData, Contains.Key("trainCount"));
+        Assert.That(executionData, Contains.Key("inferenceCount"));
+
+        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
+        int wordAlignmentCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
+
+        Assert.That(trainCount, Is.GreaterThan(0));
+        Assert.That(wordAlignmentCount, Is.GreaterThan(0));
 
         IList<Client.WordAlignment> wordAlignments =
             await _helperClient.WordAlignmentEnginesClient.GetAllWordAlignmentsAsync(engineId, corpusId);

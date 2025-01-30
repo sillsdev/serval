@@ -13,6 +13,7 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
     public string OutboxId => ServalWordAlignmentPlatformOutboxConstants.OutboxId;
 
     public async Task HandleMessageAsync(
+        string groupId,
         string method,
         string? content,
         Stream? contentStream,
@@ -67,7 +68,7 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                         await call.RequestStream.WriteAsync(
                             new InsertWordAlignmentsRequest
                             {
-                                EngineId = content!,
+                                EngineId = groupId,
                                 CorpusId = wordAlignment.CorpusId,
                                 TextId = wordAlignment.TextId,
                                 Refs = { wordAlignment.Refs },
