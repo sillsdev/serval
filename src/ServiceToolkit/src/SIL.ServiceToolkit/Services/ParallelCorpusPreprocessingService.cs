@@ -137,20 +137,6 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
         }
     }
 
-    private static IEnumerable<(CorpusFile File, Dictionary<string, HashSet<int>> Chapters)> GetChaptersPerFile(
-        MonolingualCorpus mc,
-        ITextCorpus tc
-    )
-    {
-        Dictionary<string, HashSet<int>>? chapters = mc.TrainOnChapters;
-        if (chapters is null && mc.TrainOnTextIds is not null)
-        {
-            chapters = mc.TrainOnTextIds.Select(tid => (tid, new HashSet<int> { })).ToDictionary();
-        }
-        chapters ??= tc.Texts.Select(t => (t.Id, new HashSet<int>() { })).ToDictionary();
-        return mc.Files.Select(f => (f, chapters));
-    }
-
     private static ITextCorpus FilterPretranslateCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
     {
         textCorpus = textCorpus.Transform(CleanSegment);
