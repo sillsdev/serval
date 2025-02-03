@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.WordAlignment.V1;
+
+namespace Serval.Machine.Shared.Services;
 
 public class StatisticalEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
@@ -74,17 +76,16 @@ public class StatisticalEngineService(
                 // there is no way to cancel this call
                 IReadOnlyList<string> sourceTokens = tokenizer.Tokenize(sourceSegment).ToList();
                 IReadOnlyList<string> targetTokens = tokenizer.Tokenize(targetSegment).ToList();
-                IReadOnlyCollection<AlignedWordPair> wordPairs = wordAlignmentEngine.GetBestAlignedWordPairs(
-                    sourceTokens,
-                    targetTokens
-                );
+                IReadOnlyCollection<SIL.Machine.Corpora.AlignedWordPair> wordPairs =
+                    wordAlignmentEngine.GetBestAlignedWordPairs(sourceTokens, targetTokens);
                 wordAlignmentEngine.ComputeAlignedWordPairScores(sourceTokens, targetTokens, wordPairs);
-                return new WordAlignmentResult(
-                    sourceTokens: sourceTokens,
-                    targetTokens: targetTokens,
-                    alignedWordPairs: wordPairs,
-                    confidences: wordPairs.Select(wp => wp.AlignmentScore).ToList()
-                );
+                return new WordAlignmentResult()
+                {
+                    SourceTokens = { sourceTokens },
+                    TargetTokens = { targetTokens },
+                    Alignment = { wordPairs.Select(Map) },
+                    Confidences = { wordPairs.Select(wp => wp.AlignmentScore).ToList() }
+                };
             },
             cancellationToken: cancellationToken
         );
@@ -120,7 +121,7 @@ public class StatisticalEngineService(
         string engineId,
         string buildId,
         string? buildOptions,
-        IReadOnlyList<ParallelCorpus> corpora,
+        IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus> corpora,
         CancellationToken cancellationToken = default
     )
     {
@@ -186,5 +187,14 @@ public class StatisticalEngineService(
         if (engine.BuildRevision == 0)
             throw new EngineNotBuiltException("The engine must be built first.");
         return engine;
+    }
+
+    private static WordAlignment.V1.AlignedWordPair Map(SIL.Machine.Corpora.AlignedWordPair alignedWordPair)
+    {
+        return new WordAlignment.V1.AlignedWordPair
+        {
+            SourceIndex = alignedWordPair.SourceIndex,
+            TargetIndex = alignedWordPair.TargetIndex
+        };
     }
 }

@@ -26,13 +26,17 @@ public class WordAlignmentModelFactory(IOptionsMonitor<WordAlignmentModelOptions
     {
         var modelPath = Path.Combine(engineDir, "tm", "src_trg");
         var directModel = ThotWordAlignmentModel.Create(ThotWordAlignmentModelType.Hmm);
+        directModel.SourceTokenizer = tokenizer;
+        directModel.TargetTokenizer = tokenizer;
         directModel.Load(modelPath + "_invswm");
 
         var inverseModel = ThotWordAlignmentModel.Create(ThotWordAlignmentModelType.Hmm);
+        inverseModel.SourceTokenizer = tokenizer;
+        inverseModel.TargetTokenizer = tokenizer;
         inverseModel.Load(modelPath + "_swm");
 
-        ITrainer directTrainer = directModel.CreateTrainer(corpus, tokenizer);
-        ITrainer inverseTrainer = inverseModel.CreateTrainer(corpus.Invert(), tokenizer);
+        ITrainer directTrainer = directModel.CreateTrainer(corpus);
+        ITrainer inverseTrainer = inverseModel.CreateTrainer(corpus.Invert());
 
         return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
     }

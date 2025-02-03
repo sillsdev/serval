@@ -1,3 +1,5 @@
+using WordAlignmentResult = Serval.WordAlignment.V1.WordAlignmentResult;
+
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
@@ -135,8 +137,8 @@ public class StatisticalEngineServiceTests
         );
         Assert.That(string.Join(' ', result.TargetTokens), Is.EqualTo("this is a test ."));
         Assert.That(result.Confidences, Has.Count.EqualTo(5));
-        Assert.That(result.AlignedWordPairs.First().SourceIndex, Is.EqualTo(0));
-        Assert.That(result.AlignedWordPairs.First().TargetIndex, Is.EqualTo(0));
+        Assert.That(result.Alignment.First().SourceIndex, Is.EqualTo(0));
+        Assert.That(result.Alignment.First().TargetIndex, Is.EqualTo(0));
     }
 
     private class TestEnvironment : DisposableBase
