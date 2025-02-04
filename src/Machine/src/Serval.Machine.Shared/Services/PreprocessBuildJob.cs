@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using System.Text.RegularExpressions;
+
+namespace Serval.Machine.Shared.Services;
 
 public class PreprocessBuildJob(
     IPlatformService platformService,
@@ -18,6 +20,7 @@ public class PreprocessBuildJob(
     )
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
+    private static readonly Regex UntranslatableRefRegex = new(@":(r|rem)(/|$)", RegexOptions.Compiled);
 
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
 
@@ -128,7 +131,7 @@ public class PreprocessBuildJob(
             },
             async (row, corpus) =>
             {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0 && IsTranslatable(row.Refs))
                 {
                     pretranslateWriter.WriteStartObject();
                     pretranslateWriter.WriteString("corpusId", corpus.Id);
@@ -176,5 +179,19 @@ public class PreprocessBuildJob(
     {
         resolvedCode = languageCode;
         return true;
+    }
+
+    internal static bool IsTranslatable(IReadOnlyList<object> refs)
+    {
+        bool translatable = true;
+        foreach (object? reference in refs)
+        {
+            if (reference is string str && UntranslatableRefRegex.IsMatch(str))
+            {
+                translatable = false;
+                break;
+            }
+        }
+        return translatable;
     }
 }

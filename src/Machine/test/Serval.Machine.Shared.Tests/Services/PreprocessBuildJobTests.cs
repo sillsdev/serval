@@ -528,6 +528,20 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
         });
     }
 
+    // Test untranslateable paragraph regex
+    [Test]
+    public void RunAsync_UntranslatableParagraphs()
+    {
+        Assert.That(PreprocessBuildJob.IsTranslatable(["MAT 1:0"]), Is.True);
+        Assert.That(PreprocessBuildJob.IsTranslatable(["MAT 1:0/1:p"]), Is.True);
+        Assert.That(PreprocessBuildJob.IsTranslatable(["MAT 1:0/1:r"]), Is.False);
+        Assert.That(PreprocessBuildJob.IsTranslatable(["MAT 1:0/2:r"]), Is.False);
+        Assert.That(PreprocessBuildJob.IsTranslatable(["MAT 1:0/2:rem"]), Is.False);
+        Assert.That(PreprocessBuildJob.IsTranslatable(["MAT 1:0/2:rem/1:ft"]), Is.False);
+        Assert.That(PreprocessBuildJob.IsTranslatable(["MAT 1:0/2:rems"]), Is.True);
+        Assert.That(PreprocessBuildJob.IsTranslatable(["MAT 1:0/2:re"]), Is.True);
+    }
+
     private class TestEnvironment : DisposableBase
     {
         private static readonly string TestDataPath = Path.Combine(
