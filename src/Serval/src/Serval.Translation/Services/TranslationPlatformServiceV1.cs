@@ -218,6 +218,8 @@ public class TranslationPlatformServiceV1(
                         u.Set(b => b.Message, "Restarting")
                             .Set(b => b.Step, 0)
                             .Set(b => b.PercentCompleted, 0)
+                            .Set(b => b.FineTuneProgress, 0)
+                            .Set(b => b.InferenceProgress, 0)
                             .Set(b => b.State, JobState.Pending),
                     cancellationToken: ct
                 );
@@ -252,6 +254,20 @@ public class TranslationPlatformServiceV1(
                     u.Set(
                         b => b.PercentCompleted,
                         Math.Round(request.PercentCompleted, 4, MidpointRounding.AwayFromZero)
+                    );
+                }
+                if (request.HasFineTuneProgress)
+                {
+                    u.Set(
+                        b => b.FineTuneProgress,
+                        Math.Round(request.FineTuneProgress, 4, MidpointRounding.AwayFromZero)
+                    );
+                }
+                if (request.HasInferenceProgress)
+                {
+                    u.Set(
+                        b => b.InferenceProgress,
+                        Math.Round(request.InferenceProgress, 4, MidpointRounding.AwayFromZero)
                     );
                 }
                 if (request.HasMessage)

@@ -85,6 +85,10 @@ public class ServalPlatformService(
         var request = new UpdateBuildStatusRequest { BuildId = buildId, Step = progressStatus.Step };
         if (progressStatus.PercentCompleted.HasValue)
             request.PercentCompleted = progressStatus.PercentCompleted.Value;
+        if (progressStatus.FineTuneProgress.HasValue)
+            request.FineTuneProgress = progressStatus.FineTuneProgress.Value;
+        if (progressStatus.InferenceProgress.HasValue)
+            request.InferenceProgress = progressStatus.InferenceProgress.Value;
         if (progressStatus.Message is not null)
             request.Message = progressStatus.Message;
         if (queueDepth is not null)

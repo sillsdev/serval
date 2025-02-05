@@ -89,15 +89,19 @@ services:
       - ASPNETCORE_ConnectionStrings__Serval=http://serval-api:81
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Project=docker-compose
-      - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
-      - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - BuildJob__ClearML__0__Queue=${CLEARML_GPU_QUEUE:-lambert_24gb}
+      # - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
+      - ClearML_AccessKey=ZM18DZCGK9EL7CVKTJEHPYMRHLOPMX
+      # - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - ClearML_SecretKey=conbs2eHJVRFL0Y4gomPJxCUDvPOZrI7xrqG8DSXOK3wBV1CgDpewHBYhAaeTK3KuMI
+      - BuildJob__ClearML__0__Queue=lambert_24gb
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
-      - BuildJob__ClearML__1__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
+      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://silnlp/docker-compose/
-      - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
-      - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+      # - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
+      - SharedFile__S3AccessKeyId=AKIA2UC3FR4KMOG6ONUW
+      # - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+      - SharedFile__S3SecretAccessKey=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
       - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
@@ -135,15 +139,19 @@ services:
       - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Project=docker-compose
-      - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
-      - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
-      - BuildJob__ClearML__0__Queue=${CLEARML_GPU_QUEUE:-lambert_24gb}
+      # - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
+      - ClearML_AccessKey=ZM18DZCGK9EL7CVKTJEHPYMRHLOPMX
+      # - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
+      - ClearML_SecretKey=conbs2eHJVRFL0Y4gomPJxCUDvPOZrI7xrqG8DSXOK3wBV1CgDpewHBYhAaeTK3KuMI
+      - BuildJob__ClearML__0__Queue=lambert_24gb
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
-      - BuildJob__ClearML__1__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
+      - BuildJob__ClearML__1__Queue=lambert_24gb.cpu_only
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://silnlp/docker-compose/
-      - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
-      - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+      # - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
+      - SharedFile__S3AccessKeyId=AKIA2UC3FR4KMOG6ONUW
+      # - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
+      - SharedFile__S3SecretAccessKey=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
       - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
       - 80
