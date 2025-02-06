@@ -105,7 +105,6 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
             throw new OperationCanceledException();
     }
 
-    //TODO: Move this method to translation-specific PreprocessBuildJob
     protected virtual async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<ParallelCorpus> corpora,
