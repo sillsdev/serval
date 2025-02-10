@@ -1,3 +1,5 @@
+using EchoTranslationEngine;
+using EchoWordAlignmentEngine;
 using Serval.Translation.V1;
 using Serval.WordAlignment.V1;
 
