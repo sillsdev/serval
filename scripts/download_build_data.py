@@ -47,8 +47,13 @@ def main():
         builds = [client.translation_engines_get_build(args.engine_id, args.build_id)]
     corpora = client.translation_engines_get_all_corpora(args.engine_id)
     corpora_objs = []
+    parallel_corpora = client.translation_engines_get_all_parallel_corpora(
+        args.engine_id
+    )
+    parallel_corpora_objs = []
     pretranslation_objs = []
     with ZipFile(args.output, "w") as zip_obj:
+        # MONOLINGUAL CORPORA (DEPRECATED)
         for corpus in corpora:
             obj = corpus.to_jsonable()
             obj["sourceFilesMeta"] = []
@@ -57,7 +62,8 @@ def main():
                 file_data = client.data_files_download(file_id)
                 file_meta = client.data_files_get(file_id)
                 zip_obj.writestr(
-                    f"{corpus.name}_{corpus.id}/src/{file_meta.name}", file_data.read()
+                    f"corpora/{corpus.id}/src/{file_meta.name}",
+                    file_data.read(),
                 )
                 file_meta = file_meta.to_jsonable()
                 file_meta["textId"] = f.text_id
@@ -69,7 +75,8 @@ def main():
                 file_data = client.data_files_download(file_id)
                 file_meta = client.data_files_get(file_id)
                 zip_obj.writestr(
-                    f"{corpus.name}_{corpus.id}/trg/{file_meta.name}", file_data.read()
+                    f"corpora/{corpus.id}/trg/{file_meta.name}",
+                    file_data.read(),
                 )
                 file_meta = file_meta.to_jsonable()
                 file_meta["textId"] = f.text_id
@@ -90,12 +97,84 @@ def main():
                         args.engine_id, corpus.id, pretranslation_id
                     )
                     zip_obj.writestr(
-                        f"{corpus.name}_{corpus.id}/pretranslated_usfm/{pretranslation_id}.usfm",
+                        f"corpora/{corpus.id}/pretranslated_usfm/{pretranslation_id}.usfm",
                         usfm_text,
                     )
-                except:
+                except Exception as e:
                     print(
-                        f"Failed to get usfm for {pretranslation_id}: engine={args.engine_id}, corpus={corpus.id}"
+                        f"Failed to get usfm for {pretranslation_id} (engine={args.engine_id}, corpus={corpus.id}) due to exception {e}"
+                    )
+
+            pretranslation_objs += list(map(lambda p: p.to_jsonable(), pretranslations))
+
+        # PARALLEL CORPORA
+        for corpus in parallel_corpora:
+            obj = corpus.to_jsonable()
+            obj["sourceCorporaMeta"] = []  # CHANGE TO CORPUS
+            for sc in obj["sourceCorpora"]:
+                source_corpus = client.corpora_get(sc["id"])
+                source_corpus_meta = {}
+                source_corpus_meta["id"] = source_corpus.id
+                source_corpus_meta["url"] = source_corpus.url
+                source_corpus_meta["language"] = source_corpus.language
+                source_corpus_meta["revision"] = source_corpus.revision
+                source_corpus_meta["files"] = []
+                for f in source_corpus.files:
+                    file_id = f.file.id
+                    file_data = client.data_files_download(file_id)
+                    file_meta = client.data_files_get(file_id)
+                    zip_obj.writestr(
+                        f"parallel-corpora/{corpus.id}/src/{source_corpus.id}/{file_meta.name}",
+                        file_data.read(),
+                    )
+                    file_meta = file_meta.to_jsonable()
+                    file_meta["textId"] = f.text_id
+                    source_corpus_meta["files"].append(file_meta)
+                obj["sourceCorporaMeta"].append(source_corpus_meta)
+
+            obj["targetCorporaMeta"] = []
+            for tc in obj["targetCorpora"]:
+                target_corpus = client.corpora_get(tc["id"])
+                target_corpus_meta = {}
+                target_corpus_meta["id"] = target_corpus.id
+                target_corpus_meta["url"] = target_corpus.url
+                target_corpus_meta["language"] = target_corpus.language
+                target_corpus_meta["revision"] = target_corpus.revision
+                target_corpus_meta["files"] = []
+                for f in target_corpus.files:
+                    file_id = f.file.id
+                    file_data = client.data_files_download(file_id)
+                    file_meta = client.data_files_get(file_id)
+                    zip_obj.writestr(
+                        f"parallel-corpora/{corpus.id}/trg/{file_meta.name}",
+                        file_data.read(),
+                    )
+                    file_meta = file_meta.to_jsonable()
+                    file_meta["textId"] = f.text_id
+                    target_corpus_meta["files"].append(file_meta)
+                obj["targetCorporaMeta"].append(source_corpus_meta)
+
+            del obj["sourceCorpora"]
+            del obj["targetCorpora"]
+
+            parallel_corpora_objs.append(obj)
+
+            pretranslations = client.translation_engines_get_all_pretranslations(
+                args.engine_id, corpus.id
+            )
+            pretranslation_ids = set(map(lambda x: x.text_id, pretranslations))
+            for pretranslation_id in pretranslation_ids:
+                try:
+                    usfm_text = client.translation_engines_get_pretranslated_usfm(
+                        args.engine_id, corpus.id, pretranslation_id
+                    )
+                    zip_obj.writestr(
+                        f"parallel-corpora/{corpus.id}/pretranslated_usfm/{pretranslation_id}.usfm",
+                        usfm_text,
+                    )
+                except Exception as e:
+                    print(
+                        f"Failed to get usfm for {pretranslation_id} (engine={args.engine_id}, parallel_corpus={corpus.id}) due to exception {e}"
                     )
 
             pretranslation_objs += list(map(lambda p: p.to_jsonable(), pretranslations))
@@ -104,6 +183,7 @@ def main():
         meta["engineMeta"] = engine.to_jsonable()
         meta["builds"] = list(map(lambda b: b.to_jsonable(), builds))
         meta["corpora"] = corpora_objs
+        meta["parallel-corpora"] = parallel_corpora_objs
         meta["pretranslations"] = pretranslation_objs
         zip_obj.writestr(f"engine_meta.json", json.dumps(meta, indent=1))
 

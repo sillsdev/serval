@@ -1,5 +1,0 @@
-[flake8]
-max-line-length = 120
-per-file-ignores = serval_app.py:F821,W605
-exclude =
-    serval_client_module.py

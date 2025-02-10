@@ -124,6 +124,21 @@ def from_obj(obj: Any, expected: List[type], path: str = "") -> Any:
     if exp == DeploymentInfo:
         return deployment_info_from_obj(obj, path=path)
 
+    if exp == Corpus:
+        return corpus_from_obj(obj, path=path)
+
+    if exp == CorpusFile:
+        return corpus_file_from_obj(obj, path=path)
+
+    if exp == ResourceLink:
+        return resource_link_from_obj(obj, path=path)
+
+    if exp == CorpusConfig:
+        return corpus_config_from_obj(obj, path=path)
+
+    if exp == CorpusFileConfig:
+        return corpus_file_config_from_obj(obj, path=path)
+
     if exp == DataFile:
         return data_file_from_obj(obj, path=path)
 
@@ -154,9 +169,6 @@ def from_obj(obj: Any, expected: List[type], path: str = "") -> Any:
     if exp == TranslationCorpus:
         return translation_corpus_from_obj(obj, path=path)
 
-    if exp == ResourceLink:
-        return resource_link_from_obj(obj, path=path)
-
     if exp == TranslationCorpusFile:
         return translation_corpus_file_from_obj(obj, path=path)
 
@@ -169,6 +181,15 @@ def from_obj(obj: Any, expected: List[type], path: str = "") -> Any:
     if exp == TranslationCorpusUpdateConfig:
         return translation_corpus_update_config_from_obj(obj, path=path)
 
+    if exp == TranslationParallelCorpus:
+        return translation_parallel_corpus_from_obj(obj, path=path)
+
+    if exp == TranslationParallelCorpusConfig:
+        return translation_parallel_corpus_config_from_obj(obj, path=path)
+
+    if exp == TranslationParallelCorpusUpdateConfig:
+        return translation_parallel_corpus_update_config_from_obj(obj, path=path)
+
     if exp == Pretranslation:
         return pretranslation_from_obj(obj, path=path)
 
@@ -178,6 +199,9 @@ def from_obj(obj: Any, expected: List[type], path: str = "") -> Any:
     if exp == TrainingCorpus:
         return training_corpus_from_obj(obj, path=path)
 
+    if exp == ParallelCorpusFilter:
+        return parallel_corpus_filter_from_obj(obj, path=path)
+
     if exp == PretranslateCorpus:
         return pretranslate_corpus_from_obj(obj, path=path)
 
@@ -186,6 +210,9 @@ def from_obj(obj: Any, expected: List[type], path: str = "") -> Any:
 
     if exp == TrainingCorpusConfig:
         return training_corpus_config_from_obj(obj, path=path)
+
+    if exp == ParallelCorpusFilterConfig:
+        return parallel_corpus_filter_config_from_obj(obj, path=path)
 
     if exp == PretranslateCorpusConfig:
         return pretranslate_corpus_config_from_obj(obj, path=path)
@@ -288,6 +315,26 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         assert isinstance(obj, DeploymentInfo)
         return deployment_info_to_jsonable(obj, path=path)
 
+    if exp == Corpus:
+        assert isinstance(obj, Corpus)
+        return corpus_to_jsonable(obj, path=path)
+
+    if exp == CorpusFile:
+        assert isinstance(obj, CorpusFile)
+        return corpus_file_to_jsonable(obj, path=path)
+
+    if exp == ResourceLink:
+        assert isinstance(obj, ResourceLink)
+        return resource_link_to_jsonable(obj, path=path)
+
+    if exp == CorpusConfig:
+        assert isinstance(obj, CorpusConfig)
+        return corpus_config_to_jsonable(obj, path=path)
+
+    if exp == CorpusFileConfig:
+        assert isinstance(obj, CorpusFileConfig)
+        return corpus_file_config_to_jsonable(obj, path=path)
+
     if exp == DataFile:
         assert isinstance(obj, DataFile)
         return data_file_to_jsonable(obj, path=path)
@@ -328,10 +375,6 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         assert isinstance(obj, TranslationCorpus)
         return translation_corpus_to_jsonable(obj, path=path)
 
-    if exp == ResourceLink:
-        assert isinstance(obj, ResourceLink)
-        return resource_link_to_jsonable(obj, path=path)
-
     if exp == TranslationCorpusFile:
         assert isinstance(obj, TranslationCorpusFile)
         return translation_corpus_file_to_jsonable(obj, path=path)
@@ -348,6 +391,18 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         assert isinstance(obj, TranslationCorpusUpdateConfig)
         return translation_corpus_update_config_to_jsonable(obj, path=path)
 
+    if exp == TranslationParallelCorpus:
+        assert isinstance(obj, TranslationParallelCorpus)
+        return translation_parallel_corpus_to_jsonable(obj, path=path)
+
+    if exp == TranslationParallelCorpusConfig:
+        assert isinstance(obj, TranslationParallelCorpusConfig)
+        return translation_parallel_corpus_config_to_jsonable(obj, path=path)
+
+    if exp == TranslationParallelCorpusUpdateConfig:
+        assert isinstance(obj, TranslationParallelCorpusUpdateConfig)
+        return translation_parallel_corpus_update_config_to_jsonable(obj, path=path)
+
     if exp == Pretranslation:
         assert isinstance(obj, Pretranslation)
         return pretranslation_to_jsonable(obj, path=path)
@@ -360,6 +415,10 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
         assert isinstance(obj, TrainingCorpus)
         return training_corpus_to_jsonable(obj, path=path)
 
+    if exp == ParallelCorpusFilter:
+        assert isinstance(obj, ParallelCorpusFilter)
+        return parallel_corpus_filter_to_jsonable(obj, path=path)
+
     if exp == PretranslateCorpus:
         assert isinstance(obj, PretranslateCorpus)
         return pretranslate_corpus_to_jsonable(obj, path=path)
@@ -371,6 +430,10 @@ def to_jsonable(obj: Any, expected: List[type], path: str = "") -> Any:
     if exp == TrainingCorpusConfig:
         assert isinstance(obj, TrainingCorpusConfig)
         return training_corpus_config_to_jsonable(obj, path=path)
+
+    if exp == ParallelCorpusFilterConfig:
+        assert isinstance(obj, ParallelCorpusFilterConfig)
+        return parallel_corpus_filter_config_to_jsonable(obj, path=path)
 
     if exp == PretranslateCorpusConfig:
         assert isinstance(obj, PretranslateCorpusConfig)
@@ -688,6 +751,443 @@ def deployment_info_to_jsonable(
     res["deploymentVersion"] = deployment_info.deployment_version
 
     res["aspNetCoreEnvironment"] = deployment_info.asp_net_core_environment
+
+    return res
+
+
+class Corpus:
+    def __init__(
+        self,
+        id: str,
+        revision: int,
+        language: str,
+        url: str,
+        files: List["CorpusFile"],
+        name: Optional[str] = None,
+    ) -> None:
+        """Initializes with the given values."""
+        self.id = id
+
+        self.revision = revision
+
+        self.language = language
+
+        self.url = url
+
+        self.files = files
+
+        self.name = name
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to corpus_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return corpus_to_jsonable(self)
+
+
+def new_corpus() -> Corpus:
+    """Generates an instance of Corpus with default values."""
+    return Corpus(id="", revision=0, language="", url="", files=[])
+
+
+def corpus_from_obj(obj: Any, path: str = "") -> Corpus:
+    """
+    Generates an instance of Corpus from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of Corpus
+    :param path: path to the object used for debugging
+    :return: parsed instance of Corpus
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
+
+    revision_from_obj = from_obj(
+        obj["revision"], expected=[int], path=path + ".revision"
+    )  # type: int
+
+    language_from_obj = from_obj(
+        obj["language"], expected=[str], path=path + ".language"
+    )  # type: str
+
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
+
+    files_from_obj = from_obj(
+        obj["files"], expected=[list, CorpusFile], path=path + ".files"
+    )  # type: List['CorpusFile']
+
+    obj_name = obj.get("name", None)
+    if obj_name is not None:
+        name_from_obj = from_obj(
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
+    else:
+        name_from_obj = None
+
+    return Corpus(
+        id=id_from_obj,
+        revision=revision_from_obj,
+        language=language_from_obj,
+        url=url_from_obj,
+        files=files_from_obj,
+        name=name_from_obj,
+    )
+
+
+def corpus_to_jsonable(corpus: Corpus, path: str = "") -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of Corpus.
+
+    :param corpus: instance of Corpus to be JSON-ized
+    :param path: path to the corpus used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["id"] = corpus.id
+
+    res["revision"] = corpus.revision
+
+    res["language"] = corpus.language
+
+    res["url"] = corpus.url
+
+    res["files"] = to_jsonable(
+        corpus.files, expected=[list, CorpusFile], path="{}.files".format(path)
+    )
+
+    if corpus.name is not None:
+        res["name"] = corpus.name
+
+    return res
+
+
+class CorpusFile:
+    def __init__(self, file: "ResourceLink", text_id: Optional[str] = None) -> None:
+        """Initializes with the given values."""
+        self.file = file
+
+        self.text_id = text_id
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to corpus_file_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return corpus_file_to_jsonable(self)
+
+
+def new_corpus_file() -> CorpusFile:
+    """Generates an instance of CorpusFile with default values."""
+    return CorpusFile(file=new_resource_link__)
+
+
+def corpus_file_from_obj(obj: Any, path: str = "") -> CorpusFile:
+    """
+    Generates an instance of CorpusFile from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of CorpusFile
+    :param path: path to the object used for debugging
+    :return: parsed instance of CorpusFile
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    file_from_obj = from_obj(
+        obj["file"], expected=[ResourceLink], path=path + ".file"
+    )  # type: 'ResourceLink'
+
+    obj_text_id = obj.get("textId", None)
+    if obj_text_id is not None:
+        text_id_from_obj = from_obj(
+            obj_text_id, expected=[str], path=path + ".textId"
+        )  # type: Optional[str]
+    else:
+        text_id_from_obj = None
+
+    return CorpusFile(file=file_from_obj, text_id=text_id_from_obj)
+
+
+def corpus_file_to_jsonable(
+    corpus_file: CorpusFile, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of CorpusFile.
+
+    :param corpus_file: instance of CorpusFile to be JSON-ized
+    :param path: path to the corpus_file used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["file"] = to_jsonable(
+        corpus_file.file, expected=[ResourceLink], path="{}.file".format(path)
+    )
+
+    if corpus_file.text_id is not None:
+        res["textId"] = corpus_file.text_id
+
+    return res
+
+
+class ResourceLink:
+    def __init__(self, id: str, url: str) -> None:
+        """Initializes with the given values."""
+        self.id = id
+
+        self.url = url
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to resource_link_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return resource_link_to_jsonable(self)
+
+
+def new_resource_link() -> ResourceLink:
+    """Generates an instance of ResourceLink with default values."""
+    return ResourceLink(id="", url="")
+
+
+def resource_link_from_obj(obj: Any, path: str = "") -> ResourceLink:
+    """
+    Generates an instance of ResourceLink from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of ResourceLink
+    :param path: path to the object used for debugging
+    :return: parsed instance of ResourceLink
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
+
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
+
+    return ResourceLink(id=id_from_obj, url=url_from_obj)
+
+
+def resource_link_to_jsonable(
+    resource_link: ResourceLink, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of ResourceLink.
+
+    :param resource_link: instance of ResourceLink to be JSON-ized
+    :param path: path to the resource_link used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["id"] = resource_link.id
+
+    res["url"] = resource_link.url
+
+    return res
+
+
+class CorpusConfig:
+    def __init__(
+        self, language: str, files: List["CorpusFileConfig"], name: Optional[str] = None
+    ) -> None:
+        """Initializes with the given values."""
+        self.language = language
+
+        self.files = files
+
+        self.name = name
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to corpus_config_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return corpus_config_to_jsonable(self)
+
+
+def new_corpus_config() -> CorpusConfig:
+    """Generates an instance of CorpusConfig with default values."""
+    return CorpusConfig(language="", files=[])
+
+
+def corpus_config_from_obj(obj: Any, path: str = "") -> CorpusConfig:
+    """
+    Generates an instance of CorpusConfig from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of CorpusConfig
+    :param path: path to the object used for debugging
+    :return: parsed instance of CorpusConfig
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    language_from_obj = from_obj(
+        obj["language"], expected=[str], path=path + ".language"
+    )  # type: str
+
+    files_from_obj = from_obj(
+        obj["files"], expected=[list, CorpusFileConfig], path=path + ".files"
+    )  # type: List['CorpusFileConfig']
+
+    obj_name = obj.get("name", None)
+    if obj_name is not None:
+        name_from_obj = from_obj(
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
+    else:
+        name_from_obj = None
+
+    return CorpusConfig(
+        language=language_from_obj, files=files_from_obj, name=name_from_obj
+    )
+
+
+def corpus_config_to_jsonable(
+    corpus_config: CorpusConfig, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of CorpusConfig.
+
+    :param corpus_config: instance of CorpusConfig to be JSON-ized
+    :param path: path to the corpus_config used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["language"] = corpus_config.language
+
+    res["files"] = to_jsonable(
+        corpus_config.files,
+        expected=[list, CorpusFileConfig],
+        path="{}.files".format(path),
+    )
+
+    if corpus_config.name is not None:
+        res["name"] = corpus_config.name
+
+    return res
+
+
+class CorpusFileConfig:
+    def __init__(self, file_id: str, text_id: Optional[str] = None) -> None:
+        """Initializes with the given values."""
+        self.file_id = file_id
+
+        self.text_id = text_id
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to corpus_file_config_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return corpus_file_config_to_jsonable(self)
+
+
+def new_corpus_file_config() -> CorpusFileConfig:
+    """Generates an instance of CorpusFileConfig with default values."""
+    return CorpusFileConfig(file_id="")
+
+
+def corpus_file_config_from_obj(obj: Any, path: str = "") -> CorpusFileConfig:
+    """
+    Generates an instance of CorpusFileConfig from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of CorpusFileConfig
+    :param path: path to the object used for debugging
+    :return: parsed instance of CorpusFileConfig
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    file_id_from_obj = from_obj(
+        obj["fileId"], expected=[str], path=path + ".fileId"
+    )  # type: str
+
+    obj_text_id = obj.get("textId", None)
+    if obj_text_id is not None:
+        text_id_from_obj = from_obj(
+            obj_text_id, expected=[str], path=path + ".textId"
+        )  # type: Optional[str]
+    else:
+        text_id_from_obj = None
+
+    return CorpusFileConfig(file_id=file_id_from_obj, text_id=text_id_from_obj)
+
+
+def corpus_file_config_to_jsonable(
+    corpus_file_config: CorpusFileConfig, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of CorpusFileConfig.
+
+    :param corpus_file_config: instance of CorpusFileConfig to be JSON-ized
+    :param path: path to the corpus_file_config used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["fileId"] = corpus_file_config.file_id
+
+    if corpus_file_config.text_id is not None:
+        res["textId"] = corpus_file_config.text_id
 
     return res
 
@@ -1966,74 +2466,6 @@ def translation_corpus_to_jsonable(
     return res
 
 
-class ResourceLink:
-    def __init__(self, id: str, url: str) -> None:
-        """Initializes with the given values."""
-        self.id = id
-
-        self.url = url
-
-    def to_jsonable(self) -> MutableMapping[str, Any]:
-        """
-        Dispatches the conversion to resource_link_to_jsonable.
-
-        :return: JSON-able representation
-        """
-        return resource_link_to_jsonable(self)
-
-
-def new_resource_link() -> ResourceLink:
-    """Generates an instance of ResourceLink with default values."""
-    return ResourceLink(id="", url="")
-
-
-def resource_link_from_obj(obj: Any, path: str = "") -> ResourceLink:
-    """
-    Generates an instance of ResourceLink from a dictionary object.
-
-    :param obj: a JSON-ed dictionary object representing an instance of ResourceLink
-    :param path: path to the object used for debugging
-    :return: parsed instance of ResourceLink
-    """
-    if not isinstance(obj, dict):
-        raise ValueError(
-            "Expected a dict at path {}, but got: {}".format(path, type(obj))
-        )
-
-    for key in obj:
-        if not isinstance(key, str):
-            raise ValueError(
-                "Expected a key of type str at path {}, but got: {}".format(
-                    path, type(key)
-                )
-            )
-
-    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
-
-    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
-
-    return ResourceLink(id=id_from_obj, url=url_from_obj)
-
-
-def resource_link_to_jsonable(
-    resource_link: ResourceLink, path: str = ""
-) -> MutableMapping[str, Any]:
-    """
-    Generates a JSON-able mapping from an instance of ResourceLink.
-
-    :param resource_link: instance of ResourceLink to be JSON-ized
-    :param path: path to the resource_link used for debugging
-    :return: a JSON-able representation
-    """
-    res = dict()  # type: Dict[str, Any]
-
-    res["id"] = resource_link.id
-
-    res["url"] = resource_link.url
-
-    return res
-
-
 class TranslationCorpusFile:
     def __init__(self, file: "ResourceLink", text_id: Optional[str] = None) -> None:
         """Initializes with the given values."""
@@ -2429,6 +2861,336 @@ def translation_corpus_update_config_to_jsonable(
     return res
 
 
+class TranslationParallelCorpus:
+    def __init__(
+        self,
+        id: str,
+        url: str,
+        engine: "ResourceLink",
+        source_corpora: List["ResourceLink"],
+        target_corpora: List["ResourceLink"],
+    ) -> None:
+        """Initializes with the given values."""
+        self.id = id
+
+        self.url = url
+
+        self.engine = engine
+
+        self.source_corpora = source_corpora
+
+        self.target_corpora = target_corpora
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to translation_parallel_corpus_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return translation_parallel_corpus_to_jsonable(self)
+
+
+def new_translation_parallel_corpus() -> TranslationParallelCorpus:
+    """Generates an instance of TranslationParallelCorpus with default values."""
+    return TranslationParallelCorpus(
+        id="", url="", engine=new_resource_link__, source_corpora=[], target_corpora=[]
+    )
+
+
+def translation_parallel_corpus_from_obj(
+    obj: Any, path: str = ""
+) -> TranslationParallelCorpus:
+    """
+    Generates an instance of TranslationParallelCorpus from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of TranslationParallelCorpus
+    :param path: path to the object used for debugging
+    :return: parsed instance of TranslationParallelCorpus
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    id_from_obj = from_obj(obj["id"], expected=[str], path=path + ".id")  # type: str
+
+    url_from_obj = from_obj(obj["url"], expected=[str], path=path + ".url")  # type: str
+
+    engine_from_obj = from_obj(
+        obj["engine"], expected=[ResourceLink], path=path + ".engine"
+    )  # type: 'ResourceLink'
+
+    source_corpora_from_obj = from_obj(
+        obj["sourceCorpora"],
+        expected=[list, ResourceLink],
+        path=path + ".sourceCorpora",
+    )  # type: List['ResourceLink']
+
+    target_corpora_from_obj = from_obj(
+        obj["targetCorpora"],
+        expected=[list, ResourceLink],
+        path=path + ".targetCorpora",
+    )  # type: List['ResourceLink']
+
+    return TranslationParallelCorpus(
+        id=id_from_obj,
+        url=url_from_obj,
+        engine=engine_from_obj,
+        source_corpora=source_corpora_from_obj,
+        target_corpora=target_corpora_from_obj,
+    )
+
+
+def translation_parallel_corpus_to_jsonable(
+    translation_parallel_corpus: TranslationParallelCorpus, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of TranslationParallelCorpus.
+
+    :param translation_parallel_corpus: instance of TranslationParallelCorpus to be JSON-ized
+    :param path: path to the translation_parallel_corpus used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["id"] = translation_parallel_corpus.id
+
+    res["url"] = translation_parallel_corpus.url
+
+    res["engine"] = to_jsonable(
+        translation_parallel_corpus.engine,
+        expected=[ResourceLink],
+        path="{}.engine".format(path),
+    )
+
+    res["sourceCorpora"] = to_jsonable(
+        translation_parallel_corpus.source_corpora,
+        expected=[list, ResourceLink],
+        path="{}.sourceCorpora".format(path),
+    )
+
+    res["targetCorpora"] = to_jsonable(
+        translation_parallel_corpus.target_corpora,
+        expected=[list, ResourceLink],
+        path="{}.targetCorpora".format(path),
+    )
+
+    return res
+
+
+class TranslationParallelCorpusConfig:
+    def __init__(
+        self,
+        source_corpus_ids: List[str],
+        target_corpus_ids: List[str],
+        name: Optional[str] = None,
+    ) -> None:
+        """Initializes with the given values."""
+        self.source_corpus_ids = source_corpus_ids
+
+        self.target_corpus_ids = target_corpus_ids
+
+        # The corpus name.
+        self.name = name
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to translation_parallel_corpus_config_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return translation_parallel_corpus_config_to_jsonable(self)
+
+
+def new_translation_parallel_corpus_config() -> TranslationParallelCorpusConfig:
+    """Generates an instance of TranslationParallelCorpusConfig with default values."""
+    return TranslationParallelCorpusConfig(source_corpus_ids=[], target_corpus_ids=[])
+
+
+def translation_parallel_corpus_config_from_obj(
+    obj: Any, path: str = ""
+) -> TranslationParallelCorpusConfig:
+    """
+    Generates an instance of TranslationParallelCorpusConfig from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of TranslationParallelCorpusConfig
+    :param path: path to the object used for debugging
+    :return: parsed instance of TranslationParallelCorpusConfig
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    source_corpus_ids_from_obj = from_obj(
+        obj["sourceCorpusIds"], expected=[list, str], path=path + ".sourceCorpusIds"
+    )  # type: List[str]
+
+    target_corpus_ids_from_obj = from_obj(
+        obj["targetCorpusIds"], expected=[list, str], path=path + ".targetCorpusIds"
+    )  # type: List[str]
+
+    obj_name = obj.get("name", None)
+    if obj_name is not None:
+        name_from_obj = from_obj(
+            obj_name, expected=[str], path=path + ".name"
+        )  # type: Optional[str]
+    else:
+        name_from_obj = None
+
+    return TranslationParallelCorpusConfig(
+        source_corpus_ids=source_corpus_ids_from_obj,
+        target_corpus_ids=target_corpus_ids_from_obj,
+        name=name_from_obj,
+    )
+
+
+def translation_parallel_corpus_config_to_jsonable(
+    translation_parallel_corpus_config: TranslationParallelCorpusConfig, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of TranslationParallelCorpusConfig.
+
+    :param translation_parallel_corpus_config: instance of TranslationParallelCorpusConfig to be JSON-ized
+    :param path: path to the translation_parallel_corpus_config used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["sourceCorpusIds"] = to_jsonable(
+        translation_parallel_corpus_config.source_corpus_ids,
+        expected=[list, str],
+        path="{}.sourceCorpusIds".format(path),
+    )
+
+    res["targetCorpusIds"] = to_jsonable(
+        translation_parallel_corpus_config.target_corpus_ids,
+        expected=[list, str],
+        path="{}.targetCorpusIds".format(path),
+    )
+
+    if translation_parallel_corpus_config.name is not None:
+        res["name"] = translation_parallel_corpus_config.name
+
+    return res
+
+
+class TranslationParallelCorpusUpdateConfig:
+    def __init__(
+        self,
+        source_corpus_ids: Optional[List[str]] = None,
+        target_corpus_ids: Optional[List[str]] = None,
+    ) -> None:
+        """Initializes with the given values."""
+        self.source_corpus_ids = source_corpus_ids
+
+        self.target_corpus_ids = target_corpus_ids
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to translation_parallel_corpus_update_config_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return translation_parallel_corpus_update_config_to_jsonable(self)
+
+
+def new_translation_parallel_corpus_update_config() -> TranslationParallelCorpusUpdateConfig:
+    """Generates an instance of TranslationParallelCorpusUpdateConfig with default values."""
+    return TranslationParallelCorpusUpdateConfig()
+
+
+def translation_parallel_corpus_update_config_from_obj(
+    obj: Any, path: str = ""
+) -> TranslationParallelCorpusUpdateConfig:
+    """
+    Generates an instance of TranslationParallelCorpusUpdateConfig from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of TranslationParallelCorpusUpdateConfig
+    :param path: path to the object used for debugging
+    :return: parsed instance of TranslationParallelCorpusUpdateConfig
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    obj_source_corpus_ids = obj.get("sourceCorpusIds", None)
+    if obj_source_corpus_ids is not None:
+        source_corpus_ids_from_obj = from_obj(
+            obj_source_corpus_ids, expected=[list, str], path=path + ".sourceCorpusIds"
+        )  # type: Optional[List[str]]
+    else:
+        source_corpus_ids_from_obj = None
+
+    obj_target_corpus_ids = obj.get("targetCorpusIds", None)
+    if obj_target_corpus_ids is not None:
+        target_corpus_ids_from_obj = from_obj(
+            obj_target_corpus_ids, expected=[list, str], path=path + ".targetCorpusIds"
+        )  # type: Optional[List[str]]
+    else:
+        target_corpus_ids_from_obj = None
+
+    return TranslationParallelCorpusUpdateConfig(
+        source_corpus_ids=source_corpus_ids_from_obj,
+        target_corpus_ids=target_corpus_ids_from_obj,
+    )
+
+
+def translation_parallel_corpus_update_config_to_jsonable(
+    translation_parallel_corpus_update_config: TranslationParallelCorpusUpdateConfig,
+    path: str = "",
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of TranslationParallelCorpusUpdateConfig.
+
+    :param translation_parallel_corpus_update_config: instance of TranslationParallelCorpusUpdateConfig to be JSON-ized
+    :param path: path to the translation_parallel_corpus_update_config used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    if translation_parallel_corpus_update_config.source_corpus_ids is not None:
+        res["sourceCorpusIds"] = to_jsonable(
+            translation_parallel_corpus_update_config.source_corpus_ids,
+            expected=[list, str],
+            path="{}.sourceCorpusIds".format(path),
+        )
+
+    if translation_parallel_corpus_update_config.target_corpus_ids is not None:
+        res["targetCorpusIds"] = to_jsonable(
+            translation_parallel_corpus_update_config.target_corpus_ids,
+            expected=[list, str],
+            path="{}.targetCorpusIds".format(path),
+        )
+
+    return res
+
+
 class Pretranslation:
     def __init__(self, text_id: str, refs: List[str], translation: str) -> None:
         """Initializes with the given values."""
@@ -2530,6 +3292,8 @@ class TranslationBuild:
         queue_depth: Optional[int] = None,
         date_finished: Optional[str] = None,
         options: Optional[Any] = None,
+        deployment_version: Optional[str] = None,
+        execution_data: Optional[Dict[str, str]] = None,
     ) -> None:
         """Initializes with the given values."""
         self.id = id
@@ -2560,6 +3324,10 @@ class TranslationBuild:
         self.date_finished = date_finished
 
         self.options = options
+
+        self.deployment_version = deployment_version
+
+        self.execution_data = execution_data
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -2678,6 +3446,22 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
 
     options_from_obj = obj.get("options", None)
 
+    obj_deployment_version = obj.get("deploymentVersion", None)
+    if obj_deployment_version is not None:
+        deployment_version_from_obj = from_obj(
+            obj_deployment_version, expected=[str], path=path + ".deploymentVersion"
+        )  # type: Optional[str]
+    else:
+        deployment_version_from_obj = None
+
+    obj_execution_data = obj.get("executionData", None)
+    if obj_execution_data is not None:
+        execution_data_from_obj = from_obj(
+            obj_execution_data, expected=[dict, str], path=path + ".executionData"
+        )  # type: Optional[Dict[str, str]]
+    else:
+        execution_data_from_obj = None
+
     return TranslationBuild(
         id=id_from_obj,
         url=url_from_obj,
@@ -2693,6 +3477,8 @@ def translation_build_from_obj(obj: Any, path: str = "") -> TranslationBuild:
         queue_depth=queue_depth_from_obj,
         date_finished=date_finished_from_obj,
         options=options_from_obj,
+        deployment_version=deployment_version_from_obj,
+        execution_data=execution_data_from_obj,
     )
 
 
@@ -2754,15 +3540,28 @@ def translation_build_to_jsonable(
     if translation_build.options is not None:
         res["options"] = translation_build.options
 
+    if translation_build.deployment_version is not None:
+        res["deploymentVersion"] = translation_build.deployment_version
+
+    if translation_build.execution_data is not None:
+        res["executionData"] = to_jsonable(
+            translation_build.execution_data,
+            expected=[dict, str],
+            path="{}.executionData".format(path),
+        )
+
     return res
 
 
 class TrainingCorpus:
     def __init__(
         self,
-        corpus: "ResourceLink",
+        corpus: Optional["ResourceLink"] = None,
         text_ids: Optional[List[str]] = None,
         scripture_range: Optional[str] = None,
+        parallel_corpus: Optional["ResourceLink"] = None,
+        source_filters: Optional[List["ParallelCorpusFilter"]] = None,
+        target_filters: Optional[List["ParallelCorpusFilter"]] = None,
     ) -> None:
         """Initializes with the given values."""
         self.corpus = corpus
@@ -2770,6 +3569,12 @@ class TrainingCorpus:
         self.text_ids = text_ids
 
         self.scripture_range = scripture_range
+
+        self.parallel_corpus = parallel_corpus
+
+        self.source_filters = source_filters
+
+        self.target_filters = target_filters
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -2782,7 +3587,7 @@ class TrainingCorpus:
 
 def new_training_corpus() -> TrainingCorpus:
     """Generates an instance of TrainingCorpus with default values."""
-    return TrainingCorpus(corpus=new_resource_link__)
+    return TrainingCorpus()
 
 
 def training_corpus_from_obj(obj: Any, path: str = "") -> TrainingCorpus:
@@ -2806,9 +3611,13 @@ def training_corpus_from_obj(obj: Any, path: str = "") -> TrainingCorpus:
                 )
             )
 
-    corpus_from_obj = from_obj(
-        obj["corpus"], expected=[ResourceLink], path=path + ".corpus"
-    )  # type: 'ResourceLink'
+    obj_corpus = obj.get("corpus", None)
+    if obj_corpus is not None:
+        corpus_from_obj = from_obj(
+            obj_corpus, expected=[ResourceLink], path=path + ".corpus"
+        )  # type: Optional['ResourceLink']
+    else:
+        corpus_from_obj = None
 
     obj_text_ids = obj.get("textIds", None)
     if obj_text_ids is not None:
@@ -2826,10 +3635,41 @@ def training_corpus_from_obj(obj: Any, path: str = "") -> TrainingCorpus:
     else:
         scripture_range_from_obj = None
 
+    obj_parallel_corpus = obj.get("parallelCorpus", None)
+    if obj_parallel_corpus is not None:
+        parallel_corpus_from_obj = from_obj(
+            obj_parallel_corpus, expected=[ResourceLink], path=path + ".parallelCorpus"
+        )  # type: Optional['ResourceLink']
+    else:
+        parallel_corpus_from_obj = None
+
+    obj_source_filters = obj.get("sourceFilters", None)
+    if obj_source_filters is not None:
+        source_filters_from_obj = from_obj(
+            obj_source_filters,
+            expected=[list, ParallelCorpusFilter],
+            path=path + ".sourceFilters",
+        )  # type: Optional[List['ParallelCorpusFilter']]
+    else:
+        source_filters_from_obj = None
+
+    obj_target_filters = obj.get("targetFilters", None)
+    if obj_target_filters is not None:
+        target_filters_from_obj = from_obj(
+            obj_target_filters,
+            expected=[list, ParallelCorpusFilter],
+            path=path + ".targetFilters",
+        )  # type: Optional[List['ParallelCorpusFilter']]
+    else:
+        target_filters_from_obj = None
+
     return TrainingCorpus(
         corpus=corpus_from_obj,
         text_ids=text_ids_from_obj,
         scripture_range=scripture_range_from_obj,
+        parallel_corpus=parallel_corpus_from_obj,
+        source_filters=source_filters_from_obj,
+        target_filters=target_filters_from_obj,
     )
 
 
@@ -2845,9 +3685,12 @@ def training_corpus_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res["corpus"] = to_jsonable(
-        training_corpus.corpus, expected=[ResourceLink], path="{}.corpus".format(path)
-    )
+    if training_corpus.corpus is not None:
+        res["corpus"] = to_jsonable(
+            training_corpus.corpus,
+            expected=[ResourceLink],
+            path="{}.corpus".format(path),
+        )
 
     if training_corpus.text_ids is not None:
         res["textIds"] = to_jsonable(
@@ -2859,10 +3702,31 @@ def training_corpus_to_jsonable(
     if training_corpus.scripture_range is not None:
         res["scriptureRange"] = training_corpus.scripture_range
 
+    if training_corpus.parallel_corpus is not None:
+        res["parallelCorpus"] = to_jsonable(
+            training_corpus.parallel_corpus,
+            expected=[ResourceLink],
+            path="{}.parallelCorpus".format(path),
+        )
+
+    if training_corpus.source_filters is not None:
+        res["sourceFilters"] = to_jsonable(
+            training_corpus.source_filters,
+            expected=[list, ParallelCorpusFilter],
+            path="{}.sourceFilters".format(path),
+        )
+
+    if training_corpus.target_filters is not None:
+        res["targetFilters"] = to_jsonable(
+            training_corpus.target_filters,
+            expected=[list, ParallelCorpusFilter],
+            path="{}.targetFilters".format(path),
+        )
+
     return res
 
 
-class PretranslateCorpus:
+class ParallelCorpusFilter:
     def __init__(
         self,
         corpus: "ResourceLink",
@@ -2878,25 +3742,25 @@ class PretranslateCorpus:
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
-        Dispatches the conversion to pretranslate_corpus_to_jsonable.
+        Dispatches the conversion to parallel_corpus_filter_to_jsonable.
 
         :return: JSON-able representation
         """
-        return pretranslate_corpus_to_jsonable(self)
+        return parallel_corpus_filter_to_jsonable(self)
 
 
-def new_pretranslate_corpus() -> PretranslateCorpus:
-    """Generates an instance of PretranslateCorpus with default values."""
-    return PretranslateCorpus(corpus=new_resource_link__)
+def new_parallel_corpus_filter() -> ParallelCorpusFilter:
+    """Generates an instance of ParallelCorpusFilter with default values."""
+    return ParallelCorpusFilter(corpus=new_resource_link__)
 
 
-def pretranslate_corpus_from_obj(obj: Any, path: str = "") -> PretranslateCorpus:
+def parallel_corpus_filter_from_obj(obj: Any, path: str = "") -> ParallelCorpusFilter:
     """
-    Generates an instance of PretranslateCorpus from a dictionary object.
+    Generates an instance of ParallelCorpusFilter from a dictionary object.
 
-    :param obj: a JSON-ed dictionary object representing an instance of PretranslateCorpus
+    :param obj: a JSON-ed dictionary object representing an instance of ParallelCorpusFilter
     :param path: path to the object used for debugging
-    :return: parsed instance of PretranslateCorpus
+    :return: parsed instance of ParallelCorpusFilter
     """
     if not isinstance(obj, dict):
         raise ValueError(
@@ -2931,10 +3795,147 @@ def pretranslate_corpus_from_obj(obj: Any, path: str = "") -> PretranslateCorpus
     else:
         scripture_range_from_obj = None
 
+    return ParallelCorpusFilter(
+        corpus=corpus_from_obj,
+        text_ids=text_ids_from_obj,
+        scripture_range=scripture_range_from_obj,
+    )
+
+
+def parallel_corpus_filter_to_jsonable(
+    parallel_corpus_filter: ParallelCorpusFilter, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of ParallelCorpusFilter.
+
+    :param parallel_corpus_filter: instance of ParallelCorpusFilter to be JSON-ized
+    :param path: path to the parallel_corpus_filter used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    res["corpus"] = to_jsonable(
+        parallel_corpus_filter.corpus,
+        expected=[ResourceLink],
+        path="{}.corpus".format(path),
+    )
+
+    if parallel_corpus_filter.text_ids is not None:
+        res["textIds"] = to_jsonable(
+            parallel_corpus_filter.text_ids,
+            expected=[list, str],
+            path="{}.textIds".format(path),
+        )
+
+    if parallel_corpus_filter.scripture_range is not None:
+        res["scriptureRange"] = parallel_corpus_filter.scripture_range
+
+    return res
+
+
+class PretranslateCorpus:
+    def __init__(
+        self,
+        corpus: Optional["ResourceLink"] = None,
+        text_ids: Optional[List[str]] = None,
+        scripture_range: Optional[str] = None,
+        parallel_corpus: Optional["ResourceLink"] = None,
+        source_filters: Optional[List["ParallelCorpusFilter"]] = None,
+    ) -> None:
+        """Initializes with the given values."""
+        self.corpus = corpus
+
+        self.text_ids = text_ids
+
+        self.scripture_range = scripture_range
+
+        self.parallel_corpus = parallel_corpus
+
+        self.source_filters = source_filters
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to pretranslate_corpus_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return pretranslate_corpus_to_jsonable(self)
+
+
+def new_pretranslate_corpus() -> PretranslateCorpus:
+    """Generates an instance of PretranslateCorpus with default values."""
+    return PretranslateCorpus()
+
+
+def pretranslate_corpus_from_obj(obj: Any, path: str = "") -> PretranslateCorpus:
+    """
+    Generates an instance of PretranslateCorpus from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of PretranslateCorpus
+    :param path: path to the object used for debugging
+    :return: parsed instance of PretranslateCorpus
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    obj_corpus = obj.get("corpus", None)
+    if obj_corpus is not None:
+        corpus_from_obj = from_obj(
+            obj_corpus, expected=[ResourceLink], path=path + ".corpus"
+        )  # type: Optional['ResourceLink']
+    else:
+        corpus_from_obj = None
+
+    obj_text_ids = obj.get("textIds", None)
+    if obj_text_ids is not None:
+        text_ids_from_obj = from_obj(
+            obj_text_ids, expected=[list, str], path=path + ".textIds"
+        )  # type: Optional[List[str]]
+    else:
+        text_ids_from_obj = None
+
+    obj_scripture_range = obj.get("scriptureRange", None)
+    if obj_scripture_range is not None:
+        scripture_range_from_obj = from_obj(
+            obj_scripture_range, expected=[str], path=path + ".scriptureRange"
+        )  # type: Optional[str]
+    else:
+        scripture_range_from_obj = None
+
+    obj_parallel_corpus = obj.get("parallelCorpus", None)
+    if obj_parallel_corpus is not None:
+        parallel_corpus_from_obj = from_obj(
+            obj_parallel_corpus, expected=[ResourceLink], path=path + ".parallelCorpus"
+        )  # type: Optional['ResourceLink']
+    else:
+        parallel_corpus_from_obj = None
+
+    obj_source_filters = obj.get("sourceFilters", None)
+    if obj_source_filters is not None:
+        source_filters_from_obj = from_obj(
+            obj_source_filters,
+            expected=[list, ParallelCorpusFilter],
+            path=path + ".sourceFilters",
+        )  # type: Optional[List['ParallelCorpusFilter']]
+    else:
+        source_filters_from_obj = None
+
     return PretranslateCorpus(
         corpus=corpus_from_obj,
         text_ids=text_ids_from_obj,
         scripture_range=scripture_range_from_obj,
+        parallel_corpus=parallel_corpus_from_obj,
+        source_filters=source_filters_from_obj,
     )
 
 
@@ -2950,11 +3951,12 @@ def pretranslate_corpus_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res["corpus"] = to_jsonable(
-        pretranslate_corpus.corpus,
-        expected=[ResourceLink],
-        path="{}.corpus".format(path),
-    )
+    if pretranslate_corpus.corpus is not None:
+        res["corpus"] = to_jsonable(
+            pretranslate_corpus.corpus,
+            expected=[ResourceLink],
+            path="{}.corpus".format(path),
+        )
 
     if pretranslate_corpus.text_ids is not None:
         res["textIds"] = to_jsonable(
@@ -2965,6 +3967,20 @@ def pretranslate_corpus_to_jsonable(
 
     if pretranslate_corpus.scripture_range is not None:
         res["scriptureRange"] = pretranslate_corpus.scripture_range
+
+    if pretranslate_corpus.parallel_corpus is not None:
+        res["parallelCorpus"] = to_jsonable(
+            pretranslate_corpus.parallel_corpus,
+            expected=[ResourceLink],
+            path="{}.parallelCorpus".format(path),
+        )
+
+    if pretranslate_corpus.source_filters is not None:
+        res["sourceFilters"] = to_jsonable(
+            pretranslate_corpus.source_filters,
+            expected=[list, ParallelCorpusFilter],
+            path="{}.sourceFilters".format(path),
+        )
 
     return res
 
@@ -3097,6 +4113,171 @@ def translation_build_config_to_jsonable(
 class TrainingCorpusConfig:
     def __init__(
         self,
+        corpus_id: Optional[str] = None,
+        text_ids: Optional[List[str]] = None,
+        scripture_range: Optional[str] = None,
+        parallel_corpus_id: Optional[str] = None,
+        source_filters: Optional[List["ParallelCorpusFilterConfig"]] = None,
+        target_filters: Optional[List["ParallelCorpusFilterConfig"]] = None,
+    ) -> None:
+        """Initializes with the given values."""
+        self.corpus_id = corpus_id
+
+        self.text_ids = text_ids
+
+        self.scripture_range = scripture_range
+
+        self.parallel_corpus_id = parallel_corpus_id
+
+        self.source_filters = source_filters
+
+        self.target_filters = target_filters
+
+    def to_jsonable(self) -> MutableMapping[str, Any]:
+        """
+        Dispatches the conversion to training_corpus_config_to_jsonable.
+
+        :return: JSON-able representation
+        """
+        return training_corpus_config_to_jsonable(self)
+
+
+def new_training_corpus_config() -> TrainingCorpusConfig:
+    """Generates an instance of TrainingCorpusConfig with default values."""
+    return TrainingCorpusConfig()
+
+
+def training_corpus_config_from_obj(obj: Any, path: str = "") -> TrainingCorpusConfig:
+    """
+    Generates an instance of TrainingCorpusConfig from a dictionary object.
+
+    :param obj: a JSON-ed dictionary object representing an instance of TrainingCorpusConfig
+    :param path: path to the object used for debugging
+    :return: parsed instance of TrainingCorpusConfig
+    """
+    if not isinstance(obj, dict):
+        raise ValueError(
+            "Expected a dict at path {}, but got: {}".format(path, type(obj))
+        )
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError(
+                "Expected a key of type str at path {}, but got: {}".format(
+                    path, type(key)
+                )
+            )
+
+    obj_corpus_id = obj.get("corpusId", None)
+    if obj_corpus_id is not None:
+        corpus_id_from_obj = from_obj(
+            obj_corpus_id, expected=[str], path=path + ".corpusId"
+        )  # type: Optional[str]
+    else:
+        corpus_id_from_obj = None
+
+    obj_text_ids = obj.get("textIds", None)
+    if obj_text_ids is not None:
+        text_ids_from_obj = from_obj(
+            obj_text_ids, expected=[list, str], path=path + ".textIds"
+        )  # type: Optional[List[str]]
+    else:
+        text_ids_from_obj = None
+
+    obj_scripture_range = obj.get("scriptureRange", None)
+    if obj_scripture_range is not None:
+        scripture_range_from_obj = from_obj(
+            obj_scripture_range, expected=[str], path=path + ".scriptureRange"
+        )  # type: Optional[str]
+    else:
+        scripture_range_from_obj = None
+
+    obj_parallel_corpus_id = obj.get("parallelCorpusId", None)
+    if obj_parallel_corpus_id is not None:
+        parallel_corpus_id_from_obj = from_obj(
+            obj_parallel_corpus_id, expected=[str], path=path + ".parallelCorpusId"
+        )  # type: Optional[str]
+    else:
+        parallel_corpus_id_from_obj = None
+
+    obj_source_filters = obj.get("sourceFilters", None)
+    if obj_source_filters is not None:
+        source_filters_from_obj = from_obj(
+            obj_source_filters,
+            expected=[list, ParallelCorpusFilterConfig],
+            path=path + ".sourceFilters",
+        )  # type: Optional[List['ParallelCorpusFilterConfig']]
+    else:
+        source_filters_from_obj = None
+
+    obj_target_filters = obj.get("targetFilters", None)
+    if obj_target_filters is not None:
+        target_filters_from_obj = from_obj(
+            obj_target_filters,
+            expected=[list, ParallelCorpusFilterConfig],
+            path=path + ".targetFilters",
+        )  # type: Optional[List['ParallelCorpusFilterConfig']]
+    else:
+        target_filters_from_obj = None
+
+    return TrainingCorpusConfig(
+        corpus_id=corpus_id_from_obj,
+        text_ids=text_ids_from_obj,
+        scripture_range=scripture_range_from_obj,
+        parallel_corpus_id=parallel_corpus_id_from_obj,
+        source_filters=source_filters_from_obj,
+        target_filters=target_filters_from_obj,
+    )
+
+
+def training_corpus_config_to_jsonable(
+    training_corpus_config: TrainingCorpusConfig, path: str = ""
+) -> MutableMapping[str, Any]:
+    """
+    Generates a JSON-able mapping from an instance of TrainingCorpusConfig.
+
+    :param training_corpus_config: instance of TrainingCorpusConfig to be JSON-ized
+    :param path: path to the training_corpus_config used for debugging
+    :return: a JSON-able representation
+    """
+    res = dict()  # type: Dict[str, Any]
+
+    if training_corpus_config.corpus_id is not None:
+        res["corpusId"] = training_corpus_config.corpus_id
+
+    if training_corpus_config.text_ids is not None:
+        res["textIds"] = to_jsonable(
+            training_corpus_config.text_ids,
+            expected=[list, str],
+            path="{}.textIds".format(path),
+        )
+
+    if training_corpus_config.scripture_range is not None:
+        res["scriptureRange"] = training_corpus_config.scripture_range
+
+    if training_corpus_config.parallel_corpus_id is not None:
+        res["parallelCorpusId"] = training_corpus_config.parallel_corpus_id
+
+    if training_corpus_config.source_filters is not None:
+        res["sourceFilters"] = to_jsonable(
+            training_corpus_config.source_filters,
+            expected=[list, ParallelCorpusFilterConfig],
+            path="{}.sourceFilters".format(path),
+        )
+
+    if training_corpus_config.target_filters is not None:
+        res["targetFilters"] = to_jsonable(
+            training_corpus_config.target_filters,
+            expected=[list, ParallelCorpusFilterConfig],
+            path="{}.targetFilters".format(path),
+        )
+
+    return res
+
+
+class ParallelCorpusFilterConfig:
+    def __init__(
+        self,
         corpus_id: str,
         text_ids: Optional[List[str]] = None,
         scripture_range: Optional[str] = None,
@@ -3110,25 +4291,27 @@ class TrainingCorpusConfig:
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
-        Dispatches the conversion to training_corpus_config_to_jsonable.
+        Dispatches the conversion to parallel_corpus_filter_config_to_jsonable.
 
         :return: JSON-able representation
         """
-        return training_corpus_config_to_jsonable(self)
+        return parallel_corpus_filter_config_to_jsonable(self)
 
 
-def new_training_corpus_config() -> TrainingCorpusConfig:
-    """Generates an instance of TrainingCorpusConfig with default values."""
-    return TrainingCorpusConfig(corpus_id="")
+def new_parallel_corpus_filter_config() -> ParallelCorpusFilterConfig:
+    """Generates an instance of ParallelCorpusFilterConfig with default values."""
+    return ParallelCorpusFilterConfig(corpus_id="")
 
 
-def training_corpus_config_from_obj(obj: Any, path: str = "") -> TrainingCorpusConfig:
+def parallel_corpus_filter_config_from_obj(
+    obj: Any, path: str = ""
+) -> ParallelCorpusFilterConfig:
     """
-    Generates an instance of TrainingCorpusConfig from a dictionary object.
+    Generates an instance of ParallelCorpusFilterConfig from a dictionary object.
 
-    :param obj: a JSON-ed dictionary object representing an instance of TrainingCorpusConfig
+    :param obj: a JSON-ed dictionary object representing an instance of ParallelCorpusFilterConfig
     :param path: path to the object used for debugging
-    :return: parsed instance of TrainingCorpusConfig
+    :return: parsed instance of ParallelCorpusFilterConfig
     """
     if not isinstance(obj, dict):
         raise ValueError(
@@ -3163,36 +4346,36 @@ def training_corpus_config_from_obj(obj: Any, path: str = "") -> TrainingCorpusC
     else:
         scripture_range_from_obj = None
 
-    return TrainingCorpusConfig(
+    return ParallelCorpusFilterConfig(
         corpus_id=corpus_id_from_obj,
         text_ids=text_ids_from_obj,
         scripture_range=scripture_range_from_obj,
     )
 
 
-def training_corpus_config_to_jsonable(
-    training_corpus_config: TrainingCorpusConfig, path: str = ""
+def parallel_corpus_filter_config_to_jsonable(
+    parallel_corpus_filter_config: ParallelCorpusFilterConfig, path: str = ""
 ) -> MutableMapping[str, Any]:
     """
-    Generates a JSON-able mapping from an instance of TrainingCorpusConfig.
+    Generates a JSON-able mapping from an instance of ParallelCorpusFilterConfig.
 
-    :param training_corpus_config: instance of TrainingCorpusConfig to be JSON-ized
-    :param path: path to the training_corpus_config used for debugging
+    :param parallel_corpus_filter_config: instance of ParallelCorpusFilterConfig to be JSON-ized
+    :param path: path to the parallel_corpus_filter_config used for debugging
     :return: a JSON-able representation
     """
     res = dict()  # type: Dict[str, Any]
 
-    res["corpusId"] = training_corpus_config.corpus_id
+    res["corpusId"] = parallel_corpus_filter_config.corpus_id
 
-    if training_corpus_config.text_ids is not None:
+    if parallel_corpus_filter_config.text_ids is not None:
         res["textIds"] = to_jsonable(
-            training_corpus_config.text_ids,
+            parallel_corpus_filter_config.text_ids,
             expected=[list, str],
             path="{}.textIds".format(path),
         )
 
-    if training_corpus_config.scripture_range is not None:
-        res["scriptureRange"] = training_corpus_config.scripture_range
+    if parallel_corpus_filter_config.scripture_range is not None:
+        res["scriptureRange"] = parallel_corpus_filter_config.scripture_range
 
     return res
 
@@ -3200,9 +4383,11 @@ def training_corpus_config_to_jsonable(
 class PretranslateCorpusConfig:
     def __init__(
         self,
-        corpus_id: str,
+        corpus_id: Optional[str] = None,
         text_ids: Optional[List[str]] = None,
         scripture_range: Optional[str] = None,
+        parallel_corpus_id: Optional[str] = None,
+        source_filters: Optional[List["ParallelCorpusFilterConfig"]] = None,
     ) -> None:
         """Initializes with the given values."""
         self.corpus_id = corpus_id
@@ -3210,6 +4395,10 @@ class PretranslateCorpusConfig:
         self.text_ids = text_ids
 
         self.scripture_range = scripture_range
+
+        self.parallel_corpus_id = parallel_corpus_id
+
+        self.source_filters = source_filters
 
     def to_jsonable(self) -> MutableMapping[str, Any]:
         """
@@ -3222,7 +4411,7 @@ class PretranslateCorpusConfig:
 
 def new_pretranslate_corpus_config() -> PretranslateCorpusConfig:
     """Generates an instance of PretranslateCorpusConfig with default values."""
-    return PretranslateCorpusConfig(corpus_id="")
+    return PretranslateCorpusConfig()
 
 
 def pretranslate_corpus_config_from_obj(
@@ -3248,9 +4437,13 @@ def pretranslate_corpus_config_from_obj(
                 )
             )
 
-    corpus_id_from_obj = from_obj(
-        obj["corpusId"], expected=[str], path=path + ".corpusId"
-    )  # type: str
+    obj_corpus_id = obj.get("corpusId", None)
+    if obj_corpus_id is not None:
+        corpus_id_from_obj = from_obj(
+            obj_corpus_id, expected=[str], path=path + ".corpusId"
+        )  # type: Optional[str]
+    else:
+        corpus_id_from_obj = None
 
     obj_text_ids = obj.get("textIds", None)
     if obj_text_ids is not None:
@@ -3268,10 +4461,30 @@ def pretranslate_corpus_config_from_obj(
     else:
         scripture_range_from_obj = None
 
+    obj_parallel_corpus_id = obj.get("parallelCorpusId", None)
+    if obj_parallel_corpus_id is not None:
+        parallel_corpus_id_from_obj = from_obj(
+            obj_parallel_corpus_id, expected=[str], path=path + ".parallelCorpusId"
+        )  # type: Optional[str]
+    else:
+        parallel_corpus_id_from_obj = None
+
+    obj_source_filters = obj.get("sourceFilters", None)
+    if obj_source_filters is not None:
+        source_filters_from_obj = from_obj(
+            obj_source_filters,
+            expected=[list, ParallelCorpusFilterConfig],
+            path=path + ".sourceFilters",
+        )  # type: Optional[List['ParallelCorpusFilterConfig']]
+    else:
+        source_filters_from_obj = None
+
     return PretranslateCorpusConfig(
         corpus_id=corpus_id_from_obj,
         text_ids=text_ids_from_obj,
         scripture_range=scripture_range_from_obj,
+        parallel_corpus_id=parallel_corpus_id_from_obj,
+        source_filters=source_filters_from_obj,
     )
 
 
@@ -3287,7 +4500,8 @@ def pretranslate_corpus_config_to_jsonable(
     """
     res = dict()  # type: Dict[str, Any]
 
-    res["corpusId"] = pretranslate_corpus_config.corpus_id
+    if pretranslate_corpus_config.corpus_id is not None:
+        res["corpusId"] = pretranslate_corpus_config.corpus_id
 
     if pretranslate_corpus_config.text_ids is not None:
         res["textIds"] = to_jsonable(
@@ -3298,6 +4512,16 @@ def pretranslate_corpus_config_to_jsonable(
 
     if pretranslate_corpus_config.scripture_range is not None:
         res["scriptureRange"] = pretranslate_corpus_config.scripture_range
+
+    if pretranslate_corpus_config.parallel_corpus_id is not None:
+        res["parallelCorpusId"] = pretranslate_corpus_config.parallel_corpus_id
+
+    if pretranslate_corpus_config.source_filters is not None:
+        res["sourceFilters"] = to_jsonable(
+            pretranslate_corpus_config.source_filters,
+            expected=[list, ParallelCorpusFilterConfig],
+            path="{}.sourceFilters".format(path),
+        )
 
     return res
 
@@ -3780,6 +5004,103 @@ class RemoteCaller:
             resp.raise_for_status()
             return from_obj(obj=resp.json(), expected=[DeploymentInfo])
 
+    def corpora_get_all(self) -> List["Corpus"]:
+        """
+        Send a get request to /api/v1/corpora.
+
+        :return: A list of all corpora owned by the client
+        """
+        url = self.url_prefix + "/api/v1/corpora"
+
+        resp = self.session.request(method="get", url=url)
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[list, Corpus])
+
+    def corpora_create(self, corpus_config: "CorpusConfig") -> bytes:
+        """
+        Send a post request to /api/v1/corpora.
+
+        :param corpus_config:
+
+        :return:
+        """
+        url = self.url_prefix + "/api/v1/corpora"
+
+        data = to_jsonable(corpus_config, expected=[CorpusConfig])
+
+        resp = self.session.request(
+            method="post",
+            url=url,
+            json=data,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return resp.content
+
+    def corpora_get(self, id: str) -> "Corpus":
+        """
+        Send a get request to /api/v1/corpora/{id}.
+
+        :param id: The unique identifier for the corpus
+
+        :return: The corpus exists
+        """
+        url = "".join([self.url_prefix, "/api/v1/corpora/", str(id)])
+
+        resp = self.session.request(
+            method="get",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[Corpus])
+
+    def corpora_update(self, id: str, files: List["CorpusFileConfig"]) -> "Corpus":
+        """
+        Send a patch request to /api/v1/corpora/{id}.
+
+        :param id: The unique identifier for the corpus
+        :param files: Tuples of the ids of the new corpus files and the associated text ids
+
+        :return: The corpus was updated successfully
+        """
+        url = "".join([self.url_prefix, "/api/v1/corpora/", str(id)])
+
+        data = to_jsonable(files, expected=[list, CorpusFileConfig])
+
+        resp = self.session.request(
+            method="patch",
+            url=url,
+            json=data,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[Corpus])
+
+    def corpora_delete(self, id: str) -> bytes:
+        """
+        Send a delete request to /api/v1/corpora/{id}.
+
+        :param id: The unique identifier for the corpus
+
+        :return: The corpus was deleted successfully
+        """
+        url = "".join([self.url_prefix, "/api/v1/corpora/", str(id)])
+
+        resp = self.session.request(
+            method="delete",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return resp.content
+
     def data_files_get_all(self) -> List["DataFile"]:
         """
         Send a get request to /api/v1/files.
@@ -3895,7 +5216,7 @@ class RemoteCaller:
 
     def data_files_delete(self, id: str) -> bytes:
         """
-        If a file is in a corpora and the file is deleted, it will be automatically removed from the corpora.
+        If a file is in a corpus and the file is deleted, it will be automatically removed from that corpus.
         If a build job has started before the file was deleted, the file will be used for the build job, even
         though it will no longer be accessible through the API.
 
@@ -4205,7 +5526,7 @@ class RemoteCaller:
 
         :param id: The translation engine id
 
-        :return: The files
+        :return: The corpora
         """
         url = "".join(
             [self.url_prefix, "/api/v1/translation/engines/", str(id), "/corpora"]
@@ -4285,14 +5606,17 @@ class RemoteCaller:
             resp.raise_for_status()
             return from_obj(obj=resp.json(), expected=[TranslationCorpus])
 
-    def translation_engines_delete_corpus(self, id: str, corpus_id: str) -> bytes:
+    def translation_engines_delete_corpus(
+        self, id: str, corpus_id: str, delete_files: Optional[bool] = None
+    ) -> bytes:
         """
         Removing a corpus will remove all pretranslations associated with that corpus.
 
         :param id: The translation engine id
         :param corpus_id: The corpus id
+        :param delete_files: If true, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.
 
-        :return: The data file was deleted successfully.
+        :return: The corpus was deleted successfully.
         """
         url = "".join(
             [
@@ -4301,6 +5625,173 @@ class RemoteCaller:
                 str(id),
                 "/corpora/",
                 str(corpus_id),
+            ]
+        )
+
+        params = {}  # type: Dict[str, str]
+
+        if delete_files is not None:
+            params["delete-files"] = json.dumps(delete_files)
+
+        resp = self.session.request(
+            method="delete",
+            url=url,
+            params=params,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return resp.content
+
+    def translation_engines_add_parallel_corpus(
+        self, id: str, corpus_config: "TranslationParallelCorpusConfig"
+    ) -> bytes:
+        """
+        ## Parameters
+        * **SourceCorpusIds**: The source corpora associated with the parallel corpus
+        * **TargetCorpusIds**: The target corpora associated with the parallel corpus
+
+        :param id: The translation engine id
+        :param corpus_config: The corpus configuration (see remarks)
+
+        :return:
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/parallel-corpora",
+            ]
+        )
+
+        data = to_jsonable(corpus_config, expected=[TranslationParallelCorpusConfig])
+
+        resp = self.session.request(
+            method="post",
+            url=url,
+            json=data,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return resp.content
+
+    def translation_engines_get_all_parallel_corpora(
+        self, id: str
+    ) -> List["TranslationParallelCorpus"]:
+        """
+        Send a get request to /api/v1/translation/engines/{id}/parallel-corpora.
+
+        :param id: The translation engine id
+
+        :return: The parallel corpora
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/parallel-corpora",
+            ]
+        )
+
+        resp = self.session.request(
+            method="get",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[list, TranslationParallelCorpus])
+
+    def translation_engines_update_parallel_corpus(
+        self,
+        id: str,
+        parallel_corpus_id: str,
+        corpus_config: "TranslationParallelCorpusUpdateConfig",
+    ) -> "TranslationParallelCorpus":
+        """
+        Will completely replace the parallel corpus' file associations. Will not affect jobs already queued or running. Will not affect existing pretranslations until new build is complete.
+
+        :param id: The translation engine id
+        :param parallel_corpus_id: The parallel corpus id
+        :param corpus_config: The corpus configuration
+
+        :return: The corpus was updated successfully
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/parallel-corpora/",
+                str(parallel_corpus_id),
+            ]
+        )
+
+        data = to_jsonable(
+            corpus_config, expected=[TranslationParallelCorpusUpdateConfig]
+        )
+
+        resp = self.session.request(
+            method="patch",
+            url=url,
+            json=data,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[TranslationParallelCorpus])
+
+    def translation_engines_get_parallel_corpus(
+        self, id: str, parallel_corpus_id: str
+    ) -> "TranslationParallelCorpus":
+        """
+        Send a get request to /api/v1/translation/engines/{id}/parallel-corpora/{parallelCorpusId}.
+
+        :param id: The translation engine id
+        :param parallel_corpus_id: The parallel corpus id
+
+        :return: The parallel corpus configuration
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/parallel-corpora/",
+                str(parallel_corpus_id),
+            ]
+        )
+
+        resp = self.session.request(
+            method="get",
+            url=url,
+        )
+
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[TranslationParallelCorpus])
+
+    def translation_engines_delete_parallel_corpus(
+        self, id: str, parallel_corpus_id: str
+    ) -> bytes:
+        """
+        Removing a parallel corpus will remove all pretranslations associated with that corpus.
+
+        :param id: The translation engine id
+        :param parallel_corpus_id: The parallel corpus id
+
+        :return: The parallel corpus was deleted successfully.
+        """
+        url = "".join(
+            [
+                self.url_prefix,
+                "/api/v1/translation/engines/",
+                str(id),
+                "/parallel-corpora/",
+                str(parallel_corpus_id),
             ]
         )
 
@@ -4328,7 +5819,7 @@ class RemoteCaller:
         Only pretranslations for the most recent successful build of the engine are returned.
 
         :param id: The translation engine id
-        :param corpus_id: The corpus id
+        :param corpus_id: The corpus id or parallel corpus id
         :param text_id: The text id (optional)
 
         :return: The pretranslations
@@ -4373,7 +5864,7 @@ class RemoteCaller:
         Only pretranslations for the most recent successful build of the engine are returned.
 
         :param id: The translation engine id
-        :param corpus_id: The corpus id
+        :param corpus_id: The corpus id or parallel corpus id
         :param text_id: The text id
 
         :return: The pretranslations
@@ -4400,25 +5891,33 @@ class RemoteCaller:
             return from_obj(obj=resp.json(), expected=[list, Pretranslation])
 
     def translation_engines_get_pretranslated_usfm(
-        self, id: str, corpus_id: str, text_id: str, text_origin: Optional[str] = None
+        self,
+        id: str,
+        corpus_id: str,
+        text_id: str,
+        text_origin: Optional[str] = None,
+        template: Optional[str] = None,
     ) -> str:
         """
-        If the USFM book exists in the target corpus, then the pretranslated text will be inserted into any empty
-        segments in the the target book and returned. If the USFM book does not exist in the target corpus, then the
-        pretranslated text will be inserted into an empty template created from the source USFM book and returned.
-        Only pretranslations for the most recent successful build of the engine are returned.
-
-        The text that populates the USFM structure can be controlled by the `textOrigin` parameter where with these options:
-        * `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text.  **This is the default**.
+        The text that populates the USFM structure can be controlled by the `textOrigin` parameter:
+        * `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
         * `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
-        * `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed)
-        * `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed
-        Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
+        * `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
+        * `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
+
+        The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
+        * `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
+        * `Source`: The source book is used as the template.
+        * `Target`: The target book is used as the template.
+
+        Only pretranslations for the most recent successful build of the engine are returned.
+        Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
 
         :param id: The translation engine id
-        :param corpus_id: The corpus id
+        :param corpus_id: The corpus id or parallel corpus id
         :param text_id: The text id
         :param text_origin: The source[s] of the data to populate the USFM file with.
+        :param template:
 
         :return: The book in USFM format
         """
@@ -4440,14 +5939,18 @@ class RemoteCaller:
         if text_origin is not None:
             params["text-origin"] = text_origin
 
+        if template is not None:
+            params["template"] = template
+
         resp = self.session.request(
             method="get",
             url=url,
             params=params,
         )
 
-        resp.raise_for_status()
-        return str(resp._content, encoding="utf-8")
+        with contextlib.closing(resp):
+            resp.raise_for_status()
+            return from_obj(obj=resp.json(), expected=[str])
 
     def translation_engines_get_all_builds(self, id: str) -> List["TranslationBuild"]:
         """
@@ -4474,13 +5977,23 @@ class RemoteCaller:
         self, id: str, build_config: "TranslationBuildConfig"
     ) -> bytes:
         """
-        Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
-        Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
-        Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-        Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
-        All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+        Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
+        Specifying a corpus:
+        * A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
+        * A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
 
-        Specify the corpora or textIds to pretranslate.  When a corpus or textId is selected for pretranslation,
+        Filtering by textID or chapter:
+        * Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
+        * Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        * All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
+
+        Filter - train on all or none
+        * If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
+        * If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
+        * If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
+        * If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
+
+        Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
         the following text will be pretranslated:
         * Text segments that are in the source and not the target (untranslated)
         * Text segments that are in the source and the target, but where that target segment is not trained on.
@@ -4490,6 +6003,10 @@ class RemoteCaller:
         The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
         See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
+
+        When using a parallel corpus:
+        * If, within a single parallel corpus, multiple source corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
+        * If, within a single parallel corpus, multiple target corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), only the first of the targets that includes that textId/book will be used for that textId/book.
 
         :param id: The translation engine id
         :param build_config: The build config (see remarks)
