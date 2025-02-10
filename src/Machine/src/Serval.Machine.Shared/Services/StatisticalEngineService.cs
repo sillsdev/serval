@@ -70,15 +70,15 @@ public class StatisticalEngineService(
         WordAlignmentResult result = await @lock.ReaderLockAsync(
             async ct =>
             {
-                IWordAlignmentEngine wordAlignmentEngine = await state.GetEngineAsync(engine.BuildRevision, ct);
+                IWordAlignmentModel wordAlignmentModel = await state.GetEngineAsync(engine.BuildRevision, ct);
                 LatinWordTokenizer tokenizer = new();
 
                 // there is no way to cancel this call
                 IReadOnlyList<string> sourceTokens = tokenizer.Tokenize(sourceSegment).ToList();
                 IReadOnlyList<string> targetTokens = tokenizer.Tokenize(targetSegment).ToList();
                 IReadOnlyCollection<SIL.Machine.Corpora.AlignedWordPair> wordPairs =
-                    wordAlignmentEngine.GetBestAlignedWordPairs(sourceTokens, targetTokens);
-                wordAlignmentEngine.ComputeAlignedWordPairScores(sourceTokens, targetTokens, wordPairs);
+                    wordAlignmentModel.GetBestAlignedWordPairs(sourceTokens, targetTokens);
+                wordAlignmentModel.ComputeAlignedWordPairScores(sourceTokens, targetTokens, wordPairs);
                 return new WordAlignmentResult()
                 {
                     SourceTokens = { sourceTokens },
