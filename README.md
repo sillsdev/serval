@@ -45,7 +45,7 @@ Other components of the microservice are:
 
 * Use VS Code with all the recommended extensions
 * Development is supported in Ubuntu and Windows WSL2
-  * For Ubunutu, use [microsoft's distribution of .net](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu)
+  * For Ubuntu, use [microsoft's distribution of .net](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu)
   * Ubuntu 22.04 and 24.04 are currently supported
 * Install the repositories:
   * To develop Serval, you will also likely need to make changes to the [Machine repo](https://github.com/sillsdev/machine) as well - they are intricately tied.
@@ -75,7 +75,7 @@ Coding guidelines are documented [on the wiki](https://github.com/sillsdev/serva
 ## (Optional) Get your machine.py images setup
 When jobs are run, they are queued up on ClearML.  If you want to have your own agents for integration testing (and you have a GPU with 24GB RAM), you can do the following:
 * clone the [machine.py repo](https://github.com/sillsdev/machine.py)
-* Build the docker image with `docker build . -t local.mpy` for a GPU inamge or `docker build . -f dockerfile.cpu_only -t local.mpy.cpu_only` for a CPU only image.
+* Build the docker image with `docker build . -t local.mpy` for a GPU image or `docker build . -f dockerfile.cpu_only -t local.mpy.cpu_only` for a CPU only image.
 * Register your machine as a ClearML agent (see dev team for details)
   * Make sure you do NOT "always pull the image"!  The images you are building are stored locally.
 * Set the following environment variables:
@@ -96,7 +96,7 @@ export MACHINE_PY_CPU_IMAGE=local.mpy.cpu_only
 ### To view pod logs:
 - Run: `kubectl get pods` to get the currently running pods
 - Run: `kubectl logs <pod name>`
-- Run: `kubectl describe pod  <pod name>` to check a stalled pod stuck in containercreating
+- Run: `kubectl describe pod  <pod name>` to check a stalled pod stuck in ContainerCreating
 
 ### Running the API E2E Tests
 In order to run the E2E tests, you will need to have the appropriate credentials
@@ -129,7 +129,7 @@ The deployment environment is set by the environment variable `ASPNETCORE_ENVIRO
   - Full deployment, full NMT and SMT builds.
   - Used in all kubernetes deployments
 - `ASPNETCORE_ENVIRONMENT=Staging`:
-  - Full Deploymnet, dummy NMT building (10 steps, small model).
+  - Full Deployment, dummy NMT building (10 steps, small model).
     - These default build configurations can be overwritten.
   - Used in Docker-compose local staging
 - `ASPNETCORE_ENVIRONMENT=Development`:
