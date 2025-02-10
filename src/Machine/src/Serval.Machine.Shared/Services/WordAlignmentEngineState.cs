@@ -29,7 +29,7 @@ public class WordAlignmentEngineState(
         _wordAlignmentModelFactory.InitNew(EngineDir);
     }
 
-    public async Task<IWordAlignmentEngine> GetEngineAsync(
+    public async Task<IWordAlignmentModel> GetEngineAsync(
         int buildRevision,
         CancellationToken cancellationToken = default
     )
@@ -65,8 +65,6 @@ public class WordAlignmentEngineState(
         if (CurrentBuildRevision == -1)
             CurrentBuildRevision = buildRevision;
 
-        SaveModel();
-
         if (buildRevision != CurrentBuildRevision)
         {
             Unload();
@@ -76,23 +74,11 @@ public class WordAlignmentEngineState(
         {
             Unload();
         }
-        else
-        {
-            SaveModel();
-        }
     }
 
     public void Touch()
     {
         LastUsedTime = DateTime.UtcNow;
-    }
-
-    private void SaveModel()
-    {
-        if (_wordAlignmentModel is not null && IsUpdated && !IsMarkedForDeletion)
-        {
-            _wordAlignmentModel.Save();
-        }
     }
 
     private void Unload()
