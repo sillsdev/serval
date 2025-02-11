@@ -1966,6 +1966,82 @@ public class EngineServiceTests
         Assert.That(corpus.TargetFiles, Has.Count.EqualTo(1));
     }
 
+    [Test]
+    public async Task UpdateLanguagesAsync_ShouldUpdateLanguages_WhenRequestIsValid()
+    {
+        var env = new TestEnvironment();
+        var engine = await env.CreateEngineWithTextFilesAsync();
+
+        var request = new UpdateLanguagesRequestDto { SourceLanguage = "en", TargetLanguage = "fr" };
+
+        await env.Service.UpdateLanguagesAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
+
+        engine = await env.Engines.GetAsync(engine.Id);
+
+        Assert.That(engine, Is.Not.Null);
+        Assert.That(engine.SourceLanguage, Is.Not.Null);
+        Assert.That(engine.SourceLanguage, Is.EqualTo("en"));
+        Assert.That(engine.TargetLanguage, Is.Not.Null);
+        Assert.That(engine.TargetLanguage, Is.EqualTo("fr"));
+    }
+
+    [Test]
+    public async Task UpdateLanguagesAsync_ShouldNotUpdateSourceLanguage_WhenSourceLanguageNotProvided()
+    {
+        var env = new TestEnvironment();
+        var engine = await env.CreateEngineWithTextFilesAsync();
+
+        var request = new UpdateLanguagesRequestDto { SourceLanguage = "", TargetLanguage = "fr" };
+
+        await env.Service.UpdateLanguagesAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
+
+        var updatedEngine = await env.Engines.GetAsync(engine.Id);
+
+        Assert.That(updatedEngine, Is.Not.Null);
+        Assert.That(updatedEngine.SourceLanguage, Is.Not.Null);
+        Assert.That(updatedEngine.SourceLanguage, Is.EqualTo(engine.SourceLanguage));
+        Assert.That(updatedEngine.TargetLanguage, Is.Not.Null);
+        Assert.That(updatedEngine.TargetLanguage, Is.EqualTo("fr"));
+    }
+
+    [Test]
+    public async Task UpdateLanguagesAsync_ShouldNotUpdateTargetLanguage_WhenTargetLanguageNotProvided()
+    {
+        var env = new TestEnvironment();
+        var engine = await env.CreateEngineWithTextFilesAsync();
+
+        var request = new UpdateLanguagesRequestDto { SourceLanguage = "en", TargetLanguage = "" };
+
+        await env.Service.UpdateLanguagesAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
+
+        var updatedEngine = await env.Engines.GetAsync(engine.Id);
+
+        Assert.That(updatedEngine, Is.Not.Null);
+        Assert.That(updatedEngine.SourceLanguage, Is.Not.Null);
+        Assert.That(updatedEngine.SourceLanguage, Is.EqualTo("en"));
+        Assert.That(updatedEngine.TargetLanguage, Is.Not.Null);
+        Assert.That(updatedEngine.TargetLanguage, Is.EqualTo(engine.TargetLanguage));
+    }
+
+    [Test]
+    public async Task UpdateLanguagesAsync_ShouldNotUpdate_WhenSourceAndTargetLanguagesNotProvided()
+    {
+        var env = new TestEnvironment();
+        var engine = await env.CreateEngineWithTextFilesAsync();
+
+        var request = new UpdateLanguagesRequestDto { SourceLanguage = "", TargetLanguage = "" };
+
+        await env.Service.UpdateLanguagesAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
+
+        var updatedEngine = await env.Engines.GetAsync(engine.Id);
+
+        Assert.That(updatedEngine, Is.Not.Null);
+        Assert.That(updatedEngine.SourceLanguage, Is.Not.Null);
+        Assert.That(updatedEngine.SourceLanguage, Is.EqualTo(engine.SourceLanguage));
+        Assert.That(updatedEngine.TargetLanguage, Is.Not.Null);
+        Assert.That(updatedEngine.TargetLanguage, Is.EqualTo(engine.TargetLanguage));
+    }
+
     private class TestEnvironment
     {
         public TestEnvironment()
