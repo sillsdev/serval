@@ -6,6 +6,14 @@ public interface IEngineService
     Task<Engine> GetAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default);
+
+    Task UpdateLanguagesAsync(
+        string engineId,
+        string sourceLanguage,
+        string targetLanguage,
+        CancellationToken cancellationToken = default
+    );
+
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<TranslationResult> TranslateAsync(
