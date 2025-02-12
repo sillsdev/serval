@@ -195,6 +195,33 @@ public class EngineService(
         return engine;
     }
 
+    public async Task UpdateLanguagesAsync(
+        string engineId,
+        string sourceLanguage = "",
+        string targetLanguage = "",
+        CancellationToken cancellationToken = default
+    )
+    {
+        Engine? engine = await Entities.GetAsync(engineId, cancellationToken);
+        if (engine is null)
+            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
+
+        if (sourceLanguage == "")
+            sourceLanguage = engine.SourceLanguage;
+        if (targetLanguage == "")
+            targetLanguage = engine.TargetLanguage;
+
+        await Entities.UpdateAsync(
+            engine,
+            u =>
+            {
+                u.Set(e => e.SourceLanguage, sourceLanguage);
+                u.Set(e => e.TargetLanguage, targetLanguage);
+            },
+            cancellationToken: CancellationToken.None
+        );
+    }
+
     public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
         Engine? engine = await Entities.GetAsync(engineId, cancellationToken);

@@ -160,6 +160,58 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
+    /// Update the source and/or target languages of a translation engine
+    /// </summary>
+    /// <remarks>
+    /// ## Sample request:
+    ///
+    ///     {
+    ///       "sourceLanguage": "en",
+    ///       "targetLanguage": "en"
+    ///     }
+    ///
+    /// </remarks>
+    /// <param name="id">The translation engine id</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The engine language was successfully updated.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
+    /// <response code="404">The engine does not exist and therefore cannot be updated.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.UpdateTranslationEngines)]
+    [HttpPatch("{id}")]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult> UpdateLanguagesAsync(
+        [FromRoute] string id,
+        [FromBody] UpdateLanguagesRequestDto request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await AuthorizeAsync(id, cancellationToken);
+
+        if (
+            request is null
+            || (string.IsNullOrWhiteSpace(request.SourceLanguage) && string.IsNullOrWhiteSpace(request.TargetLanguage))
+        )
+        {
+            return BadRequest("sourceLanguage or targetLanguage is required.");
+        }
+
+        await _engineService.UpdateLanguagesAsync(
+            id,
+            request.SourceLanguage,
+            request.TargetLanguage,
+            cancellationToken
+        );
+
+        return Ok();
+    }
+
+    /// <summary>
     /// Translate a segment of text
     /// </summary>
     /// <param name="id">The translation engine id</param>
