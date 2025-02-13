@@ -1967,14 +1967,14 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task UpdateLanguagesAsync_ShouldUpdateLanguages_WhenRequestIsValid()
+    public async Task UpdateAsync_ShouldUpdateLanguages_WhenRequestIsValid()
     {
         var env = new TestEnvironment();
         var engine = await env.CreateEngineWithTextFilesAsync();
 
-        var request = new UpdateLanguagesRequestDto { SourceLanguage = "en", TargetLanguage = "fr" };
+        var request = new TranslationEngineUpdateConfigDto { SourceLanguage = "en", TargetLanguage = "fr" };
 
-        await env.Service.UpdateLanguagesAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
+        await env.Service.UpdateAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
 
         engine = await env.Engines.GetAsync(engine.Id);
 
@@ -1986,14 +1986,14 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task UpdateLanguagesAsync_ShouldNotUpdateSourceLanguage_WhenSourceLanguageNotProvided()
+    public async Task UpdateAsync_ShouldNotUpdateSourceLanguage_WhenSourceLanguageNotProvided()
     {
         var env = new TestEnvironment();
         var engine = await env.CreateEngineWithTextFilesAsync();
 
-        var request = new UpdateLanguagesRequestDto { SourceLanguage = "", TargetLanguage = "fr" };
+        var request = new TranslationEngineUpdateConfigDto { SourceLanguage = "", TargetLanguage = "fr" };
 
-        await env.Service.UpdateLanguagesAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
+        await env.Service.UpdateAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
 
         var updatedEngine = await env.Engines.GetAsync(engine.Id);
 
@@ -2005,14 +2005,14 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task UpdateLanguagesAsync_ShouldNotUpdateTargetLanguage_WhenTargetLanguageNotProvided()
+    public async Task UpdateAsync_ShouldNotUpdateTargetLanguage_WhenTargetLanguageNotProvided()
     {
         var env = new TestEnvironment();
         var engine = await env.CreateEngineWithTextFilesAsync();
 
-        var request = new UpdateLanguagesRequestDto { SourceLanguage = "en", TargetLanguage = "" };
+        var request = new TranslationEngineUpdateConfigDto { SourceLanguage = "en", TargetLanguage = "" };
 
-        await env.Service.UpdateLanguagesAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
+        await env.Service.UpdateAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
 
         var updatedEngine = await env.Engines.GetAsync(engine.Id);
 
@@ -2024,14 +2024,14 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task UpdateLanguagesAsync_ShouldNotUpdate_WhenSourceAndTargetLanguagesNotProvided()
+    public async Task UpdateAsync_ShouldNotUpdate_WhenSourceAndTargetLanguagesNotProvided()
     {
         var env = new TestEnvironment();
         var engine = await env.CreateEngineWithTextFilesAsync();
 
-        var request = new UpdateLanguagesRequestDto { SourceLanguage = "", TargetLanguage = "" };
+        var request = new TranslationEngineUpdateConfigDto { SourceLanguage = "", TargetLanguage = "" };
 
-        await env.Service.UpdateLanguagesAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
+        await env.Service.UpdateAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
 
         var updatedEngine = await env.Engines.GetAsync(engine.Id);
 

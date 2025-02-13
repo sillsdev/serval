@@ -185,9 +185,9 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult> UpdateLanguagesAsync(
+    public async Task<ActionResult> UpdateAsync(
         [FromRoute] string id,
-        [FromBody] UpdateLanguagesRequestDto request,
+        [FromBody] TranslationEngineUpdateConfigDto request,
         CancellationToken cancellationToken = default
     )
     {
@@ -201,12 +201,7 @@ public class TranslationEnginesController(
             return BadRequest("sourceLanguage or targetLanguage is required.");
         }
 
-        await _engineService.UpdateLanguagesAsync(
-            id,
-            request.SourceLanguage,
-            request.TargetLanguage,
-            cancellationToken
-        );
+        await _engineService.UpdateAsync(id, request.SourceLanguage, request.TargetLanguage, cancellationToken);
 
         return Ok();
     }

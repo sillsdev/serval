@@ -195,7 +195,7 @@ public class EngineService(
         return engine;
     }
 
-    public async Task UpdateLanguagesAsync(
+    public async Task UpdateAsync(
         string engineId,
         string sourceLanguage = "",
         string targetLanguage = "",

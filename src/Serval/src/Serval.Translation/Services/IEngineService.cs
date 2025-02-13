@@ -7,7 +7,7 @@ public interface IEngineService
 
     Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default);
 
-    Task UpdateLanguagesAsync(
+    Task UpdateAsync(
         string engineId,
         string sourceLanguage,
         string targetLanguage,
