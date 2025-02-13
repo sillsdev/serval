@@ -1,8 +1,8 @@
 namespace Serval.Translation.Contracts;
 
-public class UpdateLanguagesRequestDto
+public class TranslationEngineUpdateConfigDto
 {
-    public string SourceLanguage { get; set; } = string.Empty;
+    public string SourceLanguage { get; init; } = string.Empty;
 
-    public string TargetLanguage { get; set; } = string.Empty;
+    public string TargetLanguage { get; init; } = string.Empty;
 }

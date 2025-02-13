@@ -2213,7 +2213,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id</param>
         /// <returns>The engine language was successfully updated.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task UpdateLanguagesAsync(string id, UpdateLanguagesRequest request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task UpdateAsync(string id, TranslationEngineUpdateConfig request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -3080,7 +3080,7 @@ namespace Serval.Client
         /// <param name="id">The translation engine id</param>
         /// <returns>The engine language was successfully updated.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UpdateLanguagesAsync(string id, UpdateLanguagesRequest request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task UpdateAsync(string id, TranslationEngineUpdateConfig request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -7370,7 +7370,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class UpdateLanguagesRequest
+    public partial class TranslationEngineUpdateConfig
     {
         [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]

@@ -5,8 +5,8 @@ public record Engine : IOwnedEntity, IInitializableEntity
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
     public string? Name { get; init; }
-    public required string SourceLanguage { get; set; }
-    public required string TargetLanguage { get; set; }
+    public required string SourceLanguage { get; init; }
+    public required string TargetLanguage { get; init; }
     public required string Type { get; init; }
     public required string Owner { get; init; }
     public IReadOnlyList<Corpus> Corpora { get; init; } = new List<Corpus>();
