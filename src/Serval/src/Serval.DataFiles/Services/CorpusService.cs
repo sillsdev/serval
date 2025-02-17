@@ -21,7 +21,7 @@ public class CorpusService(
 
     public async Task<Corpus> UpdateAsync(
         string id,
-        IReadOnlyList<CorpusFile> files,
+        IReadOnlyList<Models.CorpusFile> files,
         CancellationToken cancellationToken = default
     )
     {

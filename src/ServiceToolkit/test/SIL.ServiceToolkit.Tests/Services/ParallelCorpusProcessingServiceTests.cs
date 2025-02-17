@@ -72,7 +72,7 @@ public class ParallelCorpusPreprocessingServiceTests
             }
         ];
         int trainCount = 0;
-        int pretranslateCount = 0;
+        int inferenceCount = 0;
         await processor.PreprocessAsync(
             corpora,
             row =>
@@ -81,18 +81,22 @@ public class ParallelCorpusPreprocessingServiceTests
                     trainCount++;
                 return Task.CompletedTask;
             },
-            (row, _) =>
+            (row, isInTrainingData, _) =>
             {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
-                    pretranslateCount++;
+                if (row.SourceSegment.Length > 0 && !isInTrainingData)
+                {
+                    inferenceCount++;
+                }
+
                 return Task.CompletedTask;
             },
             false
         );
+
         Assert.Multiple(() =>
         {
             Assert.That(trainCount, Is.EqualTo(2));
-            Assert.That(pretranslateCount, Is.EqualTo(3));
+            Assert.That(inferenceCount, Is.EqualTo(3));
         });
     }
 }

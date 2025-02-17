@@ -1,16 +1,16 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class NmtPreprocessBuildJob(
-    IPlatformService platformService,
+    [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
     ILogger<NmtPreprocessBuildJob> logger,
-    IBuildJobService buildJobService,
+    IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     ILanguageTagService languageTagService,
     IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
-    : PreprocessBuildJob(
+    : PreprocessBuildJob<TranslationEngine>(
         platformService,
         engines,
         dataAccessContext,

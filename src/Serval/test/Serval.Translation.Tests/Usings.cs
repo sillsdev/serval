@@ -7,6 +7,7 @@ global using Microsoft.Extensions.Options;
 global using NSubstitute;
 global using NUnit.Framework;
 global using Serval.Shared.Configuration;
+global using Serval.Shared.Models;
 global using Serval.Shared.Services;
 global using Serval.Shared.Utils;
 global using Serval.Translation.Contracts;

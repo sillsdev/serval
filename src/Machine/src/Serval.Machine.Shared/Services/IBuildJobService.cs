@@ -2,11 +2,6 @@
 
 public interface IBuildJobService
 {
-    Task<IReadOnlyList<TranslationEngine>> GetBuildingEnginesAsync(
-        BuildJobRunnerType runner,
-        CancellationToken cancellationToken = default
-    );
-
     Task<bool> IsEngineBuilding(string engineId, CancellationToken cancellationToken = default);
 
     Task CreateEngineAsync(string engineId, string? name = null, CancellationToken cancellationToken = default);
@@ -15,7 +10,7 @@ public interface IBuildJobService
 
     Task<bool> StartBuildJobAsync(
         BuildJobRunnerType runnerType,
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         BuildStage stage,
@@ -39,4 +34,13 @@ public interface IBuildJobService
     );
 
     Task BuildJobRestartingAsync(string engineId, string buildId, CancellationToken cancellationToken = default);
+}
+
+public interface IBuildJobService<TEngine> : IBuildJobService
+    where TEngine : ITrainingEngine
+{
+    Task<IReadOnlyList<TEngine>> GetBuildingEnginesAsync(
+        BuildJobRunnerType runner,
+        CancellationToken cancellationToken = default
+    );
 }

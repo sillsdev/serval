@@ -26,45 +26,67 @@ public class ClearMLMonitorService(
     private readonly ILogger<IClearMLQueueService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
-    private readonly IReadOnlyDictionary<TranslationEngineType, string> _queuePerEngineType =
-        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => x.Queue);
+    private readonly IReadOnlyDictionary<EngineType, string> _queuePerEngineType =
+        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.EngineType, x => x.Queue);
 
-    private readonly IDictionary<TranslationEngineType, int> _queueSizePerEngineType = new ConcurrentDictionary<
-        TranslationEngineType,
-        int
-    >(buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => 0));
+    private readonly IDictionary<EngineType, int> _queueSizePerEngineType = new ConcurrentDictionary<EngineType, int>(
+        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.EngineType, x => 0)
+    );
 
-    public int GetQueueSize(TranslationEngineType engineType)
+    public int GetQueueSize(EngineType engineType)
     {
         return _queueSizePerEngineType[engineType];
     }
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
+        await MonitorClearMLTasksPerDomain(scope, cancellationToken);
+    }
+
+    private async Task MonitorClearMLTasksPerDomain(IServiceScope scope, CancellationToken cancellationToken)
+    {
         try
         {
-            var buildJobService = scope.ServiceProvider.GetRequiredService<IBuildJobService>();
-            IReadOnlyList<TranslationEngine> trainingEngines = await buildJobService.GetBuildingEnginesAsync(
-                BuildJobRunnerType.ClearML,
-                cancellationToken
-            );
-            if (trainingEngines.Count == 0)
+            var translationBuildJobService = scope.ServiceProvider.GetRequiredService<
+                IBuildJobService<TranslationEngine>
+            >();
+            var wordAlignmentBuildJobService = scope.ServiceProvider.GetRequiredService<
+                IBuildJobService<WordAlignmentEngine>
+            >();
+
+            Dictionary<ITrainingEngine, IBuildJobService> engineToBuildServiceDict = (
+                await translationBuildJobService.GetBuildingEnginesAsync(BuildJobRunnerType.ClearML, cancellationToken)
+            ).ToDictionary(e => (ITrainingEngine)e, e => (IBuildJobService)translationBuildJobService);
+
+            foreach (
+                var engine in await wordAlignmentBuildJobService.GetBuildingEnginesAsync(
+                    BuildJobRunnerType.ClearML,
+                    cancellationToken
+                )
+            )
+            {
+                engineToBuildServiceDict[engine] = wordAlignmentBuildJobService;
+            }
+
+            if (engineToBuildServiceDict.Count == 0)
                 return;
 
             Dictionary<string, ClearMLTask> tasks = (
                 await _clearMLService.GetTasksByIdAsync(
-                    trainingEngines.Select(e => e.CurrentBuild!.JobId),
+                    engineToBuildServiceDict.Select(e => e.Key.CurrentBuild!.JobId),
                     cancellationToken
                 )
             ).ToDictionary(t => t.Id);
-            Dictionary<TranslationEngineType, Dictionary<string, int>> queuePositionsPerEngineType = new();
+            Dictionary<EngineType, Dictionary<string, int>> queuePositionsPerEngineType = new();
 
-            foreach ((TranslationEngineType engineType, string queueName) in _queuePerEngineType)
+            foreach ((EngineType engineType, string queueName) in _queuePerEngineType)
             {
                 var tasksPerEngineType = tasks
                     .Where(kvp =>
-                        trainingEngines.Where(te => te.CurrentBuild?.JobId == kvp.Key).FirstOrDefault()?.Type
-                        == engineType
+                        engineToBuildServiceDict
+                            .Where(te => te.Key.CurrentBuild?.JobId == kvp.Key)
+                            .FirstOrDefault()
+                            .Key?.Type == engineType
                     )
                     .Select(kvp => kvp.Value)
                     .UnionBy(await _clearMLService.GetTasksForQueueAsync(queueName, cancellationToken), t => t.Id)
@@ -81,9 +103,11 @@ public class ClearMLMonitorService(
             }
 
             var dataAccessContext = scope.ServiceProvider.GetRequiredService<IDataAccessContext>();
-            var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
-            foreach (TranslationEngine engine in trainingEngines)
+            foreach (ITrainingEngine engine in engineToBuildServiceDict.Keys)
             {
+                IPlatformService platformService = scope.ServiceProvider.GetKeyedService<IPlatformService>(
+                    engine.Type.ToEngineGroup()
+                )!;
                 if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
                     continue;
 
@@ -115,7 +139,7 @@ public class ClearMLMonitorService(
                     {
                         bool canceled = !await TrainJobStartedAsync(
                             dataAccessContext,
-                            buildJobService,
+                            engineToBuildServiceDict[engine],
                             platformService,
                             engine.EngineId,
                             engine.CurrentBuild.BuildId,
@@ -154,7 +178,7 @@ public class ClearMLMonitorService(
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
-                                buildJobService,
+                                engineToBuildServiceDict[engine],
                                 engine.Type,
                                 engine.EngineId,
                                 engine.CurrentBuild.BuildId,
@@ -167,7 +191,7 @@ public class ClearMLMonitorService(
                             {
                                 await TrainJobCanceledAsync(
                                     dataAccessContext,
-                                    buildJobService,
+                                    engineToBuildServiceDict[engine],
                                     platformService,
                                     engine.EngineId,
                                     engine.CurrentBuild.BuildId,
@@ -181,7 +205,7 @@ public class ClearMLMonitorService(
                         {
                             await TrainJobCanceledAsync(
                                 dataAccessContext,
-                                buildJobService,
+                                engineToBuildServiceDict[engine],
                                 platformService,
                                 engine.EngineId,
                                 engine.CurrentBuild.BuildId,
@@ -194,7 +218,7 @@ public class ClearMLMonitorService(
                         {
                             await TrainJobFaultedAsync(
                                 dataAccessContext,
-                                buildJobService,
+                                engineToBuildServiceDict[engine],
                                 platformService,
                                 engine.EngineId,
                                 engine.CurrentBuild.BuildId,
@@ -239,7 +263,7 @@ public class ClearMLMonitorService(
 
     private async Task<bool> TrainJobCompletedAsync(
         IBuildJobService buildJobService,
-        TranslationEngineType engineType,
+        EngineType engineType,
         string engineId,
         string buildId,
         int corpusSize,

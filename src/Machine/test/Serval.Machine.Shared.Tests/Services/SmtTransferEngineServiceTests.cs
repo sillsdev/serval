@@ -51,7 +51,7 @@ public class SmtTransferEngineServiceTests
                             Language = "es",
                             Files = [],
                             TrainOnTextIds = null,
-                            PretranslateTextIds = null
+                            InferenceTextIds = null
                         }
                     },
                     TargetCorpora = new List<MonolingualCorpus>()
@@ -96,7 +96,7 @@ public class SmtTransferEngineServiceTests
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.CancelBuildAsync(EngineId1);
         await env.WaitForBuildToFinishAsync();
         _ = env.SmtBatchTrainer.DidNotReceive().SaveAsync();
@@ -122,12 +122,12 @@ public class SmtTransferEngineServiceTests
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         env.StopServer();
         await env.WaitForBuildToRestartAsync();
         engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Pending));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Pending));
         _ = env.PlatformService.Received().BuildRestartingAsync(BuildId1);
         env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
         env.StartServer();
@@ -147,7 +147,7 @@ public class SmtTransferEngineServiceTests
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.DeleteAsync(EngineId1);
         await env.WaitForBuildToFinishAsync();
         await env.WaitForAllHangfireJobsToFinishAsync();
@@ -167,7 +167,7 @@ public class SmtTransferEngineServiceTests
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.TrainSegmentPairAsync(EngineId1, "esto es una prueba.", "this is a test.", true);
         env.StopTraining();
         await env.WaitForBuildToFinishAsync();
@@ -238,7 +238,7 @@ public class SmtTransferEngineServiceTests
                 {
                     Id = EngineId1,
                     EngineId = EngineId1,
-                    Type = TranslationEngineType.SmtTransfer,
+                    Type = EngineType.SmtTransfer,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -249,6 +249,7 @@ public class SmtTransferEngineServiceTests
             _memoryStorage = new Hangfire.InMemory.InMemoryStorage();
             _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
+            PlatformService.EngineGroup.Returns(EngineGroup.Translation);
             SmtModel = Substitute.For<IInteractiveTranslationModel>();
             SmtBatchTrainer = Substitute.For<ITrainer>();
             SmtBatchTrainer.Stats.Returns(
@@ -277,14 +278,14 @@ public class SmtTransferEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.Nmt,
+                            EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -319,7 +320,7 @@ public class SmtTransferEngineServiceTests
                 buildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
-            BuildJobService = new BuildJobService(
+            BuildJobService = new BuildJobService<TranslationEngine>(
                 [
                     new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
                     new ClearMLBuildJobRunner(
@@ -352,7 +353,7 @@ public class SmtTransferEngineServiceTests
 
         public ISharedFileService SharedFileService { get; }
 
-        public IBuildJobService BuildJobService { get; }
+        public IBuildJobService<TranslationEngine> BuildJobService { get; }
 
         public async Task CommitAsync(TimeSpan inactiveTimeout)
         {
@@ -659,7 +660,7 @@ public class SmtTransferEngineServiceTests
 
                 await BuildJobService.StartBuildJobAsync(
                     BuildJobRunnerType.Hangfire,
-                    TranslationEngineType.SmtTransfer,
+                    EngineType.SmtTransfer,
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,
@@ -684,7 +685,7 @@ public class SmtTransferEngineServiceTests
                         _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
-                        Substitute.For<ILogger<PreprocessBuildJob>>(),
+                        Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
                         _env._lockFactory,

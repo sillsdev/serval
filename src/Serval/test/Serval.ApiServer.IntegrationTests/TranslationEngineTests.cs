@@ -1346,7 +1346,7 @@ public class TranslationEngineTests
                 Assert.That(build, Is.Not.Null);
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.GetBuildAsync(engineId, build!.Id, 3);
+                    await client.GetBuildAsync(engineId, build.Id, 3);
                 });
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -1585,53 +1585,6 @@ public class TranslationEngineTests
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
                 break;
         }
-    }
-
-    [Test]
-    public async Task StartBuild_ParallelCorpus()
-    {
-        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
-            NMT_ENGINE1_ID,
-            TestParallelCorpusConfig
-        );
-        PretranslateCorpusConfig ptcc =
-            new()
-            {
-                ParallelCorpusId = addedCorpus.Id,
-                SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }]
-            };
-        TrainingCorpusConfig tcc =
-            new()
-            {
-                ParallelCorpusId = addedCorpus.Id,
-                SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
-                TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }]
-            };
-        ;
-        TranslationBuildConfig tbc = new TranslationBuildConfig
-        {
-            Pretranslate = [ptcc],
-            TrainOn = [tcc],
-            Options = """
-                {"max_steps":10,
-                "use_key_terms":false,
-                "some_double":10.5,
-                "some_nested": {"more_nested": {"other_double":10.5}},
-                "some_string":"string"}
-                """
-        };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
-        });
-
-        TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
-        Assert.That(build, Is.Not.Null);
-
-        build = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
-        Assert.That(build, Is.Not.Null);
     }
 
     [Test]
@@ -1991,7 +1944,7 @@ public class TranslationEngineTests
     public async Task GetQueueAsync(string engineType)
     {
         TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient();
-        Client.Queue queue = await client.GetQueueAsync(engineType);
+        Queue queue = await client.GetQueueAsync(engineType);
         Assert.That(queue.Size, Is.EqualTo(0));
     }
 
@@ -2001,7 +1954,7 @@ public class TranslationEngineTests
         TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient([Scopes.ReadFiles]);
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
-            Client.Queue queue = await client.GetQueueAsync("Echo");
+            Queue queue = await client.GetQueueAsync("Echo");
         });
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(403));

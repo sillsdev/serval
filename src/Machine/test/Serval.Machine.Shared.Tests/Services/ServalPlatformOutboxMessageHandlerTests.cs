@@ -13,7 +13,7 @@ public class ServalPlatformOutboxMessageHandlerTests
 
         await env.Handler.HandleMessageAsync(
             "groupId",
-            ServalPlatformOutboxConstants.BuildStarted,
+            ServalTranslationPlatformOutboxConstants.BuildStarted,
             JsonSerializer.Serialize(
                 new BuildStartedRequest { BuildId = "C" },
                 MessageOutboxOptions.JsonSerializerOptions
@@ -25,7 +25,7 @@ public class ServalPlatformOutboxMessageHandlerTests
     }
 
     [Test]
-    public async Task HandleMessageAsync_InsertPretranslations()
+    public async Task HandleMessageAsync_InsertInferenceResults()
     {
         TestEnvironment env = new();
 
@@ -48,7 +48,7 @@ public class ServalPlatformOutboxMessageHandlerTests
             stream.Seek(0, SeekOrigin.Begin);
             await env.Handler.HandleMessageAsync(
                 "engine1",
-                ServalPlatformOutboxConstants.InsertPretranslations,
+                ServalTranslationPlatformOutboxConstants.InsertPretranslations,
                 "engine1",
                 stream
             );
@@ -79,7 +79,7 @@ public class ServalPlatformOutboxMessageHandlerTests
             Client.BuildFaultedAsync(Arg.Any<BuildFaultedRequest>()).Returns(CreateEmptyUnaryCall());
             Client.BuildCompletedAsync(Arg.Any<BuildCompletedRequest>()).Returns(CreateEmptyUnaryCall());
             Client
-                .IncrementTranslationEngineCorpusSizeAsync(Arg.Any<IncrementTranslationEngineCorpusSizeRequest>())
+                .IncrementEngineCorpusSizeAsync(Arg.Any<IncrementEngineCorpusSizeRequest>())
                 .Returns(CreateEmptyUnaryCall());
             PretranslationWriter = Substitute.For<IClientStreamWriter<InsertPretranslationsRequest>>();
             Client
@@ -95,11 +95,11 @@ public class ServalPlatformOutboxMessageHandlerTests
                     )
                 );
 
-            Handler = new ServalPlatformOutboxMessageHandler(Client);
+            Handler = new ServalTranslationPlatformOutboxMessageHandler(Client);
         }
 
         public TranslationPlatformApi.TranslationPlatformApiClient Client { get; }
-        public ServalPlatformOutboxMessageHandler Handler { get; }
+        public ServalTranslationPlatformOutboxMessageHandler Handler { get; }
         public IClientStreamWriter<InsertPretranslationsRequest> PretranslationWriter { get; }
 
         private static AsyncUnaryCall<Empty> CreateEmptyUnaryCall()
