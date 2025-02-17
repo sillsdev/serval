@@ -817,7 +817,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                 case EngineType.Nmt:
                 {
                     return new NmtPreprocessBuildJob(
-                        new[] { PlatformService },
+                        PlatformService,
                         Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
@@ -830,7 +830,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                 case EngineType.SmtTransfer:
                 {
                     return new SmtTransferPreprocessBuildJob(
-                        new[] { PlatformService },
+                        PlatformService,
                         Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),

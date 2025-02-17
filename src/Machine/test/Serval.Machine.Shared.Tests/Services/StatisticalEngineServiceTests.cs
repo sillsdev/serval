@@ -305,8 +305,8 @@ public class StatisticalEngineServiceTests
 
         private StatisticalEngineStateService CreateStateService()
         {
-            var options = Substitute.For<IOptionsMonitor<WordAlignmentEngineOptions>>();
-            options.CurrentValue.Returns(new WordAlignmentEngineOptions());
+            var options = Substitute.For<IOptionsMonitor<StatisticalWordAlignmentEngineOptions>>();
+            options.CurrentValue.Returns(new StatisticalWordAlignmentEngineOptions());
             return new StatisticalEngineStateService(
                 WordAlignmentModelFactory,
                 options,
@@ -318,7 +318,7 @@ public class StatisticalEngineServiceTests
         {
             return new StatisticalEngineService(
                 _lockFactory,
-                new[] { PlatformService },
+                PlatformService,
                 new MemoryDataAccessContext(),
                 Engines,
                 StateService,
@@ -450,7 +450,7 @@ public class StatisticalEngineServiceTests
                 if (jobType == typeof(WordAlignmentPreprocessBuildJob))
                 {
                     return new WordAlignmentPreprocessBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<WordAlignmentPreprocessBuildJob>>(),
@@ -464,12 +464,12 @@ public class StatisticalEngineServiceTests
                 }
                 if (jobType == typeof(StatisticalPostprocessBuildJob))
                 {
-                    var engineOptions = Substitute.For<IOptionsMonitor<WordAlignmentEngineOptions>>();
-                    engineOptions.CurrentValue.Returns(new WordAlignmentEngineOptions());
+                    var engineOptions = Substitute.For<IOptionsMonitor<StatisticalWordAlignmentEngineOptions>>();
+                    engineOptions.CurrentValue.Returns(new StatisticalWordAlignmentEngineOptions());
                     var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
                     buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new StatisticalPostprocessBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
@@ -484,7 +484,7 @@ public class StatisticalEngineServiceTests
                 if (jobType == typeof(StatisticalTrainBuildJob))
                 {
                     return new StatisticalTrainBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,

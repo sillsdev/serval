@@ -85,8 +85,8 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                 }
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.IncrementTrainEngineCorpusSize:
-                await _client.IncrementTrainEngineCorpusSizeAsync(
-                    JsonSerializer.Deserialize<IncrementTrainEngineCorpusSizeRequest>(content!),
+                await _client.IncrementEngineCorpusSizeAsync(
+                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;

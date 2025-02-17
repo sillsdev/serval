@@ -12,7 +12,7 @@ service TranslationPlatformApi {
     rpc BuildFaulted(BuildFaultedRequest) returns (google.protobuf.Empty);
     rpc BuildRestarting(BuildRestartingRequest) returns (google.protobuf.Empty);
 
-    rpc IncrementTrainEngineCorpusSize(IncrementTrainEngineCorpusSizeRequest) returns (google.protobuf.Empty);
+    rpc IncrementEngineCorpusSize(IncrementEngineCorpusSizeRequest) returns (google.protobuf.Empty);
     rpc InsertPretranslations(stream InsertPretranslationsRequest) returns (google.protobuf.Empty);
     rpc UpdateBuildExecutionData(UpdateBuildExecutionDataRequest) returns (google.protobuf.Empty);
 }
@@ -48,7 +48,7 @@ message BuildRestartingRequest {
     string build_id = 1;
 }
 
-message IncrementTrainEngineCorpusSizeRequest {
+message IncrementEngineCorpusSizeRequest {
     string engine_id = 1;
     int32 count = 2;
 }

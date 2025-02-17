@@ -129,7 +129,7 @@ public class ServalWordAlignmentPlatformService(
             ServalWordAlignmentPlatformOutboxConstants.OutboxId,
             ServalWordAlignmentPlatformOutboxConstants.IncrementTrainEngineCorpusSize,
             engineId,
-            new IncrementTrainEngineCorpusSizeRequest { EngineId = engineId, Count = count },
+            new IncrementEngineCorpusSizeRequest { EngineId = engineId, Count = count },
             cancellationToken: cancellationToken
         );
     }

@@ -212,7 +212,7 @@ public class NmtEngineServiceTests
         private NmtEngineService CreateService()
         {
             return new NmtEngineService(
-                new[] { PlatformService },
+                PlatformService,
                 new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
@@ -296,7 +296,7 @@ public class NmtEngineServiceTests
                 if (jobType == typeof(NmtPreprocessBuildJob))
                 {
                     return new NmtPreprocessBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),

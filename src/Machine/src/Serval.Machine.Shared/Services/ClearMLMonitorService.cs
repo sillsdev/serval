@@ -54,9 +54,9 @@ public class ClearMLMonitorService(
                 IBuildJobService<WordAlignmentEngine>
             >();
 
-            Dictionary<ITrainingEngine, IBuildJobServiceBase> engineToBuildServiceDict = (
+            Dictionary<ITrainingEngine, IBuildJobService> engineToBuildServiceDict = (
                 await translationBuildJobService.GetBuildingEnginesAsync(BuildJobRunnerType.ClearML, cancellationToken)
-            ).ToDictionary(e => (ITrainingEngine)e, e => (IBuildJobServiceBase)translationBuildJobService);
+            ).ToDictionary(e => (ITrainingEngine)e, e => (IBuildJobService)translationBuildJobService);
 
             foreach (
                 var engine in await wordAlignmentBuildJobService.GetBuildingEnginesAsync(
@@ -103,12 +103,11 @@ public class ClearMLMonitorService(
             }
 
             var dataAccessContext = scope.ServiceProvider.GetRequiredService<IDataAccessContext>();
-            var platformServices = scope.ServiceProvider.GetRequiredService<IEnumerable<IPlatformService>>();
             foreach (ITrainingEngine engine in engineToBuildServiceDict.Keys)
             {
-                var platformService = platformServices.First(ps =>
-                    ps.EngineGroup == EngineTypeMethods.ToEngineGroup(engine.Type)
-                );
+                IPlatformService platformService = scope.ServiceProvider.GetKeyedService<IPlatformService>(
+                    engine.Type.ToEngineGroup()
+                )!;
                 if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
                     continue;
 
@@ -240,7 +239,7 @@ public class ClearMLMonitorService(
 
     private async Task<bool> TrainJobStartedAsync(
         IDataAccessContext dataAccessContext,
-        IBuildJobServiceBase buildJobService,
+        IBuildJobService buildJobService,
         IPlatformService platformService,
         string engineId,
         string buildId,
@@ -263,7 +262,7 @@ public class ClearMLMonitorService(
     }
 
     private async Task<bool> TrainJobCompletedAsync(
-        IBuildJobServiceBase buildJobService,
+        IBuildJobService buildJobService,
         EngineType engineType,
         string engineId,
         string buildId,
@@ -294,7 +293,7 @@ public class ClearMLMonitorService(
 
     private async Task TrainJobFaultedAsync(
         IDataAccessContext dataAccessContext,
-        IBuildJobServiceBase buildJobService,
+        IBuildJobService buildJobService,
         IPlatformService platformService,
         string engineId,
         string buildId,
@@ -327,7 +326,7 @@ public class ClearMLMonitorService(
 
     private async Task TrainJobCanceledAsync(
         IDataAccessContext dataAccessContext,
-        IBuildJobServiceBase buildJobService,
+        IBuildJobService buildJobService,
         IPlatformService platformService,
         string engineId,
         string buildId,

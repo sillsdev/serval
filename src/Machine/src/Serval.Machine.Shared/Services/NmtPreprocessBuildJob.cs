@@ -1,7 +1,7 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class NmtPreprocessBuildJob(
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
     ILogger<NmtPreprocessBuildJob> logger,
@@ -11,7 +11,7 @@ public class NmtPreprocessBuildJob(
     IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
     : PreprocessBuildJob<TranslationEngine>(
-        platformServices.First(ps => ps.EngineGroup == EngineGroup.Translation),
+        platformService,
         engines,
         dataAccessContext,
         logger,

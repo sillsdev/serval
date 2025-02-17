@@ -79,7 +79,7 @@ public class ServalPlatformOutboxMessageHandlerTests
             Client.BuildFaultedAsync(Arg.Any<BuildFaultedRequest>()).Returns(CreateEmptyUnaryCall());
             Client.BuildCompletedAsync(Arg.Any<BuildCompletedRequest>()).Returns(CreateEmptyUnaryCall());
             Client
-                .IncrementTrainEngineCorpusSizeAsync(Arg.Any<IncrementTrainEngineCorpusSizeRequest>())
+                .IncrementEngineCorpusSizeAsync(Arg.Any<IncrementEngineCorpusSizeRequest>())
                 .Returns(CreateEmptyUnaryCall());
             PretranslationWriter = Substitute.For<IClientStreamWriter<InsertPretranslationsRequest>>();
             Client

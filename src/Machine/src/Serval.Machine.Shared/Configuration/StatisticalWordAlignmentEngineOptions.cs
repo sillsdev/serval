@@ -1,6 +1,6 @@
 ﻿namespace Serval.Machine.Shared.Configuration;
 
-public class WordAlignmentEngineOptions
+public class StatisticalWordAlignmentEngineOptions
 {
     public const string Key = "WordAlignmentEngine";
 

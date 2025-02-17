@@ -6,9 +6,7 @@ namespace Serval.E2ETests;
 [Category("E2E")]
 public class ServalApiTests
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private ServalClientHelper _helperClient;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
@@ -317,7 +315,7 @@ public class ServalApiTests
             await _helperClient.TranslationEnginesClient.GetWordGraphAsync(smtEngineId, "verdad");
         });
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex!.StatusCode, Is.EqualTo(409));
+        Assert.That(ex.StatusCode, Is.EqualTo(409));
 
         //Add corpus
         var corpus1 = await _helperClient.MakeParallelTextCorpus(["2JN.txt", "3JN.txt"], "es", "en", false);

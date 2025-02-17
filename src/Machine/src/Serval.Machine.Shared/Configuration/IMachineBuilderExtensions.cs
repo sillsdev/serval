@@ -21,7 +21,7 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddWordAlignmentEngineOptions(this IMachineBuilder builder, IConfiguration config)
     {
-        builder.Services.Configure<WordAlignmentEngineOptions>(config);
+        builder.Services.Configure<StatisticalWordAlignmentEngineOptions>(config);
         return builder;
     }
 
@@ -78,8 +78,8 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddWordAlignmentModel(this IMachineBuilder builder)
     {
-        builder.Services.Configure<WordAlignmentModelOptions>(
-            builder.Configuration.GetSection(WordAlignmentModelOptions.Key)
+        builder.Services.Configure<ThotWordAlignmentModelOptions>(
+            builder.Configuration.GetSection(ThotWordAlignmentModelOptions.Key)
         );
         builder.Services.AddSingleton<IWordAlignmentModelFactory, ThotWordAlignmentModelFactory>();
         return builder;
@@ -316,7 +316,7 @@ public static class IMachineBuilderExtensions
         if (connectionString is null)
             throw new InvalidOperationException("Serval connection string is required");
 
-        builder.Services.AddScoped<IPlatformService, ServalTranslationPlatformService>();
+        builder.Services.AddKeyedScoped<IPlatformService, ServalTranslationPlatformService>(EngineGroup.Translation);
 
         builder.Services.AddSingleton<IOutboxMessageHandler, ServalTranslationPlatformOutboxMessageHandler>();
 
@@ -373,7 +373,9 @@ public static class IMachineBuilderExtensions
         if (connectionString is null)
             throw new InvalidOperationException("Serval connection string is required");
 
-        builder.Services.AddScoped<IPlatformService, ServalWordAlignmentPlatformService>();
+        builder.Services.AddKeyedScoped<IPlatformService, ServalWordAlignmentPlatformService>(
+            EngineGroup.WordAlignment
+        );
 
         builder.Services.AddSingleton<IOutboxMessageHandler, ServalWordAlignmentPlatformOutboxMessageHandler>();
 
@@ -481,6 +483,7 @@ public static class IMachineBuilderExtensions
                     builder.Services.AddSingleton<StatisticalEngineStateService>();
                     builder.AddThot();
                     builder.Services.AddScoped<IWordAlignmentEngineService, StatisticalEngineService>();
+                    builder.Services.AddHostedService<StatisticalEngineCommitService>();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(engineType.ToString());
@@ -526,8 +529,8 @@ public static class IMachineBuilderExtensions
         var smtTransferEngineOptions = new SmtTransferEngineOptions();
         builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
         string? smtDriveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
-        var statisticalEngineOptions = new WordAlignmentEngineOptions();
-        builder.Configuration.GetSection(WordAlignmentEngineOptions.Key).Bind(statisticalEngineOptions);
+        var statisticalEngineOptions = new StatisticalWordAlignmentEngineOptions();
+        builder.Configuration.GetSection(StatisticalWordAlignmentEngineOptions.Key).Bind(statisticalEngineOptions);
         string? statisticsDriveLetter = Path.GetPathRoot(statisticalEngineOptions.EnginesDir)?[..1];
         if (smtDriveLetter is null || statisticsDriveLetter is null)
             throw new InvalidOperationException("SMT Engine and Statistical directory is required");

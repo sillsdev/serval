@@ -4,7 +4,7 @@ namespace Serval.Machine.Shared.Services;
 
 public class StatisticalEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
     IDataAccessContext dataAccessContext,
     IRepository<WordAlignmentEngine> engines,
     StatisticalEngineStateService stateService,
@@ -13,9 +13,7 @@ public class StatisticalEngineService(
 ) : IWordAlignmentEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
-    private readonly IPlatformService _platformService = platformServices.First(ps =>
-        ps.EngineGroup == EngineGroup.WordAlignment
-    );
+    private readonly IPlatformService _platformService = platformService;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<WordAlignmentEngine> _engines = engines;
     private readonly StatisticalEngineStateService _stateService = stateService;

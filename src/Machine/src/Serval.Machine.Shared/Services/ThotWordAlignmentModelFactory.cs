@@ -1,10 +1,10 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class ThotWordAlignmentModelFactory(IOptionsMonitor<WordAlignmentModelOptions> options)
+public class ThotWordAlignmentModelFactory(IOptionsMonitor<ThotWordAlignmentModelOptions> options)
     : ModelFactoryBase,
         IWordAlignmentModelFactory
 {
-    private readonly IOptionsMonitor<WordAlignmentModelOptions> _options = options;
+    private readonly IOptionsMonitor<ThotWordAlignmentModelOptions> _options = options;
 
     public IWordAlignmentModel Create(string engineDir)
     {
@@ -46,5 +46,14 @@ public class ThotWordAlignmentModelFactory(IOptionsMonitor<WordAlignmentModelOpt
         if (!Directory.Exists(engineDir))
             Directory.CreateDirectory(engineDir);
         ZipFile.ExtractToDirectory(_options.CurrentValue.NewModelFile, engineDir);
+    }
+
+    public override void Cleanup(string engineDir)
+    {
+        if (!Directory.Exists(engineDir))
+            return;
+        DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "src_trg"));
+        if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
+            Directory.Delete(engineDir);
     }
 }

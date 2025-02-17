@@ -1,21 +1,14 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class StatisticalTrainBuildJob(
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
     IRepository<WordAlignmentEngine> engines,
     IDataAccessContext dataAccessContext,
     IBuildJobService<WordAlignmentEngine> buildJobService,
     ILogger<StatisticalTrainBuildJob> logger,
     ISharedFileService sharedFileService,
     IWordAlignmentModelFactory wordAlignmentModelFactory
-)
-    : HangfireBuildJob<WordAlignmentEngine>(
-        platformServices.First(ps => ps.EngineGroup == EngineGroup.WordAlignment),
-        engines,
-        dataAccessContext,
-        buildJobService,
-        logger
-    )
+) : HangfireBuildJob<WordAlignmentEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
     private static readonly JsonWriterOptions WordAlignmentWriterOptions = new() { Indented = true };
     private static readonly JsonSerializerOptions JsonSerializerOptions =
