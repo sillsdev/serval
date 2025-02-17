@@ -163,11 +163,18 @@ public class StatisticalTrainBuildJob(
             IReadOnlyList<WordAlignmentMatrix> results = wordAlignmentModel.AlignBatch(segments);
             foreach ((Models.WordAlignment wordAlignment, WordAlignmentMatrix result) in batch.Zip(results))
             {
+                List<AlignedWordPair> alignedWordPairs = result.ToAlignedWordPairs().ToList();
+                wordAlignmentModel.ComputeAlignedWordPairScores(
+                    wordAlignment.SourceTokens,
+                    wordAlignment.TargetTokens,
+                    alignedWordPairs
+                );
                 JsonSerializer.Serialize(
                     targetWriter,
                     wordAlignment with
                     {
-                        Alignment = result.ToAlignedWordPairs().ToList()
+                        Alignment = alignedWordPairs,
+                        Confidences = alignedWordPairs.Select(wp => wp.AlignmentScore).ToArray()
                     },
                     JsonSerializerOptions
                 );

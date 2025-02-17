@@ -18,6 +18,7 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
         CancellationToken cancellationToken = default
     )
     {
+        ArgumentNullException.ThrowIfNull(content);
         switch (method)
         {
             case ServalTranslationPlatformOutboxConstants.BuildStarted:

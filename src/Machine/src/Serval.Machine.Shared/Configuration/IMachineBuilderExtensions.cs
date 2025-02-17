@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Polly.Extensions.Http;
 using Serval.Translation.V1;
 using Serval.WordAlignment.V1;
@@ -80,7 +81,7 @@ public static class IMachineBuilderExtensions
         builder.Services.Configure<WordAlignmentModelOptions>(
             builder.Configuration.GetSection(WordAlignmentModelOptions.Key)
         );
-        builder.Services.AddSingleton<IWordAlignmentModelFactory, WordAlignmentModelFactory>();
+        builder.Services.AddSingleton<IWordAlignmentModelFactory, ThotWordAlignmentModelFactory>();
         return builder;
     }
 
@@ -200,7 +201,6 @@ public static class IMachineBuilderExtensions
             {
                 case EngineType.SmtTransfer:
                     builder.Services.AddSingleton<SmtTransferEngineStateService>();
-                    builder.Services.AddHostedService<SmtTransferEngineCommitService>();
                     builder.AddThot();
                     queues.Add("smt_transfer");
                     break;
@@ -208,7 +208,7 @@ public static class IMachineBuilderExtensions
                     queues.Add("nmt");
                     break;
                 case EngineType.Statistical:
-                    builder.Services.AddSingleton<WordAlignmentEngineStateService>();
+                    builder.Services.AddSingleton<StatisticalEngineStateService>();
                     builder.AddThot();
                     queues.Add("statistical");
                     break;
@@ -268,7 +268,6 @@ public static class IMachineBuilderExtensions
                 );
                 o.AddRepository<WordAlignmentEngine>(
                     "word_alignment_engines",
-                    mapSetup: m => m.SetIgnoreExtraElements(true),
                     init: async c =>
                     {
                         await c.Indexes.CreateOrUpdateAsync(
@@ -444,13 +443,14 @@ public static class IMachineBuilderExtensions
             {
                 case EngineType.SmtTransfer:
                     builder.AddThot();
+                    builder.Services.AddHostedService<SmtTransferEngineCommitService>();
                     builder.Services.AddScoped<ITranslationEngineService, SmtTransferEngineService>();
                     break;
                 case EngineType.Nmt:
                     builder.Services.AddScoped<ITranslationEngineService, NmtEngineService>();
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(engineType.ToString());
+                    throw new InvalidEnumArgumentException(engineType.ToString(), (int)engineType, typeof(EngineType));
             }
         }
 
@@ -478,7 +478,7 @@ public static class IMachineBuilderExtensions
             switch (engineType)
             {
                 case EngineType.Statistical:
-                    builder.Services.AddSingleton<WordAlignmentEngineStateService>();
+                    builder.Services.AddSingleton<StatisticalEngineStateService>();
                     builder.AddThot();
                     builder.Services.AddScoped<IWordAlignmentEngineService, StatisticalEngineService>();
                     break;
@@ -494,7 +494,8 @@ public static class IMachineBuilderExtensions
     {
         try
         {
-            builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser().AddWordAlignmentModel();
+            builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
+            builder.AddWordAlignmentModel();
         }
         catch (ArgumentException)
         {

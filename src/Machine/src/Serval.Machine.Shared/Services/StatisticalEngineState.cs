@@ -2,7 +2,7 @@
 
 namespace Serval.Machine.Shared.Services;
 
-public class WordAlignmentEngineState(
+public class StatisticalEngineState(
     IWordAlignmentModelFactory wordAlignmentModelFactory,
     IOptionsMonitor<WordAlignmentEngineOptions> options,
     string engineId

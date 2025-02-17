@@ -753,14 +753,14 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                     [
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.Nmt.ToString(),
+                            EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.SmtTransfer.ToString(),
+                            EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"

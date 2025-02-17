@@ -278,14 +278,14 @@ public class SmtTransferEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.Nmt.ToString().ToString(),
+                            EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.SmtTransfer.ToString(),
+                            EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"

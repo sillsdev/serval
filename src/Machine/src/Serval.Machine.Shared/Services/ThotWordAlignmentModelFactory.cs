@@ -1,6 +1,6 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class WordAlignmentModelFactory(IOptionsMonitor<WordAlignmentModelOptions> options)
+public class ThotWordAlignmentModelFactory(IOptionsMonitor<WordAlignmentModelOptions> options)
     : ModelFactoryBase,
         IWordAlignmentModelFactory
 {
@@ -8,7 +8,7 @@ public class WordAlignmentModelFactory(IOptionsMonitor<WordAlignmentModelOptions
 
     public IWordAlignmentModel Create(string engineDir)
     {
-        var modelPath = Path.Combine(engineDir, "tm", "src_trg");
+        var modelPath = Path.Combine(engineDir, "src_trg");
         var directModel = ThotWordAlignmentModel.Create(ThotWordAlignmentModelType.Hmm);
         directModel.Load(modelPath + "_invswm");
 
@@ -24,7 +24,7 @@ public class WordAlignmentModelFactory(IOptionsMonitor<WordAlignmentModelOptions
         IParallelTextCorpus corpus
     )
     {
-        var modelPath = Path.Combine(engineDir, "tm", "src_trg");
+        var modelPath = Path.Combine(engineDir, "src_trg");
         var directModel = ThotWordAlignmentModel.Create(ThotWordAlignmentModelType.Hmm);
         directModel.SourceTokenizer = tokenizer;
         directModel.TargetTokenizer = tokenizer;

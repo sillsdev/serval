@@ -25,7 +25,7 @@ public class ServalPlatformOutboxMessageHandlerTests
     }
 
     [Test]
-    public async Task HandleMessageAsync_InsertInferences()
+    public async Task HandleMessageAsync_InsertInferenceResults()
     {
         TestEnvironment env = new();
 

@@ -104,7 +104,7 @@ public class ServalWordAlignmentPlatformService(
         );
     }
 
-    public async Task InsertInferencesAsync(
+    public async Task InsertInferenceResultsAsync(
         string engineId,
         Stream wordAlignmentsStream,
         CancellationToken cancellationToken = default
@@ -112,7 +112,7 @@ public class ServalWordAlignmentPlatformService(
     {
         await _outboxService.EnqueueMessageStreamAsync(
             ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.InsertInferences,
+            ServalWordAlignmentPlatformOutboxConstants.InsertInferenceResults,
             engineId,
             wordAlignmentsStream,
             cancellationToken: cancellationToken

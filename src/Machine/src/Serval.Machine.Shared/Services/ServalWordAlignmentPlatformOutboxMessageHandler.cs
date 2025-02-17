@@ -52,7 +52,7 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                     cancellationToken: cancellationToken
                 );
                 break;
-            case ServalWordAlignmentPlatformOutboxConstants.InsertInferences:
+            case ServalWordAlignmentPlatformOutboxConstants.InsertInferenceResults:
                 IAsyncEnumerable<Models.WordAlignment> wordAlignments = JsonSerializer
                     .DeserializeAsyncEnumerable<Models.WordAlignment>(
                         contentStream!,

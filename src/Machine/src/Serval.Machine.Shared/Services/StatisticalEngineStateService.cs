@@ -2,20 +2,20 @@
 
 namespace Serval.Machine.Shared.Services;
 
-public class WordAlignmentEngineStateService(
+public class StatisticalEngineStateService(
     IWordAlignmentModelFactory wordAlignmentModelFactory,
     IOptionsMonitor<WordAlignmentEngineOptions> options,
-    ILogger<WordAlignmentEngineStateService> logger
+    ILogger<StatisticalEngineStateService> logger
 ) : DisposableBase
 {
     private readonly IWordAlignmentModelFactory _wordAlignmentModelFactory = wordAlignmentModelFactory;
     private readonly IOptionsMonitor<WordAlignmentEngineOptions> _options = options;
-    private readonly ILogger<WordAlignmentEngineStateService> _logger = logger;
+    private readonly ILogger<StatisticalEngineStateService> _logger = logger;
 
-    private readonly ConcurrentDictionary<string, WordAlignmentEngineState> _engineStates =
-        new ConcurrentDictionary<string, WordAlignmentEngineState>();
+    private readonly ConcurrentDictionary<string, StatisticalEngineState> _engineStates =
+        new ConcurrentDictionary<string, StatisticalEngineState>();
 
-    public WordAlignmentEngineState Get(string engineId)
+    public StatisticalEngineState Get(string engineId)
     {
         return _engineStates.GetOrAdd(engineId, CreateState);
     }
@@ -32,7 +32,7 @@ public class WordAlignmentEngineStateService(
         CancellationToken cancellationToken = default
     )
     {
-        foreach (WordAlignmentEngineState state in _engineStates.Values)
+        foreach (StatisticalEngineState state in _engineStates.Values)
         {
             if (!state.IsLoaded || state.IsMarkedForDeletion)
             {
@@ -61,14 +61,14 @@ public class WordAlignmentEngineStateService(
         }
     }
 
-    private WordAlignmentEngineState CreateState(string engineId)
+    private StatisticalEngineState CreateState(string engineId)
     {
-        return new WordAlignmentEngineState(_wordAlignmentModelFactory, _options, engineId);
+        return new StatisticalEngineState(_wordAlignmentModelFactory, _options, engineId);
     }
 
     protected override void DisposeManagedResources()
     {
-        foreach (WordAlignmentEngineState state in _engineStates.Values)
+        foreach (StatisticalEngineState state in _engineStates.Values)
             state.Dispose();
         _engineStates.Clear();
     }

@@ -31,7 +31,7 @@ public class PostprocessBuildJob<TEngine>(
             )
         )
         {
-            await PlatformService.InsertInferencesAsync(engineId, pretranslationsStream, cancellationToken);
+            await PlatformService.InsertInferenceResultsAsync(engineId, pretranslationsStream, cancellationToken);
         }
 
         int additionalCorpusSize = await SaveModelAsync(engineId, buildId);

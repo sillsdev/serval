@@ -104,7 +104,7 @@ public class ServalTranslationPlatformService(
         );
     }
 
-    public async Task InsertInferencesAsync(
+    public async Task InsertInferenceResultsAsync(
         string engineId,
         Stream pretranslationsStream,
         CancellationToken cancellationToken = default
