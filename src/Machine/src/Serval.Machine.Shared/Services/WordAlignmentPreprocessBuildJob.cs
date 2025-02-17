@@ -1,7 +1,7 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class WordAlignmentPreprocessBuildJob(
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
     IRepository<WordAlignmentEngine> engines,
     IDataAccessContext dataAccessContext,
     ILogger<WordAlignmentPreprocessBuildJob> logger,
@@ -10,7 +10,7 @@ public class WordAlignmentPreprocessBuildJob(
     IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
     : PreprocessBuildJob<WordAlignmentEngine>(
-        platformServices.First(ps => ps.EngineGroup == EngineGroup.WordAlignment),
+        platformService,
         engines,
         dataAccessContext,
         logger,

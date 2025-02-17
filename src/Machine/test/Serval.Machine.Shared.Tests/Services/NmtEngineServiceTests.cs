@@ -133,14 +133,14 @@ public class NmtEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.Nmt.ToString(),
+                            EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.SmtTransfer.ToString(),
+                            EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -212,7 +212,7 @@ public class NmtEngineServiceTests
         private NmtEngineService CreateService()
         {
             return new NmtEngineService(
-                new[] { PlatformService },
+                PlatformService,
                 new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
@@ -296,7 +296,7 @@ public class NmtEngineServiceTests
                 if (jobType == typeof(NmtPreprocessBuildJob))
                 {
                     return new NmtPreprocessBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),

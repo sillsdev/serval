@@ -171,8 +171,8 @@ public class PlatformServiceTests
             }
         );
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(0));
-        await env.PlatformService.IncrementTrainEngineCorpusSize(
-            new IncrementTrainEngineCorpusSizeRequest() { EngineId = "e0", Count = 1 },
+        await env.PlatformService.IncrementEngineCorpusSize(
+            new IncrementEngineCorpusSizeRequest() { EngineId = "e0", Count = 1 },
             env.ServerCallContext
         );
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(1));

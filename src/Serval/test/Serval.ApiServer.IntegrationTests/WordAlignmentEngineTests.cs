@@ -54,9 +54,7 @@ public class WordAlignmentEngineTests
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
     private const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private TestEnvironment _env;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     [SetUp]
     public async Task SetUp()
@@ -348,7 +346,7 @@ public class WordAlignmentEngineTests
                 await _env.Builds.InsertAsync(
                     new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
                 );
-                Client.WordAlignmentResult result = await client.GetWordAlignmentAsync(
+                Client.WordAlignmentResult result = await client.AlignAsync(
                     engineId,
                     new WordAlignmentRequest { SourceSegment = "This is a test.", TargetSegment = "This is a test." }
                 );
@@ -366,7 +364,7 @@ public class WordAlignmentEngineTests
                     .Returns(CreateAsyncUnaryCall<GetWordAlignmentResponse>(StatusCode.Aborted));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.GetWordAlignmentAsync(
+                    await client.AlignAsync(
                         engineId,
                         new WordAlignmentRequest
                         {
@@ -383,7 +381,7 @@ public class WordAlignmentEngineTests
             {
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.GetWordAlignmentAsync(
+                    await client.AlignAsync(
                         engineId,
                         new WordAlignmentRequest
                         {
@@ -910,7 +908,7 @@ public class WordAlignmentEngineTests
             case 200:
             {
                 Assert.That(build, Is.Not.Null);
-                WordAlignmentBuild result = await client.GetBuildAsync(engineId, build!.Id);
+                WordAlignmentBuild result = await client.GetBuildAsync(engineId, build.Id);
                 Assert.Multiple(() =>
                 {
                     Assert.That(result.Revision, Is.EqualTo(1));
@@ -934,7 +932,7 @@ public class WordAlignmentEngineTests
                 Assert.That(build, Is.Not.Null);
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.GetBuildAsync(engineId, build!.Id, 3);
+                    await client.GetBuildAsync(engineId, build.Id, 3);
                 });
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -1129,7 +1127,7 @@ public class WordAlignmentEngineTests
             {
                 Assert.That(build, Is.Not.Null);
                 WordAlignmentBuild result = await client.GetCurrentBuildAsync(engineId);
-                Assert.That(result.Id, Is.EqualTo(build!.Id));
+                Assert.That(result.Id, Is.EqualTo(build.Id));
                 break;
             }
             case 204:
@@ -1298,11 +1296,11 @@ public class WordAlignmentEngineTests
         WordAlignmentBuild build = await client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc);
         Assert.That(build, Is.Not.Null);
         Assert.That(build.TrainOn, Is.Not.Null);
-        Assert.That(build.TrainOn!.Count, Is.EqualTo(1));
+        Assert.That(build.TrainOn.Count, Is.EqualTo(1));
         Assert.That(build.TrainOn[0].SourceFilters, Is.Not.Null);
         Assert.That(build.TrainOn[0].TargetFilters, Is.Not.Null);
         Assert.That(build.WordAlignOn, Is.Not.Null);
-        Assert.That(build.WordAlignOn!.Count, Is.EqualTo(1));
+        Assert.That(build.WordAlignOn.Count, Is.EqualTo(1));
         Assert.That(build.WordAlignOn[0].SourceFilters, Is.Not.Null);
         Assert.That(build.WordAlignOn[0].TargetFilters, Is.Not.Null);
 
@@ -1392,7 +1390,7 @@ public class WordAlignmentEngineTests
             build = await client.StartBuildAsync(engineId, tbc);
         });
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+        Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
     }
 
     [Test]

@@ -86,9 +86,7 @@ public class TranslationEngineTests
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
     private const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private TestEnvironment _env;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     [SetUp]
     public async Task SetUp()
@@ -603,7 +601,7 @@ public class TranslationEngineTests
                 Assert.That(engine, Is.Not.Null);
                 Assert.Multiple(() =>
                 {
-                    Assert.That(engine!.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
+                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
                     Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
                 });
                 break;
@@ -665,7 +663,7 @@ public class TranslationEngineTests
                 Assert.That(engine, Is.Not.Null);
                 Assert.Multiple(() =>
                 {
-                    Assert.That(engine!.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
+                    Assert.That(engine.Corpora[0].SourceFiles[0].Filename, Is.EqualTo(FILE2_FILENAME));
                     Assert.That(engine.Corpora[0].TargetFiles[0].Filename, Is.EqualTo(FILE1_FILENAME));
                 });
                 break;
@@ -762,7 +760,7 @@ public class TranslationEngineTests
             case 200:
             {
                 Assert.That(result, Is.Not.Null);
-                TranslationCorpus resultAfterAdd = await client.GetCorpusAsync(engineId, result!.Id);
+                TranslationCorpus resultAfterAdd = await client.GetCorpusAsync(engineId, result.Id);
                 Assert.Multiple(() =>
                 {
                     Assert.That(resultAfterAdd.Name, Is.EqualTo(result.Name));
@@ -840,7 +838,7 @@ public class TranslationEngineTests
         Assert.That(engine, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(engine!.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename, Is.EqualTo(FILE1_FILENAME));
+            Assert.That(engine.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename, Is.EqualTo(FILE1_FILENAME));
             Assert.That(engine.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename, Is.EqualTo(FILE2_FILENAME));
         });
     }
@@ -889,7 +887,7 @@ public class TranslationEngineTests
         Assert.That(engine, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(engine!.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename, Is.EqualTo(FILE1_FILENAME));
+            Assert.That(engine.ParallelCorpora[0].SourceCorpora[0].Files[0].Filename, Is.EqualTo(FILE1_FILENAME));
             Assert.That(engine.ParallelCorpora[0].TargetCorpora[0].Files[0].Filename, Is.EqualTo(FILE2_FILENAME));
         });
     }
@@ -1324,7 +1322,7 @@ public class TranslationEngineTests
             case 200:
             {
                 Assert.That(build, Is.Not.Null);
-                TranslationBuild result = await client.GetBuildAsync(engineId, build!.Id);
+                TranslationBuild result = await client.GetBuildAsync(engineId, build.Id);
                 Assert.Multiple(() =>
                 {
                     Assert.That(result.Revision, Is.EqualTo(1));
@@ -1348,7 +1346,7 @@ public class TranslationEngineTests
                 Assert.That(build, Is.Not.Null);
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.GetBuildAsync(engineId, build!.Id, 3);
+                    await client.GetBuildAsync(engineId, build.Id, 3);
                 });
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -1519,7 +1517,7 @@ public class TranslationEngineTests
             {
                 Assert.That(build, Is.Not.Null);
                 TranslationBuild result = await client.GetCurrentBuildAsync(engineId);
-                Assert.That(result.Id, Is.EqualTo(build!.Id));
+                Assert.That(result.Id, Is.EqualTo(build.Id));
                 break;
             }
             case 204:
@@ -1672,11 +1670,11 @@ public class TranslationEngineTests
         TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
         Assert.That(build, Is.Not.Null);
         Assert.That(build.TrainOn, Is.Not.Null);
-        Assert.That(build.TrainOn!.Count, Is.EqualTo(1));
+        Assert.That(build.TrainOn.Count, Is.EqualTo(1));
         Assert.That(build.TrainOn[0].TextIds, Is.Null);
         Assert.That(build.TrainOn[0].ScriptureRange, Is.Null);
         Assert.That(build.Pretranslate, Is.Not.Null);
-        Assert.That(build.Pretranslate!.Count, Is.EqualTo(1));
+        Assert.That(build.Pretranslate.Count, Is.EqualTo(1));
         Assert.That(build.Pretranslate[0].TextIds, Is.Null);
         Assert.That(build.Pretranslate[0].ScriptureRange, Is.Null);
 
@@ -1723,11 +1721,11 @@ public class TranslationEngineTests
         TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
         Assert.That(build, Is.Not.Null);
         Assert.That(build.TrainOn, Is.Not.Null);
-        Assert.That(build.TrainOn!.Count, Is.EqualTo(1));
+        Assert.That(build.TrainOn.Count, Is.EqualTo(1));
         Assert.That(build.TrainOn[0].TextIds, Is.Null);
         Assert.That(build.TrainOn[0].ScriptureRange, Is.Null);
         Assert.That(build.Pretranslate, Is.Not.Null);
-        Assert.That(build.Pretranslate!.Count, Is.EqualTo(1));
+        Assert.That(build.Pretranslate.Count, Is.EqualTo(1));
         Assert.That(build.Pretranslate[0].TextIds, Is.Null);
         Assert.That(build.Pretranslate[0].ScriptureRange, Is.Null);
 
@@ -1852,7 +1850,7 @@ public class TranslationEngineTests
             build = await client.StartBuildAsync(engineId, tbc);
         });
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
+        Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
     }
 
     [Test]
@@ -1959,7 +1957,7 @@ public class TranslationEngineTests
             Queue queue = await client.GetQueueAsync("Echo");
         });
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex!.StatusCode, Is.EqualTo(403));
+        Assert.That(ex.StatusCode, Is.EqualTo(403));
     }
 
     [Test]
@@ -1983,7 +1981,7 @@ public class TranslationEngineTests
             Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync("Nmt", "abc");
         });
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex!.StatusCode, Is.EqualTo(403));
+        Assert.That(ex.StatusCode, Is.EqualTo(403));
     }
 
     [Test]

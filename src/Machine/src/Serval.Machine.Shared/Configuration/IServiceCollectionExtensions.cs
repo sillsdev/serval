@@ -25,7 +25,7 @@ public static class IServiceCollectionExtensions
         builder.AddServiceOptions(configuration.GetSection(ServiceOptions.Key));
         builder.AddSharedFileOptions(configuration.GetSection(SharedFileOptions.Key));
         builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
-        builder.AddWordAlignmentEngineOptions(configuration.GetSection(WordAlignmentEngineOptions.Key));
+        builder.AddStatisticalEngineOptions(configuration.GetSection(StatisticalEngineOptions.Key));
         builder.AddClearMLOptions(configuration.GetSection(ClearMLOptions.Key));
         builder.AddDistributedReaderWriterLockOptions(configuration.GetSection(DistributedReaderWriterLockOptions.Key));
         builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));

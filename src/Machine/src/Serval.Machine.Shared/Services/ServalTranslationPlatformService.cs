@@ -104,7 +104,7 @@ public class ServalTranslationPlatformService(
         );
     }
 
-    public async Task InsertInferencesAsync(
+    public async Task InsertInferenceResultsAsync(
         string engineId,
         Stream pretranslationsStream,
         CancellationToken cancellationToken = default
@@ -129,7 +129,7 @@ public class ServalTranslationPlatformService(
             ServalTranslationPlatformOutboxConstants.OutboxId,
             ServalTranslationPlatformOutboxConstants.IncrementTrainEngineCorpusSize,
             engineId,
-            new IncrementTrainEngineCorpusSizeRequest { EngineId = engineId, Count = count },
+            new IncrementEngineCorpusSizeRequest { EngineId = engineId, Count = count },
             cancellationToken: cancellationToken
         );
     }

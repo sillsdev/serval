@@ -1,4 +1,4 @@
-namespace Serval.Shared.Contracts;
+namespace Serval.Shared.Models;
 
 public record ParallelCorpusFilter
 {

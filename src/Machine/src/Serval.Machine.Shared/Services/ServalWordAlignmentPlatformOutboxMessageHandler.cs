@@ -52,7 +52,7 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                     cancellationToken: cancellationToken
                 );
                 break;
-            case ServalWordAlignmentPlatformOutboxConstants.InsertInferences:
+            case ServalWordAlignmentPlatformOutboxConstants.InsertInferenceResults:
                 IAsyncEnumerable<Models.WordAlignment> wordAlignments = JsonSerializer
                     .DeserializeAsyncEnumerable<Models.WordAlignment>(
                         contentStream!,
@@ -85,8 +85,8 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                 }
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.IncrementTrainEngineCorpusSize:
-                await _client.IncrementTrainEngineCorpusSizeAsync(
-                    JsonSerializer.Deserialize<IncrementTrainEngineCorpusSizeRequest>(content!),
+                await _client.IncrementEngineCorpusSizeAsync(
+                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content!),
                     cancellationToken: cancellationToken
                 );
                 break;

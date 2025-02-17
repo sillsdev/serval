@@ -16,18 +16,7 @@ public abstract class ModelFactoryBase : IModelFactory
         throw new NotImplementedException();
     }
 
-    public void Cleanup(string engineDir)
-    {
-        if (!Directory.Exists(engineDir))
-            return;
-        DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "lm"));
-        DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "tm"));
-        string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
-        if (File.Exists(smtConfigFileName))
-            File.Delete(smtConfigFileName);
-        if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
-            Directory.Delete(engineDir);
-    }
+    public abstract void Cleanup(string engineDir);
 
     public async Task UpdateEngineFromAsync(
         string engineDir,
