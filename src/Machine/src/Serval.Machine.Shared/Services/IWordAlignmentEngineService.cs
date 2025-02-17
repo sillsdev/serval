@@ -15,7 +15,7 @@ public interface IWordAlignmentEngineService
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<WordAlignmentResult> GetBestWordAlignmentAsync(
+    Task<WordAlignmentResult> AlignAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,

@@ -34,7 +34,7 @@ public class StatisticalEngineServiceTests
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
         // ensure that the model was loaded before training
-        await env.Service.GetBestWordAlignmentAsync(EngineId1, "esto es una prueba.", "this is a test.");
+        await env.Service.AlignAsync(EngineId1, "esto es una prueba.", "this is a test.");
         await env.Service.StartBuildAsync(
             EngineId1,
             BuildId1,
@@ -76,7 +76,7 @@ public class StatisticalEngineServiceTests
         Assert.That(engine.BuildRevision, Is.EqualTo(2));
         // check if model was reloaded upon first use after training
         env.WordAlignmentModel.ClearReceivedCalls();
-        await env.Service.GetBestWordAlignmentAsync(EngineId1, "esto es una prueba.", "this is a test.");
+        await env.Service.AlignAsync(EngineId1, "esto es una prueba.", "this is a test.");
         env.WordAlignmentModel.Received().Dispose();
     }
 
@@ -127,14 +127,10 @@ public class StatisticalEngineServiceTests
     }
 
     [Test]
-    public async Task GetBestWordAlignment()
+    public async Task AlignAsync()
     {
         using var env = new TestEnvironment();
-        WordAlignmentResult result = await env.Service.GetBestWordAlignmentAsync(
-            EngineId1,
-            "esto es una prueba.",
-            "this is a test."
-        );
+        WordAlignmentResult result = await env.Service.AlignAsync(EngineId1, "esto es una prueba.", "this is a test.");
         Assert.That(string.Join(' ', result.TargetTokens), Is.EqualTo("this is a test ."));
         Assert.That(result.Confidences, Has.Count.EqualTo(5));
         Assert.That(result.Alignment.First().SourceIndex, Is.EqualTo(0));
@@ -192,7 +188,7 @@ public class StatisticalEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.Statistical.ToString(),
+                            EngineType = EngineType.Statistical,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -244,7 +240,7 @@ public class StatisticalEngineServiceTests
         }
 
         public StatisticalEngineService Service { get; private set; }
-        public WordAlignmentEngineStateService StateService { get; private set; }
+        public StatisticalEngineStateService StateService { get; private set; }
         public MemoryRepository<WordAlignmentEngine> Engines { get; }
         public IWordAlignmentModelFactory WordAlignmentModelFactory { get; }
         public ITrainer WordAlignmentBatchTrainer { get; }
@@ -307,14 +303,14 @@ public class StatisticalEngineServiceTests
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
         }
 
-        private WordAlignmentEngineStateService CreateStateService()
+        private StatisticalEngineStateService CreateStateService()
         {
-            var options = Substitute.For<IOptionsMonitor<WordAlignmentEngineOptions>>();
-            options.CurrentValue.Returns(new WordAlignmentEngineOptions());
-            return new WordAlignmentEngineStateService(
+            var options = Substitute.For<IOptionsMonitor<StatisticalEngineOptions>>();
+            options.CurrentValue.Returns(new StatisticalEngineOptions());
+            return new StatisticalEngineStateService(
                 WordAlignmentModelFactory,
                 options,
-                Substitute.For<ILogger<WordAlignmentEngineStateService>>()
+                Substitute.For<ILogger<StatisticalEngineStateService>>()
             );
         }
 
@@ -322,7 +318,7 @@ public class StatisticalEngineServiceTests
         {
             return new StatisticalEngineService(
                 _lockFactory,
-                new[] { PlatformService },
+                PlatformService,
                 new MemoryDataAccessContext(),
                 Engines,
                 StateService,
@@ -454,7 +450,7 @@ public class StatisticalEngineServiceTests
                 if (jobType == typeof(WordAlignmentPreprocessBuildJob))
                 {
                     return new WordAlignmentPreprocessBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<WordAlignmentPreprocessBuildJob>>(),
@@ -468,12 +464,12 @@ public class StatisticalEngineServiceTests
                 }
                 if (jobType == typeof(StatisticalPostprocessBuildJob))
                 {
-                    var engineOptions = Substitute.For<IOptionsMonitor<WordAlignmentEngineOptions>>();
-                    engineOptions.CurrentValue.Returns(new WordAlignmentEngineOptions());
+                    var engineOptions = Substitute.For<IOptionsMonitor<StatisticalEngineOptions>>();
+                    engineOptions.CurrentValue.Returns(new StatisticalEngineOptions());
                     var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
                     buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new StatisticalPostprocessBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
@@ -488,7 +484,7 @@ public class StatisticalEngineServiceTests
                 if (jobType == typeof(StatisticalTrainBuildJob))
                 {
                     return new StatisticalTrainBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,

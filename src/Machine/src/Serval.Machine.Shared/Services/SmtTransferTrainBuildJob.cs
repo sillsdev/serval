@@ -1,7 +1,7 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferTrainBuildJob(
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
     IBuildJobService<TranslationEngine> buildJobService,
@@ -10,14 +10,7 @@ public class SmtTransferTrainBuildJob(
     ITruecaserFactory truecaserFactory,
     ISmtModelFactory smtModelFactory,
     ITransferEngineFactory transferEngineFactory
-)
-    : HangfireBuildJob<TranslationEngine>(
-        platformServices.First(ps => ps.EngineGroup == EngineGroup.Translation),
-        engines,
-        dataAccessContext,
-        buildJobService,
-        logger
-    )
+) : HangfireBuildJob<TranslationEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
     private static readonly JsonSerializerOptions JsonSerializerOptions =

@@ -1,10 +1,10 @@
 ﻿namespace Serval.Machine.Shared.Configuration;
 
-public class WordAlignmentModelOptions
+public class ThotWordAlignmentModelOptions
 {
     public const string Key = "WordAlignmentModel";
 
-    public WordAlignmentModelOptions()
+    public ThotWordAlignmentModelOptions()
     {
         string installDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
         NewModelFile = Path.Combine(installDir, "thot-new-model.zip");

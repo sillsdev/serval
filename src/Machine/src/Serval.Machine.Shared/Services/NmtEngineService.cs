@@ -1,7 +1,7 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class NmtEngineService(
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
     IDataAccessContext dataAccessContext,
     IRepository<TranslationEngine> engines,
     IBuildJobService<TranslationEngine> buildJobService,
@@ -10,9 +10,7 @@ public class NmtEngineService(
     ISharedFileService sharedFileService
 ) : ITranslationEngineService
 {
-    private readonly IPlatformService _platformService = platformServices.First(ps =>
-        ps.EngineGroup == EngineGroup.Translation
-    );
+    private readonly IPlatformService _platformService = platformService;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IBuildJobService<TranslationEngine> _buildJobService = buildJobService;

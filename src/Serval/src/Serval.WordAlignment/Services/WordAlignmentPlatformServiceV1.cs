@@ -265,8 +265,8 @@ public class WordAlignmentPlatformServiceV1(
         return Empty;
     }
 
-    public override async Task<Empty> IncrementTrainEngineCorpusSize(
-        IncrementTrainEngineCorpusSizeRequest request,
+    public override async Task<Empty> IncrementEngineCorpusSize(
+        IncrementEngineCorpusSizeRequest request,
         ServerCallContext context
     )
     {

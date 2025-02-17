@@ -1,8 +1,8 @@
 ﻿namespace Serval.Machine.Shared.Configuration;
 
-public class WordAlignmentEngineOptions
+public class StatisticalEngineOptions
 {
-    public const string Key = "WordAlignmentEngine";
+    public const string Key = "StatisticalEngine";
 
     public string EnginesDir { get; set; } = "word_alignment_engines";
     public TimeSpan EngineCommitFrequency { get; set; } = TimeSpan.FromMinutes(5);

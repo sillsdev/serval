@@ -1,7 +1,7 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class StatisticalPostprocessBuildJob(
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
     IRepository<WordAlignmentEngine> engines,
     IDataAccessContext dataAccessContext,
     IBuildJobService<WordAlignmentEngine> buildJobService,
@@ -10,10 +10,10 @@ public class StatisticalPostprocessBuildJob(
     IDistributedReaderWriterLockFactory lockFactory,
     IWordAlignmentModelFactory wordAlignmentModelFactory,
     IOptionsMonitor<BuildJobOptions> buildOptions,
-    IOptionsMonitor<WordAlignmentEngineOptions> engineOptions
+    IOptionsMonitor<StatisticalEngineOptions> engineOptions
 )
     : PostprocessBuildJob<WordAlignmentEngine>(
-        platformServices.First(ps => ps.EngineGroup == EngineGroup.WordAlignment),
+        platformService,
         engines,
         dataAccessContext,
         buildJobService,
@@ -23,7 +23,7 @@ public class StatisticalPostprocessBuildJob(
     )
 {
     private readonly IWordAlignmentModelFactory _wordAlignmentModelFactory = wordAlignmentModelFactory;
-    private readonly IOptionsMonitor<WordAlignmentEngineOptions> _engineOptions = engineOptions;
+    private readonly IOptionsMonitor<StatisticalEngineOptions> _engineOptions = engineOptions;
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
 
     protected override async Task DoWorkAsync(
@@ -43,7 +43,7 @@ public class StatisticalPostprocessBuildJob(
             )
         )
         {
-            await PlatformService.InsertInferencesAsync(engineId, wordAlignmentStream, cancellationToken);
+            await PlatformService.InsertInferenceResultsAsync(engineId, wordAlignmentStream, cancellationToken);
         }
 
         int additionalCorpusSize = await SaveModelAsync(engineId, buildId);

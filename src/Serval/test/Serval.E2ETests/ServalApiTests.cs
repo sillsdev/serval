@@ -6,9 +6,7 @@ namespace Serval.E2ETests;
 [Category("E2E")]
 public class ServalApiTests
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private ServalClientHelper _helperClient;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
@@ -58,7 +56,7 @@ public class ServalApiTests
         ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
         await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
         await _helperClient.BuildEngineAsync(engineId);
-        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
+        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
             engineId,
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "espíritu verdad" }
         );
@@ -317,7 +315,7 @@ public class ServalApiTests
             await _helperClient.TranslationEnginesClient.GetWordGraphAsync(smtEngineId, "verdad");
         });
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex!.StatusCode, Is.EqualTo(409));
+        Assert.That(ex.StatusCode, Is.EqualTo(409));
 
         //Add corpus
         var corpus1 = await _helperClient.MakeParallelTextCorpus(["2JN.txt", "3JN.txt"], "es", "en", false);
@@ -513,7 +511,7 @@ public class ServalApiTests
             new WordAlignmentCorpusConfig() { ParallelCorpusId = corpusId }
         ];
         string buildId = await _helperClient.BuildEngineAsync(engineId);
-        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
+        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
             engineId,
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "spirit truth" }
         );

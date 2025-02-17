@@ -4,21 +4,19 @@ namespace Serval.Machine.Shared.Services;
 
 public class StatisticalEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
     IDataAccessContext dataAccessContext,
     IRepository<WordAlignmentEngine> engines,
-    WordAlignmentEngineStateService stateService,
+    StatisticalEngineStateService stateService,
     IBuildJobService<WordAlignmentEngine> buildJobService,
     IClearMLQueueService clearMLQueueService
 ) : IWordAlignmentEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
-    private readonly IPlatformService _platformService = platformServices.First(ps =>
-        ps.EngineGroup == EngineGroup.WordAlignment
-    );
+    private readonly IPlatformService _platformService = platformService;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<WordAlignmentEngine> _engines = engines;
-    private readonly WordAlignmentEngineStateService _stateService = stateService;
+    private readonly StatisticalEngineStateService _stateService = stateService;
     private readonly IBuildJobService<WordAlignmentEngine> _buildJobService = buildJobService;
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
 
@@ -49,12 +47,12 @@ public class StatisticalEngineService(
             cancellationToken: cancellationToken
         );
 
-        WordAlignmentEngineState state = _stateService.Get(engineId);
+        StatisticalEngineState state = _stateService.Get(engineId);
         state.InitNew();
         return wordAlignmentEngine;
     }
 
-    public async Task<WordAlignmentResult> GetBestWordAlignmentAsync(
+    public async Task<WordAlignmentResult> AlignAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -62,7 +60,7 @@ public class StatisticalEngineService(
     )
     {
         WordAlignmentEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
-        WordAlignmentEngineState state = _stateService.Get(engineId);
+        StatisticalEngineState state = _stateService.Get(engineId);
         if (state.IsMarkedForDeletion)
             throw new InvalidOperationException("Engine is marked for deletion.");
 
@@ -78,7 +76,6 @@ public class StatisticalEngineService(
                 IReadOnlyList<string> targetTokens = tokenizer.Tokenize(targetSegment).ToList();
                 IReadOnlyCollection<SIL.Machine.Corpora.AlignedWordPair> wordPairs =
                     wordAlignmentModel.GetBestAlignedWordPairs(sourceTokens, targetTokens);
-                wordAlignmentModel.ComputeAlignedWordPairScores(sourceTokens, targetTokens, wordPairs);
                 return new WordAlignmentResult()
                 {
                     SourceTokens = { sourceTokens },
@@ -97,7 +94,7 @@ public class StatisticalEngineService(
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
         // there is no way to cancel this call
-        WordAlignmentEngineState state = _stateService.Get(engineId);
+        StatisticalEngineState state = _stateService.Get(engineId);
         state.IsMarkedForDeletion = true;
 
         await CancelBuildJobAsync(engineId, cancellationToken);
@@ -139,7 +136,7 @@ public class StatisticalEngineService(
         if (building)
             throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
-        WordAlignmentEngineState state = _stateService.Get(engineId);
+        StatisticalEngineState state = _stateService.Get(engineId);
         state.Touch();
     }
 
@@ -149,7 +146,7 @@ public class StatisticalEngineService(
         if (!building)
             throw new InvalidOperationException("The engine is not currently building.");
 
-        WordAlignmentEngineState state = _stateService.Get(engineId);
+        StatisticalEngineState state = _stateService.Get(engineId);
         state.Touch();
     }
 

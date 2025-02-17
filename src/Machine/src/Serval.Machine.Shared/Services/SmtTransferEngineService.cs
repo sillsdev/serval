@@ -2,7 +2,7 @@
 
 public class SmtTransferEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
     IDataAccessContext dataAccessContext,
     IRepository<TranslationEngine> engines,
     IRepository<TrainSegmentPair> trainSegmentPairs,
@@ -12,9 +12,7 @@ public class SmtTransferEngineService(
 ) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
-    private readonly IPlatformService _platformService = platformServices.First(ps =>
-        ps.EngineGroup == EngineGroup.Translation
-    );
+    private readonly IPlatformService _platformService = platformService;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;

@@ -753,14 +753,14 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                     [
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.Nmt.ToString(),
+                            EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.SmtTransfer.ToString(),
+                            EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -817,7 +817,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                 case EngineType.Nmt:
                 {
                     return new NmtPreprocessBuildJob(
-                        new[] { PlatformService },
+                        PlatformService,
                         Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
@@ -830,7 +830,7 @@ Target one, chapter one, verse seven and eight. Target one, chapter one, verse n
                 case EngineType.SmtTransfer:
                 {
                     return new SmtTransferPreprocessBuildJob(
-                        new[] { PlatformService },
+                        PlatformService,
                         Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
