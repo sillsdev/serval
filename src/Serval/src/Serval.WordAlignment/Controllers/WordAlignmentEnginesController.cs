@@ -87,7 +87,7 @@ public class WordAlignmentEnginesController(
     /// The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
     /// ### echo-word-alignment
     /// The echo-word-alignment engine has full coverage of all endpoints. Endpoints like create and build return empty responses.
-    /// Endpoints like get-word-alignment echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
+    /// Endpoints like align echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
     /// ## Sample request:
     ///
     ///     {
@@ -163,7 +163,7 @@ public class WordAlignmentEnginesController(
     /// <response code="409">The engine needs to be built before it can alignment segments.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadWordAlignmentEngines)]
-    [HttpPost("{id}/get-word-alignment")]
+    [HttpPost("{id}/align")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -172,7 +172,7 @@ public class WordAlignmentEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<WordAlignmentResultDto>> GetWordAlignmentAsync(
+    public async Task<ActionResult<WordAlignmentResultDto>> AlignAsync(
         [NotNull] string id,
         [FromBody] WordAlignmentRequestDto wordAlignmentRequest,
         CancellationToken cancellationToken

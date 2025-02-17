@@ -1,7 +1,7 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferPreprocessBuildJob(
-    IEnumerable<IPlatformService> platformServices,
+    [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
     ILogger<SmtTransferPreprocessBuildJob> logger,
@@ -12,7 +12,7 @@ public class SmtTransferPreprocessBuildJob(
     IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
     : PreprocessBuildJob<TranslationEngine>(
-        platformServices.First(ps => ps.EngineGroup == EngineGroup.Translation),
+        platformService,
         engines,
         dataAccessContext,
         logger,

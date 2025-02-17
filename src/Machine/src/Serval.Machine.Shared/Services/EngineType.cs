@@ -13,9 +13,9 @@ public enum EngineGroup
     WordAlignment
 }
 
-public static class EngineTypeMethods
+public static class EngineTypeExtensions
 {
-    public static EngineGroup ToEngineGroup(EngineType engineType)
+    public static EngineGroup ToEngineGroup(this EngineType engineType)
     {
         return engineType switch
         {

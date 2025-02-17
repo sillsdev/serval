@@ -2,14 +2,14 @@
 
 namespace Serval.Machine.Shared.Services;
 
-public class WordAlignmentEngineState(
+public class StatisticalEngineState(
     IWordAlignmentModelFactory wordAlignmentModelFactory,
-    IOptionsMonitor<WordAlignmentEngineOptions> options,
+    IOptionsMonitor<StatisticalEngineOptions> options,
     string engineId
 ) : DisposableBase
 {
     private readonly IWordAlignmentModelFactory _wordAlignmentModelFactory = wordAlignmentModelFactory;
-    private readonly IOptionsMonitor<WordAlignmentEngineOptions> _options = options;
+    private readonly IOptionsMonitor<StatisticalEngineOptions> _options = options;
     private readonly AsyncLock _lock = new();
 
     private IWordAlignmentModel? _wordAlignmentModel;

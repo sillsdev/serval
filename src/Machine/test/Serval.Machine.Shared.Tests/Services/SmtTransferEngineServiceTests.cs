@@ -278,14 +278,14 @@ public class SmtTransferEngineServiceTests
                     [
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.Nmt.ToString().ToString(),
+                            EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
                         new ClearMLBuildQueue()
                         {
-                            EngineType = EngineType.SmtTransfer.ToString(),
+                            EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
@@ -421,7 +421,7 @@ public class SmtTransferEngineServiceTests
         {
             return new SmtTransferEngineService(
                 _lockFactory,
-                new[] { PlatformService },
+                PlatformService,
                 new MemoryDataAccessContext(),
                 Engines,
                 TrainSegmentPairs,
@@ -682,7 +682,7 @@ public class SmtTransferEngineServiceTests
                 if (jobType == typeof(SmtTransferPreprocessBuildJob))
                 {
                     return new SmtTransferPreprocessBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
@@ -703,7 +703,7 @@ public class SmtTransferEngineServiceTests
                     var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
                     buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new SmtTransferPostprocessBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
@@ -720,7 +720,7 @@ public class SmtTransferEngineServiceTests
                 if (jobType == typeof(SmtTransferTrainBuildJob))
                 {
                     return new SmtTransferTrainBuildJob(
-                        new[] { _env.PlatformService },
+                        _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,

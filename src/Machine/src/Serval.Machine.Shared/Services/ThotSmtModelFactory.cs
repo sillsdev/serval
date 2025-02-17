@@ -47,4 +47,17 @@ public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) :
             Directory.CreateDirectory(engineDir);
         ZipFile.ExtractToDirectory(_options.CurrentValue.NewModelFile, engineDir);
     }
+
+    public override void Cleanup(string engineDir)
+    {
+        if (!Directory.Exists(engineDir))
+            return;
+        DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "lm"));
+        DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "tm"));
+        string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
+        if (File.Exists(smtConfigFileName))
+            File.Delete(smtConfigFileName);
+        if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
+            Directory.Delete(engineDir);
+    }
 }
