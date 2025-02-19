@@ -2,7 +2,7 @@ namespace Serval.Machine.Shared.Services;
 
 public class StatisticalEngineCommitService(
     IServiceProvider services,
-    IOptionsMonitor<StatisticalWordAlignmentEngineOptions> engineOptions,
+    IOptionsMonitor<StatisticalEngineOptions> engineOptions,
     StatisticalEngineStateService stateService,
     ILogger<StatisticalEngineCommitService> logger
 )
@@ -13,7 +13,7 @@ public class StatisticalEngineCommitService(
         logger
     )
 {
-    private readonly IOptionsMonitor<StatisticalWordAlignmentEngineOptions> _engineOptions = engineOptions;
+    private readonly IOptionsMonitor<StatisticalEngineOptions> _engineOptions = engineOptions;
     private readonly StatisticalEngineStateService _stateService = stateService;
     private readonly ILogger<StatisticalEngineCommitService> _logger = logger;
 

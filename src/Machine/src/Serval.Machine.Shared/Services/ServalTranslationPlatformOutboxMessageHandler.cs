@@ -18,43 +18,48 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
         CancellationToken cancellationToken = default
     )
     {
-        ArgumentNullException.ThrowIfNull(content);
         switch (method)
         {
             case ServalTranslationPlatformOutboxConstants.BuildStarted:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildStartedAsync(
-                    JsonSerializer.Deserialize<BuildStartedRequest>(content!, _jsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildStartedRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.BuildCompleted:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildCompletedAsync(
-                    JsonSerializer.Deserialize<BuildCompletedRequest>(content!, _jsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildCompletedRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.BuildCanceled:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildCanceledAsync(
-                    JsonSerializer.Deserialize<BuildCanceledRequest>(content!, _jsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildCanceledRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.BuildFaulted:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildFaultedAsync(
-                    JsonSerializer.Deserialize<BuildFaultedRequest>(content!, _jsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildFaultedRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.BuildRestarting:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildRestartingAsync(
-                    JsonSerializer.Deserialize<BuildRestartingRequest>(content!, _jsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildRestartingRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.InsertPretranslations:
+                ArgumentNullException.ThrowIfNull(contentStream);
                 IAsyncEnumerable<Pretranslation> pretranslations = JsonSerializer
                     .DeserializeAsyncEnumerable<Pretranslation>(
-                        contentStream!,
+                        contentStream,
                         _jsonSerializerOptions,
                         cancellationToken
                     )
@@ -81,8 +86,9 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
                 }
                 break;
             case ServalTranslationPlatformOutboxConstants.IncrementTrainEngineCorpusSize:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.IncrementEngineCorpusSizeAsync(
-                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content!),
+                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content),
                     cancellationToken: cancellationToken
                 );
                 break;

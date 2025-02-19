@@ -10,7 +10,7 @@ public class StatisticalPostprocessBuildJob(
     IDistributedReaderWriterLockFactory lockFactory,
     IWordAlignmentModelFactory wordAlignmentModelFactory,
     IOptionsMonitor<BuildJobOptions> buildOptions,
-    IOptionsMonitor<StatisticalWordAlignmentEngineOptions> engineOptions
+    IOptionsMonitor<StatisticalEngineOptions> engineOptions
 )
     : PostprocessBuildJob<WordAlignmentEngine>(
         platformService,
@@ -23,7 +23,7 @@ public class StatisticalPostprocessBuildJob(
     )
 {
     private readonly IWordAlignmentModelFactory _wordAlignmentModelFactory = wordAlignmentModelFactory;
-    private readonly IOptionsMonitor<StatisticalWordAlignmentEngineOptions> _engineOptions = engineOptions;
+    private readonly IOptionsMonitor<StatisticalEngineOptions> _engineOptions = engineOptions;
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
 
     protected override async Task DoWorkAsync(

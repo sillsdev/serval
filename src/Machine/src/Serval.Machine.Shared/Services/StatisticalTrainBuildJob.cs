@@ -26,6 +26,10 @@ public class StatisticalTrainBuildJob(
         CancellationToken cancellationToken
     )
     {
+        string? modelType = null;
+        if (buildOptions is not null)
+            modelType = (string?)JsonSerializer.Deserialize<JsonObject>(buildOptions)?["model_type"];
+
         using TempDirectory tempDir = new(buildId);
         string corpusDir = Path.Combine(tempDir.Path, "corpus");
         await DownloadDataAsync(buildId, corpusDir, cancellationToken);
@@ -37,11 +41,11 @@ public class StatisticalTrainBuildJob(
 
         // train word alignment model
         string engineDir = Path.Combine(tempDir.Path, "engine");
-        int trainCount = await TrainAsync(buildId, engineDir, parallelCorpus, cancellationToken);
+        int trainCount = await TrainAsync(buildId, engineDir, parallelCorpus, modelType, cancellationToken);
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        await GenerateWordAlignmentsAsync(buildId, engineDir, cancellationToken);
+        await GenerateWordAlignmentsAsync(buildId, engineDir, modelType, cancellationToken);
 
         bool canceling = !await BuildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Hangfire,
@@ -99,12 +103,18 @@ public class StatisticalTrainBuildJob(
         string buildId,
         string engineDir,
         IParallelTextCorpus parallelCorpus,
+        string? modelType,
         CancellationToken cancellationToken
     )
     {
         _wordAlignmentFactory.InitNew(engineDir);
         LatinWordTokenizer tokenizer = new();
-        using ITrainer wordAlignmentTrainer = _wordAlignmentFactory.CreateTrainer(engineDir, tokenizer, parallelCorpus);
+        using ITrainer wordAlignmentTrainer = _wordAlignmentFactory.CreateTrainer(
+            engineDir,
+            tokenizer,
+            parallelCorpus,
+            modelType
+        );
         cancellationToken.ThrowIfCancellationRequested();
 
         var progress = new BuildProgress(PlatformService, buildId);
@@ -127,6 +137,7 @@ public class StatisticalTrainBuildJob(
     private async Task GenerateWordAlignmentsAsync(
         string buildId,
         string engineDir,
+        string? modelType,
         CancellationToken cancellationToken
     )
     {
@@ -147,7 +158,7 @@ public class StatisticalTrainBuildJob(
 
         LatinWordTokenizer tokenizer = new();
         LatinWordDetokenizer detokenizer = new();
-        using IWordAlignmentModel wordAlignmentModel = _wordAlignmentFactory.Create(engineDir);
+        using IWordAlignmentModel wordAlignmentModel = _wordAlignmentFactory.Create(engineDir, modelType);
         await foreach (IReadOnlyList<Models.WordAlignment> batch in BatchAsync(wordAlignments))
         {
             (IReadOnlyList<string> Source, IReadOnlyList<string> Target)[] segments = batch

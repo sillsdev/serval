@@ -7021,7 +7021,7 @@ namespace Serval.Client
         /// <br/>The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
         /// <br/>### echo-word-alignment
         /// <br/>The echo-word-alignment engine has full coverage of all endpoints. Endpoints like create and build return empty responses.
-        /// <br/>Endpoints like get-word-alignment echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
+        /// <br/>Endpoints like align echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -7062,7 +7062,7 @@ namespace Serval.Client
         /// <param name="wordAlignmentRequest">The source and target segment</param>
         /// <returns>The word alignment result</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentResult> GetWordAlignmentAsync(string id, WordAlignmentRequest wordAlignmentRequest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<WordAlignmentResult> AlignAsync(string id, WordAlignmentRequest wordAlignmentRequest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -7384,7 +7384,7 @@ namespace Serval.Client
         /// <br/>The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
         /// <br/>### echo-word-alignment
         /// <br/>The echo-word-alignment engine has full coverage of all endpoints. Endpoints like create and build return empty responses.
-        /// <br/>Endpoints like get-word-alignment echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
+        /// <br/>Endpoints like align echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -7704,7 +7704,7 @@ namespace Serval.Client
         /// <param name="wordAlignmentRequest">The source and target segment</param>
         /// <returns>The word alignment result</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentResult> GetWordAlignmentAsync(string id, WordAlignmentRequest wordAlignmentRequest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<WordAlignmentResult> AlignAsync(string id, WordAlignmentRequest wordAlignmentRequest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -7727,10 +7727,10 @@ namespace Serval.Client
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines/{id}/get-word-alignment"
+                    // Operation Path: "word-alignment/engines/{id}/align"
                     urlBuilder_.Append("word-alignment/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/get-word-alignment");
+                    urlBuilder_.Append("/align");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 

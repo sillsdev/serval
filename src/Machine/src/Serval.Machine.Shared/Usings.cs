@@ -58,3 +58,4 @@ global using SIL.ServiceToolkit.Models;
 global using SIL.ServiceToolkit.Services;
 global using SIL.ServiceToolkit.Utils;
 global using SIL.WritingSystems;
+global using YamlDotNet.RepresentationModel;

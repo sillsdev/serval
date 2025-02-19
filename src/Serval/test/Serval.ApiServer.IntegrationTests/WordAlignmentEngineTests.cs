@@ -346,7 +346,7 @@ public class WordAlignmentEngineTests
                 await _env.Builds.InsertAsync(
                     new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
                 );
-                Client.WordAlignmentResult result = await client.GetWordAlignmentAsync(
+                Client.WordAlignmentResult result = await client.AlignAsync(
                     engineId,
                     new WordAlignmentRequest { SourceSegment = "This is a test.", TargetSegment = "This is a test." }
                 );
@@ -364,7 +364,7 @@ public class WordAlignmentEngineTests
                     .Returns(CreateAsyncUnaryCall<GetWordAlignmentResponse>(StatusCode.Aborted));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.GetWordAlignmentAsync(
+                    await client.AlignAsync(
                         engineId,
                         new WordAlignmentRequest
                         {
@@ -381,7 +381,7 @@ public class WordAlignmentEngineTests
             {
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.GetWordAlignmentAsync(
+                    await client.AlignAsync(
                         engineId,
                         new WordAlignmentRequest
                         {

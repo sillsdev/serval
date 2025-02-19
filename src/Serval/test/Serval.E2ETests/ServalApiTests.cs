@@ -56,7 +56,7 @@ public class ServalApiTests
         ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
         await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, train_corpus, false);
         await _helperClient.BuildEngineAsync(engineId);
-        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
+        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
             engineId,
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "espíritu verdad" }
         );
@@ -511,7 +511,7 @@ public class ServalApiTests
             new WordAlignmentCorpusConfig() { ParallelCorpusId = corpusId }
         ];
         string buildId = await _helperClient.BuildEngineAsync(engineId);
-        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.GetWordAlignmentAsync(
+        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
             engineId,
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "spirit truth" }
         );

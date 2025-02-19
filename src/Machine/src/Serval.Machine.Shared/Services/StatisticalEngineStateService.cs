@@ -4,12 +4,12 @@ namespace Serval.Machine.Shared.Services;
 
 public class StatisticalEngineStateService(
     IWordAlignmentModelFactory wordAlignmentModelFactory,
-    IOptionsMonitor<StatisticalWordAlignmentEngineOptions> options,
+    IOptionsMonitor<StatisticalEngineOptions> options,
     ILogger<StatisticalEngineStateService> logger
 ) : DisposableBase
 {
     private readonly IWordAlignmentModelFactory _wordAlignmentModelFactory = wordAlignmentModelFactory;
-    private readonly IOptionsMonitor<StatisticalWordAlignmentEngineOptions> _options = options;
+    private readonly IOptionsMonitor<StatisticalEngineOptions> _options = options;
     private readonly ILogger<StatisticalEngineStateService> _logger = logger;
 
     private readonly ConcurrentDictionary<string, StatisticalEngineState> _engineStates =

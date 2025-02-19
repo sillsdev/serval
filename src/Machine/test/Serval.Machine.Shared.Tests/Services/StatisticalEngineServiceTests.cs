@@ -305,8 +305,8 @@ public class StatisticalEngineServiceTests
 
         private StatisticalEngineStateService CreateStateService()
         {
-            var options = Substitute.For<IOptionsMonitor<StatisticalWordAlignmentEngineOptions>>();
-            options.CurrentValue.Returns(new StatisticalWordAlignmentEngineOptions());
+            var options = Substitute.For<IOptionsMonitor<StatisticalEngineOptions>>();
+            options.CurrentValue.Returns(new StatisticalEngineOptions());
             return new StatisticalEngineStateService(
                 WordAlignmentModelFactory,
                 options,
@@ -464,8 +464,8 @@ public class StatisticalEngineServiceTests
                 }
                 if (jobType == typeof(StatisticalPostprocessBuildJob))
                 {
-                    var engineOptions = Substitute.For<IOptionsMonitor<StatisticalWordAlignmentEngineOptions>>();
-                    engineOptions.CurrentValue.Returns(new StatisticalWordAlignmentEngineOptions());
+                    var engineOptions = Substitute.For<IOptionsMonitor<StatisticalEngineOptions>>();
+                    engineOptions.CurrentValue.Returns(new StatisticalEngineOptions());
                     var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
                     buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new StatisticalPostprocessBuildJob(

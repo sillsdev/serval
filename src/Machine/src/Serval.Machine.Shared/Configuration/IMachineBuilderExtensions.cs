@@ -19,9 +19,9 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddWordAlignmentEngineOptions(this IMachineBuilder builder, IConfiguration config)
+    public static IMachineBuilder AddStatisticalEngineOptions(this IMachineBuilder builder, IConfiguration config)
     {
-        builder.Services.Configure<StatisticalWordAlignmentEngineOptions>(config);
+        builder.Services.Configure<StatisticalEngineOptions>(config);
         return builder;
     }
 
@@ -201,7 +201,7 @@ public static class IMachineBuilderExtensions
             {
                 case EngineType.SmtTransfer:
                     builder.Services.AddSingleton<SmtTransferEngineStateService>();
-                    builder.AddThot();
+                    builder.AddThotSmtTransferEngine();
                     queues.Add("smt_transfer");
                     break;
                 case EngineType.Nmt:
@@ -209,7 +209,7 @@ public static class IMachineBuilderExtensions
                     break;
                 case EngineType.Statistical:
                     builder.Services.AddSingleton<StatisticalEngineStateService>();
-                    builder.AddThot();
+                    builder.AddThotStatisticalWordAlignment();
                     queues.Add("statistical");
                     break;
                 default:
@@ -444,7 +444,7 @@ public static class IMachineBuilderExtensions
             switch (engineType)
             {
                 case EngineType.SmtTransfer:
-                    builder.AddThot();
+                    builder.AddThotSmtTransferEngine();
                     builder.Services.AddHostedService<SmtTransferEngineCommitService>();
                     builder.Services.AddScoped<ITranslationEngineService, SmtTransferEngineService>();
                     break;
@@ -452,7 +452,7 @@ public static class IMachineBuilderExtensions
                     builder.Services.AddScoped<ITranslationEngineService, NmtEngineService>();
                     break;
                 default:
-                    throw new InvalidEnumArgumentException(engineType.ToString(), (int)engineType, typeof(EngineType));
+                    throw new InvalidEnumArgumentException(nameof(engineType), (int)engineType, typeof(EngineType));
             }
         }
 
@@ -481,7 +481,7 @@ public static class IMachineBuilderExtensions
             {
                 case EngineType.Statistical:
                     builder.Services.AddSingleton<StatisticalEngineStateService>();
-                    builder.AddThot();
+                    builder.AddThotStatisticalWordAlignment();
                     builder.Services.AddScoped<IWordAlignmentEngineService, StatisticalEngineService>();
                     builder.Services.AddHostedService<StatisticalEngineCommitService>();
                     break;
@@ -493,17 +493,15 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddThot(this IMachineBuilder builder)
+    public static IMachineBuilder AddThotStatisticalWordAlignment(this IMachineBuilder builder)
     {
-        try
-        {
-            builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
-            builder.AddWordAlignmentModel();
-        }
-        catch (ArgumentException)
-        {
-            // if this has already been run, don't run it again
-        }
+        builder.AddWordAlignmentModel();
+        return builder;
+    }
+
+    public static IMachineBuilder AddThotSmtTransferEngine(this IMachineBuilder builder)
+    {
+        builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
         return builder;
     }
 
@@ -529,8 +527,8 @@ public static class IMachineBuilderExtensions
         var smtTransferEngineOptions = new SmtTransferEngineOptions();
         builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
         string? smtDriveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
-        var statisticalEngineOptions = new StatisticalWordAlignmentEngineOptions();
-        builder.Configuration.GetSection(StatisticalWordAlignmentEngineOptions.Key).Bind(statisticalEngineOptions);
+        var statisticalEngineOptions = new StatisticalEngineOptions();
+        builder.Configuration.GetSection(StatisticalEngineOptions.Key).Bind(statisticalEngineOptions);
         string? statisticsDriveLetter = Path.GetPathRoot(statisticalEngineOptions.EnginesDir)?[..1];
         if (smtDriveLetter is null || statisticsDriveLetter is null)
             throw new InvalidOperationException("SMT Engine and Statistical directory is required");
