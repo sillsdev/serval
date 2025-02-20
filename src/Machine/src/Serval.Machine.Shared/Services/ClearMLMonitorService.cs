@@ -95,7 +95,12 @@ public class ClearMLMonitorService(
                     await UpdateTrainJobStatus(
                         platformService,
                         engine.CurrentBuild.BuildId,
-                        new ProgressStatus(step: 0, percentCompleted: 0.0),
+                        new ProgressStatus(
+                            step: 0,
+                            percentCompleted: 0.0,
+                            fineTuneProgress: 0.0,
+                            inferenceProgress: 0.0
+                        ),
                         //CurrentBuild.BuildId should always equal the corresponding task.Name
                         queuePositionsPerEngineType[engine.Type][engine.CurrentBuild.BuildId] + 1,
                         cancellationToken
@@ -130,13 +135,26 @@ public class ClearMLMonitorService(
                         case ClearMLTaskStatus.InProgress:
                         {
                             double? percentCompleted = null;
+                            double? fineTuneProgress = null;
+                            double? inferenceProgress = null;
+
                             if (task.Runtime.TryGetValue("progress", out string? progressStr))
                                 percentCompleted = int.Parse(progressStr, CultureInfo.InvariantCulture) / 100.0;
+                            if (task.Runtime.TryGetValue("finetune", out string? fineTuneStr))
+                                fineTuneProgress = int.Parse(fineTuneStr, CultureInfo.InvariantCulture) / 100.0;
+                            if (task.Runtime.TryGetValue("inference", out string? inferenceStr))
+                                inferenceProgress = int.Parse(inferenceStr, CultureInfo.InvariantCulture) / 100.0;
                             task.Runtime.TryGetValue("message", out string? message);
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(task.LastIteration ?? 0, percentCompleted, message),
+                                new ProgressStatus(
+                                    task.LastIteration ?? 0,
+                                    percentCompleted,
+                                    fineTuneProgress,
+                                    inferenceProgress,
+                                    message
+                                ),
                                 queueDepth: 0,
                                 cancellationToken
                             );
@@ -149,7 +167,13 @@ public class ClearMLMonitorService(
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(task.LastIteration ?? 0, percentCompleted: 1.0, message),
+                                new ProgressStatus(
+                                    task.LastIteration ?? 0,
+                                    percentCompleted: 1.0,
+                                    fineTuneProgress: 0.5,
+                                    inferenceProgress: 0.5,
+                                    message
+                                ),
                                 queueDepth: 0,
                                 cancellationToken
                             );

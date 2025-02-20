@@ -1,4 +1,4 @@
-namespace Serval.Translation.Models;
+﻿namespace Serval.Translation.Models;
 
 public record Build : IInitializableEntity
 {
@@ -10,6 +10,8 @@ public record Build : IInitializableEntity
     public IReadOnlyList<PretranslateCorpus>? Pretranslate { get; init; }
     public int Step { get; init; }
     public double? PercentCompleted { get; init; }
+    public double? FineTuneProgress { get; init; }
+    public double? InferenceProgress { get; init; }
     public string? Message { get; init; }
     public int? QueueDepth { get; init; }
     public JobState State { get; init; } = JobState.Pending;

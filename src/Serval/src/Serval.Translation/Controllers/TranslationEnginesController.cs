@@ -1591,6 +1591,8 @@ public class TranslationEnginesController(
             Pretranslate = source.Pretranslate?.Select(s => Map(source.EngineRef, s)).ToList(),
             Step = source.Step,
             PercentCompleted = source.PercentCompleted,
+            FineTuneProgress = source.FineTuneProgress,
+            InferenceProgress = source.InferenceProgress,
             Message = source.Message,
             QueueDepth = source.QueueDepth,
             State = source.State,

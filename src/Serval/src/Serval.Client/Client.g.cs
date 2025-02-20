@@ -7763,6 +7763,12 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? PercentCompleted { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("fineTuneProgress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? FineTuneProgress { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("inferenceProgress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? InferenceProgress { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Message { get; set; } = default!;
 
