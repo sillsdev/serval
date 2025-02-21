@@ -11,7 +11,7 @@ public class SmtTransferPreprocessBuildJob(
     IRepository<TrainSegmentPair> trainSegmentPairs,
     IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
-    : PreprocessBuildJob<TranslationEngine>(
+    : TranslationPreprocessBuildJob(
         platformService,
         engines,
         dataAccessContext,
