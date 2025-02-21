@@ -1,6 +1,6 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>
+public abstract class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>
     where TEngine : ITrainingEngine
 {
     protected static readonly JsonWriterOptions InferenceWriterOptions = new() { Indented = true };
@@ -62,19 +62,16 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
             buildOptions,
             cancellationToken
         );
-        // Log summary of build data
-        JsonObject buildPreprocessSummary =
-            new()
-            {
-                { "Event", "BuildPreprocess" },
-                { "EngineId", engineId },
-                { "BuildId", buildId },
-                { "NumTrainRows", trainCount },
-                { "NumInferenceRows", inferenceCount },
-                { "SourceLanguageResolved", srcLang },
-                { "TargetLanguageResolved", trgLang }
-            };
-        Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
+
+        await UpdateBuildExecutionData(
+            engineId,
+            buildId,
+            trainCount,
+            inferenceCount,
+            srcLang,
+            trgLang,
+            cancellationToken
+        );
 
         if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
         {
@@ -82,13 +79,6 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
                 $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
             );
         }
-
-        var executionData = new Dictionary<string, string>()
-        {
-            { "trainCount", trainCount.ToString(CultureInfo.InvariantCulture) },
-            { "inference", inferenceCount.ToString(CultureInfo.InvariantCulture) }
-        };
-        await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -105,68 +95,22 @@ public class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyLi
             throw new OperationCanceledException();
     }
 
-    protected virtual async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
+    protected abstract Task UpdateBuildExecutionData(
+        string engineId,
+        string buildId,
+        int trainCount,
+        int inferenceCount,
+        string srcLang,
+        string trgLang,
+        CancellationToken cancellationToken
+    );
+
+    protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<ParallelCorpus> corpora,
         string? buildOptions,
         CancellationToken cancellationToken
-    )
-    {
-        JsonObject? buildOptionsObject = null;
-        if (buildOptions is not null)
-            buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
-
-        await using StreamWriter sourceTrainWriter =
-            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken));
-        await using StreamWriter targetTrainWriter =
-            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
-
-        await using Stream pretranslateStream = await SharedFileService.OpenWriteAsync(
-            $"builds/{buildId}/pretranslate.src.json",
-            cancellationToken
-        );
-        await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, InferenceWriterOptions);
-
-        int trainCount = 0;
-        int pretranslateCount = 0;
-        pretranslateWriter.WriteStartArray();
-        await ParallelCorpusPreprocessingService.PreprocessAsync(
-            corpora,
-            async row =>
-            {
-                if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
-                {
-                    await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                    await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                }
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-                    trainCount++;
-            },
-            async (row, isInTrainingData, corpus) =>
-            {
-                if (row.SourceSegment.Length > 0 && !isInTrainingData)
-                {
-                    pretranslateWriter.WriteStartObject();
-                    pretranslateWriter.WriteString("corpusId", corpus.Id);
-                    pretranslateWriter.WriteString("textId", row.TextId);
-                    pretranslateWriter.WriteStartArray("refs");
-                    foreach (object rowRef in row.Refs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteString("translation", row.SourceSegment);
-                    pretranslateWriter.WriteEndObject();
-                    pretranslateCount++;
-                }
-                if (pretranslateWriter.BytesPending > 1024 * 1024)
-                    await pretranslateWriter.FlushAsync();
-            },
-            (bool?)buildOptionsObject?["use_key_terms"] ?? true
-        );
-
-        pretranslateWriter.WriteEndArray();
-
-        return (trainCount, pretranslateCount);
-    }
+    );
 
     protected override async Task CleanupAsync(
         string engineId,

@@ -10,7 +10,7 @@ public class NmtPreprocessBuildJob(
     ILanguageTagService languageTagService,
     IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
-    : PreprocessBuildJob<TranslationEngine>(
+    : TranslationPreprocessBuildJob(
         platformService,
         engines,
         dataAccessContext,
