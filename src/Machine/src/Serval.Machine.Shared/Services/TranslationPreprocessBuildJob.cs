@@ -1,15 +1,15 @@
-﻿namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Shared.Services;
 
-public class WordAlignmentPreprocessBuildJob(
-    [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
-    IRepository<WordAlignmentEngine> engines,
+public class TranslationPreprocessBuildJob(
+    [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
+    IRepository<TranslationEngine> engines,
     IDataAccessContext dataAccessContext,
-    ILogger<WordAlignmentPreprocessBuildJob> logger,
-    IBuildJobService<WordAlignmentEngine> buildJobService,
+    ILogger<PreprocessBuildJob<TranslationEngine>> logger,
+    IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
 )
-    : PreprocessBuildJob<WordAlignmentEngine>(
+    : PreprocessBuildJob<TranslationEngine>(
         platformService,
         engines,
         dataAccessContext,
@@ -35,58 +35,58 @@ public class WordAlignmentPreprocessBuildJob(
         await using StreamWriter targetTrainWriter =
             new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
 
-        await using Stream wordAlignmentStream = await SharedFileService.OpenWriteAsync(
-            $"builds/{buildId}/word_alignments.inputs.json",
+        await using Stream pretranslateStream = await SharedFileService.OpenWriteAsync(
+            $"builds/{buildId}/pretranslate.src.json",
             cancellationToken
         );
-        await using Utf8JsonWriter wordAlignmentWriter = new(wordAlignmentStream, InferenceWriterOptions);
+        await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, InferenceWriterOptions);
 
         int trainCount = 0;
-        int inferenceCount = 0;
-        wordAlignmentWriter.WriteStartArray();
+        int pretranslateCount = 0;
+        pretranslateWriter.WriteStartArray();
         await ParallelCorpusPreprocessingService.PreprocessAsync(
             corpora,
             async row =>
             {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
                 {
                     await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
                     await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                    trainCount++;
                 }
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                    trainCount++;
             },
             async (row, isInTrainingData, corpus) =>
             {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0 && !isInTrainingData)
+                if (row.SourceSegment.Length > 0 && !isInTrainingData)
                 {
-                    wordAlignmentWriter.WriteStartObject();
-                    wordAlignmentWriter.WriteString("corpusId", corpus.Id);
-                    wordAlignmentWriter.WriteString("textId", row.TextId);
-                    wordAlignmentWriter.WriteStartArray("refs");
+                    pretranslateWriter.WriteStartObject();
+                    pretranslateWriter.WriteString("corpusId", corpus.Id);
+                    pretranslateWriter.WriteString("textId", row.TextId);
+                    pretranslateWriter.WriteStartArray("refs");
                     foreach (object rowRef in row.Refs)
-                        wordAlignmentWriter.WriteStringValue(rowRef.ToString());
-                    wordAlignmentWriter.WriteEndArray();
-                    wordAlignmentWriter.WriteString("source", row.SourceSegment);
-                    wordAlignmentWriter.WriteString("target", row.TargetSegment);
-                    wordAlignmentWriter.WriteEndObject();
-                    inferenceCount++;
+                        pretranslateWriter.WriteStringValue(rowRef.ToString());
+                    pretranslateWriter.WriteEndArray();
+                    pretranslateWriter.WriteString("translation", row.SourceSegment);
+                    pretranslateWriter.WriteEndObject();
+                    pretranslateCount++;
                 }
-                if (wordAlignmentWriter.BytesPending > 1024 * 1024)
-                    await wordAlignmentWriter.FlushAsync();
+                if (pretranslateWriter.BytesPending > 1024 * 1024)
+                    await pretranslateWriter.FlushAsync();
             },
             (bool?)buildOptionsObject?["use_key_terms"] ?? true
         );
 
-        wordAlignmentWriter.WriteEndArray();
+        pretranslateWriter.WriteEndArray();
 
-        return (trainCount, inferenceCount);
+        return (trainCount, pretranslateCount);
     }
 
     protected override async Task UpdateBuildExecutionData(
         string engineId,
         string buildId,
         int trainCount,
-        int wordAlignCount,
+        int pretranslateCount,
         string srcLang,
         string trgLang,
         CancellationToken cancellationToken
@@ -100,7 +100,7 @@ public class WordAlignmentPreprocessBuildJob(
                 { "EngineId", engineId },
                 { "BuildId", buildId },
                 { "NumTrainRows", trainCount },
-                { "NumWordAlignRows", wordAlignCount },
+                { "NumPretranslateRows", pretranslateCount },
                 { "SourceLanguageResolved", srcLang },
                 { "TargetLanguageResolved", trgLang }
             };
@@ -108,7 +108,7 @@ public class WordAlignmentPreprocessBuildJob(
         var executionData = new Dictionary<string, string>()
         {
             { "trainCount", trainCount.ToString(CultureInfo.InvariantCulture) },
-            { "wordAlignCount", wordAlignCount.ToString(CultureInfo.InvariantCulture) }
+            { "pretranslateCount", pretranslateCount.ToString(CultureInfo.InvariantCulture) }
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }
