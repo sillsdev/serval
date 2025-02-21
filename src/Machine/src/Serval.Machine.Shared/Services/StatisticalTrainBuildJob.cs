@@ -28,7 +28,7 @@ public class StatisticalTrainBuildJob(
     {
         string? modelType = null;
         if (buildOptions is not null)
-            modelType = (string?)JsonSerializer.Deserialize<JsonObject>(buildOptions)?["model_type"];
+            modelType = (string?)JsonSerializer.Deserialize<JsonObject>(buildOptions)?["thot_align"]?["model_type"];
 
         using TempDirectory tempDir = new(buildId);
         string corpusDir = Path.Combine(tempDir.Path, "corpus");

@@ -46,30 +46,6 @@ public class ThotWordAlignmentModelFactory(IOptionsMonitor<ThotWordAlignmentMode
         return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
     }
 
-    public ITrainer CreateTrainer(
-        string engineDir,
-        ITokenizer<string, int, string> tokenizer,
-        IParallelTextCorpus corpus
-    )
-    {
-        var modelPath = Path.Combine(engineDir, "src_trg");
-        ThotWordAlignmentModelType modelType = GetEngineModelType(modelPath);
-        var directModel = ThotWordAlignmentModel.Create(modelType);
-        directModel.SourceTokenizer = tokenizer;
-        directModel.TargetTokenizer = tokenizer;
-        directModel.Load(modelPath + "_invswm");
-
-        var inverseModel = ThotWordAlignmentModel.Create(modelType);
-        inverseModel.SourceTokenizer = tokenizer;
-        inverseModel.TargetTokenizer = tokenizer;
-        inverseModel.Load(modelPath + "_swm");
-
-        ITrainer directTrainer = directModel.CreateTrainer(corpus);
-        ITrainer inverseTrainer = inverseModel.CreateTrainer(corpus.Invert());
-
-        return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
-    }
-
     public override void InitNew(string engineDir)
     {
         if (!Directory.Exists(engineDir))
@@ -92,27 +68,6 @@ public class ThotWordAlignmentModelFactory(IOptionsMonitor<ThotWordAlignmentMode
             Directory.Delete(engineDir);
     }
 
-    private static ThotWordAlignmentModelType GetThotWordAlignmentModelType(string modelType)
-    {
-        switch (modelType)
-        {
-            case "fastAlign":
-            case "fast_align":
-                return ThotWordAlignmentModelType.FastAlign;
-            case "ibm1":
-                return ThotWordAlignmentModelType.Ibm1;
-            case "ibm2":
-                return ThotWordAlignmentModelType.Ibm2;
-            default:
-            case "hmm":
-                return ThotWordAlignmentModelType.Hmm;
-            case "ibm3":
-                return ThotWordAlignmentModelType.Ibm3;
-            case "ibm4":
-                return ThotWordAlignmentModelType.Ibm4;
-        }
-    }
-
     private static ThotWordAlignmentModelType GetEngineModelType(string modelPath, string? modelTypeStr = null)
     {
         ThotWordAlignmentModelType modelType = ThotWordAlignmentModelType.Hmm;
@@ -121,7 +76,7 @@ public class ThotWordAlignmentModelFactory(IOptionsMonitor<ThotWordAlignmentMode
 
         if (modelTypeStr is not null)
         {
-            modelType = GetThotWordAlignmentModelType(modelTypeStr);
+            modelType = ThotWordAlignmentModelTypeHelpers.GetThotWordAlignmentModelType(modelTypeStr);
         }
         else if (File.Exists(configPath))
         {
@@ -132,7 +87,7 @@ public class ThotWordAlignmentModelFactory(IOptionsMonitor<ThotWordAlignmentMode
                 var root = (YamlMappingNode)yaml.Documents.First().RootNode;
                 modelTypeStr = (string?)root[new YamlScalarNode("model")];
                 if (modelTypeStr != null)
-                    modelType = GetThotWordAlignmentModelType(modelTypeStr);
+                    modelType = ThotWordAlignmentModelTypeHelpers.GetThotWordAlignmentModelType(modelTypeStr);
             }
         }
         return modelType;
