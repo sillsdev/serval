@@ -100,7 +100,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                             textBehavior: UpdateUsfmTextBehavior.PreferExisting
+                            textBehavior: UpdateUsfmTextBehavior.PreferExisting
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -109,7 +109,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                             textBehavior: UpdateUsfmTextBehavior.PreferNew
+                            textBehavior: UpdateUsfmTextBehavior.PreferNew
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -127,7 +127,7 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                             textBehavior: UpdateUsfmTextBehavior.StripExisting
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting
                         ) ?? "";
                     break;
             }
@@ -151,14 +151,14 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                             textBehavior: UpdateUsfmTextBehavior.StripExisting
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
                             textId,
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                             textBehavior: UpdateUsfmTextBehavior.StripExisting
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting
                         ) ?? "";
             }
         }
