@@ -387,8 +387,7 @@ public class WordAlignmentEnginesController(
     ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
     /// * **SourceTokens**: the tokenized source segment
     /// * **TargetTokens**: the tokenized target segment
-    /// * **Confidences**: the confidence of the alignment on a scale from 0 to 1
-    /// * **Alignment**: a list of aligned word pairs
+    /// * **Alignment**: a list of aligned word pairs with associated scores
     ///
     /// Word alignments can be filtered by text id if provided.
     /// Only word alignments for the most recent successful build of the engine are returned.
@@ -984,14 +983,18 @@ public class WordAlignmentEnginesController(
         {
             SourceTokens = source.SourceTokens.ToList(),
             TargetTokens = source.TargetTokens.ToList(),
-            Confidences = source.Confidences.Select(c => Math.Round(c, 8)).ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
         };
     }
 
     private AlignedWordPairDto Map(AlignedWordPair source)
     {
-        return new AlignedWordPairDto() { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
+        return new AlignedWordPairDto()
+        {
+            SourceIndex = source.SourceIndex,
+            TargetIndex = source.TargetIndex,
+            Score = source.Score
+        };
     }
 
     private static WordAlignmentDto Map(Models.WordAlignment source)
@@ -1002,12 +1005,12 @@ public class WordAlignmentEnginesController(
             Refs = source.Refs,
             SourceTokens = source.SourceTokens.ToList(),
             TargetTokens = source.TargetTokens.ToList(),
-            Confidences = source.Confidences.Select(c => Math.Round(c, 8)).ToList(),
             Alignment = source
                 .Alignment.Select(c => new AlignedWordPairDto()
                 {
                     SourceIndex = c.SourceIndex,
-                    TargetIndex = c.TargetIndex
+                    TargetIndex = c.TargetIndex,
+                    Score = c.Score
                 })
                 .ToList(),
         };

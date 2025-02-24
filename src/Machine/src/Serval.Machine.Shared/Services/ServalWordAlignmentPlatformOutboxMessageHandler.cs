@@ -74,7 +74,6 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                                 Refs = { wordAlignment.Refs },
                                 SourceTokens = { wordAlignment.SourceTokens },
                                 TargetTokens = { wordAlignment.TargetTokens },
-                                Confidences = { wordAlignment.Confidences },
                                 Alignment = { Map(wordAlignment.Alignment) }
                             },
                             cancellationToken
@@ -125,7 +124,6 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
             }
             string corpusId = "",
                 textId = "";
-            IReadOnlyList<double> confidences = [];
             IReadOnlyList<string> refs = [],
                 sourceTokens = [],
                 targetTokens = [];
@@ -144,10 +142,6 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                         case "text_id":
                             reader.Read();
                             textId = reader.GetString()!;
-                            break;
-                        case "confidences":
-                            reader.Read();
-                            confidences = JsonSerializer.Deserialize<IList<double>>(ref reader, options)!.ToArray();
                             break;
                         case "refs":
                             reader.Read();
@@ -178,7 +172,6 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                 TextId = textId,
                 Refs = refs,
                 Alignment = alignedWordPairs,
-                Confidences = confidences,
                 SourceTokens = sourceTokens,
                 TargetTokens = targetTokens
             };

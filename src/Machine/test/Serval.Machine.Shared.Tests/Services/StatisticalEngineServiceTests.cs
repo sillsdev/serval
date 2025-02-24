@@ -132,7 +132,6 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment();
         WordAlignmentResult result = await env.Service.AlignAsync(EngineId1, "esto es una prueba.", "this is a test.");
         Assert.That(string.Join(' ', result.TargetTokens), Is.EqualTo("this is a test ."));
-        Assert.That(result.Confidences, Has.Count.EqualTo(5));
         Assert.That(result.Alignment.First().SourceIndex, Is.EqualTo(0));
         Assert.That(result.Alignment.First().TargetIndex, Is.EqualTo(0));
     }

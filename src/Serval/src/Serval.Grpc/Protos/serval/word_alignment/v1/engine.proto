@@ -61,12 +61,12 @@ message GetQueueSizeResponse {
 message AlignedWordPair {
     int32 source_index = 1;
     int32 target_index = 2;
+    double score = 3;
 }
 
 message WordAlignmentResult {
     repeated string source_tokens = 1;
     repeated string target_tokens = 2;
-    repeated double confidences = 3;
     repeated AlignedWordPair alignment = 4;
 }
 
