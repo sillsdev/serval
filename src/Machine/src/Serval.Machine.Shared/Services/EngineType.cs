@@ -12,17 +12,3 @@ public enum EngineGroup
     Translation,
     WordAlignment
 }
-
-public static class EngineTypeExtensions
-{
-    public static EngineGroup ToEngineGroup(this EngineType engineType)
-    {
-        return engineType switch
-        {
-            EngineType.SmtTransfer => EngineGroup.Translation,
-            EngineType.Nmt => EngineGroup.Translation,
-            EngineType.Statistical => EngineGroup.WordAlignment,
-            _ => throw new ArgumentOutOfRangeException(nameof(engineType), engineType, null)
-        };
-    }
-}

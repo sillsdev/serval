@@ -727,7 +727,6 @@ public class WordAlignmentEngineTests
             SourceTokens = ["This", "is", "a", "test", "."],
             TargetTokens = ["This", "is", "a", "test", "."],
             Alignment = CreateNAlignedWordPair(5),
-            Confidences = [1, 1, 1, 1, 1],
             ModelRevision = 1
         };
         await _env.WordAlignments.InsertAsync(wordAlignment);
@@ -795,7 +794,6 @@ public class WordAlignmentEngineTests
             SourceTokens = ["This", "is", "a", "test", "."],
             TargetTokens = ["This", "is", "a", "test", "."],
             Alignment = CreateNAlignedWordPair(5),
-            Confidences = [1, 1, 1, 1, 1],
             ModelRevision = 1
         };
         await _env.WordAlignments.InsertAsync(wordAlignment);
@@ -827,7 +825,6 @@ public class WordAlignmentEngineTests
             SourceTokens = ["This", "is", "a", "test", "."],
             TargetTokens = ["This", "is", "a", "test", "."],
             Alignment = CreateNAlignedWordPair(5),
-            Confidences = [1, 1, 1, 1, 1],
             ModelRevision = 1
         };
         await _env.WordAlignments.InsertAsync(wordAlignment);
@@ -1412,7 +1409,6 @@ public class WordAlignmentEngineTests
             SourceTokens = ["This", "is", "a", "test", "."],
             TargetTokens = ["This", "is", "a", "test", "."],
             Alignment = CreateNAlignedWordPair(5),
-            Confidences = [1, 1, 1, 1, 1],
             ModelRevision = 1
         };
         await _env.WordAlignments.InsertAsync(wordAlignment);
@@ -1484,12 +1480,12 @@ public class WordAlignmentEngineTests
         _env.Dispose();
     }
 
-    private static IReadOnlyList<Shared.Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
+    private static IReadOnlyList<WordAlignment.Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
     {
-        var alignedWordPairs = new List<Shared.Models.AlignedWordPair>();
+        var alignedWordPairs = new List<WordAlignment.Models.AlignedWordPair>();
         for (int i = 0; i < numberOfAlignedWords; i++)
         {
-            alignedWordPairs.Add(new Shared.Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
+            alignedWordPairs.Add(new WordAlignment.Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
         }
         return alignedWordPairs;
     }
@@ -1532,7 +1528,6 @@ public class WordAlignmentEngineTests
             {
                 SourceTokens = { "This is a test .".Split() },
                 TargetTokens = { "This is a test .".Split() },
-                Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
                 Alignment =
                 {
                     new WordAlignment.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
