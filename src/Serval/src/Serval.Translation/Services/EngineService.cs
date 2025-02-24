@@ -737,9 +737,9 @@ public class EngineService(
         return source.Values.Cast<Contracts.TranslationSource>().ToHashSet();
     }
 
-    private Shared.Models.AlignedWordPair Map(V1.AlignedWordPair source)
+    private Models.AlignedWordPair Map(V1.AlignedWordPair source)
     {
-        return new Shared.Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
+        return new Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
     }
 
     private Models.Phrase Map(V1.Phrase source)

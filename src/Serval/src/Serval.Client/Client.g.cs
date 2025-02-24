@@ -7266,8 +7266,7 @@ namespace Serval.Client
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **SourceTokens**: the tokenized source segment
         /// <br/>* **TargetTokens**: the tokenized target segment
-        /// <br/>* **Confidences**: the confidence of the alignment on a scale from 0 to 1
-        /// <br/>* **Alignment**: a list of aligned word pairs
+        /// <br/>* **Alignment**: a list of aligned word pairs with associated scores
         /// <br/>            
         /// <br/>Word alignments can be filtered by text id if provided.
         /// <br/>Only word alignments for the most recent successful build of the engine are returned.
@@ -8535,8 +8534,7 @@ namespace Serval.Client
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **SourceTokens**: the tokenized source segment
         /// <br/>* **TargetTokens**: the tokenized target segment
-        /// <br/>* **Confidences**: the confidence of the alignment on a scale from 0 to 1
-        /// <br/>* **Alignment**: a list of aligned word pairs
+        /// <br/>* **Alignment**: a list of aligned word pairs with associated scores
         /// <br/>            
         /// <br/>Word alignments can be filtered by text id if provided.
         /// <br/>Only word alignments for the most recent successful build of the engine are returned.
@@ -10689,13 +10687,23 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required]
         public System.Collections.Generic.IList<string> TargetTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
-        [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<double> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<double>();
-
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
+        public System.Collections.Generic.IList<AlignedWordPair2> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair2>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AlignedWordPair2
+    {
+        [Newtonsoft.Json.JsonProperty("sourceIndex", Required = Newtonsoft.Json.Required.Always)]
+        public int SourceIndex { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetIndex", Required = Newtonsoft.Json.Required.Always)]
+        public int TargetIndex { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.Always)]
+        public double Score { get; set; } = default!;
 
     }
 
@@ -10786,13 +10794,9 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required]
         public System.Collections.Generic.IList<string> TargetTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
-        [Newtonsoft.Json.JsonProperty("confidences", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<double> Confidences { get; set; } = new System.Collections.ObjectModel.Collection<double>();
-
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
+        public System.Collections.Generic.IList<AlignedWordPair2> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair2>();
 
     }
 

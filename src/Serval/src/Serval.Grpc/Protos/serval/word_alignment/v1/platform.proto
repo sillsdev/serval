@@ -63,8 +63,7 @@ message InsertWordAlignmentsRequest {
     repeated string refs = 4;
     repeated string source_tokens = 5;
     repeated string target_tokens = 6;
-    repeated double confidences = 7;
-    repeated AlignedWordPair alignment = 8;
+    repeated AlignedWordPair alignment = 7;
 }
 
 message UpdateBuildExecutionDataRequest {

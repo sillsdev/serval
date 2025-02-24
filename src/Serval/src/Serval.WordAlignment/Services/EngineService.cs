@@ -437,14 +437,18 @@ public class EngineService(
         {
             SourceTokens = source.SourceTokens.ToList(),
             TargetTokens = source.TargetTokens.ToList(),
-            Confidences = source.Confidences.ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
         };
     }
 
-    private Shared.Models.AlignedWordPair Map(V1.AlignedWordPair source)
+    private Models.AlignedWordPair Map(V1.AlignedWordPair source)
     {
-        return new Shared.Models.AlignedWordPair { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
+        return new Models.AlignedWordPair
+        {
+            SourceIndex = source.SourceIndex,
+            TargetIndex = source.TargetIndex,
+            Score = source.Score
+        };
     }
 
     private V1.ParallelCorpus Map(

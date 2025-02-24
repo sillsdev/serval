@@ -80,8 +80,7 @@ public class StatisticalEngineService(
                 {
                     SourceTokens = { sourceTokens },
                     TargetTokens = { targetTokens },
-                    Alignment = { wordPairs.Select(Map) },
-                    Confidences = { wordPairs.Select(wp => wp.AlignmentScore).ToList() }
+                    Alignment = { wordPairs.Select(Map) }
                 };
             },
             cancellationToken: cancellationToken
@@ -191,7 +190,8 @@ public class StatisticalEngineService(
         return new WordAlignment.V1.AlignedWordPair
         {
             SourceIndex = alignedWordPair.SourceIndex,
-            TargetIndex = alignedWordPair.TargetIndex
+            TargetIndex = alignedWordPair.TargetIndex,
+            Score = alignedWordPair.TranslationScore
         };
     }
 }

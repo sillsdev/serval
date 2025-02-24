@@ -51,7 +51,6 @@ public class WordAlignmentEngineServiceV1(
             {
                 SourceTokens = { sourceTokens },
                 TargetTokens = { targetTokens },
-                Confidences = { Enumerable.Repeat(1.0, minLength) },
                 Alignment = { GenerateAlignedWordPairs(minLength) }
             }
         };
@@ -93,8 +92,7 @@ public class WordAlignmentEngineServiceV1(
                                             .Select(
                                                 (_, i) => new AlignedWordPair() { SourceIndex = i, TargetIndex = i }
                                             )
-                                    },
-                                    Confidences = { row.SourceSegment.Split().Select(_ => 1.0) }
+                                    }
                                 }
                             );
                             return Task.CompletedTask;

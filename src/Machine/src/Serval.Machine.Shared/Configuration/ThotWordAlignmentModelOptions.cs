@@ -2,7 +2,7 @@
 
 public class ThotWordAlignmentModelOptions
 {
-    public const string Key = "WordAlignmentModel";
+    public const string Key = "ThotWordAlignmentModel";
 
     public ThotWordAlignmentModelOptions()
     {

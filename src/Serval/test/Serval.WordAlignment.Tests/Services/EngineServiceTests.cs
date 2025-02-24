@@ -1201,7 +1201,6 @@ public class EngineServiceTests
             {
                 SourceTokens = { "esto es una prueba .".Split() },
                 TargetTokens = { "this is a test .".Split() },
-                Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
                 Alignment =
                 {
                     new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
@@ -1678,12 +1677,12 @@ public class EngineServiceTests
         }
     }
 
-    private static IReadOnlyList<Shared.Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
+    private static IReadOnlyList<Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
     {
-        var alignedWordPairs = new List<Shared.Models.AlignedWordPair>();
+        var alignedWordPairs = new List<Models.AlignedWordPair>();
         for (int i = 0; i < numberOfAlignedWords; i++)
         {
-            alignedWordPairs.Add(new Shared.Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
+            alignedWordPairs.Add(new Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
         }
         return alignedWordPairs;
     }
