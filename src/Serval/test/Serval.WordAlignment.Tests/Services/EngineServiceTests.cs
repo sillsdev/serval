@@ -1201,7 +1201,6 @@ public class EngineServiceTests
             {
                 SourceTokens = { "esto es una prueba .".Split() },
                 TargetTokens = { "this is a test .".Split() },
-                Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
                 Alignment =
                 {
                     new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },

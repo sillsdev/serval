@@ -727,7 +727,6 @@ public class WordAlignmentEngineTests
             SourceTokens = ["This", "is", "a", "test", "."],
             TargetTokens = ["This", "is", "a", "test", "."],
             Alignment = CreateNAlignedWordPair(5),
-            Confidences = [1, 1, 1, 1, 1],
             ModelRevision = 1
         };
         await _env.WordAlignments.InsertAsync(wordAlignment);
@@ -795,7 +794,6 @@ public class WordAlignmentEngineTests
             SourceTokens = ["This", "is", "a", "test", "."],
             TargetTokens = ["This", "is", "a", "test", "."],
             Alignment = CreateNAlignedWordPair(5),
-            Confidences = [1, 1, 1, 1, 1],
             ModelRevision = 1
         };
         await _env.WordAlignments.InsertAsync(wordAlignment);
@@ -827,7 +825,6 @@ public class WordAlignmentEngineTests
             SourceTokens = ["This", "is", "a", "test", "."],
             TargetTokens = ["This", "is", "a", "test", "."],
             Alignment = CreateNAlignedWordPair(5),
-            Confidences = [1, 1, 1, 1, 1],
             ModelRevision = 1
         };
         await _env.WordAlignments.InsertAsync(wordAlignment);
@@ -1412,7 +1409,6 @@ public class WordAlignmentEngineTests
             SourceTokens = ["This", "is", "a", "test", "."],
             TargetTokens = ["This", "is", "a", "test", "."],
             Alignment = CreateNAlignedWordPair(5),
-            Confidences = [1, 1, 1, 1, 1],
             ModelRevision = 1
         };
         await _env.WordAlignments.InsertAsync(wordAlignment);
@@ -1532,7 +1528,6 @@ public class WordAlignmentEngineTests
             {
                 SourceTokens = { "This is a test .".Split() },
                 TargetTokens = { "This is a test .".Split() },
-                Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
                 Alignment =
                 {
                     new WordAlignment.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },

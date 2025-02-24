@@ -42,6 +42,7 @@
 		<PackageReference Include="SIL.Machine.Translation.Thot" Version="3.5.2" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
 		<PackageReference Include="SIL.WritingSystems" Version="14.1.1" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
+		<PackageReference Include="YamlDotNet" Version="11.2.1" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -50,7 +51,6 @@
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj')" />
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
-		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Tool\SIL.Machine.Tool.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Tool\SIL.Machine.Tool.csproj')" />
 		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
 		<EmbeddedResource Include="data\flores200languages.csv" />
 	</ItemGroup>

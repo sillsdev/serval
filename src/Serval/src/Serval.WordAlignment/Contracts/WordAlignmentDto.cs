@@ -6,6 +6,5 @@ public record WordAlignmentDto
     public required IReadOnlyList<string> Refs { get; init; }
     public required IReadOnlyList<string> SourceTokens { get; init; }
     public required IReadOnlyList<string> TargetTokens { get; init; }
-    public required IReadOnlyList<double> Confidences { get; init; }
     public required IReadOnlyList<AlignedWordPairDto> Alignment { get; init; }
 }

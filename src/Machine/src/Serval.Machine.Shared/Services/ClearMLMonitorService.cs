@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using System.ComponentModel;
+
+namespace Serval.Machine.Shared.Services;
 
 public class ClearMLMonitorService(
     IServiceProvider services,
@@ -105,9 +107,20 @@ public class ClearMLMonitorService(
             var dataAccessContext = scope.ServiceProvider.GetRequiredService<IDataAccessContext>();
             foreach (ITrainingEngine engine in engineToBuildServiceDict.Keys)
             {
-                IPlatformService platformService = scope.ServiceProvider.GetKeyedService<IPlatformService>(
-                    engine.Type.ToEngineGroup()
-                )!;
+                IPlatformService platformService = scope.ServiceProvider.GetRequiredKeyedService<IPlatformService>(
+                    engine.Type switch
+                    {
+                        EngineType.SmtTransfer => EngineGroup.Translation,
+                        EngineType.Nmt => EngineGroup.Translation,
+                        EngineType.Statistical => EngineGroup.WordAlignment,
+                        _
+                            => throw new InvalidEnumArgumentException(
+                                nameof(engine.Type),
+                                (int)engine.Type,
+                                typeof(EngineType)
+                            )
+                    }
+                );
                 if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
                     continue;
 

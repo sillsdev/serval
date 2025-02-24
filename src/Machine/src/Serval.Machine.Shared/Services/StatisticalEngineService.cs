@@ -80,8 +80,7 @@ public class StatisticalEngineService(
                 {
                     SourceTokens = { sourceTokens },
                     TargetTokens = { targetTokens },
-                    Alignment = { wordPairs.Select(Map) },
-                    Confidences = { wordPairs.Select(wp => wp.AlignmentScore).ToList() }
+                    Alignment = { wordPairs.Select(Map) }
                 };
             },
             cancellationToken: cancellationToken

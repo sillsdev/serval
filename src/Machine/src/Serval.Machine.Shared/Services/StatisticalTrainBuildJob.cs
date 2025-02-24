@@ -177,8 +177,7 @@ public class StatisticalTrainBuildJob(
                     targetWriter,
                     wordAlignment with
                     {
-                        Alignment = alignedWordPairs,
-                        Confidences = alignedWordPairs.Select(wp => wp.AlignmentScore).ToArray()
+                        Alignment = alignedWordPairs
                     },
                     JsonSerializerOptions
                 );
