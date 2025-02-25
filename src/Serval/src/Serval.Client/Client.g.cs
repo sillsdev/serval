@@ -10547,7 +10547,21 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
+        public System.Collections.Generic.IList<AlignedWordPair2> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair2>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AlignedWordPair2
+    {
+        [Newtonsoft.Json.JsonProperty("sourceIndex", Required = Newtonsoft.Json.Required.Always)]
+        public int SourceIndex { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetIndex", Required = Newtonsoft.Json.Required.Always)]
+        public int TargetIndex { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.Always)]
+        public double Score { get; set; } = default!;
 
     }
 
@@ -10640,7 +10654,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
+        public System.Collections.Generic.IList<AlignedWordPair2> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair2>();
 
     }
 

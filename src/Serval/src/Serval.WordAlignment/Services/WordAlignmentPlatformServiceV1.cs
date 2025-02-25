@@ -308,7 +308,7 @@ public class WordAlignmentPlatformServiceV1(
                     SourceTokens = request.SourceTokens.ToList(),
                     TargetTokens = request.TargetTokens.ToList(),
                     Alignment = request
-                        .Alignment.Select(a => new Shared.Models.AlignedWordPair
+                        .Alignment.Select(a => new Models.AlignedWordPair
                         {
                             SourceIndex = a.SourceIndex,
                             TargetIndex = a.TargetIndex,

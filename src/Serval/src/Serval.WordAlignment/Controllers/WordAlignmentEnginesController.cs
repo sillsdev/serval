@@ -989,7 +989,12 @@ public class WordAlignmentEnginesController(
 
     private AlignedWordPairDto Map(AlignedWordPair source)
     {
-        return new AlignedWordPairDto() { SourceIndex = source.SourceIndex, TargetIndex = source.TargetIndex };
+        return new AlignedWordPairDto()
+        {
+            SourceIndex = source.SourceIndex,
+            TargetIndex = source.TargetIndex,
+            Score = source.Score
+        };
     }
 
     private static WordAlignmentDto Map(Models.WordAlignment source)
@@ -1004,7 +1009,8 @@ public class WordAlignmentEnginesController(
                 .Alignment.Select(c => new AlignedWordPairDto()
                 {
                     SourceIndex = c.SourceIndex,
-                    TargetIndex = c.TargetIndex
+                    TargetIndex = c.TargetIndex,
+                    Score = c.Score
                 })
                 .ToList(),
         };

@@ -190,7 +190,8 @@ public class StatisticalEngineService(
         return new WordAlignment.V1.AlignedWordPair
         {
             SourceIndex = alignedWordPair.SourceIndex,
-            TargetIndex = alignedWordPair.TargetIndex
+            TargetIndex = alignedWordPair.TargetIndex,
+            Score = alignedWordPair.TranslationScore
         };
     }
 }

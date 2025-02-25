@@ -1677,12 +1677,12 @@ public class EngineServiceTests
         }
     }
 
-    private static IReadOnlyList<Shared.Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
+    private static IReadOnlyList<Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
     {
-        var alignedWordPairs = new List<Shared.Models.AlignedWordPair>();
+        var alignedWordPairs = new List<Models.AlignedWordPair>();
         for (int i = 0; i < numberOfAlignedWords; i++)
         {
-            alignedWordPairs.Add(new Shared.Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
+            alignedWordPairs.Add(new Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
         }
         return alignedWordPairs;
     }

@@ -441,9 +441,9 @@ public class EngineService(
         };
     }
 
-    private Shared.Models.AlignedWordPair Map(V1.AlignedWordPair source)
+    private Models.AlignedWordPair Map(V1.AlignedWordPair source)
     {
-        return new Shared.Models.AlignedWordPair
+        return new Models.AlignedWordPair
         {
             SourceIndex = source.SourceIndex,
             TargetIndex = source.TargetIndex,

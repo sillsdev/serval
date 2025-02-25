@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 public class ClearMLMonitorService(
     IServiceProvider services,

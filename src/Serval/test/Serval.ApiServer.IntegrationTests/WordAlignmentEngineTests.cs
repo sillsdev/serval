@@ -1480,12 +1480,12 @@ public class WordAlignmentEngineTests
         _env.Dispose();
     }
 
-    private static IReadOnlyList<Shared.Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
+    private static IReadOnlyList<WordAlignment.Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
     {
-        var alignedWordPairs = new List<Shared.Models.AlignedWordPair>();
+        var alignedWordPairs = new List<WordAlignment.Models.AlignedWordPair>();
         for (int i = 0; i < numberOfAlignedWords; i++)
         {
-            alignedWordPairs.Add(new Shared.Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
+            alignedWordPairs.Add(new WordAlignment.Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
         }
         return alignedWordPairs;
     }
