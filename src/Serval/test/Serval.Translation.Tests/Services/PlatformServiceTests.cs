@@ -83,12 +83,16 @@ public class PlatformServiceTests
             {
                 BuildId = "b0",
                 QueueDepth = 1,
-                PercentCompleted = 0.5
+                PercentCompleted = 0.5,
+                FineTuneProgress = 0.25,
+                InferenceProgress = 0.3,
             },
             env.ServerCallContext
         );
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.EqualTo(1));
         Assert.That(env.Builds.Get("b0").PercentCompleted, Is.EqualTo(0.5));
+        Assert.That(env.Builds.Get("b0").FineTuneProgress, Is.EqualTo(0.25));
+        Assert.That(env.Builds.Get("b0").InferenceProgress, Is.EqualTo(0.3));
     }
 
     [Test]

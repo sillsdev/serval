@@ -21,8 +21,10 @@ message UpdateBuildStatusRequest {
     string build_id = 1;
     int32 step = 2;
     optional double percent_completed = 3;
-    optional string message = 4;
-    optional int32 queue_depth = 5;
+    optional double fine_tune_progress = 4;
+    optional double inference_progress = 5;
+    optional string message = 6;
+    optional int32 queue_depth = 7;
 }
 
 message BuildStartedRequest {

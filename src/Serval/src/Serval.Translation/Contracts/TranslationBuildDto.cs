@@ -1,4 +1,4 @@
-namespace Serval.Translation.Contracts;
+﻿namespace Serval.Translation.Contracts;
 
 public record TranslationBuildDto
 {
@@ -11,6 +11,9 @@ public record TranslationBuildDto
     public IReadOnlyList<PretranslateCorpusDto>? Pretranslate { get; init; }
     public required int Step { get; init; }
     public double? PercentCompleted { get; init; }
+    public double? FineTuneProgress { get; init; }
+    public double? InferenceProgress { get; init; }
+
     public string? Message { get; init; }
 
     public int? QueueDepth { get; init; }
