@@ -10,6 +10,6 @@ public static class ServalWordAlignmentPlatformOutboxConstants
     public const string BuildFaulted = "BuildFaulted";
     public const string BuildRestarting = "BuildRestarting";
     public const string IncrementTrainEngineCorpusSize = "IncrementTrainEngineCorpusSize";
-    public const string InsertInferenceResults = "InsertInferenceResults";
+    public const string InsertWordAlignmentResults = "InsertWordAlignmentResults";
     public const string UpdateBuildExecutionData = "UpdateBuildExecutionData";
 }
