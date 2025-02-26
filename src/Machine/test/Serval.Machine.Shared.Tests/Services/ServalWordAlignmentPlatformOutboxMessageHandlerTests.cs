@@ -1,10 +1,10 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Serval.Translation.V1;
+using Google.Protobuf.WellKnownTypes;
+using Serval.WordAlignment.V1;
 
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
-public class ServalPlatformOutboxMessageHandlerTests
+public class ServalWordAlignmentPlatformOutboxMessageHandlerTests
 {
     [Test]
     public async Task HandleMessageAsync_BuildStarted()
@@ -13,7 +13,7 @@ public class ServalPlatformOutboxMessageHandlerTests
 
         await env.Handler.HandleMessageAsync(
             "groupId",
-            ServalTranslationPlatformOutboxConstants.BuildStarted,
+            ServalWordAlignmentPlatformOutboxConstants.BuildStarted,
             JsonSerializer.Serialize(
                 new BuildStartedRequest { BuildId = "C" },
                 MessageOutboxOptions.JsonSerializerOptions
@@ -35,12 +35,14 @@ public class ServalPlatformOutboxMessageHandlerTests
                 stream,
                 new[]
                 {
-                    new Pretranslation
+                    new JsonObject
                     {
-                        CorpusId = "corpus1",
-                        TextId = "MAT",
-                        Refs = ["MAT 1:1"],
-                        Translation = "translation"
+                        { "corpusId", "corpus1" },
+                        { "textId", "MAT" },
+                        { "refs", new JsonArray(["MAT 1:1"]) },
+                        { "sourceTokens", new JsonArray(["sourceToken1"]) },
+                        { "targetTokens", new JsonArray(["targetToken1"]) },
+                        { "alignment", "0-0:1.0:1.0" }
                     }
                 },
                 MessageOutboxOptions.JsonSerializerOptions
@@ -48,22 +50,32 @@ public class ServalPlatformOutboxMessageHandlerTests
             stream.Seek(0, SeekOrigin.Begin);
             await env.Handler.HandleMessageAsync(
                 "engine1",
-                ServalTranslationPlatformOutboxConstants.InsertPretranslations,
+                ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignmentResults,
                 "engine1",
                 stream
             );
         }
 
-        _ = env.Client.Received(1).InsertPretranslations();
-        _ = env.PretranslationWriter.Received(1)
+        _ = env.Client.Received(1).InsertWordAlignments();
+        _ = env.WordAlignmentsWriter.Received(1)
             .WriteAsync(
-                new InsertPretranslationsRequest
+                new InsertWordAlignmentsRequest
                 {
                     EngineId = "engine1",
                     CorpusId = "corpus1",
                     TextId = "MAT",
                     Refs = { "MAT 1:1" },
-                    Translation = "translation"
+                    SourceTokens = { "sourceToken1" },
+                    TargetTokens = { "targetToken1" },
+                    Alignment =
+                    {
+                        new WordAlignment.V1.AlignedWordPair()
+                        {
+                            SourceIndex = 0,
+                            TargetIndex = 0,
+                            Score = 1.0
+                        }
+                    }
                 },
                 Arg.Any<CancellationToken>()
             );
@@ -73,7 +85,7 @@ public class ServalPlatformOutboxMessageHandlerTests
     {
         public TestEnvironment()
         {
-            Client = Substitute.For<TranslationPlatformApi.TranslationPlatformApiClient>();
+            Client = Substitute.For<WordAlignmentPlatformApi.WordAlignmentPlatformApiClient>();
             Client.BuildStartedAsync(Arg.Any<BuildStartedRequest>()).Returns(CreateEmptyUnaryCall());
             Client.BuildCanceledAsync(Arg.Any<BuildCanceledRequest>()).Returns(CreateEmptyUnaryCall());
             Client.BuildFaultedAsync(Arg.Any<BuildFaultedRequest>()).Returns(CreateEmptyUnaryCall());
@@ -81,12 +93,12 @@ public class ServalPlatformOutboxMessageHandlerTests
             Client
                 .IncrementEngineCorpusSizeAsync(Arg.Any<IncrementEngineCorpusSizeRequest>())
                 .Returns(CreateEmptyUnaryCall());
-            PretranslationWriter = Substitute.For<IClientStreamWriter<InsertPretranslationsRequest>>();
+            WordAlignmentsWriter = Substitute.For<IClientStreamWriter<InsertWordAlignmentsRequest>>();
             Client
-                .InsertPretranslations(cancellationToken: Arg.Any<CancellationToken>())
+                .InsertWordAlignments(cancellationToken: Arg.Any<CancellationToken>())
                 .Returns(
                     TestCalls.AsyncClientStreamingCall(
-                        PretranslationWriter,
+                        WordAlignmentsWriter,
                         Task.FromResult(new Empty()),
                         Task.FromResult(new Metadata()),
                         () => Status.DefaultSuccess,
@@ -95,12 +107,12 @@ public class ServalPlatformOutboxMessageHandlerTests
                     )
                 );
 
-            Handler = new ServalTranslationPlatformOutboxMessageHandler(Client);
+            Handler = new ServalWordAlignmentPlatformOutboxMessageHandler(Client);
         }
 
-        public TranslationPlatformApi.TranslationPlatformApiClient Client { get; }
-        public ServalTranslationPlatformOutboxMessageHandler Handler { get; }
-        public IClientStreamWriter<InsertPretranslationsRequest> PretranslationWriter { get; }
+        public WordAlignmentPlatformApi.WordAlignmentPlatformApiClient Client { get; }
+        public ServalWordAlignmentPlatformOutboxMessageHandler Handler { get; }
+        public IClientStreamWriter<InsertWordAlignmentsRequest> WordAlignmentsWriter { get; }
 
         private static AsyncUnaryCall<Empty> CreateEmptyUnaryCall()
         {

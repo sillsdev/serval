@@ -23,39 +23,45 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
         switch (method)
         {
             case ServalWordAlignmentPlatformOutboxConstants.BuildStarted:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildStartedAsync(
-                    JsonSerializer.Deserialize<BuildStartedRequest>(content!),
+                    JsonSerializer.Deserialize<BuildStartedRequest>(content, JsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.BuildCompleted:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildCompletedAsync(
-                    JsonSerializer.Deserialize<BuildCompletedRequest>(content!),
+                    JsonSerializer.Deserialize<BuildCompletedRequest>(content, JsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.BuildCanceled:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildCanceledAsync(
-                    JsonSerializer.Deserialize<BuildCanceledRequest>(content!),
+                    JsonSerializer.Deserialize<BuildCanceledRequest>(content, JsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.BuildFaulted:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildFaultedAsync(
-                    JsonSerializer.Deserialize<BuildFaultedRequest>(content!),
+                    JsonSerializer.Deserialize<BuildFaultedRequest>(content, JsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.BuildRestarting:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildRestartingAsync(
-                    JsonSerializer.Deserialize<BuildRestartingRequest>(content!),
+                    JsonSerializer.Deserialize<BuildRestartingRequest>(content, JsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
-            case ServalWordAlignmentPlatformOutboxConstants.InsertInferenceResults:
+            case ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignmentResults:
+                ArgumentNullException.ThrowIfNull(contentStream);
                 IAsyncEnumerable<Models.WordAlignment> wordAlignments = JsonSerializer
                     .DeserializeAsyncEnumerable<Models.WordAlignment>(
-                        contentStream!,
+                        contentStream,
                         JsonSerializerOptions,
                         cancellationToken
                     )
@@ -84,8 +90,9 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                 }
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.IncrementTrainEngineCorpusSize:
+                ArgumentNullException.ThrowIfNull(content);
                 await _client.IncrementEngineCorpusSizeAsync(
-                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content!),
+                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content, JsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
@@ -103,7 +110,8 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
             yield return new WordAlignment.V1.AlignedWordPair
             {
                 SourceIndex = alignedWordPair.SourceIndex,
-                TargetIndex = alignedWordPair.TargetIndex
+                TargetIndex = alignedWordPair.TargetIndex,
+                Score = alignedWordPair.TranslationScore
             };
         }
     }
@@ -135,11 +143,11 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                     string s = reader.GetString()!;
                     switch (s)
                     {
-                        case "corpus_id":
+                        case "corpusId":
                             reader.Read();
                             corpusId = reader.GetString()!;
                             break;
-                        case "text_id":
+                        case "textId":
                             reader.Read();
                             textId = reader.GetString()!;
                             break;
@@ -147,11 +155,11 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                             reader.Read();
                             refs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
                             break;
-                        case "source_tokens":
+                        case "sourceTokens":
                             reader.Read();
                             sourceTokens = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
                             break;
-                        case "target_tokens":
+                        case "targetTokens":
                             reader.Read();
                             targetTokens = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
                             break;
