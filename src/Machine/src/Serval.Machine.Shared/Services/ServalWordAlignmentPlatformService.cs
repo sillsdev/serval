@@ -112,7 +112,7 @@ public class ServalWordAlignmentPlatformService(
     {
         await _outboxService.EnqueueMessageStreamAsync(
             ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.InsertInferenceResults,
+            ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignmentResults,
             engineId,
             wordAlignmentsStream,
             cancellationToken: cancellationToken
