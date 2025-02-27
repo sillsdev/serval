@@ -50,7 +50,7 @@ public class ServalWordAlignmentPlatformOutboxMessageHandlerTests
             stream.Seek(0, SeekOrigin.Begin);
             await env.Handler.HandleMessageAsync(
                 "engine1",
-                ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignmentResults,
+                ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignments,
                 "engine1",
                 stream
             );
