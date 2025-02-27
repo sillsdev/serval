@@ -7163,7 +7163,7 @@ namespace Serval.Client
         /// Starts a build job for a engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
+        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used. Only parallel corpora are supported.
         /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
         /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
@@ -8638,7 +8638,7 @@ namespace Serval.Client
         /// Starts a build job for a engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
+        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used. Only parallel corpora are supported.
         /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
         /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)

@@ -1,5 +1,7 @@
 ﻿namespace Serval.WordAlignment.Controllers;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/word-alignment/engines")]
 [OpenApiTag("Word Alignment Engines")]
@@ -323,7 +325,7 @@ public class WordAlignmentEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine or parallel corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-    [Authorize(Scopes.ReadTranslationEngines)]
+    [Authorize(Scopes.ReadWordAlignmentEngines)]
     [HttpGet("{id}/parallel-corpora/{parallelCorpusId}", Name = Endpoints.GetParallelWordAlignmentCorpus)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -531,7 +533,7 @@ public class WordAlignmentEnginesController(
     /// Starts a build job for a engine.
     /// </summary>
     /// <remarks>
-    /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used.
+    /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used. Only parallel corpora are supported.
     /// Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
     /// Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
     /// Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
@@ -740,7 +742,7 @@ public class WordAlignmentEnginesController(
             Engine = new ResourceLinkDto
             {
                 Id = engineId,
-                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId })
+                Url = _urlService.GetUrl(Endpoints.GetWordAlignmentEngine, new { id = engineId })
             },
             SourceCorpora = source
                 .SourceCorpora.Select(c => new ResourceLinkDto
@@ -802,7 +804,7 @@ public class WordAlignmentEnginesController(
             )
             {
                 throw new InvalidOperationException(
-                    $"Only the first source corpus in a parallel corpus may be filtered for pretranslation."
+                    $"Only the first source corpus in a parallel corpus may be filtered for alignment."
                 );
             }
             wordAlignmentCorpora.Add(
@@ -826,9 +828,13 @@ public class WordAlignmentEnginesController(
         var trainingCorpora = new List<TrainingCorpus>();
         foreach (TrainingCorpusConfigDto cc in source)
         {
+            if (cc.CorpusId != null)
+            {
+                throw new InvalidOperationException($"CorpusId cannot be set. Only ParallelCorpusId is supported.");
+            }
             if (cc.ParallelCorpusId == null)
             {
-                throw new InvalidOperationException($"One of ParallelCorpusId and CorpusId must be set.");
+                throw new InvalidOperationException($"ParallelCorpusId must be set.");
             }
             if (!corpusIds.Contains(cc.ParallelCorpusId))
             {
@@ -901,13 +907,16 @@ public class WordAlignmentEnginesController(
         return new WordAlignmentBuildDto
         {
             Id = source.Id,
-            Url = _urlService.GetUrl(Endpoints.GetTranslationBuild, new { id = source.EngineRef, buildId = source.Id }),
+            Url = _urlService.GetUrl(
+                Endpoints.GetWordAlignmentBuild,
+                new { id = source.EngineRef, buildId = source.Id }
+            ),
             Revision = source.Revision,
             Name = source.Name,
             Engine = new ResourceLinkDto
             {
                 Id = source.EngineRef,
-                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.EngineRef })
+                Url = _urlService.GetUrl(Endpoints.GetWordAlignmentBuild, new { id = source.EngineRef })
             },
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             WordAlignOn = source.WordAlignOn?.Select(s => Map(source.EngineRef, s)).ToList(),
@@ -933,7 +942,7 @@ public class WordAlignmentEnginesController(
                     {
                         Id = source.ParallelCorpusRef,
                         Url = _urlService.GetUrl(
-                            Endpoints.GetParallelTranslationCorpus,
+                            Endpoints.GetParallelWordAlignmentCorpus,
                             new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
                         )
                     }
@@ -953,7 +962,7 @@ public class WordAlignmentEnginesController(
                     {
                         Id = source.ParallelCorpusRef,
                         Url = _urlService.GetUrl(
-                            Endpoints.GetParallelTranslationCorpus,
+                            Endpoints.GetParallelWordAlignmentCorpus,
                             new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
                         )
                     }
