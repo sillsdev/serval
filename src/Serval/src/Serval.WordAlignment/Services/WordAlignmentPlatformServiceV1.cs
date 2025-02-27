@@ -42,7 +42,7 @@ public class WordAlignmentPlatformServiceV1(
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
                 await _publishEndpoint.Publish(
-                    new TranslationBuildStarted
+                    new WordAlignmentBuildStarted
                     {
                         BuildId = build.Id,
                         EngineId = engine.Id,
@@ -84,14 +84,14 @@ public class WordAlignmentPlatformServiceV1(
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
-                // delete pretranslations created by the previous build
+                // delete alignments created by the previous build
                 await _wordAlignments.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision < engine.ModelRevision,
                     ct
                 );
 
                 await _publishEndpoint.Publish(
-                    new TranslationBuildFinished
+                    new WordAlignmentBuildFinished
                     {
                         BuildId = build.Id,
                         EngineId = engine.Id,
@@ -133,14 +133,14 @@ public class WordAlignmentPlatformServiceV1(
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
-                // delete pretranslations that might have been created during the build
+                // delete word alignments that might have been created during the build
                 await _wordAlignments.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
                     ct
                 );
 
                 await _publishEndpoint.Publish(
-                    new TranslationBuildFinished
+                    new WordAlignmentBuildFinished
                     {
                         BuildId = build.Id,
                         EngineId = engine.Id,
@@ -182,14 +182,14 @@ public class WordAlignmentPlatformServiceV1(
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
-                // delete pretranslations that might have been created during the build
+                // delete word alignments that might have been created during the build
                 await _wordAlignments.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
                     ct
                 );
 
                 await _publishEndpoint.Publish(
-                    new TranslationBuildFinished
+                    new WordAlignmentBuildFinished
                     {
                         BuildId = build.Id,
                         EngineId = engine.Id,
@@ -228,7 +228,7 @@ public class WordAlignmentPlatformServiceV1(
                 if (engine is null)
                     throw new RpcException(new Status(StatusCode.NotFound, "The engine does not exist."));
 
-                // delete pretranslations that might have been created during the build
+                // delete word alignments that might have been created during the build
                 await _wordAlignments.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
                     ct
