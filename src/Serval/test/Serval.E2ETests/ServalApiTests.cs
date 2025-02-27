@@ -504,7 +504,7 @@ public class ServalApiTests
         string corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, testCorpus, true);
         _helperClient.WordAlignmentBuildConfig.TrainOn =
         [
-            new TrainingCorpusConfig2() { ParallelCorpusId = trainCorpusId }
+            new TrainingCorpusConfig() { ParallelCorpusId = trainCorpusId }
         ];
         _helperClient.WordAlignmentBuildConfig.WordAlignOn =
         [
