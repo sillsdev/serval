@@ -960,7 +960,7 @@ public class WordAlignmentEngineTests
     public async Task StartBuildForEngineByIdAsync(IEnumerable<string> scope, int expectedStatusCode, string engineId)
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(scope);
-        TrainingCorpusConfig2 tcc;
+        TrainingCorpusConfig tcc;
         WordAlignmentCorpusConfig wacc;
         WordAlignmentBuildConfig tbc;
         switch (expectedStatusCode)
@@ -970,23 +970,23 @@ public class WordAlignmentEngineTests
                     engineId,
                     TestParallelCorpusConfig
                 );
-                tcc = new TrainingCorpusConfig2
+                tcc = new TrainingCorpusConfig
                 {
                     ParallelCorpusId = addedCorpus.Id,
                     SourceFilters =
                     [
-                        new ParallelCorpusFilterConfig2 { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }
+                        new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }
                     ],
-                    TargetFilters = [new ParallelCorpusFilterConfig2 { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }]
+                    TargetFilters = [new ParallelCorpusFilterConfig { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }]
                 };
                 wacc = new WordAlignmentCorpusConfig
                 {
                     ParallelCorpusId = addedCorpus.Id,
                     SourceFilters =
                     [
-                        new ParallelCorpusFilterConfig2 { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }
+                        new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }
                     ],
-                    TargetFilters = [new ParallelCorpusFilterConfig2 { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }]
+                    TargetFilters = [new ParallelCorpusFilterConfig { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }]
                 };
                 tbc = new WordAlignmentBuildConfig
                 {
@@ -1019,16 +1019,16 @@ public class WordAlignmentEngineTests
             case 403:
             case 404:
 
-                tcc = new TrainingCorpusConfig2
+                tcc = new TrainingCorpusConfig
                 {
                     ParallelCorpusId = "cccccccccccccccccccccccc",
                     SourceFilters =
                     [
-                        new ParallelCorpusFilterConfig2 { CorpusId = "ccccccccccccccccccccccc1", TextIds = ["all"] }
+                        new ParallelCorpusFilterConfig { CorpusId = "ccccccccccccccccccccccc1", TextIds = ["all"] }
                     ],
                     TargetFilters =
                     [
-                        new ParallelCorpusFilterConfig2 { CorpusId = "ccccccccccccccccccccccc1", TextIds = ["all"] }
+                        new ParallelCorpusFilterConfig { CorpusId = "ccccccccccccccccccccccc1", TextIds = ["all"] }
                     ]
                 };
                 wacc = new WordAlignmentCorpusConfig
@@ -1036,11 +1036,11 @@ public class WordAlignmentEngineTests
                     ParallelCorpusId = "cccccccccccccccccccccccc",
                     SourceFilters =
                     [
-                        new ParallelCorpusFilterConfig2 { CorpusId = "ccccccccccccccccccccccc1", TextIds = ["all"] }
+                        new ParallelCorpusFilterConfig { CorpusId = "ccccccccccccccccccccccc1", TextIds = ["all"] }
                     ],
                     TargetFilters =
                     [
-                        new ParallelCorpusFilterConfig2 { CorpusId = "ccccccccccccccccccccccc1", TextIds = ["all"] }
+                        new ParallelCorpusFilterConfig { CorpusId = "ccccccccccccccccccccccc1", TextIds = ["all"] }
                     ]
                 };
                 tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc], TrainOn = [tcc] };
@@ -1064,19 +1064,19 @@ public class WordAlignmentEngineTests
             ECHO_ENGINE1_ID,
             TestParallelCorpusConfig
         );
-        TrainingCorpusConfig2 tcc =
+        TrainingCorpusConfig tcc =
             new()
             {
                 ParallelCorpusId = addedCorpus.Id,
-                SourceFilters = [new ParallelCorpusFilterConfig2 { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
-                TargetFilters = [new ParallelCorpusFilterConfig2 { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }]
+                SourceFilters = [new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
+                TargetFilters = [new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }]
             };
         WordAlignmentCorpusConfig wacc =
             new()
             {
                 ParallelCorpusId = addedCorpus.Id,
-                SourceFilters = [new ParallelCorpusFilterConfig2 { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
-                TargetFilters = [new ParallelCorpusFilterConfig2 { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }]
+                SourceFilters = [new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
+                TargetFilters = [new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }]
             };
         WordAlignmentBuildConfig tbc =
             new()
@@ -1207,7 +1207,7 @@ public class WordAlignmentEngineTests
             STATISTICAL_ENGINE_ID,
             TestParallelCorpusConfig
         );
-        TrainingCorpusConfig2 tcc =
+        TrainingCorpusConfig tcc =
             new()
             {
                 ParallelCorpusId = addedCorpus.Id,
@@ -1256,7 +1256,7 @@ public class WordAlignmentEngineTests
             STATISTICAL_ENGINE_ID,
             TestParallelCorpusConfig
         );
-        TrainingCorpusConfig2 tcc =
+        TrainingCorpusConfig tcc =
             new()
             {
                 ParallelCorpusId = addedCorpus.Id,
@@ -1314,7 +1314,7 @@ public class WordAlignmentEngineTests
             TestMixedParallelCorpusConfig
         );
         WordAlignmentCorpusConfig wacc = new() { };
-        TrainingCorpusConfig2 tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
+        TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         WordAlignmentBuildConfig tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc], TrainOn = [tcc] };
         WordAlignmentBuild resultAfterStart;
         Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -1337,11 +1337,11 @@ public class WordAlignmentEngineTests
                 ParallelCorpusId = addedParallelCorpus.Id,
                 SourceFilters =
                 [
-                    new ParallelCorpusFilterConfig2() { CorpusId = SOURCE_CORPUS_ID_1 },
-                    new ParallelCorpusFilterConfig2() { CorpusId = SOURCE_CORPUS_ID_2 }
+                    new ParallelCorpusFilterConfig() { CorpusId = SOURCE_CORPUS_ID_1 },
+                    new ParallelCorpusFilterConfig() { CorpusId = SOURCE_CORPUS_ID_2 }
                 ]
             };
-        TrainingCorpusConfig2 tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
+        TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         WordAlignmentBuildConfig tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc], TrainOn = [tcc] };
         Assert.ThrowsAsync<ServalApiException>(async () =>
         {
@@ -1358,7 +1358,7 @@ public class WordAlignmentEngineTests
             TestParallelCorpusConfig
         );
         WordAlignmentCorpusConfig wacc = new() { ParallelCorpusId = addedParallelCorpus.Id };
-        TrainingCorpusConfig2 tcc = new() { };
+        TrainingCorpusConfig tcc = new() { };
         WordAlignmentBuildConfig tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc], TrainOn = [tcc] };
         WordAlignmentBuild resultAfterStart;
         Assert.ThrowsAsync<ServalApiException>(async () =>

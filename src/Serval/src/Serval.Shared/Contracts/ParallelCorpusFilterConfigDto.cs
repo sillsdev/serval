@@ -1,4 +1,4 @@
-namespace Serval.Translation.Contracts;
+namespace Serval.Shared.Contracts;
 
 public record ParallelCorpusFilterConfigDto
 {

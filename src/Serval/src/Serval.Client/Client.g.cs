@@ -9836,6 +9836,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("targetIndex", Required = Newtonsoft.Json.Required.Always)]
         public int TargetIndex { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? Score { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -10547,21 +10550,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<AlignedWordPair2> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair2>();
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class AlignedWordPair2
-    {
-        [Newtonsoft.Json.JsonProperty("sourceIndex", Required = Newtonsoft.Json.Required.Always)]
-        public int SourceIndex { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetIndex", Required = Newtonsoft.Json.Required.Always)]
-        public int TargetIndex { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("score", Required = Newtonsoft.Json.Required.Always)]
-        public double Score { get; set; } = default!;
+        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
 
     }
 
@@ -10654,7 +10643,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<AlignedWordPair2> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair2>();
+        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
 
     }
 
@@ -10680,7 +10669,7 @@ namespace Serval.Client
         public ResourceLink Engine { get; set; } = new ResourceLink();
 
         [Newtonsoft.Json.JsonProperty("trainOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<TrainingCorpus2>? TrainOn { get; set; } = default!;
+        public System.Collections.Generic.IList<TrainingCorpus>? TrainOn { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("wordAlignOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<WordAlignmentCorpus>? WordAlignOn { get; set; } = default!;
@@ -10720,45 +10709,16 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TrainingCorpus2
-    {
-        [Newtonsoft.Json.JsonProperty("parallelCorpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public ResourceLink? ParallelCorpus { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilter2>? SourceFilters { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilter2>? TargetFilters { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusFilter2
-    {
-        [Newtonsoft.Json.JsonProperty("corpus", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public ResourceLink Corpus { get; set; } = new ResourceLink();
-
-        [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? ScriptureRange { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordAlignmentCorpus
     {
         [Newtonsoft.Json.JsonProperty("parallelCorpus", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public ResourceLink? ParallelCorpus { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilter2>? SourceFilters { get; set; } = default!;
+        public System.Collections.Generic.IList<ParallelCorpusFilter>? SourceFilters { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilter2>? TargetFilters { get; set; } = default!;
+        public System.Collections.Generic.IList<ParallelCorpusFilter>? TargetFilters { get; set; } = default!;
 
     }
 
@@ -10769,7 +10729,7 @@ namespace Serval.Client
         public string? Name { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("trainOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<TrainingCorpusConfig2>? TrainOn { get; set; } = default!;
+        public System.Collections.Generic.IList<TrainingCorpusConfig>? TrainOn { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("wordAlignOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<WordAlignmentCorpusConfig>? WordAlignOn { get; set; } = default!;
@@ -10780,45 +10740,16 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TrainingCorpusConfig2
-    {
-        [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? ParallelCorpusId { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilterConfig2>? SourceFilters { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilterConfig2>? TargetFilters { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusFilterConfig2
-    {
-        [Newtonsoft.Json.JsonProperty("corpusId", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string CorpusId { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("textIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<string>? TextIds { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("scriptureRange", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? ScriptureRange { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordAlignmentCorpusConfig
     {
         [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? ParallelCorpusId { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilterConfig2>? SourceFilters { get; set; } = default!;
+        public System.Collections.Generic.IList<ParallelCorpusFilterConfig>? SourceFilters { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<ParallelCorpusFilterConfig2>? TargetFilters { get; set; } = default!;
+        public System.Collections.Generic.IList<ParallelCorpusFilterConfig>? TargetFilters { get; set; } = default!;
 
     }
 
