@@ -57,7 +57,7 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                     cancellationToken: cancellationToken
                 );
                 break;
-            case ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignmentResults:
+            case ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignments:
                 ArgumentNullException.ThrowIfNull(contentStream);
                 IAsyncEnumerable<Models.WordAlignment> wordAlignments = JsonSerializer
                     .DeserializeAsyncEnumerable<Models.WordAlignment>(
