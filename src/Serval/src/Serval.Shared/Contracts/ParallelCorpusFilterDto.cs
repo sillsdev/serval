@@ -1,4 +1,4 @@
-namespace Serval.WordAlignment.Contracts;
+namespace Serval.Shared.Contracts;
 
 public record ParallelCorpusFilterDto
 {
