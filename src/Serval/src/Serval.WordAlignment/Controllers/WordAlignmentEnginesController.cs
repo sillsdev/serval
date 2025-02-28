@@ -916,7 +916,10 @@ public class WordAlignmentEnginesController(
             Engine = new ResourceLinkDto
             {
                 Id = source.EngineRef,
-                Url = _urlService.GetUrl(Endpoints.GetWordAlignmentBuild, new { id = source.EngineRef })
+                Url = _urlService.GetUrl(
+                    Endpoints.GetWordAlignmentBuild,
+                    new { id = source.EngineRef, buildId = source.Id }
+                )
             },
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             WordAlignOn = source.WordAlignOn?.Select(s => Map(source.EngineRef, s)).ToList(),
