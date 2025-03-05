@@ -114,7 +114,7 @@ public class PlatformServiceTests
             ExecutionData = new Dictionary<string, string>
             {
                 { "trainCount", "0" },
-                { "inferenceCount", "0" },
+                { "wordAlignCount", "0" },
                 { "staticCount", "0" }
             }
         };
@@ -125,10 +125,10 @@ public class PlatformServiceTests
         var executionData = build.ExecutionData;
 
         Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("inferenceCount"));
+        Assert.That(executionData, Contains.Key("wordAlignCount"));
 
         int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int wordAlignmentCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
+        int wordAlignmentCount = Convert.ToInt32(executionData["wordAlignCount"], CultureInfo.InvariantCulture);
         int staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
 
         Assert.That(trainCount, Is.EqualTo(0));
@@ -137,7 +137,7 @@ public class PlatformServiceTests
 
         var updateRequest = new UpdateBuildExecutionDataRequest() { BuildId = "123", EngineId = engine.Id };
         updateRequest.ExecutionData.Add(
-            new Dictionary<string, string> { { "trainCount", "4" }, { "inferenceCount", "5" } }
+            new Dictionary<string, string> { { "trainCount", "4" }, { "wordAlignCount", "5" } }
         );
 
         await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
@@ -147,7 +147,7 @@ public class PlatformServiceTests
         executionData = build!.ExecutionData;
 
         trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        wordAlignmentCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
+        wordAlignmentCount = Convert.ToInt32(executionData["wordAlignCount"], CultureInfo.InvariantCulture);
         staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
 
         Assert.That(trainCount, Is.GreaterThan(0));

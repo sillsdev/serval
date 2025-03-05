@@ -33,7 +33,14 @@ public class WordAlignmentEngineServiceV1(
         {
             throw new ArgumentOutOfRangeException(nameof(number), "Number must be non-negative");
         }
-        return Enumerable.Range(0, number).Select(i => new AlignedWordPair { SourceIndex = i, TargetIndex = i });
+        return Enumerable
+            .Range(0, number)
+            .Select(i => new AlignedWordPair
+            {
+                SourceIndex = i,
+                TargetIndex = i,
+                Score = 1.0
+            });
     }
 
     public override Task<GetWordAlignmentResponse> GetWordAlignment(

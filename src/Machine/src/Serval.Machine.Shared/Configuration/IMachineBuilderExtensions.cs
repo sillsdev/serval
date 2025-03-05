@@ -443,8 +443,9 @@ public static class IMachineBuilderExtensions
             switch (engineType)
             {
                 case EngineType.SmtTransfer:
-                    builder.AddThotSmtTransferEngine();
+                    builder.Services.AddSingleton<SmtTransferEngineStateService>();
                     builder.Services.AddHostedService<SmtTransferEngineCommitService>();
+                    builder.AddThotSmtTransferEngine();
                     builder.Services.AddScoped<ITranslationEngineService, SmtTransferEngineService>();
                     break;
                 case EngineType.Nmt:

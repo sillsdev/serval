@@ -7926,7 +7926,7 @@ namespace Serval.Client
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine needs to be built before it can alignment segments.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine needs to be built before it can align segments.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
