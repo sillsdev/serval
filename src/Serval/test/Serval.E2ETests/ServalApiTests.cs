@@ -61,12 +61,13 @@ public class ServalApiTests
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "espíritu verdad" }
         );
         Assert.That(
-            tResult.Alignment,
+            tResult.Alignment.First(),
             Is.EqualTo(
-                new List<AlignedWordPair>
+                new AlignedWordPair()
                 {
-                    new() { SourceIndex = 0, TargetIndex = 0 },
-                    new() { SourceIndex = 1, TargetIndex = 1 }
+                    SourceIndex = 0,
+                    TargetIndex = 0,
+                    Score = 1.0
                 }
             )
         );
@@ -167,10 +168,10 @@ public class ServalApiTests
         var executionData = build.ExecutionData!;
 
         Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("inferenceCount"));
+        Assert.That(executionData, Contains.Key("pretranslateCount"));
 
         int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int pretranslateCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
+        int pretranslateCount = Convert.ToInt32(executionData["pretranslateCount"], CultureInfo.InvariantCulture);
 
         Assert.That(trainCount, Is.GreaterThan(0));
         Assert.That(pretranslateCount, Is.GreaterThan(0));
@@ -532,10 +533,10 @@ public class ServalApiTests
         var executionData = build.ExecutionData!;
 
         Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("inferenceCount"));
+        Assert.That(executionData, Contains.Key("wordAlignCount"));
 
         int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int wordAlignmentCount = Convert.ToInt32(executionData["inferenceCount"], CultureInfo.InvariantCulture);
+        int wordAlignmentCount = Convert.ToInt32(executionData["wordAlignCount"], CultureInfo.InvariantCulture);
 
         Assert.That(trainCount, Is.GreaterThan(0));
         Assert.That(wordAlignmentCount, Is.GreaterThan(0));

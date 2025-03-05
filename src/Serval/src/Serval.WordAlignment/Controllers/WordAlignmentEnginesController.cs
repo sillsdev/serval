@@ -162,7 +162,7 @@ public class WordAlignmentEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="405">The method is not supported.</response>
-    /// <response code="409">The engine needs to be built before it can alignment segments.</response>
+    /// <response code="409">The engine needs to be built before it can align segments.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.ReadWordAlignmentEngines)]
     [HttpPost("{id}/align")]
