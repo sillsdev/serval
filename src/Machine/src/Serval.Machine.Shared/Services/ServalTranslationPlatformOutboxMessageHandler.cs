@@ -92,6 +92,13 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
                     cancellationToken: cancellationToken
                 );
                 break;
+            case ServalTranslationPlatformOutboxConstants.UpdateBuildExecutionData:
+                ArgumentNullException.ThrowIfNull(content);
+                await _client.UpdateBuildExecutionDataAsync(
+                    JsonSerializer.Deserialize<UpdateBuildExecutionDataRequest>(content),
+                    cancellationToken: cancellationToken
+                );
+                break;
             default:
                 throw new InvalidOperationException($"Encountered a message with the unrecognized method '{method}'.");
         }
