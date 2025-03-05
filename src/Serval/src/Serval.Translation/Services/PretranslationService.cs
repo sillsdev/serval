@@ -36,6 +36,7 @@ public class PretranslationService(
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
         PretranslationUsfmTemplate template,
+        PretranslationUsfmMarkerBehavior? markerBehavior = PretranslationUsfmMarkerBehavior.Preserve,
         CancellationToken cancellationToken = default
     )
     {
@@ -101,6 +102,7 @@ public class PretranslationService(
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferExisting
+                        // embedBehavior: markerBehavior
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -110,6 +112,7 @@ public class PretranslationService(
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferNew
+                        // embedBehavior: markerBehavior
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -119,6 +122,7 @@ public class PretranslationService(
                             [], // don't put any pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferNew
+                        // embedBehavior: markerBehavior
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -128,6 +132,7 @@ public class PretranslationService(
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting
+                        // embedBehavior: markerBehavior
                         ) ?? "";
                     break;
             }
@@ -152,6 +157,7 @@ public class PretranslationService(
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting
+                        // embedBehavior: markerBehavior
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
@@ -159,6 +165,7 @@ public class PretranslationService(
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting
+                        // embedBehavior: markerBehavior
                         ) ?? "";
             }
         }

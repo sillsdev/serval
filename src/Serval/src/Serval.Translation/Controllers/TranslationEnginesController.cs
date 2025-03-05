@@ -925,6 +925,7 @@ public class TranslationEnginesController(
         [NotNull] string textId,
         [FromQuery(Name = "text-origin")] PretranslationUsfmTextOrigin? textOrigin,
         [FromQuery] PretranslationUsfmTemplate? template,
+        [FromQuery(Name = "marker-behavior")] PretranslationUsfmMarkerBehavior? markerBehavior,
         CancellationToken cancellationToken
     )
     {
@@ -942,6 +943,7 @@ public class TranslationEnginesController(
             textId,
             textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
             template ?? PretranslationUsfmTemplate.Auto,
+            markerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             cancellationToken
         );
         if (usfm == "")

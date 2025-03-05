@@ -1,4 +1,6 @@
-﻿namespace Serval.Translation.Services;
+﻿using SIL.Machine.Corpora;
+
+namespace Serval.Translation.Services;
 
 public interface IPretranslationService
 {
@@ -17,6 +19,9 @@ public interface IPretranslationService
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
         PretranslationUsfmTemplate template,
+        // PretranslationUsfmMarkerBehavior? markerBehavior,
+        UpdateUsfmMarkerBehavior embedBehavior,
+        UpdateUsfmMarkerBehavior styleMarkerBehavior,
         CancellationToken cancellationToken = default
     );
 }
