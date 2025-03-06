@@ -88,14 +88,14 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
             case ServalTranslationPlatformOutboxConstants.IncrementTrainEngineCorpusSize:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.IncrementEngineCorpusSizeAsync(
-                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content),
+                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalTranslationPlatformOutboxConstants.UpdateBuildExecutionData:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.UpdateBuildExecutionDataAsync(
-                    JsonSerializer.Deserialize<UpdateBuildExecutionDataRequest>(content),
+                    JsonSerializer.Deserialize<UpdateBuildExecutionDataRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;

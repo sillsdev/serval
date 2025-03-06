@@ -1,45 +1,30 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public abstract class PreprocessBuildJob<TEngine> : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>
+public abstract class PreprocessBuildJob<TEngine>(
+    IPlatformService platformService,
+    IRepository<TEngine> engines,
+    IDataAccessContext dataAccessContext,
+    ILogger<PreprocessBuildJob<TEngine>> logger,
+    IBuildJobService<TEngine> buildJobService,
+    ISharedFileService sharedFileService,
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+)
+    : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>(
+        platformService,
+        engines,
+        dataAccessContext,
+        buildJobService,
+        logger
+    )
     where TEngine : ITrainingEngine
 {
     protected static readonly JsonWriterOptions InferenceWriterOptions = new() { Indented = true };
 
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
 
-    protected readonly ISharedFileService SharedFileService;
-    protected readonly IParallelCorpusPreprocessingService ParallelCorpusPreprocessingService;
-    private int _seed = 1234;
-    private Random _random;
-
-    public PreprocessBuildJob(
-        IPlatformService platformService,
-        IRepository<TEngine> engines,
-        IDataAccessContext dataAccessContext,
-        ILogger<PreprocessBuildJob<TEngine>> logger,
-        IBuildJobService<TEngine> buildJobService,
-        ISharedFileService sharedFileService,
-        IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
-    )
-        : base(platformService, engines, dataAccessContext, buildJobService, logger)
-    {
-        SharedFileService = sharedFileService;
-        this.ParallelCorpusPreprocessingService = parallelCorpusPreprocessingService;
-        _random = new Random(_seed);
-    }
-
-    internal int Seed
-    {
-        get => _seed;
-        set
-        {
-            if (_seed != value)
-            {
-                _seed = value;
-                _random = new Random(_seed);
-            }
-        }
-    }
+    protected readonly ISharedFileService SharedFileService = sharedFileService;
+    protected readonly IParallelCorpusPreprocessingService ParallelCorpusPreprocessingService =
+        parallelCorpusPreprocessingService;
 
     protected override async Task DoWorkAsync(
         string engineId,

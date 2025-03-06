@@ -306,16 +306,16 @@ public class NmtEngineServiceTests
                         new ParallelCorpusPreprocessingService(new CorpusService())
                     );
                 }
-                if (jobType == typeof(PostprocessBuildJob<TranslationEngine>))
+                if (jobType == typeof(TranslationPostprocessBuildJob))
                 {
                     var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
                     buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
-                    return new PostprocessBuildJob<TranslationEngine>(
+                    return new TranslationPostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
                         new MemoryDataAccessContext(),
                         _env.BuildJobService,
-                        Substitute.For<ILogger<PostprocessBuildJob<TranslationEngine>>>(),
+                        Substitute.For<ILogger<TranslationPostprocessBuildJob>>(),
                         _env.SharedFileService,
                         buildJobOptions
                     );

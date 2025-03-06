@@ -2,13 +2,19 @@
 
 namespace Serval.Machine.Shared.Services;
 
-public class ServalWordAlignmentPlatformOutboxMessageHandler(
-    WordAlignmentPlatformApi.WordAlignmentPlatformApiClient client
-) : IOutboxMessageHandler
+public class ServalWordAlignmentPlatformOutboxMessageHandler : IOutboxMessageHandler
 {
-    private readonly WordAlignmentPlatformApi.WordAlignmentPlatformApiClient _client = client;
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Converters = { new WordAlignmentConverter() } };
+    public ServalWordAlignmentPlatformOutboxMessageHandler(
+        WordAlignmentPlatformApi.WordAlignmentPlatformApiClient client
+    )
+    {
+        _client = client;
+        _jsonSerializerOptions = MessageOutboxOptions.JsonSerializerOptions;
+        _jsonSerializerOptions.Converters.Add(new WordAlignmentConverter());
+    }
+
+    private readonly WordAlignmentPlatformApi.WordAlignmentPlatformApiClient _client;
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     public string OutboxId => ServalWordAlignmentPlatformOutboxConstants.OutboxId;
 
@@ -25,35 +31,35 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
             case ServalWordAlignmentPlatformOutboxConstants.BuildStarted:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildStartedAsync(
-                    JsonSerializer.Deserialize<BuildStartedRequest>(content, JsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildStartedRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.BuildCompleted:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildCompletedAsync(
-                    JsonSerializer.Deserialize<BuildCompletedRequest>(content, JsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildCompletedRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.BuildCanceled:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildCanceledAsync(
-                    JsonSerializer.Deserialize<BuildCanceledRequest>(content, JsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildCanceledRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.BuildFaulted:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildFaultedAsync(
-                    JsonSerializer.Deserialize<BuildFaultedRequest>(content, JsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildFaultedRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.BuildRestarting:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.BuildRestartingAsync(
-                    JsonSerializer.Deserialize<BuildRestartingRequest>(content, JsonSerializerOptions),
+                    JsonSerializer.Deserialize<BuildRestartingRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
@@ -62,7 +68,7 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
                 IAsyncEnumerable<Models.WordAlignment> wordAlignments = JsonSerializer
                     .DeserializeAsyncEnumerable<Models.WordAlignment>(
                         contentStream,
-                        JsonSerializerOptions,
+                        _jsonSerializerOptions,
                         cancellationToken
                     )
                     .OfType<Models.WordAlignment>();
@@ -92,14 +98,14 @@ public class ServalWordAlignmentPlatformOutboxMessageHandler(
             case ServalWordAlignmentPlatformOutboxConstants.IncrementTrainEngineCorpusSize:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.IncrementEngineCorpusSizeAsync(
-                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content, JsonSerializerOptions),
+                    JsonSerializer.Deserialize<IncrementEngineCorpusSizeRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
             case ServalWordAlignmentPlatformOutboxConstants.UpdateBuildExecutionData:
                 ArgumentNullException.ThrowIfNull(content);
                 await _client.UpdateBuildExecutionDataAsync(
-                    JsonSerializer.Deserialize<UpdateBuildExecutionDataRequest>(content),
+                    JsonSerializer.Deserialize<UpdateBuildExecutionDataRequest>(content, _jsonSerializerOptions),
                     cancellationToken: cancellationToken
                 );
                 break;
