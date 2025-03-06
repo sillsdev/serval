@@ -1,29 +1,9 @@
 namespace SIL.ServiceToolkit.Services;
 
-public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingService
+public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : IParallelCorpusPreprocessingService
 {
-    private readonly ICorpusService _corpusService;
-    private int _seed = 1234;
-    private Random _random;
-
-    public ParallelCorpusPreprocessingService(ICorpusService corpusService)
-    {
-        _corpusService = corpusService;
-        _random = new Random(_seed);
-    }
-
-    internal int Seed
-    {
-        get => _seed;
-        set
-        {
-            if (_seed != value)
-            {
-                _seed = value;
-                _random = new Random(_seed);
-            }
-        }
-    }
+    private readonly ICorpusService _corpusService = corpusService;
+    private readonly int _seed = 1234;
 
     public async Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
@@ -62,9 +42,9 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
             ITextCorpus targetPretranslateCorpus = targetCorpora
                 .Select(tc => FilterPretranslateCorpora(tc.Corpus, tc.TextCorpus))
                 .ToArray()
-                .ChooseRandom(Seed);
+                .ChooseRandom(_seed);
 
-            ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
+            ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(_seed);
             if (sourceTrainingCorpus.IsScripture())
             {
                 sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
@@ -102,7 +82,7 @@ public class ParallelCorpusPreprocessingService : IParallelCorpusPreprocessingSe
                 if (sourceTermCorpora is not null && targetTermCorpora is not null)
                 {
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora
-                        .ChooseRandom(Seed)
+                        .ChooseRandom(_seed)
                         .AlignRows(targetTermCorpora.ChooseFirst());
                     foreach (
                         ParallelTextRow row in parallelKeyTermsCorpus.DistinctBy(row =>

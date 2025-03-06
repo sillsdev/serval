@@ -19,7 +19,7 @@ public class NmtHangfireBuildJobFactory : IHangfireBuildJobFactory
                     buildOptions
                 ),
             BuildStage.Postprocess
-                => CreateJob<TranslationEngine, PostprocessBuildJob<TranslationEngine>, (int, double)>(
+                => CreateJob<TranslationEngine, TranslationPostprocessBuildJob, (int, double)>(
                     engineId,
                     buildId,
                     "nmt",

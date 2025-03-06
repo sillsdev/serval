@@ -14,7 +14,7 @@ public class SmtTransferPostprocessBuildJob(
     IOptionsMonitor<BuildJobOptions> buildOptions,
     IOptionsMonitor<SmtTransferEngineOptions> engineOptions
 )
-    : PostprocessBuildJob<TranslationEngine>(
+    : TranslationPostprocessBuildJob(
         platformService,
         engines,
         dataAccessContext,

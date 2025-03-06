@@ -165,7 +165,7 @@ public class ServalApiTests
         TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
         Assert.That(build.ExecutionData, Is.Not.Null);
 
-        var executionData = build.ExecutionData!;
+        var executionData = build.ExecutionData;
 
         Assert.That(executionData, Contains.Key("trainCount"));
         Assert.That(executionData, Contains.Key("pretranslateCount"));
@@ -516,21 +516,30 @@ public class ServalApiTests
             engineId,
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "spirit truth" }
         );
-        Assert.That(
-            tResult.Alignment,
-            Is.EqualTo(
-                new List<AlignedWordPair>
-                {
-                    new() { SourceIndex = 0, TargetIndex = 0 },
-                    new() { SourceIndex = 1, TargetIndex = 1 }
-                }
-            )
-        );
+
+        Assert.That(tResult.Alignment, Has.Count.EqualTo(2));
+
+        AlignedWordPair firstPair = tResult.Alignment[0];
+        AlignedWordPair secondPair = tResult.Alignment[1];
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstPair.SourceIndex, Is.EqualTo(0));
+            Assert.That(firstPair.TargetIndex, Is.EqualTo(0));
+            Assert.That(firstPair.Score, Is.EqualTo(0.9).Within(0.1));
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(secondPair.SourceIndex, Is.EqualTo(1));
+            Assert.That(secondPair.TargetIndex, Is.EqualTo(1));
+            Assert.That(secondPair.Score, Is.EqualTo(0.9).Within(0.1));
+        });
 
         WordAlignmentBuild build = await _helperClient.WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId);
         Assert.That(build.ExecutionData, Is.Not.Null);
 
-        var executionData = build.ExecutionData!;
+        var executionData = build.ExecutionData;
 
         Assert.That(executionData, Contains.Key("trainCount"));
         Assert.That(executionData, Contains.Key("wordAlignCount"));
