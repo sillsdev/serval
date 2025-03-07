@@ -3,7 +3,7 @@ namespace SIL.ServiceToolkit.Services;
 public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : IParallelCorpusPreprocessingService
 {
     private readonly ICorpusService _corpusService = corpusService;
-    private readonly int _seed = 1234;
+    private const int Seed = 1234;
 
     public async Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
@@ -42,9 +42,9 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
             ITextCorpus targetPretranslateCorpus = targetCorpora
                 .Select(tc => FilterPretranslateCorpora(tc.Corpus, tc.TextCorpus))
                 .ToArray()
-                .ChooseRandom(_seed);
+                .ChooseRandom(Seed);
 
-            ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(_seed);
+            ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
             if (sourceTrainingCorpus.IsScripture())
             {
                 sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
@@ -82,7 +82,7 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
                 if (sourceTermCorpora is not null && targetTermCorpora is not null)
                 {
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora
-                        .ChooseRandom(_seed)
+                        .ChooseRandom(Seed)
                         .AlignRows(targetTermCorpora.ChooseFirst());
                     foreach (
                         ParallelTextRow row in parallelKeyTermsCorpus.DistinctBy(row =>
