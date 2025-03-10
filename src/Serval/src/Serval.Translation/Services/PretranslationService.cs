@@ -38,6 +38,7 @@ public class PretranslationService(
         PretranslationUsfmTemplate template,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
+        UpdateUsfmMarkerBehavior paragraphBehavior,
         CancellationToken cancellationToken = default
     )
     {

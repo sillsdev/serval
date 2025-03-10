@@ -21,6 +21,7 @@ public interface IPretranslationService
         PretranslationUsfmTemplate template,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
+        UpdateUsfmMarkerBehavior paragraphBehavior,
         CancellationToken cancellationToken = default
     );
 }
