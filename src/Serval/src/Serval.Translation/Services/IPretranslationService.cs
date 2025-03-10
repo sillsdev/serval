@@ -19,9 +19,8 @@ public interface IPretranslationService
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
         PretranslationUsfmTemplate template,
-        // PretranslationUsfmMarkerBehavior? markerBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
-        UpdateUsfmMarkerBehavior styleMarkerBehavior,
+        UpdateUsfmMarkerBehavior styleBehavior,
         CancellationToken cancellationToken = default
     );
 }

@@ -2470,7 +2470,7 @@ namespace Serval.Client
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? markerBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, UpdateUsfmMarkerBehavior? embedBehavior = null, UpdateUsfmMarkerBehavior? styleBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -5152,7 +5152,7 @@ namespace Serval.Client
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? markerBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, UpdateUsfmMarkerBehavior? embedBehavior = null, UpdateUsfmMarkerBehavior? styleBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5191,9 +5191,13 @@ namespace Serval.Client
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("template")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(template, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
-                    if (markerBehavior != null)
+                    if (embedBehavior != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("marker-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(markerBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("embed-marker-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(embedBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (styleBehavior != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("style-marker-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(styleBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -7735,7 +7739,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum PretranslationUsfmMarkerBehavior
+    public enum UpdateUsfmMarkerBehavior
     {
 
         [System.Runtime.Serialization.EnumMember(Value = @"Preserve")]

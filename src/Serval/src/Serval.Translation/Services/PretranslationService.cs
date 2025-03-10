@@ -36,7 +36,8 @@ public class PretranslationService(
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
         PretranslationUsfmTemplate template,
-        PretranslationUsfmMarkerBehavior? markerBehavior = PretranslationUsfmMarkerBehavior.Preserve,
+        UpdateUsfmMarkerBehavior embedBehavior,
+        UpdateUsfmMarkerBehavior styleBehavior,
         CancellationToken cancellationToken = default
     )
     {
@@ -101,8 +102,9 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferExisting
-                        // embedBehavior: markerBehavior
+                            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+                            embedBehavior: embedBehavior,
+                            styleBehavior: styleBehavior
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -111,8 +113,9 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferNew
-                        // embedBehavior: markerBehavior
+                            textBehavior: UpdateUsfmTextBehavior.PreferNew,
+                            embedBehavior: embedBehavior,
+                            styleBehavior: styleBehavior
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -121,8 +124,9 @@ public class PretranslationService(
                             textId,
                             [], // don't put any pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferNew
-                        // embedBehavior: markerBehavior
+                            textBehavior: UpdateUsfmTextBehavior.PreferNew,
+                            embedBehavior: embedBehavior,
+                            styleBehavior: styleBehavior
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -131,8 +135,9 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting
-                        // embedBehavior: markerBehavior
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+                            embedBehavior: embedBehavior,
+                            styleBehavior: styleBehavior
                         ) ?? "";
                     break;
             }
@@ -156,16 +161,18 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting
-                        // embedBehavior: markerBehavior
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+                            embedBehavior: embedBehavior,
+                            styleBehavior: styleBehavior
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
                             textId,
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting
-                        // embedBehavior: markerBehavior
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+                            embedBehavior: embedBehavior,
+                            styleBehavior: styleBehavior
                         ) ?? "";
             }
         }

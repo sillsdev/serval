@@ -437,8 +437,7 @@ public class PretranslationServiceTests
 
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
-            PretranslationUsfmTemplate template,
-            PretranslationUsfmMarkerBehavior? markerBehavior = PretranslationUsfmMarkerBehavior.Preserve
+            PretranslationUsfmTemplate template
         )
         {
             string usfm = await Service.GetUsfmAsync(
@@ -448,7 +447,8 @@ public class PretranslationServiceTests
                 textId: "MAT",
                 textOrigin: textOrigin,
                 template: template,
-                markerBehavior: markerBehavior
+                embedBehavior: UpdateUsfmMarkerBehavior.Strip,
+                styleBehavior: UpdateUsfmMarkerBehavior.Preserve
             );
             usfm = usfm.Replace("\r\n", "\n");
             string parallel_usfm = await Service.GetUsfmAsync(
@@ -458,7 +458,8 @@ public class PretranslationServiceTests
                 textId: "MAT",
                 textOrigin: textOrigin,
                 template: template,
-                markerBehavior: markerBehavior
+                embedBehavior: UpdateUsfmMarkerBehavior.Strip,
+                styleBehavior: UpdateUsfmMarkerBehavior.Preserve
             );
             parallel_usfm = parallel_usfm.Replace("\r\n", "\n");
             Assert.That(parallel_usfm, Is.EqualTo(usfm));

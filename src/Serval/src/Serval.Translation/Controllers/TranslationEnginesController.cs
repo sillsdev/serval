@@ -925,7 +925,8 @@ public class TranslationEnginesController(
         [NotNull] string textId,
         [FromQuery(Name = "text-origin")] PretranslationUsfmTextOrigin? textOrigin,
         [FromQuery] PretranslationUsfmTemplate? template,
-        [FromQuery(Name = "marker-behavior")] PretranslationUsfmMarkerBehavior? markerBehavior,
+        [FromQuery(Name = "embed-marker-behavior")] SIL.Machine.Corpora.UpdateUsfmMarkerBehavior? embedBehavior,
+        [FromQuery(Name = "style-marker-behavior")] SIL.Machine.Corpora.UpdateUsfmMarkerBehavior? styleBehavior,
         CancellationToken cancellationToken
     )
     {
@@ -943,7 +944,8 @@ public class TranslationEnginesController(
             textId,
             textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
             template ?? PretranslationUsfmTemplate.Auto,
-            markerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
+            embedBehavior ?? SIL.Machine.Corpora.UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior ?? SIL.Machine.Corpora.UpdateUsfmMarkerBehavior.Strip,
             cancellationToken
         );
         if (usfm == "")
