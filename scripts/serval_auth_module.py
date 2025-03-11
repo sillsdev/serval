@@ -23,8 +23,9 @@ class ServalBearerAuth(requests.auth.AuthBase):
         self.__last_time_fetched = time.time()
 
     def __call__(self, r):
-        if time.time() - self.__last_time_fetched > 20 * 60:
+        if time.time() - self.__last_time_fetched > 20 * 60 * 60:
             self.update_token()
+            self.__last_time_fetched = time.time()
         r.headers["authorization"] = "Bearer " + self.token
         return r
 
