@@ -892,13 +892,21 @@ public class TranslationEnginesController(
     /// * `Source`: The source book is used as the template.
     /// * `Target`: The target book is used as the template.
     ///
+    /// The intra-verse USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters:
+    /// * `Preserve`: The USFM markers (or the entire embed) are preserved. **This is the default for paragraph markers and embeds**.
+    /// * `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
+    ///
     /// Only pretranslations for the most recent successful build of the engine are returned.
-    /// Both scripture and non-scripture text in the USFM is parsed and grouped according to [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
+    /// The USFM parsing and terms used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id or parallel corpus id</param>
     /// <param name="textId">The text id</param>
     /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
+    /// <param name="template">The source or target book to use as the USFM template.</param>
+    /// <param name="paragraphMarkerBehavior">The behavior of paragraph markers.</param>
+    /// <param name="embedBehavior">The behavior of embed markers.</param>
+    /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The book in USFM format</response>
     /// <response code="204">The specified book does not exist in the source or target corpus.</response>
@@ -925,6 +933,9 @@ public class TranslationEnginesController(
         [NotNull] string textId,
         [FromQuery(Name = "text-origin")] PretranslationUsfmTextOrigin? textOrigin,
         [FromQuery] PretranslationUsfmTemplate? template,
+        [FromQuery(Name = "paragraph-marker-behavior")] PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior,
+        [FromQuery(Name = "embed-behavior")] PretranslationUsfmMarkerBehavior? embedBehavior,
+        [FromQuery(Name = "style-marker-behavior")] PretranslationUsfmMarkerBehavior? styleMarkerBehavior,
         CancellationToken cancellationToken
     )
     {
@@ -942,6 +953,9 @@ public class TranslationEnginesController(
             textId,
             textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
             template ?? PretranslationUsfmTemplate.Auto,
+            paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
+            embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
+            styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
             cancellationToken
         );
         if (usfm == "")
