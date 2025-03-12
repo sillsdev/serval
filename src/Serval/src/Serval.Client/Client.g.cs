@@ -2461,12 +2461,17 @@ namespace Serval.Client
         /// <br/>* `Source`: The source book is used as the template.
         /// <br/>* `Target`: The target book is used as the template.
         /// <br/>            
-        /// <br/>The intra-verse USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters:
+        /// <br/>The intra-verse USFM markers are handled in the following way:
+        /// <br/>* All verse and non-verse text is stripped of all intra-verse USFM to be pretranslated (if the book is chosen).
+        /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
+        /// <br/>* Only the note text in field \ft will be translated - all other parts of embeds will be carried through if preserved.
+        /// <br/>            
+        /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters.
         /// <br/>* `Preserve`: The USFM markers (or the entire embed) are preserved. **This is the default for paragraph markers and embeds**.
         /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
         /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
-        /// <br/>The USFM parsing and terms used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
+        /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id or parallel corpus id</param>
@@ -5152,12 +5157,17 @@ namespace Serval.Client
         /// <br/>* `Source`: The source book is used as the template.
         /// <br/>* `Target`: The target book is used as the template.
         /// <br/>            
-        /// <br/>The intra-verse USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters:
+        /// <br/>The intra-verse USFM markers are handled in the following way:
+        /// <br/>* All verse and non-verse text is stripped of all intra-verse USFM to be pretranslated (if the book is chosen).
+        /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
+        /// <br/>* Only the note text in field \ft will be translated - all other parts of embeds will be carried through if preserved.
+        /// <br/>            
+        /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters.
         /// <br/>* `Preserve`: The USFM markers (or the entire embed) are preserved. **This is the default for paragraph markers and embeds**.
         /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
         /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
-        /// <br/>The USFM parsing and terms used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
+        /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id or parallel corpus id</param>
