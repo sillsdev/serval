@@ -36,6 +36,9 @@ public class PretranslationService(
         string textId,
         PretranslationUsfmTextOrigin textOrigin,
         PretranslationUsfmTemplate template,
+        PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
+        PretranslationUsfmMarkerBehavior embedBehavior,
+        PretranslationUsfmMarkerBehavior styleMarkerBehavior,
         CancellationToken cancellationToken = default
     )
     {
@@ -100,7 +103,10 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferExisting
+                            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+                            paragraphBehavior: Map(paragraphMarkerBehavior),
+                            embedBehavior: Map(embedBehavior),
+                            styleBehavior: Map(styleMarkerBehavior)
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -109,7 +115,10 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferNew
+                            textBehavior: UpdateUsfmTextBehavior.PreferNew,
+                            paragraphBehavior: Map(paragraphMarkerBehavior),
+                            embedBehavior: Map(embedBehavior),
+                            styleBehavior: Map(styleMarkerBehavior)
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -118,7 +127,10 @@ public class PretranslationService(
                             textId,
                             [], // don't put any pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferNew
+                            textBehavior: UpdateUsfmTextBehavior.PreferNew,
+                            paragraphBehavior: Map(paragraphMarkerBehavior),
+                            embedBehavior: Map(embedBehavior),
+                            styleBehavior: Map(styleMarkerBehavior)
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -127,7 +139,10 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+                            paragraphBehavior: Map(paragraphMarkerBehavior),
+                            embedBehavior: Map(embedBehavior),
+                            styleBehavior: Map(styleMarkerBehavior)
                         ) ?? "";
                     break;
             }
@@ -151,18 +166,34 @@ public class PretranslationService(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+                            paragraphBehavior: Map(paragraphMarkerBehavior),
+                            embedBehavior: Map(embedBehavior),
+                            styleBehavior: Map(styleMarkerBehavior)
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
                             textId,
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting
+                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+                            paragraphBehavior: Map(paragraphMarkerBehavior),
+                            embedBehavior: Map(embedBehavior),
+                            styleBehavior: Map(styleMarkerBehavior)
                         ) ?? "";
             }
         }
 
         return "";
+    }
+
+    private static UpdateUsfmMarkerBehavior Map(PretranslationUsfmMarkerBehavior behavior)
+    {
+        return behavior switch
+        {
+            PretranslationUsfmMarkerBehavior.Preserve => UpdateUsfmMarkerBehavior.Preserve,
+            PretranslationUsfmMarkerBehavior.Strip => UpdateUsfmMarkerBehavior.Strip,
+            _ => throw new InvalidEnumArgumentException(nameof(behavior))
+        };
     }
 }
