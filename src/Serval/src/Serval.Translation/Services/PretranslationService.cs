@@ -193,7 +193,7 @@ public class PretranslationService(
         {
             PretranslationUsfmMarkerBehavior.Preserve => UpdateUsfmMarkerBehavior.Preserve,
             PretranslationUsfmMarkerBehavior.Strip => UpdateUsfmMarkerBehavior.Strip,
-            _ => throw new ArgumentOutOfRangeException(nameof(behavior))
+            _ => throw new InvalidEnumArgumentException(nameof(behavior))
         };
     }
 }
