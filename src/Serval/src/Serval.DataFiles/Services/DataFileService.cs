@@ -115,7 +115,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
                 DataFile? dataFile = await Entities.DeleteAsync(id, ct);
                 if (dataFile is null)
                     throw new EntityNotFoundException($"Could not find the DataFile '{id}'.");
-                // We are intentioanlly not deleting files so they can be deleted later by DataFileCleaner
+                // We are intentionally not deleting files so they can be deleted later by DataFileCleaner
                 await _deletedFiles.InsertAsync(
                     new DeletedFile { Filename = dataFile.Filename, DeletedAt = DateTime.UtcNow },
                     ct
