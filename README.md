@@ -142,8 +142,8 @@ There are 3 different environments that Serval is deployed to:
 - Production
 
 ## To deploy the cluster
-- Add the dallas-rke KubeConfig to your kubectl configs
-- Run `kubectl config use-context dallas-rke`
+- Add the dallas-stage KubeConfig to your kubectl configs
+- Run `kubectl config use-context dallas-stage`
 - First, startup the storage (using internal qa for example)
 - `helm install serval-pvc deploy/serval-pvc -n nlp -f deploy/qa-int-values.yaml`
 - Now you can turn on Serval
