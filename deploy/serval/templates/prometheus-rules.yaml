@@ -19,20 +19,6 @@ spec:
           for: 30m
           labels:
             severity: warning
-    - name: memory
-      rules:
-        - alert: memory-near-limit
-          annotations:
-            description: >-
-              '{{ "{{ $labels.container }}" }} is over 93% memory for 10 minutes.'
-          expr: >-
-            min (container_memory_working_set_bytes{image!="", namespace="{{ .Values.namespace }}", container!="POD" })
-            by (container, namespace) / on (container, namespace)
-            min (kube_pod_container_resource_limits{resource="memory", namespace="{{ .Values.namespace }}", container!="POD"})
-            by (container, namespace) * 100 >= 93
-          for: 10m
-          labels:
-            severity: warning
     - name: disk
       rules:
         - alert: disk-near-limit
