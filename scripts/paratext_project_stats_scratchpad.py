@@ -24,19 +24,8 @@ book_count_df = None
 for folder in folders[:1]:
     root_path = os.path.join(pp_folder, folder, "local/stats")
     # read in the file meta.json in each folder
-    meta = json.load(open(os.path.join(root_path, "meta.json")))
-    revision_df = pd.DataFrame(
-        json.load(open(os.path.join(root_path, "revisionStatus.json")))
-    ).T
-    cc_df = pd.DataFrame(
-        json.load(open(os.path.join(root_path, "characterCount.json")))
-    )
-    notes_df = pd.DataFrame(
-        json.load(open(os.path.join(root_path, "openNotesCount.json")))
-    )
-    cc_df = build_character_data(
-        cc_df,
-    )
+
+    meta, revision_df, cc_df, notes_df = load_json_data(root_path)
 
     book_df = build_book_data(cc_df, notes_df, revision_df)
     book_df = correct_time(book_df)

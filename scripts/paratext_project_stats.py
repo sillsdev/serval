@@ -1,6 +1,28 @@
 # %%
+import json
+import os
+
 import numpy as np
 import pandas as pd
+
+
+def load_json_data(
+    root_path: str,
+) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    meta = json.load(open(os.path.join(root_path, "meta.json")))
+    revision_df = pd.DataFrame(
+        json.load(open(os.path.join(root_path, "revisionStatus.json")))
+    ).T
+    cc_df = pd.DataFrame(
+        json.load(open(os.path.join(root_path, "characterCount.json")))
+    )
+    cc_df = build_character_data(cc_df)
+
+    notes = json.load(open(os.path.join(root_path, "openNotesCount.json")))
+    notes_df = pd.json_normalize(notes, record_path="byBook", meta=["date"])
+    notes_df = build_notes_data(notes_df)
+
+    return meta, revision_df, cc_df, notes_df
 
 
 def build_character_data(cc_df: pd.DataFrame):
@@ -32,6 +54,28 @@ def build_character_data(cc_df: pd.DataFrame):
         & (cc_df["contentChange"] >= (0.5 * cc_df["contentTotal"]))
     ).astype(int)
     return cc_df
+
+
+def build_notes_data(notes_df: pd.DataFrame) -> pd.DataFrame:
+    notes_df = notes_df[
+        [
+            "referenceId",
+            "date",
+            "notesType.open",
+            "notesType.resolved",
+            "notesType.conflict",
+        ]
+    ]
+    notes_df = notes_df.rename(
+        columns={
+            "referenceId": "book",
+            "notesType.open": "openNotes",
+            "notesType.resolved": "resolvedNotes",
+            "notesType.conflict": "conflictNotes",
+        }
+    )
+    notes_df["notesUpdated"] = 1
+    return notes_df
 
 
 def build_verse_count_df(verses_df: pd.DataFrame):
@@ -69,16 +113,25 @@ def convert_to_int_if_possible(df):
 def build_book_data(
     cc_df: pd.DataFrame, notes_df: pd.DataFrame, revision_df: pd.DataFrame
 ):
-    merged_df = cc_df.merge(
+    cc_and_notes_df = cc_df.merge(
+        notes_df,
+        on=["date", "book"],
+        how="outer",
+    )
+    merged_df = cc_and_notes_df.merge(
         revision_df[["date"]],
         on="date",
         how="outer",
         sort="date",
     )
+
+    notesColumns = ["openNotes", "resolvedNotes", "conflictNotes"]
+    merged_df.loc[:, notesColumns] = merged_df.groupby("book")[notesColumns].ffill()
+
     merged_df.fillna(0, inplace=True)
 
-    merged_df = merged_df.sort_values("date")
     book_group = merged_df.groupby(["book", "date"])
+
     book_df = book_group.agg(
         {
             "contentTotal": "sum",
@@ -87,6 +140,9 @@ def build_book_data(
             "moderateEdit": "sum",
             "majorEdit": "sum",
             "contentChange": "sum",
+            "openNotes": "max",
+            "resolvedNotes": "max",
+            "conflictNotes": "max",
         }
     )
     book_df = book_df.reset_index()
@@ -99,6 +155,9 @@ def build_book_data(
     book_df["moderateEdit_cumsum"] = book_grouped["moderateEdit"].cumsum()
     book_df["majorEdit_cumsum"] = book_grouped["majorEdit"].cumsum()
     book_df["contentChange_cumsum"] = book_grouped["contentChange"].cumsum()
+    book_df["openNotes"] = book_grouped["openNotes"].ffill()
+    book_df["resolvedNotes"] = book_grouped["resolvedNotes"].ffill()
+    book_df["conflictNotes"] = book_grouped["conflictNotes"].ffill()
     return book_df
 
 
