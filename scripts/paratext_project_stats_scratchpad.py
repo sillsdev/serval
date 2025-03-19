@@ -28,7 +28,8 @@ for folder in folders[:1]:
     meta, revision_df, cc_df, notes_df = load_json_data(root_path)
 
     book_df = build_book_data(cc_df, notes_df, revision_df)
-    book_df = correct_time(book_df)
+    week_df = to_weeks(book_df)
+    book_df = calculate_idle_time(book_df)
 
     if not verses_read_in:
         verses_df = pd.DataFrame(
@@ -37,9 +38,8 @@ for folder in folders[:1]:
         book_count_df = build_verse_count_df(verses_df)
         verses_read_in = True
 
-    book_df = book_df.merge(book_count_df, on="book", how="outer", sort="dateTime")
-    book_df.reset_index(drop=True, inplace=True)
-    book_df.to_csv(os.path.join(root_path, "book_data.csv"), index=False)
+    week_df = week_df.merge(book_count_df, on="book", how="left")
+    week_df.to_csv(os.path.join(root_path, "week_data.csv"), index=False)
 
 # %%
 plt.plot(cc_df["dateTime"], cc_df["contentTotal"])

@@ -8,7 +8,7 @@ import pandas as pd
 
 def load_json_data(
     root_path: str,
-) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame):
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     meta = json.load(open(os.path.join(root_path, "meta.json")))
     revision_df = pd.DataFrame(
         json.load(open(os.path.join(root_path, "revisionStatus.json")))
@@ -92,15 +92,6 @@ def build_verse_count_df(verses_df: pd.DataFrame):
 
 
 def convert_to_int_if_possible(df):
-    """
-    Converts DataFrame columns to integer type if all values in the column are integers.
-
-    Args:
-        df (pd.DataFrame): Input DataFrame.
-
-    Returns:
-        pd.DataFrame: DataFrame with columns converted to integer type where applicable.
-    """
     for col in df.columns:
         if pd.api.types.is_numeric_dtype(df[col]):
             if all(
@@ -150,29 +141,55 @@ def build_book_data(
 
     book_df["dateTime"] = pd.to_datetime(book_df["date"].astype("Int64") * 1000000000)
     book_grouped = book_df.groupby("book")
-    book_df["firstDraft_cumsum"] = book_grouped["firstDraft"].cumsum()
-    book_df["minorEdit_cumsum"] = book_grouped["minorEdit"].cumsum()
-    book_df["moderateEdit_cumsum"] = book_grouped["moderateEdit"].cumsum()
-    book_df["majorEdit_cumsum"] = book_grouped["majorEdit"].cumsum()
-    book_df["contentChange_cumsum"] = book_grouped["contentChange"].cumsum()
     book_df["openNotes"] = book_grouped["openNotes"].ffill()
     book_df["resolvedNotes"] = book_grouped["resolvedNotes"].ffill()
     book_df["conflictNotes"] = book_grouped["conflictNotes"].ffill()
     return book_df
 
 
-def correct_time(book_df: pd.DataFrame):
-    book_df["timeFromStart"] = book_df["dateTime"] - book_df["dateTime"].min()
-    book_df["timeBetweenEdits"] = book_df["dateTime"].diff()
-    book_df["timeBetweenEdits"] = book_df["timeBetweenEdits"].fillna(pd.Timedelta(0))
-    # shorten any gaps over 3 weeks to be one week of time
-    book_df["wasIdle"] = book_df["timeBetweenEdits"] > pd.Timedelta(21, unit="d")
-    book_df["timeBetweenEditsRemoveIdle"] = book_df["timeBetweenEdits"]
-    book_df.loc[book_df["wasIdle"], "timeBetweenEditsRemoveIdle"] = pd.Timedelta(
-        7, unit="d"
+def to_weeks(book_df: pd.DataFrame):
+    start_date = book_df["dateTime"].min()
+    one_week = pd.Timedelta(7, unit="d")
+    book_df["weeksFromStart"] = (book_df["dateTime"] - start_date).dt.days // 7
+    # create combined week and year column
+    week_df = book_df.groupby(["book", "weeksFromStart"]).agg(
+        {
+            "contentTotal": "sum",
+            "firstDraft": ["sum", "max"],
+            "minorEdit": "sum",
+            "moderateEdit": "sum",
+            "majorEdit": "sum",
+            "contentChange": "sum",
+            "openNotes": "max",
+            "resolvedNotes": "max",
+            "conflictNotes": "max",
+        }
     )
-    book_df["timeFromStartRemoveIdle"] = book_df["timeBetweenEditsRemoveIdle"].cumsum()
-    return book_df
+    week_df.sort_values(by=["weeksFromStart", "book"], inplace=True)
+    week_df = week_df.reset_index()
+    week_df.columns = [
+        "_".join(col) if col[1] != "" else col[0] for col in week_df.columns
+    ]
+    week_df["dateTime"] = start_date + week_df["weeksFromStart"] * one_week
+    week_df["year.week"] = week_df["dateTime"].dt.strftime("%Y.%U")
+
+    week_grouped = week_df.groupby("book")
+    week_df["firstDraft_cumsum"] = week_grouped["firstDraft_sum"].cumsum()
+    week_df["minorEdit_cumsum"] = week_grouped["minorEdit_sum"].cumsum()
+    week_df["moderateEdit_cumsum"] = week_grouped["moderateEdit_sum"].cumsum()
+    week_df["majorEdit_cumsum"] = week_grouped["majorEdit_sum"].cumsum()
+    week_df["contentChange_cumsum"] = week_grouped["contentChange_sum"].cumsum()
+    return week_df
+
+
+def calculate_idle_time(week_df: pd.DataFrame):
+    weeksBetweenEdits = week_df["weeksFromStart"].diff()
+    weeksBetweenEdits = weeksBetweenEdits.fillna(0)
+    # shorten any gaps over 3 weeks to be one week of time
+    week_df["wasIdle"] = weeksBetweenEdits >= 3
+    weeksBetweenEdits[week_df["wasIdle"]] = 1
+    week_df["weeksFromStartRemoveIdle"] = weeksBetweenEdits.cumsum()
+    return week_df
 
 
 # %%
