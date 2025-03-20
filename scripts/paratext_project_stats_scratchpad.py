@@ -2,28 +2,44 @@
 import os
 
 import clearml_stats
-import pandas as pd
-from paratext_project_processor import ParatextProjectProcessor
-from plotly import express as px
-
-pd.options.plotting.backend = "plotly"
+from pp_stats.paratext_project_plotter import plot_combined_progress
+from pp_stats.paratext_project_processor import ParatextProjectProcessor
 
 # %%
 stats = clearml_stats.clearml_stats()
 # stats.update_tasks_and_projects()
-# stats.create_language_projects()
+stats.create_language_projects()
 
 # %%
 pp_folder = os.environ["PARATEXT_PROJECT_STATS_FOLDER"]
 ppp = ParatextProjectProcessor(pp_folder)
-ppp.process()
+ppp.process(20)
 
 
 # %%
-week_df = ppp.week_data["ESWE8_c081cd88e02904fdf4ef621358a900d37d89e2b5"].week_df.copy()
-week_df["percentDrafted"] = week_df["firstDraft_cumsum"] / week_df["verseCount"] * 100
-week_df.set_index("weeksFromStartRemoveIdle", inplace=True)
-grouped = week_df.groupby("book")["percentDrafted"].reset_index()
-fig = px.line(grouped, x="book", y="percentDrafted", title="Percent Drafted by Book")
-fig.show()
+for pp_id, pp in ppp.week_data.items():
+    language_name = pp.meta_dict["language"]
+    language_code = pp.meta_dict["languageCode"].split(":")[0]
+    if language_name in stats.lang_name_to_code:
+        language_code = stats.lang_name_to_code[language_name]
+    if language_code in stats._language_projects_df.index:
+        language = stats._language_projects_df.loc[language_code, :]
+        tasks = language["tasks"]
+        completion_times = [
+            stats._tasks[task]["completed"]
+            for task in tasks
+            if "completed" in stats._tasks[task]
+        ]
+    else:
+        print(f"Language {language_code} not found in language projects.")
+        continue
+
+    combined_df = pp.get_combined_progress(False)
+    fig = plot_combined_progress(
+        combined_df, draft_events=completion_times, title=f"{pp_id}: {language_name}"
+    )
+    fig.show()
+    fig.write_html(os.path.join(pp.process_path, f"combined_progress.html"))
+    pp.save_week_data()
+    print(f"Processed project {pp_id} with language {language_name}: {language_code}.")
 # %%

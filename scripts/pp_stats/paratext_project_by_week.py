@@ -8,8 +8,8 @@ import pandas as pd
 class ParatextProjectByWeek:
     def __init__(self, root_folder: str):
         self.process_path = os.path.join(root_folder, "local/stats")
-        self.meta_df = None
-        self.week_df = None
+        self.meta_dict: dict[str, str] = None
+        self.week_df: pd.DataFrame = None
         self._book_count_df = None
 
     def process(self):
@@ -30,8 +30,31 @@ class ParatextProjectByWeek:
             index=False,
         )
 
+    def get_book(self, book: str) -> pd.DataFrame:
+        return self.week_df[self.week_df["name"] == book].copy()
+
+    def get_combined_progress(self, removeIdleWeeks=True) -> pd.DataFrame:
+        if removeIdleWeeks:
+            week_column = "weeksFromStartRemoveIdle"
+        else:
+            week_column = "weeksFromStart"
+        combined_df = self.week_df.groupby(week_column).agg(
+            {
+                "contentTotal_sum": "sum",
+                "firstDraft_sum": "sum",
+                "minorEdit_sum": "sum",
+                "moderateEdit_sum": "sum",
+                "majorEdit_sum": "sum",
+                "contentChange_sum": "sum",
+                "notesChange_sum": "sum",
+                "year.week": "first",
+                "dateTime": "first",
+            }
+        )
+        return combined_df
+
     def _load_meta_data(self) -> pd.DataFrame:
-        self.meta_df = json.load(open(os.path.join(self.process_path, "meta.json")))
+        self.meta_dict = json.load(open(os.path.join(self.process_path, "meta.json")))
 
     def _load_revision_data(
         self,
@@ -84,28 +107,27 @@ class ParatextProjectByWeek:
             (cc_df["contentChange"] >= 5)
             & (cc_df["contentChange"] >= (0.5 * cc_df["contentTotal"]))
         ).astype(int)
+        # remove duplicate firstDrafts on the same referenceNumber
+        firstDraftMask = cc_df["firstDraft"] == 1
+        cc_df.loc[firstDraftMask, "firstDraft"] = (
+            cc_df[firstDraftMask].groupby("referenceNumber")["firstDraft"].cumsum() == 1
+        ).astype(int)
         return cc_df
 
     def _build_notes_data(self, notes_df: pd.DataFrame) -> pd.DataFrame:
-        notes_df = notes_df[
-            [
-                "referenceId",
-                "date",
-                "notesType.open",
-                "notesType.resolved",
-                "notesType.conflict",
-            ]
+        changed_cols = [
+            "notesType.openChange",
+            "notesType.resolvedChange",
+            "notesType.conflictChange",
+            "notesType.openConsultantChange",
+            "notesType.resolvedConsultantChange",
         ]
-        notes_df = notes_df.rename(
-            columns={
-                "referenceId": "book",
-                "notesType.open": "openNotes",
-                "notesType.resolved": "resolvedNotes",
-                "notesType.conflict": "conflictNotes",
-            }
+        notes_df.rename(
+            columns={"referenceId": "book", "notesType.open": "openNotes"},
+            inplace=True,
         )
-        notes_df["notesUpdated"] = 1
-        return notes_df
+        notes_df["notesChange"] = notes_df[changed_cols].abs().sum(axis=1)
+        return notes_df[["date", "book", "notesChange", "openNotes"]]
 
     def _build_book_data(self) -> pd.DataFrame:
         revision_df, cc_df, notes_df = self._load_revision_data()
@@ -122,8 +144,7 @@ class ParatextProjectByWeek:
             sort="date",
         )
 
-        notesColumns = ["openNotes", "resolvedNotes", "conflictNotes"]
-        merged_df.loc[:, notesColumns] = merged_df.groupby("book")[notesColumns].ffill()
+        merged_df.loc[:, "openNotes"] = merged_df.groupby("book")["openNotes"].ffill()
 
         merged_df.fillna(0, inplace=True)
 
@@ -137,9 +158,8 @@ class ParatextProjectByWeek:
                 "moderateEdit": "sum",
                 "majorEdit": "sum",
                 "contentChange": "sum",
+                "notesChange": "sum",
                 "openNotes": "max",
-                "resolvedNotes": "max",
-                "conflictNotes": "max",
             }
         )
         book_df = book_df.reset_index()
@@ -150,8 +170,6 @@ class ParatextProjectByWeek:
         )
         book_grouped = book_df.groupby("book")
         book_df["openNotes"] = book_grouped["openNotes"].ffill()
-        book_df["resolvedNotes"] = book_grouped["resolvedNotes"].ffill()
-        book_df["conflictNotes"] = book_grouped["conflictNotes"].ffill()
         return book_df
 
     def _to_weeks(self, book_df: pd.DataFrame) -> pd.DataFrame:
@@ -167,9 +185,8 @@ class ParatextProjectByWeek:
                 "moderateEdit": "sum",
                 "majorEdit": "sum",
                 "contentChange": "sum",
+                "notesChange": "sum",
                 "openNotes": "max",
-                "resolvedNotes": "max",
-                "conflictNotes": "max",
             }
         )
         week_df.sort_values(by=["weeksFromStart", "book"], inplace=True)
@@ -186,6 +203,7 @@ class ParatextProjectByWeek:
         week_df["moderateEdit_cumsum"] = week_grouped["moderateEdit_sum"].cumsum()
         week_df["majorEdit_cumsum"] = week_grouped["majorEdit_sum"].cumsum()
         week_df["contentChange_cumsum"] = week_grouped["contentChange_sum"].cumsum()
+        week_df["notesChange_cumsum"] = week_grouped["notesChange_sum"].cumsum()
         return week_df
 
     def _calculate_idle_time(self, week_df: pd.DataFrame) -> pd.DataFrame:

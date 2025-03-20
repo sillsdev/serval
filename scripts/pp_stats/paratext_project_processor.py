@@ -1,7 +1,7 @@
 # %%
 import os
 
-from paratext_project_by_week import ParatextProjectByWeek
+from pp_stats.paratext_project_by_week import ParatextProjectByWeek
 
 
 class ParatextProjectProcessor:
@@ -11,8 +11,10 @@ class ParatextProjectProcessor:
         self.week_data: dict[str, ParatextProjectByWeek] = {}
         self.verses_read_in = False
 
-    def process(self):
-        for folder in self.folders[:1]:
+    def process(self, max_num_projects: int = None):
+        if not max_num_projects:
+            max_num_projects = len(self.folders)
+        for folder in self.folders[:max_num_projects]:
             pp = ParatextProjectByWeek(os.path.join(self.parent_folder, folder))
             pp.process()
             pp.save_week_data()

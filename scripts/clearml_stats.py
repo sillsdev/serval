@@ -58,7 +58,7 @@ class clearml_stats:
         self._languages: pd.DataFrame = pd.read_excel(
             language_database_filename, index_col=0
         )
-        self._lang_name_to_code = self._create_language_name_to_code()
+        self.lang_name_to_code: dict[str, str] = self._create_language_name_to_code()
 
     def update_tasks_and_projects(self):
         last_update = self._last_update()
@@ -347,9 +347,9 @@ class clearml_stats:
                             if candidate.lower() in self._languages.index
                         ]
                         + [
-                            self._lang_name_to_code[normalize_name(lang_name)]
+                            self.lang_name_to_code[normalize_name(lang_name)]
                             for lang_name in re_lang_name.findall(command)
-                            if normalize_name(lang_name) in self._lang_name_to_code
+                            if normalize_name(lang_name) in self.lang_name_to_code
                         ]
                     )
                     if len(lang_code_candidates) == 2:
