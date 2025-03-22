@@ -11,7 +11,10 @@ pd.options.plotting.backend = "plotly"
 
 # %%
 def plot_combined_progress(
-    combined_df: pd.DataFrame, draft_events: list[datetime], title: str = None
+    combined_df: pd.DataFrame,
+    draft_events: list[datetime],
+    title: str = None,
+    year_start: int = None,
 ) -> go.Figure:
 
     cols_to_plot = [
@@ -24,13 +27,9 @@ def plot_combined_progress(
     combined_df.columns = [col.replace("_sum", "") for col in combined_df.columns]
     cols_to_plot = [col.replace("_sum", "") for col in cols_to_plot]
 
+    start_time = combined_df.loc[0, "dateTime"].tz_localize(None)
     draft_event_weeks_since_start = [
-        (
-            event.replace(tzinfo=None)
-            - combined_df.loc[0, "dateTime"].tz_localize(None)
-        ).days
-        // 7
-        for event in draft_events
+        (event.replace(tzinfo=None) - start_time).days // 7 for event in draft_events
     ]
 
     # create 3 axis plot vertically stacked with reduced spacing
@@ -78,6 +77,7 @@ def plot_combined_progress(
             opacity=0.8,
             row="all",
             col=1,
+            layer="below",
         )
 
     # Top subplot: First Draft
@@ -139,7 +139,7 @@ def plot_combined_progress(
         showlegend=True,
         margin=dict(t=30, b=30, l=30, r=30),
         legend=dict(
-            x=0.98,
+            x=0.02,
             y=0.98,
             xanchor="left",
             yanchor="top",
@@ -153,6 +153,12 @@ def plot_combined_progress(
     fig.update_yaxes(titlefont=dict(size=10), row=1, col=1)
     fig.update_yaxes(titlefont=dict(size=10), row=2, col=1)
     fig.update_yaxes(titlefont=dict(size=10), row=3, col=1)
+
+    # Set the default zoom for the X axis to start at the year_start
+    if year_start is not None:
+        start_week = max(0, (datetime(year_start, 1, 1) - start_time).days // 7)
+        end_week = max(combined_df.index)
+        fig.update_xaxes(range=[start_week, end_week])
 
     return fig
 

@@ -15,10 +15,13 @@ class ParatextProjectProcessor:
         if not max_num_projects:
             max_num_projects = len(self.folders)
         for folder in self.folders[:max_num_projects]:
-            pp = ParatextProjectByWeek(os.path.join(self.parent_folder, folder))
-            pp.process()
-            pp.save_week_data()
-            self.week_data[folder] = pp
+            try:
+                pp = ParatextProjectByWeek(os.path.join(self.parent_folder, folder))
+                pp.process()
+                pp.save_week_data()
+                self.week_data[folder] = pp
+            except Exception as e:
+                print(f"Error processing folder {folder}: {e}")
 
 
 # %%
