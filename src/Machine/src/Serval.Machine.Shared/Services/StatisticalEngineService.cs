@@ -139,14 +139,15 @@ public class StatisticalEngineService(
         state.Touch();
     }
 
-    public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        bool building = await CancelBuildJobAsync(engineId, cancellationToken);
-        if (!building)
+        string? buildId = await CancelBuildJobAsync(engineId, cancellationToken);
+        if (buildId is null)
             throw new InvalidOperationException("The engine is not currently building.");
 
         StatisticalEngineState state = _stateService.Get(engineId);
         state.Touch();
+        return buildId;
     }
 
     public int GetQueueSize()
@@ -154,7 +155,7 @@ public class StatisticalEngineService(
         return _clearMLQueueService.GetQueueSize(Type);
     }
 
-    private async Task<bool> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
+    private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
         string? buildId = null;
         await _dataAccessContext.WithTransactionAsync(
@@ -166,7 +167,7 @@ public class StatisticalEngineService(
             },
             cancellationToken: cancellationToken
         );
-        return buildId is not null;
+        return buildId;
     }
 
     private async Task<WordAlignmentEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)

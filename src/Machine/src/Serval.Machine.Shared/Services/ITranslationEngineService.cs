@@ -39,7 +39,7 @@ public interface ITranslationEngineService
         CancellationToken cancellationToken = default
     );
 
-    Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
