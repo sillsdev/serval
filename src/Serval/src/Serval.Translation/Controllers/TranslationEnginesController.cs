@@ -1214,7 +1214,10 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<TranslationBuildDto>> CancelBuildAsync([NotNull] string id, CancellationToken cancellationToken)
+    public async Task<ActionResult<TranslationBuildDto>> CancelBuildAsync(
+        [NotNull] string id,
+        CancellationToken cancellationToken
+    )
     {
         await AuthorizeAsync(id, cancellationToken);
         Build? build = await _engineService.CancelBuildAsync(id, cancellationToken);

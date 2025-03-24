@@ -122,7 +122,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         {
             throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
-        return new CancelBuildResponse() {BuildId = buildId};
+        return new CancelBuildResponse() { BuildId = buildId };
     }
 
     public override async Task<GetModelDownloadUrlResponse> GetModelDownloadUrl(
