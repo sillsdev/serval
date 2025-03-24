@@ -253,7 +253,13 @@ public class ServalApiTests
         {
             try
             {
-                await _helperClient.TranslationEnginesClient.CancelBuildAsync(engineIds[i]);
+                TranslationBuild currentBuild = await _helperClient.TranslationEnginesClient.GetCurrentBuildAsync(
+                    engineIds[i]
+                );
+                TranslationBuild canceledBuild = await _helperClient.TranslationEnginesClient.CancelBuildAsync(
+                    engineIds[i]
+                );
+                Assert.That(currentBuild, Is.EqualTo(canceledBuild));
             }
             catch { }
         }
