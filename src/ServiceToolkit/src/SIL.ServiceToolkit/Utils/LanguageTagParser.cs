@@ -30,6 +30,18 @@ public partial class LanguageTagParser
     {
         Sldr.InitializeLanguageTags();
         string cachedAllTagsPath = Path.Combine(Sldr.SldrCachePath, "langtags.json");
+
+        if (!File.Exists(cachedAllTagsPath))
+        {
+            using HttpClient client = new();
+            using HttpResponseMessage response = client.Send(
+                new HttpRequestMessage(HttpMethod.Get, "https://ldml.api.sil.org/langtags.json")
+            );
+            response.EnsureSuccessStatusCode();
+            using Stream responseStream = response.Content.ReadAsStream();
+            using FileStream fileStream = new(cachedAllTagsPath, FileMode.Create);
+            responseStream.CopyTo(fileStream);
+        }
         using FileStream stream = new(cachedAllTagsPath, FileMode.Open);
         var json = JsonNode.Parse(stream);
 
