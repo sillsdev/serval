@@ -663,12 +663,16 @@ public class WordAlignmentEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult> CancelBuildAsync([NotNull] string id, CancellationToken cancellationToken)
+    public async Task<ActionResult<WordAlignmentBuildDto>> CancelBuildAsync(
+        [NotNull] string id,
+        CancellationToken cancellationToken
+    )
     {
         await AuthorizeAsync(id, cancellationToken);
-        if (!await _engineService.CancelBuildAsync(id, cancellationToken))
+        Build? build = await _engineService.CancelBuildAsync(id, cancellationToken);
+        if (build is null)
             return NoContent();
-        return Ok();
+        return Ok(Map(build));
     }
 
     private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)

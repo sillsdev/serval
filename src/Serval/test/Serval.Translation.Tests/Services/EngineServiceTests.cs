@@ -2187,7 +2187,7 @@ public class EngineServiceTests
                 .Returns(CreateAsyncUnaryCall(getWordGraphResponse));
             TranslationServiceClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
             TranslationServiceClient
                 .CreateAsync(Arg.Any<CreateRequest>())
                 .Returns(CreateAsyncUnaryCall(new CreateResponse()));

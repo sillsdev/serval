@@ -12,7 +12,7 @@ service TranslationEngineApi {
     rpc GetWordGraph(GetWordGraphRequest) returns (GetWordGraphResponse);
     rpc TrainSegmentPair(TrainSegmentPairRequest) returns (google.protobuf.Empty);
     rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
-    rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
+    rpc CancelBuild(CancelBuildRequest) returns (CancelBuildResponse);
     rpc GetModelDownloadUrl(GetModelDownloadUrlRequest) returns (GetModelDownloadUrlResponse);
     rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
     rpc GetLanguageInfo(GetLanguageInfoRequest) returns (GetLanguageInfoResponse);
@@ -77,6 +77,9 @@ message CancelBuildRequest {
     string engine_id = 2;
 }
 
+message CancelBuildResponse {
+    string build_id = 1;
+}
 
 message GetModelDownloadUrlRequest {
     string engine_type = 1;

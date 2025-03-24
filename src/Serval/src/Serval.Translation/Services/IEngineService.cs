@@ -41,7 +41,7 @@ public interface IEngineService
 
     Task StartBuildAsync(Build build, CancellationToken cancellationToken = default);
 
-    Task<bool> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<Build?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 

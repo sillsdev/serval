@@ -209,14 +209,15 @@ public class SmtTransferEngineService(
         state.Touch();
     }
 
-    public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        bool building = await CancelBuildJobAsync(engineId, cancellationToken);
-        if (!building)
+        string? buildId = await CancelBuildJobAsync(engineId, cancellationToken);
+        if (buildId is null)
             throw new InvalidOperationException("The engine is not currently building.");
 
         SmtTransferEngineState state = _stateService.Get(engineId);
         state.Touch();
+        return buildId;
     }
 
     public int GetQueueSize()
@@ -229,7 +230,7 @@ public class SmtTransferEngineService(
         throw new NotSupportedException("SMT transfer engines do not support language info.");
     }
 
-    private async Task<bool> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
+    private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
         string? buildId = null;
         await _dataAccessContext.WithTransactionAsync(
@@ -241,7 +242,7 @@ public class SmtTransferEngineService(
             },
             cancellationToken: cancellationToken
         );
-        return buildId is not null;
+        return buildId;
     }
 
     public Task<ModelDownloadUrl> GetModelDownloadUrlAsync(

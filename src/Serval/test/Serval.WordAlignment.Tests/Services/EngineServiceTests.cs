@@ -1216,7 +1216,7 @@ public class EngineServiceTests
                 .Returns(CreateAsyncUnaryCall(wordAlignmentResponse));
             WordAlignmentServiceClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
             WordAlignmentServiceClient.CreateAsync(Arg.Any<CreateRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
             WordAlignmentServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
             WordAlignmentServiceClient

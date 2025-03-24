@@ -387,7 +387,7 @@ public class EngineService(
         }
     }
 
-    public async Task<bool> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<Build?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
         Engine? engine = await GetAsync(engineId, cancellationToken);
         if (engine is null)
@@ -397,18 +397,18 @@ public class EngineService(
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
         try
         {
-            await client.CancelBuildAsync(
+            CancelBuildResponse cancelBuildResponse = await client.CancelBuildAsync(
                 new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id },
                 cancellationToken: cancellationToken
             );
+            return await _builds.GetAsync(cancelBuildResponse.BuildId, cancellationToken);
         }
         catch (RpcException re)
         {
             if (re.StatusCode is StatusCode.Aborted)
-                return false;
+                return null;
             throw;
         }
-        return true;
     }
 
     public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(

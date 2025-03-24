@@ -9,7 +9,7 @@ service WordAlignmentEngineApi {
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
     rpc GetWordAlignment(GetWordAlignmentRequest) returns (GetWordAlignmentResponse);
     rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
-    rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
+    rpc CancelBuild(CancelBuildRequest) returns (CancelBuildResponse);
     rpc GetQueueSize(GetQueueSizeRequest) returns (GetQueueSizeResponse);
 }
 
@@ -48,6 +48,10 @@ message StartBuildRequest {
 message CancelBuildRequest {
     string engine_type = 1;
     string engine_id = 2;
+}
+
+message CancelBuildResponse {
+    string build_id = 1;
 }
 
 message GetQueueSizeRequest {

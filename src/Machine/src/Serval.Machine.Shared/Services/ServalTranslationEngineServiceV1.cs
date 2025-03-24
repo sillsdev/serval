@@ -110,18 +110,19 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         return Empty;
     }
 
-    public override async Task<Empty> CancelBuild(CancelBuildRequest request, ServerCallContext context)
+    public override async Task<CancelBuildResponse> CancelBuild(CancelBuildRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        string? buildId;
         try
         {
-            await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
+            buildId = await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
         }
         catch (InvalidOperationException e)
         {
             throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
-        return Empty;
+        return new CancelBuildResponse() {BuildId = buildId};
     }
 
     public override async Task<GetModelDownloadUrlResponse> GetModelDownloadUrl(

@@ -1559,20 +1559,28 @@ public class TranslationEngineTests
     )
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
-        if (!addBuild)
+
+        string buildId = "b00000000000000000000000";
+        if (addBuild)
         {
-            var build = new Build { EngineRef = engineId };
+            _env.EchoClient.CancelBuildAsync(
+                Arg.Is(new CancelBuildRequest() { EngineId = engineId, EngineType = "Echo" }),
+                null,
+                null,
+                Arg.Any<CancellationToken>()
+            )
+                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse() { BuildId = buildId }));
+            var build = new Build { Id = buildId, EngineRef = engineId };
             await _env.Builds.InsertAsync(build);
-            _env.NmtClient.CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
         }
 
         switch (expectedStatusCode)
         {
             case 200:
-            case 204:
-                await client.CancelBuildAsync(engineId);
+                TranslationBuild build = await client.CancelBuildAsync(engineId);
+                Assert.That(build.Id, Is.EqualTo("b00000000000000000000000"));
                 break;
+            case 204:
             case 403:
             case 404:
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -2070,7 +2078,7 @@ public class TranslationEngineTests
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             EchoClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
             EchoClient
                 .GetModelDownloadUrlAsync(
                     Arg.Any<GetModelDownloadUrlRequest>(),
@@ -2215,7 +2223,7 @@ public class TranslationEngineTests
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             NmtClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
             NmtClient
                 .GetWordGraphAsync(Arg.Any<GetWordGraphRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall<GetWordGraphResponse>(StatusCode.Unimplemented));
