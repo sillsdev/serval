@@ -30,7 +30,7 @@ public interface IWordAlignmentEngineService
         CancellationToken cancellationToken = default
     );
 
-    Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     int GetQueueSize();
 }

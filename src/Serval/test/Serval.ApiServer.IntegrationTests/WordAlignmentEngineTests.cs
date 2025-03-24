@@ -1166,25 +1166,28 @@ public class WordAlignmentEngineTests
     )
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(scope);
-        if (!addBuild)
+
+        string buildId = "b00000000000000000000000";
+        if (addBuild)
         {
-            var build = new Build { EngineRef = engineId };
-            await _env.Builds.InsertAsync(build);
-            _env.StatisticalClient.CancelBuildAsync(
-                Arg.Any<CancelBuildRequest>(),
+            _env.EchoClient.CancelBuildAsync(
+                Arg.Is(new CancelBuildRequest() { EngineId = engineId, EngineType = "EchoWordAlignment" }),
                 null,
                 null,
                 Arg.Any<CancellationToken>()
             )
-                .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
+                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse() { BuildId = buildId }));
+            var build = new Build { Id = buildId, EngineRef = engineId };
+            await _env.Builds.InsertAsync(build);
         }
 
         switch (expectedStatusCode)
         {
             case 200:
-            case 204:
-                await client.CancelBuildAsync(engineId);
+                WordAlignmentBuild build = await client.CancelBuildAsync(engineId);
+                Assert.That(build.Id, Is.EqualTo(buildId));
                 break;
+            case 204:
             case 403:
             case 404:
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -1523,7 +1526,7 @@ public class WordAlignmentEngineTests
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             EchoClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
             var wordAlignmentResult = new WordAlignment.V1.WordAlignmentResult
             {
                 SourceTokens = { "This is a test .".Split() },
@@ -1557,7 +1560,7 @@ public class WordAlignmentEngineTests
                 .Returns(CreateAsyncUnaryCall(new Empty()));
             StatisticalClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
+                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
             StatisticalClient
                 .GetWordAlignmentAsync(Arg.Any<GetWordAlignmentRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall<GetWordAlignmentResponse>(StatusCode.Unimplemented));

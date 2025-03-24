@@ -88,11 +88,12 @@ public class NmtEngineService(
             throw new InvalidOperationException("The engine is already building or in the process of canceling.");
     }
 
-    public async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        bool building = await CancelBuildJobAsync(engineId, cancellationToken);
-        if (!building)
+        string? buildId = await CancelBuildJobAsync(engineId, cancellationToken);
+        if (buildId is null)
             throw new InvalidOperationException("The engine is not currently building.");
+        return buildId;
     }
 
     public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
@@ -165,7 +166,7 @@ public class NmtEngineService(
         return _languageTagService.ConvertToFlores200Code(language, out internalCode);
     }
 
-    private async Task<bool> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
+    private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
         string? buildId = null;
         await _dataAccessContext.WithTransactionAsync(
@@ -177,7 +178,7 @@ public class NmtEngineService(
             },
             cancellationToken: cancellationToken
         );
-        return buildId is not null;
+        return buildId;
     }
 
     private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
