@@ -43,7 +43,7 @@ public class ClearMLMonitorService(
         await MonitorClearMLTasksPerDomain(scope, cancellationToken);
     }
 
-    private async Task MonitorClearMLTasksPerDomain(IServiceScope scope, CancellationToken cancellationToken)
+    internal async Task MonitorClearMLTasksPerDomain(IServiceScope scope, CancellationToken cancellationToken)
     {
         try
         {
@@ -248,7 +248,7 @@ public class ClearMLMonitorService(
         }
     }
 
-    private async Task<bool> TrainJobStartedAsync(
+    internal async Task<bool> TrainJobStartedAsync(
         IDataAccessContext dataAccessContext,
         IBuildJobService buildJobService,
         IPlatformService platformService,
@@ -272,7 +272,7 @@ public class ClearMLMonitorService(
         return success;
     }
 
-    private async Task<bool> TrainJobCompletedAsync(
+    internal async Task<bool> TrainJobCompletedAsync(
         IBuildJobService buildJobService,
         EngineType engineType,
         string engineId,
@@ -302,7 +302,7 @@ public class ClearMLMonitorService(
         }
     }
 
-    private async Task TrainJobFaultedAsync(
+    internal async Task TrainJobFaultedAsync(
         IDataAccessContext dataAccessContext,
         IBuildJobService buildJobService,
         IPlatformService platformService,
@@ -335,7 +335,7 @@ public class ClearMLMonitorService(
         }
     }
 
-    private async Task TrainJobCanceledAsync(
+    internal async Task TrainJobCanceledAsync(
         IDataAccessContext dataAccessContext,
         IBuildJobService buildJobService,
         IPlatformService platformService,
@@ -375,7 +375,7 @@ public class ClearMLMonitorService(
         }
     }
 
-    private async Task UpdateTrainJobStatus(
+    internal async Task UpdateTrainJobStatus(
         IPlatformService platformService,
         string buildId,
         ProgressStatus progressStatus,

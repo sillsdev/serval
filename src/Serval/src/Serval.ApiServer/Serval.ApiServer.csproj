@@ -54,6 +54,6 @@
 	</Target>
 
 	<Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' ">
-		<Exec WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;NSWAG=1" Command="$(NSwagExe_Net80) run nswag.json /variables:Configuration=$(Configuration)" />
+		<Exec WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;NSWAG=1;DOTNET_ROLL_FORWARD=LatestMajor" Command="$(NSwagExe_Net80) run nswag.json /variables:Configuration=$(Configuration)" />
 	</Target>
 </Project>
