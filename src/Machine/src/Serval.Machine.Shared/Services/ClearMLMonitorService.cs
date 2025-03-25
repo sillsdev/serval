@@ -17,9 +17,9 @@ public class ClearMLMonitorService(
     ),
         IClearMLQueueService
 {
-    private static readonly string SummaryMetric = CreateMD5("Summary");
-    private static readonly string TrainCorpusSizeVariant = CreateMD5("train_corpus_size");
-    private static readonly string ConfidenceVariant = CreateMD5("confidence");
+    internal static readonly string SummaryMetric = CreateMD5("Summary");
+    internal static readonly string TrainCorpusSizeVariant = CreateMD5("train_corpus_size");
+    internal static readonly string ConfidenceVariant = CreateMD5("confidence");
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
@@ -43,7 +43,7 @@ public class ClearMLMonitorService(
         await MonitorClearMLTasksPerDomain(scope, cancellationToken);
     }
 
-    private async Task MonitorClearMLTasksPerDomain(IServiceScope scope, CancellationToken cancellationToken)
+    internal async Task MonitorClearMLTasksPerDomain(IServiceScope scope, CancellationToken cancellationToken)
     {
         try
         {
