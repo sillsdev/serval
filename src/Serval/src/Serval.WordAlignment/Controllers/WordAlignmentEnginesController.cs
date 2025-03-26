@@ -707,6 +707,12 @@ public class WordAlignmentEnginesController(
             >(new GetCorpus { CorpusId = corpusId, Owner = Owner }, cancellationToken);
             if (response.Is(out Response<CorpusResult>? result))
             {
+                if (!result.Message.Files.Any())
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {corpusId} does not have any files associated with it."
+                    );
+                }
                 corpora.Add(
                     new MonolingualCorpus
                     {
@@ -793,6 +799,13 @@ public class WordAlignmentEnginesController(
                     $"The parallel corpus {cc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                 );
             }
+            ParallelCorpus corpus = engine.ParallelCorpora.Where(pc => pc.Id == cc.ParallelCorpusId).First();
+            if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {cc.ParallelCorpusId} does not have source or target corpora associated with it."
+                );
+            }
             if (
                 cc.SourceFilters != null
                 && cc.SourceFilters.Count > 0
@@ -840,6 +853,13 @@ public class WordAlignmentEnginesController(
             {
                 throw new InvalidOperationException(
                     $"The parallel corpus {cc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
+                );
+            }
+            ParallelCorpus corpus = engine.ParallelCorpora.Where(pc => pc.Id == cc.ParallelCorpusId).First();
+            if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {cc.ParallelCorpusId} does not have source or target corpora associated with it."
                 );
             }
             trainingCorpora.Add(
