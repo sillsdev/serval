@@ -50,17 +50,41 @@ public class PretranslationService(
         CorpusFile targetFile;
         if (corpus is not null)
         {
+            if (corpus.SourceFiles.Count == 0)
+                throw new InvalidOperationException($"The corpus {corpus.Id} has no source files.");
             sourceFile = corpus.SourceFiles[0];
+            if (corpus.TargetFiles.Count == 0)
+                throw new InvalidOperationException($"The corpus {corpus.Id} has no target files.");
             targetFile = corpus.TargetFiles[0];
         }
         else if (parallelCorpus is not null)
         {
+            if (parallelCorpus.SourceCorpora.Count == 0)
+            {
+                throw new InvalidOperationException($"The parallel corpus {parallelCorpus.Id} has no source corpora.");
+            }
+            if (parallelCorpus.SourceCorpora[0].Files.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {parallelCorpus.SourceCorpora[0].Id} referenced in parallel corpus {parallelCorpus.Id} has no files associated with it."
+                );
+            }
             sourceFile = parallelCorpus.SourceCorpora[0].Files[0];
+            if (parallelCorpus.TargetCorpora.Count == 0)
+            {
+                throw new InvalidOperationException($"The parallel corpus {parallelCorpus.Id} has no target corpora.");
+            }
+            if (parallelCorpus.TargetCorpora[0].Files.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {parallelCorpus.TargetCorpora[0].Id} referenced in parallel corpus {parallelCorpus.Id} has no files associated with it."
+                );
+            }
             targetFile = parallelCorpus.TargetCorpora[0].Files[0];
         }
         else
         {
-            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
+            throw new EntityNotFoundException($"Could not find the corpus '{corpusId}' in engine '{engineId}'.");
         }
         if (sourceFile.Format is not FileFormat.Paratext || targetFile.Format is not FileFormat.Paratext)
             throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
