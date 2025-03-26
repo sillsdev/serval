@@ -1349,7 +1349,7 @@ public class TranslationEnginesController(
             >(new GetCorpus { CorpusId = corpusId, Owner = Owner }, cancellationToken);
             if (response.Is(out Response<CorpusResult>? result))
             {
-                if (result.Message.Files.Any())
+                if (!result.Message.Files.Any())
                 {
                     throw new InvalidOperationException(
                         $"The corpus {corpusId} does not have any files associated with it."
