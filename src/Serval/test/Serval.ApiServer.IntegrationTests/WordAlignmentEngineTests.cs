@@ -32,6 +32,13 @@ public class WordAlignmentEngineTests
             SourceCorpusIds = [SOURCE_CORPUS_ZIP_ID],
             TargetCorpusIds = [TARGET_CORPUS_ZIP_ID],
         };
+    private static readonly WordAlignmentParallelCorpusConfig TestParallelCorpusConfigEmptySource =
+        new()
+        {
+            Name = "TestCorpus",
+            SourceCorpusIds = [EMPTY_CORPUS_ID],
+            TargetCorpusIds = [TARGET_CORPUS_ID],
+        };
 
     private const string ECHO_ENGINE1_ID = "e00000000000000000000001";
     private const string ECHO_ENGINE2_ID = "e00000000000000000000002";
@@ -50,6 +57,7 @@ public class WordAlignmentEngineTests
     private const string TARGET_CORPUS_ID = "cc0000000000000000000003";
     private const string SOURCE_CORPUS_ZIP_ID = "cc0000000000000000000004";
     private const string TARGET_CORPUS_ZIP_ID = "cc0000000000000000000005";
+    private const string EMPTY_CORPUS_ID = "cc0000000000000000000006";
 
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
     private const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
@@ -172,8 +180,17 @@ public class WordAlignmentEngineTests
             Owner = "client1",
             Files = [new() { FileRef = srcParatextFile.Id, TextId = "all" }]
         };
+        var emptyCorpus = new DataFiles.Models.Corpus
+        {
+            Id = EMPTY_CORPUS_ID,
+            Language = "en",
+            Owner = "client1",
+            Files = []
+        };
 
-        await _env.Corpora.InsertAllAsync([srcCorpus, srcCorpus2, trgCorpus, srcScriptureCorpus, trgScriptureCorpus]);
+        await _env.Corpora.InsertAllAsync(
+            [srcCorpus, srcCorpus2, trgCorpus, srcScriptureCorpus, trgScriptureCorpus, emptyCorpus]
+        );
     }
 
     [Test]
@@ -1056,7 +1073,22 @@ public class WordAlignmentEngineTests
         }
     }
 
-    [TestCase]
+    [Test]
+    public void AddParallelCorpusAsync_EmptyCorpus()
+    {
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            WordAlignmentParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+                ECHO_ENGINE1_ID,
+                TestParallelCorpusConfigEmptySource
+            );
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
     public async Task StartBuildForEngineAsync_UnparsableOptions()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
