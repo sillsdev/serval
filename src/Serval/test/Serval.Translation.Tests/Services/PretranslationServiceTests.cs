@@ -266,6 +266,34 @@ public class PretranslationServiceTests
         );
     }
 
+    [Test]
+    public async Task Disclaimer_Not_Shown_When_Set_To_False()
+    {
+        using TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferExisting,
+            PretranslationUsfmTemplate.Source,
+            false
+        );
+
+        Assert.That(usfm, Does.Not.Contain("rem This draft of"));
+    }
+
+    [Test]
+    public async Task Disclaimer_Shows_When_Set_To_True()
+    {
+        using TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferExisting,
+            PretranslationUsfmTemplate.Source,
+            true
+        );
+
+        Assert.That(usfm, Does.Contain("rem This draft of"));
+    }
+
     private class TestEnvironment : IDisposable
     {
         public TestEnvironment()
@@ -437,7 +465,8 @@ public class PretranslationServiceTests
 
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
-            PretranslationUsfmTemplate template
+            PretranslationUsfmTemplate template,
+            bool addDisclaimer = false
         )
         {
             string usfm = await Service.GetUsfmAsync(
@@ -449,7 +478,8 @@ public class PretranslationServiceTests
                 template: template,
                 paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
-                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
+                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
+                addDisclaimer: addDisclaimer
             );
             usfm = usfm.Replace("\r\n", "\n");
             string parallel_usfm = await Service.GetUsfmAsync(
@@ -461,7 +491,8 @@ public class PretranslationServiceTests
                 template: template,
                 paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
-                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
+                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
+                addDisclaimer: addDisclaimer
             );
             parallel_usfm = parallel_usfm.Replace("\r\n", "\n");
             Assert.That(parallel_usfm, Is.EqualTo(usfm));

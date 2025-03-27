@@ -961,6 +961,7 @@ public class TranslationEnginesController(
             paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
+            true,
             cancellationToken
         );
         if (usfm == "")
@@ -1353,6 +1354,12 @@ public class TranslationEnginesController(
             >(new GetCorpus { CorpusId = corpusId, Owner = Owner }, cancellationToken);
             if (response.Is(out Response<CorpusResult>? result))
             {
+                if (!result.Message.Files.Any())
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {corpusId} does not have any files associated with it."
+                    );
+                }
                 corpora.Add(
                     new MonolingualCorpus
                     {
@@ -1430,6 +1437,13 @@ public class TranslationEnginesController(
                         $"The corpus {pcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
                 }
+                Corpus corpus = engine.Corpora.Single(c => c.Id == pcc.CorpusId);
+                if (corpus.SourceFiles.Count == 0 && corpus.TargetFiles.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {pcc.CorpusId} is not valid: This corpus does not have any source or target files."
+                    );
+                }
                 if (pcc.TextIds != null && pcc.ScriptureRange != null)
                 {
                     throw new InvalidOperationException(
@@ -1457,17 +1471,20 @@ public class TranslationEnginesController(
                         $"The parallel corpus {pcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                     );
                 }
+                ParallelCorpus corpus = engine.ParallelCorpora.Single(pc => pc.Id == pcc.ParallelCorpusId);
+                if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {pcc.ParallelCorpusId} does not have source or target corpora associated with it."
+                    );
+                }
                 if (
                     pcc.SourceFilters != null
                     && pcc.SourceFilters.Count > 0
                     && (
                         pcc.SourceFilters.Select(sf => sf.CorpusId).Distinct().Count() > 1
                         || pcc.SourceFilters[0].CorpusId
-                            != engine
-                                .ParallelCorpora.Where(pc => pc.Id == pcc.ParallelCorpusId)
-                                .First()
-                                .SourceCorpora[0]
-                                .Id
+                            != engine.ParallelCorpora.Single(pc => pc.Id == pcc.ParallelCorpusId).SourceCorpora[0].Id
                     )
                 )
                 {
@@ -1509,6 +1526,13 @@ public class TranslationEnginesController(
                         $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
                 }
+                Corpus corpus = engine.Corpora.Single(c => c.Id == tcc.CorpusId);
+                if (corpus.SourceFiles.Count == 0 && corpus.TargetFiles.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.CorpusId} is not valid: This corpus does not have any source or target files."
+                    );
+                }
                 if (tcc.TextIds != null && tcc.ScriptureRange != null)
                 {
                     throw new InvalidOperationException(
@@ -1535,6 +1559,22 @@ public class TranslationEnginesController(
                     throw new InvalidOperationException(
                         $"The parallel corpus {tcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                     );
+                }
+                ParallelCorpus corpus = engine.ParallelCorpora.Single(pc => pc.Id == tcc.ParallelCorpusId);
+                if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {tcc.ParallelCorpusId} does not have source or target corpora associated with it."
+                    );
+                }
+                foreach (MonolingualCorpus monolingualCorpus in corpus.SourceCorpora.Concat(corpus.TargetCorpora))
+                {
+                    if (monolingualCorpus.Files.Count == 0)
+                    {
+                        throw new InvalidOperationException(
+                            $"The corpus {monolingualCorpus.Id} referenced in parallel corpus {corpus.Id} does not have any files associated with it."
+                        );
+                    }
                 }
                 trainOnCorpora.Add(
                     new TrainingCorpus

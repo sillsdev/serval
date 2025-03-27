@@ -711,6 +711,12 @@ public class WordAlignmentEnginesController(
             >(new GetCorpus { CorpusId = corpusId, Owner = Owner }, cancellationToken);
             if (response.Is(out Response<CorpusResult>? result))
             {
+                if (!result.Message.Files.Any())
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {corpusId} does not have any files associated with it."
+                    );
+                }
                 corpora.Add(
                     new MonolingualCorpus
                     {
@@ -797,13 +803,20 @@ public class WordAlignmentEnginesController(
                     $"The parallel corpus {cc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                 );
             }
+            ParallelCorpus corpus = engine.ParallelCorpora.Single(pc => pc.Id == cc.ParallelCorpusId);
+            if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {cc.ParallelCorpusId} does not have source or target corpora associated with it."
+                );
+            }
             if (
                 cc.SourceFilters != null
                 && cc.SourceFilters.Count > 0
                 && (
                     cc.SourceFilters.Select(sf => sf.CorpusId).Distinct().Count() > 1
                     || cc.SourceFilters[0].CorpusId
-                        != engine.ParallelCorpora.Where(pc => pc.Id == cc.ParallelCorpusId).First().SourceCorpora[0].Id
+                        != engine.ParallelCorpora.Single(pc => pc.Id == cc.ParallelCorpusId).SourceCorpora[0].Id
                 )
             )
             {
@@ -845,6 +858,22 @@ public class WordAlignmentEnginesController(
                 throw new InvalidOperationException(
                     $"The parallel corpus {cc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                 );
+            }
+            ParallelCorpus corpus = engine.ParallelCorpora.Single(pc => pc.Id == cc.ParallelCorpusId);
+            if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {cc.ParallelCorpusId} does not have source or target corpora associated with it."
+                );
+            }
+            foreach (MonolingualCorpus monolingualCorpus in corpus.SourceCorpora.Concat(corpus.TargetCorpora))
+            {
+                if (monolingualCorpus.Files.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {monolingualCorpus.Id} referenced in parallel corpus {corpus.Id} does not have any files associated with it."
+                    );
+                }
             }
             trainingCorpora.Add(
                 new TrainingCorpus

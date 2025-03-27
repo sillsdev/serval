@@ -1,4 +1,5 @@
-﻿using SIL.Machine.Corpora;
+﻿using System.Globalization;
+using SIL.Machine.Corpora;
 
 namespace Serval.Translation.Services;
 
@@ -39,6 +40,7 @@ public class PretranslationService(
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
+        bool addDisclaimer = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -50,17 +52,41 @@ public class PretranslationService(
         CorpusFile targetFile;
         if (corpus is not null)
         {
+            if (corpus.SourceFiles.Count == 0)
+                throw new InvalidOperationException($"The corpus {corpus.Id} has no source files.");
             sourceFile = corpus.SourceFiles[0];
+            if (corpus.TargetFiles.Count == 0)
+                throw new InvalidOperationException($"The corpus {corpus.Id} has no target files.");
             targetFile = corpus.TargetFiles[0];
         }
         else if (parallelCorpus is not null)
         {
+            if (parallelCorpus.SourceCorpora.Count == 0)
+            {
+                throw new InvalidOperationException($"The parallel corpus {parallelCorpus.Id} has no source corpora.");
+            }
+            if (parallelCorpus.SourceCorpora[0].Files.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {parallelCorpus.SourceCorpora[0].Id} referenced in parallel corpus {parallelCorpus.Id} has no files associated with it."
+                );
+            }
             sourceFile = parallelCorpus.SourceCorpora[0].Files[0];
+            if (parallelCorpus.TargetCorpora.Count == 0)
+            {
+                throw new InvalidOperationException($"The parallel corpus {parallelCorpus.Id} has no target corpora.");
+            }
+            if (parallelCorpus.TargetCorpora[0].Files.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {parallelCorpus.TargetCorpora[0].Id} referenced in parallel corpus {parallelCorpus.Id} has no files associated with it."
+                );
+            }
             targetFile = parallelCorpus.TargetCorpora[0].Files[0];
         }
         else
         {
-            throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
+            throw new EntityNotFoundException($"Could not find the corpus '{corpusId}' in engine '{engineId}'.");
         }
         if (sourceFile.Format is not FileFormat.Paratext || targetFile.Format is not FileFormat.Paratext)
             throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
@@ -84,6 +110,12 @@ public class PretranslationService(
             )
             .OrderBy(p => p.Refs[0]);
 
+        string usfm = "";
+        int idPosition = 0;
+        int newlinePosition = 0;
+        string disclaimerText =
+            $"\\rem This draft of {textId} was machine translated on {engine!.DateCreated?.ToString("dddd, MMMM d, yyyy 'at' h:mm tt", CultureInfo.InvariantCulture)} from project {sourceSettings.Name}. It should be reviewed and edited carefully.\n";
+
         // Update the target book if it exists
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
@@ -94,7 +126,7 @@ public class PretranslationService(
             );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
-            string usfm = "";
+            usfm = "";
             switch (textOrigin)
             {
                 case PretranslationUsfmTextOrigin.PreferExisting:
@@ -146,7 +178,20 @@ public class PretranslationService(
                         ) ?? "";
                     break;
             }
-            // In order to support PretranslationUsfmTemplate.Auto
+
+            if (addDisclaimer)
+            {
+                idPosition = usfm.IndexOf("\\id");
+                if (idPosition != -1)
+                {
+                    newlinePosition = usfm.IndexOf('\n', idPosition);
+                    if (newlinePosition != -1)
+                    {
+                        usfm = usfm.Insert(newlinePosition + 1, disclaimerText);
+                    }
+                }
+            }
+
             if (!string.IsNullOrEmpty(usfm))
                 return usfm;
         }
@@ -156,13 +201,15 @@ public class PretranslationService(
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename);
 
+            usfm = "";
             // Copy and update the source book if it exists
             switch (textOrigin)
             {
                 case PretranslationUsfmTextOrigin.PreferExisting:
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                    return updater.UpdateUsfm(
+                    usfm =
+                        updater.UpdateUsfm(
                             textId,
                             pretranslations.ToList(),
                             fullName: targetSettings.FullName,
@@ -171,8 +218,10 @@ public class PretranslationService(
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior)
                         ) ?? "";
+                    break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
-                    return updater.UpdateUsfm(
+                    usfm =
+                        updater.UpdateUsfm(
                             textId,
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
@@ -181,8 +230,30 @@ public class PretranslationService(
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior)
                         ) ?? "";
+                    break;
             }
+
+            if (addDisclaimer)
+            {
+                idPosition = usfm.IndexOf("\\id");
+                if (idPosition != -1)
+                {
+                    newlinePosition = usfm.IndexOf('\n', idPosition);
+                    if (newlinePosition != -1)
+                    {
+                        usfm = usfm.Insert(newlinePosition + 1, disclaimerText);
+                    }
+                }
+            }
+
+            return usfm;
         }
+
+        // idPosition = usfm.IndexOf("\\id");
+
+        // newlinePosition = usfm.IndexOf('\n', idPosition);
+
+        // usfm = usfm.Insert(newlinePosition + 1, disclaimerText);
 
         return "";
     }
