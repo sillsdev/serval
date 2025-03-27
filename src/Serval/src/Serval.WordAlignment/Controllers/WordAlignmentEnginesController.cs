@@ -866,6 +866,15 @@ public class WordAlignmentEnginesController(
                     $"The corpus {cc.ParallelCorpusId} does not have source or target corpora associated with it."
                 );
             }
+            foreach (MonolingualCorpus monolingualCorpus in corpus.SourceCorpora.Concat(corpus.TargetCorpora))
+            {
+                if (monolingualCorpus.Files.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus {monolingualCorpus.Id} referenced in parallel corpus {corpus.Id} does not have any files associated with it."
+                    );
+                }
+            }
             trainingCorpora.Add(
                 new TrainingCorpus
                 {
