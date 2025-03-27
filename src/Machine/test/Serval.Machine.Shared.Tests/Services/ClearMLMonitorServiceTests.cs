@@ -74,7 +74,7 @@ public class ClearMLMonitorServiceTests
 }
 
 // ============================
-// Fake implementation of IOptionsMonitor<T>
+// Mock implementation of IOptionsMonitor<T>
 // ============================
 
 public class FakeOptionsMonitor<T>(T currentValue) : IOptionsMonitor<T>
@@ -93,7 +93,7 @@ public class FakeOptionsMonitor<T>(T currentValue) : IOptionsMonitor<T>
 }
 
 // ============================
-// Fake implementations for dependencies
+// Mock implementations for dependencies
 // ============================
 
 public class FakeClearMLService : IClearMLService
@@ -126,10 +126,6 @@ public class FakeClearMLService : IClearMLService
     public Task<bool> EnqueueTaskAsync(string id, string queue, CancellationToken cancellationToken = default) =>
         Task.FromResult(true);
 
-    // ❌ OLD - Incorrect signature (extra `queue` parameter)
-    // public Task<bool> DequeueTaskAsync(string id, string queue, CancellationToken cancellationToken = default)
-
-    // ✅ NEW - Corrected to match `IClearMLService`
     public Task<bool> DequeueTaskAsync(string id, CancellationToken cancellationToken = default) =>
         Task.FromResult(true);
 
@@ -168,7 +164,7 @@ public class FakeClearMLService : IClearMLService
 }
 
 // ============================
-// Fake SharedFileService Implementation
+// Mock SharedFileService Implementation
 // ============================
 
 public class FakeSharedFileService : ISharedFileService
@@ -198,7 +194,7 @@ public class FakeSharedFileService : ISharedFileService
 }
 
 // ============================
-// Fake Logger Implementation
+// Mock Logger Implementation
 // ============================
 
 public class FakeLogger<T> : ILogger<T>
