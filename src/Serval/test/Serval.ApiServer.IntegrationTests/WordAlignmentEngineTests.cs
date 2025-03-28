@@ -1082,7 +1082,7 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void AddParallelCorpusAsync_EmptyCorpus()
+    public void AddParallelCorpusAsync_EmptyParallelCorpus()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -1097,7 +1097,7 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public async Task StartBuildForEngineAsync_NoSourceCorpusAligning()
+    public async Task StartBuildForEngineAsync_NoCorporaAligning()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
         WordAlignmentParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
@@ -1115,7 +1115,7 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public async Task StartBuildForEngineAsync_NoSourceCorpusTraining()
+    public async Task StartBuildForEngineAsync_NoCorporaTraining()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
         WordAlignmentParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
