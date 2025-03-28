@@ -803,7 +803,7 @@ public class WordAlignmentEnginesController(
                     $"The parallel corpus {cc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                 );
             }
-            ParallelCorpus corpus = engine.ParallelCorpora.Where(pc => pc.Id == cc.ParallelCorpusId).First();
+            ParallelCorpus corpus = engine.ParallelCorpora.Single(pc => pc.Id == cc.ParallelCorpusId);
             if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
             {
                 throw new InvalidOperationException(
@@ -816,7 +816,7 @@ public class WordAlignmentEnginesController(
                 && (
                     cc.SourceFilters.Select(sf => sf.CorpusId).Distinct().Count() > 1
                     || cc.SourceFilters[0].CorpusId
-                        != engine.ParallelCorpora.Where(pc => pc.Id == cc.ParallelCorpusId).First().SourceCorpora[0].Id
+                        != engine.ParallelCorpora.Single(pc => pc.Id == cc.ParallelCorpusId).SourceCorpora[0].Id
                 )
             )
             {
@@ -859,7 +859,7 @@ public class WordAlignmentEnginesController(
                     $"The parallel corpus {cc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                 );
             }
-            ParallelCorpus corpus = engine.ParallelCorpora.Where(pc => pc.Id == cc.ParallelCorpusId).First();
+            ParallelCorpus corpus = engine.ParallelCorpora.Single(pc => pc.Id == cc.ParallelCorpusId);
             if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
             {
                 throw new InvalidOperationException(

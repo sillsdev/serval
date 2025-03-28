@@ -1436,7 +1436,7 @@ public class TranslationEnginesController(
                         $"The corpus {pcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
                 }
-                Corpus corpus = engine.Corpora.Where(c => c.Id == pcc.CorpusId).First();
+                Corpus corpus = engine.Corpora.Single(c => c.Id == pcc.CorpusId);
                 if (corpus.SourceFiles.Count == 0 && corpus.TargetFiles.Count == 0)
                 {
                     throw new InvalidOperationException(
@@ -1470,7 +1470,7 @@ public class TranslationEnginesController(
                         $"The parallel corpus {pcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                     );
                 }
-                ParallelCorpus corpus = engine.ParallelCorpora.Where(pc => pc.Id == pcc.ParallelCorpusId).First();
+                ParallelCorpus corpus = engine.ParallelCorpora.Single(pc => pc.Id == pcc.ParallelCorpusId);
                 if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
                 {
                     throw new InvalidOperationException(
@@ -1483,11 +1483,7 @@ public class TranslationEnginesController(
                     && (
                         pcc.SourceFilters.Select(sf => sf.CorpusId).Distinct().Count() > 1
                         || pcc.SourceFilters[0].CorpusId
-                            != engine
-                                .ParallelCorpora.Where(pc => pc.Id == pcc.ParallelCorpusId)
-                                .First()
-                                .SourceCorpora[0]
-                                .Id
+                            != engine.ParallelCorpora.Single(pc => pc.Id == pcc.ParallelCorpusId).SourceCorpora[0].Id
                     )
                 )
                 {
@@ -1529,7 +1525,7 @@ public class TranslationEnginesController(
                         $"The corpus {tcc.CorpusId} is not valid: This corpus does not exist for engine {engine.Id}."
                     );
                 }
-                Corpus corpus = engine.Corpora.Where(c => c.Id == tcc.CorpusId).First();
+                Corpus corpus = engine.Corpora.Single(c => c.Id == tcc.CorpusId);
                 if (corpus.SourceFiles.Count == 0 && corpus.TargetFiles.Count == 0)
                 {
                     throw new InvalidOperationException(
@@ -1563,7 +1559,7 @@ public class TranslationEnginesController(
                         $"The parallel corpus {tcc.ParallelCorpusId} is not valid: This parallel corpus does not exist for engine {engine.Id}."
                     );
                 }
-                ParallelCorpus corpus = engine.ParallelCorpora.Where(pc => pc.Id == tcc.ParallelCorpusId).First();
+                ParallelCorpus corpus = engine.ParallelCorpora.Single(pc => pc.Id == tcc.ParallelCorpusId);
                 if (corpus.SourceCorpora.Count == 0 && corpus.TargetCorpora.Count == 0)
                 {
                     throw new InvalidOperationException(
