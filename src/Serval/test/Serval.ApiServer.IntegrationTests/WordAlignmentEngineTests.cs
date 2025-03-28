@@ -40,6 +40,14 @@ public class WordAlignmentEngineTests
             TargetCorpusIds = [TARGET_CORPUS_ID],
         };
 
+    private static readonly WordAlignmentParallelCorpusConfig TestParallelCorpusConfigNoCorpora =
+        new()
+        {
+            Name = "TestCorpus",
+            SourceCorpusIds = [],
+            TargetCorpusIds = [],
+        };
+
     private const string ECHO_ENGINE1_ID = "e00000000000000000000001";
     private const string ECHO_ENGINE2_ID = "e00000000000000000000002";
     private const string ECHO_ENGINE3_ID = "e00000000000000000000003";
@@ -1089,6 +1097,80 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
+    public async Task StartBuildForEngineAsync_NoSourceCorpusAligning()
+    {
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
+        WordAlignmentParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfigNoCorpora
+        );
+        WordAlignmentCorpusConfig wacc = new() { ParallelCorpusId = addedCorpus.Id };
+        WordAlignmentBuildConfig tbc = new() { WordAlignOn = [wacc] };
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task StartBuildForEngineAsync_NoSourceCorpusTraining()
+    {
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
+        WordAlignmentParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfigNoCorpora
+        );
+        TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedCorpus.Id };
+        WordAlignmentBuildConfig tbc = new() { TrainOn = [tcc], };
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task StartBuildForEngineAsync_EmptyCorpus()
+    {
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
+        WordAlignmentParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
+        TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedCorpus.Id };
+        WordAlignmentBuildConfig tbc = new() { TrainOn = [tcc], };
+        string dataFileId = FILE1_SRC_ID;
+        //Below code is copy-pasted from EngineService.DeleteAllCorpusFilesAsync
+        await _env.Engines.UpdateAllAsync(
+            e =>
+                e.ParallelCorpora.Any(c =>
+                    c.SourceCorpora.Any(sc => sc.Files.Any(f => f.Id == dataFileId))
+                    || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                ),
+            u =>
+            {
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+            }
+        );
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
     public async Task StartBuildForEngineAsync_UnparsableOptions()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
@@ -1101,14 +1183,14 @@ public class WordAlignmentEngineTests
             {
                 ParallelCorpusId = addedCorpus.Id,
                 SourceFilters = [new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
-                TargetFilters = [new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }]
+                TargetFilters = [new ParallelCorpusFilterConfig { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }]
             };
         WordAlignmentCorpusConfig wacc =
             new()
             {
                 ParallelCorpusId = addedCorpus.Id,
                 SourceFilters = [new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
-                TargetFilters = [new ParallelCorpusFilterConfig { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }]
+                TargetFilters = [new ParallelCorpusFilterConfig { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }]
             };
         WordAlignmentBuildConfig tbc =
             new()
