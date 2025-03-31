@@ -1,6 +1,6 @@
 using System.IO.Compression;
 using ApiExample;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
@@ -257,9 +257,9 @@ async Task CreatePreTranslationEngineAsync(CancellationToken cancellationToken)
             translationEngineId,
             parallelCorpusId,
             textId: "LAO",
-            PretranslationUsfmTextOrigin.OnlyPretranslated,
-            PretranslationUsfmTemplate.Source,
-            cancellationToken
+            textOrigin: PretranslationUsfmTextOrigin.OnlyPretranslated,
+            template: PretranslationUsfmTemplate.Source,
+            cancellationToken: cancellationToken
         );
         Console.WriteLine(usfm);
 
@@ -309,7 +309,14 @@ async Task CreatePreTranslationEngineAsync(CancellationToken cancellationToken)
             }
 
             Console.WriteLine("Cancel the current build");
-            await translationEnginesClient.CancelBuildAsync(translationEngineId, CancellationToken.None);
+            try
+            {
+                await translationEnginesClient.CancelBuildAsync(translationEngineId, CancellationToken.None);
+            }
+            catch (ServalApiException e) when (e.StatusCode == 204)
+            {
+                // This is the expected result if there is no active build job.
+            }
 
             Console.WriteLine("Delete the Translation Engine");
             await translationEnginesClient.DeleteAsync(translationEngineId, CancellationToken.None);
