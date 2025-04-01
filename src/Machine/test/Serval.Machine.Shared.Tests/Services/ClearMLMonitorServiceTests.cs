@@ -1,6 +1,8 @@
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Serval.Machine.Shared.Services;
 
-namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Tests.Services;
 
 [TestFixture]
 public class ClearMLMonitorServiceTests
@@ -10,6 +12,11 @@ public class ClearMLMonitorServiceTests
     private ISharedFileService _sharedFileService;
     private ILogger<ClearMLMonitorService> _logger;
     private IServiceProvider _serviceProvider;
+    private IOptionsMonitor<BuildJobOptions> _buildJobOptionsMock;
+    private IBuildJobService _buildJobService;
+    private IDataAccessContext _dataAccessContext;
+    private IPlatformService _platformService;
+    private IOptionsMonitor<ClearMLOptions> _clearMLOptions;
 
     [SetUp]
     public void SetUp()
@@ -17,17 +24,16 @@ public class ClearMLMonitorServiceTests
         _clearMLService = Substitute.For<IClearMLService>();
         _sharedFileService = Substitute.For<ISharedFileService>();
         _logger = Substitute.For<ILogger<ClearMLMonitorService>>();
+        _buildJobService = Substitute.For<IBuildJobService>();
+        _dataAccessContext = Substitute.For<IDataAccessContext>();
+        _platformService = Substitute.For<IPlatformService>();
 
         var serviceCollection = new ServiceCollection();
         _serviceProvider = serviceCollection.BuildServiceProvider();
 
-        var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-        clearMLOptions.CurrentValue.Returns(
-            new ClearMLOptions { BuildPollingTimeout = TimeSpan.FromSeconds(5), BuildPollingEnabled = true }
-        );
-
-        var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
-        buildJobOptions.CurrentValue.Returns(
+        // ✅ Fix: Properly mock BuildJobOptions
+        _buildJobOptionsMock = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+        _buildJobOptionsMock.CurrentValue.Returns(
             new BuildJobOptions
             {
                 ClearML = new List<ClearMLBuildQueue>
@@ -38,12 +44,17 @@ public class ClearMLMonitorServiceTests
             }
         );
 
+        _clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
+        _clearMLOptions.CurrentValue.Returns(
+            new ClearMLOptions { BuildPollingTimeout = TimeSpan.FromSeconds(5), BuildPollingEnabled = true }
+        );
+
         _service = new TestableClearMLMonitorService(
             _serviceProvider,
             _clearMLService,
             _sharedFileService,
-            clearMLOptions,
-            buildJobOptions,
+            _clearMLOptions,
+            _buildJobOptionsMock,
             _logger
         );
     }
@@ -53,8 +64,8 @@ public class ClearMLMonitorServiceTests
     {
         // Arrange
         var engineType = EngineType.Nmt;
+        string queueName = "nmt_queue"; // Ensure this matches the test setup
 
-        // Setup mock response
         var fakeTasks = new List<ClearMLTask>
         {
             new ClearMLTask
@@ -68,41 +79,43 @@ public class ClearMLMonitorServiceTests
                 Runtime = new Dictionary<string, string>()
             }
         };
+
         _clearMLService
-            .GetTasksForQueueAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .GetTasksForQueueAsync(Arg.Is<string>(q => q == queueName), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<ClearMLTask>>(fakeTasks));
 
-        // Act
+        // Act: Ensure DoWorkAsync() is actually executed
         await _service.TestDoWorkAsync(_serviceProvider.CreateScope(), CancellationToken.None);
+        await Task.Delay(100); // Give time for async processing
+
+        // Debug: Check if `GetTasksForQueueAsync()` was actually called
+        await _clearMLService.Received(1).GetTasksForQueueAsync(queueName, Arg.Any<CancellationToken>());
+
         int queueSize = _service.GetQueueSize(engineType);
 
-        // Assert
-        Assert.That(queueSize, Is.GreaterThan(0));
+        Assert.That(queueSize, Is.EqualTo(fakeTasks.Count));
     }
 
-    // [Test]
-    // public async Task MonitorClearMLTasksPerDomain_HandlesExceptions()
-    // {
-    //     // Arrange
-    //     _clearMLService
-    //         .GetTasksForQueueAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-    //         .Throws(new InvalidOperationException("ClearML encountered an error while retrieving tasks."));
-    //     var scope = _serviceProvider.CreateScope();
+    [Test]
+    public async Task TrainJobStartedAsync_Successful_ReturnsTrue()
+    {
+        var dataAccessContext = Substitute.For<IDataAccessContext>();
+        var buildJobService = Substitute.For<IBuildJobService>();
+        var platformService = Substitute.For<IPlatformService>();
+        string engineId = "engine123";
+        string buildId = "build456";
 
-    //     // Act & Assert
-    //     await _service.TestDoWorkAsync(scope, CancellationToken.None);
+        bool result = await _service.TestTrainJobStartedAsync(
+            dataAccessContext,
+            buildJobService,
+            platformService,
+            engineId,
+            buildId,
+            CancellationToken.None
+        );
 
-    //     // Verify error was logged
-    //     _logger
-    //         .Received(1)
-    //         .Log(
-    //             LogLevel.Error,
-    //             Arg.Any<EventId>(),
-    //             Arg.Any<object>(),
-    //             Arg.Any<Exception>(),
-    //             Arg.Any<Func<object, Exception, string>>()
-    //         );
-    // }
+        Assert.That(result, Is.True);
+    }
 }
 
 public class TestableClearMLMonitorService(
@@ -114,9 +127,114 @@ public class TestableClearMLMonitorService(
     ILogger<ClearMLMonitorService> logger
 ) : ClearMLMonitorService(serviceProvider, clearMLService, sharedFileService, clearMLOptions, buildJobOptions, logger)
 {
-    // Expose protected method for testing
     public Task TestDoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         return DoWorkAsync(scope, cancellationToken);
     }
+
+    public async Task<bool> TestTrainJobStartedAsync(
+        IDataAccessContext dataAccessContext,
+        IBuildJobService buildJobService,
+        IPlatformService platformService,
+        string engineId,
+        string buildId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var method = typeof(ClearMLMonitorService).GetMethod(
+            "TrainJobStartedAsync",
+            BindingFlags.Instance | BindingFlags.NonPublic
+        );
+
+        if (method == null)
+        {
+            throw new InvalidOperationException(
+                "TrainJobStartedAsync method not found! Ensure it exists and is protected/private."
+            );
+        }
+
+        if (
+            method.Invoke(
+                this,
+                new object[]
+                {
+                    dataAccessContext,
+                    buildJobService,
+                    platformService,
+                    engineId,
+                    buildId,
+                    cancellationToken
+                }
+            )
+            is not Task<bool> task
+        )
+        {
+            throw new InvalidOperationException("Failed to invoke TrainJobStartedAsync.");
+        }
+
+        return await task;
+    }
+
+    // public Task<bool> TestTrainJobCompletedAsync(
+    //     IBuildJobService buildJobService,
+    //     EngineType engineType,
+    //     string engineId,
+    //     string buildId,
+    //     int corpusSize,
+    //     double confidence,
+    //     string? buildOptions,
+    //     CancellationToken cancellationToken
+    // )
+    // {
+    //     return TrainJobCompletedAsync(
+    //         buildJobService,
+    //         engineType,
+    //         engineId,
+    //         buildId,
+    //         corpusSize,
+    //         confidence,
+    //         buildOptions,
+    //         cancellationToken
+    //     );
+    // }
+
+    // public Task TestTrainJobFaultedAsync(
+    //     IDataAccessContext dataAccessContext,
+    //     IBuildJobService buildJobService,
+    //     IPlatformService platformService,
+    //     string engineId,
+    //     string buildId,
+    //     string message,
+    //     CancellationToken cancellationToken
+    // )
+    // {
+    //     return TrainJobFaultedAsync(
+    //         dataAccessContext,
+    //         buildJobService,
+    //         platformService,
+    //         engineId,
+    //         buildId,
+    //         message,
+    //         cancellationToken
+    //     );
+    // }
+
+    // public Task TestTrainJobCanceledAsync(
+    //     IDataAccessContext dataAccessContext,
+    //     IBuildJobService buildJobService,
+    //     IPlatformService platformService,
+    //     string engineId,
+    //     string buildId,
+    //     CancellationToken cancellationToken
+    // )
+    // {
+    //     return TrainJobCanceledAsync(
+    //         dataAccessContext,
+    //         buildJobService,
+    //         platformService,
+    //         engineId,
+    //         buildId,
+    //         cancellationToken
+    //     );
+    // }
 }
