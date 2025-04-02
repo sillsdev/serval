@@ -35,8 +35,6 @@ public class ClearMLMonitorService(
 
     public int GetQueueSize(EngineType engineType)
     {
-        // var k = buildJobOptions;
-        // Console.WriteLine(k);
         return _queueSizePerEngineType[engineType];
     }
 

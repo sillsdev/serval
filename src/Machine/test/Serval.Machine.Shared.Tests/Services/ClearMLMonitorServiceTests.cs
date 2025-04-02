@@ -1,13 +1,16 @@
-using System.Reflection;
+// using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Serval.Machine.Shared.Services;
 
-namespace Serval.Machine.Tests.Services;
+// using Serval.Machine.Shared.Services;
+
+// namespace Serval.Machine.Tests.Services;
+namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
 public class ClearMLMonitorServiceTests
 {
-    private TestableClearMLMonitorService _service;
+    // private TestableClearMLMonitorService _service;
+    private ClearMLMonitorService _service;
     private IClearMLService _clearMLService;
     private ISharedFileService _sharedFileService;
     private ILogger<ClearMLMonitorService> _logger;
@@ -49,7 +52,16 @@ public class ClearMLMonitorServiceTests
             new ClearMLOptions { BuildPollingTimeout = TimeSpan.FromSeconds(5), BuildPollingEnabled = true }
         );
 
-        _service = new TestableClearMLMonitorService(
+        // _service = new TestableClearMLMonitorService(
+        //     _serviceProvider,
+        //     _clearMLService,
+        //     _sharedFileService,
+        //     _clearMLOptions,
+        //     _buildJobOptionsMock,
+        //     _logger
+        // );
+
+        _service = new ClearMLMonitorService(
             _serviceProvider,
             _clearMLService,
             _sharedFileService,
@@ -85,7 +97,9 @@ public class ClearMLMonitorServiceTests
             .Returns(Task.FromResult<IReadOnlyList<ClearMLTask>>(fakeTasks));
 
         // Act: Ensure DoWorkAsync() is actually executed
-        await _service.TestDoWorkAsync(_serviceProvider.CreateScope(), CancellationToken.None);
+        // await _service.TestDoWorkAsync(_serviceProvider.CreateScope(), CancellationToken.None);
+        await _service.DoWorkAsync(_serviceProvider.CreateScope(), CancellationToken.None);
+
         await Task.Delay(100); // Give time for async processing
 
         // Debug: Check if `GetTasksForQueueAsync()` was actually called
@@ -118,123 +132,123 @@ public class ClearMLMonitorServiceTests
     }
 }
 
-public class TestableClearMLMonitorService(
-    IServiceProvider serviceProvider,
-    IClearMLService clearMLService,
-    ISharedFileService sharedFileService,
-    IOptionsMonitor<ClearMLOptions> clearMLOptions,
-    IOptionsMonitor<BuildJobOptions> buildJobOptions,
-    ILogger<ClearMLMonitorService> logger
-) : ClearMLMonitorService(serviceProvider, clearMLService, sharedFileService, clearMLOptions, buildJobOptions, logger)
-{
-    public Task TestDoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
-    {
-        return DoWorkAsync(scope, cancellationToken);
-    }
+// public class TestableClearMLMonitorService(
+//     IServiceProvider serviceProvider,
+//     IClearMLService clearMLService,
+//     ISharedFileService sharedFileService,
+//     IOptionsMonitor<ClearMLOptions> clearMLOptions,
+//     IOptionsMonitor<BuildJobOptions> buildJobOptions,
+//     ILogger<ClearMLMonitorService> logger
+// ) : ClearMLMonitorService(serviceProvider, clearMLService, sharedFileService, clearMLOptions, buildJobOptions, logger)
+// {
+//     public Task TestDoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
+//     {
+//         return DoWorkAsync(scope, cancellationToken);
+//     }
 
-    public async Task<bool> TestTrainJobStartedAsync(
-        IDataAccessContext dataAccessContext,
-        IBuildJobService buildJobService,
-        IPlatformService platformService,
-        string engineId,
-        string buildId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var method = typeof(ClearMLMonitorService).GetMethod(
-            "TrainJobStartedAsync",
-            BindingFlags.Instance | BindingFlags.NonPublic
-        );
+//     public async Task<bool> TestTrainJobStartedAsync(
+//         IDataAccessContext dataAccessContext,
+//         IBuildJobService buildJobService,
+//         IPlatformService platformService,
+//         string engineId,
+//         string buildId,
+//         CancellationToken cancellationToken = default
+//     )
+//     {
+//         var method = typeof(ClearMLMonitorService).GetMethod(
+//             "TrainJobStartedAsync",
+//             BindingFlags.Instance | BindingFlags.NonPublic
+//         );
 
-        if (method == null)
-        {
-            throw new InvalidOperationException(
-                "TrainJobStartedAsync method not found! Ensure it exists and is protected/private."
-            );
-        }
+//         if (method == null)
+//         {
+//             throw new InvalidOperationException(
+//                 "TrainJobStartedAsync method not found! Ensure it exists and is protected/private."
+//             );
+//         }
 
-        if (
-            method.Invoke(
-                this,
-                new object[]
-                {
-                    dataAccessContext,
-                    buildJobService,
-                    platformService,
-                    engineId,
-                    buildId,
-                    cancellationToken
-                }
-            )
-            is not Task<bool> task
-        )
-        {
-            throw new InvalidOperationException("Failed to invoke TrainJobStartedAsync.");
-        }
+//         if (
+//             method.Invoke(
+//                 this,
+//                 new object[]
+//                 {
+//                     dataAccessContext,
+//                     buildJobService,
+//                     platformService,
+//                     engineId,
+//                     buildId,
+//                     cancellationToken
+//                 }
+//             )
+//             is not Task<bool> task
+//         )
+//         {
+//             throw new InvalidOperationException("Failed to invoke TrainJobStartedAsync.");
+//         }
 
-        return await task;
-    }
+//         return await task;
+//     }
 
-    // public Task<bool> TestTrainJobCompletedAsync(
-    //     IBuildJobService buildJobService,
-    //     EngineType engineType,
-    //     string engineId,
-    //     string buildId,
-    //     int corpusSize,
-    //     double confidence,
-    //     string? buildOptions,
-    //     CancellationToken cancellationToken
-    // )
-    // {
-    //     return TrainJobCompletedAsync(
-    //         buildJobService,
-    //         engineType,
-    //         engineId,
-    //         buildId,
-    //         corpusSize,
-    //         confidence,
-    //         buildOptions,
-    //         cancellationToken
-    //     );
-    // }
+//     // public Task<bool> TestTrainJobCompletedAsync(
+//     //     IBuildJobService buildJobService,
+//     //     EngineType engineType,
+//     //     string engineId,
+//     //     string buildId,
+//     //     int corpusSize,
+//     //     double confidence,
+//     //     string? buildOptions,
+//     //     CancellationToken cancellationToken
+//     // )
+//     // {
+//     //     return TrainJobCompletedAsync(
+//     //         buildJobService,
+//     //         engineType,
+//     //         engineId,
+//     //         buildId,
+//     //         corpusSize,
+//     //         confidence,
+//     //         buildOptions,
+//     //         cancellationToken
+//     //     );
+//     // }
 
-    // public Task TestTrainJobFaultedAsync(
-    //     IDataAccessContext dataAccessContext,
-    //     IBuildJobService buildJobService,
-    //     IPlatformService platformService,
-    //     string engineId,
-    //     string buildId,
-    //     string message,
-    //     CancellationToken cancellationToken
-    // )
-    // {
-    //     return TrainJobFaultedAsync(
-    //         dataAccessContext,
-    //         buildJobService,
-    //         platformService,
-    //         engineId,
-    //         buildId,
-    //         message,
-    //         cancellationToken
-    //     );
-    // }
+//     // public Task TestTrainJobFaultedAsync(
+//     //     IDataAccessContext dataAccessContext,
+//     //     IBuildJobService buildJobService,
+//     //     IPlatformService platformService,
+//     //     string engineId,
+//     //     string buildId,
+//     //     string message,
+//     //     CancellationToken cancellationToken
+//     // )
+//     // {
+//     //     return TrainJobFaultedAsync(
+//     //         dataAccessContext,
+//     //         buildJobService,
+//     //         platformService,
+//     //         engineId,
+//     //         buildId,
+//     //         message,
+//     //         cancellationToken
+//     //     );
+//     // }
 
-    // public Task TestTrainJobCanceledAsync(
-    //     IDataAccessContext dataAccessContext,
-    //     IBuildJobService buildJobService,
-    //     IPlatformService platformService,
-    //     string engineId,
-    //     string buildId,
-    //     CancellationToken cancellationToken
-    // )
-    // {
-    //     return TrainJobCanceledAsync(
-    //         dataAccessContext,
-    //         buildJobService,
-    //         platformService,
-    //         engineId,
-    //         buildId,
-    //         cancellationToken
-    //     );
-    // }
-}
+//     // public Task TestTrainJobCanceledAsync(
+//     //     IDataAccessContext dataAccessContext,
+//     //     IBuildJobService buildJobService,
+//     //     IPlatformService platformService,
+//     //     string engineId,
+//     //     string buildId,
+//     //     CancellationToken cancellationToken
+//     // )
+//     // {
+//     //     return TrainJobCanceledAsync(
+//     //         dataAccessContext,
+//     //         buildJobService,
+//     //         platformService,
+//     //         engineId,
+//     //         buildId,
+//     //         cancellationToken
+//     //     );
+//     // }
+// }
