@@ -961,6 +961,7 @@ public class TranslationEnginesController(
             paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
+            true,
             cancellationToken
         );
         if (usfm == "")
