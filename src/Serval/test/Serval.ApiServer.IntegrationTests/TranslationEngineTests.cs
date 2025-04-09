@@ -67,6 +67,22 @@ public class TranslationEngineTests
             TargetFiles = { new TranslationCorpusFileConfig { FileId = FILE4_TRG_ZIP_ID } }
         };
 
+    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigEmptySource =
+        new()
+        {
+            Name = "TestCorpus",
+            SourceCorpusIds = [EMPTY_CORPUS_ID],
+            TargetCorpusIds = [TARGET_CORPUS_ID],
+        };
+
+    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigNoCorpora =
+        new()
+        {
+            Name = "TestCorpus",
+            SourceCorpusIds = [],
+            TargetCorpusIds = [],
+        };
+
     private const string ECHO_ENGINE1_ID = "e00000000000000000000001";
     private const string ECHO_ENGINE2_ID = "e00000000000000000000002";
     private const string ECHO_ENGINE3_ID = "e00000000000000000000003";
@@ -83,6 +99,8 @@ public class TranslationEngineTests
     private const string SOURCE_CORPUS_ID_1 = "cc0000000000000000000001";
     private const string SOURCE_CORPUS_ID_2 = "cc0000000000000000000002";
     private const string TARGET_CORPUS_ID = "cc0000000000000000000003";
+    private const string EMPTY_CORPUS_ID = "cc0000000000000000000006";
+
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
     private const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
 
@@ -200,7 +218,14 @@ public class TranslationEngineTests
             Owner = "client1",
             Files = [new() { FileRef = trgFile.Id, TextId = "all" }]
         };
-        await _env.Corpora.InsertAllAsync([srcCorpus, srcCorpus2, trgCorpus]);
+        var emptyCorpus = new DataFiles.Models.Corpus
+        {
+            Id = EMPTY_CORPUS_ID,
+            Language = "en",
+            Owner = "client1",
+            Files = []
+        };
+        await _env.Corpora.InsertAllAsync([srcCorpus, srcCorpus2, trgCorpus, emptyCorpus]);
     }
 
     [Test]
@@ -1428,6 +1453,221 @@ public class TranslationEngineTests
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
                 break;
         }
+    }
+
+    [Test]
+    public void AddParallelCorpusAsync_EmptyCorpus()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+                ECHO_ENGINE1_ID,
+                TestParallelCorpusConfigEmptySource
+            );
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task StartBuildForEngineAsync_NoCorporaTranslating()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfigNoCorpora
+        );
+        PretranslateCorpusConfig wacc = new() { ParallelCorpusId = addedCorpus.Id };
+        TranslationBuildConfig tbc = new() { Pretranslate = [wacc] };
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task StartBuildForEngineAsync_NoCorporaTraining()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfigNoCorpora
+        );
+        TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedCorpus.Id };
+        TranslationBuildConfig tbc = new() { TrainOn = [tcc], };
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task StartBuildForEngineAsync_EmptyParallelCorpus()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
+        TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedCorpus.Id };
+        TranslationBuildConfig tbc = new() { TrainOn = [tcc], };
+        string dataFileId = FILE1_SRC_ID;
+        //Below code is copy-pasted from EngineService.DeleteAllCorpusFilesAsync
+        await _env.Engines.UpdateAllAsync(
+            e =>
+                e.ParallelCorpora.Any(c =>
+                    c.SourceCorpora.Any(sc => sc.Files.Any(f => f.Id == dataFileId))
+                    || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                ),
+            u =>
+            {
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+            }
+        );
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task StartBuildForEngineAsync_EmptyCorpus()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id };
+        TranslationBuildConfig tbc = new() { TrainOn = [tcc], };
+        //Below code is copy-pasted from EngineService.DeleteAllCorpusFilesAsync
+        async Task DeleteFilesFromCorpora(string dataFileId)
+        {
+            await _env.Engines.UpdateAllAsync(
+                e =>
+                    e.Corpora.Any(c =>
+                        c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
+                    ),
+                u =>
+                {
+                    u.RemoveAll(e => e.Corpora[ArrayPosition.All].SourceFiles, f => f.Id == dataFileId);
+                    u.RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId);
+                }
+            );
+        }
+        await DeleteFilesFromCorpora(FILE1_SRC_ID);
+        await DeleteFilesFromCorpora(FILE2_TRG_ID);
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task GetPretranslatedUsfmAsync_NoCorpora()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfigNoCorpora
+        );
+
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT");
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task GetPretranslatedUsfmAsync_EmptyParallelCorpus()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
+
+        string dataFileId = FILE1_SRC_ID;
+        //Below code is copy-pasted from EngineService.DeleteAllCorpusFilesAsync
+        await _env.Engines.UpdateAllAsync(
+            e =>
+                e.ParallelCorpora.Any(c =>
+                    c.SourceCorpora.Any(sc => sc.Files.Any(f => f.Id == dataFileId))
+                    || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                ),
+            u =>
+            {
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
+                );
+            }
+        );
+
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT");
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task GetPretranslatedUsfmAsync_EmptyCorpus()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id };
+        TranslationBuildConfig tbc = new() { TrainOn = [tcc], };
+        //Below code is copy-pasted from EngineService.DeleteAllCorpusFilesAsync
+        async Task DeleteFilesFromCorpora(string dataFileId)
+        {
+            await _env.Engines.UpdateAllAsync(
+                e =>
+                    e.Corpora.Any(c =>
+                        c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
+                    ),
+                u =>
+                {
+                    u.RemoveAll(e => e.Corpora[ArrayPosition.All].SourceFiles, f => f.Id == dataFileId);
+                    u.RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId);
+                }
+            );
+        }
+        await DeleteFilesFromCorpora(FILE1_SRC_ID);
+        await DeleteFilesFromCorpora(FILE2_TRG_ID);
+
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            await client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT");
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
 
     [TestCase]
