@@ -252,10 +252,11 @@ class clearml_stats:
                 project["language_status"] = lang["LanguageEGIDSName"]
             self._projects[project_id] = project
         langs_df = pd.DataFrame.from_dict(self._projects).T
-        self._language_projects_df = langs_df.groupby("minority_language_code").agg(
+        self._language_projects_df = langs_df.groupby(
+            ["minority_language_code", "type"]
+        ).agg(
             {
                 "name": "first",
-                "type": "last",
                 "language_name": "first",
                 "country": "first",
                 "continent": "first",
