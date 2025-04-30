@@ -456,7 +456,10 @@ public class ServalClientHelper : IAsyncDisposable
                 Files = targetFileConfig
             };
 
-        var targetCorpus = await CorporaClient.CreateAsync(targetCorpusConfig);
+        Corpus? targetCorpus =
+            targetCorpusConfig.Files.Count > 0
+                ? targetCorpus = await CorporaClient.CreateAsync(targetCorpusConfig)
+                : null;
 
         var sourceFileConfig = new List<CorpusFileConfig>();
 
@@ -484,8 +487,9 @@ public class ServalClientHelper : IAsyncDisposable
 
         var sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);
 
-        TranslationParallelCorpusConfig parallelCorpusConfig =
-            new() { SourceCorpusIds = { sourceCorpus.Id }, TargetCorpusIds = { targetCorpus.Id } };
+        TranslationParallelCorpusConfig parallelCorpusConfig = new() { SourceCorpusIds = { sourceCorpus.Id } };
+        if (targetCorpus is not null)
+            parallelCorpusConfig.TargetCorpusIds.Add(targetCorpus.Id);
 
         return new ParallelCorpusConfig(parallelCorpusConfig);
     }
