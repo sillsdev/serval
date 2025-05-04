@@ -18,7 +18,8 @@ public class TranslationEnginesController(
 {
     private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
         new() { Converters = { new ObjectToInferredTypesConverter() } };
-
+    private const string DisclaimerRemarkText =
+        "This draft of {0} was generated using AI. It should be reviewed and edited carefully.";
     private readonly IEngineService _engineService = engineService;
     private readonly IBuildService _buildService = buildService;
     private readonly IPretranslationService _pretranslationService = pretranslationService;
@@ -961,6 +962,7 @@ public class TranslationEnginesController(
             paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
+            [string.Format(CultureInfo.InvariantCulture, DisclaimerRemarkText, textId)], //What's the least misleading, easy-to-implement date to give here? Or should we hold off on a date and add it in a future PR? What about mentioning that it's been drafted using a fine-tuned NLLB?
             cancellationToken
         );
         if (usfm == "")

@@ -39,6 +39,7 @@ public class PretranslationService(
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
+        IReadOnlyList<string>? remarks = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -130,7 +131,8 @@ public class PretranslationService(
                             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior)
+                            styleBehavior: Map(styleMarkerBehavior),
+                            remarks: remarks
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -142,7 +144,8 @@ public class PretranslationService(
                             textBehavior: UpdateUsfmTextBehavior.PreferNew,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior)
+                            styleBehavior: Map(styleMarkerBehavior),
+                            remarks: remarks
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -154,7 +157,8 @@ public class PretranslationService(
                             textBehavior: UpdateUsfmTextBehavior.PreferNew,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior)
+                            styleBehavior: Map(styleMarkerBehavior),
+                            remarks: remarks
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -166,7 +170,8 @@ public class PretranslationService(
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior)
+                            styleBehavior: Map(styleMarkerBehavior),
+                            remarks: remarks
                         ) ?? "";
                     break;
             }
@@ -193,7 +198,8 @@ public class PretranslationService(
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior)
+                            styleBehavior: Map(styleMarkerBehavior),
+                            remarks: remarks
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
@@ -203,7 +209,8 @@ public class PretranslationService(
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior)
+                            styleBehavior: Map(styleMarkerBehavior),
+                            remarks: remarks
                         ) ?? "";
             }
         }

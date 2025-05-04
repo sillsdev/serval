@@ -2124,6 +2124,7 @@ public class TranslationEngineTests
             usfm.Replace("\r\n", "\n"),
             Is.EqualTo(
                 @"\id MAT - TRG
+\rem This draft of MAT was generated using AI. It should be reviewed and edited carefully.
 \h
 \c 1
 \p

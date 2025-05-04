@@ -20,6 +20,7 @@ public interface IPretranslationService
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
+        IReadOnlyList<string>? remarks = null,
         CancellationToken cancellationToken = default
     );
 }
