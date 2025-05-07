@@ -53,7 +53,7 @@ public class PretranslationService(
             .OrderByDescending(b => b.DateFinished)
             .FirstOrDefault();
         if (build is null || build.DateFinished is null)
-            throw new EntityNotFoundException($"Could not find any completed builds for engine '{engineId}'.");
+            throw new InvalidOperationException($"Could not find any completed builds for engine '{engineId}'.");
 
         string formattedRemark = string.Format(
             CultureInfo.InvariantCulture,
