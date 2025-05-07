@@ -33,6 +33,7 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1 Chapter 1, verse 1.
 \v 2 Chapter 1, verse 2.
@@ -57,6 +58,7 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1 Chapter 1, verse 1.
 \v 2 Chapter 1, verse 2.
@@ -81,6 +83,7 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1
 \v 2
@@ -105,6 +108,7 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1 Chapter 1, verse 1.
 \v 2 Chapter 1, verse 2.
@@ -155,6 +159,7 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1 Chapter 1, verse 1.
 \v 2 Chapter 1, verse 2.
@@ -192,6 +197,7 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1 Chapter 1, verse 1.
 \v 2 Chapter 1, verse 2.
@@ -217,6 +223,7 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1 Chapter 1, verse 1.
 \v 2 Chapter 1, verse 2.
@@ -238,7 +245,13 @@ public class PretranslationServiceTests
             PretranslationUsfmTemplate.Target
         );
 
-        Assert.That(usfm, Is.EqualTo(TargetUsfm).IgnoreLineEndings());
+        List<string> lines = TargetUsfm.Split('\n').ToList();
+
+        lines.Insert(
+            1,
+            @"\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully."
+        );
+        Assert.That(usfm, Is.EqualTo(string.Join('\n', lines)).IgnoreLineEndings());
     }
 
     [Test]
@@ -256,6 +269,7 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1 Chapter 1, verse 1.
 \v 2 Chapter 1, verse 2.
@@ -264,19 +278,6 @@ public class PretranslationServiceTests
                 )
                 .IgnoreLineEndings()
         );
-    }
-
-    [Test]
-    public async Task GetUsfmAsync_Disclaimer_Remark_Not_Shown()
-    {
-        using TestEnvironment env = new();
-
-        string usfm = await env.GetUsfmAsync(
-            PretranslationUsfmTextOrigin.PreferExisting,
-            PretranslationUsfmTemplate.Source
-        );
-
-        Assert.That(usfm, Does.Not.Contain("rem This draft"));
     }
 
     [Test]
@@ -376,7 +377,13 @@ public class PretranslationServiceTests
                     {
                         Id = "build1",
                         EngineRef = "engine1",
-                        DateFinished = DateTime.UtcNow
+                        DateFinished = DateTime.UnixEpoch
+                    },
+                    new()
+                    {
+                        Id = "build2",
+                        EngineRef = "parallel_engine1",
+                        DateFinished = DateTime.UnixEpoch
                     }
                 ]
             );
