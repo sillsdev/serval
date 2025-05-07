@@ -370,7 +370,16 @@ public class PretranslationServiceTests
                 ]
             );
 
-            Builds = new MemoryRepository<Build>([new() { Id = "build1", EngineRef = "engine1" }]);
+            Builds = new MemoryRepository<Build>(
+                [
+                    new()
+                    {
+                        Id = "build1",
+                        EngineRef = "engine1",
+                        DateFinished = DateTime.UtcNow
+                    }
+                ]
+            );
             Pretranslations = new MemoryRepository<Pretranslation>(
                 [
                     new()
