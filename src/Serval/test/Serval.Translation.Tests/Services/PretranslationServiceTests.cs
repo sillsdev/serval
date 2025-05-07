@@ -276,7 +276,7 @@ public class PretranslationServiceTests
             PretranslationUsfmTemplate.Source
         );
 
-        Assert.That(usfm, Does.Not.Contain("rem This is an AI draft"));
+        Assert.That(usfm, Does.Not.Contain("rem This draft"));
     }
 
     [Test]
@@ -286,10 +286,9 @@ public class PretranslationServiceTests
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferExisting,
-            PretranslationUsfmTemplate.Source,
-            "This is an AI draft"
+            PretranslationUsfmTemplate.Source
         );
-        Assert.That(usfm, Does.Contain("rem This is an AI draft"));
+        Assert.That(usfm, Does.Contain("rem This draft"));
     }
 
     private class TestEnvironment : IDisposable
@@ -371,6 +370,7 @@ public class PretranslationServiceTests
                 ]
             );
 
+            Builds = new MemoryRepository<Build>([new() { Id = "build1", EngineRef = "engine1" }]);
             Pretranslations = new MemoryRepository<Pretranslation>(
                 [
                     new()
@@ -451,20 +451,20 @@ public class PretranslationServiceTests
             }
             ScriptureDataFileService.GetZipParatextProjectTextUpdater("file1.zip").Returns(x => GetTextUpdater("SRC"));
             ScriptureDataFileService.GetZipParatextProjectTextUpdater("file2.zip").Returns(x => GetTextUpdater("TRG"));
-            Service = new PretranslationService(Pretranslations, Engines, ScriptureDataFileService);
+            Service = new PretranslationService(Pretranslations, Engines, Builds, ScriptureDataFileService);
         }
 
         public PretranslationService Service { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
         public MemoryRepository<Engine> Engines { get; }
+        public MemoryRepository<Build> Builds { get; }
         public IScriptureDataFileService ScriptureDataFileService { get; }
         public IZipContainer TargetZipContainer { get; }
         public IList<Shared.Services.ZipParatextProjectTextUpdater> TextUpdaters { get; }
 
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
-            PretranslationUsfmTemplate template,
-            string? remark = null
+            PretranslationUsfmTemplate template
         )
         {
             string usfm = await Service.GetUsfmAsync(
@@ -476,8 +476,7 @@ public class PretranslationServiceTests
                 template: template,
                 paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
-                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
-                remarks: remark is not null ? [remark] : null
+                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
             );
             usfm = usfm.Replace("\r\n", "\n");
             string parallel_usfm = await Service.GetUsfmAsync(
@@ -489,8 +488,7 @@ public class PretranslationServiceTests
                 template: template,
                 paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
-                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
-                remarks: remark is not null ? [remark] : null
+                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
             );
             parallel_usfm = parallel_usfm.Replace("\r\n", "\n");
             Assert.That(parallel_usfm, Is.EqualTo(usfm));
