@@ -5,11 +5,15 @@ namespace Serval.Translation.Services;
 public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
+    IRepository<Build> builds,
     IScriptureDataFileService scriptureDataFileService
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
     private readonly IRepository<Engine> _engines = engines;
+    private readonly IRepository<Build> _builds = builds;
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
+    private const string AIDisclaimerRemark =
+        "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
 
     public async Task<IEnumerable<Pretranslation>> GetAllAsync(
         string engineId,
@@ -39,13 +43,24 @@ public class PretranslationService(
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
-        IReadOnlyList<string>? remarks = null,
         CancellationToken cancellationToken = default
     )
     {
         Engine? engine = await _engines.GetAsync(engineId, cancellationToken);
         Corpus? corpus = engine?.Corpora.SingleOrDefault(c => c.Id == corpusId);
         ParallelCorpus? parallelCorpus = engine?.ParallelCorpora.SingleOrDefault(c => c.Id == corpusId);
+        Build? build = (await _builds.GetAllAsync(b => b.EngineRef == engineId, cancellationToken))
+            .OrderByDescending(b => b.DateFinished)
+            .FirstOrDefault();
+        if (build is null || build.DateFinished is null)
+            throw new EntityNotFoundException($"Could not find any completed builds for engine '{engineId}'.");
+
+        string formattedRemark = string.Format(
+            CultureInfo.InvariantCulture,
+            AIDisclaimerRemark,
+            textId,
+            build.DateFinished.Value.ToUniversalTime().ToString("u")
+        );
 
         CorpusFile sourceFile;
         CorpusFile targetFile;
@@ -132,7 +147,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            remarks: remarks
+                            remarks: [formattedRemark]
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -145,7 +160,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            remarks: remarks
+                            remarks: [formattedRemark]
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -158,7 +173,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            remarks: remarks
+                            remarks: [formattedRemark]
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -171,7 +186,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            remarks: remarks
+                            remarks: [formattedRemark]
                         ) ?? "";
                     break;
             }
@@ -199,7 +214,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            remarks: remarks
+                            remarks: [formattedRemark]
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
@@ -210,7 +225,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            remarks: remarks
+                            remarks: [formattedRemark]
                         ) ?? "";
             }
         }
