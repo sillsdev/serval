@@ -2108,6 +2108,15 @@ public class TranslationEngineTests
         TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        await _env.Builds.InsertAsync(
+            new Build
+            {
+                Id = "b10000000000000000000000",
+                EngineRef = ECHO_ENGINE1_ID,
+                Revision = 1,
+                DateFinished = DateTime.UnixEpoch,
+            }
+        );
         var pret = new Translation.Models.Pretranslation
         {
             CorpusRef = addedCorpus.Id,
@@ -2124,7 +2133,7 @@ public class TranslationEngineTests
             usfm.Replace("\r\n", "\n"),
             Is.EqualTo(
                 @"\id MAT - TRG
-\rem This draft of MAT was generated using AI on . It should be reviewed and edited carefully.
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \h
 \c 1
 \p
@@ -2180,6 +2189,15 @@ public class TranslationEngineTests
         TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        await _env.Builds.InsertAsync(
+            new Build
+            {
+                Id = "b10000000000000000000000",
+                EngineRef = ECHO_ENGINE1_ID,
+                Revision = 1,
+                DateFinished = DateTime.UnixEpoch,
+            }
+        );
 
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(
             () => client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MRK")
