@@ -259,9 +259,9 @@ public class ServalApiTests
                 TranslationBuild canceledBuild = await _helperClient.TranslationEnginesClient.CancelBuildAsync(
                     engineIds[i]
                 );
-                Assert.That(currentBuild, Is.EqualTo(canceledBuild));
+                Assert.That(currentBuild.Id, Is.EqualTo(canceledBuild.Id));
             }
-            catch { }
+            catch (ServalApiException ex) when (ex.StatusCode == 204) { }
         }
     }
 
