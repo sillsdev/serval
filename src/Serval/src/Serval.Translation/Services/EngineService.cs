@@ -486,6 +486,9 @@ public class EngineService(
         );
         if (engine is null)
             throw new EntityNotFoundException($"Could not find the Corpus '{corpusId}' in Engine '{engineId}'.");
+
+        await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken: cancellationToken);
+
         return engine.Corpora.First(c => c.Id == corpusId);
     }
 
@@ -571,6 +574,11 @@ public class EngineService(
             );
         }
 
+        await _pretranslations.DeleteAllAsync(
+            pt => pt.CorpusRef == parallelCorpusId,
+            cancellationToken: cancellationToken
+        );
+
         return engine.ParallelCorpora.First(c => c.Id == parallelCorpusId);
     }
 
@@ -602,9 +610,9 @@ public class EngineService(
         );
     }
 
-    public Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)
+    public async Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)
     {
-        return Entities.UpdateAllAsync(
+        await Entities.UpdateAllAsync(
             e =>
                 e.Corpora.Any(c =>
                     c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
@@ -628,15 +636,44 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
+        HashSet<string> parallelCorpusIds = (
+            await Entities.GetAllAsync(
+                e =>
+                    e.ParallelCorpora.Any(c =>
+                        c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == dataFileId))
+                        || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                    ),
+                cancellationToken: cancellationToken
+            )
+        )
+            .SelectMany(e => e.ParallelCorpora.Select(c => c.Id))
+            .ToHashSet();
+
+        HashSet<string> corpusIds = (
+            await Entities.GetAllAsync(
+                e =>
+                    e.Corpora.Any(c =>
+                        c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
+                    ),
+                cancellationToken
+            )
+        )
+            .SelectMany(e => e.Corpora.Select(c => c.Id))
+            .ToHashSet();
+
+        await _pretranslations.DeleteAllAsync(
+            pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
+            cancellationToken: cancellationToken
+        );
     }
 
-    public Task UpdateDataFileFilenameFilesAsync(
+    public async Task UpdateDataFileFilenameFilesAsync(
         string dataFileId,
         string filename,
         CancellationToken cancellationToken = default
     )
     {
-        return Entities.UpdateAllAsync(
+        await Entities.UpdateAllAsync(
             e =>
                 e.Corpora.Any(c =>
                     c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
@@ -674,15 +711,44 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
+        HashSet<string> parallelCorpusIds = (
+            await Entities.GetAllAsync(
+                e =>
+                    e.ParallelCorpora.Any(c =>
+                        c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == dataFileId))
+                        || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                    ),
+                cancellationToken: cancellationToken
+            )
+        )
+            .SelectMany(e => e.ParallelCorpora.Select(c => c.Id))
+            .ToHashSet();
+
+        HashSet<string> corpusIds = (
+            await Entities.GetAllAsync(
+                e =>
+                    e.Corpora.Any(c =>
+                        c.SourceFiles.Any(f => f.Id == dataFileId) || c.TargetFiles.Any(f => f.Id == dataFileId)
+                    ),
+                cancellationToken
+            )
+        )
+            .SelectMany(e => e.Corpora.Select(c => c.Id))
+            .ToHashSet();
+
+        await _pretranslations.DeleteAllAsync(
+            pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
+            cancellationToken: cancellationToken
+        );
     }
 
-    public Task UpdateCorpusFilesAsync(
+    public async Task UpdateCorpusFilesAsync(
         string corpusId,
         IReadOnlyList<Shared.Models.CorpusFile> files,
         CancellationToken cancellationToken = default
     )
     {
-        return Entities.UpdateAllAsync(
+        await Entities.UpdateAllAsync(
             e =>
                 e.ParallelCorpora.Any(c =>
                     c.SourceCorpora.Any(sc => sc.Id == corpusId) || c.TargetCorpora.Any(tc => tc.Id == corpusId)
@@ -704,6 +770,7 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
+        await _pretranslations.DeleteAllAsync(pt => pt.CorpusRef == corpusId, cancellationToken: cancellationToken);
     }
 
     public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
