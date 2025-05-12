@@ -85,6 +85,26 @@ public class SmtTransferEngineService(
         await _lockFactory.DeleteAsync(engineId, CancellationToken.None);
     }
 
+    public async Task UpdateAsync(
+        string engineId,
+        string sourceLanguage,
+        string targetLanguage,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // await CancelBuildJobAsync(engineId, cancellationToken); Should we cancel the build or delete the segment pairs?
+
+        await _engines.UpdateAsync(
+            e => e.EngineId == engineId,
+            u =>
+            {
+                u.Set(e => e.SourceLanguage, sourceLanguage);
+                u.Set(e => e.TargetLanguage, targetLanguage);
+            },
+            cancellationToken: cancellationToken
+        );
+    }
+
     public async Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,

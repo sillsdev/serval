@@ -33,6 +33,18 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         return Empty;
     }
 
+    public override async Task<Empty> Update(UpdateRequest request, ServerCallContext context)
+    {
+        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        await engineService.UpdateAsync(
+            request.EngineId,
+            request.SourceLanguage,
+            request.TargetLanguage,
+            context.CancellationToken
+        );
+        return Empty;
+    }
+
     public override async Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);

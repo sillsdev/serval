@@ -65,6 +65,26 @@ public class NmtEngineService(
         await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
     }
 
+    public async Task UpdateAsync(
+        string engineId,
+        string sourceLanguage,
+        string targetLanguage,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // await CancelBuildJobAsync(engineId, cancellationToken); Should we cancel the build?
+
+        await _engines.UpdateAsync(
+            e => e.EngineId == engineId,
+            u =>
+            {
+                u.Set(e => e.SourceLanguage, sourceLanguage);
+                u.Set(e => e.TargetLanguage, targetLanguage);
+            },
+            cancellationToken: cancellationToken
+        );
+    }
+
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
