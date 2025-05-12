@@ -225,21 +225,20 @@ public class EngineService(
                     cancellationToken: ct
                 );
                 await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
+                TranslationEngineApi.TranslationEngineApiClient client =
+                    _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+                await client.UpdateAsync(
+                    new UpdateRequest
+                    {
+                        EngineType = engine.Type,
+                        EngineId = engine.Id,
+                        SourceLanguage = sourceLanguage,
+                        TargetLanguage = targetLanguage
+                    },
+                    cancellationToken: ct
+                );
             },
             CancellationToken.None
-        );
-
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.UpdateAsync(
-            new UpdateRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceLanguage = sourceLanguage,
-                TargetLanguage = targetLanguage
-            },
-            cancellationToken: cancellationToken
         );
     }
 
