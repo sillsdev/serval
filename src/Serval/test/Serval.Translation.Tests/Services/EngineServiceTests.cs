@@ -2195,6 +2195,7 @@ public class EngineServiceTests
             TranslationServiceClient
                 .StartBuildAsync(Arg.Any<StartBuildRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
+            TranslationServiceClient.UpdateAsync(Arg.Any<UpdateRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
             TranslationServiceClient
                 .TrainSegmentPairAsync(Arg.Any<TrainSegmentPairRequest>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
