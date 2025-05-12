@@ -72,7 +72,7 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        // await CancelBuildJobAsync(engineId, cancellationToken); Should we cancel the build?
+        await CancelBuildJobAsync(engineId, cancellationToken);
 
         await _engines.UpdateAsync(
             e => e.EngineId == engineId,
