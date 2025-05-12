@@ -341,6 +341,19 @@ public class EngineService(
 
     public async Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)
     {
+        HashSet<string> parallelCorpusIds = (
+            await Entities.GetAllAsync(
+                e =>
+                    e.ParallelCorpora.Any(c =>
+                        c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == dataFileId))
+                        || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                    ),
+                cancellationToken: cancellationToken
+            )
+        )
+            .SelectMany(e => e.ParallelCorpora.Select(c => c.Id))
+            .ToHashSet();
+
         await Entities.UpdateAllAsync(
             e =>
                 e.ParallelCorpora.Any(c =>
@@ -360,18 +373,6 @@ public class EngineService(
             },
             cancellationToken: cancellationToken
         );
-        HashSet<string> parallelCorpusIds = (
-            await Entities.GetAllAsync(
-                e =>
-                    e.ParallelCorpora.Any(c =>
-                        c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == dataFileId))
-                        || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
-                    ),
-                cancellationToken: cancellationToken
-            )
-        )
-            .SelectMany(e => e.ParallelCorpora.Select(c => c.Id))
-            .ToHashSet();
 
         await _wordAlignments.DeleteAllAsync(
             wa => parallelCorpusIds.Contains(wa.CorpusRef),
