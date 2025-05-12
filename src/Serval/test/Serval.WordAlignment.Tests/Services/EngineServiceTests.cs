@@ -1191,6 +1191,86 @@ public class EngineServiceTests
         Assert.That(corpus.TargetCorpora, Has.Count.EqualTo(1));
     }
 
+    [Test]
+    public async Task DeletePretranslationsWhenParallelCorpusIsUpdatedAsync()
+    {
+        var env = new TestEnvironment();
+        Models.WordAlignment wordAlignment =
+            new()
+            {
+                Id = "wordAlignment",
+                EngineRef = "engine1",
+                CorpusRef = "corpus1",
+                Refs = ["ref1"],
+                TextId = "textId1",
+                SourceTokens = [],
+                TargetTokens = [],
+                Alignment = CreateNAlignedWordPair(0),
+            };
+        var engine = await env.CreateEngineWithTextFilesAsync();
+        await env.WordAlignments.InsertAsync(wordAlignment);
+        Assert.That(await env.WordAlignments.GetAsync(wordAlignment.Id), Is.Not.Null);
+        await env.Service.UpdateParallelCorpusAsync(engine.Id, "corpus1", sourceCorpora: [], targetCorpora: []);
+        Assert.That(await env.WordAlignments.GetAsync(wordAlignment.Id), Is.Null);
+    }
+
+    [Test]
+    public async Task DeletePretranslationsWhenCorpusFilesAreDeletedAsync()
+    {
+        var env = new TestEnvironment();
+        Models.WordAlignment wordAlignment =
+            new()
+            {
+                Id = "wordAlignment",
+                EngineRef = "engine1",
+                CorpusRef = "corpus1",
+                Refs = ["ref1"],
+                TextId = "textId1",
+                SourceTokens = [],
+                TargetTokens = [],
+                Alignment = CreateNAlignedWordPair(0),
+            };
+        await env.CreateEngineWithTextFilesAsync();
+        await env.WordAlignments.InsertAsync(wordAlignment);
+        Assert.That(await env.WordAlignments.GetAsync(wordAlignment.Id), Is.Not.Null);
+        await env.Service.DeleteAllCorpusFilesAsync("file1");
+        Assert.That(await env.WordAlignments.GetAsync(wordAlignment.Id), Is.Null);
+    }
+
+    [Test]
+    public async Task DeletePretranslationsWhenCorpusFilesAreUpdatedAsync()
+    {
+        var env = new TestEnvironment();
+        Models.WordAlignment wordAlignment =
+            new()
+            {
+                Id = "wordAlignment",
+                EngineRef = "engine1",
+                CorpusRef = "corpus1",
+                Refs = ["ref1"],
+                TextId = "textId1",
+                SourceTokens = [],
+                TargetTokens = [],
+                Alignment = CreateNAlignedWordPair(0),
+            };
+        await env.CreateEngineWithTextFilesAsync();
+        await env.WordAlignments.InsertAsync(wordAlignment);
+        Assert.That(await env.WordAlignments.GetAsync(wordAlignment.Id), Is.Not.Null);
+        await env.Service.UpdateCorpusFilesAsync(
+            "corpus1",
+            [
+                new()
+                {
+                    Id = "file1",
+                    Filename = "newfilename",
+                    TextId = "text1",
+                    Format = Shared.Contracts.FileFormat.Text
+                }
+            ]
+        );
+        Assert.That(await env.WordAlignments.GetAsync(wordAlignment.Id), Is.Null);
+    }
+
     private class TestEnvironment
     {
         public TestEnvironment()
@@ -1248,10 +1328,12 @@ public class EngineServiceTests
                     )
                 );
 
+            WordAlignments = new MemoryRepository<Models.WordAlignment>();
+
             Service = new EngineService(
                 Engines,
                 new MemoryRepository<Build>(),
-                new MemoryRepository<Models.WordAlignment>(),
+                WordAlignments,
                 grpcClientFactory,
                 dataFileOptions,
                 new MemoryDataAccessContext(),
@@ -1262,6 +1344,7 @@ public class EngineServiceTests
 
         public EngineService Service { get; }
         public IRepository<Engine> Engines { get; }
+        public IRepository<Models.WordAlignment> WordAlignments { get; }
         public WordAlignmentEngineApi.WordAlignmentEngineApiClient WordAlignmentServiceClient { get; }
 
         public async Task<Engine> CreateEngineWithTextFilesAsync()

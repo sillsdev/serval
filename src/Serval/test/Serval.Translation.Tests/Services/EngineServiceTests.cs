@@ -2084,6 +2084,106 @@ public class EngineServiceTests
         Assert.That(updatedEngine.TargetLanguage, Is.EqualTo(engine.TargetLanguage));
     }
 
+    [Test]
+    public async Task DeletePretranslationsWhenCorpusIsUpdatedAsync()
+    {
+        var env = new TestEnvironment();
+        Pretranslation pretranslation =
+            new()
+            {
+                Id = "pretranslation1",
+                EngineRef = "engine1",
+                CorpusRef = "corpus1",
+                Refs = ["ref1"],
+                TextId = "textId1",
+                Translation = "translation"
+            };
+        var engine = await env.CreateEngineWithTextFilesAsync();
+        await env.Pretranslations.InsertAsync(pretranslation);
+        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
+        await env.Service.UpdateCorpusAsync(engine.Id, "corpus1", sourceFiles: [], targetFiles: []);
+        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
+    }
+
+    [Test]
+    public async Task DeletePretranslationsWhenParallelCorpusIsUpdatedAsync()
+    {
+        var env = new TestEnvironment();
+        Pretranslation pretranslation =
+            new()
+            {
+                Id = "pretranslation1",
+                EngineRef = "engine1",
+                CorpusRef = "parallel-corpus1",
+                Refs = ["ref1"],
+                TextId = "textId1",
+                Translation = "translation"
+            };
+        var engine = await env.CreateParallelCorpusEngineWithTextFilesAsync();
+        await env.Pretranslations.InsertAsync(pretranslation);
+        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
+        await env.Service.UpdateParallelCorpusAsync(
+            engine.Id,
+            "parallel-corpus1",
+            sourceCorpora: [],
+            targetCorpora: []
+        );
+        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
+    }
+
+    [Test]
+    public async Task DeletePretranslationsWhenCorpusFilesAreDeletedAsync()
+    {
+        var env = new TestEnvironment();
+        Pretranslation pretranslation =
+            new()
+            {
+                Id = "pretranslation1",
+                EngineRef = "engine1",
+                CorpusRef = "corpus1",
+                Refs = ["ref1"],
+                TextId = "textId1",
+                Translation = "translation"
+            };
+        await env.CreateEngineWithTextFilesAsync();
+        await env.Pretranslations.InsertAsync(pretranslation);
+        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
+        await env.Service.DeleteAllCorpusFilesAsync("file1");
+        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
+    }
+
+    [Test]
+    public async Task DeletePretranslationsWhenCorpusFilesAreUpdatedAsync()
+    {
+        var env = new TestEnvironment();
+        Pretranslation pretranslation =
+            new()
+            {
+                Id = "pretranslation1",
+                EngineRef = "engine1",
+                CorpusRef = "corpus1",
+                Refs = ["ref1"],
+                TextId = "textId1",
+                Translation = "translation"
+            };
+        await env.CreateEngineWithTextFilesAsync();
+        await env.Pretranslations.InsertAsync(pretranslation);
+        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
+        await env.Service.UpdateCorpusFilesAsync(
+            "corpus1",
+            [
+                new()
+                {
+                    Id = "file1",
+                    Filename = "newfilename",
+                    TextId = "text1",
+                    Format = Shared.Contracts.FileFormat.Text
+                }
+            ]
+        );
+        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
+    }
+
     private class TestEnvironment
     {
         public TestEnvironment()
@@ -2223,11 +2323,11 @@ public class EngineServiceTests
                         languageCode: "en"
                     )
                 );
-
+            Pretranslations = new MemoryRepository<Pretranslation>();
             Service = new EngineService(
                 Engines,
                 new MemoryRepository<Build>(),
-                new MemoryRepository<Pretranslation>(),
+                Pretranslations,
                 Substitute.For<IScopedMediator>(),
                 grpcClientFactory,
                 dataFileOptions,
@@ -2239,6 +2339,7 @@ public class EngineServiceTests
 
         public EngineService Service { get; }
         public IRepository<Engine> Engines { get; }
+        public IRepository<Pretranslation> Pretranslations { get; }
         public TranslationEngineApi.TranslationEngineApiClient TranslationServiceClient { get; }
 
         public async Task<Engine> CreateEngineWithTextFilesAsync()
