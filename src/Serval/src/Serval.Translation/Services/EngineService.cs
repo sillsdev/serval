@@ -212,6 +212,19 @@ public class EngineService(
         if (targetLanguage == "")
             targetLanguage = engine.TargetLanguage;
 
+        TranslationEngineApi.TranslationEngineApiClient client =
+            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+        await client.UpdateAsync(
+            new UpdateRequest
+            {
+                EngineType = engine.Type,
+                EngineId = engine.Id,
+                SourceLanguage = sourceLanguage,
+                TargetLanguage = targetLanguage
+            },
+            cancellationToken: cancellationToken
+        );
+
         await Entities.UpdateAsync(
             engine,
             u =>
@@ -221,6 +234,7 @@ public class EngineService(
             },
             cancellationToken: CancellationToken.None
         );
+        // await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, cancellationToken); Should we delete the pretranslations?
     }
 
     public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)

@@ -14,6 +14,13 @@ public interface ITranslationEngineService
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
+    Task UpdateAsync(
+        string engineId,
+        string sourceLanguage,
+        string targetLanguage,
+        CancellationToken cancellationToken = default
+    );
+
     Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,

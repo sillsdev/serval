@@ -156,6 +156,16 @@ public class SmtTransferEngineServiceTests
         Assert.That(env.Engines.Contains(EngineId1), Is.False);
     }
 
+    [Test]
+    public async Task UpdateAsync()
+    {
+        using var env = new TestEnvironment();
+        await env.Service.UpdateAsync("engine1", "fr", "en");
+        TranslationEngine engine = env.Engines.Get("engine1");
+        Assert.That(engine.SourceLanguage, Is.EqualTo("fr"));
+        Assert.That(engine.TargetLanguage, Is.EqualTo("en"));
+    }
+
     [TestCase(BuildJobRunnerType.Hangfire)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public async Task TrainSegmentPairAsync(BuildJobRunnerType trainJobRunnerType)

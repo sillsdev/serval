@@ -66,6 +66,16 @@ public class NmtEngineServiceTests
         Assert.That(env.Engines.Contains("engine1"), Is.False);
     }
 
+    [Test]
+    public async Task UpdateAsync()
+    {
+        using var env = new TestEnvironment();
+        await env.Service.UpdateAsync("engine1", "fr", "en");
+        TranslationEngine engine = env.Engines.Get("engine1");
+        Assert.That(engine.SourceLanguage, Is.EqualTo("fr"));
+        Assert.That(engine.TargetLanguage, Is.EqualTo("en"));
+    }
+
     private class TestEnvironment : DisposableBase
     {
         private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
