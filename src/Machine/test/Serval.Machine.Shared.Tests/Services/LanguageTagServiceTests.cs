@@ -22,7 +22,7 @@ public class LanguageTagServiceTests
     [TestCase("cmn-Hant", "zho_Hant", Description = "MandarinChineseScript")]
     [TestCase("ms", "zsm_Latn", Description = "Macrolanguage")]
     [TestCase("arb", "arb_Arab", Description = "Arabic")]
-    [TestCase("pes", "pes_Arab", Description = "KoreanScriptCorrection")]
+    [TestCase("pes", "pes_Arab", Description = "IranianPersianNoScript")]
     [TestCase("eng", "eng_Latn", Description = "InsteadOfISO639_1")]
     [TestCase("eng-Latn", "eng_Latn", Description = "DashToUnderscore")]
     [TestCase("kor", "kor_Hang", Description = "KoreanScript")]
