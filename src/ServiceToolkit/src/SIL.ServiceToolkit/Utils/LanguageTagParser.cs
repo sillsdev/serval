@@ -10,7 +10,8 @@ public partial class LanguageTagParser
             { "lv", "lvs" },
             { "ne", "npi" },
             { "sw", "swh" },
-            { "cmn", "zh" }
+            { "cmn", "zh" },
+            { "pes", "fa-IR" }
         };
 
     private static readonly Dictionary<string, string> StandardScripts = new() { { "Kore", "Hang" } };
