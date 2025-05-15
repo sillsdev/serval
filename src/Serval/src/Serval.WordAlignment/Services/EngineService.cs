@@ -355,47 +355,42 @@ public class EngineService(
 
     public async Task DeleteAllCorpusFilesAsync(string dataFileId, CancellationToken cancellationToken = default)
     {
-        await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+        //This is only getting called within a transaction
+        HashSet<string> parallelCorpusIds = (
+            await Entities.GetAllAsync(
+                e =>
+                    e.ParallelCorpora.Any(c =>
+                        c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == dataFileId))
+                        || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                    ),
+                cancellationToken: cancellationToken
+            )
+        )
+            .SelectMany(e => e.ParallelCorpora.Select(c => c.Id))
+            .ToHashSet();
+
+        await Entities.UpdateAllAsync(
+            e =>
+                e.ParallelCorpora.Any(c =>
+                    c.SourceCorpora.Any(sc => sc.Files.Any(f => f.Id == dataFileId))
+                    || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
+                ),
+            u =>
             {
-                HashSet<string> parallelCorpusIds = (
-                    await Entities.GetAllAsync(
-                        e =>
-                            e.ParallelCorpora.Any(c =>
-                                c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == dataFileId))
-                                || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
-                            ),
-                        cancellationToken: cancellationToken
-                    )
-                )
-                    .SelectMany(e => e.ParallelCorpora.Select(c => c.Id))
-                    .ToHashSet();
-
-                await Entities.UpdateAllAsync(
-                    e =>
-                        e.ParallelCorpora.Any(c =>
-                            c.SourceCorpora.Any(sc => sc.Files.Any(f => f.Id == dataFileId))
-                            || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == dataFileId))
-                        ),
-                    u =>
-                    {
-                        u.RemoveAll(
-                            e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
-                            f => f.Id == dataFileId
-                        );
-                        u.RemoveAll(
-                            e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
-                            f => f.Id == dataFileId
-                        );
-                    },
-                    cancellationToken: cancellationToken
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
                 );
-
-                await _wordAlignments.DeleteAllAsync(
-                    wa => parallelCorpusIds.Contains(wa.CorpusRef),
-                    cancellationToken: cancellationToken
+                u.RemoveAll(
+                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    f => f.Id == dataFileId
                 );
             },
+            cancellationToken: cancellationToken
+        );
+
+        await _wordAlignments.DeleteAllAsync(
+            wa => parallelCorpusIds.Contains(wa.CorpusRef),
             cancellationToken: cancellationToken
         );
     }
