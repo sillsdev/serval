@@ -13,6 +13,10 @@ public class MongoDataAccessContext(IMongoClient client) : DisposableBase, IMong
     )
     {
         IClientSessionHandle session = await StartSession(cancellationToken).ConfigureAwait(false);
+        if (session.IsInTransaction)
+        {
+            return await callbackAsync(cancellationToken).ConfigureAwait(false);
+        }
 
         return await session
             .WithTransactionAsync(
