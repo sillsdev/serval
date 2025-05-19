@@ -23,6 +23,19 @@ public class TranslationEngineServiceV1(
         return Task.FromResult(new CreateResponse { IsModelPersisted = true });
     }
 
+    public override Task<CancelBuildResponse> CancelBuild(CancelBuildRequest request, ServerCallContext context)
+    {
+        if (
+            _taskQueue.ActiveBuilds.TryRemove(request.EngineId, out (string buildId, CancellationTokenSource cts) build)
+        )
+        {
+            build.cts.Cancel();
+            return Task.FromResult(new CancelBuildResponse { BuildId = build.buildId });
+        }
+
+        throw new RpcException(new Status(StatusCode.Aborted, "No build running"));
+    }
+
     public override Task<Empty> Delete(DeleteRequest request, ServerCallContext context)
     {
         return Task.FromResult(Empty);
@@ -71,18 +84,26 @@ public class TranslationEngineServiceV1(
 
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
+        var cts = new CancellationTokenSource();
+        if (!_taskQueue.ActiveBuilds.TryAdd(request.EngineId, (request.BuildId, cts)))
+        {
+            throw new RpcException(new Status(StatusCode.AlreadyExists, "A build is already in progress."));
+        }
+
         await _taskQueue.QueueBackgroundWorkItemAsync(
             async (services, cancellationToken) =>
             {
+                var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
                 TranslationPlatformApi.TranslationPlatformApiClient client =
                     services.GetRequiredService<TranslationPlatformApi.TranslationPlatformApiClient>();
-                await client.BuildStartedAsync(
-                    new BuildStartedRequest { BuildId = request.BuildId },
-                    cancellationToken: cancellationToken
-                );
 
                 try
                 {
+                    await client.BuildStartedAsync(
+                        new BuildStartedRequest { BuildId = request.BuildId },
+                        cancellationToken: linkedCts.Token
+                    );
+
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
                         request.Corpora.Select(Map).ToList(),
@@ -99,19 +120,25 @@ public class TranslationEngineServiceV1(
                                     Translation = row.SourceSegment
                                 }
                             );
+                            if (cts.IsCancellationRequested)
+                            {
+                                throw new OperationCanceledException(cts.Token);
+                            }
+
                             return Task.CompletedTask;
                         },
                         false
                     );
                     using (
                         AsyncClientStreamingCall<InsertPretranslationsRequest, Empty> call =
-                            client.InsertPretranslations(cancellationToken: cancellationToken)
+                            client.InsertPretranslations(cancellationToken: linkedCts.Token)
                     )
                     {
                         foreach (InsertPretranslationsRequest request in pretranslationsRequests)
                         {
-                            await call.RequestStream.WriteAsync(request, cancellationToken);
+                            await call.RequestStream.WriteAsync(request, linkedCts.Token);
                         }
+
                         await call.RequestStream.CompleteAsync();
                         await call;
                     }
@@ -130,10 +157,26 @@ public class TranslationEngineServiceV1(
                 }
                 catch (Exception e)
                 {
-                    await client.BuildFaultedAsync(
-                        new BuildFaultedRequest { BuildId = request.BuildId, Message = e.Message },
-                        cancellationToken: CancellationToken.None
-                    );
+                    if (cts.IsCancellationRequested)
+                    {
+                        // This will be an RpcException resulting from the token cancellation
+                        // occuring during an RPC call.
+                        await client.BuildCanceledAsync(
+                            new BuildCanceledRequest { BuildId = request.BuildId },
+                            cancellationToken: CancellationToken.None
+                        );
+                    }
+                    else
+                    {
+                        await client.BuildFaultedAsync(
+                            new BuildFaultedRequest { BuildId = request.BuildId, Message = e.Message },
+                            cancellationToken: CancellationToken.None
+                        );
+                    }
+                }
+                finally
+                {
+                    _taskQueue.ActiveBuilds.TryRemove(request.EngineId, out _);
                 }
             }
         );

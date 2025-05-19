@@ -1,9 +1,18 @@
 ﻿namespace EchoEngine;
 
+using System.Collections.Concurrent;
+
 public class BackgroundTaskQueue
 {
     private const int Capacity = 128;
+    private readonly ConcurrentDictionary<string, (string, CancellationTokenSource)> _activeBuilds = new();
     private readonly Channel<Func<IServiceProvider, CancellationToken, ValueTask>> _queue;
+
+    /// <summary>
+    /// A concurrent dictionary to keep track of active builds, where engine id is the key,
+    /// and the value is a tuple of the build id and the cancellation token source.
+    /// </summary>
+    public ConcurrentDictionary<string, (string, CancellationTokenSource)> ActiveBuilds => _activeBuilds;
 
     public BackgroundTaskQueue()
     {
