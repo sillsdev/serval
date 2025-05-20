@@ -4,6 +4,7 @@ public static class DataAccessClassMap
 {
     public static void RegisterConventions(string nspace, params IConvention[] conventions)
     {
+        ConventionRegistry.Remove(nspace);
         var conventionPack = new ConventionPack();
         conventionPack.AddRange(conventions);
         ConventionRegistry.Register(nspace, conventionPack, t => t.Namespace != null && t.Namespace.StartsWith(nspace));

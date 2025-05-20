@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿namespace SIL.ServiceToolkit.Services;
 
 public class FileSystem : IFileSystem
 {

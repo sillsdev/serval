@@ -4,20 +4,20 @@ namespace Serval.Machine.Shared.Services;
 
 public class ServalTranslationPlatformService(
     TranslationPlatformApi.TranslationPlatformApiClient client,
-    IMessageOutboxService outboxService
+    IOutboxService outboxService
 ) : IPlatformService
 {
     EngineGroup IPlatformService.EngineGroup => EngineGroup.Translation;
     private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
-    private readonly IMessageOutboxService _outboxService = outboxService;
+    private readonly IOutboxService _outboxService = outboxService;
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalTranslationPlatformOutboxConstants.OutboxId,
-            ServalTranslationPlatformOutboxConstants.BuildStarted,
-            buildId,
-            new BuildStartedRequest { BuildId = buildId },
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.BuildStarted,
+            groupId: buildId,
+            content: new BuildStartedRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -30,10 +30,10 @@ public class ServalTranslationPlatformService(
     )
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalTranslationPlatformOutboxConstants.OutboxId,
-            ServalTranslationPlatformOutboxConstants.BuildCompleted,
-            buildId,
-            new BuildCompletedRequest
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.BuildCompleted,
+            groupId: buildId,
+            content: new BuildCompletedRequest
             {
                 BuildId = buildId,
                 CorpusSize = trainSize,
@@ -46,10 +46,10 @@ public class ServalTranslationPlatformService(
     public async Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalTranslationPlatformOutboxConstants.OutboxId,
-            ServalTranslationPlatformOutboxConstants.BuildCanceled,
-            buildId,
-            new BuildCanceledRequest { BuildId = buildId },
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.BuildCanceled,
+            groupId: buildId,
+            content: new BuildCanceledRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -57,10 +57,10 @@ public class ServalTranslationPlatformService(
     public async Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalTranslationPlatformOutboxConstants.OutboxId,
-            ServalTranslationPlatformOutboxConstants.BuildFaulted,
-            buildId,
-            new BuildFaultedRequest { BuildId = buildId, Message = message },
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.BuildFaulted,
+            groupId: buildId,
+            content: new BuildFaultedRequest { BuildId = buildId, Message = message },
             cancellationToken: cancellationToken
         );
     }
@@ -68,10 +68,10 @@ public class ServalTranslationPlatformService(
     public async Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalTranslationPlatformOutboxConstants.OutboxId,
-            ServalTranslationPlatformOutboxConstants.BuildRestarting,
-            buildId,
-            new BuildRestartingRequest { BuildId = buildId },
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.BuildRestarting,
+            groupId: buildId,
+            content: new BuildRestartingRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -110,11 +110,12 @@ public class ServalTranslationPlatformService(
         CancellationToken cancellationToken = default
     )
     {
-        await _outboxService.EnqueueMessageStreamAsync(
-            ServalTranslationPlatformOutboxConstants.OutboxId,
-            ServalTranslationPlatformOutboxConstants.InsertPretranslations,
-            engineId,
-            pretranslationsStream,
+        await _outboxService.EnqueueMessageAsync(
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.InsertPretranslations,
+            groupId: engineId,
+            content: engineId,
+            stream: pretranslationsStream,
             cancellationToken: cancellationToken
         );
     }
@@ -126,10 +127,10 @@ public class ServalTranslationPlatformService(
     )
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalTranslationPlatformOutboxConstants.OutboxId,
-            ServalTranslationPlatformOutboxConstants.IncrementTrainEngineCorpusSize,
-            engineId,
-            new IncrementEngineCorpusSizeRequest { EngineId = engineId, Count = count },
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.IncrementEngineCorpusSize,
+            groupId: engineId,
+            content: new IncrementEngineCorpusSizeRequest { EngineId = engineId, Count = count },
             cancellationToken: cancellationToken
         );
     }
@@ -144,10 +145,10 @@ public class ServalTranslationPlatformService(
         var request = new UpdateBuildExecutionDataRequest { EngineId = engineId, BuildId = buildId };
         request.ExecutionData.Add((IDictionary<string, string>)executionData);
         await _outboxService.EnqueueMessageAsync(
-            ServalTranslationPlatformOutboxConstants.OutboxId,
-            ServalTranslationPlatformOutboxConstants.UpdateBuildExecutionData,
-            engineId,
-            request,
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.UpdateBuildExecutionData,
+            groupId: engineId,
+            content: request,
             cancellationToken: cancellationToken
         );
     }

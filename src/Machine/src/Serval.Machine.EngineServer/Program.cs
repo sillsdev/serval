@@ -1,21 +1,17 @@
 using Hangfire;
 using OpenTelemetry.Trace;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder
     .Services.AddMachine(builder.Configuration)
-    .AddBuildJobService()
-    .AddMongoDataAccess()
-    .AddMongoHangfireJobClient()
     .AddServalTranslationEngineService()
     .AddServalWordAlignmentEngineService()
     .AddServalTranslationPlatformService()
     .AddServalWordAlignmentPlatformService()
     .AddModelCleanupService()
-    .AddMessageOutboxDeliveryService()
-    .AddClearMLService();
+    .AddMessageOutboxDeliveryService();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -32,10 +28,7 @@ if (builder.Environment.IsDevelopment())
         });
 }
 
-builder.Services.Configure<Bugsnag.Configuration>(builder.Configuration.GetSection("Bugsnag"));
-builder.Services.AddBugsnag();
-
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.MapServalTranslationEngineService();
 app.MapServalWordAlignmentEngineService();

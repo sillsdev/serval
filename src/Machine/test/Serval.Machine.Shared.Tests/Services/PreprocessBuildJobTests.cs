@@ -480,7 +480,7 @@ public class PreprocessBuildJobTests
             Assert.That(
                 src,
                 Is.EqualTo(
-                    @"Source one, chapter fourteen, verse fifty-five. Segment b.
+                        @"Source one, chapter fourteen, verse fifty-five. Segment b.
 Source one, chapter fourteen, verse fifty-six.
 Source two, chapter one, verse one.
 Source two, chapter one, verse two.
@@ -490,14 +490,15 @@ Source two, chapter one, verse five. Source two, chapter one, verse six.
 Source one, chapter one, verse seven, eight, and nine. Source one, chapter one, verse ten.
 Source two, chapter one, verse one.
 "
-                ),
+                    )
+                    .IgnoreLineEndings(),
                 src
             );
             string trg = await env.GetTargetExtractAsync();
             Assert.That(
                 trg,
                 Is.EqualTo(
-                    @"Target two, chapter fourteen, verse fifty-five.
+                        @"Target two, chapter fourteen, verse fifty-five.
 Target two, chapter fourteen, verse fifty-six.
 Target one, chapter one, verse one.
 Target one, chapter one, verse two.
@@ -507,7 +508,8 @@ Target one, chapter one, verse five and six.
 Target one, chapter one, verse seven and eight. Target one, chapter one, verse nine and ten.
 
 "
-                ),
+                    )
+                    .IgnoreLineEndings(),
                 trg
             );
             Assert.That(pretranslations, Is.Not.Null);
