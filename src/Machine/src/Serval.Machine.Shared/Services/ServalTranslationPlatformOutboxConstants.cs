@@ -10,6 +10,6 @@ public static class ServalTranslationPlatformOutboxConstants
     public const string BuildFaulted = "BuildFaulted";
     public const string BuildRestarting = "BuildRestarting";
     public const string InsertPretranslations = "InsertPretranslations";
-    public const string IncrementTrainEngineCorpusSize = "IncrementTrainEngineCorpusSize";
+    public const string IncrementEngineCorpusSize = "IncrementTrainEngineCorpusSize";
     public const string UpdateBuildExecutionData = "UpdateBuildExecutionData";
 }

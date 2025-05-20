@@ -1,2 +1,10 @@
+global using System.Text;
+global using Grpc.Core;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using NSubstitute;
+global using NSubstitute.ExceptionExtensions;
 global using NUnit.Framework;
+global using SIL.DataAccess;
+global using SIL.ServiceToolkit.Configuration;
 global using SIL.ServiceToolkit.Models;

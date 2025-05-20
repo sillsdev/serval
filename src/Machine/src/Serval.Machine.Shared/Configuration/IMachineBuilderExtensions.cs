@@ -1,4 +1,3 @@
-using Polly.Extensions.Http;
 using Serval.Translation.V1;
 using Serval.WordAlignment.V1;
 
@@ -39,12 +38,6 @@ public static class IMachineBuilderExtensions
         return build;
     }
 
-    public static IMachineBuilder AddMessageOutboxOptions(this IMachineBuilder builder, IConfiguration config)
-    {
-        builder.Services.Configure<MessageOutboxOptions>(config);
-        return builder;
-    }
-
     public static IMachineBuilder AddSharedFileOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<SharedFileOptions>(config);
@@ -54,12 +47,6 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddBuildJobOptions(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<BuildJobOptions>(config);
-        return builder;
-    }
-
-    public static IMachineBuilder AddServiceToolkitServices(this IMachineBuilder builder)
-    {
-        builder.Services.AddParallelCorpusPreprocessor();
         return builder;
     }
 
@@ -96,40 +83,40 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddClearMLService(this IMachineBuilder builder, string? connectionString = null)
+    public static IMachineBuilder AddClearMLService(this IMachineBuilder builder)
     {
-        connectionString ??= builder.Configuration.GetConnectionString("ClearML");
+        string? connectionString = builder.Configuration.GetConnectionString("ClearML");
         if (connectionString is null)
             throw new InvalidOperationException("ClearML connection string is required");
-
-        var policy = Policy
-            .Handle<HttpRequestException>()
-            .OrTransientHttpStatusCode()
-            .OrResult(msg => msg.StatusCode == HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(
-                7,
-                retryAttempt => TimeSpan.FromSeconds(2 * retryAttempt), // total 56, less than the 1 minute limit
-                onRetryAsync: (outcome, timespan, retryAttempt, context) =>
-                {
-                    if (retryAttempt < 3)
-                        return Task.CompletedTask;
-                    // Log the retry attempt
-                    var serviceProvider = builder.Services.BuildServiceProvider();
-                    var logger = serviceProvider.GetService<ILogger<ClearMLService>>();
-                    logger?.LogInformation(
-                        "Retry {RetryAttempt} encountered an error. Waiting {Timespan} before next retry. Error: {ErrorMessage}",
-                        retryAttempt,
-                        timespan,
-                        outcome.Exception?.Message
-                    );
-                    return Task.CompletedTask;
-                }
-            );
 
         builder
             .Services.AddHttpClient("ClearML")
             .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!))
-            .AddPolicyHandler(policy);
+            .AddPolicyHandler(
+                (serviceProvider, _) =>
+                    Policy
+                        .Handle<HttpRequestException>()
+                        .OrTransientHttpStatusCode()
+                        .OrResult(msg => msg.StatusCode == HttpStatusCode.TooManyRequests)
+                        .WaitAndRetryAsync(
+                            7,
+                            retryAttempt => TimeSpan.FromSeconds(2 * retryAttempt), // total 56, less than the 1 minute limit
+                            onRetryAsync: (outcome, timespan, retryAttempt, context) =>
+                            {
+                                if (retryAttempt < 3)
+                                    return Task.CompletedTask;
+                                // Log the retry attempt
+                                var logger = serviceProvider.GetRequiredService<ILogger<ClearMLService>>();
+                                logger.LogInformation(
+                                    "Retry {RetryAttempt} encountered an error. Waiting {Timespan} before next retry. Error: {ErrorMessage}",
+                                    retryAttempt,
+                                    timespan,
+                                    outcome.Exception?.Message
+                                );
+                                return Task.CompletedTask;
+                            }
+                        )
+            );
 
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
 
@@ -162,12 +149,9 @@ public static class IMachineBuilderExtensions
         return mongoStorageOptions;
     }
 
-    public static IMachineBuilder AddMongoHangfireJobClient(
-        this IMachineBuilder builder,
-        string? connectionString = null
-    )
+    public static IMachineBuilder AddMongoHangfireJobClient(this IMachineBuilder builder)
     {
-        connectionString ??= builder.Configuration.GetConnectionString("Hangfire");
+        string? connectionString = builder.Configuration.GetConnectionString("Hangfire");
         if (connectionString is null)
             throw new InvalidOperationException("Hangfire connection string is required");
 
@@ -182,12 +166,9 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddHangfireJobServer(
-        this IMachineBuilder builder,
-        IEnumerable<EngineType>? engineTypes = null
-    )
+    public static IMachineBuilder AddHangfireJobServer(this IMachineBuilder builder)
     {
-        engineTypes ??= (
+        IEnumerable<EngineType> engineTypes = (
             builder.Configuration.GetSection("TranslationEngines").Get<EngineType[]?>()
             ?? [EngineType.SmtTransfer, EngineType.Nmt]
         ).Concat(
@@ -223,28 +204,13 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddMemoryDataAccess(this IMachineBuilder builder)
+    public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder)
     {
-        builder.Services.AddMemoryDataAccess(o =>
-        {
-            o.AddRepository<TranslationEngine>();
-            o.AddRepository<WordAlignmentEngine>();
-            o.AddRepository<RWLock>();
-            o.AddRepository<TrainSegmentPair>();
-            o.AddRepository<OutboxMessage>();
-            o.AddRepository<Outbox>();
-        });
-
-        return builder;
-    }
-
-    public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder, string? connectionString = null)
-    {
-        connectionString ??= builder.Configuration.GetConnectionString("Mongo");
+        string? connectionString = builder.Configuration.GetConnectionString("Mongo");
         if (connectionString is null)
             throw new InvalidOperationException("Mongo connection string is required");
         builder.Services.AddMongoDataAccess(
-            connectionString!,
+            connectionString,
             "Serval.Machine.Shared.Models",
             o =>
             {
@@ -291,35 +257,47 @@ public static class IMachineBuilderExtensions
                             )
                         )
                 );
-                o.AddRepository<OutboxMessage>(
-                    "outbox_messages",
-                    mapSetup: m => m.MapProperty(m => m.OutboxRef).SetSerializer(new StringSerializer())
-                );
-                o.AddRepository<Outbox>(
-                    "outboxes",
-                    mapSetup: m => m.MapIdProperty(o => o.Id).SetSerializer(new StringSerializer())
-                );
             }
         );
-        builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");
+        builder.Services.AddHealthChecks().AddMongoDb(connectionString, name: "Mongo");
 
         return builder;
     }
 
-    public static IMachineBuilder AddServalTranslationPlatformService(
-        this IMachineBuilder builder,
-        string? connectionString = null
-    )
+    public static IMachineBuilder AddMongoOutbox(this IMachineBuilder builder)
     {
-        connectionString ??= builder.Configuration.GetConnectionString("Serval");
+        string? connectionString = builder.Configuration.GetConnectionString("Mongo");
+        if (connectionString is null)
+            throw new InvalidOperationException("Mongo connection string is required");
+        builder.Services.AddOutbox(builder.Configuration, x => x.UseMongo(connectionString));
+        return builder;
+    }
+
+    public static IMachineBuilder AddMessageOutboxDeliveryService(this IMachineBuilder builder)
+    {
+        builder.Services.AddOutbox(x => x.UseDeliveryService());
+        return builder;
+    }
+
+    public static IMachineBuilder AddServalTranslationPlatformService(this IMachineBuilder builder)
+    {
+        string? connectionString = builder.Configuration.GetConnectionString("Serval");
         if (connectionString is null)
             throw new InvalidOperationException("Serval connection string is required");
 
         builder.Services.AddKeyedScoped<IPlatformService, ServalTranslationPlatformService>(EngineGroup.Translation);
 
-        builder.Services.AddSingleton<IOutboxMessageHandler, ServalTranslationPlatformOutboxMessageHandler>();
-
-        builder.Services.AddScoped<IMessageOutboxService, MessageOutboxService>();
+        builder.Services.AddOutbox(x =>
+        {
+            x.AddConsumer<TranslationBuildStartedConsumer>();
+            x.AddConsumer<TranslationBuildCompletedConsumer>();
+            x.AddConsumer<TranslationBuildCanceledConsumer>();
+            x.AddConsumer<TranslationBuildRestartingConsumer>();
+            x.AddConsumer<TranslationBuildFaultedConsumer>();
+            x.AddConsumer<TranslationIncrementEngineCorpusSizeConsumer>();
+            x.AddConsumer<TranslationInsertPretranslationsConsumer>();
+            x.AddConsumer<TranslationUpdateBuildExecutionDataConsumer>();
+        });
 
         builder
             .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
@@ -363,12 +341,9 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddServalWordAlignmentPlatformService(
-        this IMachineBuilder builder,
-        string? connectionString = null
-    )
+    public static IMachineBuilder AddServalWordAlignmentPlatformService(this IMachineBuilder builder)
     {
-        connectionString ??= builder.Configuration.GetConnectionString("Serval");
+        string? connectionString = builder.Configuration.GetConnectionString("Serval");
         if (connectionString is null)
             throw new InvalidOperationException("Serval connection string is required");
 
@@ -376,9 +351,17 @@ public static class IMachineBuilderExtensions
             EngineGroup.WordAlignment
         );
 
-        builder.Services.AddSingleton<IOutboxMessageHandler, ServalWordAlignmentPlatformOutboxMessageHandler>();
-
-        builder.Services.AddScoped<IMessageOutboxService, MessageOutboxService>();
+        builder.Services.AddOutbox(x =>
+        {
+            x.AddConsumer<WordAlignmentBuildStartedConsumer>();
+            x.AddConsumer<WordAlignmentBuildCompletedConsumer>();
+            x.AddConsumer<WordAlignmentBuildCanceledConsumer>();
+            x.AddConsumer<WordAlignmentBuildRestartingConsumer>();
+            x.AddConsumer<WordAlignmentBuildFaultedConsumer>();
+            x.AddConsumer<WordAlignmentIncrementEngineCorpusSizeConsumer>();
+            x.AddConsumer<WordAlignmentInsertWordAlignmentsConsumer>();
+            x.AddConsumer<WordAlignmentUpdateBuildExecutionDataConsumer>();
+        });
 
         builder
             .Services.AddGrpcClient<WordAlignmentPlatformApi.WordAlignmentPlatformApiClient>(o =>
@@ -422,11 +405,7 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddServalTranslationEngineService(
-        this IMachineBuilder builder,
-        string? connectionString = null,
-        IEnumerable<EngineType>? engineTypes = null
-    )
+    public static IMachineBuilder AddServalTranslationEngineService(this IMachineBuilder builder)
     {
         builder.Services.AddGrpc(options =>
         {
@@ -435,7 +414,7 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<TimeoutInterceptor>();
         });
 
-        engineTypes ??=
+        IEnumerable<EngineType> engineTypes =
             builder.Configuration.GetSection("TranslationEngines").Get<EngineType[]?>()
             ?? [EngineType.SmtTransfer, EngineType.Nmt];
         foreach (EngineType engineType in engineTypes.Distinct())
@@ -459,11 +438,7 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddServalWordAlignmentEngineService(
-        this IMachineBuilder builder,
-        string? connectionString = null,
-        IEnumerable<EngineType>? engineTypes = null
-    )
+    public static IMachineBuilder AddServalWordAlignmentEngineService(this IMachineBuilder builder)
     {
         builder.Services.AddGrpc(options =>
         {
@@ -472,7 +447,7 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<TimeoutInterceptor>();
         });
 
-        engineTypes ??=
+        IEnumerable<EngineType> engineTypes =
             builder.Configuration.GetSection("WordAlignmentEngines").Get<EngineType[]?>() ?? [EngineType.Statistical];
 
         foreach (EngineType engineType in engineTypes.Distinct())
@@ -549,12 +524,6 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddModelCleanupService(this IMachineBuilder builder)
     {
         builder.Services.AddHostedService<ModelCleanupService>();
-        return builder;
-    }
-
-    public static IMachineBuilder AddMessageOutboxDeliveryService(this IMachineBuilder builder)
-    {
-        builder.Services.AddHostedService<MessageOutboxDeliveryService>();
         return builder;
     }
 }

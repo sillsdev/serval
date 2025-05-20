@@ -1,7 +1,7 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿namespace SIL.ServiceToolkit.Services;
 
 [TestFixture]
-public class MessageOutboxServiceTests
+public class OutboxServiceTests
 {
     private const string OutboxId = "TestOutbox";
     private const string Method = "TestMethod";
@@ -51,13 +51,13 @@ public class MessageOutboxServiceTests
         env.FileSystem.OpenWrite(Path.Combine("outbox", "1")).Returns(fileStream);
 
         await using MemoryStream stream = new(Encoding.UTF8.GetBytes("content"));
-        await env.Service.EnqueueMessageStreamAsync(OutboxId, Method, "A", stream);
+        await env.Service.EnqueueMessageAsync(OutboxId, Method, "A", "content", stream);
 
         OutboxMessage message = env.Messages.Get("1");
         Assert.That(message.OutboxRef, Is.EqualTo(OutboxId));
         Assert.That(message.Method, Is.EqualTo(Method));
         Assert.That(message.Index, Is.EqualTo(1));
-        Assert.That(message.Content, Is.EqualTo(null));
+        Assert.That(message.Content, Is.EqualTo("\"content\""));
         Assert.That(message.HasContentStream, Is.True);
         Assert.That(fileStream.ToArray(), Is.EqualTo(stream.ToArray()));
     }
@@ -80,14 +80,14 @@ public class MessageOutboxServiceTests
             var idGenerator = Substitute.For<IIdGenerator>();
             idGenerator.GenerateId().Returns("1");
             FileSystem = Substitute.For<IFileSystem>();
-            var options = Substitute.For<IOptionsMonitor<MessageOutboxOptions>>();
-            options.CurrentValue.Returns(new MessageOutboxOptions());
-            Service = new MessageOutboxService(Outboxes, Messages, idGenerator, FileSystem, options);
+            var options = Substitute.For<IOptionsMonitor<OutboxOptions>>();
+            options.CurrentValue.Returns(new OutboxOptions());
+            Service = new OutboxService(Outboxes, Messages, idGenerator, FileSystem, options);
         }
 
         public MemoryRepository<Outbox> Outboxes { get; }
         public MemoryRepository<OutboxMessage> Messages { get; }
         public IFileSystem FileSystem { get; }
-        public MessageOutboxService Service { get; }
+        public OutboxService Service { get; }
     }
 }

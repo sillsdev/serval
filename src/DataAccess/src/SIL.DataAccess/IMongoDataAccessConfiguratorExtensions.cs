@@ -20,7 +20,7 @@ public static class IMongoDataAccessConfiguratorExtensions
             });
         }
 
-        configurator.Services.AddScoped<IRepository<T>>(sp =>
+        configurator.Services.TryAddScoped<IRepository<T>>(sp =>
             CreateRepository(
                 sp.GetRequiredService<IMongoDataAccessContext>(),
                 sp.GetRequiredService<IMongoDatabase>().GetCollection<T>(collectionName)

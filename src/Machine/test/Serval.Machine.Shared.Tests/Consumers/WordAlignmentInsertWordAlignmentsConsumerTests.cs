@@ -1,31 +1,13 @@
 using Google.Protobuf.WellKnownTypes;
 using Serval.WordAlignment.V1;
 
-namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Shared.Consumers;
 
 [TestFixture]
-public class ServalWordAlignmentPlatformOutboxMessageHandlerTests
+public class WordAlignmentInsertWordAlignmentsConsumerTests
 {
     [Test]
-    public async Task HandleMessageAsync_BuildStarted()
-    {
-        TestEnvironment env = new();
-
-        await env.Handler.HandleMessageAsync(
-            "groupId",
-            ServalWordAlignmentPlatformOutboxConstants.BuildStarted,
-            JsonSerializer.Serialize(
-                new BuildStartedRequest { BuildId = "C" },
-                MessageOutboxOptions.JsonSerializerOptions
-            ),
-            null
-        );
-
-        _ = env.Client.Received(1).BuildStartedAsync(Arg.Is<BuildStartedRequest>(x => x.BuildId == "C"));
-    }
-
-    [Test]
-    public async Task HandleMessageAsync_InsertInferenceResults()
+    public async Task HandleMessageAsync()
     {
         TestEnvironment env = new();
 
@@ -33,27 +15,30 @@ public class ServalWordAlignmentPlatformOutboxMessageHandlerTests
         {
             await JsonSerializer.SerializeAsync(
                 stream,
-                new[]
+                new JsonArray
                 {
                     new JsonObject
                     {
                         { "corpusId", "corpus1" },
                         { "textId", "MAT" },
-                        { "refs", new JsonArray(["MAT 1:1"]) },
-                        { "sourceTokens", new JsonArray(["sourceToken1"]) },
-                        { "targetTokens", new JsonArray(["targetToken1"]) },
+                        {
+                            "refs",
+                            new JsonArray { "MAT 1:1" }
+                        },
+                        {
+                            "sourceTokens",
+                            new JsonArray { "sourceToken1" }
+                        },
+                        {
+                            "targetTokens",
+                            new JsonArray { "targetToken1" }
+                        },
                         { "alignment", "0-0:1.0:1.0" }
                     }
-                },
-                MessageOutboxOptions.JsonSerializerOptions
+                }
             );
             stream.Seek(0, SeekOrigin.Begin);
-            await env.Handler.HandleMessageAsync(
-                "engine1",
-                ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignments,
-                "engine1",
-                stream
-            );
+            await env.Handler.HandleMessageAsync("engine1", stream);
         }
 
         _ = env.Client.Received(1).InsertWordAlignments();
@@ -86,13 +71,6 @@ public class ServalWordAlignmentPlatformOutboxMessageHandlerTests
         public TestEnvironment()
         {
             Client = Substitute.For<WordAlignmentPlatformApi.WordAlignmentPlatformApiClient>();
-            Client.BuildStartedAsync(Arg.Any<BuildStartedRequest>()).Returns(CreateEmptyUnaryCall());
-            Client.BuildCanceledAsync(Arg.Any<BuildCanceledRequest>()).Returns(CreateEmptyUnaryCall());
-            Client.BuildFaultedAsync(Arg.Any<BuildFaultedRequest>()).Returns(CreateEmptyUnaryCall());
-            Client.BuildCompletedAsync(Arg.Any<BuildCompletedRequest>()).Returns(CreateEmptyUnaryCall());
-            Client
-                .IncrementEngineCorpusSizeAsync(Arg.Any<IncrementEngineCorpusSizeRequest>())
-                .Returns(CreateEmptyUnaryCall());
             WordAlignmentsWriter = Substitute.For<IClientStreamWriter<InsertWordAlignmentsRequest>>();
             Client
                 .InsertWordAlignments(cancellationToken: Arg.Any<CancellationToken>())
@@ -102,27 +80,16 @@ public class ServalWordAlignmentPlatformOutboxMessageHandlerTests
                         Task.FromResult(new Empty()),
                         Task.FromResult(new Metadata()),
                         () => Status.DefaultSuccess,
-                        () => new Metadata(),
+                        () => [],
                         () => { }
                     )
                 );
 
-            Handler = new ServalWordAlignmentPlatformOutboxMessageHandler(Client);
+            Handler = new WordAlignmentInsertWordAlignmentsConsumer(Client);
         }
 
         public WordAlignmentPlatformApi.WordAlignmentPlatformApiClient Client { get; }
-        public ServalWordAlignmentPlatformOutboxMessageHandler Handler { get; }
+        public WordAlignmentInsertWordAlignmentsConsumer Handler { get; }
         public IClientStreamWriter<InsertWordAlignmentsRequest> WordAlignmentsWriter { get; }
-
-        private static AsyncUnaryCall<Empty> CreateEmptyUnaryCall()
-        {
-            return new AsyncUnaryCall<Empty>(
-                Task.FromResult(new Empty()),
-                Task.FromResult(new Metadata()),
-                () => Status.DefaultSuccess,
-                () => new Metadata(),
-                () => { }
-            );
-        }
     }
 }

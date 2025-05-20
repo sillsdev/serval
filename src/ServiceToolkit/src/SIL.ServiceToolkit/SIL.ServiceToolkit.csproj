@@ -15,6 +15,7 @@
 	  <PackageReference Include="Grpc.Core.Api" Version="2.65.0" />
 	  <PackageReference Include="Hangfire.Core" Version="1.8.14" />
 	  <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />
+	  <PackageReference Include="Protobuf.System.Text.Json" Version="1.4.0" />
 	  <PackageReference Include="SIL.WritingSystems" Version="14.1.1" />
 	  <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
 	  <PackageReference Include="SIL.Scripture" Version="12.0.1" />
@@ -23,6 +24,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+	  <ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess\SIL.DataAccess.csproj" />
 	</ItemGroup>
 
 </Project>

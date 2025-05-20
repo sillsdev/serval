@@ -4,20 +4,20 @@ namespace Serval.Machine.Shared.Services;
 
 public class ServalWordAlignmentPlatformService(
     WordAlignmentPlatformApi.WordAlignmentPlatformApiClient client,
-    IMessageOutboxService outboxService
+    IOutboxService outboxService
 ) : IPlatformService
 {
     EngineGroup IPlatformService.EngineGroup => EngineGroup.WordAlignment;
     private readonly WordAlignmentPlatformApi.WordAlignmentPlatformApiClient _client = client;
-    private readonly IMessageOutboxService _outboxService = outboxService;
+    private readonly IOutboxService _outboxService = outboxService;
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.BuildStarted,
-            buildId,
-            new BuildStartedRequest { BuildId = buildId },
+            outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
+            method: ServalWordAlignmentPlatformOutboxConstants.BuildStarted,
+            groupId: buildId,
+            content: new BuildStartedRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -30,10 +30,10 @@ public class ServalWordAlignmentPlatformService(
     )
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.BuildCompleted,
-            buildId,
-            new BuildCompletedRequest
+            outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
+            method: ServalWordAlignmentPlatformOutboxConstants.BuildCompleted,
+            groupId: buildId,
+            content: new BuildCompletedRequest
             {
                 BuildId = buildId,
                 CorpusSize = trainSize,
@@ -46,10 +46,10 @@ public class ServalWordAlignmentPlatformService(
     public async Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.BuildCanceled,
-            buildId,
-            new BuildCanceledRequest { BuildId = buildId },
+            outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
+            method: ServalWordAlignmentPlatformOutboxConstants.BuildCanceled,
+            groupId: buildId,
+            content: new BuildCanceledRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -57,10 +57,10 @@ public class ServalWordAlignmentPlatformService(
     public async Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.BuildFaulted,
-            buildId,
-            new BuildFaultedRequest { BuildId = buildId, Message = message },
+            outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
+            method: ServalWordAlignmentPlatformOutboxConstants.BuildFaulted,
+            groupId: buildId,
+            content: new BuildFaultedRequest { BuildId = buildId, Message = message },
             cancellationToken: cancellationToken
         );
     }
@@ -68,10 +68,10 @@ public class ServalWordAlignmentPlatformService(
     public async Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.BuildRestarting,
-            buildId,
-            new BuildRestartingRequest { BuildId = buildId },
+            outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
+            method: ServalWordAlignmentPlatformOutboxConstants.BuildRestarting,
+            groupId: buildId,
+            content: new BuildRestartingRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
     }
@@ -110,11 +110,12 @@ public class ServalWordAlignmentPlatformService(
         CancellationToken cancellationToken = default
     )
     {
-        await _outboxService.EnqueueMessageStreamAsync(
-            ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignments,
-            engineId,
-            wordAlignmentsStream,
+        await _outboxService.EnqueueMessageAsync(
+            outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
+            method: ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignments,
+            groupId: engineId,
+            content: engineId,
+            stream: wordAlignmentsStream,
             cancellationToken: cancellationToken
         );
     }
@@ -126,10 +127,10 @@ public class ServalWordAlignmentPlatformService(
     )
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.IncrementTrainEngineCorpusSize,
-            engineId,
-            new IncrementEngineCorpusSizeRequest { EngineId = engineId, Count = count },
+            outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
+            method: ServalWordAlignmentPlatformOutboxConstants.IncrementTrainEngineCorpusSize,
+            groupId: engineId,
+            content: new IncrementEngineCorpusSizeRequest { EngineId = engineId, Count = count },
             cancellationToken: cancellationToken
         );
     }
@@ -144,10 +145,10 @@ public class ServalWordAlignmentPlatformService(
         var request = new UpdateBuildExecutionDataRequest { EngineId = engineId, BuildId = buildId };
         request.ExecutionData.Add((IDictionary<string, string>)executionData);
         await _outboxService.EnqueueMessageAsync(
-            ServalWordAlignmentPlatformOutboxConstants.OutboxId,
-            ServalWordAlignmentPlatformOutboxConstants.UpdateBuildExecutionData,
-            engineId,
-            request,
+            outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
+            method: ServalWordAlignmentPlatformOutboxConstants.UpdateBuildExecutionData,
+            groupId: engineId,
+            content: request,
             cancellationToken: cancellationToken
         );
     }

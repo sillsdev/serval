@@ -1,32 +1,32 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿namespace SIL.ServiceToolkit.Services;
 
-public class MessageOutboxDeliveryService(
+public class OutboxDeliveryService(
     IServiceProvider services,
-    IEnumerable<IOutboxMessageHandler> outboxMessageHandlers,
     IFileSystem fileSystem,
-    IOptionsMonitor<MessageOutboxOptions> options,
-    ILogger<MessageOutboxDeliveryService> logger
+    IOptionsMonitor<OutboxOptions> options,
+    ILogger<OutboxDeliveryService> logger
 ) : BackgroundService
 {
     private readonly IServiceProvider _services = services;
-    private readonly Dictionary<string, IOutboxMessageHandler> _outboxMessageHandlers =
-        outboxMessageHandlers.ToDictionary(o => o.OutboxId);
     private readonly IFileSystem _fileSystem = fileSystem;
-    private readonly IOptionsMonitor<MessageOutboxOptions> _options = options;
-    private readonly ILogger<MessageOutboxDeliveryService> _logger = logger;
+    private readonly IOptionsMonitor<OutboxOptions> _options = options;
+    private readonly ILogger<OutboxDeliveryService> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Initialize();
         using IServiceScope scope = _services.CreateScope();
         var messages = scope.ServiceProvider.GetRequiredService<IRepository<OutboxMessage>>();
+        Dictionary<(string, string), IOutboxConsumer> consumers = scope
+            .ServiceProvider.GetServices<IOutboxConsumer>()
+            .ToDictionary(o => (o.OutboxId, o.Method));
         using ISubscription<OutboxMessage> subscription = await messages.SubscribeAsync(e => true, stoppingToken);
         while (true)
         {
             await subscription.WaitForChangeAsync(cancellationToken: stoppingToken);
             if (stoppingToken.IsCancellationRequested)
                 break;
-            await ProcessMessagesAsync(messages, stoppingToken);
+            await ProcessMessagesAsync(consumers, messages, stoppingToken);
         }
     }
 
@@ -36,6 +36,7 @@ public class MessageOutboxDeliveryService(
     }
 
     internal async Task ProcessMessagesAsync(
+        Dictionary<(string, string), IOutboxConsumer> consumers,
         IRepository<OutboxMessage> messages,
         CancellationToken cancellationToken = default
     )
@@ -53,18 +54,11 @@ public class MessageOutboxDeliveryService(
         foreach (IGrouping<(string OutboxId, string GroupId), OutboxMessage> messageGroup in messageGroups)
         {
             bool abortMessageGroup = false;
-            IOutboxMessageHandler outboxMessageHandler = _outboxMessageHandlers[messageGroup.Key.OutboxId];
             foreach (OutboxMessage message in messageGroup)
             {
                 try
                 {
-                    await ProcessGroupMessagesAsync(
-                        messages,
-                        message,
-                        messageGroup.Key.GroupId,
-                        outboxMessageHandler,
-                        cancellationToken
-                    );
+                    await ProcessGroupMessagesAsync(consumers, messages, message, cancellationToken);
                 }
                 catch (RpcException e)
                 {
@@ -102,32 +96,25 @@ public class MessageOutboxDeliveryService(
     }
 
     private async Task ProcessGroupMessagesAsync(
+        Dictionary<(string, string), IOutboxConsumer> consumers,
         IRepository<OutboxMessage> messages,
         OutboxMessage message,
-        string groupId,
-        IOutboxMessageHandler outboxMessageHandler,
         CancellationToken cancellationToken = default
     )
     {
-        Stream? contentStream = null;
         string filePath = Path.Combine(_options.CurrentValue.OutboxDir, message.Id);
+        IOutboxConsumer consumer = consumers[(message.OutboxRef, message.Method)];
+        object content = OutboxService.DeserializeContent(message.Content, consumer.ContentType);
         if (message.HasContentStream)
-            contentStream = _fileSystem.OpenRead(filePath);
-        try
         {
-            await outboxMessageHandler.HandleMessageAsync(
-                groupId,
-                message.Method,
-                message.Content,
-                contentStream,
-                cancellationToken
-            );
-            await messages.DeleteAsync(message.Id, CancellationToken.None);
+            using Stream stream = _fileSystem.OpenRead(filePath);
+            await consumer.HandleMessageAsync(content, stream, cancellationToken);
         }
-        finally
+        else
         {
-            contentStream?.Dispose();
+            await consumer.HandleMessageAsync(content, null, cancellationToken);
         }
+        await messages.DeleteAsync(message.Id, CancellationToken.None);
         _fileSystem.DeleteFile(filePath);
     }
 
