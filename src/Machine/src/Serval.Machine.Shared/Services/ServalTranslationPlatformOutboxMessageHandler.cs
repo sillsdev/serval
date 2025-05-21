@@ -2,11 +2,17 @@
 
 namespace Serval.Machine.Shared.Services;
 
-public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformApi.TranslationPlatformApiClient client)
-    : IOutboxMessageHandler
+public class ServalTranslationPlatformOutboxMessageHandler : IOutboxMessageHandler
 {
-    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
-    private readonly JsonSerializerOptions _jsonSerializerOptions = MessageOutboxOptions.JsonSerializerOptions;
+    public ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformApi.TranslationPlatformApiClient client)
+    {
+        _client = client;
+        _jsonSerializerOptions = MessageOutboxOptions.JsonSerializerOptions;
+        _jsonSerializerOptions.Converters.Add(new PretranslationConverter());
+    }
+
+    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client;
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     public string OutboxId => ServalTranslationPlatformOutboxConstants.OutboxId;
 
@@ -102,5 +108,84 @@ public class ServalTranslationPlatformOutboxMessageHandler(TranslationPlatformAp
             default:
                 throw new InvalidOperationException($"Encountered a message with the unrecognized method '{method}'.");
         }
+    }
+
+    internal class PretranslationConverter : JsonConverter<Pretranslation>
+    {
+        public override Pretranslation Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options
+        )
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException(
+                    $"Expected StartObject token at the beginning of WordAlignment object but instead encountered {reader.TokenType}"
+                );
+            }
+            string corpusId = "",
+                textId = "",
+                translation = "";
+            IReadOnlyList<string> refs = [],
+                sourceTokens = [],
+                targetTokens = [];
+            IReadOnlyList<SIL.Machine.Corpora.AlignedWordPair> alignedWordPairs = [];
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    string s = reader.GetString()!;
+                    switch (s)
+                    {
+                        case "corpusId":
+                            reader.Read();
+                            corpusId = reader.GetString()!;
+                            break;
+                        case "textId":
+                            reader.Read();
+                            textId = reader.GetString()!;
+                            break;
+                        case "refs":
+                            reader.Read();
+                            refs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "translation":
+                            reader.Read();
+                            translation = reader.GetString()!;
+                            break;
+                        case "sourceTokens":
+                            reader.Read();
+                            sourceTokens = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "targetTokens":
+                            reader.Read();
+                            targetTokens = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "alignment":
+                            reader.Read();
+                            alignedWordPairs = SIL.Machine.Corpora.AlignedWordPair.Parse(reader.GetString()).ToArray();
+                            break;
+                        default:
+                            throw new JsonException(
+                                $"Unexpected property name {s} when deserializing WordAlignment object"
+                            );
+                    }
+                }
+            }
+            return new Pretranslation()
+            {
+                CorpusId = corpusId,
+                TextId = textId,
+                Refs = refs,
+                Translation = translation,
+                Alignment = alignedWordPairs,
+                SourceTokens = sourceTokens,
+                TargetTokens = targetTokens
+            };
+        }
+
+        public override void Write(Utf8JsonWriter writer, Pretranslation value, JsonSerializerOptions options) =>
+            throw new NotSupportedException();
     }
 }
