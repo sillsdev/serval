@@ -117,7 +117,16 @@ public class TranslationEngineServiceV1(
                                     CorpusId = corpus.Id,
                                     TextId = row.TextId,
                                     Refs = { row.Refs.Select(r => r.ToString()) },
-                                    Translation = row.SourceSegment
+                                    Translation = row.SourceSegment,
+                                    SourceTokens = { row.SourceSegment.Split() },
+                                    TranslationTokens = { row.SourceSegment.Split() },
+                                    Alignment =
+                                    {
+                                        row.SourceSegment.Split()
+                                            .Select(
+                                                (_, i) => new AlignedWordPair() { SourceIndex = i, TargetIndex = i }
+                                            )
+                                    }
                                 }
                             );
                             if (cts.IsCancellationRequested)

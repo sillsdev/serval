@@ -490,8 +490,8 @@ public class PretranslationServiceTests
                 textId: "MAT",
                 textOrigin: textOrigin,
                 template: template,
-                paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
-                embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
+                paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.PushToEnd,
+                embedBehavior: PretranslationUsfmMarkerBehavior.PushToEnd,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
             );
             usfm = usfm.Replace("\r\n", "\n");
@@ -502,8 +502,8 @@ public class PretranslationServiceTests
                 textId: "MAT",
                 textOrigin: textOrigin,
                 template: template,
-                paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
-                embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
+                paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.PushToEnd,
+                embedBehavior: PretranslationUsfmMarkerBehavior.PushToEnd,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
             );
             parallel_usfm = parallel_usfm.Replace("\r\n", "\n");
