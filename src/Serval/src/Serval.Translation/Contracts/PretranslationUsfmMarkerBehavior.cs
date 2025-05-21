@@ -2,6 +2,7 @@
 
 public enum PretranslationUsfmMarkerBehavior
 {
-    Preserve,
+    PushToEnd,
+    TryToPlace,
     Strip,
 }
