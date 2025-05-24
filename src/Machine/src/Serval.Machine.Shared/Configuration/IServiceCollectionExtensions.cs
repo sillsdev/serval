@@ -12,7 +12,7 @@ public static class IServiceCollectionExtensions
         services.AddHealthChecks().AddCheck<S3HealthCheck>("S3 Bucket");
 
         services.AddSingleton<ILanguageTagService, LanguageTagService>();
-        services.AddTransient<IFileSystem, FileSystem>();
+        services.AddFileSystem();
 
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
         services.AddStartupTask(
@@ -20,8 +20,11 @@ public static class IServiceCollectionExtensions
                 sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
         );
         services.AddParallelCorpusPreprocessor();
+        services.Configure<Bugsnag.Configuration>(configuration.GetSection("Bugsnag"));
+        services.AddBugsnag();
 
         var builder = new MachineBuilder(services, configuration);
+
         builder.AddServiceOptions(configuration.GetSection(ServiceOptions.Key));
         builder.AddSharedFileOptions(configuration.GetSection(SharedFileOptions.Key));
         builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
@@ -29,11 +32,17 @@ public static class IServiceCollectionExtensions
         builder.AddClearMLOptions(configuration.GetSection(ClearMLOptions.Key));
         builder.AddDistributedReaderWriterLockOptions(configuration.GetSection(DistributedReaderWriterLockOptions.Key));
         builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
-        builder.AddMessageOutboxOptions(configuration.GetSection(MessageOutboxOptions.Key));
+
+        builder.AddBuildJobService();
+        builder.AddMongoDataAccess();
+        builder.AddMongoHangfireJobClient();
+        builder.AddClearMLService();
+        builder.AddMongoOutbox();
+
         return builder;
     }
 
-    public static IServiceCollection AddStartupTask(
+    private static IServiceCollection AddStartupTask(
         this IServiceCollection services,
         Func<IServiceProvider, CancellationToken, Task> startupTask
     )

@@ -7,8 +7,8 @@ public static class IServiceCollectionExtensions
         Action<IMemoryDataAccessConfigurator> configure
     )
     {
-        services.AddTransient<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
-        services.AddScoped<IDataAccessContext, MemoryDataAccessContext>();
+        services.TryAddTransient<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
+        services.TryAddScoped<IDataAccessContext, MemoryDataAccessContext>();
         configure(new MemoryDataAccessConfigurator(services));
         return services;
     }
@@ -30,17 +30,20 @@ public static class IServiceCollectionExtensions
         );
 
         services.Configure<MongoDataAccessOptions>(options => options.Url = new MongoUrl(connectionString));
-        services.AddTransient<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
-        var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
-        clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
-        clientSettings.LinqProvider = LinqProvider.V2;
-        services.AddSingleton<IMongoClient>(sp => new MongoClient(clientSettings));
-        services.AddSingleton(sp =>
+        services.TryAddTransient<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
+        services.TryAddSingleton<IMongoClient>(sp =>
+        {
+            var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
+            clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
+            clientSettings.LinqProvider = LinqProvider.V2;
+            return new MongoClient(clientSettings);
+        });
+        services.TryAddSingleton(sp =>
             sp.GetRequiredService<IMongoClient>()
                 .GetDatabase(sp.GetRequiredService<IOptions<MongoDataAccessOptions>>().Value.Url.DatabaseName)
         );
         services.TryAddScoped<IMongoDataAccessContext, MongoDataAccessContext>();
-        services.AddScoped<IDataAccessContext>(sp => sp.GetRequiredService<IMongoDataAccessContext>());
+        services.TryAddScoped<IDataAccessContext>(sp => sp.GetRequiredService<IMongoDataAccessContext>());
         services.AddHostedService<MongoDataAccessInitializeService>();
         configure(new MongoDataAccessConfigurator(services));
         return services;

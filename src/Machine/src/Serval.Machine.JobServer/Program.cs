@@ -1,16 +1,13 @@
 using OpenTelemetry.Trace;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder
     .Services.AddMachine(builder.Configuration)
-    .AddBuildJobService()
-    .AddMongoDataAccess()
-    .AddMongoHangfireJobClient()
     .AddHangfireJobServer()
     .AddServalTranslationPlatformService()
-    .AddServalWordAlignmentPlatformService()
-    .AddClearMLService();
+    .AddServalWordAlignmentPlatformService();
+
 if (builder.Environment.IsDevelopment())
 {
     builder
@@ -26,9 +23,6 @@ if (builder.Environment.IsDevelopment())
         });
 }
 
-builder.Services.Configure<Bugsnag.Configuration>(builder.Configuration.GetSection("Bugsnag"));
-builder.Services.AddBugsnag();
-
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.Run();

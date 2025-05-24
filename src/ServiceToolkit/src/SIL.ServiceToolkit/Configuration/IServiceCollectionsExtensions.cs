@@ -4,8 +4,8 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddParallelCorpusPreprocessor(this IServiceCollection services)
     {
-        services.AddSingleton<IParallelCorpusPreprocessingService, ParallelCorpusPreprocessingService>();
-        services.AddSingleton<ICorpusService, CorpusService>();
+        services.TryAddSingleton<IParallelCorpusPreprocessingService, ParallelCorpusPreprocessingService>();
+        services.TryAddSingleton<ICorpusService, CorpusService>();
         return services;
     }
 
@@ -24,9 +24,36 @@ public static class IServiceCollectionExtensions
             .AddSingleton<IStartupFilter, BugsnagStartupFilter>()
             .AddScoped<Bugsnag.IClient, Bugsnag.Client>(context =>
             {
-                var configuration = context.GetService<IOptions<Bugsnag.Configuration>>();
-                var client = new Bugsnag.Client(configuration!.Value);
+                IOptions<Bugsnag.Configuration> configuration = context.GetRequiredService<
+                    IOptions<Bugsnag.Configuration>
+                >();
+                var client = new Bugsnag.Client(configuration.Value);
                 return client;
             });
+    }
+
+    public static IServiceCollection AddFileSystem(this IServiceCollection services)
+    {
+        services.TryAddTransient<IFileSystem, FileSystem>();
+        return services;
+    }
+
+    public static IServiceCollection AddOutbox(this IServiceCollection services, Action<IOutboxConfigurator> configure)
+    {
+        services.TryAddScoped<IOutboxService, OutboxService>();
+        configure(new OutboxConfigurator(services));
+        return services;
+    }
+
+    public static IServiceCollection AddOutbox(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<IOutboxConfigurator> configure
+    )
+    {
+        services.Configure<OutboxOptions>(configuration.GetSection(OutboxOptions.Key));
+        services.TryAddScoped<IOutboxService, OutboxService>();
+        configure(new OutboxConfigurator(services));
+        return services;
     }
 }
