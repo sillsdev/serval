@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Serval.WordAlignment.V1;
+using SIL.ServiceToolkit.Models;
 
 namespace Serval.WordAlignment.Services;
 
@@ -258,6 +259,20 @@ public class WordAlignmentPlatformServiceV1(
                     u.Set(b => b.Message, request.Message);
                 if (request.HasQueueDepth)
                     u.Set(b => b.QueueDepth, request.QueueDepth);
+                if (request.Phases.Count > 0)
+                {
+                    u.Set(
+                        b => b.Phases,
+                        request
+                            .Phases.Select(p => new BuildPhase
+                            {
+                                Stage = (BuildPhaseStage)p.Stage,
+                                Step = p.Step,
+                                StepCount = p.StepCount
+                            })
+                            .ToList()
+                    );
+                }
             },
             cancellationToken: context.CancellationToken
         );
