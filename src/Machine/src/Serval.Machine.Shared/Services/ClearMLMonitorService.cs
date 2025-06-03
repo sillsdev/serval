@@ -20,6 +20,10 @@ public class ClearMLMonitorService(
     internal static readonly string SummaryMetric = CreateMD5("Summary");
     internal static readonly string TrainCorpusSizeVariant = CreateMD5("train_corpus_size");
     internal static readonly string ConfidenceVariant = CreateMD5("confidence");
+    internal static readonly string InferenceStepVariant = CreateMD5("inference_step");
+    internal static readonly string InferenceStepCountVariant = CreateMD5("inference_step_count");
+    internal static readonly string TrainStepVariant = CreateMD5("train_step");
+    internal static readonly string TrainStepCountVariant = CreateMD5("train_step_count");
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
@@ -133,6 +137,7 @@ public class ClearMLMonitorService(
                         new ProgressStatus(step: 0, percentCompleted: 0.0),
                         //CurrentBuild.BuildId should always equal the corresponding task.Name
                         queuePositionsPerEngineType[engine.Type][engine.CurrentBuild.BuildId] + 1,
+                        GetPhases(task),
                         cancellationToken
                     );
                 }
@@ -173,6 +178,7 @@ public class ClearMLMonitorService(
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(task.LastIteration ?? 0, percentCompleted, message),
                                 queueDepth: 0,
+                                GetPhases(task),
                                 cancellationToken
                             );
                             break;
@@ -186,6 +192,7 @@ public class ClearMLMonitorService(
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(task.LastIteration ?? 0, percentCompleted: 1.0, message),
                                 queueDepth: 0,
+                                GetPhases(task),
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
@@ -267,7 +274,7 @@ public class ClearMLMonitorService(
             },
             cancellationToken: cancellationToken
         );
-        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, cancellationToken);
+        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, null, cancellationToken);
         _logger.LogInformation("Build started ({BuildId})", buildId);
         return success;
     }
@@ -380,6 +387,7 @@ public class ClearMLMonitorService(
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
+        IReadOnlyCollection<BuildPhase>? phases = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -390,7 +398,7 @@ public class ClearMLMonitorService(
         {
             return;
         }
-        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, cancellationToken);
+        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, phases, cancellationToken);
         _curBuildStatus[buildId] = progressStatus;
     }
 
@@ -403,6 +411,25 @@ public class ClearMLMonitorService(
             return 0;
 
         return metricEvent.Value;
+    }
+
+    private static IReadOnlyCollection<BuildPhase> GetPhases(ClearMLTask task)
+    {
+        return
+        [
+            new BuildPhase
+            {
+                Stage = BuildPhaseStage.Inference,
+                Step = (int)GetMetric(task, SummaryMetric, InferenceStepVariant),
+                StepCount = (int)GetMetric(task, SummaryMetric, InferenceStepCountVariant)
+            },
+            new BuildPhase
+            {
+                Stage = BuildPhaseStage.Train,
+                Step = (int)GetMetric(task, SummaryMetric, TrainStepVariant),
+                StepCount = (int)GetMetric(task, SummaryMetric, TrainStepCountVariant)
+            }
+        ];
     }
 
     private static string CreateMD5(string input)

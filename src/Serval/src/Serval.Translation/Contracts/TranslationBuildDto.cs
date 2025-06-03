@@ -29,4 +29,5 @@ public record TranslationBuildDto
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
     public IReadOnlyDictionary<string, string>? ExecutionData { get; init; }
+    public IReadOnlyList<PhaseDto>? Phases { get; init; }
 }
