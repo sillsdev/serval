@@ -10395,6 +10395,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IDictionary<string, string>? ExecutionData { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -10479,6 +10482,34 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Canceled")]
         Canceled = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Phase
+    {
+        [Newtonsoft.Json.JsonProperty("stage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public PhaseStage Stage { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
+        public int Step { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("stepCount", Required = Newtonsoft.Json.Required.Always)]
+        public int StepCount { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum PhaseStage
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Train")]
+        Train = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Inference")]
+        Inference = 1,
 
     }
 
@@ -10911,6 +10942,9 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IDictionary<string, string>? ExecutionData { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
 
     }
 

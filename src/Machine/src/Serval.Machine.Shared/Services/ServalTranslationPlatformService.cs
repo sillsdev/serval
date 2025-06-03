@@ -1,4 +1,5 @@
 ﻿using Serval.Translation.V1;
+using Phase = Serval.Translation.V1.Phase;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -80,6 +81,7 @@ public class ServalTranslationPlatformService(
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
+        IReadOnlyCollection<BuildPhase>? phases = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -90,6 +92,17 @@ public class ServalTranslationPlatformService(
             request.Message = progressStatus.Message;
         if (queueDepth is not null)
             request.QueueDepth = queueDepth.Value;
+        if (phases is not null)
+        {
+            request.Phases.AddRange(
+                phases.Select(p => new Phase
+                {
+                    Stage = (PhaseStage)p.Stage,
+                    Step = p.Step,
+                    StepCount = p.StepCount
+                })
+            );
+        }
 
         // just try to send it - if it fails, it fails.
         await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);
