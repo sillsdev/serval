@@ -100,7 +100,7 @@ services:
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - BuildJob__ClearML__1__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
-      - BuildJob__ClearML__2__Queue=lambert_24gb.cpu_only
+      - BuildJob__ClearML__2__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
       - BuildJob__ClearML__2__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://silnlp/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
@@ -148,7 +148,7 @@ services:
       - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
       - BuildJob__ClearML__1__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
       - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
-      - BuildJob__ClearML__2__Queue=lambert_24gb.cpu_only
+      - BuildJob__ClearML__2__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
       - BuildJob__ClearML__2__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
       - SharedFile__Uri=s3://silnlp/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
