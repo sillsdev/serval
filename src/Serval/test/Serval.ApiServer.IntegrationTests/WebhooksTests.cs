@@ -166,8 +166,7 @@ public class WebhooksTests
 
         public TestEnvironment()
         {
-            MongoClientSettings clientSettings = new() { LinqProvider = LinqProvider.V2 };
-            _mongoClient = new MongoClient(clientSettings);
+            _mongoClient = new MongoClient();
             ResetDatabases();
 
             Factory = new ServalWebApplicationFactory();
