@@ -35,7 +35,6 @@ public static class IServiceCollectionExtensions
         {
             var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
             clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
-            clientSettings.LinqProvider = LinqProvider.V2;
             return new MongoClient(clientSettings);
         });
         services.TryAddSingleton(sp =>

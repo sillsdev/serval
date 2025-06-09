@@ -8,17 +8,9 @@ public class DataAccessFieldDefinition<TDocument, TField>(
     private readonly ExpressionFieldDefinition<TDocument, TField> _internalDef = new(expression);
     private readonly string _arrayFilterId = arrayFilterId;
 
-    public override RenderedFieldDefinition<TField> Render(
-        IBsonSerializer<TDocument> documentSerializer,
-        IBsonSerializerRegistry serializerRegistry,
-        LinqProvider linqProvider
-    )
+    public override RenderedFieldDefinition<TField> Render(RenderArgs<TDocument> args)
     {
-        RenderedFieldDefinition<TField> rendered = _internalDef.Render(
-            documentSerializer,
-            serializerRegistry,
-            linqProvider
-        );
+        RenderedFieldDefinition<TField> rendered = _internalDef.Render(args);
         string fieldName = rendered.FieldName.Replace(ArrayPosition.All.ToString(CultureInfo.InvariantCulture), "$[]");
         fieldName = fieldName.Replace(ArrayPosition.FirstMatching.ToString(CultureInfo.InvariantCulture), "$");
         fieldName = fieldName.Replace(
