@@ -2337,8 +2337,7 @@ public class TranslationEngineTests
 
         public TestEnvironment()
         {
-            var clientSettings = new MongoClientSettings { LinqProvider = LinqProvider.V2 };
-            _mongoClient = new MongoClient(clientSettings);
+            _mongoClient = new MongoClient();
             ResetDatabases();
 
             Factory = new ServalWebApplicationFactory();
