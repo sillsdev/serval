@@ -10,8 +10,8 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
     public MongoUpdateBuilder()
     {
         _builder = Builders<T>.Update;
-        _defs = new List<UpdateDefinition<T>>();
-        _arrayFilters = new Dictionary<BsonDocument, (string, ArrayFilterDefinition<BsonValue>)>();
+        _defs = [];
+        _arrayFilters = [];
     }
 
     public IUpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> field, TField value)
@@ -75,12 +75,18 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
         {
             ExpressionFilterDefinition<TItem> filter = new(predicate);
             BsonDocument bsonDoc = filter.Render(
-                BsonSerializer.SerializerRegistry.GetSerializer<TItem>(),
-                BsonSerializer.SerializerRegistry,
-                LinqProvider.V2
+                new RenderArgs<TItem>(
+                    BsonSerializer.SerializerRegistry.GetSerializer<TItem>(),
+                    BsonSerializer.SerializerRegistry
+                )
             );
             string filterId;
-            if (_arrayFilters.TryGetValue(bsonDoc, out var existingArrayFilter))
+            if (
+                _arrayFilters.TryGetValue(
+                    bsonDoc,
+                    out (string Id, ArrayFilterDefinition<BsonValue> FilterDef) existingArrayFilter
+                )
+            )
             {
                 filterId = existingArrayFilter.Id;
             }
@@ -109,7 +115,7 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
 
     public (UpdateDefinition<T>, IReadOnlyList<ArrayFilterDefinition>) Build()
     {
-        ArrayFilterDefinition[] arrayFilters = _arrayFilters.Values.Select(f => f.FilterDef).ToArray();
+        ArrayFilterDefinition[] arrayFilters = [.. _arrayFilters.Values.Select(f => f.FilterDef)];
         if (_defs.Count == 1)
             return (_defs.Single(), arrayFilters);
         return (_builder.Combine(_defs), arrayFilters);

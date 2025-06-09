@@ -244,9 +244,7 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
     {
         var filterDef = new ExpressionFilterDefinition<T>(filter);
         BsonDocument renderedFilter = filterDef.Render(
-            _collection.DocumentSerializer,
-            _collection.Settings.SerializerRegistry,
-            LinqProvider.V2
+            new RenderArgs<T>(_collection.DocumentSerializer, _collection.Settings.SerializerRegistry)
         );
         var findCommand = new BsonDocument
         {
