@@ -66,11 +66,6 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
         Expression<Func<TItem, bool>>? predicate = null
     )
     {
-        Expression<Func<T, TItem>> itemExpr = ExpressionHelper.Concatenate(
-            collectionField,
-            (collection) => ((IReadOnlyList<TItem>?)collection)![ArrayPosition.ArrayFilter]
-        );
-        Expression<Func<T, TField>> fieldExpr = ExpressionHelper.Concatenate(itemExpr, itemField);
         if (predicate != null)
         {
             ExpressionFilterDefinition<TItem> filter = new(predicate);
@@ -104,10 +99,20 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
                     )
                 );
             }
+            Expression<Func<T, TItem>> itemExpr = ExpressionHelper.Concatenate(
+                collectionField,
+                collection => ((IReadOnlyList<TItem>?)collection)!.AllMatchingElements(filterId)
+            );
+            Expression<Func<T, TField>> fieldExpr = ExpressionHelper.Concatenate(itemExpr, itemField);
             _defs.Add(_builder.Set(ToFieldDefinition(fieldExpr, filterId), value));
         }
         else
         {
+            Expression<Func<T, TItem>> itemExpr = ExpressionHelper.Concatenate(
+                collectionField,
+                collection => ((IReadOnlyList<TItem>?)collection)!.AllElements()
+            );
+            Expression<Func<T, TField>> fieldExpr = ExpressionHelper.Concatenate(itemExpr, itemField);
             _defs.Add(_builder.Set(ToFieldDefinition(fieldExpr), value));
         }
         return this;
