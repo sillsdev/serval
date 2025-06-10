@@ -26,7 +26,7 @@ args = {
     'trg_lang': 'eng_Latn',
     'shared_file_uri': 's3://bucket',
     'shared_file_folder': 'folder1/folder2',
-    'build_options': '''{ ""max_steps"": ""10"" }''',
+    'build_options': '''{""max_steps"":""10"",""align_pretranslations"":true}''',
     'clearml': True
 }
 run(args)
