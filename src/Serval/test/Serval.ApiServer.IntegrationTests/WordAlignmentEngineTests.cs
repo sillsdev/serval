@@ -1155,11 +1155,11 @@ public class WordAlignmentEngineTests
             u =>
             {
                 u.RemoveAll(
-                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    e => e.ParallelCorpora.AllElements().SourceCorpora.AllElements().Files,
                     f => f.Id == dataFileId
                 );
                 u.RemoveAll(
-                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    e => e.ParallelCorpora.AllElements().TargetCorpora.AllElements().Files,
                     f => f.Id == dataFileId
                 );
             }

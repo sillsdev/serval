@@ -196,11 +196,13 @@ public class DistributedReaderWriterLock(
     {
         DateTime now = DateTime.UtcNow;
         DateTime expiresAt = now + lifetime;
+#pragma warning disable CA1826 // Mongo LINQ3 does not support indexers
         Expression<Func<RWLock, bool>> filter = rwl =>
             rwl.Id == _id
             && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt <= now)
             && !rwl.ReaderLocks.Any(l => l.ExpiresAt > now)
-            && (!rwl.WriterQueue.Any() || rwl.WriterQueue[0].Id == lockId);
+            && (!rwl.WriterQueue.Any() || rwl.WriterQueue.First().Id == lockId);
+#pragma warning restore CA1826
         void Update(IUpdateBuilder<RWLock> u)
         {
             u.Set(
