@@ -225,8 +225,8 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(7));
-            Assert.That(src2Count, Is.EqualTo(13));
+            Assert.That(src1Count, Is.EqualTo(9));
+            Assert.That(src2Count, Is.EqualTo(6));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
@@ -482,12 +482,12 @@ public class PreprocessBuildJobTests
                 Is.EqualTo(
                         @"Source one, chapter fourteen, verse fifty-five. Segment b.
 Source one, chapter fourteen, verse fifty-six.
-Source two, chapter one, verse one.
-Source two, chapter one, verse two.
-Source two, chapter one, verse three.
+Source one, chapter one, verse one.
+Source one, chapter one, verse two and three.
 Source one, chapter one, verse four.
-Source two, chapter one, verse five. Source two, chapter one, verse six.
-Source one, chapter one, verse seven, eight, and nine. Source one, chapter one, verse ten.
+Source one, chapter one, verse five. Source two, chapter one, verse six.
+Source two, chapter one, verse seven. Source two, chapter one, verse eight.
+Source two, chapter one, verse nine. Source one, chapter one, verse ten.
 Source two, chapter one, verse one.
 "
                     )
@@ -501,11 +501,11 @@ Source two, chapter one, verse one.
                         @"Target two, chapter fourteen, verse fifty-five.
 Target two, chapter fourteen, verse fifty-six.
 Target one, chapter one, verse one.
-Target one, chapter one, verse two.
-Target one, chapter one, verse three.
+Target one, chapter one, verse two. Target one, chapter one, verse three.
 
 Target one, chapter one, verse five and six.
-Target one, chapter one, verse seven and eight. Target one, chapter one, verse nine and ten.
+Target one, chapter one, verse seven and eight.
+Target one, chapter one, verse nine and ten.
 
 "
                     )
