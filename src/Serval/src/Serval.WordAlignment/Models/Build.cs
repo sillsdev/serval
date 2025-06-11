@@ -1,4 +1,6 @@
-﻿namespace Serval.WordAlignment.Models;
+﻿using SIL.ServiceToolkit.Models;
+
+namespace Serval.WordAlignment.Models;
 
 public record Build : IInitializableEntity
 {
@@ -19,4 +21,5 @@ public record Build : IInitializableEntity
     public IReadOnlyDictionary<string, string> ExecutionData { get; init; } = new Dictionary<string, string>();
     public bool? IsInitialized { get; set; }
     public DateTime? DateCreated { get; set; }
+    public IReadOnlyList<BuildPhase>? Phases { get; init; }
 }
