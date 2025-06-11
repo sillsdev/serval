@@ -123,10 +123,9 @@ public class TranslationEngineServiceV1(
                                     TranslationTokens = { tokens },
                                     Alignment =
                                     {
-                                        tokens
-                                            .Select(
-                                                (_, i) => new AlignedWordPair() { SourceIndex = i, TargetIndex = i }
-                                            )
+                                        tokens.Select(
+                                            (_, i) => new AlignedWordPair() { SourceIndex = i, TargetIndex = i }
+                                        )
                                     }
                                 }
                             );
