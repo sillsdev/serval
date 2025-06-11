@@ -163,7 +163,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.TryToPlace
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
                             remarks: [formattedRemark]
@@ -179,7 +180,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.TryToPlace
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
                             remarks: [formattedRemark]
@@ -195,7 +197,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.TryToPlace
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
                             remarks: [formattedRemark]
@@ -211,7 +214,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.TryToPlace
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
                             remarks: [formattedRemark]
@@ -242,7 +246,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.TryToPlace
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
                             remarks: [formattedRemark]
@@ -256,7 +261,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.TryToPlace
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
                             remarks: [formattedRemark]
@@ -271,8 +277,8 @@ public class PretranslationService(
     {
         return behavior switch
         {
-            PretranslationUsfmMarkerBehavior.PushToEnd => UpdateUsfmMarkerBehavior.Preserve,
-            PretranslationUsfmMarkerBehavior.TryToPlace => UpdateUsfmMarkerBehavior.Preserve,
+            PretranslationUsfmMarkerBehavior.Preserve => UpdateUsfmMarkerBehavior.Preserve,
+            PretranslationUsfmMarkerBehavior.PreservePosition => UpdateUsfmMarkerBehavior.Preserve,
             PretranslationUsfmMarkerBehavior.Strip => UpdateUsfmMarkerBehavior.Strip,
             _ => throw new InvalidEnumArgumentException(nameof(behavior))
         };

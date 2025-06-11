@@ -110,6 +110,7 @@ public class TranslationEngineServiceV1(
                         row => Task.CompletedTask,
                         (row, _, corpus) =>
                         {
+                            string[] tokens = row.SourceSegment.Split();
                             pretranslationsRequests.Add(
                                 new InsertPretranslationsRequest
                                 {
@@ -118,11 +119,11 @@ public class TranslationEngineServiceV1(
                                     TextId = row.TextId,
                                     Refs = { row.Refs.Select(r => r.ToString()) },
                                     Translation = row.SourceSegment,
-                                    SourceTokens = { row.SourceSegment.Split() },
-                                    TranslationTokens = { row.SourceSegment.Split() },
+                                    SourceTokens = { tokens },
+                                    TranslationTokens = { tokens },
                                     Alignment =
                                     {
-                                        row.SourceSegment.Split()
+                                        tokens
                                             .Select(
                                                 (_, i) => new AlignedWordPair() { SourceIndex = i, TargetIndex = i }
                                             )

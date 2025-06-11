@@ -10330,11 +10330,11 @@ namespace Serval.Client
     public enum PretranslationUsfmMarkerBehavior
     {
 
-        [System.Runtime.Serialization.EnumMember(Value = @"PushToEnd")]
-        PushToEnd = 0,
+        [System.Runtime.Serialization.EnumMember(Value = @"Preserve")]
+        Preserve = 0,
 
-        [System.Runtime.Serialization.EnumMember(Value = @"TryToPlace")]
-        TryToPlace = 1,
+        [System.Runtime.Serialization.EnumMember(Value = @"PreservePosition")]
+        PreservePosition = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Strip")]
         Strip = 2,

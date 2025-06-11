@@ -3,7 +3,7 @@ syntax = "proto3";
 package serval.translation.v1;
 
 import "google/protobuf/empty.proto";
-import "Protos/serval/translation/v1/engine.proto";
+import "serval/translation/v1/common.proto";
 
 
 service TranslationPlatformApi {
