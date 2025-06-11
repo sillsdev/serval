@@ -20,10 +20,6 @@ public class ClearMLMonitorService(
     internal static readonly string SummaryMetric = CreateMD5("Summary");
     internal static readonly string TrainCorpusSizeVariant = CreateMD5("train_corpus_size");
     internal static readonly string ConfidenceVariant = CreateMD5("confidence");
-    internal static readonly string InferenceStepVariant = CreateMD5("inference_step");
-    internal static readonly string InferenceStepCountVariant = CreateMD5("inference_step_count");
-    internal static readonly string TrainStepVariant = CreateMD5("train_step");
-    internal static readonly string TrainStepCountVariant = CreateMD5("train_step_count");
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
@@ -420,16 +416,21 @@ public class ClearMLMonitorService(
             new BuildPhase
             {
                 Stage = BuildPhaseStage.Inference,
-                Step = (int)GetMetric(task, SummaryMetric, InferenceStepVariant),
-                StepCount = (int)GetMetric(task, SummaryMetric, InferenceStepCountVariant)
+                Step = GetRuntimeInt(task, "inference_step"),
+                StepCount = GetRuntimeInt(task, "inference_step_count"),
             },
             new BuildPhase
             {
                 Stage = BuildPhaseStage.Train,
-                Step = (int)GetMetric(task, SummaryMetric, TrainStepVariant),
-                StepCount = (int)GetMetric(task, SummaryMetric, TrainStepCountVariant)
+                Step = GetRuntimeInt(task, "train_step"),
+                StepCount = GetRuntimeInt(task, "train_step_count"),
             }
         ];
+    }
+
+    private static int GetRuntimeInt(ClearMLTask task, string key)
+    {
+        return task.Runtime.TryGetValue(key, out string? s) && int.TryParse(s, out int value) ? value : 0;
     }
 
     private static string CreateMD5(string input)
