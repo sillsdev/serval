@@ -4,6 +4,7 @@ package serval.translation.v1;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "serval/translation/v1/common.proto";
 
 service TranslationEngineApi {
     rpc Create(CreateRequest) returns (CreateResponse);
@@ -116,12 +117,6 @@ message GetLanguageInfoRequest {
 message GetLanguageInfoResponse {
     bool is_native = 3;
     optional string internal_code = 1;
-}
-
-
-message AlignedWordPair {
-    int32 source_index = 1;
-    int32 target_index = 2;
 }
 
 message Phrase {

@@ -3,7 +3,7 @@ syntax = "proto3";
 package serval.word_alignment.v1;
 
 import "google/protobuf/empty.proto";
-import "Protos/serval/word_alignment/v1/engine.proto";
+import "serval/word_alignment/v1/common.proto";
 
 
 service WordAlignmentPlatformApi {

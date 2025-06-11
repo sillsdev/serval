@@ -3,5 +3,6 @@
 public enum PretranslationUsfmMarkerBehavior
 {
     Preserve,
+    PreservePosition,
     Strip,
 }

@@ -3,6 +3,8 @@ syntax = "proto3";
 package serval.translation.v1;
 
 import "google/protobuf/empty.proto";
+import "serval/translation/v1/common.proto";
+
 
 service TranslationPlatformApi {
     rpc UpdateBuildStatus(UpdateBuildStatusRequest) returns (google.protobuf.Empty);
@@ -59,6 +61,9 @@ message InsertPretranslationsRequest {
     string text_id = 3;
     repeated string refs = 4;
     string translation = 5;
+    repeated string source_tokens = 6;
+    repeated string translation_tokens = 7;
+    repeated AlignedWordPair alignment = 8;
 }
 
 message UpdateBuildExecutionDataRequest {

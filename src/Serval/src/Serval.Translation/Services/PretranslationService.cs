@@ -1,4 +1,5 @@
 ﻿using SIL.Machine.Corpora;
+using SIL.Machine.Translation;
 
 namespace Serval.Translation.Services;
 
@@ -112,9 +113,15 @@ public class PretranslationService(
             targetFile.Filename
         );
 
-        IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslations = (
-            await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
-        )
+        IEnumerable<Pretranslation> pretranslations = await GetAllAsync(
+            engineId,
+            modelRevision,
+            corpusId,
+            textId,
+            cancellationToken
+        );
+
+        IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslationRows = pretranslations
             .Select(p =>
                 (
                     Refs: (IReadOnlyList<ScriptureRef>)
@@ -124,12 +131,21 @@ public class PretranslationService(
             )
             .OrderBy(p => p.Refs[0]);
 
+        IEnumerable<PlaceMarkersAlignmentInfo> alignmentInfo = pretranslations.Select(
+            p => new PlaceMarkersAlignmentInfo(
+                p.Refs,
+                p.SourceTokens?.ToList() ?? [],
+                p.TranslationTokens?.ToList() ?? [],
+                Map(p.Alignment)
+            )
+        );
+
         // Update the target book if it exists
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
             // the pretranslations are generated from the source book and inserted into the target book
             // use relaxed references since the USFM structure may not be the same
-            pretranslations = pretranslations.Select(p =>
+            pretranslationRows = pretranslationRows.Select(p =>
                 ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
             );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
@@ -141,12 +157,16 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslations.ToList(),
+                            pretranslationRows.ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
+                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
+                                : null,
                             remarks: [formattedRemark]
                         ) ?? "";
                     break;
@@ -154,12 +174,16 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslations.ToList(),
+                            pretranslationRows.ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferNew,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
+                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
+                                : null,
                             remarks: [formattedRemark]
                         ) ?? "";
                     break;
@@ -173,6 +197,10 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
+                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
+                                : null,
                             remarks: [formattedRemark]
                         ) ?? "";
                     break;
@@ -180,12 +208,16 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslations.ToList(),
+                            pretranslationRows.ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
+                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
+                                : null,
                             remarks: [formattedRemark]
                         ) ?? "";
                     break;
@@ -208,12 +240,16 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
                     return updater.UpdateUsfm(
                             textId,
-                            pretranslations.ToList(),
+                            pretranslationRows.ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
+                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
+                                : null,
                             remarks: [formattedRemark]
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -225,6 +261,10 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
+                            updateBlockHandlers: paragraphMarkerBehavior
+                            == PretranslationUsfmMarkerBehavior.PreservePosition
+                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
+                                : null,
                             remarks: [formattedRemark]
                         ) ?? "";
             }
@@ -238,8 +278,30 @@ public class PretranslationService(
         return behavior switch
         {
             PretranslationUsfmMarkerBehavior.Preserve => UpdateUsfmMarkerBehavior.Preserve,
+            PretranslationUsfmMarkerBehavior.PreservePosition => UpdateUsfmMarkerBehavior.Preserve,
             PretranslationUsfmMarkerBehavior.Strip => UpdateUsfmMarkerBehavior.Strip,
             _ => throw new InvalidEnumArgumentException(nameof(behavior))
         };
+    }
+
+    private static WordAlignmentMatrix Map(IEnumerable<Models.AlignedWordPair>? alignedWordPairs)
+    {
+        int rowCount = 0;
+        int columnCount = 0;
+        if (alignedWordPairs is not null)
+        {
+            foreach (Models.AlignedWordPair pair in alignedWordPairs)
+            {
+                if (pair.SourceIndex + 1 > rowCount)
+                    rowCount = pair.SourceIndex + 1;
+                if (pair.TargetIndex + 1 > columnCount)
+                    columnCount = pair.TargetIndex + 1;
+            }
+        }
+        return new WordAlignmentMatrix(
+            rowCount,
+            columnCount,
+            alignedWordPairs?.Select(wp => (wp.SourceIndex, wp.TargetIndex))
+        );
     }
 }

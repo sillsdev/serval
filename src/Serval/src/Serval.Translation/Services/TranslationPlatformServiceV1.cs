@@ -325,6 +325,9 @@ public class TranslationPlatformServiceV1(
                     TextId = request.TextId,
                     Refs = request.Refs.ToList(),
                     Translation = request.Translation,
+                    SourceTokens = request.SourceTokens,
+                    TranslationTokens = request.TranslationTokens,
+                    Alignment = request.Alignment.Select(Map).ToList()
                 }
             );
             if (batch.Count == PretranslationInsertBatchSize)
@@ -337,5 +340,14 @@ public class TranslationPlatformServiceV1(
             await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
 
         return Empty;
+    }
+
+    private Models.AlignedWordPair Map(V1.AlignedWordPair alignedWordPair)
+    {
+        return new Models.AlignedWordPair()
+        {
+            SourceIndex = alignedWordPair.SourceIndex,
+            TargetIndex = alignedWordPair.TargetIndex
+        };
     }
 }
