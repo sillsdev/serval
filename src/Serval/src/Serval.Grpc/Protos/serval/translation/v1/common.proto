@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package serval.translation.v1;
+
+message AlignedWordPair {
+    int32 source_index = 1;
+    int32 target_index = 2;
+}

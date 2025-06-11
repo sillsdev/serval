@@ -26,7 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Protos\**\*.proto" />
+		<Protobuf Include="**\*.proto" ProtoRoot="Protos" />
 	</ItemGroup>
 
 </Project>

@@ -958,8 +958,8 @@ public class TranslationEnginesController(
             textId,
             textOrigin ?? PretranslationUsfmTextOrigin.PreferExisting,
             template ?? PretranslationUsfmTemplate.Auto,
-            paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.PushToEnd,
-            embedBehavior ?? PretranslationUsfmMarkerBehavior.PushToEnd,
+            paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
+            embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
             cancellationToken
         );

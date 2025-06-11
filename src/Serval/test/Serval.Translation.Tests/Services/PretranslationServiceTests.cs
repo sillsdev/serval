@@ -132,7 +132,7 @@ public class PretranslationServiceTests
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.OnlyPretranslated,
             PretranslationUsfmTemplate.Source,
-            paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.TryToPlace
+            paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.PreservePosition
         );
 
         Assert.That(
@@ -542,7 +542,7 @@ public class PretranslationServiceTests
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
             PretranslationUsfmTemplate template,
-            PretranslationUsfmMarkerBehavior paragraphMarkerBehavior = PretranslationUsfmMarkerBehavior.PushToEnd
+            PretranslationUsfmMarkerBehavior paragraphMarkerBehavior = PretranslationUsfmMarkerBehavior.Preserve
         )
         {
             string usfm = await Service.GetUsfmAsync(
@@ -553,7 +553,7 @@ public class PretranslationServiceTests
                 textOrigin: textOrigin,
                 template: template,
                 paragraphMarkerBehavior: paragraphMarkerBehavior,
-                embedBehavior: PretranslationUsfmMarkerBehavior.PushToEnd,
+                embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
             );
             usfm = usfm.Replace("\r\n", "\n");
@@ -565,7 +565,7 @@ public class PretranslationServiceTests
                 textOrigin: textOrigin,
                 template: template,
                 paragraphMarkerBehavior: paragraphMarkerBehavior,
-                embedBehavior: PretranslationUsfmMarkerBehavior.PushToEnd,
+                embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
             );
             parallel_usfm = parallel_usfm.Replace("\r\n", "\n");

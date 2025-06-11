@@ -3,6 +3,7 @@
 package serval.word_alignment.v1;
 
 import "google/protobuf/empty.proto";
+import "serval/word_alignment/v1/common.proto";
 
 service WordAlignmentEngineApi {
     rpc Create(CreateRequest) returns (google.protobuf.Empty);
@@ -60,12 +61,6 @@ message GetQueueSizeRequest {
 
 message GetQueueSizeResponse {
     int32 size = 1;
-}
-
-message AlignedWordPair {
-    int32 source_index = 1;
-    int32 target_index = 2;
-    double score = 3;
 }
 
 message WordAlignmentResult {
