@@ -1,7 +1,10 @@
 using Google.Protobuf.WellKnownTypes;
 using Serval.Translation.Models;
 using Serval.Translation.V1;
+using SIL.ServiceToolkit.Models;
 using static Serval.ApiServer.Utils;
+using Phase = Serval.Client.Phase;
+using PhaseStage = Serval.Client.PhaseStage;
 
 namespace Serval.ApiServer;
 
@@ -1747,7 +1750,19 @@ public class TranslationEngineTests
         Build? build = null;
         if (addBuild)
         {
-            build = new Build { EngineRef = engineId };
+            build = new Build
+            {
+                EngineRef = engineId,
+                Phases =
+                [
+                    new BuildPhase
+                    {
+                        Stage = BuildPhaseStage.Train,
+                        Step = 1,
+                        StepCount = 2
+                    }
+                ]
+            };
             await _env.Builds.InsertAsync(build);
         }
 
@@ -1758,6 +1773,17 @@ public class TranslationEngineTests
                 Assert.That(build, Is.Not.Null);
                 TranslationBuild result = await client.GetCurrentBuildAsync(engineId);
                 Assert.That(result.Id, Is.EqualTo(build.Id));
+                Assert.That(
+                    result.Phases![0],
+                    Is.EqualTo(
+                        new Phase
+                        {
+                            Stage = PhaseStage.Train,
+                            Step = 1,
+                            StepCount = 2
+                        }
+                    )
+                );
                 break;
             }
             case 204:

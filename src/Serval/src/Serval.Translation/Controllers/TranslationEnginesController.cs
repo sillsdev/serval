@@ -1,3 +1,5 @@
+using BuildPhase = SIL.ServiceToolkit.Models.BuildPhase;
+
 namespace Serval.Translation.Controllers;
 
 #pragma warning disable CS0612 // Type or member is obsolete
@@ -1659,7 +1661,8 @@ public class TranslationEnginesController(
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
-            ExecutionData = source.ExecutionData
+            ExecutionData = source.ExecutionData,
+            Phases = source.Phases?.Select(Map).ToList()
         };
     }
 
@@ -1875,6 +1878,16 @@ public class TranslationEnginesController(
             Url = source.Url,
             ModelRevision = source.ModelRevision,
             ExpiresAt = source.ExpiresAt
+        };
+    }
+
+    private static PhaseDto Map(BuildPhase source)
+    {
+        return new PhaseDto
+        {
+            Stage = (PhaseStage)source.Stage,
+            Step = source.Step,
+            StepCount = source.StepCount
         };
     }
 }
