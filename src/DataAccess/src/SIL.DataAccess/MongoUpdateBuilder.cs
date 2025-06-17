@@ -87,7 +87,7 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
             }
             else
             {
-                filterId = "f" + ObjectId.GenerateNewId().ToString();
+                filterId = $"f{ObjectId.GenerateNewId()}";
                 _arrayFilters.Add(
                     bsonDoc,
                     (
@@ -104,7 +104,7 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
                 collection => ((IReadOnlyList<TItem>?)collection)!.AllMatchingElements(filterId)
             );
             Expression<Func<T, TField>> fieldExpr = ExpressionHelper.Concatenate(itemExpr, itemField);
-            _defs.Add(_builder.Set(ToFieldDefinition(fieldExpr, filterId), value));
+            _defs.Add(_builder.Set(ToFieldDefinition(fieldExpr), value));
         }
         else
         {
@@ -126,11 +126,6 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
         return (_builder.Combine(_defs), arrayFilters);
     }
 
-    private static FieldDefinition<T, TField> ToFieldDefinition<TField>(
-        Expression<Func<T, TField>> field,
-        string arrayFilterId = ""
-    )
-    {
-        return new DataAccessFieldDefinition<T, TField>(field, arrayFilterId);
-    }
+    private static FieldDefinition<T, TField> ToFieldDefinition<TField>(Expression<Func<T, TField>> field) =>
+        new ExpressionFieldDefinition<T, TField>(field);
 }
