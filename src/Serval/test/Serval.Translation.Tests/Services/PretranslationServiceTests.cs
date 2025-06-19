@@ -7,6 +7,7 @@ public class PretranslationServiceTests
         $@"\id MAT - SRC
 \c 1
 \v 1 SRC - Chapter one, verse one.
+\p new paragraph
 \v 2
 \v 3 SRC - Chapter one, verse three.
 ";
@@ -35,7 +36,8 @@ public class PretranslationServiceTests
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
-\v 1 Chapter 1, verse 1.
+\v 1 Chapter 1, verse 1. Translated new paragraph
+\p
 \v 2 Chapter 1, verse 2.
 \v 3
 "
@@ -60,7 +62,8 @@ public class PretranslationServiceTests
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
-\v 1 Chapter 1, verse 1.
+\v 1 Chapter 1, verse 1. Translated new paragraph
+\p
 \v 2 Chapter 1, verse 2.
 \v 3
 "
@@ -86,6 +89,7 @@ public class PretranslationServiceTests
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
 \v 1
+\p
 \v 2
 \v 3
 "
@@ -110,7 +114,35 @@ public class PretranslationServiceTests
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
+\v 1 Chapter 1, verse 1. Translated new paragraph
+\p
+\v 2 Chapter 1, verse 2.
+\v 3
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
+    public async Task GetUsfmAsync_Source_PlaceMarkers()
+    {
+        using TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.OnlyPretranslated,
+            PretranslationUsfmTemplate.Source,
+            paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.PreservePosition
+        );
+
+        Assert.That(
+            usfm,
+            Is.EqualTo(
+                    @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\c 1
 \v 1 Chapter 1, verse 1.
+\p Translated new paragraph
 \v 2 Chapter 1, verse 2.
 \v 3
 "
@@ -161,7 +193,7 @@ public class PretranslationServiceTests
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
-\v 1 Chapter 1, verse 1.
+\v 1 Chapter 1, verse 1. Translated new paragraph
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
 "
@@ -199,7 +231,8 @@ public class PretranslationServiceTests
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
-\v 1 Chapter 1, verse 1.
+\v 1 Chapter 1, verse 1. Translated new paragraph
+\p
 \v 2 Chapter 1, verse 2.
 \v 3
 "
@@ -225,7 +258,7 @@ public class PretranslationServiceTests
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
-\v 1 Chapter 1, verse 1.
+\v 1 Chapter 1, verse 1. Translated new paragraph
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
 "
@@ -271,7 +304,7 @@ public class PretranslationServiceTests
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \c 1
-\v 1 Chapter 1, verse 1.
+\v 1 Chapter 1, verse 1. Translated new paragraph
 \v 2 Chapter 1, verse 2.
 \v 3
 "
@@ -397,7 +430,21 @@ public class PretranslationServiceTests
                         CorpusRef = "corpus1",
                         TextId = "MAT",
                         Refs = ["MAT 1:1"],
-                        Translation = "Chapter 1, verse 1."
+                        Translation = "Chapter 1, verse 1. Translated new paragraph",
+                        SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
+                        TranslationTokens = ["Chapter", "1", ",", "verse", "1", ".", "Translated", "new", "paragraph"],
+                        Alignment =
+                        [
+                            new() { SourceIndex = 2, TargetIndex = 0 },
+                            new() { SourceIndex = 3, TargetIndex = 1 },
+                            new() { SourceIndex = 4, TargetIndex = 2 },
+                            new() { SourceIndex = 5, TargetIndex = 3 },
+                            new() { SourceIndex = 6, TargetIndex = 4 },
+                            new() { SourceIndex = 7, TargetIndex = 5 },
+                            new() { SourceIndex = 8, TargetIndex = 6 },
+                            new() { SourceIndex = 8, TargetIndex = 7 },
+                            new() { SourceIndex = 9, TargetIndex = 8 },
+                        ]
                     },
                     new()
                     {
@@ -417,7 +464,21 @@ public class PretranslationServiceTests
                         CorpusRef = "parallel_corpus1",
                         TextId = "MAT",
                         Refs = ["MAT 1:1"],
-                        Translation = "Chapter 1, verse 1."
+                        Translation = "Chapter 1, verse 1. Translated new paragraph",
+                        SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
+                        TranslationTokens = ["Chapter", "1", ",", "verse", "1", ".", "Translated", "new", "paragraph"],
+                        Alignment =
+                        [
+                            new() { SourceIndex = 2, TargetIndex = 0 },
+                            new() { SourceIndex = 3, TargetIndex = 1 },
+                            new() { SourceIndex = 4, TargetIndex = 2 },
+                            new() { SourceIndex = 5, TargetIndex = 3 },
+                            new() { SourceIndex = 6, TargetIndex = 4 },
+                            new() { SourceIndex = 7, TargetIndex = 5 },
+                            new() { SourceIndex = 8, TargetIndex = 6 },
+                            new() { SourceIndex = 8, TargetIndex = 7 },
+                            new() { SourceIndex = 9, TargetIndex = 8 },
+                        ]
                     },
                     new()
                     {
@@ -480,7 +541,8 @@ public class PretranslationServiceTests
 
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
-            PretranslationUsfmTemplate template
+            PretranslationUsfmTemplate template,
+            PretranslationUsfmMarkerBehavior paragraphMarkerBehavior = PretranslationUsfmMarkerBehavior.Preserve
         )
         {
             string usfm = await Service.GetUsfmAsync(
@@ -490,7 +552,7 @@ public class PretranslationServiceTests
                 textId: "MAT",
                 textOrigin: textOrigin,
                 template: template,
-                paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
+                paragraphMarkerBehavior: paragraphMarkerBehavior,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
             );
@@ -502,7 +564,7 @@ public class PretranslationServiceTests
                 textId: "MAT",
                 textOrigin: textOrigin,
                 template: template,
-                paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
+                paragraphMarkerBehavior: paragraphMarkerBehavior,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
             );
