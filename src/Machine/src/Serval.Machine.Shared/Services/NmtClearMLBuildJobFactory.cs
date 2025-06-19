@@ -28,17 +28,6 @@ public class NmtClearMLBuildJobFactory(
             if (engine is null)
                 throw new InvalidOperationException("The engine does not exist.");
 
-            JsonObject? buildOptionsObject = null;
-            if (buildOptions is not null)
-            {
-                buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
-                if (buildOptionsObject is not null)
-                {
-                    buildOptionsObject["align_pretranslations"] = true;
-                    buildOptions = JsonSerializer.Serialize(buildOptionsObject);
-                }
-            }
-
             Uri sharedFileUri = _sharedFileService.GetBaseUri();
             string baseUri = sharedFileUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
             string folder = sharedFileUri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
