@@ -1,6 +1,4 @@
-﻿using SIL.ServiceToolkit.Models;
-
-namespace Serval.WordAlignment.Models;
+﻿namespace Serval.WordAlignment.Models;
 
 public record Build : IInitializableEntity
 {

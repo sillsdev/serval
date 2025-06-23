@@ -1,10 +1,10 @@
 using Google.Protobuf.WellKnownTypes;
 using Serval.Translation.Models;
 using Serval.Translation.V1;
-using SIL.ServiceToolkit.Models;
 using static Serval.ApiServer.Utils;
 using Phase = Serval.Client.Phase;
 using PhaseStage = Serval.Client.PhaseStage;
+using Queue = Serval.Client.Queue;
 
 namespace Serval.ApiServer;
 

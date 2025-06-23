@@ -1,5 +1,3 @@
-using SIL.ServiceToolkit.Models;
-
 namespace Serval.Translation.Models;
 
 public record Build : IInitializableEntity
