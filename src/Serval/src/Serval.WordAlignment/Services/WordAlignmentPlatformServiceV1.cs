@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Serval.WordAlignment.V1;
-using SIL.ServiceToolkit.Models;
 
 namespace Serval.WordAlignment.Services;
 

@@ -1,6 +1,5 @@
 using System.Globalization;
 using Serval.Translation.V1;
-using SIL.ServiceToolkit.Models;
 using PhaseStage = Serval.Translation.V1.PhaseStage;
 
 namespace Serval.Translation.Services;

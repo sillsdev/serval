@@ -1,6 +1,4 @@
-﻿using BuildPhase = SIL.ServiceToolkit.Models.BuildPhase;
-
-namespace Serval.WordAlignment.Controllers;
+﻿namespace Serval.WordAlignment.Controllers;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 

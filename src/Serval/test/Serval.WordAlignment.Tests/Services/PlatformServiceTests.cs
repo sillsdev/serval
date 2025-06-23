@@ -1,6 +1,5 @@
 using System.Globalization;
 using Serval.WordAlignment.V1;
-using SIL.ServiceToolkit.Models;
 
 namespace Serval.WordAlignment.Services;
 
