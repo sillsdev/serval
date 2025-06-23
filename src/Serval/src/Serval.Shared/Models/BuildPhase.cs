@@ -1,4 +1,4 @@
-﻿namespace SIL.ServiceToolkit.Models;
+﻿namespace Serval.Shared.Models;
 
 public enum BuildPhaseStage
 {
