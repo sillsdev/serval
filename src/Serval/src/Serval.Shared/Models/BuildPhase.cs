@@ -9,6 +9,6 @@ public enum BuildPhaseStage
 public record BuildPhase
 {
     public required BuildPhaseStage Stage { get; init; }
-    public required int Step { get; init; }
-    public required int StepCount { get; init; }
+    public int? Step { get; init; }
+    public int? StepCount { get; init; }
 }
