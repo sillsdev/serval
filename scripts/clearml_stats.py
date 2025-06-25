@@ -2,12 +2,13 @@
 import json
 import os
 import pickle
+import pytz
+from tqdm import tqdm
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
 import regex as re
-from clearml import Task
 from clearml.backend_api.session.client import APIClient
 from matplotlib import pyplot as plt
 
@@ -30,35 +31,40 @@ langtags_url = (
 )
 langtags_df = pd.read_csv(langtags_url, index_col=0)
 
+PAGE_SIZE = 500
+
 
 def normalize_name(language_name: str) -> str:
-    # break apart on capatitalization or spaces, rearrange parts alphabetically
+    # break apart on capitalization or spaces, rearrange parts alphabetically
     return "".join(sorted(re.findall(r"\p{Lu}\p{Ll}*", language_name)))
 
 
 def short_name(language_name: str) -> str:
-    # get the first captialized word and return it
+    # get the first capitalized word and return it
     return re.findall(r"\p{Lu}\p{Ll}*", language_name)[0]
 
 
 # %%
 class clearml_stats:
-
-    def __init__(self):
+    def __init__(self, refresh=False):
         self._client: APIClient = APIClient()
         self._tasks: dict[str, dict] = self._read_tasks()
+        self._projects: dict[str, dict] = self._read_projects()
+        self._languages: pd.DataFrame = pd.read_excel(
+            language_database_filename, index_col=0
+        )
+        self._lang_name_to_code = self._create_language_name_to_code()
         self._project_id_to_task_id: dict[str, list[str]] = {}
+        if len(self._tasks) == 0 or len(self._projects) == 0 or refresh:
+            self.update_tasks_and_projects()
+            self._tasks: dict[str, dict] = self._read_tasks()
+            self._projects: dict[str, dict] = self._read_projects()
         for task_id in self._tasks.keys():
             project_id = self._tasks[task_id]["project"]
             if project_id in self._project_id_to_task_id:
                 self._project_id_to_task_id[project_id].append(task_id)
             else:
                 self._project_id_to_task_id[project_id] = [task_id]
-        self._projects: dict[str, dict] = self._read_projects()
-        self._languages: pd.DataFrame = pd.read_excel(
-            language_database_filename, index_col=0
-        )
-        self._lang_name_to_code = self._create_language_name_to_code()
 
     def update_tasks_and_projects(self):
         last_update = self._last_update()
@@ -66,7 +72,6 @@ class clearml_stats:
         task_list = self._get_task_list(last_update)
         self._update_tasks(task_list)
         self._update_projects(project_list)
-        return
 
     def get_tasks_by_project(self, project_name_filter: str = "") -> pd.DataFrame:
         if project_name_filter == "":
@@ -112,6 +117,10 @@ class clearml_stats:
         return tasks_df
 
     def _last_update(self) -> datetime:
+        if len(self._tasks) == 0:
+            return datetime.fromtimestamp(1640998800).astimezone(
+                pytz.UTC
+            )  # Jan 1 2022 at 1 am - i.e., before FT drafting was released
         return pd.to_datetime(max([v["created"] for v in self._tasks.values()]))
 
     def _get_project_list(self, last_update: datetime) -> list:
@@ -119,17 +128,15 @@ class clearml_stats:
         page = 0
         while True:
             new_projects = self._client.projects.get_all(
-                page=page, page_size=25, order_by=["-created"]
+                page=page, page_size=PAGE_SIZE, order_by=["-created"]
             )
             if len(new_projects) == 0:
                 break
             project_list += new_projects
             page += 1
-            time_of_last_project = pd.to_datetime(
-                self._client.projects.get_by_id(new_projects[-1].id).data.created
-            )
+            time_of_last_project = pd.to_datetime(new_projects[-1].data.created)
             print(
-                f"Update project list-> Time: {time_of_last_project}, current page: {page}"
+                f"Update project list-> Time: {time_of_last_project}, current page: {page}, total projects so far: {page*PAGE_SIZE}"
             )
             if last_update > time_of_last_project:
                 break
@@ -140,17 +147,15 @@ class clearml_stats:
         page = 0
         while True:
             new_tasks = self._client.tasks.get_all(
-                page=page, page_size=25, order_by=["-created"]
+                page=page, page_size=PAGE_SIZE, order_by=["-created"]
             )
             if len(new_tasks) == 0:
                 break
             task_list += new_tasks
             page += 1
-            time_of_last_task = pd.to_datetime(
-                Task.get_task(new_tasks[-1].id).data.created
-            )
+            time_of_last_task = pd.to_datetime(new_tasks[-1].data.created)
             print(
-                f"Update tasks list-> Time: {time_of_last_task}, current page: {page}"
+                f"Update tasks list-> Time: {time_of_last_task}, current page: {page}, total tasks so far: {page*PAGE_SIZE}"
             )
             if last_update > time_of_last_task:
                 break
@@ -159,34 +164,21 @@ class clearml_stats:
     def _update_tasks(self, task_list):
         tasks = self._tasks
         new_tasks = [task for task in task_list if task.id not in tasks]
-        num_of_tasks = len(new_tasks)
-        cur_task_num = 0
-        step = 10
-        while cur_task_num < num_of_tasks:
-            cur_tasks = Task.get_tasks(
-                [t.id for t in new_tasks[cur_task_num : cur_task_num + step]]
-            )
-            if len(cur_tasks) == 0:
-                print("what's wrong?")
-                break
-            for task in cur_tasks:
-                data = task.data.to_dict()
-                try:
-                    script = data["script"]["diff"][:-11]
-                    args = script.split("args = ")
-                    data["script_args"] = json.loads(
-                        args[1]
-                        .replace("'", '"')
-                        .replace('"""', "")
-                        .replace("True", "true")
-                        .replace("False", "false")
-                    )
-                except:
-                    data["script_args"] = {}
-                tasks[task.id] = data
-            cur_task_num += step
-            if cur_task_num % 50 == 0:
-                print(f"Processed {cur_task_num} out of {num_of_tasks} tasks")
+        for task in tqdm(new_tasks):
+            data = task.data.to_dict()
+            try:
+                script = data["script"]["diff"][:-11]
+                args = script.split("args = ")
+                data["script_args"] = json.loads(
+                    args[1]
+                    .replace("'", '"')
+                    .replace('"""', "")
+                    .replace("True", "true")
+                    .replace("False", "false")
+                )
+            except:
+                data["script_args"] = {}
+            tasks[task.id] = data
         self._save_tasks(tasks)
 
     def _update_projects(self, project_list: list):
@@ -221,7 +213,8 @@ class clearml_stats:
                     else task["started"]
                 )
 
-        projects[task["project"]]["tasks"].append(task["id"])
+            projects[task["project"]]["tasks"].append(task["id"])
+
         self._assign_project_type()
         self._assign_languages()
         self.create_language_projects()
@@ -253,10 +246,11 @@ class clearml_stats:
             self._projects[project_id] = project
         langs_df = pd.DataFrame.from_dict(self._projects).T
         self._language_projects_df = langs_df.groupby(
-            ["minority_language_code", "type"]
+            ["type", "minority_language_code", "name"]
         ).agg(
             {
-                "name": "first",
+                "src_lang": "sum",
+                "trg_lang": "sum",
                 "language_name": "first",
                 "country": "first",
                 "continent": "first",
@@ -276,7 +270,7 @@ class clearml_stats:
         def get_from_langtags(field: str):
             return [
                 langtags_df.loc[lang, field] if lang in langtags_df.index else "unknown"
-                for lang in self._language_projects_df.index
+                for _, lang, _ in self._language_projects_df.index
             ]
 
         self._language_projects_df["LangTags_subtag"] = get_from_langtags(
@@ -290,13 +284,14 @@ class clearml_stats:
         self._language_projects_df.to_csv(
             language_project_output_filename, date_format="%Y/%m/%d"
         )
+        print(self._language_projects_df.index, self._language_projects_df.columns)
 
     def _assign_project_type(self):
         for project_id in self._projects:
             project_name = self._projects[project_id]["name"]
             if "Machine/prod.serval-api.org" in project_name:
                 self._projects[project_id]["type"] = "production"
-            elif "Machine/qa_int.serval-api.org" in project_name:
+            elif "Machine/qa-int.serval-api.org" in project_name:
                 self._projects[project_id]["type"] = "internal_qa"
             elif "Machine/qa.serval-api.org" in project_name:
                 self._projects[project_id]["type"] = "external_qa"
@@ -320,6 +315,7 @@ class clearml_stats:
             self._projects[project_id]["lang_candidates"] = []
 
             project = self._projects[project_id]
+
             if project_id in self._project_id_to_task_id:
                 project["tasks"] = self._project_id_to_task_id[project_id]
                 task = self._tasks[project["tasks"][0]]
@@ -366,13 +362,62 @@ class clearml_stats:
                             f"Project {project_id} has no language candidates: "
                             + command
                         )
+                if self._projects[project_id]["src_lang"] == "unknown":
+                    try:
+                        config = json.loads(
+                            task["hyperparams"]["config"]["data/corpus_pairs"][
+                                "value"
+                            ].replace("'", '"')
+                        )[0]
+                        self._projects[project_id]["src_lang"] = (
+                            config["src"][0].split("-")[0]
+                            if isinstance(config["src"], list)
+                            else config["src"].split("-")[0]
+                        )
+                        if len(self._projects[project_id]["src_lang"]) == 2:
+                            two_letter_tag = self._projects[project_id]["src_lang"]
+                            self._projects[project_id]["src_lang"] = task[
+                                "hyperparams"
+                            ]["config"][f"data/lang_codes/{two_letter_tag}"][
+                                "value"
+                            ].split(
+                                "_"
+                            )[
+                                0
+                            ]
+
+                        self._projects[project_id]["trg_lang"] = (
+                            config["trg"][0].split("-")[0]
+                            if isinstance(config["trg"], list)
+                            else config["trg"].split("-")[0]
+                        )
+                        if len(self._projects[project_id]["trg_lang"]) == 2:
+                            two_letter_tag = self._projects[project_id]["trg_lang"]
+                            self._projects[project_id]["trg_lang"] = task[
+                                "hyperparams"
+                            ]["config"][f"data/lang_codes/{two_letter_tag}"][
+                                "value"
+                            ].split(
+                                "_"
+                            )[
+                                0
+                            ]
+                        add_lang(self._projects[project_id]["src_lang"])
+                        add_lang(self._projects[project_id]["trg_lang"])
+                    except KeyError:
+                        pass
+                    except Exception as e:
+                        print(task)
+                        raise e
 
         for project_id in self._projects:
             project = self._projects[project_id]
             if (
-                langs_by_occurrence[project["src_lang"]]
+                project["src_lang"] not in langs_by_occurrence
+                or project["trg_lang"] not in langs_by_occurrence
+                or langs_by_occurrence[project["src_lang"]]
                 > langs_by_occurrence[project["trg_lang"]]
-            ):
+            ) and not "BT" in project["name"]:
                 project["minority_language_code"] = project["trg_lang"].lower()
             else:
                 project["minority_language_code"] = project["src_lang"].lower()
@@ -411,12 +456,16 @@ class clearml_stats:
             pickle.dump(tasks, f)
 
     def _read_projects(self):
-        with open(project_pickle_filename, "rb") as f:
-            return pickle.load(f)
+        if os.path.exists(project_pickle_filename):
+            with open(project_pickle_filename, "rb") as f:
+                return pickle.load(f)
+        return {}
 
     def _read_tasks(self):
-        with open(tasks_pickle_filename, "rb") as f:
-            return pickle.load(f)
+        if os.path.exists(tasks_pickle_filename):
+            with open(tasks_pickle_filename, "rb") as f:
+                return pickle.load(f)
+        return {}
 
 
 def plot_loading_per_week(tasks_df: pd.DataFrame, title_prefix="", group_by="status"):
