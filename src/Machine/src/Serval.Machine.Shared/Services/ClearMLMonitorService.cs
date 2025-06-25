@@ -428,9 +428,9 @@ public class ClearMLMonitorService(
         ];
     }
 
-    private static int GetRuntimeInt(ClearMLTask task, string key)
+    private static int? GetRuntimeInt(ClearMLTask task, string key)
     {
-        return task.Runtime.TryGetValue(key, out string? s) && int.TryParse(s, out int value) ? value : 0;
+        return task.Runtime.TryGetValue(key, out string? s) && int.TryParse(s, out int value) ? value : null;
     }
 
     private static string CreateMD5(string input)

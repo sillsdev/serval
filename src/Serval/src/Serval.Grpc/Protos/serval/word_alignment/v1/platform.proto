@@ -75,8 +75,8 @@ message UpdateBuildExecutionDataRequest {
 
 message Phase {
     PhaseStage stage = 1;
-    int32 step = 2;
-    int32 step_count = 3;
+    optional int32 step = 2;
+    optional int32 step_count = 3;
 }
 
 enum PhaseStage {

@@ -92,16 +92,14 @@ public class ServalWordAlignmentPlatformService(
             request.Message = progressStatus.Message;
         if (queueDepth is not null)
             request.QueueDepth = queueDepth.Value;
-        if (phases is not null)
+        foreach (BuildPhase buildPhase in phases ?? [])
         {
-            request.Phases.AddRange(
-                phases.Select(p => new Phase
-                {
-                    Stage = (PhaseStage)p.Stage,
-                    Step = p.Step,
-                    StepCount = p.StepCount
-                })
-            );
+            var phase = new Phase { Stage = (PhaseStage)buildPhase.Stage, };
+            if (buildPhase.Step is not null)
+                phase.Step = buildPhase.Step.Value;
+            if (buildPhase.StepCount is not null)
+                phase.StepCount = buildPhase.StepCount.Value;
+            request.Phases.Add(phase);
         }
 
         // just try to send it - if it fails, it fails.
