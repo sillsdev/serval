@@ -266,8 +266,8 @@ public class TranslationPlatformServiceV1(
                             .Phases.Select(p => new BuildPhase
                             {
                                 Stage = (BuildPhaseStage)p.Stage,
-                                Step = p.Step,
-                                StepCount = p.StepCount
+                                Step = p.HasStep ? p.Step : null,
+                                StepCount = p.HasStepCount ? p.StepCount : null
                             })
                             .ToList()
                     );

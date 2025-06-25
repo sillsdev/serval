@@ -10498,11 +10498,11 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public PhaseStage Stage { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
-        public int Step { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int? Step { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("stepCount", Required = Newtonsoft.Json.Required.Always)]
-        public int StepCount { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("stepCount", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int? StepCount { get; set; } = default!;
 
     }
 
