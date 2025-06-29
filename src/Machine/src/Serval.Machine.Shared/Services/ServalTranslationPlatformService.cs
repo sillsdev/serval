@@ -1,4 +1,5 @@
 ﻿using Serval.Translation.V1;
+using Phase = Serval.Translation.V1.Phase;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -80,16 +81,26 @@ public class ServalTranslationPlatformService(
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
+        IReadOnlyCollection<BuildPhase>? phases = null,
         CancellationToken cancellationToken = default
     )
     {
         var request = new UpdateBuildStatusRequest { BuildId = buildId, Step = progressStatus.Step };
         if (progressStatus.PercentCompleted.HasValue)
-            request.PercentCompleted = progressStatus.PercentCompleted.Value;
+            request.Progress = progressStatus.PercentCompleted.Value;
         if (progressStatus.Message is not null)
             request.Message = progressStatus.Message;
         if (queueDepth is not null)
             request.QueueDepth = queueDepth.Value;
+        foreach (BuildPhase buildPhase in phases ?? [])
+        {
+            var phase = new Phase { Stage = (PhaseStage)buildPhase.Stage, };
+            if (buildPhase.Step is not null)
+                phase.Step = buildPhase.Step.Value;
+            if (buildPhase.StepCount is not null)
+                phase.StepCount = buildPhase.StepCount.Value;
+            request.Phases.Add(phase);
+        }
 
         // just try to send it - if it fails, it fails.
         await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);

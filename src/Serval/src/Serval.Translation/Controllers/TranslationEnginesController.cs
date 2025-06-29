@@ -1011,7 +1011,7 @@ public class TranslationEnginesController(
     /// A use case is to actively query the state of the current build, where the subsequent
     /// request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
     /// This method should use request throttling.
-    /// Note: Within the returned build, percentCompleted is a value between 0 and 1.
+    /// Note: Within the returned build, progress is a value between 0 and 1.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildId">The build job id</param>
@@ -1653,14 +1653,16 @@ public class TranslationEnginesController(
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             Pretranslate = source.Pretranslate?.Select(s => Map(source.EngineRef, s)).ToList(),
             Step = source.Step,
-            PercentCompleted = source.PercentCompleted,
+            PercentCompleted = source.Progress,
+            Progress = source.Progress,
             Message = source.Message,
             QueueDepth = source.QueueDepth,
             State = source.State,
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
-            ExecutionData = source.ExecutionData
+            ExecutionData = source.ExecutionData,
+            Phases = source.Phases?.Select(Map).ToList()
         };
     }
 
@@ -1876,6 +1878,16 @@ public class TranslationEnginesController(
             Url = source.Url,
             ModelRevision = source.ModelRevision,
             ExpiresAt = source.ExpiresAt
+        };
+    }
+
+    private static PhaseDto Map(BuildPhase source)
+    {
+        return new PhaseDto
+        {
+            Stage = (PhaseStage)source.Stage,
+            Step = source.Step,
+            StepCount = source.StepCount
         };
     }
 }

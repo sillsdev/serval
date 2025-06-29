@@ -22,9 +22,10 @@ service TranslationPlatformApi {
 message UpdateBuildStatusRequest {
     string build_id = 1;
     int32 step = 2;
-    optional double percent_completed = 3;
+    optional double progress = 3;
     optional string message = 4;
     optional int32 queue_depth = 5;
+    repeated Phase phases = 6;
 }
 
 message BuildStartedRequest {
@@ -70,4 +71,15 @@ message UpdateBuildExecutionDataRequest {
     string engine_id = 1;
     string build_id = 2;
     map<string, string> execution_data = 3;
+}
+
+message Phase {
+    PhaseStage stage = 1;
+    optional int32 step = 2;
+    optional int32 step_count = 3;
+}
+
+enum PhaseStage {
+    PHASE_STAGE_TRAIN = 0;
+    PHASE_STAGE_INFERENCE = 1;
 }

@@ -10,7 +10,10 @@ public record TranslationBuildDto
     public IReadOnlyList<TrainingCorpusDto>? TrainOn { get; init; }
     public IReadOnlyList<PretranslateCorpusDto>? Pretranslate { get; init; }
     public required int Step { get; init; }
+
+    [Obsolete]
     public double? PercentCompleted { get; init; }
+    public double? Progress { get; init; }
     public string? Message { get; init; }
 
     public int? QueueDepth { get; init; }
@@ -29,4 +32,5 @@ public record TranslationBuildDto
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
     public IReadOnlyDictionary<string, string>? ExecutionData { get; init; }
+    public IReadOnlyList<PhaseDto>? Phases { get; init; }
 }
