@@ -22,7 +22,7 @@ service TranslationPlatformApi {
 message UpdateBuildStatusRequest {
     string build_id = 1;
     int32 step = 2;
-    optional double percent_completed = 3;
+    optional double progress = 3;
     optional string message = 4;
     optional int32 queue_depth = 5;
     repeated Phase phases = 6;

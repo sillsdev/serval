@@ -78,12 +78,12 @@ public class PlatformServiceTests
         );
         await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.Null);
-        Assert.That(env.Builds.Get("b0").PercentCompleted, Is.Null);
+        Assert.That(env.Builds.Get("b0").Progress, Is.Null);
         var request = new UpdateBuildStatusRequest
         {
             BuildId = "b0",
             QueueDepth = 1,
-            PercentCompleted = 0.5
+            Progress = 0.5
         };
         request.Phases.Add(
             new Phase
@@ -95,7 +95,7 @@ public class PlatformServiceTests
         );
         await env.PlatformService.UpdateBuildStatus(request, env.ServerCallContext);
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.EqualTo(1));
-        Assert.That(env.Builds.Get("b0").PercentCompleted, Is.EqualTo(0.5));
+        Assert.That(env.Builds.Get("b0").Progress, Is.EqualTo(0.5));
         Assert.That(env.Builds.Get("b0").Phases![0].Stage, Is.EqualTo(BuildPhaseStage.Train));
         Assert.That(env.Builds.Get("b0").Phases![0].Step, Is.EqualTo(2));
         Assert.That(env.Builds.Get("b0").Phases![0].StepCount, Is.EqualTo(3));

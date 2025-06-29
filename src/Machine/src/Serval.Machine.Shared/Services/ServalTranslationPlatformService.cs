@@ -87,7 +87,7 @@ public class ServalTranslationPlatformService(
     {
         var request = new UpdateBuildStatusRequest { BuildId = buildId, Step = progressStatus.Step };
         if (progressStatus.PercentCompleted.HasValue)
-            request.PercentCompleted = progressStatus.PercentCompleted.Value;
+            request.Progress = progressStatus.PercentCompleted.Value;
         if (progressStatus.Message is not null)
             request.Message = progressStatus.Message;
         if (queueDepth is not null)

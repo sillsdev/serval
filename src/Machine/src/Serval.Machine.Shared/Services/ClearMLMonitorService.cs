@@ -165,14 +165,14 @@ public class ClearMLMonitorService(
                     {
                         case ClearMLTaskStatus.InProgress:
                         {
-                            double? percentCompleted = null;
+                            double? progress = null;
                             if (task.Runtime.TryGetValue("progress", out string? progressStr))
-                                percentCompleted = int.Parse(progressStr, CultureInfo.InvariantCulture) / 100.0;
+                                progress = int.Parse(progressStr, CultureInfo.InvariantCulture) / 100.0;
                             task.Runtime.TryGetValue("message", out string? message);
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(task.LastIteration ?? 0, percentCompleted, message),
+                                new ProgressStatus(task.LastIteration ?? 0, progress, message),
                                 queueDepth: 0,
                                 GetPhases(task),
                                 cancellationToken
