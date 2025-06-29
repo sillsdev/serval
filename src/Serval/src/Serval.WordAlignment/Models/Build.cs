@@ -9,7 +9,7 @@ public record Build : IInitializableEntity
     public IReadOnlyList<TrainingCorpus>? TrainOn { get; init; }
     public IReadOnlyList<WordAlignmentCorpus>? WordAlignOn { get; init; }
     public int Step { get; init; }
-    public double? PercentCompleted { get; init; }
+    public double? Progress { get; init; }
     public string? Message { get; init; }
     public int? QueueDepth { get; init; }
     public JobState State { get; init; } = JobState.Pending;

@@ -217,7 +217,7 @@ public class WordAlignmentPlatformServiceV1(
                     u =>
                         u.Set(b => b.Message, "Restarting")
                             .Set(b => b.Step, 0)
-                            .Set(b => b.PercentCompleted, 0)
+                            .Set(b => b.Progress, 0)
                             .Set(b => b.State, JobState.Pending),
                     cancellationToken: ct
                 );
@@ -247,13 +247,8 @@ public class WordAlignmentPlatformServiceV1(
             u =>
             {
                 u.Set(b => b.Step, request.Step);
-                if (request.HasPercentCompleted)
-                {
-                    u.Set(
-                        b => b.PercentCompleted,
-                        Math.Round(request.PercentCompleted, 4, MidpointRounding.AwayFromZero)
-                    );
-                }
+                if (request.HasProgress)
+                    u.Set(b => b.Progress, Math.Round(request.Progress, 4, MidpointRounding.AwayFromZero));
                 if (request.HasMessage)
                     u.Set(b => b.Message, request.Message);
                 if (request.HasQueueDepth)
