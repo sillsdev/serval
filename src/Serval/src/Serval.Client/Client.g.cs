@@ -2550,7 +2550,7 @@ namespace Serval.Client
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
         /// <br/>This method should use request throttling.
-        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
+        /// <br/>Note: Within the returned build, progress is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -5598,7 +5598,7 @@ namespace Serval.Client
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
         /// <br/>This method should use request throttling.
-        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
+        /// <br/>Note: Within the returned build, progress is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -7370,7 +7370,7 @@ namespace Serval.Client
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
         /// <br/>This method should use request throttling.
-        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
+        /// <br/>Note: Within the returned build, progress is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -8959,7 +8959,7 @@ namespace Serval.Client
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
         /// <br/>This method should use request throttling.
-        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
+        /// <br/>Note: Within the returned build, progress is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -10372,7 +10372,11 @@ namespace Serval.Client
         public int Step { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public double? PercentCompleted { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("progress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? Progress { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Message { get; set; } = default!;
@@ -10920,7 +10924,11 @@ namespace Serval.Client
         public int Step { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public double? PercentCompleted { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("progress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? Progress { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Message { get; set; } = default!;
