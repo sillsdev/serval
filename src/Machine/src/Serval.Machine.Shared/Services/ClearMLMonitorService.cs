@@ -133,6 +133,7 @@ public class ClearMLMonitorService(
                         new ProgressStatus(step: 0, percentCompleted: 0.0),
                         //CurrentBuild.BuildId should always equal the corresponding task.Name
                         queuePositionsPerEngineType[engine.Type][engine.CurrentBuild.BuildId] + 1,
+                        GetPhases(task),
                         cancellationToken
                     );
                 }
@@ -164,15 +165,16 @@ public class ClearMLMonitorService(
                     {
                         case ClearMLTaskStatus.InProgress:
                         {
-                            double? percentCompleted = null;
+                            double? progress = null;
                             if (task.Runtime.TryGetValue("progress", out string? progressStr))
-                                percentCompleted = int.Parse(progressStr, CultureInfo.InvariantCulture) / 100.0;
+                                progress = int.Parse(progressStr, CultureInfo.InvariantCulture) / 100.0;
                             task.Runtime.TryGetValue("message", out string? message);
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(task.LastIteration ?? 0, percentCompleted, message),
+                                new ProgressStatus(task.LastIteration ?? 0, progress, message),
                                 queueDepth: 0,
+                                GetPhases(task),
                                 cancellationToken
                             );
                             break;
@@ -186,6 +188,7 @@ public class ClearMLMonitorService(
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(task.LastIteration ?? 0, percentCompleted: 1.0, message),
                                 queueDepth: 0,
+                                GetPhases(task),
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
@@ -267,7 +270,7 @@ public class ClearMLMonitorService(
             },
             cancellationToken: cancellationToken
         );
-        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, cancellationToken);
+        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, null, cancellationToken);
         _logger.LogInformation("Build started ({BuildId})", buildId);
         return success;
     }
@@ -380,6 +383,7 @@ public class ClearMLMonitorService(
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
+        IReadOnlyCollection<BuildPhase>? phases = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -390,7 +394,7 @@ public class ClearMLMonitorService(
         {
             return;
         }
-        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, cancellationToken);
+        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, phases, cancellationToken);
         _curBuildStatus[buildId] = progressStatus;
     }
 
@@ -403,6 +407,30 @@ public class ClearMLMonitorService(
             return 0;
 
         return metricEvent.Value;
+    }
+
+    private static IReadOnlyCollection<BuildPhase> GetPhases(ClearMLTask task)
+    {
+        return
+        [
+            new BuildPhase
+            {
+                Stage = BuildPhaseStage.Inference,
+                Step = GetRuntimeInt(task, "inference_step"),
+                StepCount = GetRuntimeInt(task, "inference_step_count"),
+            },
+            new BuildPhase
+            {
+                Stage = BuildPhaseStage.Train,
+                Step = GetRuntimeInt(task, "train_step"),
+                StepCount = GetRuntimeInt(task, "train_step_count"),
+            }
+        ];
+    }
+
+    private static int? GetRuntimeInt(ClearMLTask task, string key)
+    {
+        return task.Runtime.TryGetValue(key, out string? s) && int.TryParse(s, out int value) ? value : null;
     }
 
     private static string CreateMD5(string input)

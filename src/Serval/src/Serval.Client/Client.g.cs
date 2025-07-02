@@ -2550,7 +2550,7 @@ namespace Serval.Client
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
         /// <br/>This method should use request throttling.
-        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
+        /// <br/>Note: Within the returned build, progress is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -5598,7 +5598,7 @@ namespace Serval.Client
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
         /// <br/>This method should use request throttling.
-        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
+        /// <br/>Note: Within the returned build, progress is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -7370,7 +7370,7 @@ namespace Serval.Client
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
         /// <br/>This method should use request throttling.
-        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
+        /// <br/>Note: Within the returned build, progress is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -8959,7 +8959,7 @@ namespace Serval.Client
         /// <br/>A use case is to actively query the state of the current build, where the subsequent
         /// <br/>request sets the `minRevision` to the returned `revision` + 1 and timeouts are handled gracefully.
         /// <br/>This method should use request throttling.
-        /// <br/>Note: Within the returned build, percentCompleted is a value between 0 and 1.
+        /// <br/>Note: Within the returned build, progress is a value between 0 and 1.
         /// </remarks>
         /// <param name="id">The engine id</param>
         /// <param name="buildId">The build job id</param>
@@ -10372,7 +10372,11 @@ namespace Serval.Client
         public int Step { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public double? PercentCompleted { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("progress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? Progress { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Message { get; set; } = default!;
@@ -10399,6 +10403,9 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IDictionary<string, string>? ExecutionData { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
 
     }
 
@@ -10484,6 +10491,34 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Canceled")]
         Canceled = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Phase
+    {
+        [Newtonsoft.Json.JsonProperty("stage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public PhaseStage Stage { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int? Step { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("stepCount", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int? StepCount { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum PhaseStage
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Train")]
+        Train = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Inference")]
+        Inference = 1,
 
     }
 
@@ -10889,7 +10924,11 @@ namespace Serval.Client
         public int Step { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
         public double? PercentCompleted { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("progress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? Progress { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Message { get; set; } = default!;
@@ -10916,6 +10955,9 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IDictionary<string, string>? ExecutionData { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
 
     }
 

@@ -19,6 +19,7 @@ global using NUnit.Framework;
 global using Serval.Client;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Controllers;
+global using Serval.Shared.Models;
 global using Serval.Shared.Services;
 global using SIL.DataAccess;
 global using SIL.ObjectModel;

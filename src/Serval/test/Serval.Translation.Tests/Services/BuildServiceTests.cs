@@ -15,13 +15,13 @@ public class BuildServiceTests
         {
             Id = BUILD1_ID,
             EngineRef = "engine1",
-            PercentCompleted = 0.1
+            Progress = 0.1
         };
         await builds.InsertAsync(build);
         EntityChange<Build> change = await task;
         Assert.That(change.Type, Is.EqualTo(EntityChangeType.Insert));
         Assert.That(change.Entity!.Revision, Is.EqualTo(1));
-        Assert.That(change.Entity.PercentCompleted, Is.EqualTo(0.1));
+        Assert.That(change.Entity.Progress, Is.EqualTo(0.1));
     }
 
     [Test]
@@ -32,11 +32,11 @@ public class BuildServiceTests
         var build = new Build { Id = BUILD1_ID, EngineRef = "engine1" };
         await builds.InsertAsync(build);
         Task<EntityChange<Build>> task = service.GetNewerRevisionAsync(build.Id, 2);
-        await builds.UpdateAsync(build, u => u.Set(b => b.PercentCompleted, 0.1));
+        await builds.UpdateAsync(build, u => u.Set(b => b.Progress, 0.1));
         EntityChange<Build> change = await task;
         Assert.That(change.Type, Is.EqualTo(EntityChangeType.Update));
         Assert.That(change.Entity!.Revision, Is.EqualTo(2));
-        Assert.That(change.Entity.PercentCompleted, Is.EqualTo(0.1));
+        Assert.That(change.Entity.Progress, Is.EqualTo(0.1));
     }
 
     [Test]
