@@ -17,6 +17,7 @@ public class ClearMLMonitorService(
     ),
         IClearMLQueueService
 {
+    internal const string UserProperties = "properties";
     internal static readonly string SummaryMetric = CreateMD5("Summary");
     internal static readonly string TrainCorpusSizeVariant = CreateMD5("train_corpus_size");
     internal static readonly string ConfidenceVariant = CreateMD5("confidence");
@@ -168,7 +169,7 @@ public class ClearMLMonitorService(
                             double? progress = null;
                             if (task.Runtime.TryGetValue("progress", out string? progressStr))
                                 progress = int.Parse(progressStr, CultureInfo.InvariantCulture) / 100.0;
-                            task.Runtime.TryGetValue("message", out string? message);
+                            string? message = GetUserProperty(task, "message");
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
@@ -182,7 +183,7 @@ public class ClearMLMonitorService(
 
                         case ClearMLTaskStatus.Completed:
                         {
-                            task.Runtime.TryGetValue("message", out string? message);
+                            string? message = GetUserProperty(task, "message");
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
@@ -416,21 +417,39 @@ public class ClearMLMonitorService(
             new BuildPhase
             {
                 Stage = BuildPhaseStage.Inference,
-                Step = GetRuntimeInt(task, "inference_step"),
-                StepCount = GetRuntimeInt(task, "inference_step_count"),
+                Step = GetUserPropertyInt(task, "inference_step"),
+                StepCount = GetUserPropertyInt(task, "inference_step_count"),
             },
             new BuildPhase
             {
                 Stage = BuildPhaseStage.Train,
-                Step = GetRuntimeInt(task, "train_step"),
-                StepCount = GetRuntimeInt(task, "train_step_count"),
+                Step = GetUserPropertyInt(task, "train_step"),
+                StepCount = GetUserPropertyInt(task, "train_step_count"),
             }
         ];
     }
 
-    private static int? GetRuntimeInt(ClearMLTask task, string key)
+    private static string? GetUserProperty(ClearMLTask task, string name)
     {
-        return task.Runtime.TryGetValue(key, out string? s) && int.TryParse(s, out int value) ? value : null;
+        if (
+            !task.Hyperparams.TryGetValue(
+                UserProperties,
+                out IReadOnlyDictionary<string, ClearMLParamsItem>? paramsItems
+            )
+        )
+        {
+            return null;
+        }
+
+        if (!paramsItems.TryGetValue(name, out ClearMLParamsItem? paramsItem))
+            return null;
+
+        return paramsItem.Value;
+    }
+
+    private static int? GetUserPropertyInt(ClearMLTask task, string name)
+    {
+        return int.TryParse(GetUserProperty(task, name), out int value) ? value : null;
     }
 
     private static string CreateMD5(string input)

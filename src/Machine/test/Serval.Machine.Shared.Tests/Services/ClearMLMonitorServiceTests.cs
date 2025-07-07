@@ -125,6 +125,7 @@ public class ClearMLMonitorServiceTests
         ClearMLTaskStatus status,
         DateTime created,
         Dictionary<string, string>? runtime = null,
+        Dictionary<string, IReadOnlyDictionary<string, ClearMLParamsItem>>? hyperParams = null,
         Dictionary<string, IReadOnlyDictionary<string, ClearMLMetricsEvent>>? lastMetrics = null,
         int lastIteration = 0,
         string? statusMessage = null,
@@ -138,6 +139,7 @@ public class ClearMLMonitorServiceTests
             Status = status,
             Created = created,
             Runtime = runtime ?? new Dictionary<string, string>(),
+            Hyperparams = hyperParams ?? new Dictionary<string, IReadOnlyDictionary<string, ClearMLParamsItem>>(),
             LastMetrics = lastMetrics ?? new Dictionary<string, IReadOnlyDictionary<string, ClearMLMetricsEvent>>(),
             LastIteration = lastIteration,
             StatusMessage = statusMessage,
@@ -181,10 +183,14 @@ public class ClearMLMonitorServiceTests
         TranslationEngine engine = CreateTestEngine(jobState: BuildJobState.Active);
         SetupBuildingEngines(engine);
 
-        Dictionary<string, string> runtimeInfo = new Dictionary<string, string>
+        var runtimeInfo = new Dictionary<string, string> { { "progress", "50" } };
+
+        var hyperParams = new Dictionary<string, IReadOnlyDictionary<string, ClearMLParamsItem>>
         {
-            { "progress", "50" },
-            { "message", "Training epoch 5/10" }
+            [ClearMLMonitorService.UserProperties] = new Dictionary<string, ClearMLParamsItem>
+            {
+                ["message"] = new ClearMLParamsItem { Name = "message", Value = "Training epoch 5/10" }
+            }
         };
 
         ClearMLTask task = CreateClearMLTask(
@@ -193,6 +199,7 @@ public class ClearMLMonitorServiceTests
             status: ClearMLTaskStatus.InProgress,
             created: DateTime.UtcNow,
             runtime: runtimeInfo,
+            hyperParams: hyperParams,
             lastIteration: 5
         );
 
@@ -232,14 +239,20 @@ public class ClearMLMonitorServiceTests
             }
         };
 
-        Dictionary<string, string> runtime = new Dictionary<string, string> { ["message"] = "Training complete" };
+        var hyperParams = new Dictionary<string, IReadOnlyDictionary<string, ClearMLParamsItem>>
+        {
+            [ClearMLMonitorService.UserProperties] = new Dictionary<string, ClearMLParamsItem>
+            {
+                ["message"] = new ClearMLParamsItem { Name = "message", Value = "Training complete" }
+            }
+        };
 
         ClearMLTask task = CreateClearMLTask(
             id: engine!.CurrentBuild!.JobId,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Completed,
             created: DateTime.UtcNow,
-            runtime: runtime,
+            hyperParams: hyperParams,
             lastMetrics: lastMetrics,
             lastIteration: 100
         );

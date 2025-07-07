@@ -219,7 +219,8 @@ public class ClearMLService(
             "created",
             "active_duration",
             "last_metrics",
-            "runtime"
+            "runtime",
+            "hyperparams"
         );
         JsonObject? result = await CallAsync("tasks", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["tasks"];
