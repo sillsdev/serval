@@ -330,8 +330,8 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
                     member = methodExpr.Method;
                     index = member.Name switch
                     {
-                        "AllElements" => ArrayPosition.All,
-                        "FirstMatchingElement" => ArrayPosition.FirstMatching,
+                        nameof(DataAccessExtensions.AllElements) => ArrayPosition.All,
+                        nameof(DataAccessExtensions.FirstMatchingElement) => ArrayPosition.FirstMatching,
                         "get_Item" => ExpressionHelper.FindConstantValue(methodExpr.Arguments[0]),
                         _ => throw new ArgumentException("Invalid method call in field expression.", nameof(field))
                     };

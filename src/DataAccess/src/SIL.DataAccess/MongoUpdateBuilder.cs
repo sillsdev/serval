@@ -3,16 +3,11 @@ namespace SIL.DataAccess;
 public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
     where T : IEntity
 {
-    private readonly UpdateDefinitionBuilder<T> _builder;
-    private readonly List<UpdateDefinition<T>> _defs;
-    private readonly Dictionary<BsonDocument, (string Id, ArrayFilterDefinition<BsonValue> FilterDef)> _arrayFilters;
-
-    public MongoUpdateBuilder()
-    {
-        _builder = Builders<T>.Update;
-        _defs = [];
-        _arrayFilters = [];
-    }
+    private readonly UpdateDefinitionBuilder<T> _builder = Builders<T>.Update;
+    private readonly List<UpdateDefinition<T>> _defs = [];
+    private readonly Dictionary<BsonDocument, (string Id, ArrayFilterDefinition<BsonValue> FilterDef)> _arrayFilters =
+    [];
+    private readonly MongoLinqMethodRewriter _rewriter = new MongoLinqMethodRewriter();
 
     public IUpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> field, TField value)
     {
@@ -126,6 +121,9 @@ public class MongoUpdateBuilder<T> : IUpdateBuilder<T>
         return (_builder.Combine(_defs), arrayFilters);
     }
 
-    private static FieldDefinition<T, TField> ToFieldDefinition<TField>(Expression<Func<T, TField>> field) =>
-        new ExpressionFieldDefinition<T, TField>(field);
+    private FieldDefinition<T, TField> ToFieldDefinition<TField>(Expression<Func<T, TField>> field)
+    {
+        var rewritten = (Expression<Func<T, TField>>)_rewriter.Visit(field);
+        return new ExpressionFieldDefinition<T, TField>(rewritten);
+    }
 }

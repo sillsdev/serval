@@ -1,5 +1,4 @@
 using MassTransit.Mediator;
-using MongoDB.Driver.Linq;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;

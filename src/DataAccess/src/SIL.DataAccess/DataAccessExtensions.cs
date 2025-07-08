@@ -111,4 +111,14 @@ public static class DataAccessExtensions
             }
         }
     }
+
+    public static T FirstMatchingElement<T>(this IEnumerable<T> _) =>
+        throw new NotSupportedException(
+            $"{nameof(FirstMatchingElement)}() is a marker for {nameof(MongoLinqMethodRewriter)} and should not be called directly."
+        );
+
+    public static T AllElements<T>(this IEnumerable<T> _) =>
+        throw new NotSupportedException(
+            $"{nameof(AllElements)}() is a marker for {nameof(MongoLinqMethodRewriter)} and should not be called directly."
+        );
 }
