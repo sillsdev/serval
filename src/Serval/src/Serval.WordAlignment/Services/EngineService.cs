@@ -1,5 +1,4 @@
-﻿using MongoDB.Driver.Linq;
-using Serval.WordAlignment.V1;
+﻿using Serval.WordAlignment.V1;
 
 namespace Serval.WordAlignment.Services;
 

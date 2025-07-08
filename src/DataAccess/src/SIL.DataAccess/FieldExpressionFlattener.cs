@@ -17,8 +17,14 @@ internal class FieldExpressionFlattener : System.Linq.Expressions.ExpressionVisi
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
         // We will treat these LINQ3 expressions as the special ArrayPosition indexers
-        if (node.Method.Name != "AllElements" && node.Method.Name != "FirstMatchingElement")
+        if (
+            node.Method.Name != nameof(DataAccessExtensions.AllElements)
+            && node.Method.Name != nameof(DataAccessExtensions.FirstMatchingElement)
+        )
+        {
             _argExprs.UnionWith(node.Arguments);
+        }
+
         _nodes.Push(node);
         return base.VisitMethodCall(node);
     }
