@@ -296,9 +296,9 @@ public class EngineService(
                     u =>
                     {
                         if (sourceCorpora is not null)
-                            u.Set(c => c.ParallelCorpora[ArrayPosition.FirstMatching].SourceCorpora, sourceCorpora);
+                            u.Set(c => c.ParallelCorpora.FirstMatchingElement().SourceCorpora, sourceCorpora);
                         if (targetCorpora is not null)
-                            u.Set(c => c.ParallelCorpora[ArrayPosition.FirstMatching].TargetCorpora, targetCorpora);
+                            u.Set(c => c.ParallelCorpora.FirstMatchingElement().TargetCorpora, targetCorpora);
                     },
                     cancellationToken: cancellationToken
                 );
@@ -380,11 +380,11 @@ public class EngineService(
                     u =>
                     {
                         u.RemoveAll(
-                            e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                            e => e.ParallelCorpora.AllElements().SourceCorpora.AllElements().Files,
                             f => f.Id == dataFileId
                         );
                         u.RemoveAll(
-                            e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                            e => e.ParallelCorpora.AllElements().TargetCorpora.AllElements().Files,
                             f => f.Id == dataFileId
                         );
                     },
@@ -418,13 +418,13 @@ public class EngineService(
                     u =>
                     {
                         u.SetAll(
-                            e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                            e => e.ParallelCorpora.AllElements().SourceCorpora.AllElements().Files,
                             f => f.Filename,
                             filename,
                             f => f.Id == dataFileId
                         );
                         u.SetAll(
-                            e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                            e => e.ParallelCorpora.AllElements().TargetCorpora.AllElements().Files,
                             f => f.Filename,
                             filename,
                             f => f.Id == dataFileId
@@ -469,13 +469,13 @@ public class EngineService(
             u =>
             {
                 u.SetAll(
-                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora,
+                    e => e.ParallelCorpora.AllElements().SourceCorpora,
                     mc => mc.Files,
                     files,
                     mc => mc.Id == corpusId
                 );
                 u.SetAll(
-                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora,
+                    e => e.ParallelCorpora.AllElements().TargetCorpora,
                     mc => mc.Files,
                     files,
                     mc => mc.Id == corpusId

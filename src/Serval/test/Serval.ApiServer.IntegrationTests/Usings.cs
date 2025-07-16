@@ -13,7 +13,6 @@ global using Microsoft.AspNetCore.Mvc.Testing;
 global using Microsoft.AspNetCore.TestHost;
 global using Microsoft.Extensions.Options;
 global using MongoDB.Driver;
-global using MongoDB.Driver.Linq;
 global using NSubstitute;
 global using NUnit.Framework;
 global using Serval.Client;

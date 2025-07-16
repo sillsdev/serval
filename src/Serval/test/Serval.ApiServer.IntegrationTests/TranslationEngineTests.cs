@@ -1530,11 +1530,11 @@ public class TranslationEngineTests
             u =>
             {
                 u.RemoveAll(
-                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    e => e.ParallelCorpora.AllElements().SourceCorpora.AllElements().Files,
                     f => f.Id == dataFileId
                 );
                 u.RemoveAll(
-                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    e => e.ParallelCorpora.AllElements().TargetCorpora.AllElements().Files,
                     f => f.Id == dataFileId
                 );
             }
@@ -1564,8 +1564,8 @@ public class TranslationEngineTests
                     ),
                 u =>
                 {
-                    u.RemoveAll(e => e.Corpora[ArrayPosition.All].SourceFiles, f => f.Id == dataFileId);
-                    u.RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId);
+                    u.RemoveAll(e => e.Corpora.AllElements().SourceFiles, f => f.Id == dataFileId);
+                    u.RemoveAll(e => e.Corpora.AllElements().TargetFiles, f => f.Id == dataFileId);
                 }
             );
         }
@@ -1618,11 +1618,11 @@ public class TranslationEngineTests
             u =>
             {
                 u.RemoveAll(
-                    e => e.ParallelCorpora[ArrayPosition.All].SourceCorpora[ArrayPosition.All].Files,
+                    e => e.ParallelCorpora.AllElements().SourceCorpora.AllElements().Files,
                     f => f.Id == dataFileId
                 );
                 u.RemoveAll(
-                    e => e.ParallelCorpora[ArrayPosition.All].TargetCorpora[ArrayPosition.All].Files,
+                    e => e.ParallelCorpora.AllElements().TargetCorpora.AllElements().Files,
                     f => f.Id == dataFileId
                 );
             }
@@ -1655,8 +1655,8 @@ public class TranslationEngineTests
                     ),
                 u =>
                 {
-                    u.RemoveAll(e => e.Corpora[ArrayPosition.All].SourceFiles, f => f.Id == dataFileId);
-                    u.RemoveAll(e => e.Corpora[ArrayPosition.All].TargetFiles, f => f.Id == dataFileId);
+                    u.RemoveAll(e => e.Corpora.AllElements().SourceFiles, f => f.Id == dataFileId);
+                    u.RemoveAll(e => e.Corpora.AllElements().TargetFiles, f => f.Id == dataFileId);
                 }
             );
         }
@@ -2337,8 +2337,7 @@ public class TranslationEngineTests
 
         public TestEnvironment()
         {
-            var clientSettings = new MongoClientSettings { LinqProvider = LinqProvider.V2 };
-            _mongoClient = new MongoClient(clientSettings);
+            _mongoClient = new MongoClient();
             ResetDatabases();
 
             Factory = new ServalWebApplicationFactory();
