@@ -35,6 +35,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1. Translated new paragraph
 \p
@@ -61,6 +62,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1. Translated new paragraph
 \p
@@ -87,6 +89,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1
 \p
@@ -113,6 +116,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1. Translated new paragraph
 \p
@@ -140,6 +144,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Embed markers were moved to the end of the verse. Paragraph markers have positions preserved. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1.
 \p Translated new paragraph
@@ -192,6 +197,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1. Translated new paragraph
 \v 2 Chapter 1, verse 2.
@@ -230,6 +236,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1. Translated new paragraph
 \p
@@ -257,6 +264,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1. Translated new paragraph
 \v 2 Chapter 1, verse 2.
@@ -284,6 +292,10 @@ public class PretranslationServiceTests
             1,
             @"\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully."
         );
+        lines.Insert(
+            2,
+            @"\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed."
+        );
         Assert.That(usfm, Is.EqualTo(string.Join('\n', lines)).IgnoreLineEndings());
     }
 
@@ -303,6 +315,7 @@ public class PretranslationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1. Translated new paragraph
 \v 2 Chapter 1, verse 2.
