@@ -56,11 +56,16 @@ public class PretranslationService(
         if (build is null || build.DateFinished is null)
             throw new InvalidOperationException($"Could not find any completed builds for engine '{engineId}'.");
 
-        string formattedRemark = string.Format(
+        string disclaimerRemark = string.Format(
             CultureInfo.InvariantCulture,
             AIDisclaimerRemark,
             textId,
             build.DateFinished.Value.ToUniversalTime().ToString("u")
+        );
+        string markerPlacementRemark = GenerateMarkerPlacementRemark(
+            paragraphMarkerBehavior,
+            embedBehavior,
+            styleMarkerBehavior
         );
 
         CorpusFile sourceFile;
@@ -167,7 +172,7 @@ public class PretranslationService(
                             == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
-                            remarks: [formattedRemark]
+                            remarks: [disclaimerRemark, markerPlacementRemark]
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -184,7 +189,7 @@ public class PretranslationService(
                             == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
-                            remarks: [formattedRemark]
+                            remarks: [disclaimerRemark, markerPlacementRemark]
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -201,7 +206,7 @@ public class PretranslationService(
                             == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
-                            remarks: [formattedRemark]
+                            remarks: [disclaimerRemark, markerPlacementRemark]
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -218,7 +223,7 @@ public class PretranslationService(
                             == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
-                            remarks: [formattedRemark]
+                            remarks: [disclaimerRemark, markerPlacementRemark]
                         ) ?? "";
                     break;
             }
@@ -250,7 +255,7 @@ public class PretranslationService(
                             == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
-                            remarks: [formattedRemark]
+                            remarks: [disclaimerRemark, markerPlacementRemark]
                         ) ?? "";
                 case PretranslationUsfmTextOrigin.OnlyExisting:
                     return updater.UpdateUsfm(
@@ -265,12 +270,56 @@ public class PretranslationService(
                             == PretranslationUsfmMarkerBehavior.PreservePosition
                                 ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
                                 : null,
-                            remarks: [formattedRemark]
+                            remarks: [disclaimerRemark, markerPlacementRemark]
                         ) ?? "";
             }
         }
 
         return "";
+    }
+
+    /// <summary>
+    /// Generate a natural sounding comment describing marker placement.
+    /// </summary>
+    /// <param name="paragraphMarkerBehavior">The paragraph marker behavior.</param>
+    /// <param name="embedBehavior">The embed marker behavior.</param>
+    /// <param name="styleMarkerBehavior">The style marker behavior.</param>
+    /// <returns>One to three sentences describing the marker placement behavior.</returns>
+    private static string GenerateMarkerPlacementRemark(
+        PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
+        PretranslationUsfmMarkerBehavior embedBehavior,
+        PretranslationUsfmMarkerBehavior styleMarkerBehavior
+    )
+    {
+        var behaviorMap = new Dictionary<PretranslationUsfmMarkerBehavior, List<string>>
+        {
+            { PretranslationUsfmMarkerBehavior.Preserve, [] },
+            { PretranslationUsfmMarkerBehavior.PreservePosition, [] },
+            { PretranslationUsfmMarkerBehavior.Strip, [] },
+        };
+
+        behaviorMap[paragraphMarkerBehavior].Add("paragraph");
+        behaviorMap[embedBehavior].Add("embed");
+        behaviorMap[styleMarkerBehavior].Add("style");
+
+        IEnumerable<string> sentences = behaviorMap
+            .Where(kvp => kvp.Value.Count > 0)
+            .Select(kvp =>
+            {
+                string markers =
+                    kvp.Value.Count == 1 ? kvp.Value[0] : string.Join(", ", kvp.Value[..^1]) + " and " + kvp.Value[^1];
+                markers = char.ToUpperInvariant(markers[0]) + markers[1..];
+                string behavior = kvp.Key switch
+                {
+                    PretranslationUsfmMarkerBehavior.Preserve => "were moved to the end of the verse",
+                    PretranslationUsfmMarkerBehavior.PreservePosition => "have positions preserved",
+                    PretranslationUsfmMarkerBehavior.Strip => "were removed",
+                    _ => "have unknown behavior",
+                };
+                return $"{markers} markers {behavior}.";
+            });
+
+        return string.Join(" ", sentences);
     }
 
     private static UpdateUsfmMarkerBehavior Map(PretranslationUsfmMarkerBehavior behavior)
