@@ -163,4 +163,15 @@ public class ServalWordAlignmentPlatformService(
             cancellationToken: cancellationToken
         );
     }
+
+    public Task UpdateCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyCollection<CorpusAnalysis> corpusAnalysis,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Word alignment does not support corpus analysis
+        return Task.CompletedTask;
+    }
 }

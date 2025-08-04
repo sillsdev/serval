@@ -163,4 +163,33 @@ public class ServalTranslationPlatformService(
             cancellationToken: cancellationToken
         );
     }
+
+    public async Task UpdateCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyCollection<CorpusAnalysis> corpusAnalysis,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var content = new UpdateCorpusAnalysisRequest { EngineId = engineId, BuildId = buildId };
+        foreach (CorpusAnalysis analysis in corpusAnalysis)
+        {
+            content.CorpusAnalysis.Add(
+                new CorpusAnalysisResult
+                {
+                    CorpusId = analysis.CorpusRef,
+                    SourceQuoteConvention = analysis.SourceQuoteConvention,
+                    TargetQuoteConvention = analysis.TargetQuoteConvention,
+                }
+            );
+        }
+
+        await _outboxService.EnqueueMessageAsync(
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.UpdateCorpusAnalysis,
+            groupId: engineId,
+            content,
+            cancellationToken: cancellationToken
+        );
+    }
 }

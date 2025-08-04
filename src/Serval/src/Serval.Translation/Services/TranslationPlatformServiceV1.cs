@@ -293,6 +293,36 @@ public class TranslationPlatformServiceV1(
         return new Empty();
     }
 
+    public override async Task<Empty> UpdateCorpusAnalysis(
+        UpdateCorpusAnalysisRequest request,
+        ServerCallContext context
+    )
+    {
+        await _builds.UpdateAsync(
+            b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
+            u =>
+            {
+                if (request.CorpusAnalysis.Count > 0)
+                {
+                    u.Set(
+                        b => b.Analysis,
+                        request
+                            .CorpusAnalysis.Select(a => new CorpusAnalysis
+                            {
+                                CorpusRef = a.CorpusId,
+                                SourceQuoteConvention = a.SourceQuoteConvention,
+                                TargetQuoteConvention = a.TargetQuoteConvention,
+                            })
+                            .ToList()
+                    );
+                }
+            },
+            cancellationToken: context.CancellationToken
+        );
+
+        return Empty;
+    }
+
     public override async Task<Empty> IncrementEngineCorpusSize(
         IncrementEngineCorpusSizeRequest request,
         ServerCallContext context
