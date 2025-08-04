@@ -112,4 +112,41 @@ public class TranslationPreprocessBuildJob(
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }
+
+    protected override async Task UpdateCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyList<ParallelCorpus> corpora,
+        CancellationToken cancellationToken
+    )
+    {
+        List<CorpusAnalysis> corpusAnalysis = [];
+        await ParallelCorpusPreprocessingService.AnalyseCorporaAsync(
+            corpora,
+            async (sourceQuotationConvention, targetQuotationConvention, corpus) =>
+            {
+                string sourceQuotationConventionName =
+                    sourceQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
+                string targetQuotationConventionName =
+                    targetQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
+                if (
+                    !string.IsNullOrWhiteSpace(sourceQuotationConventionName)
+                    || !string.IsNullOrWhiteSpace(sourceQuotationConventionName)
+                )
+                {
+                    corpusAnalysis.Add(
+                        new CorpusAnalysis
+                        {
+                            CorpusRef = corpus.Id,
+                            SourceQuoteConvention = sourceQuotationConventionName,
+                            TargetQuoteConvention = targetQuotationConventionName,
+                        }
+                    );
+                }
+
+                await Task.CompletedTask;
+            }
+        );
+        await PlatformService.UpdateCorpusAnalysisAsync(engineId, buildId, corpusAnalysis, cancellationToken);
+    }
 }

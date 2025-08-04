@@ -297,6 +297,7 @@ public static class IMachineBuilderExtensions
             x.AddConsumer<TranslationIncrementEngineCorpusSizeConsumer>();
             x.AddConsumer<TranslationInsertPretranslationsConsumer>();
             x.AddConsumer<TranslationUpdateBuildExecutionDataConsumer>();
+            x.AddConsumer<TranslationUpdateCorpusAnalysisConsumer>();
         });
 
         builder
