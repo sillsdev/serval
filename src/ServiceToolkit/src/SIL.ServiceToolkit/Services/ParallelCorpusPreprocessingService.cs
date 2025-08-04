@@ -5,6 +5,40 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
     private readonly ICorpusService _corpusService = corpusService;
     private const int Seed = 1234;
 
+    public async Task AnalyseCorporaAsync(
+        IReadOnlyList<ParallelCorpus> corpora,
+        Func<QuoteConventionAnalysis?, QuoteConventionAnalysis?, ParallelCorpus, Task> analyze
+    )
+    {
+        foreach (ParallelCorpus corpus in corpora)
+        {
+            // Analyze quote conventions
+            var sourceHandler = new QuoteConventionDetector();
+            foreach (MonolingualCorpus sourceMonolingualCorpus in corpus.SourceCorpora)
+            {
+                foreach (CorpusFile file in sourceMonolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
+                {
+                    using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
+                    var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
+                    quoteConventionDetector.GetQuoteConventionAnalysis(sourceHandler);
+                }
+            }
+
+            var targetHandler = new QuoteConventionDetector();
+            foreach (MonolingualCorpus targetMonolingualCorpus in corpus.TargetCorpora)
+            {
+                foreach (CorpusFile file in targetMonolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
+                {
+                    using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
+                    var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
+                    quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler);
+                }
+            }
+
+            await analyze(sourceHandler.DetectQuotationConvention(), targetHandler.DetectQuotationConvention(), corpus);
+        }
+    }
+
     public async Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
@@ -108,6 +142,7 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
                 await inference(row, isInTrainingData, corpus);
             }
         }
+
         if (useKeyTerms && parallelTrainingDataPresent)
         {
             foreach (Row row in keyTermTrainingData)

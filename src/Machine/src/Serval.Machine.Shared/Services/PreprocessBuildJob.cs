@@ -58,6 +58,8 @@ public abstract class PreprocessBuildJob<TEngine>(
             cancellationToken
         );
 
+        await UpdateCorpusAnalysisAsync(engineId, buildId, data, cancellationToken);
+
         if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
         {
             throw new InvalidOperationException(
@@ -87,6 +89,13 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string srcLang,
         string trgLang,
+        CancellationToken cancellationToken
+    );
+
+    protected abstract Task UpdateCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken
     );
 

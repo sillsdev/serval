@@ -36,4 +36,11 @@ public interface IPlatformService
         IReadOnlyDictionary<string, string> executionData,
         CancellationToken cancellationToken = default
     );
+
+    Task UpdateCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyCollection<CorpusAnalysis> corpusAnalysis,
+        CancellationToken cancellationToken = default
+    );
 }

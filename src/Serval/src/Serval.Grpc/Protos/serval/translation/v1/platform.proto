@@ -17,6 +17,7 @@ service TranslationPlatformApi {
     rpc IncrementEngineCorpusSize(IncrementEngineCorpusSizeRequest) returns (google.protobuf.Empty);
     rpc InsertPretranslations(stream InsertPretranslationsRequest) returns (google.protobuf.Empty);
     rpc UpdateBuildExecutionData(UpdateBuildExecutionDataRequest) returns (google.protobuf.Empty);
+    rpc UpdateCorpusAnalysis(UpdateCorpusAnalysisRequest) returns (google.protobuf.Empty);
 }
 
 message UpdateBuildStatusRequest {
@@ -71,6 +72,18 @@ message UpdateBuildExecutionDataRequest {
     string engine_id = 1;
     string build_id = 2;
     map<string, string> execution_data = 3;
+}
+
+message UpdateCorpusAnalysisRequest {
+	string engine_id = 1;
+	string build_id = 2;
+	repeated CorpusAnalysisResult corpus_analysis = 3;
+}
+
+message CorpusAnalysisResult {
+	string corpus_id = 1;
+	string source_quote_convention = 2;
+	string target_quote_convention = 3;
 }
 
 message Phase {
