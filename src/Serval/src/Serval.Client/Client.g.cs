@@ -2484,7 +2484,7 @@ namespace Serval.Client
         /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationQuotationMarkBehavior? quotationMarkBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -5181,7 +5181,7 @@ namespace Serval.Client
         /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationQuotationMarkBehavior? quotationMarkBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5231,6 +5231,10 @@ namespace Serval.Client
                     if (styleMarkerBehavior != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("style-marker-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(styleMarkerBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (quotationMarkBehavior != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("quotation-mark-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(quotationMarkBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -10342,6 +10346,18 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum PretranslationQuotationMarkBehavior
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"NormalizedSourceQuotes")]
+        NormalizedSourceQuotes = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TargetQuotes")]
+        TargetQuotes = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class TranslationBuild
     {
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
@@ -10406,6 +10422,9 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("analysis", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<CorpusAnalysis>? Analysis { get; set; } = default!;
 
     }
 
@@ -10519,6 +10538,23 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Inference")]
         Inference = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CorpusAnalysis
+    {
+        [Newtonsoft.Json.JsonProperty("corpusRef", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string CorpusRef { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string SourceQuoteConvention { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string TargetQuoteConvention { get; set; } = default!;
 
     }
 

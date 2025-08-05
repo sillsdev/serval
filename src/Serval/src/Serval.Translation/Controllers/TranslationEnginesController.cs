@@ -941,6 +941,7 @@ public class TranslationEnginesController(
         [FromQuery(Name = "paragraph-marker-behavior")] PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior,
         [FromQuery(Name = "embed-behavior")] PretranslationUsfmMarkerBehavior? embedBehavior,
         [FromQuery(Name = "style-marker-behavior")] PretranslationUsfmMarkerBehavior? styleMarkerBehavior,
+        [FromQuery(Name = "quotation-mark-behavior")] PretranslationQuotationMarkBehavior? quotationMarkBehavior,
         CancellationToken cancellationToken
     )
     {
@@ -961,6 +962,7 @@ public class TranslationEnginesController(
             paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
+            quotationMarkBehavior ?? PretranslationQuotationMarkBehavior.NormalizedSourceQuotes,
             cancellationToken
         );
         if (usfm == "")
@@ -1662,7 +1664,8 @@ public class TranslationEnginesController(
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = source.ExecutionData,
-            Phases = source.Phases?.Select(Map).ToList()
+            Phases = source.Phases?.Select(Map).ToList(),
+            Analysis = source.Analysis?.Select(Map).ToList()
         };
     }
 
@@ -1888,6 +1891,16 @@ public class TranslationEnginesController(
             Stage = (PhaseStage)source.Stage,
             Step = source.Step,
             StepCount = source.StepCount
+        };
+    }
+
+    private static CorpusAnalysisDto Map(CorpusAnalysis source)
+    {
+        return new CorpusAnalysisDto
+        {
+            CorpusRef = source.CorpusRef,
+            SourceQuoteConvention = source.SourceQuoteConvention,
+            TargetQuoteConvention = source.TargetQuoteConvention,
         };
     }
 }

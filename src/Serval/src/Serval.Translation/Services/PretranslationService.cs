@@ -1,4 +1,5 @@
 ﻿using SIL.Machine.Corpora;
+using SIL.Machine.Corpora.PunctuationAnalysis;
 using SIL.Machine.Translation;
 
 namespace Serval.Translation.Services;
@@ -44,6 +45,7 @@ public class PretranslationService(
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
+        PretranslationQuotationMarkBehavior quotationMarkBehavior,
         CancellationToken cancellationToken = default
     )
     {
@@ -67,6 +69,8 @@ public class PretranslationService(
             embedBehavior,
             styleMarkerBehavior
         );
+
+        List<string> remarks = [formattedRemark, markerPlacementRemark];
 
         CorpusFile sourceFile;
         CorpusFile targetFile;
@@ -136,15 +140,22 @@ public class PretranslationService(
             )
             .OrderBy(p => p.Refs[0]);
 
-        IEnumerable<PlaceMarkersAlignmentInfo> alignmentInfo = pretranslations.Select(
-            p => new PlaceMarkersAlignmentInfo(
-                p.Refs,
-                p.SourceTokens?.ToList() ?? [],
-                p.TranslationTokens?.ToList() ?? [],
-                Map(p.Alignment)
-            )
-        );
+        List<IUsfmUpdateBlockHandler> updateBlockHandlers = [];
 
+        if (paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition)
+        {
+            IEnumerable<PlaceMarkersAlignmentInfo> alignmentInfo = pretranslations.Select(
+                p => new PlaceMarkersAlignmentInfo(
+                    p.Refs,
+                    p.SourceTokens?.ToList() ?? [],
+                    p.TranslationTokens?.ToList() ?? [],
+                    Map(p.Alignment)
+                )
+            );
+            updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo));
+        }
+
+        string usfm = "";
         // Update the target book if it exists
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
@@ -155,7 +166,6 @@ public class PretranslationService(
             );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
-            string usfm = "";
             switch (textOrigin)
             {
                 case PretranslationUsfmTextOrigin.PreferExisting:
@@ -168,11 +178,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior
-                            == PretranslationUsfmMarkerBehavior.PreservePosition
-                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
-                                : null,
-                            remarks: [formattedRemark, markerPlacementRemark]
+                            updateBlockHandlers: updateBlockHandlers
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -185,11 +191,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior
-                            == PretranslationUsfmMarkerBehavior.PreservePosition
-                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
-                                : null,
-                            remarks: [formattedRemark, markerPlacementRemark]
+                            updateBlockHandlers: updateBlockHandlers
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -202,11 +204,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior
-                            == PretranslationUsfmMarkerBehavior.PreservePosition
-                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
-                                : null,
-                            remarks: [formattedRemark, markerPlacementRemark]
+                            updateBlockHandlers: updateBlockHandlers
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -219,20 +217,16 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior
-                            == PretranslationUsfmMarkerBehavior.PreservePosition
-                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
-                                : null,
-                            remarks: [formattedRemark, markerPlacementRemark]
+                            updateBlockHandlers: updateBlockHandlers
                         ) ?? "";
                     break;
             }
-            // In order to support PretranslationUsfmTemplate.Auto
-            if (!string.IsNullOrEmpty(usfm))
-                return usfm;
         }
 
-        if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
+        if (
+            string.IsNullOrEmpty(usfm)
+            && (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
+        )
         {
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename);
@@ -243,7 +237,8 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.PreferExisting:
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                    return updater.UpdateUsfm(
+                    usfm =
+                        updater.UpdateUsfm(
                             textId,
                             pretranslationRows.ToList(),
                             fullName: targetSettings.FullName,
@@ -251,14 +246,12 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior
-                            == PretranslationUsfmMarkerBehavior.PreservePosition
-                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
-                                : null,
-                            remarks: [formattedRemark, markerPlacementRemark]
+                            updateBlockHandlers: updateBlockHandlers
                         ) ?? "";
+                    break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
-                    return updater.UpdateUsfm(
+                    usfm =
+                        updater.UpdateUsfm(
                             textId,
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
@@ -266,16 +259,96 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: paragraphMarkerBehavior
-                            == PretranslationUsfmMarkerBehavior.PreservePosition
-                                ? [new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo)]
-                                : null,
-                            remarks: [formattedRemark, markerPlacementRemark]
+                            updateBlockHandlers: updateBlockHandlers
                         ) ?? "";
+                    break;
             }
         }
+        if (quotationMarkBehavior == PretranslationQuotationMarkBehavior.TargetQuotes)
+        {
+            if (build.Analysis is null)
+            {
+                throw new InvalidOperationException(
+                    $"Unable to denormalize quotation marks: No quote convention analysis exists for build {build.Id}"
+                );
+            }
+            if (!build.Analysis.Any(a => a.CorpusRef == corpusId))
+            {
+                throw new InvalidOperationException(
+                    $"Unable to denormalize quotation marks: No quote convention analysis exists for corpus {corpusId}"
+                );
+            }
+            CorpusAnalysis analysis = build.Analysis.Single(c => c.CorpusRef == corpusId);
+            (string denormalizedUsfm, IReadOnlyList<string> denormalizationRemarks) = DenormalizeQuotationMarks(
+                usfm,
+                analysis
+            );
+            usfm = denormalizedUsfm;
+            remarks.AddRange(denormalizationRemarks);
+        }
+        var remarkUpdater = new UpdateUsfmParserHandler(remarks: remarks);
+        UsfmParser.Parse(usfm, remarkUpdater);
 
-        return "";
+        return remarkUpdater.GetUsfm();
+    }
+
+    private static (string Usfm, IReadOnlyList<string> Remarks) DenormalizeQuotationMarks(
+        string usfm,
+        CorpusAnalysis analysis
+    )
+    {
+        QuoteConvention sourceQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
+            analysis.SourceQuoteConvention
+        );
+        if (sourceQuoteConvention is null)
+        {
+            throw new InvalidOperationException(
+                $"Unable to denormalize quotation marks: No such convention {analysis.SourceQuoteConvention}"
+            );
+        }
+        QuoteConvention targetQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
+            analysis.TargetQuoteConvention
+        );
+        if (targetQuoteConvention is null)
+        {
+            throw new InvalidOperationException(
+                $"Unable to denormalize quotation marks: No such convention {analysis.TargetQuoteConvention}"
+            );
+        }
+        QuotationMarkDenormalizationFirstPass quotationMarkDenormalizationFirstPass =
+            new(sourceQuoteConvention, targetQuoteConvention);
+
+        UsfmParser.Parse(usfm, quotationMarkDenormalizationFirstPass);
+        List<QuotationMarkUpdateStrategy> bestChapterStrategies =
+            quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
+
+        QuotationMarkDenormalizationUsfmUpdateBlockHandler quotationMarkDenormalizer =
+            new(
+                sourceQuoteConvention,
+                targetQuoteConvention,
+                new QuotationMarkUpdateSettings(chapterStrategies: bestChapterStrategies)
+            );
+        List<string> remarks = [];
+        if (bestChapterStrategies.Any(s => s != QuotationMarkUpdateStrategy.Skip))
+        {
+            string quotationDenormalizationRemark =
+                "Quotation marks in the following chapters have been automatically denormalized after translation: "
+                + string.Join(
+                    ", ",
+                    bestChapterStrategies
+                        .Select((strategy, index) => (strategy, index))
+                        .Where(tuple => tuple.strategy != QuotationMarkUpdateStrategy.Skip)
+                        .Select(tuple => tuple.index + 1)
+                )
+                + ".";
+            remarks.Add(quotationDenormalizationRemark);
+        }
+
+        var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer]);
+        UsfmParser.Parse(usfm, updater);
+
+        usfm = updater.GetUsfm();
+        return (usfm, remarks);
     }
 
     private static string GenerateMarkerPlacementRemark(
