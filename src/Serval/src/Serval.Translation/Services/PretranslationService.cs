@@ -1,4 +1,5 @@
 ﻿using SIL.Machine.Corpora;
+using SIL.Machine.PunctuationAnalysis;
 using SIL.Machine.Translation;
 
 namespace Serval.Translation.Services;
@@ -44,6 +45,7 @@ public class PretranslationService(
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
+        PretranslationQuotationMarkBehavior quotationMarkBehavior,
         CancellationToken cancellationToken = default
     )
     {
@@ -67,6 +69,8 @@ public class PretranslationService(
             embedBehavior,
             styleMarkerBehavior
         );
+
+        List<string> remarks = [disclaimerRemark, markerPlacementRemark];
 
         CorpusFile sourceFile;
         CorpusFile targetFile;
@@ -147,6 +151,20 @@ public class PretranslationService(
         if (paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition)
             updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler());
 
+        if (paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition)
+        {
+            IEnumerable<PlaceMarkersAlignmentInfo> alignmentInfo = pretranslations.Select(
+                p => new PlaceMarkersAlignmentInfo(
+                    p.Refs,
+                    p.SourceTokens?.ToList() ?? [],
+                    p.TranslationTokens?.ToList() ?? [],
+                    Map(p.Alignment)
+                )
+            );
+            updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo));
+        }
+
+        string usfm = "";
         // Update the target book if it exists
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
@@ -162,7 +180,6 @@ public class PretranslationService(
             );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
-            string usfm = "";
             switch (textOrigin)
             {
                 case PretranslationUsfmTextOrigin.PreferExisting:
@@ -222,12 +239,12 @@ public class PretranslationService(
                         ) ?? "";
                     break;
             }
-            // In order to support PretranslationUsfmTemplate.Auto
-            if (!string.IsNullOrEmpty(usfm))
-                return usfm;
         }
 
-        if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
+        if (
+            string.IsNullOrEmpty(usfm)
+            && (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
+        )
         {
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename);
@@ -238,7 +255,8 @@ public class PretranslationService(
                 case PretranslationUsfmTextOrigin.PreferExisting:
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                    return updater.UpdateUsfm(
+                    usfm =
+                        updater.UpdateUsfm(
                             textId,
                             pretranslationRows.Select(Map).ToList(),
                             fullName: targetSettings.FullName,
@@ -249,8 +267,10 @@ public class PretranslationService(
                             updateBlockHandlers: updateBlockHandlers,
                             remarks: [disclaimerRemark, markerPlacementRemark]
                         ) ?? "";
+                    break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
-                    return updater.UpdateUsfm(
+                    usfm =
+                        updater.UpdateUsfm(
                             textId,
                             [], // don't pass the pretranslations, we only want the existing text.
                             fullName: targetSettings.FullName,
@@ -261,10 +281,94 @@ public class PretranslationService(
                             updateBlockHandlers: updateBlockHandlers,
                             remarks: [disclaimerRemark, markerPlacementRemark]
                         ) ?? "";
+                    break;
             }
         }
+        if (quotationMarkBehavior == PretranslationQuotationMarkBehavior.TargetQuotes)
+        {
+            if (build.Analysis is null)
+            {
+                throw new InvalidOperationException(
+                    $"Unable to denormalize quotation marks: No quote convention analysis exists for build {build.Id}"
+                );
+            }
+            if (!build.Analysis.Any(a => a.CorpusRef == corpusId))
+            {
+                throw new InvalidOperationException(
+                    $"Unable to denormalize quotation marks: No quote convention analysis exists for corpus {corpusId}"
+                );
+            }
+            CorpusAnalysis analysis = build.Analysis.Single(c => c.CorpusRef == corpusId);
+            (string denormalizedUsfm, IReadOnlyList<string> denormalizationRemarks) = DenormalizeQuotationMarks(
+                usfm,
+                analysis
+            );
+            usfm = denormalizedUsfm;
+            remarks.AddRange(denormalizationRemarks);
+        }
+        var remarkUpdater = new UpdateUsfmParserHandler(remarks: remarks);
+        UsfmParser.Parse(usfm, remarkUpdater);
 
-        return "";
+        return remarkUpdater.GetUsfm();
+    }
+
+    private static (string Usfm, IReadOnlyList<string> Remarks) DenormalizeQuotationMarks(
+        string usfm,
+        CorpusAnalysis analysis
+    )
+    {
+        QuoteConvention sourceQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
+            analysis.SourceQuoteConvention
+        );
+        if (sourceQuoteConvention is null)
+        {
+            throw new InvalidOperationException(
+                $"Unable to denormalize quotation marks: No such convention {analysis.SourceQuoteConvention}"
+            );
+        }
+        QuoteConvention targetQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
+            analysis.TargetQuoteConvention
+        );
+        if (targetQuoteConvention is null)
+        {
+            throw new InvalidOperationException(
+                $"Unable to denormalize quotation marks: No such convention {analysis.TargetQuoteConvention}"
+            );
+        }
+        QuotationMarkDenormalizationFirstPass quotationMarkDenormalizationFirstPass =
+            new(sourceQuoteConvention, targetQuoteConvention);
+
+        UsfmParser.Parse(usfm, quotationMarkDenormalizationFirstPass);
+        List<QuotationMarkUpdateStrategy> bestChapterStrategies =
+            quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
+
+        QuotationMarkDenormalizationUsfmUpdateBlockHandler quotationMarkDenormalizer =
+            new(
+                sourceQuoteConvention,
+                targetQuoteConvention,
+                new QuotationMarkUpdateSettings(chapterStrategies: bestChapterStrategies)
+            );
+        List<string> remarks = [];
+        if (bestChapterStrategies.Any(s => s != QuotationMarkUpdateStrategy.Skip))
+        {
+            string quotationDenormalizationRemark =
+                "Quotation marks in the following chapters have been automatically denormalized after translation: "
+                + string.Join(
+                    ", ",
+                    bestChapterStrategies
+                        .Select((strategy, index) => (strategy, index))
+                        .Where(tuple => tuple.strategy != QuotationMarkUpdateStrategy.Skip)
+                        .Select(tuple => tuple.index + 1)
+                )
+                + ".";
+            remarks.Add(quotationDenormalizationRemark);
+        }
+
+        var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer]);
+        UsfmParser.Parse(usfm, updater);
+
+        usfm = updater.GetUsfm();
+        return (usfm, remarks);
     }
 
     /// <summary>

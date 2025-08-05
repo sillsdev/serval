@@ -941,6 +941,7 @@ public class TranslationEnginesController(
         [FromQuery(Name = "paragraph-marker-behavior")] PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior,
         [FromQuery(Name = "embed-behavior")] PretranslationUsfmMarkerBehavior? embedBehavior,
         [FromQuery(Name = "style-marker-behavior")] PretranslationUsfmMarkerBehavior? styleMarkerBehavior,
+        [FromQuery(Name = "quotation-mark-behavior")] PretranslationQuotationMarkBehavior? quotationMarkBehavior,
         CancellationToken cancellationToken
     )
     {
@@ -961,6 +962,7 @@ public class TranslationEnginesController(
             paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
+            quotationMarkBehavior ?? PretranslationQuotationMarkBehavior.NormalizedSourceQuotes,
             cancellationToken
         );
         if (usfm == "")
@@ -1889,16 +1891,6 @@ public class TranslationEnginesController(
             Stage = (PhaseStage)source.Stage,
             Step = source.Step,
             StepCount = source.StepCount
-        };
-    }
-
-    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source)
-    {
-        return new ParallelCorpusAnalysisDto
-        {
-            ParallelCorpusRef = source.ParallelCorpusRef,
-            SourceQuoteConvention = source.SourceQuoteConvention,
-            TargetQuoteConvention = source.TargetQuoteConvention,
         };
     }
 }
