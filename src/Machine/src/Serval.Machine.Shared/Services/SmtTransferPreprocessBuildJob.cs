@@ -45,15 +45,4 @@ public class SmtTransferPreprocessBuildJob(
             cancellationToken: cancellationToken
         );
     }
-
-    protected override Task UpdateCorpusAnalysisAsync(
-        string engineId,
-        string buildId,
-        IReadOnlyList<ParallelCorpus> corpora,
-        CancellationToken cancellationToken
-    )
-    {
-        // SMT does not support corpus analysis
-        return Task.CompletedTask;
-    }
 }

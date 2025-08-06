@@ -37,10 +37,10 @@ public interface IPlatformService
         CancellationToken cancellationToken = default
     );
 
-    Task UpdateCorpusAnalysisAsync(
+    Task UpdateParallelCorpusAnalysisAsync(
         string engineId,
         string buildId,
-        IReadOnlyCollection<CorpusAnalysis> corpusAnalysis,
+        IReadOnlyCollection<ParallelCorpusAnalysis> parallelCorpusAnalysis,
         CancellationToken cancellationToken = default
     );
 }

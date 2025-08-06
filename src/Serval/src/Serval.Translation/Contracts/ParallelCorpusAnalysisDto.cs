@@ -1,8 +1,8 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public record CorpusAnalysisDto
+public record ParallelCorpusAnalysisDto
 {
-    public required string CorpusRef { get; init; }
+    public required string ParallelCorpusRef { get; init; }
     public required string SourceQuoteConvention { get; init; }
     public required string TargetQuoteConvention { get; init; }
 }

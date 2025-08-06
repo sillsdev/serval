@@ -7,6 +7,7 @@ global using NSubstitute;
 global using NSubstitute.ExceptionExtensions;
 global using NUnit.Framework;
 global using SIL.DataAccess;
+global using SIL.Machine.Corpora.PunctuationAnalysis;
 global using SIL.Machine.Utils;
 global using SIL.ObjectModel;
 global using SIL.ServiceToolkit.Configuration;

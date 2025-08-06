@@ -51,6 +51,7 @@ global using Serval.Machine.Shared.Services;
 global using Serval.Machine.Shared.Utils;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
+global using SIL.Machine.Corpora.PunctuationAnalysis;
 global using SIL.Machine.Morphology.HermitCrab;
 global using SIL.Machine.Tokenization;
 global using SIL.Machine.Translation;
