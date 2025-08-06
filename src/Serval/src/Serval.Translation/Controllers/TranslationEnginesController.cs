@@ -1892,11 +1892,11 @@ public class TranslationEnginesController(
         };
     }
 
-    private static CorpusAnalysisDto Map(CorpusAnalysis source)
+    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source)
     {
-        return new CorpusAnalysisDto
+        return new ParallelCorpusAnalysisDto
         {
-            CorpusRef = source.CorpusRef,
+            ParallelCorpusRef = source.ParallelCorpusRef,
             SourceQuoteConvention = source.SourceQuoteConvention,
             TargetQuoteConvention = source.TargetQuoteConvention,
         };

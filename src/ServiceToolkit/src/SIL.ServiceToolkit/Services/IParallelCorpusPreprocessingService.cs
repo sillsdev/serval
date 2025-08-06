@@ -2,10 +2,7 @@ namespace SIL.ServiceToolkit.Services;
 
 public interface IParallelCorpusPreprocessingService
 {
-    Task AnalyseCorporaAsync(
-        IReadOnlyList<ParallelCorpus> corpora,
-        Func<QuoteConventionAnalysis?, QuoteConventionAnalysis?, ParallelCorpus, Task> analyze
-    );
+    (QuoteConventionAnalysis?, QuoteConventionAnalysis?) AnalyzeParallelCorpus(ParallelCorpus corpus);
     Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,

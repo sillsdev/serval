@@ -10408,7 +10408,7 @@ namespace Serval.Client
         public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("analysis", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<CorpusAnalysis>? Analysis { get; set; } = default!;
+        public System.Collections.Generic.IList<ParallelCorpusAnalysis>? Analysis { get; set; } = default!;
 
     }
 
@@ -10526,11 +10526,11 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class CorpusAnalysis
+    public partial class ParallelCorpusAnalysis
     {
-        [Newtonsoft.Json.JsonProperty("corpusRef", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("parallelCorpusRef", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string CorpusRef { get; set; } = default!;
+        public string ParallelCorpusRef { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]

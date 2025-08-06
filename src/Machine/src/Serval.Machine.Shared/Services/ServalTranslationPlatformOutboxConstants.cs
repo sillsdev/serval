@@ -12,5 +12,5 @@ public static class ServalTranslationPlatformOutboxConstants
     public const string InsertPretranslations = "InsertPretranslations";
     public const string IncrementEngineCorpusSize = "IncrementTrainEngineCorpusSize";
     public const string UpdateBuildExecutionData = "UpdateBuildExecutionData";
-    public const string UpdateCorpusAnalysis = "UpdateCorpusAnalysis";
+    public const string UpdateParallelCorpusAnalysis = "UpdateParallelCorpusAnalysis";
 }

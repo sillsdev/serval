@@ -293,8 +293,8 @@ public class TranslationPlatformServiceV1(
         return new Empty();
     }
 
-    public override async Task<Empty> UpdateCorpusAnalysis(
-        UpdateCorpusAnalysisRequest request,
+    public override async Task<Empty> UpdateParallelCorpusAnalysis(
+        UpdateParallelCorpusAnalysisRequest request,
         ServerCallContext context
     )
     {
@@ -302,14 +302,14 @@ public class TranslationPlatformServiceV1(
             b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
             u =>
             {
-                if (request.CorpusAnalysis.Count > 0)
+                if (request.ParallelCorpusAnalysis.Count > 0)
                 {
                     u.Set(
                         b => b.Analysis,
                         request
-                            .CorpusAnalysis.Select(a => new CorpusAnalysis
+                            .ParallelCorpusAnalysis.Select(a => new ParallelCorpusAnalysis
                             {
-                                CorpusRef = a.CorpusId,
+                                ParallelCorpusRef = a.ParallelCorpusId,
                                 SourceQuoteConvention = a.SourceQuoteConvention,
                                 TargetQuoteConvention = a.TargetQuoteConvention,
                             })
