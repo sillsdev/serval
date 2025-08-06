@@ -164,14 +164,14 @@ public class ServalWordAlignmentPlatformService(
         );
     }
 
-    public Task UpdateCorpusAnalysisAsync(
+    public Task UpdateParallelCorpusAnalysisAsync(
         string engineId,
         string buildId,
-        IReadOnlyCollection<CorpusAnalysis> corpusAnalysis,
+        IReadOnlyCollection<ParallelCorpusAnalysis> parallelCorpusAnalysis,
         CancellationToken cancellationToken = default
     )
     {
-        // Word alignment does not support corpus analysis
+        // Word alignment does not support parallel corpus analysis
         return Task.CompletedTask;
     }
 }
