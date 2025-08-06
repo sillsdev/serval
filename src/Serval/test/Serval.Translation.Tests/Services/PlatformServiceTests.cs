@@ -166,6 +166,52 @@ public class PlatformServiceTests
     }
 
     [Test]
+    public async Task UpdateParallelCorpusAnalysisAsync()
+    {
+        var env = new TestEnvironment();
+
+        var engine = new Engine
+        {
+            Id = "e0",
+            Owner = "owner1",
+            Type = "nmt",
+            SourceLanguage = "en",
+            TargetLanguage = "es",
+            Corpora = [],
+        };
+        await env.Engines.InsertAsync(engine);
+
+        var build = new Build { Id = "123", EngineRef = "e0", };
+        await env.Builds.InsertAsync(build);
+
+        List<ParallelCorpusAnalysis> expected =
+        [
+            new ParallelCorpusAnalysis
+            {
+                ParallelCorpusRef = "corpus01",
+                SourceQuoteConvention = "standard_english",
+                TargetQuoteConvention = "typewriter_english"
+            }
+        ];
+
+        var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = engine.Id };
+        updateRequest.ParallelCorpusAnalysis.Add(
+            new ParallelCorpusAnalysisResult
+            {
+                ParallelCorpusId = "corpus01",
+                SourceQuoteConvention = "standard_english",
+                TargetQuoteConvention = "typewriter_english"
+            }
+        );
+
+        await env.PlatformService.UpdateParallelCorpusAnalysis(updateRequest, env.ServerCallContext);
+
+        build = await env.Builds.GetAsync(c => c.Id == build.Id);
+
+        Assert.That(build?.Analysis, Is.EqualTo(expected));
+    }
+
+    [Test]
     public async Task IncrementCorpusSizeAsync()
     {
         var env = new TestEnvironment();

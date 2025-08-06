@@ -1662,7 +1662,8 @@ public class TranslationEnginesController(
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = source.ExecutionData,
-            Phases = source.Phases?.Select(Map).ToList()
+            Phases = source.Phases?.Select(Map).ToList(),
+            Analysis = source.Analysis?.Select(Map).ToList(),
         };
     }
 
@@ -1888,6 +1889,16 @@ public class TranslationEnginesController(
             Stage = (PhaseStage)source.Stage,
             Step = source.Step,
             StepCount = source.StepCount
+        };
+    }
+
+    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source)
+    {
+        return new ParallelCorpusAnalysisDto
+        {
+            ParallelCorpusRef = source.ParallelCorpusRef,
+            SourceQuoteConvention = source.SourceQuoteConvention,
+            TargetQuoteConvention = source.TargetQuoteConvention,
         };
     }
 }

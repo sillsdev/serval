@@ -163,4 +163,33 @@ public class ServalTranslationPlatformService(
             cancellationToken: cancellationToken
         );
     }
+
+    public async Task UpdateParallelCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyCollection<ParallelCorpusAnalysis> parallelCorpusAnalysis,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var content = new UpdateParallelCorpusAnalysisRequest { EngineId = engineId, BuildId = buildId };
+        foreach (ParallelCorpusAnalysis analysis in parallelCorpusAnalysis)
+        {
+            content.ParallelCorpusAnalysis.Add(
+                new ParallelCorpusAnalysisResult
+                {
+                    ParallelCorpusId = analysis.ParallelCorpusRef,
+                    SourceQuoteConvention = analysis.SourceQuoteConvention,
+                    TargetQuoteConvention = analysis.TargetQuoteConvention,
+                }
+            );
+        }
+
+        await _outboxService.EnqueueMessageAsync(
+            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
+            method: ServalTranslationPlatformOutboxConstants.UpdateParallelCorpusAnalysis,
+            groupId: engineId,
+            content,
+            cancellationToken: cancellationToken
+        );
+    }
 }

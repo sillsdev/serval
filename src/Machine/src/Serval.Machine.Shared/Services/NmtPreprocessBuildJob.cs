@@ -26,4 +26,42 @@ public class NmtPreprocessBuildJob(
     {
         return _languageTagService.ConvertToFlores200Code(languageCode, out resolvedCode);
     }
+
+    protected override async Task UpdateParallelCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyList<ParallelCorpus> corpora,
+        CancellationToken cancellationToken
+    )
+    {
+        List<ParallelCorpusAnalysis> parallelCorpusAnalysis = [];
+        foreach (ParallelCorpus parallelCorpus in corpora)
+        {
+            (QuoteConventionAnalysis? sourceQuotationConvention, QuoteConventionAnalysis? targetQuotationConvention) =
+                ParallelCorpusPreprocessingService.AnalyzeParallelCorpus(parallelCorpus);
+            string sourceQuotationConventionName = sourceQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
+            string targetQuotationConventionName = targetQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
+            if (
+                !string.IsNullOrWhiteSpace(sourceQuotationConventionName)
+                || !string.IsNullOrWhiteSpace(sourceQuotationConventionName)
+            )
+            {
+                parallelCorpusAnalysis.Add(
+                    new ParallelCorpusAnalysis
+                    {
+                        ParallelCorpusRef = parallelCorpus.Id,
+                        SourceQuoteConvention = sourceQuotationConventionName,
+                        TargetQuoteConvention = targetQuotationConventionName,
+                    }
+                );
+            }
+        }
+
+        await PlatformService.UpdateParallelCorpusAnalysisAsync(
+            engineId,
+            buildId,
+            parallelCorpusAnalysis,
+            cancellationToken
+        );
+    }
 }

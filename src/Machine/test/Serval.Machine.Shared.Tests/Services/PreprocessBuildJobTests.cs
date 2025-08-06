@@ -297,13 +297,17 @@ public class PreprocessBuildJobTests
         string sourceExtract = await env.GetSourceExtractAsync();
         Assert.That(
             sourceExtract,
-            Is.EqualTo("Source one, chapter two, verse one.\nSource one, chapter two, verse two.\n\n"),
+            Is.EqualTo(
+                "Source one, chapter two, verse one.\nSource one, chapter two, verse two. \u201ca quotation\u201d\n\n"
+            ),
             sourceExtract
         );
         string targetExtract = await env.GetTargetExtractAsync();
         Assert.That(
             targetExtract,
-            Is.EqualTo("Target one, chapter two, verse one.\n\nTarget one, chapter two, verse three.\n"),
+            Is.EqualTo(
+                "Target one, chapter two, verse one.\n\nTarget one, chapter two, verse three. \"a quotation\"\n"
+            ),
             targetExtract
         );
         JsonArray? pretranslations = await env.GetPretranslationsAsync();

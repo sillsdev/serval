@@ -36,4 +36,11 @@ public interface IPlatformService
         IReadOnlyDictionary<string, string> executionData,
         CancellationToken cancellationToken = default
     );
+
+    Task UpdateParallelCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyCollection<ParallelCorpusAnalysis> parallelCorpusAnalysis,
+        CancellationToken cancellationToken = default
+    );
 }

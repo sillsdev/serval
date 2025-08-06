@@ -5,6 +5,33 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
     private readonly ICorpusService _corpusService = corpusService;
     private const int Seed = 1234;
 
+    public (QuoteConventionAnalysis?, QuoteConventionAnalysis?) AnalyzeParallelCorpus(ParallelCorpus parallelCorpus)
+    {
+        var sourceHandler = new QuoteConventionDetector();
+        foreach (MonolingualCorpus sourceMonolingualCorpus in parallelCorpus.SourceCorpora)
+        {
+            foreach (CorpusFile file in sourceMonolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
+            {
+                using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
+                var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
+                quoteConventionDetector.GetQuoteConventionAnalysis(sourceHandler);
+            }
+        }
+
+        var targetHandler = new QuoteConventionDetector();
+        foreach (MonolingualCorpus targetMonolingualCorpus in parallelCorpus.TargetCorpora)
+        {
+            foreach (CorpusFile file in targetMonolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
+            {
+                using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
+                var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
+                quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler);
+            }
+        }
+
+        return (sourceHandler.DetectQuotationConvention(), targetHandler.DetectQuotationConvention());
+    }
+
     public async Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
@@ -108,6 +135,7 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
                 await inference(row, isInTrainingData, corpus);
             }
         }
+
         if (useKeyTerms && parallelTrainingDataPresent)
         {
             foreach (Row row in keyTermTrainingData)
