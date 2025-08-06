@@ -60,7 +60,7 @@ public abstract class PreprocessBuildJob<TEngine>(
 
         if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
         {
-            throw new OperationCanceledException(
+            throw new InvalidOperationException(
                 $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
             );
         }
