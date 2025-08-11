@@ -941,7 +941,7 @@ public class TranslationEnginesController(
         [FromQuery(Name = "paragraph-marker-behavior")] PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior,
         [FromQuery(Name = "embed-behavior")] PretranslationUsfmMarkerBehavior? embedBehavior,
         [FromQuery(Name = "style-marker-behavior")] PretranslationUsfmMarkerBehavior? styleMarkerBehavior,
-        [FromQuery(Name = "quotation-mark-behavior")] PretranslationQuotationMarkBehavior? quotationMarkBehavior,
+        [FromQuery(Name = "quotation-mark-behavior")] PretranslationNormalizationBehavior? quotationMarkBehavior,
         CancellationToken cancellationToken
     )
     {
@@ -962,7 +962,7 @@ public class TranslationEnginesController(
             paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
-            quotationMarkBehavior ?? PretranslationQuotationMarkBehavior.NormalizedSourceQuotes,
+            quotationMarkBehavior ?? PretranslationNormalizationBehavior.Normalized,
             cancellationToken
         );
         if (usfm == "")

@@ -45,7 +45,7 @@ public class PretranslationService(
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
-        PretranslationQuotationMarkBehavior quotationMarkBehavior,
+        PretranslationNormalizationBehavior quoteNormalizationBehavior,
         CancellationToken cancellationToken = default
     )
     {
@@ -152,17 +152,7 @@ public class PretranslationService(
             updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler());
 
         if (paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition)
-        {
-            IEnumerable<PlaceMarkersAlignmentInfo> alignmentInfo = pretranslations.Select(
-                p => new PlaceMarkersAlignmentInfo(
-                    p.Refs,
-                    p.SourceTokens?.ToList() ?? [],
-                    p.TranslationTokens?.ToList() ?? [],
-                    Map(p.Alignment)
-                )
-            );
-            updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo));
-        }
+            updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler());
 
         string usfm = "";
         // Update the target book if it exists
@@ -284,7 +274,7 @@ public class PretranslationService(
                     break;
             }
         }
-        if (quotationMarkBehavior == PretranslationQuotationMarkBehavior.TargetQuotes)
+        if (quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized)
         {
             if (build.Analysis is null)
             {
@@ -317,7 +307,7 @@ public class PretranslationService(
         CorpusAnalysis analysis
     )
     {
-        QuoteConvention sourceQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
+        QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             analysis.SourceQuoteConvention
         );
         if (sourceQuoteConvention is null)
@@ -326,7 +316,7 @@ public class PretranslationService(
                 $"Unable to denormalize quotation marks: No such convention {analysis.SourceQuoteConvention}"
             );
         }
-        QuoteConvention targetQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
+        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             analysis.TargetQuoteConvention
         );
         if (targetQuoteConvention is null)
