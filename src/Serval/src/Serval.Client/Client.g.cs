@@ -2482,9 +2482,10 @@ namespace Serval.Client
         /// <param name="paragraphMarkerBehavior">The behavior of paragraph markers.</param>
         /// <param name="embedBehavior">The behavior of embed markers.</param>
         /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
+        /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quotationMarkBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -5179,9 +5180,10 @@ namespace Serval.Client
         /// <param name="paragraphMarkerBehavior">The behavior of paragraph markers.</param>
         /// <param name="embedBehavior">The behavior of embed markers.</param>
         /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
+        /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quotationMarkBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5232,9 +5234,9 @@ namespace Serval.Client
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("style-marker-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(styleMarkerBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
-                    if (quotationMarkBehavior != null)
+                    if (quoteNormalizationBehavior != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("quotation-mark-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(quotationMarkBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("quotation-mark-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(quoteNormalizationBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
