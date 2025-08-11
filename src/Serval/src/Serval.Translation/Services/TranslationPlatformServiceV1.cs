@@ -298,27 +298,27 @@ public class TranslationPlatformServiceV1(
         ServerCallContext context
     )
     {
-        await _builds.UpdateAsync(
-            b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
-            u =>
+        // Ensure only parallel corpus IDs are present
+        Engine? engine = await _engines.GetAsync(request.EngineId, context.CancellationToken);
+        if (engine == null)
+            return Empty;
+        var analysis = request
+            .ParallelCorpusAnalysis.Where(p => engine.ParallelCorpora.Select(pc => pc.Id).Contains(p.ParallelCorpusId))
+            .Select(a => new ParallelCorpusAnalysis
             {
-                if (request.ParallelCorpusAnalysis.Count > 0)
-                {
-                    u.Set(
-                        b => b.Analysis,
-                        request
-                            .ParallelCorpusAnalysis.Select(a => new ParallelCorpusAnalysis
-                            {
-                                ParallelCorpusRef = a.ParallelCorpusId,
-                                SourceQuoteConvention = a.SourceQuoteConvention,
-                                TargetQuoteConvention = a.TargetQuoteConvention,
-                            })
-                            .ToList()
-                    );
-                }
-            },
-            cancellationToken: context.CancellationToken
-        );
+                ParallelCorpusRef = a.ParallelCorpusId,
+                SourceQuoteConvention = a.SourceQuoteConvention,
+                TargetQuoteConvention = a.TargetQuoteConvention,
+            })
+            .ToList();
+        if (analysis.Count > 0)
+        {
+            await _builds.UpdateAsync(
+                b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
+                u => u.Set(b => b.Analysis, analysis),
+                cancellationToken: context.CancellationToken
+            );
+        }
 
         return Empty;
     }
