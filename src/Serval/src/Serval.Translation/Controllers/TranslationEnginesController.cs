@@ -901,6 +901,10 @@ public class TranslationEnginesController(
     /// * `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
     /// * `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
     ///
+    /// Quote normalization behavior is controlled by the `quoteNormalizationBehavior` parameter options:
+    /// * `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data.
+    /// * `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
+    ///
     /// Only pretranslations for the most recent successful build of the engine are returned.
     /// The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
     /// </remarks>
@@ -912,6 +916,7 @@ public class TranslationEnginesController(
     /// <param name="paragraphMarkerBehavior">The behavior of paragraph markers.</param>
     /// <param name="embedBehavior">The behavior of embed markers.</param>
     /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
+    /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The book in USFM format</response>
     /// <response code="204">The specified book does not exist in the source or target corpus.</response>
@@ -941,7 +946,7 @@ public class TranslationEnginesController(
         [FromQuery(Name = "paragraph-marker-behavior")] PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior,
         [FromQuery(Name = "embed-behavior")] PretranslationUsfmMarkerBehavior? embedBehavior,
         [FromQuery(Name = "style-marker-behavior")] PretranslationUsfmMarkerBehavior? styleMarkerBehavior,
-        [FromQuery(Name = "quotation-mark-behavior")] PretranslationNormalizationBehavior? quotationMarkBehavior,
+        [FromQuery(Name = "quotation-mark-behavior")] PretranslationNormalizationBehavior? quoteNormalizationBehavior,
         CancellationToken cancellationToken
     )
     {
@@ -962,7 +967,7 @@ public class TranslationEnginesController(
             paragraphMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             embedBehavior ?? PretranslationUsfmMarkerBehavior.Preserve,
             styleMarkerBehavior ?? PretranslationUsfmMarkerBehavior.Strip,
-            quotationMarkBehavior ?? PretranslationNormalizationBehavior.Normalized,
+            quoteNormalizationBehavior ?? PretranslationNormalizationBehavior.Normalized,
             cancellationToken
         );
         if (usfm == "")
