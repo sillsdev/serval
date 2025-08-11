@@ -171,6 +171,8 @@ public class PretranslationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
+\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
 \v 1 TRG - Chapter one, verse one.
 \v 2 Chapter 1, verse 2.
