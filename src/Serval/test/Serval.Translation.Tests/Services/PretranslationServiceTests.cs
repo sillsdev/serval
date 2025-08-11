@@ -348,7 +348,7 @@ public class PretranslationServiceTests
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferExisting,
             PretranslationUsfmTemplate.Source,
-            quotationMarkBehavior: PretranslationQuotationMarkBehavior.TargetQuotes
+            quotationMarkBehavior: PretranslationNormalizationBehavior.Denormalized
         );
         Assert.That(usfm, Does.Contain("“Translated new paragraph”"));
         Assert.That(Regex.Matches(usfm, @"\\rem"), Has.Count.EqualTo(3));
@@ -356,7 +356,7 @@ public class PretranslationServiceTests
         usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferExisting,
             PretranslationUsfmTemplate.Source,
-            quotationMarkBehavior: PretranslationQuotationMarkBehavior.NormalizedSourceQuotes
+            quotationMarkBehavior: PretranslationNormalizationBehavior.Normalized
         );
         Assert.That(usfm, Does.Contain("\"Translated new paragraph\""));
         Assert.That(Regex.Matches(usfm, @"\\rem"), Has.Count.EqualTo(2));
@@ -624,8 +624,7 @@ public class PretranslationServiceTests
             PretranslationUsfmTextOrigin textOrigin,
             PretranslationUsfmTemplate template,
             PretranslationUsfmMarkerBehavior paragraphMarkerBehavior = PretranslationUsfmMarkerBehavior.Preserve,
-            PretranslationQuotationMarkBehavior quotationMarkBehavior =
-                PretranslationQuotationMarkBehavior.NormalizedSourceQuotes
+            PretranslationNormalizationBehavior quotationMarkBehavior = PretranslationNormalizationBehavior.Normalized
         )
         {
             string usfm = await Service.GetUsfmAsync(
@@ -638,7 +637,7 @@ public class PretranslationServiceTests
                 paragraphMarkerBehavior: paragraphMarkerBehavior,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
-                quotationMarkBehavior: quotationMarkBehavior
+                quoteNormalizationBehavior: quotationMarkBehavior
             );
             usfm = usfm.Replace("\r\n", "\n");
             string parallel_usfm = await Service.GetUsfmAsync(
@@ -651,7 +650,7 @@ public class PretranslationServiceTests
                 paragraphMarkerBehavior: paragraphMarkerBehavior,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
-                quotationMarkBehavior: quotationMarkBehavior
+                quoteNormalizationBehavior: quotationMarkBehavior
             );
             parallel_usfm = parallel_usfm.Replace("\r\n", "\n");
             Assert.That(parallel_usfm, Is.EqualTo(usfm));

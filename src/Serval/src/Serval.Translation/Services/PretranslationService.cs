@@ -1,5 +1,5 @@
 ﻿using SIL.Machine.Corpora;
-using SIL.Machine.Corpora.PunctuationAnalysis;
+using SIL.Machine.PunctuationAnalysis;
 using SIL.Machine.Translation;
 
 namespace Serval.Translation.Services;
@@ -45,7 +45,7 @@ public class PretranslationService(
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
-        PretranslationQuotationMarkBehavior quotationMarkBehavior,
+        PretranslationNormalizationBehavior quoteNormalizationBehavior,
         CancellationToken cancellationToken = default
     )
     {
@@ -130,30 +130,27 @@ public class PretranslationService(
             cancellationToken
         );
 
-        IEnumerable<(IReadOnlyList<ScriptureRef> Refs, string Translation)> pretranslationRows = pretranslations
+        IEnumerable<(
+            IReadOnlyList<ScriptureRef> ScriptureRefs,
+            Pretranslation Pretranslation,
+            PretranslationUsfmMarkerBehavior ParagraphBehavior,
+            PretranslationUsfmMarkerBehavior StyleBehavior
+        )> pretranslationRows = pretranslations
             .Select(p =>
                 (
-                    Refs: (IReadOnlyList<ScriptureRef>)
+                    ScriptureRefs: (IReadOnlyList<ScriptureRef>)
                         p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToArray(),
-                    p.Translation
+                    p,
+                    paragraphMarkerBehavior,
+                    styleMarkerBehavior
                 )
             )
-            .OrderBy(p => p.Refs[0]);
+            .OrderBy(p => p.ScriptureRefs[0]);
 
         List<IUsfmUpdateBlockHandler> updateBlockHandlers = [];
 
         if (paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition)
-        {
-            IEnumerable<PlaceMarkersAlignmentInfo> alignmentInfo = pretranslations.Select(
-                p => new PlaceMarkersAlignmentInfo(
-                    p.Refs,
-                    p.SourceTokens?.ToList() ?? [],
-                    p.TranslationTokens?.ToList() ?? [],
-                    Map(p.Alignment)
-                )
-            );
-            updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler(alignmentInfo));
-        }
+            updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler());
 
         string usfm = "";
         // Update the target book if it exists
@@ -162,7 +159,12 @@ public class PretranslationService(
             // the pretranslations are generated from the source book and inserted into the target book
             // use relaxed references since the USFM structure may not be the same
             pretranslationRows = pretranslationRows.Select(p =>
-                ((IReadOnlyList<ScriptureRef>)p.Refs.Select(r => r.ToRelaxed()).ToArray(), p.Translation)
+                (
+                    (IReadOnlyList<ScriptureRef>)p.ScriptureRefs.Select(r => r.ToRelaxed()).ToArray(),
+                    p.Pretranslation,
+                    p.ParagraphBehavior,
+                    p.StyleBehavior
+                )
             );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
                 _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
@@ -172,7 +174,7 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslationRows.ToList(),
+                            pretranslationRows.Select(Map).ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
@@ -185,7 +187,7 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslationRows.ToList(),
+                            pretranslationRows.Select(Map).ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferNew,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
@@ -211,7 +213,7 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslationRows.ToList(),
+                            pretranslationRows.Select(Map).ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
@@ -240,7 +242,7 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslationRows.ToList(),
+                            pretranslationRows.Select(Map).ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
@@ -264,7 +266,7 @@ public class PretranslationService(
                     break;
             }
         }
-        if (quotationMarkBehavior == PretranslationQuotationMarkBehavior.TargetQuotes)
+        if (quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized)
         {
             if (build.Analysis is null)
             {
@@ -297,7 +299,7 @@ public class PretranslationService(
         CorpusAnalysis analysis
     )
     {
-        QuoteConvention sourceQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
+        QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             analysis.SourceQuoteConvention
         );
         if (sourceQuoteConvention is null)
@@ -306,7 +308,7 @@ public class PretranslationService(
                 $"Unable to denormalize quotation marks: No such convention {analysis.SourceQuoteConvention}"
             );
         }
-        QuoteConvention targetQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
+        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             analysis.TargetQuoteConvention
         );
         if (targetQuoteConvention is null)
@@ -417,6 +419,36 @@ public class PretranslationService(
             rowCount,
             columnCount,
             alignedWordPairs?.Select(wp => (wp.SourceIndex, wp.TargetIndex))
+        );
+    }
+
+    private static UpdateUsfmRow Map(
+        (
+            IReadOnlyList<ScriptureRef> ScriptureRefs,
+            Pretranslation Pretranslation,
+            PretranslationUsfmMarkerBehavior ParagraphBehavior,
+            PretranslationUsfmMarkerBehavior StyleBehavior
+        ) pretranslationRow
+    )
+    {
+        return new UpdateUsfmRow(
+            pretranslationRow.ScriptureRefs,
+            pretranslationRow.Pretranslation.Translation,
+            pretranslationRow.Pretranslation.Alignment is not null
+                ? new Dictionary<string, object>
+                {
+                    {
+                        PlaceMarkersAlignmentInfo.MetadataKey,
+                        new PlaceMarkersAlignmentInfo(
+                            pretranslationRow.Pretranslation.SourceTokens?.ToList() ?? [],
+                            pretranslationRow.Pretranslation.TranslationTokens?.ToList() ?? [],
+                            Map(pretranslationRow.Pretranslation.Alignment),
+                            paragraphBehavior: Map(pretranslationRow.ParagraphBehavior),
+                            styleBehavior: Map(pretranslationRow.StyleBehavior)
+                        )
+                    }
+                }
+                : null
         );
     }
 }

@@ -1,7 +1,7 @@
 namespace Serval.Translation.Contracts;
 
-public enum PretranslationQuotationMarkBehavior
+public enum PretranslationNormalizationBehavior
 {
-    NormalizedSourceQuotes,
-    TargetQuotes
+    Normalized,
+    Denormalized
 }
