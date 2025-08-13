@@ -20,5 +20,5 @@ public record Build : IInitializableEntity
     public bool? IsInitialized { get; set; }
     public DateTime? DateCreated { get; set; }
     public IReadOnlyList<BuildPhase>? Phases { get; init; }
-    public IReadOnlyList<CorpusAnalysis>? Analysis { get; init; }
+    public IReadOnlyList<ParallelCorpusAnalysis>? Analysis { get; init; }
 }

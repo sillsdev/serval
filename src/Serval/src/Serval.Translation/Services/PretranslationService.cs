@@ -282,20 +282,20 @@ public class PretranslationService(
                     $"Unable to denormalize quotation marks: No quote convention analysis exists for build {build.Id}"
                 );
             }
-            if (!build.Analysis.Any(a => a.CorpusRef == corpusId))
+            if (!build.Analysis.Any(a => a.ParallelCorpusRef == corpusId))
             {
                 throw new InvalidOperationException(
                     $"Unable to denormalize quotation marks: No quote convention analysis exists for corpus {corpusId}"
                 );
             }
-            CorpusAnalysis analysis = build.Analysis.Single(c => c.CorpusRef == corpusId);
+            ParallelCorpusAnalysis analysis = build.Analysis.Single(c => c.ParallelCorpusRef == corpusId);
             usfm = DenormalizeQuotationMarks(usfm, analysis);
         }
 
         return usfm;
     }
 
-    private static string DenormalizeQuotationMarks(string usfm, CorpusAnalysis analysis)
+    private static string DenormalizeQuotationMarks(string usfm, ParallelCorpusAnalysis analysis)
     {
         QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             analysis.SourceQuoteConvention

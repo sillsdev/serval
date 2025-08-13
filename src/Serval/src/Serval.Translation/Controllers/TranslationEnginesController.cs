@@ -1898,6 +1898,16 @@ public class TranslationEnginesController(
             StepCount = source.StepCount
         };
     }
+
+    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source)
+    {
+        return new ParallelCorpusAnalysisDto
+        {
+            ParallelCorpusRef = source.ParallelCorpusRef,
+            SourceQuoteConvention = source.SourceQuoteConvention,
+            TargetQuoteConvention = source.TargetQuoteConvention,
+        };
+    }
 }
 
 #pragma warning restore CS0612 // Type or member is obsolete

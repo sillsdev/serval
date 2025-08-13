@@ -438,7 +438,7 @@ namespace Serval.Client
                     var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
                     if (field != null)
                     {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
                             as System.Runtime.Serialization.EnumMemberAttribute;
                         if (attribute != null)
                         {
@@ -450,7 +450,7 @@ namespace Serval.Client
                     return converted == null ? string.Empty : converted;
                 }
             }
-            else if (value is bool)
+            else if (value is bool) 
             {
                 return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
             }
@@ -1162,7 +1162,7 @@ namespace Serval.Client
                     var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
                     if (field != null)
                     {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
                             as System.Runtime.Serialization.EnumMemberAttribute;
                         if (attribute != null)
                         {
@@ -1174,7 +1174,7 @@ namespace Serval.Client
                     return converted == null ? string.Empty : converted;
                 }
             }
-            else if (value is bool)
+            else if (value is bool) 
             {
                 return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
             }
@@ -1220,7 +1220,7 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// Sample request:
-        /// <br/>
+        /// <br/>            
         /// <br/>    POST /files
         /// <br/>    {
         /// <br/>       "format": "text",
@@ -1435,7 +1435,7 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// Sample request:
-        /// <br/>
+        /// <br/>            
         /// <br/>    POST /files
         /// <br/>    {
         /// <br/>       "format": "text",
@@ -2088,7 +2088,7 @@ namespace Serval.Client
                     var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
                     if (field != null)
                     {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
                             as System.Runtime.Serialization.EnumMemberAttribute;
                         if (attribute != null)
                         {
@@ -2100,7 +2100,7 @@ namespace Serval.Client
                     return converted == null ? string.Empty : converted;
                 }
             }
-            else if (value is bool)
+            else if (value is bool) 
             {
                 return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
             }
@@ -2159,14 +2159,14 @@ namespace Serval.Client
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
         /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
-        /// <br/>
+        /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
-        /// <br/>
+        /// <br/>            
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### echo
         /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
-        /// <br/>
+        /// <br/>            
         /// <br/>    {
         /// <br/>      "name": "myTeam:myProject:myEngine",
         /// <br/>      "sourceLanguage": "el",
@@ -2204,7 +2204,7 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Sample request:
-        /// <br/>
+        /// <br/>            
         /// <br/>    {
         /// <br/>      "sourceLanguage": "en",
         /// <br/>      "targetLanguage": "en"
@@ -2413,7 +2413,7 @@ namespace Serval.Client
         /// <br/>  * The references defined in the SourceFile per line, if any.
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **Translation**: the text of the pretranslation
-        /// <br/>
+        /// <br/>            
         /// <br/>Pretranslations can be filtered by text id if provided.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
@@ -2435,7 +2435,7 @@ namespace Serval.Client
         /// <br/>  * The references defined in the SourceFile per line, if any.
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **Translation**: the text of the pretranslation
-        /// <br/>
+        /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -2455,22 +2455,26 @@ namespace Serval.Client
         /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
         /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
         /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
-        /// <br/>
+        /// <br/>            
         /// <br/>The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
         /// <br/>* `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
         /// <br/>* `Source`: The source book is used as the template.
         /// <br/>* `Target`: The target book is used as the template.
-        /// <br/>
+        /// <br/>            
         /// <br/>The intra-verse USFM markers are handled in the following way:
         /// <br/>* All verse and non-verse text is stripped of all intra-verse USFM to be pretranslated (if the book is chosen).
         /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
         /// <br/>* Notes are stripped.
-        /// <br/>
+        /// <br/>            
         /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters.
         /// <br/>* `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
         /// <br/>* `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
         /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
-        /// <br/>
+        /// <br/>            
+        /// <br/>Quote normalization behavior is controlled by the `quoteNormalizationBehavior` parameter options:
+        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data.
+        /// <br/>* `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
+        /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
@@ -2505,30 +2509,30 @@ namespace Serval.Client
         /// <br/>Specifying a corpus:
         /// <br/>* A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
         /// <br/>* A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
-        /// <br/>
+        /// <br/>            
         /// <br/>Filtering by textID or chapter:
         /// <br/>* Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>* Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
         /// <br/>* All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
-        /// <br/>
+        /// <br/>            
         /// <br/>Filter - train on all or none
         /// <br/>* If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
         /// <br/>* If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
         /// <br/>* If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
         /// <br/>* If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
-        /// <br/>
+        /// <br/>            
         /// <br/>Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
         /// <br/>the following text will be pretranslated:
         /// <br/>* Text segments that are in the source and not the target (untranslated)
         /// <br/>* Text segments that are in the source and the target, but where that target segment is not trained on.
         /// <br/>If the engine does not support pretranslation, these fields have no effect.
         /// <br/>Pretranslating has the same filtering as training.
-        /// <br/>
+        /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
         /// <br/>See [smt-transfer job settings documentation](https://github.com/sillsdev/serval/wiki/SMT-Transfer-Build-Options) about configuring job parameters.
         /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
-        /// <br/>
+        /// <br/>            
         /// <br/>When using a parallel corpus:
         /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
         /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), only the first of the targets that includes that textId/book will be used for that textId/book.
@@ -2589,10 +2593,10 @@ namespace Serval.Client
         /// <remarks>
         /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
         /// <br/>then the model from the most recent successful build can be downloaded.
-        /// <br/>
+        /// <br/>            
         /// <br/>The endpoint will return a URL that can be used to download the model for up to 1 hour
         /// <br/>after the request is made.  If the URL is not used within that time, a new request will need to be made.
-        /// <br/>
+        /// <br/>            
         /// <br/>The download itself is created by g-zipping together the folder containing the fine tuned model
         /// <br/>with all necessary supporting files.  This zipped folder is then named by the pattern:
         /// <br/> * &lt;engine_id&gt;_&lt;model_revision&gt;.tar.gz
@@ -2763,14 +2767,14 @@ namespace Serval.Client
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
         /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
-        /// <br/>
+        /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
-        /// <br/>
+        /// <br/>            
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### echo
         /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
-        /// <br/>
+        /// <br/>            
         /// <br/>    {
         /// <br/>      "name": "myTeam:myProject:myEngine",
         /// <br/>      "sourceLanguage": "el",
@@ -3087,7 +3091,7 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Sample request:
-        /// <br/>
+        /// <br/>            
         /// <br/>    {
         /// <br/>      "sourceLanguage": "en",
         /// <br/>      "targetLanguage": "en"
@@ -4889,7 +4893,7 @@ namespace Serval.Client
         /// <br/>  * The references defined in the SourceFile per line, if any.
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **Translation**: the text of the pretranslation
-        /// <br/>
+        /// <br/>            
         /// <br/>Pretranslations can be filtered by text id if provided.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
@@ -5023,7 +5027,7 @@ namespace Serval.Client
         /// <br/>  * The references defined in the SourceFile per line, if any.
         /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
         /// <br/>* **Translation**: the text of the pretranslation
-        /// <br/>
+        /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -5153,22 +5157,26 @@ namespace Serval.Client
         /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
         /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
         /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
-        /// <br/>
+        /// <br/>            
         /// <br/>The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
         /// <br/>* `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
         /// <br/>* `Source`: The source book is used as the template.
         /// <br/>* `Target`: The target book is used as the template.
-        /// <br/>
+        /// <br/>            
         /// <br/>The intra-verse USFM markers are handled in the following way:
         /// <br/>* All verse and non-verse text is stripped of all intra-verse USFM to be pretranslated (if the book is chosen).
         /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
         /// <br/>* Notes are stripped.
-        /// <br/>
+        /// <br/>            
         /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters.
         /// <br/>* `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
         /// <br/>* `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
         /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
-        /// <br/>
+        /// <br/>            
+        /// <br/>Quote normalization behavior is controlled by the `quoteNormalizationBehavior` parameter options:
+        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data.
+        /// <br/>* `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
+        /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
@@ -5444,30 +5452,30 @@ namespace Serval.Client
         /// <br/>Specifying a corpus:
         /// <br/>* A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
         /// <br/>* A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
-        /// <br/>
+        /// <br/>            
         /// <br/>Filtering by textID or chapter:
         /// <br/>* Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>* Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
         /// <br/>* All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
-        /// <br/>
+        /// <br/>            
         /// <br/>Filter - train on all or none
         /// <br/>* If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
         /// <br/>* If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
         /// <br/>* If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
         /// <br/>* If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
-        /// <br/>
+        /// <br/>            
         /// <br/>Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
         /// <br/>the following text will be pretranslated:
         /// <br/>* Text segments that are in the source and not the target (untranslated)
         /// <br/>* Text segments that are in the source and the target, but where that target segment is not trained on.
         /// <br/>If the engine does not support pretranslation, these fields have no effect.
         /// <br/>Pretranslating has the same filtering as training.
-        /// <br/>
+        /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
         /// <br/>See [smt-transfer job settings documentation](https://github.com/sillsdev/serval/wiki/SMT-Transfer-Build-Options) about configuring job parameters.
         /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
-        /// <br/>
+        /// <br/>            
         /// <br/>When using a parallel corpus:
         /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
         /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), only the first of the targets that includes that textId/book will be used for that textId/book.
@@ -5980,10 +5988,10 @@ namespace Serval.Client
         /// <remarks>
         /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
         /// <br/>then the model from the most recent successful build can be downloaded.
-        /// <br/>
+        /// <br/>            
         /// <br/>The endpoint will return a URL that can be used to download the model for up to 1 hour
         /// <br/>after the request is made.  If the URL is not used within that time, a new request will need to be made.
-        /// <br/>
+        /// <br/>            
         /// <br/>The download itself is created by g-zipping together the folder containing the fine tuned model
         /// <br/>with all necessary supporting files.  This zipped folder is then named by the pattern:
         /// <br/> * &lt;engine_id&gt;_&lt;model_revision&gt;.tar.gz
@@ -6166,7 +6174,7 @@ namespace Serval.Client
                     var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
                     if (field != null)
                     {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
                             as System.Runtime.Serialization.EnumMemberAttribute;
                         if (attribute != null)
                         {
@@ -6178,7 +6186,7 @@ namespace Serval.Client
                     return converted == null ? string.Empty : converted;
                 }
             }
-            else if (value is bool)
+            else if (value is bool) 
             {
                 return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
             }
@@ -6578,7 +6586,7 @@ namespace Serval.Client
                     var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
                     if (field != null)
                     {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
                             as System.Runtime.Serialization.EnumMemberAttribute;
                         if (attribute != null)
                         {
@@ -6590,7 +6598,7 @@ namespace Serval.Client
                     return converted == null ? string.Empty : converted;
                 }
             }
-            else if (value is bool)
+            else if (value is bool) 
             {
                 return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
             }
@@ -7135,7 +7143,7 @@ namespace Serval.Client
                     var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
                     if (field != null)
                     {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
                             as System.Runtime.Serialization.EnumMemberAttribute;
                         if (attribute != null)
                         {
@@ -7147,7 +7155,7 @@ namespace Serval.Client
                     return converted == null ? string.Empty : converted;
                 }
             }
-            else if (value is bool)
+            else if (value is bool) 
             {
                 return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
             }
@@ -7205,7 +7213,7 @@ namespace Serval.Client
         /// <br/>The echo-word-alignment engine has full coverage of all endpoints. Endpoints like create and build return empty responses.
         /// <br/>Endpoints like align echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
-        /// <br/>
+        /// <br/>            
         /// <br/>    {
         /// <br/>      "name": "myTeam:myProject:myEngine",
         /// <br/>      "sourceLanguage": "el",
@@ -7320,7 +7328,7 @@ namespace Serval.Client
         /// <br/>* **SourceTokens**: the tokenized source segment
         /// <br/>* **TargetTokens**: the tokenized target segment
         /// <br/>* **Alignment**: a list of aligned word pairs with associated scores
-        /// <br/>
+        /// <br/>            
         /// <br/>Word alignments can be filtered by text id if provided.
         /// <br/>Only word alignments for the most recent successful build of the engine are returned.
         /// </remarks>
@@ -7350,10 +7358,10 @@ namespace Serval.Client
         /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
         /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
-        /// <br/>
+        /// <br/>            
         /// <br/>Specify the corpora or textIds to word align on.
         /// <br/>When a corpus or textId is selected for word align on, only text segments that are in both the source and the target will be aligned.
-        /// <br/>
+        /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [statistical alignment job settings documentation](https://github.com/sillsdev/serval/wiki/Statistical-Alignment-Build-Options) about configuring job parameters.
         /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
@@ -7567,7 +7575,7 @@ namespace Serval.Client
         /// <br/>The echo-word-alignment engine has full coverage of all endpoints. Endpoints like create and build return empty responses.
         /// <br/>Endpoints like align echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
-        /// <br/>
+        /// <br/>            
         /// <br/>    {
         /// <br/>      "name": "myTeam:myProject:myEngine",
         /// <br/>      "sourceLanguage": "el",
@@ -8588,7 +8596,7 @@ namespace Serval.Client
         /// <br/>* **SourceTokens**: the tokenized source segment
         /// <br/>* **TargetTokens**: the tokenized target segment
         /// <br/>* **Alignment**: a list of aligned word pairs with associated scores
-        /// <br/>
+        /// <br/>            
         /// <br/>Word alignments can be filtered by text id if provided.
         /// <br/>Only word alignments for the most recent successful build of the engine are returned.
         /// </remarks>
@@ -8825,10 +8833,10 @@ namespace Serval.Client
         /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
         /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
         /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
-        /// <br/>
+        /// <br/>            
         /// <br/>Specify the corpora or textIds to word align on.
         /// <br/>When a corpus or textId is selected for word align on, only text segments that are in both the source and the target will be aligned.
-        /// <br/>
+        /// <br/>            
         /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [statistical alignment job settings documentation](https://github.com/sillsdev/serval/wiki/Statistical-Alignment-Build-Options) about configuring job parameters.
         /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
@@ -9406,7 +9414,7 @@ namespace Serval.Client
                     var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
                     if (field != null)
                     {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
                             as System.Runtime.Serialization.EnumMemberAttribute;
                         if (attribute != null)
                         {
@@ -9418,7 +9426,7 @@ namespace Serval.Client
                     return converted == null ? string.Empty : converted;
                 }
             }
-            else if (value is bool)
+            else if (value is bool) 
             {
                 return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
             }
@@ -9679,7 +9687,7 @@ namespace Serval.Client
                     var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
                     if (field != null)
                     {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
                             as System.Runtime.Serialization.EnumMemberAttribute;
                         if (attribute != null)
                         {
@@ -9691,7 +9699,7 @@ namespace Serval.Client
                     return converted == null ? string.Empty : converted;
                 }
             }
-            else if (value is bool)
+            else if (value is bool) 
             {
                 return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
             }
@@ -10540,6 +10548,23 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Inference")]
         Inference = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ParallelCorpusAnalysis
+    {
+        [Newtonsoft.Json.JsonProperty("parallelCorpusRef", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string ParallelCorpusRef { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string SourceQuoteConvention { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string TargetQuoteConvention { get; set; } = default!;
 
     }
 

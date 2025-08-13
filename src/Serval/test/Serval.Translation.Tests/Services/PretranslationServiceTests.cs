@@ -450,9 +450,9 @@ public class PretranslationServiceTests
                         DateFinished = DateTime.UnixEpoch,
                         Analysis =
                         [
-                            new CorpusAnalysis()
+                            new ParallelCorpusAnalysis()
                             {
-                                CorpusRef = "corpus1",
+                                ParallelCorpusRef = "corpus1",
                                 SourceQuoteConvention = "standard_english",
                                 TargetQuoteConvention = "standard_english"
                             }
@@ -465,9 +465,9 @@ public class PretranslationServiceTests
                         DateFinished = DateTime.UnixEpoch,
                         Analysis =
                         [
-                            new CorpusAnalysis()
+                            new ParallelCorpusAnalysis()
                             {
-                                CorpusRef = "parallel_corpus1",
+                                ParallelCorpusRef = "parallel_corpus1",
                                 SourceQuoteConvention = "standard_english",
                                 TargetQuoteConvention = "standard_english"
                             }
