@@ -1,5 +1,6 @@
 using System.Globalization;
 using Serval.Translation.V1;
+using ParallelCorpus = Serval.Shared.Models.ParallelCorpus;
 using PhaseStage = Serval.Translation.V1.PhaseStage;
 
 namespace Serval.Translation.Services;
@@ -163,6 +164,103 @@ public class PlatformServiceTests
         Assert.That(trainCount, Is.GreaterThan(0));
         Assert.That(pretranslateCount, Is.GreaterThan(0));
         Assert.That(staticCount, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task UpdateParallelCorpusAnalysisAsync()
+    {
+        var env = new TestEnvironment();
+
+        var engine = new Engine
+        {
+            Id = "e0",
+            Owner = "owner1",
+            Type = "nmt",
+            SourceLanguage = "en",
+            TargetLanguage = "es",
+            ParallelCorpora =
+            [
+                new ParallelCorpus
+                {
+                    Id = "parallelCorpus01",
+                    SourceCorpora = [],
+                    TargetCorpora = [],
+                },
+            ],
+        };
+        await env.Engines.InsertAsync(engine);
+
+        var build = new Build { Id = "123", EngineRef = "e0" };
+        await env.Builds.InsertAsync(build);
+
+        List<ParallelCorpusAnalysis> expected =
+        [
+            new ParallelCorpusAnalysis
+            {
+                ParallelCorpusRef = "parallelCorpus01",
+                SourceQuoteConvention = "standard_english",
+                TargetQuoteConvention = "typewriter_english",
+            },
+        ];
+
+        var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = engine.Id };
+        updateRequest.ParallelCorpusAnalysis.Add(
+            new ParallelCorpusAnalysisResult
+            {
+                ParallelCorpusId = "parallelCorpus01",
+                SourceQuoteConvention = "standard_english",
+                TargetQuoteConvention = "typewriter_english",
+            }
+        );
+
+        await env.PlatformService.UpdateParallelCorpusAnalysis(updateRequest, env.ServerCallContext);
+
+        build = await env.Builds.GetAsync(c => c.Id == build.Id);
+
+        Assert.That(build?.Analysis, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public async Task UpdateParallelCorpusAnalysisAsync_NoEngine()
+    {
+        var env = new TestEnvironment();
+
+        var build = new Build { Id = "123", EngineRef = "e0" };
+        await env.Builds.InsertAsync(build);
+
+        var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = "e0" };
+        await env.PlatformService.UpdateParallelCorpusAnalysis(updateRequest, env.ServerCallContext);
+
+        build = await env.Builds.GetAsync(c => c.Id == build.Id);
+
+        Assert.That(build?.Analysis, Is.Null);
+    }
+
+    [Test]
+    public async Task UpdateParallelCorpusAnalysisAsync_NoParallelCorpora()
+    {
+        var env = new TestEnvironment();
+
+        var engine = new Engine
+        {
+            Id = "e0",
+            Owner = "owner1",
+            Type = "nmt",
+            SourceLanguage = "en",
+            TargetLanguage = "es",
+            ParallelCorpora = [],
+        };
+        await env.Engines.InsertAsync(engine);
+
+        var build = new Build { Id = "123", EngineRef = "e0" };
+        await env.Builds.InsertAsync(build);
+
+        var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = engine.Id };
+        await env.PlatformService.UpdateParallelCorpusAnalysis(updateRequest, env.ServerCallContext);
+
+        build = await env.Builds.GetAsync(c => c.Id == build.Id);
+
+        Assert.That(build?.Analysis, Is.Null);
     }
 
     [Test]

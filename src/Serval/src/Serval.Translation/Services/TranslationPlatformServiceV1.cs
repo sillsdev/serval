@@ -293,6 +293,36 @@ public class TranslationPlatformServiceV1(
         return new Empty();
     }
 
+    public override async Task<Empty> UpdateParallelCorpusAnalysis(
+        UpdateParallelCorpusAnalysisRequest request,
+        ServerCallContext context
+    )
+    {
+        // Ensure only parallel corpus IDs are present
+        Engine? engine = await _engines.GetAsync(request.EngineId, context.CancellationToken);
+        if (engine == null)
+            return Empty;
+        var analysis = request
+            .ParallelCorpusAnalysis.Where(p => engine.ParallelCorpora.Select(pc => pc.Id).Contains(p.ParallelCorpusId))
+            .Select(a => new ParallelCorpusAnalysis
+            {
+                ParallelCorpusRef = a.ParallelCorpusId,
+                SourceQuoteConvention = a.SourceQuoteConvention,
+                TargetQuoteConvention = a.TargetQuoteConvention,
+            })
+            .ToList();
+        if (analysis.Count > 0)
+        {
+            await _builds.UpdateAsync(
+                b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
+                u => u.Set(b => b.Analysis, analysis),
+                cancellationToken: context.CancellationToken
+            );
+        }
+
+        return Empty;
+    }
+
     public override async Task<Empty> IncrementEngineCorpusSize(
         IncrementEngineCorpusSizeRequest request,
         ServerCallContext context

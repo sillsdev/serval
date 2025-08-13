@@ -112,4 +112,15 @@ public class WordAlignmentPreprocessBuildJob(
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }
+
+    protected override Task UpdateParallelCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyList<ParallelCorpus> corpora,
+        CancellationToken cancellationToken
+    )
+    {
+        // Word alignment does not support parallel corpus analysis
+        return Task.CompletedTask;
+    }
 }

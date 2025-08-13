@@ -1,5 +1,6 @@
 ﻿global using System.Diagnostics;
 global using System.Diagnostics.CodeAnalysis;
+global using System.IO.Compression;
 global using System.Net;
 global using System.Runtime.CompilerServices;
 global using System.Text;
@@ -25,6 +26,7 @@ global using Microsoft.Net.Http.Headers;
 global using MongoDB.Bson.Serialization.Serializers;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
+global using SIL.Machine.PunctuationAnalysis;
 global using SIL.ServiceToolkit.Configuration;
 global using SIL.ServiceToolkit.Models;
 global using SIL.ServiceToolkit.Services;

@@ -1,3 +1,4 @@
+global using System.IO.Compression;
 global using System.Text;
 global using Grpc.Core;
 global using Microsoft.Extensions.Logging;
@@ -6,5 +7,8 @@ global using NSubstitute;
 global using NSubstitute.ExceptionExtensions;
 global using NUnit.Framework;
 global using SIL.DataAccess;
+global using SIL.Machine.PunctuationAnalysis;
+global using SIL.Machine.Utils;
+global using SIL.ObjectModel;
 global using SIL.ServiceToolkit.Configuration;
 global using SIL.ServiceToolkit.Models;

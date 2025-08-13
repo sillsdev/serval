@@ -58,6 +58,8 @@ public abstract class PreprocessBuildJob<TEngine>(
             cancellationToken
         );
 
+        await UpdateParallelCorpusAnalysisAsync(engineId, buildId, data, cancellationToken);
+
         if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
         {
             throw new InvalidOperationException(
@@ -89,6 +91,13 @@ public abstract class PreprocessBuildJob<TEngine>(
         string trgLang,
         CancellationToken cancellationToken
     );
+
+    protected virtual Task UpdateParallelCorpusAnalysisAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyList<ParallelCorpus> corpora,
+        CancellationToken cancellationToken
+    ) => Task.CompletedTask;
 
     protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
