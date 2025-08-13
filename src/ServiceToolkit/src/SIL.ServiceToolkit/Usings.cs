@@ -26,7 +26,7 @@ global using Microsoft.Net.Http.Headers;
 global using MongoDB.Bson.Serialization.Serializers;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
-global using SIL.Machine.Corpora.PunctuationAnalysis;
+global using SIL.Machine.PunctuationAnalysis;
 global using SIL.ServiceToolkit.Configuration;
 global using SIL.ServiceToolkit.Models;
 global using SIL.ServiceToolkit.Services;
