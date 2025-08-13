@@ -180,7 +180,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers
+                            updateBlockHandlers: updateBlockHandlers,
+                            remarks: remarks
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -193,7 +194,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers
+                            updateBlockHandlers: updateBlockHandlers,
+                            remarks: remarks
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -206,7 +208,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers
+                            updateBlockHandlers: updateBlockHandlers,
+                            remarks: remarks
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -219,7 +222,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers
+                            updateBlockHandlers: updateBlockHandlers,
+                            remarks: remarks
                         ) ?? "";
                     break;
             }
@@ -248,7 +252,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers
+                            updateBlockHandlers: updateBlockHandlers,
+                            remarks: remarks
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -261,7 +266,8 @@ public class PretranslationService(
                             paragraphBehavior: Map(paragraphMarkerBehavior),
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers
+                            updateBlockHandlers: updateBlockHandlers,
+                            remarks: remarks
                         ) ?? "";
                     break;
             }
@@ -281,23 +287,13 @@ public class PretranslationService(
                 );
             }
             CorpusAnalysis analysis = build.Analysis.Single(c => c.CorpusRef == corpusId);
-            (string denormalizedUsfm, IReadOnlyList<string> denormalizationRemarks) = DenormalizeQuotationMarks(
-                usfm,
-                analysis
-            );
-            usfm = denormalizedUsfm;
-            remarks.AddRange(denormalizationRemarks);
+            usfm = DenormalizeQuotationMarks(usfm, analysis);
         }
-        var remarkUpdater = new UpdateUsfmParserHandler(remarks: remarks);
-        UsfmParser.Parse(usfm, remarkUpdater);
 
-        return remarkUpdater.GetUsfm();
+        return usfm;
     }
 
-    private static (string Usfm, IReadOnlyList<string> Remarks) DenormalizeQuotationMarks(
-        string usfm,
-        CorpusAnalysis analysis
-    )
+    private static string DenormalizeQuotationMarks(string usfm, CorpusAnalysis analysis)
     {
         QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             analysis.SourceQuoteConvention
@@ -346,11 +342,11 @@ public class PretranslationService(
             remarks.Add(quotationDenormalizationRemark);
         }
 
-        var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer]);
+        var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer], remarks: remarks);
         UsfmParser.Parse(usfm, updater);
 
         usfm = updater.GetUsfm();
-        return (usfm, remarks);
+        return usfm;
     }
 
     private static string GenerateMarkerPlacementRemark(
