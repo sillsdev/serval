@@ -37,7 +37,7 @@ public class PretranslationServiceTests
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
-\v 1 Chapter 1, verse 1. Translated new paragraph
+\v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
 \v 3
@@ -64,7 +64,7 @@ public class PretranslationServiceTests
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
-\v 1 Chapter 1, verse 1. Translated new paragraph
+\v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
 \v 3
@@ -118,7 +118,7 @@ public class PretranslationServiceTests
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
-\v 1 Chapter 1, verse 1. Translated new paragraph
+\v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
 \v 3
@@ -147,7 +147,7 @@ public class PretranslationServiceTests
 \rem Embed markers were moved to the end of the verse. Paragraph markers have positions preserved. Style markers were removed.
 \c 1
 \v 1 Chapter 1, verse 1.
-\p Translated new paragraph
+\p ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3
 "
@@ -201,7 +201,7 @@ public class PretranslationServiceTests
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
-\v 1 Chapter 1, verse 1. Translated new paragraph
+\v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
 "
@@ -240,7 +240,7 @@ public class PretranslationServiceTests
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
-\v 1 Chapter 1, verse 1. Translated new paragraph
+\v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
 \v 3
@@ -268,7 +268,7 @@ public class PretranslationServiceTests
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
-\v 1 Chapter 1, verse 1. Translated new paragraph
+\v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
 "
@@ -319,7 +319,7 @@ public class PretranslationServiceTests
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
-\v 1 Chapter 1, verse 1. Translated new paragraph
+\v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3
 "
@@ -340,11 +340,33 @@ public class PretranslationServiceTests
         Assert.That(usfm, Does.Contain("rem This draft"));
     }
 
+    [Test]
+    public async Task GetUsfmAsync_DenormalizeQuotationMarks()
+    {
+        using TestEnvironment env = new();
+
+        string usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferExisting,
+            PretranslationUsfmTemplate.Source,
+            quotationMarkBehavior: PretranslationNormalizationBehavior.Denormalized
+        );
+        Assert.That(usfm, Does.Contain("“Translated new paragraph”"));
+        Assert.That(Regex.Matches(usfm, @"\\rem"), Has.Count.EqualTo(3));
+
+        usfm = await env.GetUsfmAsync(
+            PretranslationUsfmTextOrigin.PreferExisting,
+            PretranslationUsfmTemplate.Source,
+            quotationMarkBehavior: PretranslationNormalizationBehavior.Normalized
+        );
+        Assert.That(usfm, Does.Contain("\"Translated new paragraph\""));
+        Assert.That(Regex.Matches(usfm, @"\\rem"), Has.Count.EqualTo(2));
+    }
+
     private class TestEnvironment : IDisposable
     {
         public TestEnvironment()
         {
-            Shared.Models.CorpusFile file1 =
+            CorpusFile file1 =
                 new()
                 {
                     Id = "file1",
@@ -352,7 +374,7 @@ public class PretranslationServiceTests
                     Format = Shared.Contracts.FileFormat.Paratext,
                     TextId = "project1"
                 };
-            Shared.Models.CorpusFile file2 =
+            CorpusFile file2 =
                 new()
                 {
                     Id = "file2",
@@ -395,7 +417,7 @@ public class PretranslationServiceTests
                             new()
                             {
                                 Id = "parallel_corpus1",
-                                SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                                SourceCorpora = new List<MonolingualCorpus>()
                                 {
                                     new()
                                     {
@@ -404,7 +426,7 @@ public class PretranslationServiceTests
                                         Files = [file1],
                                     }
                                 },
-                                TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                                TargetCorpora = new List<MonolingualCorpus>()
                                 {
                                     new()
                                     {
@@ -425,13 +447,31 @@ public class PretranslationServiceTests
                     {
                         Id = "build1",
                         EngineRef = "engine1",
-                        DateFinished = DateTime.UnixEpoch
+                        DateFinished = DateTime.UnixEpoch,
+                        Analysis =
+                        [
+                            new ParallelCorpusAnalysis()
+                            {
+                                ParallelCorpusRef = "corpus1",
+                                SourceQuoteConvention = "standard_english",
+                                TargetQuoteConvention = "standard_english"
+                            }
+                        ]
                     },
                     new()
                     {
                         Id = "build2",
                         EngineRef = "parallel_engine1",
-                        DateFinished = DateTime.UnixEpoch
+                        DateFinished = DateTime.UnixEpoch,
+                        Analysis =
+                        [
+                            new ParallelCorpusAnalysis()
+                            {
+                                ParallelCorpusRef = "parallel_corpus1",
+                                SourceQuoteConvention = "standard_english",
+                                TargetQuoteConvention = "standard_english"
+                            }
+                        ]
                     }
                 ]
             );
@@ -445,9 +485,22 @@ public class PretranslationServiceTests
                         CorpusRef = "corpus1",
                         TextId = "MAT",
                         Refs = ["MAT 1:1"],
-                        Translation = "Chapter 1, verse 1. Translated new paragraph",
+                        Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
                         SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
-                        TranslationTokens = ["Chapter", "1", ",", "verse", "1", ".", "Translated", "new", "paragraph"],
+                        TranslationTokens =
+                        [
+                            "Chapter",
+                            "1",
+                            ",",
+                            "verse",
+                            "1",
+                            ".",
+                            "\"",
+                            "Translated",
+                            "new",
+                            "paragraph",
+                            "\""
+                        ],
                         Alignment =
                         [
                             new() { SourceIndex = 2, TargetIndex = 0 },
@@ -456,9 +509,9 @@ public class PretranslationServiceTests
                             new() { SourceIndex = 5, TargetIndex = 3 },
                             new() { SourceIndex = 6, TargetIndex = 4 },
                             new() { SourceIndex = 7, TargetIndex = 5 },
-                            new() { SourceIndex = 8, TargetIndex = 6 },
                             new() { SourceIndex = 8, TargetIndex = 7 },
-                            new() { SourceIndex = 9, TargetIndex = 8 },
+                            new() { SourceIndex = 8, TargetIndex = 8 },
+                            new() { SourceIndex = 9, TargetIndex = 9 },
                         ]
                     },
                     new()
@@ -479,9 +532,22 @@ public class PretranslationServiceTests
                         CorpusRef = "parallel_corpus1",
                         TextId = "MAT",
                         Refs = ["MAT 1:1"],
-                        Translation = "Chapter 1, verse 1. Translated new paragraph",
+                        Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
                         SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
-                        TranslationTokens = ["Chapter", "1", ",", "verse", "1", ".", "Translated", "new", "paragraph"],
+                        TranslationTokens =
+                        [
+                            "Chapter",
+                            "1",
+                            ",",
+                            "verse",
+                            "1",
+                            ".",
+                            "\"",
+                            "Translated",
+                            "new",
+                            "paragraph",
+                            "\""
+                        ],
                         Alignment =
                         [
                             new() { SourceIndex = 2, TargetIndex = 0 },
@@ -490,9 +556,9 @@ public class PretranslationServiceTests
                             new() { SourceIndex = 5, TargetIndex = 3 },
                             new() { SourceIndex = 6, TargetIndex = 4 },
                             new() { SourceIndex = 7, TargetIndex = 5 },
-                            new() { SourceIndex = 8, TargetIndex = 6 },
                             new() { SourceIndex = 8, TargetIndex = 7 },
-                            new() { SourceIndex = 9, TargetIndex = 8 },
+                            new() { SourceIndex = 8, TargetIndex = 8 },
+                            new() { SourceIndex = 9, TargetIndex = 9 },
                         ]
                     },
                     new()
@@ -557,7 +623,8 @@ public class PretranslationServiceTests
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
             PretranslationUsfmTemplate template,
-            PretranslationUsfmMarkerBehavior paragraphMarkerBehavior = PretranslationUsfmMarkerBehavior.Preserve
+            PretranslationUsfmMarkerBehavior paragraphMarkerBehavior = PretranslationUsfmMarkerBehavior.Preserve,
+            PretranslationNormalizationBehavior quotationMarkBehavior = PretranslationNormalizationBehavior.Normalized
         )
         {
             string usfm = await Service.GetUsfmAsync(
@@ -569,7 +636,8 @@ public class PretranslationServiceTests
                 template: template,
                 paragraphMarkerBehavior: paragraphMarkerBehavior,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
-                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
+                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
+                quoteNormalizationBehavior: quotationMarkBehavior
             );
             usfm = usfm.Replace("\r\n", "\n");
             string parallel_usfm = await Service.GetUsfmAsync(
@@ -581,7 +649,8 @@ public class PretranslationServiceTests
                 template: template,
                 paragraphMarkerBehavior: paragraphMarkerBehavior,
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
-                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip
+                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
+                quoteNormalizationBehavior: quotationMarkBehavior
             );
             parallel_usfm = parallel_usfm.Replace("\r\n", "\n");
             Assert.That(parallel_usfm, Is.EqualTo(usfm));

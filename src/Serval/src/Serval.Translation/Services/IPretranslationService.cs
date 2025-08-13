@@ -20,6 +20,7 @@ public interface IPretranslationService
         PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
         PretranslationUsfmMarkerBehavior embedBehavior,
         PretranslationUsfmMarkerBehavior styleMarkerBehavior,
+        PretranslationNormalizationBehavior quoteNormalizationBehavior,
         CancellationToken cancellationToken = default
     );
 }

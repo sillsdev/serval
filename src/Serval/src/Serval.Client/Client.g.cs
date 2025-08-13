@@ -2471,6 +2471,10 @@ namespace Serval.Client
         /// <br/>* `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
         /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
         /// <br/>            
+        /// <br/>Quote normalization behavior is controlled by the `quoteNormalizationBehavior` parameter options:
+        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data.
+        /// <br/>* `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
+        /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
@@ -2482,9 +2486,10 @@ namespace Serval.Client
         /// <param name="paragraphMarkerBehavior">The behavior of paragraph markers.</param>
         /// <param name="embedBehavior">The behavior of embed markers.</param>
         /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
+        /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -5168,6 +5173,10 @@ namespace Serval.Client
         /// <br/>* `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
         /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
         /// <br/>            
+        /// <br/>Quote normalization behavior is controlled by the `quoteNormalizationBehavior` parameter options:
+        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data.
+        /// <br/>* `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
+        /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
@@ -5179,9 +5188,10 @@ namespace Serval.Client
         /// <param name="paragraphMarkerBehavior">The behavior of paragraph markers.</param>
         /// <param name="embedBehavior">The behavior of embed markers.</param>
         /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
+        /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5231,6 +5241,10 @@ namespace Serval.Client
                     if (styleMarkerBehavior != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("style-marker-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(styleMarkerBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (quoteNormalizationBehavior != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("quotation-mark-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(quoteNormalizationBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -10338,6 +10352,18 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Strip")]
         Strip = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum PretranslationNormalizationBehavior
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Normalized")]
+        Normalized = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Denormalized")]
+        Denormalized = 1,
 
     }
 
