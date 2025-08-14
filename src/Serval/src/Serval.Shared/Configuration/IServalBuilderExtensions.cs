@@ -32,7 +32,10 @@ public static class IServalBuilderExtensions
         if (mongoConnectionString is null)
             throw new InvalidOperationException("Mongo connection string not configured");
         builder.Services.AddMongoDataAccess(mongoConnectionString, "Serval", configure);
-        builder.Services.AddHealthChecks().AddMongoDb(mongoConnectionString, name: "Mongo");
+        builder
+            .Services.AddSingleton(sp => new MongoClient(mongoConnectionString))
+            .AddHealthChecks()
+            .AddMongoDb(name: "Mongo");
         return builder;
     }
 }

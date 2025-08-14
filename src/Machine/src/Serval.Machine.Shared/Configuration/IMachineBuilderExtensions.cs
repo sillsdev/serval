@@ -259,7 +259,10 @@ public static class IMachineBuilderExtensions
                 );
             }
         );
-        builder.Services.AddHealthChecks().AddMongoDb(connectionString, name: "Mongo");
+        builder
+            .Services.AddSingleton(sp => new MongoClient(connectionString))
+            .AddHealthChecks()
+            .AddMongoDb(name: "Mongo");
 
         return builder;
     }
