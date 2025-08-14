@@ -16,7 +16,7 @@
 	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
-		<PackageReference Include="AspNetCore.HealthChecks.System" Version="8.0.1" />
+		<PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
 		<PackageReference Include="Google.Protobuf" Version="3.22.1" />
 		<PackageReference Include="Grpc.Core.Api" Version="2.65.0" />
 		<PackageReference Include="Grpc.Tools" Version="2.65.0">

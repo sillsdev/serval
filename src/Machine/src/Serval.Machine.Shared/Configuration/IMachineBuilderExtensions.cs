@@ -259,7 +259,7 @@ public static class IMachineBuilderExtensions
                 );
             }
         );
-        builder.Services.AddHealthChecks().AddMongoDb(connectionString, name: "Mongo");
+        builder.Services.AddHealthChecks().AddMongoDb(name: "Mongo");
 
         return builder;
     }

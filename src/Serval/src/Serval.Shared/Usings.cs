@@ -11,6 +11,7 @@ global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
+global using MongoDB.Driver;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Contracts;
 global using Serval.Shared.Models;

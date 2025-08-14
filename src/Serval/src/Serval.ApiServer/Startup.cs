@@ -45,7 +45,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                     NameClaimType = ClaimTypes.NameIdentifier
                 };
             });
-        services.AddHealthChecks().AddIdentityServer(new Uri(authority), name: "Auth0");
+        services.AddHealthChecks().AddOpenIdConnectServer(new Uri(authority), name: "Auth0");
 
         var dataFileOptions = new DataFileOptions();
         Configuration.GetSection(DataFileOptions.Key).Bind(dataFileOptions);
