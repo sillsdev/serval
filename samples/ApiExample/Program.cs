@@ -239,14 +239,10 @@ async Task CreatePreTranslationEngineAsync(CancellationToken cancellationToken)
                 cancellationToken
             );
             if (translationBuild.DateFinished is not null)
-            {
                 break;
-            }
 
             Console.SetCursorPosition(0, cursorTop);
-            Console.WriteLine(
-                $"{translationBuild.State}: {(translationBuild.PercentCompleted ?? 0) * 100}% completed...   "
-            );
+            Console.WriteLine($"{translationBuild.State}: {(translationBuild.Progress ?? 0) * 100}% completed...   ");
 
             // Wait 20 seconds
             cancellationToken.WaitHandle.WaitOne(millisecondsTimeout: 20000);
