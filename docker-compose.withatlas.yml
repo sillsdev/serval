@@ -64,7 +64,7 @@ services:
       - 81:80
     depends_on:
       - serval-api
-    mem_limit: 200M
+    mem_limit: 400M
     volumes:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
