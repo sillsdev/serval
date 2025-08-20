@@ -274,20 +274,12 @@ public class PretranslationService(
                     break;
             }
         }
-        if (quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized)
+        if (
+            quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized
+            && build.Analysis is not null
+            && build.Analysis.Any(a => a.ParallelCorpusRef == corpusId)
+        )
         {
-            if (build.Analysis is null)
-            {
-                throw new InvalidOperationException(
-                    $"Unable to denormalize quotation marks: No quote convention analysis exists for build {build.Id}"
-                );
-            }
-            if (!build.Analysis.Any(a => a.ParallelCorpusRef == corpusId))
-            {
-                throw new InvalidOperationException(
-                    $"Unable to denormalize quotation marks: No quote convention analysis exists for corpus {corpusId}"
-                );
-            }
             ParallelCorpusAnalysis analysis = build.Analysis.Single(c => c.ParallelCorpusRef == corpusId);
             usfm = DenormalizeQuotationMarks(usfm, analysis);
         }
@@ -301,20 +293,14 @@ public class PretranslationService(
             analysis.SourceQuoteConvention
         );
         if (sourceQuoteConvention is null)
-        {
-            throw new InvalidOperationException(
-                $"Unable to denormalize quotation marks: No such convention {analysis.SourceQuoteConvention}"
-            );
-        }
+            return usfm;
+
         QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             analysis.TargetQuoteConvention
         );
         if (targetQuoteConvention is null)
-        {
-            throw new InvalidOperationException(
-                $"Unable to denormalize quotation marks: No such convention {analysis.TargetQuoteConvention}"
-            );
-        }
+            return usfm;
+
         QuotationMarkDenormalizationFirstPass quotationMarkDenormalizationFirstPass =
             new(sourceQuoteConvention, targetQuoteConvention);
 
