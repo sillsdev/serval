@@ -41,6 +41,17 @@ public class TranslationEngineServiceV1(
         return Task.FromResult(Empty);
     }
 
+    public override Task<Empty> Update(UpdateRequest request, ServerCallContext context)
+    {
+        if (request.SourceLanguage != request.TargetLanguage)
+        {
+            var status = new Status(StatusCode.InvalidArgument, "Source and target languages must be the same");
+            throw new RpcException(status);
+        }
+
+        return Task.FromResult(Empty);
+    }
+
     public override Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
     {
         string[] tokens = request.Segment.Split();
