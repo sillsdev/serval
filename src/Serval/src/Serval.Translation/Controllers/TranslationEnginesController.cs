@@ -894,7 +894,6 @@ public class TranslationEnginesController(
     /// The intra-verse USFM markers are handled in the following way:
     /// * All verse and non-verse text is stripped of all intra-verse USFM to be pretranslated (if the book is chosen).
     /// * Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
-    /// * Notes are stripped.
     ///
     /// Preserving or stripping different types of USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters.
     /// * `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
