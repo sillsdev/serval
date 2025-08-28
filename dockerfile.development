@@ -1,4 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0-noble
+WORKDIR /tools
+RUN dotnet tool install --tool-path /tools dotnet-trace \
+    && dotnet tool install --tool-path /tools dotnet-counters \
+    && dotnet tool install --tool-path /tools dotnet-dump \
+    && dotnet tool install --tool-path /tools dotnet-gcdump
 # libgomp needed for thot
 RUN apt update && apt install -y unzip libgomp1 && \
     curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /remote_debugger
