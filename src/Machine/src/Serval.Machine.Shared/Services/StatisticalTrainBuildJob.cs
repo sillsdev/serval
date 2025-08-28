@@ -10,6 +10,8 @@ public class StatisticalTrainBuildJob(
     IWordAlignmentModelFactory wordAlignmentModelFactory
 ) : HangfireBuildJob<WordAlignmentEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
+    // Using UnsafeRelaxedJsonEscaping to avoid escaping surrogate pairs which can result in invalid UTF-8.
+    // This is safe since the data written by this writer is only read internally and only as UTF-8 encoded JSON.
     private static readonly JsonWriterOptions WordAlignmentWriterOptions =
         new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
     private static readonly JsonSerializerOptions JsonSerializerOptions =
