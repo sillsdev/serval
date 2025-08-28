@@ -12,7 +12,8 @@ public class SmtTransferTrainBuildJob(
     ITransferEngineFactory transferEngineFactory
 ) : HangfireBuildJob<TranslationEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
-    private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
+    private static readonly JsonWriterOptions PretranslateWriterOptions =
+        new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private const int BatchSize = 128;

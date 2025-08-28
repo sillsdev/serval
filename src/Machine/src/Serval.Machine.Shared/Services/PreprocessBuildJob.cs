@@ -18,7 +18,8 @@ public abstract class PreprocessBuildJob<TEngine>(
     )
     where TEngine : ITrainingEngine
 {
-    protected static readonly JsonWriterOptions InferenceWriterOptions = new() { Indented = true };
+    protected static readonly JsonWriterOptions InferenceWriterOptions =
+        new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
 

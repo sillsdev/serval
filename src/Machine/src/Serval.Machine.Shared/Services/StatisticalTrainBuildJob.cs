@@ -10,7 +10,8 @@ public class StatisticalTrainBuildJob(
     IWordAlignmentModelFactory wordAlignmentModelFactory
 ) : HangfireBuildJob<WordAlignmentEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
-    private static readonly JsonWriterOptions WordAlignmentWriterOptions = new() { Indented = true };
+    private static readonly JsonWriterOptions WordAlignmentWriterOptions =
+        new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private const int BatchSize = 128;
