@@ -32,6 +32,7 @@ builder.Services.AddHealthChecks().AddCheck("Live", () => HealthCheckResult.Heal
 
 builder.Services.Configure<Bugsnag.Configuration>(builder.Configuration.GetSection("Bugsnag"));
 builder.Services.AddBugsnag();
+builder.Services.AddDiagnostics();
 
 WebApplication app = builder.Build();
 

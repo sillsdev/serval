@@ -209,6 +209,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         }
         services.Configure<Bugsnag.Configuration>(Configuration.GetSection("Bugsnag"));
         services.AddBugsnag();
+        services.AddDiagnostics();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
