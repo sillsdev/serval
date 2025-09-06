@@ -22,6 +22,7 @@ public static class IServiceCollectionExtensions
         services.AddParallelCorpusPreprocessor();
         services.Configure<Bugsnag.Configuration>(configuration.GetSection("Bugsnag"));
         services.AddBugsnag();
+        services.AddDiagnostics();
 
         var builder = new MachineBuilder(services, configuration);
 
