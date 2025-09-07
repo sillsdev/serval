@@ -56,4 +56,7 @@ public static class IServiceCollectionExtensions
         configure(new OutboxConfigurator(services));
         return services;
     }
+
+    public static IServiceCollection AddDiagnostics(this IServiceCollection services) =>
+        services.AddHostedService<DiagnosticService>();
 }
