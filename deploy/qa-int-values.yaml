@@ -10,7 +10,7 @@ lokiTenent: nlp-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:1.10.4
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.9.11
-ClearMLQueue: lambert_24gb
+ClearMLQueue: production
 MongoConnectionPrefix: qa_int_
 SharedFileLocation: s3://silnlp/int-qa/
 servalClaimSize: 6Gi

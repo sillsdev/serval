@@ -32,6 +32,8 @@ spec:
               value: Http2
             - name: ASPNETCORE_ConnectionStrings__TranslationPlatformApi
               value: http://serval-api:81
+            - name: ASPNETCORE_ConnectionStrings__WordAlignmentPlatformApi
+              value: http://serval-api:81
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: echo
