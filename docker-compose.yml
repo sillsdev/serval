@@ -33,6 +33,7 @@ services:
       - 80:80
     depends_on:
       - mongo
+    mem_limit: 400M
     volumes:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
@@ -114,6 +115,7 @@ services:
     depends_on:
       - mongo
       - serval-api
+    mem_limit: 4500M
     volumes:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
@@ -163,6 +165,7 @@ services:
       - mongo
       - machine-engine
       - serval-api
+    mem_limit: 2500M
     volumes:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
