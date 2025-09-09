@@ -165,7 +165,7 @@ services:
       - mongo
       - machine-engine
       - serval-api
-    mem_limit: 2500M
+    mem_limit: 3500M
     volumes:
       - .:/app:ro
       - ~/.nuget/packages:/root/.nuget/packages:ro
