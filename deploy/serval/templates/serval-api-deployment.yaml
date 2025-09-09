@@ -52,6 +52,14 @@ spec:
               value: Nmt
             - name: ASPNETCORE_Translation__Engines__2__Address
               value: http://machine-engine
+            - name: ASPNETCORE_WordAlignment__Engines__0__Type
+              value: EchoWordAlignment
+            - name: ASPNETCORE_WordAlignment__Engines__0__Address
+              value: http://echo
+            - name: ASPNETCORE_WordAlignment__Engines__1__Type
+              value: Statistical
+            - name: ASPNETCORE_WordAlignment__Engines__1__Address
+              value: http://machine-engine
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: serval-api
