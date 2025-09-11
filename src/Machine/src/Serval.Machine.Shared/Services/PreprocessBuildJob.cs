@@ -70,6 +70,13 @@ public abstract class PreprocessBuildJob<TEngine>(
             );
         }
 
+        if (inferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
+        {
+            throw new InvalidOperationException(
+                $"There was no data specified for inferencing in build {buildId}. Build canceled."
+            );
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
 
         bool canceling = !await BuildJobService.StartBuildJobAsync(
