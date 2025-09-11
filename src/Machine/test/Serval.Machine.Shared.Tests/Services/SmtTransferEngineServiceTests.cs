@@ -252,7 +252,7 @@ public class SmtTransferEngineServiceTests
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
-                    IsModelPersisted = false
+                    IsModelPersisted = true
                 }
             );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
