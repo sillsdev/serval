@@ -13,6 +13,8 @@
 	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
+		<PackageReference Include="Bugsnag" Version="4.1.0" />
+		<PackageReference Include="Bugsnag.AspNet.Core" Version="4.1.0" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.65.0" />
 		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.65.0" />
 	</ItemGroup>
