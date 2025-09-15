@@ -21,6 +21,7 @@ global using Amazon;
 global using Amazon.Runtime;
 global using Amazon.S3;
 global using Amazon.S3.Model;
+global using Bugsnag.AspNet.Core;
 global using CommunityToolkit.HighPerformance;
 global using Grpc.Core;
 global using Grpc.Core.Interceptors;
