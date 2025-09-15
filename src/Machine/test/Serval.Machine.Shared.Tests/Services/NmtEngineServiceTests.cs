@@ -7,6 +7,7 @@ public class NmtEngineServiceTests
     public async Task StartBuildAsync()
     {
         using var env = new TestEnvironment();
+        env.PersistModel();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
         await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<ParallelCorpus>());
@@ -16,7 +17,7 @@ public class NmtEngineServiceTests
         {
             Assert.That(engine.CurrentBuild, Is.Null);
             Assert.That(engine.BuildRevision, Is.EqualTo(2));
-            Assert.That(engine.IsModelPersisted, Is.False);
+            Assert.That(engine.IsModelPersisted, Is.True);
         });
     }
 
@@ -24,6 +25,7 @@ public class NmtEngineServiceTests
     public async Task CancelBuildAsync_Building()
     {
         using var env = new TestEnvironment();
+        env.PersistModel();
         env.UseInfiniteTrainJob();
 
         TranslationEngine engine = env.Engines.Get("engine1");
@@ -51,6 +53,7 @@ public class NmtEngineServiceTests
     public async Task DeleteAsync_WhileBuilding()
     {
         using var env = new TestEnvironment();
+        env.PersistModel();
         env.UseInfiniteTrainJob();
 
         TranslationEngine engine = env.Engines.Get("engine1");
@@ -196,6 +199,11 @@ public class NmtEngineServiceTests
         public IClearMLService ClearMLService { get; }
         public ISharedFileService SharedFileService { get; }
         public IBuildJobService<TranslationEngine> BuildJobService { get; }
+
+        public void PersistModel()
+        {
+            Engines.Replace(Engines.Get("engine1") with { IsModelPersisted = true });
+        }
 
         public void StopServer()
         {
