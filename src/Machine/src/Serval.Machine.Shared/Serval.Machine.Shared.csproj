@@ -29,6 +29,8 @@
 		<PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
 		<PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
 		<PackageReference Include="AWSSDK.S3" Version="3.7.205.8" />
+		<PackageReference Include="Bugsnag" Version="4.1.0" />
+		<PackageReference Include="Bugsnag.AspNet.Core" Version="4.1.0" />
 		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.65.0" />
 		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.65.0" />
