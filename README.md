@@ -62,7 +62,7 @@ To debug in VSCode, launch "DockerComb" after to containers come up (about 5 -10
 ## Option 2: Bare metal local testing deployment
 Alternatively, you can develop without containerizing Serval.
 
-Install MongoDB 6.0 as a replica set run it on localhost:27017. (You can run `docker compose -f docker-compose.mongo.yml up` from the root of the serval repo to do so).
+Install MongoDB 8.0 as a replica set run it on localhost:27017. (You can run `docker compose -f docker-compose.mongo.yml up` from the root of the serval repo to do so).
 
 Make sure that the environment variable ASPNETCORE_ENVIRONMENT is set to "Development" by running `export ASPNETCORE_ENVIRONMENT=Development` or adding it to your `.bashrc`.
 
@@ -84,20 +84,6 @@ export MACHINE_PY_IMAGE=local.mpy
 export MACHINE_PY_CPU_IMAGE=local.mpy.cpu_only
 ```
 
-## Debugging
-### To access Serval API
-* Internal QA:
-  * Use the VPN
-  * In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `10.3.0.119 serval-api.org`
-  * go to `https://machine-api.org/swagger` and accept the security warning
-* External QA:
-  * go to `https://qa.serval-api.org/swagger` and accept the security warning
-
-### To view pod logs:
-- Run: `kubectl get pods` to get the currently running pods
-- Run: `kubectl logs <pod name>`
-- Run: `kubectl describe pod  <pod name>` to check a stalled pod stuck in ContainerCreating
-
 ### Running the API E2E Tests
 In order to run the E2E tests, you will need to have the appropriate credentials
 - Get Client ID and Client Secret from auth0.com
@@ -107,59 +93,6 @@ In order to run the E2E tests, you will need to have the appropriate credentials
   - Copy the auth0 url into Environment variable `SERVAL_AUTH_URL` (e.g. `SERVAL_AUTH_URL=https://sil-appbuilder.auth0.com`)
   - Set `SERVAL_HOST_URL` to the api's URL (e.g. `SERVAL_HOST_URL=http://localhost`)
 Now, when you run the tests from `Serval.E2ETests`, the token will automatically be retrieved from Auth0.
-
-### Debugging the S3 bucket
-
-To view files stored in the bucket, run
-  ```
-  aws s3 ls s3://silnlp/<deployment environment>
-  ```
-### Mongo debugging
-
-* First, get the mongo pod name: `kubectl get pods -n serval`
-* Then forward to a local port, such as 28015: `kubectl port-forward <pod name> 28015:27017 -n serval`
-* Download [MongoDB Compass](https://www.mongodb.com/try/download/compass).
-* Then, open MongoDB Compass and connect to `mongodb://localhost:28015/?directConnection=true`
-
-
-# Deployment
-## ASPNETCORE Environments:
-The deployment environment is set by the environment variable `ASPNETCORE_ENVIRONMENT`.
-- `ASPNETCORE_ENVIRONMENT=Production`
-  - Full deployment, full NMT and SMT builds.
-  - Used in all kubernetes deployments
-- `ASPNETCORE_ENVIRONMENT=Staging`:
-  - Full Deployment, dummy NMT building (10 steps, small model).
-    - These default build configurations can be overwritten.
-  - Used in Docker-compose local staging
-- `ASPNETCORE_ENVIRONMENT=Development`:
-  - Non-docker use only
-
-## Kubernetes deployments:
-There are 3 different environments that Serval is deployed to:
-- Internal QA for testing out the deployment
-- External QA for clients to test new updates before production
-- Production
-
-## To deploy the cluster
-- Add the dallas-stage KubeConfig to your kubectl configs
-- Run `kubectl config use-context dallas-stage`
-- First, startup the storage (using internal qa for example)
-- `helm install serval-pvc deploy/serval-pvc -n nlp -f deploy/qa-int-values.yaml`
-- Now you can turn on Serval
-- `helm install serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
-
-## To update the cluster
-- To upgrade Serval:
-  - For QA internal Run:
-    - `kubectl config use-context dallas-stage`
-    - `helm upgrade serval deploy/serval -n nlp -f deploy/qa-int-values.yaml`
-  - For QA external Run:
-    - `kubectl config use-context dallas-stage`
-    - `helm upgrade serval deploy/serval -n serval -f deploy/qa-ext-values.yaml`
-  - For Production Run:
-    - `kubectl config use-context aws-prod`
-    - `helm upgrade serval deploy/serval -n serval -f deploy/values.yaml`
 
 ## Special thanks to
 
