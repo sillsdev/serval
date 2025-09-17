@@ -301,10 +301,12 @@ public class ServalApiTests
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT2");
         TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
-        // NMT engines auto-fill IsModelPersisted as true
+        // NMT engines auto-fill IsModelPersisted as false
         Assert.That(engine.IsModelPersisted, Is.False);
         string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
-        await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
+        string corpusId = await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
+        _helperClient.TranslationBuildConfig.TrainOn = [new() { CorpusId = corpusId, TextIds = ["1JN.txt"] }];
+        _helperClient.TranslationBuildConfig.Pretranslate = [new() { CorpusId = corpusId, TextIds = ["2JN.txt"] }];
         await StartAndCancelTwice(engineId);
     }
 
