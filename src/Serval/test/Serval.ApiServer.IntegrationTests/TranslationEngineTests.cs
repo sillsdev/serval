@@ -1481,8 +1481,8 @@ public class TranslationEngineTests
             ECHO_ENGINE1_ID,
             TestParallelCorpusConfigNoCorpora
         );
-        PretranslateCorpusConfig wacc = new() { ParallelCorpusId = addedCorpus.Id };
-        TranslationBuildConfig tbc = new() { Pretranslate = [wacc] };
+        PretranslateCorpusConfig pcc = new() { ParallelCorpusId = addedCorpus.Id };
+        TranslationBuildConfig tbc = new() { Pretranslate = [pcc] };
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);

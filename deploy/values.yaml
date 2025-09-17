@@ -6,7 +6,7 @@ emailsToAlert: 'john_lambert@sil.org, eli_lowry@sil.org'
 enableTls: true
 namespace: serval
 auth0Domain: languagetechnology.auth0.com
-lokiTenent: nlp-tenant
+lokiTenant: nlp-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:1.10.4
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.9.11

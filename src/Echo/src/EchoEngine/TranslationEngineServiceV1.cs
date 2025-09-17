@@ -180,7 +180,7 @@ public class TranslationEngineServiceV1(
                     if (cts.IsCancellationRequested)
                     {
                         // This will be an RpcException resulting from the token cancellation
-                        // occuring during an RPC call.
+                        // occurring during an RPC call.
                         await client.BuildCanceledAsync(
                             new BuildCanceledRequest { BuildId = request.BuildId },
                             cancellationToken: CancellationToken.None
