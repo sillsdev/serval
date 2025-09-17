@@ -14,7 +14,6 @@ public class StatusTests
 
     [Test]
     [TestCase(new[] { Scopes.ReadStatus }, 200)]
-    // [TestCase(new[] { Scopes.ReadStatus }, 401)]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403)]
     public async Task GetHealthAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
@@ -46,7 +45,6 @@ public class StatusTests
 
     [Test]
     [TestCase(new[] { Scopes.ReadStatus }, 200)]
-    // [TestCase(new[] { Scopes.ReadStatus }, 401)]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403)]
     public async Task GetDeploymentAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
