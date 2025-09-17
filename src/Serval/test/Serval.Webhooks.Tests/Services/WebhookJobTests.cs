@@ -38,7 +38,6 @@ public class WebhookJobTests
             )
             .WithContent("""{"event":"TranslationBuildStarted","payload":{"buildId":"build1","engineId":"engine1"}}""")
             .Respond(HttpStatusCode.OK);
-        // {"Event":"TranslationBuildStarted","Payload":{"BuildId":"build1","EngineId":"engine1"}}
 
         var payload = new { BuildId = "build1", EngineId = "engine1" };
         await env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None);

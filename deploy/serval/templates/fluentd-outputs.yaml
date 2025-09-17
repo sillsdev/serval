@@ -9,7 +9,7 @@ spec:
       flush_interval: 10s
       flush_mode: interval
     configure_kubernetes_labels: true
-    tenant: {{ .Values.lokiTenent }}
+    tenant: {{ .Values.lokiTenant }}
     url: {{ .Values.lokiUrl }}
 status:
   active: true

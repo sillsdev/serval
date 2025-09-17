@@ -92,8 +92,6 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        // await CancelBuildJobAsync(engineId, cancellationToken); Should we cancel the build or delete the segment pairs?
-
         await _engines.UpdateAsync(
             e => e.EngineId == engineId,
             u =>
