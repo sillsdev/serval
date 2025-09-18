@@ -78,25 +78,25 @@ public class TranslationEnginesController(
     /// </summary>
     /// <remarks>
     /// ## Parameters
-    /// * **name**: (optional) A name to help identify and distinguish the file.
+    /// * **`name`**: (optional) A name to help identify and distinguish the translation engine.
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-    /// * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
-    /// * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-    /// * **type**: **smt-transfer** or **nmt** or **echo**
-    /// * **isModelPersisted**: (optional) - see below
+    /// * **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+    /// * **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
+    /// * **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`**
+    /// * **`isModelPersisted`**: (optional) - see below
     /// ### smt-transfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-    /// * **IsModelPersisted**: (default to true) All models are persistent and can be updated with train-segment.  False is not supported.
+    /// * **`isModelPersisted`**: (default to `true`) All models are persistent and can be updated with train-segment.  False is not supported.
     /// ### nmt
     /// The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-    /// * **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
+    /// * **`isModelPersisted`**: (default to `false`) Whether the model can be downloaded by the client after it has been successfully built.
     ///
     /// If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
     ///
     /// Typical endpoints: pretranslate
     /// ### echo
-    /// The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+    /// The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or smt-transfer. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
     /// ## Sample request:
     ///
     ///     {
@@ -104,7 +104,7 @@ public class TranslationEnginesController(
     ///       "sourceLanguage": "el",
     ///       "targetLanguage": "en",
     ///       "type": "nmt"
-    ///       "IsModelPersisted": true
+    ///       "isModelPersisted": true
     ///     }
     ///
     /// </remarks>
@@ -242,7 +242,7 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Translates a segment of text into the top N results
+    /// Returns the top N translations of a segment
     /// </summary>
     /// <param name="id">The translation engine id</param>
     /// <param name="n">The number of translations to generate</param>
@@ -320,7 +320,7 @@ public class TranslationEnginesController(
     /// </summary>
     /// <remarks>
     /// A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
-    /// that should be set to true if this segment pair forms the beginning of a sentence. (This information
+    /// that should be set to `true` if this segment pair forms the beginning of a sentence. (This information
     /// will be used to reconstruct proper capitalization when training/inferencing).
     /// </remarks>
     /// <param name="id">The translation engine id</param>
@@ -369,19 +369,19 @@ public class TranslationEnginesController(
     /// ## Parameters
     /// * **name**: A name to help identify and distinguish the corpus from other corpora
     ///   * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-    /// * **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-    ///   * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-    /// * **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-    /// * **SourceFiles**: The source files associated with the corpus
-    ///   * **FileId**: The unique id referencing the uploaded file
-    ///   * **TextId**: The client-defined name to associate source and target files.
-    ///     * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-    ///     * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
-    ///     * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
-    ///     * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
-    ///     * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
-    /// * **TargetFiles**: The target files associated with the corpus
-    ///   * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
+    /// * **`sourceLanguage`**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+    ///   * Normally, this is the same as the engine's `sourceLanguage`.  This may change for future engines as a means of transfer learning.
+    /// * **`targetLanguage`**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+    /// * **`sourceFiles`**: The source files associated with the corpus
+    ///   * **`fileId`**: The unique id referencing the uploaded file
+    ///   * **`textId`**: The client-defined name to associate source and target files.
+    ///     * If the text ids in the source files and target files match, they will be used to train the engine.
+    ///     * If selected for pretranslation when building, all source files that have no target file, or lines of text in a source file that have missing or blank lines in the target file will be pretranslated.
+    ///     * If a text id is used more than once in source files, the sources will be randomly and evenly mixed for training.
+    ///     * For pretranslating, multiple sources with the same text id will be combined, but the first source will always take precedence (no random mixing).
+    ///     * For Paratext projects, text id will be ignored - multiple Paratext source projects will always be mixed (as if they have the same text id).
+    /// * **`targetFiles`**: The target files associated with the corpus
+    ///   * Same as `sourceFiles`, except only a single instance of a text id or a single Paratext project is supported.  There is no mixing or combining of multiple targets.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -531,20 +531,21 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Remove a corpus from a translation engine
+    /// Remove a corpus from a translation engine (obsolete - use parallel corpora instead)
     /// </summary>
     /// <remarks>
     /// Removing a corpus will remove all pretranslations associated with that corpus.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
-    /// <param name="deleteFiles">If true, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
+    /// <param name="deleteFiles">If `true`, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus was deleted successfully.</response>
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine or corpus does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Obsolete("This endpoint is obsolete. Use parallel corpora instead.")]
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpDelete("{id}/corpora/{corpusId}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -569,8 +570,8 @@ public class TranslationEnginesController(
     /// </summary>
     /// <remarks>
     /// ## Parameters
-    /// * **SourceCorpusIds**: The source corpora associated with the parallel corpus
-    /// * **TargetCorpusIds**: The target corpora associated with the parallel corpus
+    /// * **`sourceCorpusIds`**: The source corpora associated with the parallel corpus
+    /// * **`targetCorpusIds`**: The target corpora associated with the parallel corpus
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -756,11 +757,11 @@ public class TranslationEnginesController(
     /// </summary>
     /// <remarks>
     /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
-    /// * **TextId**: The TextId of the SourceFile defined when the corpus was created.
-    /// * **Refs** (a list of strings): A list of references including:
-    ///   * The references defined in the SourceFile per line, if any.
-    ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-    /// * **Translation**: the text of the pretranslation
+    /// * **`textId`**: The text id of the source file defined when the corpus was created.
+    /// * **`refs`** (a list of strings): A list of references including:
+    ///   * The references defined in the source file per line, if any.
+    ///   * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+    /// * **`translation`**: the text of the pretranslation
     ///
     /// Pretranslations can be filtered by text id if provided.
     /// Only pretranslations for the most recent successful build of the engine are returned.
@@ -819,11 +820,11 @@ public class TranslationEnginesController(
     /// </summary>
     /// <remarks>
     /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
-    /// * **TextId**: The TextId of the SourceFile defined when the corpus was created.
-    /// * **Refs** (a list of strings): A list of references including:
-    ///   * The references defined in the SourceFile per line, if any.
-    ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-    /// * **Translation**: the text of the pretranslation
+    /// * **`textId`**: The text id of the source file defined when the corpus was created.
+    /// * **`refs`** (a list of strings): A list of references including:
+    ///   * The references defined in the source file per line, if any.
+    ///   * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+    /// * **`translation`**: the text of the pretranslation
     ///
     /// Only pretranslations for the most recent successful build of the engine are returned.
     /// </remarks>
@@ -880,7 +881,7 @@ public class TranslationEnginesController(
     /// Get a pretranslated Scripture book in USFM format.
     /// </summary>
     /// <remarks>
-    /// The text that populates the USFM structure can be controlled by the `textOrigin` parameter:
+    /// The text that populates the USFM structure can be controlled by the `text-origin` parameter:
     /// * `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
     /// * `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
     /// * `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
@@ -892,16 +893,16 @@ public class TranslationEnginesController(
     /// * `Target`: The target book is used as the template.
     ///
     /// The intra-verse USFM markers are handled in the following way:
-    /// * All verse and non-verse text is stripped of all intra-verse USFM to be pretranslated (if the book is chosen).
+    /// * Each verse and non-verse text unit is stripped of all intra-verse USFM.
     /// * Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
     ///
-    /// Preserving or stripping different types of USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters.
+    /// Preserving or stripping different types of USFM markers can be controlled by the `paragraph-marker-behavior`, `embed-behavior`, and `style-marker-behavior` parameters.
     /// * `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
     /// * `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
     /// * `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
     ///
-    /// Quote normalization behavior is controlled by the `quoteNormalizationBehavior` parameter options:
-    /// * `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data.
+    /// Quote normalization behavior is controlled by the `quote-normalization-behavior` parameter options:
+    /// * `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data. **This is the default**.
     /// * `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
     ///
     /// Only pretranslations for the most recent successful build of the engine are returned.
@@ -1070,37 +1071,37 @@ public class TranslationEnginesController(
     /// Starts a build job for a translation engine.
     /// </summary>
     /// <remarks>
-    /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
+    /// Specify the corpora and text ids/scripture ranges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
     /// Specifying a corpus:
-    /// * A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
-    /// * A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
+    /// * A (legacy) corpus is selected by specifying `corpusId` and a parallel corpus is selected by specifying `parallelCorpusId`.
+    /// * A parallel corpus can be further filtered by specifying particular corpusIds in `sourceFilters` or `targetFilters`.
     ///
-    /// Filtering by textID or chapter:
-    /// * Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-    /// * Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+    /// Filtering by text id or chapter:
+    /// * Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
+    /// * Filters can also be supplied via the `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range).
     /// * All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
     ///
     /// Filter - train on all or none
-    /// * If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
-    /// * If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
-    /// * If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
+    /// * If `trainOn` or `pretranslate` is not provided, all corpora will be used for training or pretranslation respectively
+    /// * If a corpus is selected for training or pretranslation and neither `scriptureRange` nor `textIds` is defined, all of the selected corpus will be used.
+    /// * If a corpus is selected for training or pretranslation and an empty `scriptureRange` or `textIds` is defined, none of the selected corpus will be used.
     /// * If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
     ///
-    /// Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
+    /// Specify the corpora and text ids/scripture ranges within those corpora to pretranslate. When a corpus is selected for pretranslation,
     /// the following text will be pretranslated:
-    /// * Text segments that are in the source and not the target (untranslated)
-    /// * Text segments that are in the source and the target, but where that target segment is not trained on.
+    /// * Text segments that are in the source but do not exist in the target.
+    /// * Text segments that are in the source and the target, but because of `trainOn` filtering, have not been trained on.
     /// If the engine does not support pretranslation, these fields have no effect.
-    /// Pretranslating has the same filtering as training.
+    /// Pretranslating uses the same filtering as training.
     ///
-    /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+    /// The `options` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
     /// See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
     /// See [smt-transfer job settings documentation](https://github.com/sillsdev/serval/wiki/SMT-Transfer-Build-Options) about configuring job parameters.
     /// See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
     ///
-    /// When using a parallel corpus:
-    /// * If, within a single parallel corpus, multiple source corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
-    /// * If, within a single parallel corpus, multiple target corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), only the first of the targets that includes that textId/book will be used for that textId/book.
+    /// Note that when using a parallel corpus:
+    /// * If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
+    /// * If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
@@ -1233,10 +1234,10 @@ public class TranslationEnginesController(
     }
 
     /// <summary>
-    /// Let a link to download the NMT translation model of the last build that was successfully saved.
+    /// Get a link to download the NMT translation model of the last build that was successfully saved.
     /// </summary>
     /// <remarks>
-    /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
+    /// If an nmt build was successful and `isModelPersisted` is `true` for the engine,
     /// then the model from the most recent successful build can be downloaded.
     ///
     /// The endpoint will return a URL that can be used to download the model for up to 1 hour
