@@ -23,6 +23,7 @@ global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using Microsoft.Net.Http.Headers;
+global using MongoDB.Bson;
 global using MongoDB.Bson.Serialization.Serializers;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
