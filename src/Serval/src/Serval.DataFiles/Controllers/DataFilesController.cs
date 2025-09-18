@@ -83,9 +83,9 @@ public class DataFilesController(
     ///     > verse_001_005 (tab) Ὑπομνῆσαι δὲ ὑμᾶς βούλομαι , εἰδότας ὑμᾶς ἅπαξ τοῦτο
     ///     > verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
     ///     > verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
-    ///   * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
+    ///   * Otherwise, *no tabs* should be used in the file. A unique identifier will be generated for each translation unit based on the line number.
     /// * **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.
-    ///   * USFM files in paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
+    ///   * USFM files in Paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)
     /// </param>
     /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>

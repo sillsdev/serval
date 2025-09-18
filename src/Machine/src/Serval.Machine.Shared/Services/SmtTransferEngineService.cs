@@ -245,7 +245,8 @@ public class SmtTransferEngineService(
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)
     {
-        throw new NotSupportedException("SMT transfer engines do not support language info.");
+        internalCode = language;
+        return true;
     }
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
