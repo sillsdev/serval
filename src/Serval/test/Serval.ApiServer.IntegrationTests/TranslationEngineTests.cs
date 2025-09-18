@@ -2584,7 +2584,7 @@ public class TranslationEngineTests
                             .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
                             .Returns(NmtClient);
                         grpcClientFactory
-                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
+                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Smt")
                             .Returns(SmtClient);
                         services.AddSingleton(grpcClientFactory);
                     });
@@ -2599,6 +2599,11 @@ public class TranslationEngineTests
                     CreateAsyncUnaryCall(new GetLanguageInfoResponse() { InternalCode = "abc_123", IsNative = true })
                 );
             SmtClient
+                .GetLanguageInfoAsync(Arg.Any<GetLanguageInfoRequest>(), null, null, Arg.Any<CancellationToken>())
+                .Returns(
+                    CreateAsyncUnaryCall(new GetLanguageInfoResponse() { InternalCode = "abc_123", IsNative = true })
+                );
+            EchoClient
                 .GetLanguageInfoAsync(Arg.Any<GetLanguageInfoRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(
                     CreateAsyncUnaryCall(new GetLanguageInfoResponse() { InternalCode = "abc_123", IsNative = true })
