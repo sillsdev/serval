@@ -79,12 +79,12 @@ public class WordAlignmentEnginesController(
     /// </summary>
     /// <remarks>
     /// ## Parameters
-    /// * **name**: (optional) A name to help identify and distinguish the file.
+    /// * **`name`**: (optional) A name to help identify and distinguish the file.
     ///   * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-    /// * **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
-    /// * **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-    /// * **type**: **statistical** or **echo-word-alignment**
+    /// * **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+    /// * **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
+    /// * **type**: **`statistical`** or **`echo-word-alignment`**
     /// ### statistical
     /// The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
     /// ### echo-word-alignment
@@ -196,8 +196,8 @@ public class WordAlignmentEnginesController(
     /// </summary>
     /// <remarks>
     /// ## Parameters
-    /// * **SourceCorpusIds**: The source corpora associated with the parallel corpus
-    /// * **TargetCorpusIds**: The target corpora associated with the parallel corpus
+    /// * **`sourceCorpusIds`**: The source corpora associated with the parallel corpus
+    /// * **`targetCorpusIds`**: The target corpora associated with the parallel corpus
     /// </remarks>
     /// <param name="id">The engine id</param>
     /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -383,13 +383,13 @@ public class WordAlignmentEnginesController(
     /// </summary>
     /// <remarks>
     /// Word alignments are arranged in a list of dictionaries with the following fields per word alignment:
-    /// * **TextId**: The TextId of the SourceFile defined when the corpus was created.
-    /// * **Refs** (a list of strings): A list of references including:
-    ///   * The references defined in the SourceFile per line, if any.
-    ///   * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-    /// * **SourceTokens**: the tokenized source segment
-    /// * **TargetTokens**: the tokenized target segment
-    /// * **Alignment**: a list of aligned word pairs with associated scores
+    /// * **`textId`**: The text id of the source file defined when the corpus was created.
+    /// * **`refs`** (a list of strings): A list of references including:
+    ///   * The references defined in the source file per line, if any.
+    ///   * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+    /// * **`sourceTokens`**: the tokenized source segment
+    /// * **`targetTokens`**: the tokenized target segment
+    /// * **`alignment`**: a list of aligned word pairs with associated scores
     ///
     /// Word alignments can be filtered by text id if provided.
     /// Only word alignments for the most recent successful build of the engine are returned.
@@ -533,18 +533,16 @@ public class WordAlignmentEnginesController(
     /// Starts a build job for a engine.
     /// </summary>
     /// <remarks>
-    /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used. Only parallel corpora are supported.
-    /// Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
-    /// Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-    /// Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+    /// Specify the corpora and textIds to train on. If no `trainOn` field is provided, all corpora will be used. Only parallel corpora are supported.
+    /// Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
+    /// Filters can also be supplied via `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
     /// All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
     ///
-    /// Specify the corpora or textIds to word align on.
-    /// When a corpus or textId is selected for word align on, only text segments that are in both the source and the target will be aligned.
+    /// Specify the corpora or text ids to word align on.
+    /// When a corpus or text id is selected for word align on, only text segments that are in both the source and the target will be aligned.
     ///
-    /// The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+    /// The `options` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
     /// See [statistical alignment job settings documentation](https://github.com/sillsdev/serval/wiki/Statistical-Alignment-Build-Options) about configuring job parameters.
-    /// See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
     /// </remarks>
     /// <param name="id">The engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
