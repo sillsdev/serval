@@ -18,11 +18,15 @@ public static class IOutboxConfiguratorExtensions
             {
                 o.AddRepository<OutboxMessage>(
                     "outbox_messages",
-                    mapSetup: m => m.MapProperty(m => m.OutboxRef).SetSerializer(new StringSerializer())
+                    mapSetup: ms =>
+                    {
+                        ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                        ms.MapMember(m => m.OutboxRef).SetSerializer(new StringSerializer());
+                    }
                 );
                 o.AddRepository<Outbox>(
                     "outboxes",
-                    mapSetup: m => m.MapIdProperty(o => o.Id).SetSerializer(new StringSerializer())
+                    mapSetup: ms => ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer())
                 );
             }
         );

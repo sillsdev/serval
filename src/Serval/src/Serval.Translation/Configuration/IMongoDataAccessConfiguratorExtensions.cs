@@ -1,4 +1,6 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -11,6 +13,42 @@ public static class IMongoDataAccessConfiguratorExtensions
     {
         configurator.AddRepository<Engine>(
             "translation.engines",
+            mapSetup: ms =>
+            {
+                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                if (!BsonClassMap.IsClassMapRegistered(typeof(Corpus)))
+                {
+                    BsonClassMap.RegisterClassMap<Corpus>(cm =>
+                    {
+                        cm.AutoMap();
+                        cm.MapMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    });
+                }
+                if (!BsonClassMap.IsClassMapRegistered(typeof(ParallelCorpus)))
+                {
+                    BsonClassMap.RegisterClassMap<ParallelCorpus>(cm =>
+                    {
+                        cm.AutoMap();
+                        cm.MapMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    });
+                }
+                if (!BsonClassMap.IsClassMapRegistered(typeof(MonolingualCorpus)))
+                {
+                    BsonClassMap.RegisterClassMap<MonolingualCorpus>(cm =>
+                    {
+                        cm.AutoMap();
+                        cm.MapMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    });
+                }
+                if (!BsonClassMap.IsClassMapRegistered(typeof(CorpusFile)))
+                {
+                    BsonClassMap.RegisterClassMap<CorpusFile>(cm =>
+                    {
+                        cm.AutoMap();
+                        cm.MapMember(c => c.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    });
+                }
+            },
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
@@ -28,6 +66,45 @@ public static class IMongoDataAccessConfiguratorExtensions
         );
         configurator.AddRepository<Build>(
             "translation.builds",
+            mapSetup: ms =>
+            {
+                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                ms.MapMember(m => m.EngineRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                if (!BsonClassMap.IsClassMapRegistered(typeof(TrainingCorpus)))
+                {
+                    BsonClassMap.RegisterClassMap<TrainingCorpus>(cm =>
+                    {
+                        cm.AutoMap();
+                        cm.MapMember(m => m.CorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                        cm.MapMember(m => m.ParallelCorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    });
+                }
+                if (!BsonClassMap.IsClassMapRegistered(typeof(PretranslateCorpus)))
+                {
+                    BsonClassMap.RegisterClassMap<PretranslateCorpus>(cm =>
+                    {
+                        cm.AutoMap();
+                        cm.MapMember(m => m.CorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                        cm.MapMember(m => m.ParallelCorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    });
+                }
+                if (!BsonClassMap.IsClassMapRegistered(typeof(ParallelCorpusFilter)))
+                {
+                    BsonClassMap.RegisterClassMap<ParallelCorpusFilter>(cm =>
+                    {
+                        cm.AutoMap();
+                        cm.MapMember(m => m.CorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    });
+                }
+                if (!BsonClassMap.IsClassMapRegistered(typeof(ParallelCorpusAnalysis)))
+                {
+                    BsonClassMap.RegisterClassMap<ParallelCorpusAnalysis>(cm =>
+                    {
+                        cm.AutoMap();
+                        cm.MapMember(c => c.ParallelCorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    });
+                }
+            },
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
@@ -53,6 +130,12 @@ public static class IMongoDataAccessConfiguratorExtensions
         );
         configurator.AddRepository<Pretranslation>(
             "translation.pretranslations",
+            mapSetup: ms =>
+            {
+                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                ms.MapMember(m => m.CorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                ms.MapMember(m => m.EngineRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
+            },
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
