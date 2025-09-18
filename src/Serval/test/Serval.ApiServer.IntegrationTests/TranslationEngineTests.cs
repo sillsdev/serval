@@ -2584,7 +2584,7 @@ public class TranslationEngineTests
                             .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
                             .Returns(NmtClient);
                         grpcClientFactory
-                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Smt")
+                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("SmtTransfer")
                             .Returns(SmtClient);
                         services.AddSingleton(grpcClientFactory);
                     });
