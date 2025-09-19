@@ -787,10 +787,12 @@ public class TranslationEnginesController(
     public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetAllPretranslationsAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
-        [FromQuery] string? textId,
+        [FromQuery(Name = "text-id")] string? textId,
+        [FromQuery(Name = "textId")] string? textIdCamelCase,
         CancellationToken cancellationToken
     )
     {
+        textId ??= textIdCamelCase;
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         if (!engine.Corpora.Any(c => c.Id == corpusId) && !engine.ParallelCorpora.Any(c => c.Id == corpusId))
@@ -1041,10 +1043,12 @@ public class TranslationEnginesController(
     public async Task<ActionResult<TranslationBuildDto>> GetBuildAsync(
         [NotNull] string id,
         [NotNull] string buildId,
-        [FromQuery] long? minRevision,
+        [FromQuery(Name = "min-revision")] long? minRevision,
+        [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
         CancellationToken cancellationToken
     )
     {
+        minRevision ??= minRevisionCamelCase;
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
@@ -1169,10 +1173,12 @@ public class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationBuildDto>> GetCurrentBuildAsync(
         [NotNull] string id,
-        [FromQuery] long? minRevision,
+        [FromQuery(Name = "min-revision")] long? minRevision,
+        [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
         CancellationToken cancellationToken
     )
     {
+        minRevision ??= minRevisionCamelCase;
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
