@@ -1,3 +1,6 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using Serval.Translation.V1;
 using Serval.WordAlignment.V1;
 
@@ -216,7 +219,11 @@ public static class IMachineBuilderExtensions
             {
                 o.AddRepository<TranslationEngine>(
                     "translation_engines",
-                    mapSetup: m => m.SetIgnoreExtraElements(true),
+                    mapSetup: ms =>
+                    {
+                        ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                        ms.SetIgnoreExtraElements(true);
+                    },
                     init: async c =>
                     {
                         await c.Indexes.CreateOrUpdateAsync(
@@ -233,6 +240,7 @@ public static class IMachineBuilderExtensions
                 );
                 o.AddRepository<WordAlignmentEngine>(
                     "word_alignment_engines",
+                    mapSetup: ms => ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId)),
                     init: async c =>
                     {
                         await c.Indexes.CreateOrUpdateAsync(
@@ -247,9 +255,29 @@ public static class IMachineBuilderExtensions
                         );
                     }
                 );
-                o.AddRepository<RWLock>("locks");
+                o.AddRepository<RWLock>(
+                    "locks",
+                    mapSetup: ms =>
+                    {
+                        ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                        if (!BsonClassMap.IsClassMapRegistered(typeof(Lock)))
+                        {
+                            BsonClassMap.RegisterClassMap<Lock>(cm =>
+                            {
+                                cm.AutoMap();
+                                cm.MapMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                            });
+                        }
+                    }
+                );
                 o.AddRepository<TrainSegmentPair>(
                     "train_segment_pairs",
+                    mapSetup: ms =>
+                    {
+                        ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                        ms.MapMember(m => m.TranslationEngineRef)
+                            .SetSerializer(new StringSerializer(BsonType.ObjectId));
+                    },
                     init: c =>
                         c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<TrainSegmentPair>(
