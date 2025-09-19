@@ -92,7 +92,7 @@ public class DistributedReaderWriterLock(
             (bool completed, T? result) = await TaskEx.Timeout(action, expiresAt - DateTime.UtcNow, cancellationToken);
             if (!completed)
                 throw new TimeoutException($"A reader lock for the distributed lock '{_id}' expired.");
-            // if the task sucssfully completed, then the result will be populated
+            // if the task successfully completed, then the result will be populated
             return result!;
         }
         finally
@@ -173,7 +173,7 @@ public class DistributedReaderWriterLock(
             (bool completed, T? result) = await TaskEx.Timeout(action, expiresAt - DateTime.UtcNow, cancellationToken);
             if (!completed)
                 throw new TimeoutException($"A writer lock for the distributed lock '{_id}' expired.");
-            // if the task sucssfully completed, then the result will be populated
+            // if the task successfully completed, then the result will be populated
             return result!;
         }
         finally

@@ -92,8 +92,6 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        // await CancelBuildJobAsync(engineId, cancellationToken); Should we cancel the build or delete the segment pairs?
-
         await _engines.UpdateAsync(
             e => e.EngineId == engineId,
             u =>
@@ -247,7 +245,8 @@ public class SmtTransferEngineService(
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)
     {
-        throw new NotSupportedException("SMT transfer engines do not support language info.");
+        internalCode = language;
+        return true;
     }
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

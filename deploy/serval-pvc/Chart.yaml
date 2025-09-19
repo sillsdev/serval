@@ -1,5 +1,5 @@
 name: serval-pvc
-description: The persistant volume claims to support a serval deploymnet
+description: The persistent volume claims to support a serval deployment
 version: 0.0.1
 apiVersion: v1
 keywords:

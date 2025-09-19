@@ -44,19 +44,17 @@ public class TranslationEngineTypesController(IAuthorizationService authService,
     /// Get information regarding a language for a given engine type
     /// </summary>
     /// <remarks>
-    /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
-    /// and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
-    /// language is an appropriate candidate for a source language or if two languages can be translated between
+    /// This endpoint exists primarily to support `nmt` model-training since `echo` and `smt-transfer` engines support all languages equally. Given a language tag, it provides the ISO 639-3 code that the tag maps to internally
+    /// and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a language is a good candidate for a source language.
     /// **Base Models available**
-    /// * **NLLB-200**: This is the only current base translation model available.
-    ///   * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
-    /// without training.
+    /// * **NLLB-200**: This is the only base NMT translation model currently available.
+    ///   * The languages supported by the base model can be found [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md).
     /// Response format:
-    /// * **EngineType**: See above
-    /// * **IsNative**: Whether the base translation model supports this language without fine-tuning.
-    /// * **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+    /// * **`engineType`**: See above
+    /// * **`isNative`**: Whether the base translation model supports this language without fine-tuning.
+    /// * **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
     /// </remarks>
-    /// <param name="engineType">A valid engine type: nmt or echo</param>
+    /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer</param>
     /// <param name="language">The language to retrieve information on.</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">Language information for the specified engine type</response>

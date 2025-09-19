@@ -227,6 +227,14 @@ public class SmtTransferEngineServiceTests
         );
     }
 
+    [Test]
+    public void GetLanguageInfo()
+    {
+        using var env = new TestEnvironment();
+        env.Service.IsLanguageNativeToModel("en", out string internalCode);
+        Assert.That(internalCode, Is.EqualTo("en"));
+    }
+
     private class TestEnvironment : DisposableBase
     {
         private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;

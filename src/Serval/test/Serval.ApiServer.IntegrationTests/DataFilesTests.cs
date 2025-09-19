@@ -49,7 +49,6 @@ public class DataFilesTests
 
     [Test]
     [TestCase(new[] { Scopes.ReadFiles }, 200)]
-    // [TestCase(new[] { Scopes.ReadFiles }, 401)]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403)]
     public async Task GetAllAsync(IEnumerable<string> scope, int expectedStatusCode)
     {
@@ -83,7 +82,6 @@ public class DataFilesTests
 
     [Test]
     [TestCase(new[] { Scopes.ReadFiles }, 200, ID1)]
-    // [TestCase(new[] { Scopes.ReadFiles }, 401, ID1)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ID3)]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403, ID1)]
     [TestCase(new[] { Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]
@@ -116,7 +114,6 @@ public class DataFilesTests
 
     [Test]
     [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 201)]
-    // [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 401)]
     [TestCase(new[] { Scopes.CreateFiles, Scopes.ReadFiles }, 400)]
     [TestCase(new[] { Scopes.ReadFiles }, 403)]
     public async Task CreateAsync(IEnumerable<string> scope, int expectedStatusCode)
@@ -277,7 +274,6 @@ public class DataFilesTests
 
     [Test]
     [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 200, ID1)]
-    // [TestCase(new[] { Scopes.ReadFiles }, 401, ID1)]
     [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 403, ID3)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ID1)]
     [TestCase(new[] { Scopes.DeleteFiles, Scopes.ReadFiles }, 404, DOES_NOT_EXIST_ID)]

@@ -1234,9 +1234,9 @@ namespace Serval.Client
         /// <br/>    &gt; verse_001_005 (tab) Ὑπομνῆσαι δὲ ὑμᾶς βούλομαι , εἰδότας ὑμᾶς ἅπαξ τοῦτο
         /// <br/>    &gt; verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
         /// <br/>    &gt; verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
-        /// <br/>  * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
+        /// <br/>  * Otherwise, *no tabs* should be used in the file. A unique identifier will be generated for each translation unit based on the line number.
         /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.
-        /// <br/>  * USFM files in paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)</param>
+        /// <br/>  * USFM files in Paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)</param>
         /// <param name="name">A name to help identify and distinguish the file.
         /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
         /// <br/>The name does not have to be unique.
@@ -1449,9 +1449,9 @@ namespace Serval.Client
         /// <br/>    &gt; verse_001_005 (tab) Ὑπομνῆσαι δὲ ὑμᾶς βούλομαι , εἰδότας ὑμᾶς ἅπαξ τοῦτο
         /// <br/>    &gt; verse_001_006 (tab) Ἀγγέλους τε τοὺς μὴ τηρήσαντας τὴν ἑαυτῶν ἀρχήν , ἀλλὰ (tab) ss
         /// <br/>    &gt; verse_001_007 (tab) Ὡς Σόδομα καὶ Γόμορρα , καὶ αἱ περὶ αὐτὰς πόλεις (tab) ss
-        /// <br/>  * Otherwise, *no tabs* should be used in the file and a unique identifier will generated for each translation unit based on the line number.
+        /// <br/>  * Otherwise, *no tabs* should be used in the file. A unique identifier will be generated for each translation unit based on the line number.
         /// <br/>* **Paratext**: A complete, zipped Paratext project backup: that is, a .zip archive of files including the USFM files and "Settings.xml" file. To generate a zipped backup for a project in Paratext, navigate to "Paratext/Advanced/Backup project to file..." and follow the dialogue.
-        /// <br/>  * USFM files in paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)</param>
+        /// <br/>  * USFM files in Paratext projects have unique identifiers assigned per segment for scripture and non-scripture content according to [this guide](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation)</param>
         /// <param name="name">A name to help identify and distinguish the file.
         /// <br/>Recommendation: Create a multi-part name to distinguish between projects, uses, languages, etc.
         /// <br/>The name does not have to be unique.
@@ -2146,25 +2146,25 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **name**: (optional) A name to help identify and distinguish the file.
+        /// <br/>* **`name`**: (optional) A name to help identify and distinguish the translation engine.
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
-        /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **type**: **smt-transfer** or **nmt** or **echo**
-        /// <br/>* **isModelPersisted**: (optional) - see below
+        /// <br/>* **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+        /// <br/>* **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
+        /// <br/>* **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`**
+        /// <br/>* **`isModelPersisted`**: (optional) - see below
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-        /// <br/>* **IsModelPersisted**: (default to true) All models are persistent and can be updated with train-segment.  False is not supported.
+        /// <br/>* **`isModelPersisted`**: (default to `true`) All models are persistent and can be updated with train-segment.  False is not supported.
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
+        /// <br/>* **`isModelPersisted`**: (default to `false`) Whether the model can be downloaded by the client after it has been successfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### echo
-        /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or smt-transfer. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -2172,7 +2172,7 @@ namespace Serval.Client
         /// <br/>      "sourceLanguage": "el",
         /// <br/>      "targetLanguage": "en",
         /// <br/>      "type": "nmt"
-        /// <br/>      "IsModelPersisted": true
+        /// <br/>      "isModelPersisted": true
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
@@ -2227,7 +2227,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Translates a segment of text into the top N results
+        /// Returns the top N translations of a segment
         /// </summary>
         /// <param name="id">The translation engine id</param>
         /// <param name="n">The number of translations to generate</param>
@@ -2252,7 +2252,7 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
-        /// <br/>that should be set to true if this segment pair forms the beginning of a sentence. (This information
+        /// <br/>that should be set to `true` if this segment pair forms the beginning of a sentence. (This information
         /// <br/>will be used to reconstruct proper capitalization when training/inferencing).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -2269,19 +2269,19 @@ namespace Serval.Client
         /// ## Parameters
         /// <br/>* **name**: A name to help identify and distinguish the corpus from other corpora
         /// <br/>  * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-        /// <br/>  * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-        /// <br/>* **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-        /// <br/>* **SourceFiles**: The source files associated with the corpus
-        /// <br/>  * **FileId**: The unique id referencing the uploaded file
-        /// <br/>  * **TextId**: The client-defined name to associate source and target files.
-        /// <br/>    * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-        /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
-        /// <br/>    * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
-        /// <br/>    * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
-        /// <br/>    * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
-        /// <br/>* **TargetFiles**: The target files associated with the corpus
-        /// <br/>  * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
+        /// <br/>* **`sourceLanguage`**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+        /// <br/>  * Normally, this is the same as the engine's `sourceLanguage`.  This may change for future engines as a means of transfer learning.
+        /// <br/>* **`targetLanguage`**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+        /// <br/>* **`sourceFiles`**: The source files associated with the corpus
+        /// <br/>  * **`fileId`**: The unique id referencing the uploaded file
+        /// <br/>  * **`textId`**: The client-defined name to associate source and target files.
+        /// <br/>    * If the text ids in the source files and target files match, they will be used to train the engine.
+        /// <br/>    * If selected for pretranslation when building, all source files that have no target file, or lines of text in a source file that have missing or blank lines in the target file will be pretranslated.
+        /// <br/>    * If a text id is used more than once in source files, the sources will be randomly and evenly mixed for training.
+        /// <br/>    * For pretranslating, multiple sources with the same text id will be combined, but the first source will always take precedence (no random mixing).
+        /// <br/>    * For Paratext projects, text id will be ignored - multiple Paratext source projects will always be mixed (as if they have the same text id).
+        /// <br/>* **`targetFiles`**: The target files associated with the corpus
+        /// <br/>  * Same as `sourceFiles`, except only a single instance of a text id or a single Paratext project is supported.  There is no mixing or combining of multiple targets.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -2329,16 +2329,17 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Remove a corpus from a translation engine
+        /// Remove a corpus from a translation engine (obsolete - use parallel corpora instead)
         /// </summary>
         /// <remarks>
         /// Removing a corpus will remove all pretranslations associated with that corpus.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
-        /// <param name="deleteFiles">If true, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
+        /// <param name="deleteFiles">If `true`, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
         /// <returns>The corpus was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, bool? deleteFiles = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -2347,8 +2348,8 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **SourceCorpusIds**: The source corpora associated with the parallel corpus
-        /// <br/>* **TargetCorpusIds**: The target corpora associated with the parallel corpus
+        /// <br/>* **`sourceCorpusIds`**: The source corpora associated with the parallel corpus
+        /// <br/>* **`targetCorpusIds`**: The target corpora associated with the parallel corpus
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -2408,11 +2409,11 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
-        /// <br/>* **TextId**: The TextId of the SourceFile defined when the corpus was created.
-        /// <br/>* **Refs** (a list of strings): A list of references including:
-        /// <br/>  * The references defined in the SourceFile per line, if any.
-        /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-        /// <br/>* **Translation**: the text of the pretranslation
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`translation`**: the text of the pretranslation
         /// <br/>            
         /// <br/>Pretranslations can be filtered by text id if provided.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
@@ -2422,7 +2423,7 @@ namespace Serval.Client
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2430,11 +2431,11 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
-        /// <br/>* **TextId**: The TextId of the SourceFile defined when the corpus was created.
-        /// <br/>* **Refs** (a list of strings): A list of references including:
-        /// <br/>  * The references defined in the SourceFile per line, if any.
-        /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-        /// <br/>* **Translation**: the text of the pretranslation
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`translation`**: the text of the pretranslation
         /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
@@ -2450,7 +2451,7 @@ namespace Serval.Client
         /// Get a pretranslated Scripture book in USFM format.
         /// </summary>
         /// <remarks>
-        /// The text that populates the USFM structure can be controlled by the `textOrigin` parameter:
+        /// The text that populates the USFM structure can be controlled by the `text-origin` parameter:
         /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
         /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
         /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
@@ -2461,17 +2462,17 @@ namespace Serval.Client
         /// <br/>* `Source`: The source book is used as the template.
         /// <br/>* `Target`: The target book is used as the template.
         /// <br/>            
-        /// <br/>The intra-verse USFM markers are handled in the following way:
-        /// <br/>* All verse and non-verse text is stripped of all intra-verse USFM to be pretranslated (if the book is chosen).
+        /// <br/>The intra-segment USFM markers are handled in the following way:
+        /// <br/>* Each verse and non-verse text segment is stripped of all intra-segment USFM.
         /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
         /// <br/>            
-        /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters.
+        /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraph-marker-behavior`, `embed-behavior`, and `style-marker-behavior` parameters.
         /// <br/>* `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
         /// <br/>* `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
         /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
         /// <br/>            
-        /// <br/>Quote normalization behavior is controlled by the `quoteNormalizationBehavior` parameter options:
-        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data.
+        /// <br/>Quote normalization behavior is controlled by the `quote-normalization-behavior` parameter options:
+        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data. **This is the default**.
         /// <br/>* `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
         /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
@@ -2504,37 +2505,37 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
+        /// Specify the corpora and text ids/scripture ranges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
         /// <br/>Specifying a corpus:
-        /// <br/>* A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
-        /// <br/>* A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
+        /// <br/>* A (legacy) corpus is selected by specifying `corpusId` and a parallel corpus is selected by specifying `parallelCorpusId`.
+        /// <br/>* A parallel corpus can be further filtered by specifying particular corpusIds in `sourceFilters` or `targetFilters`.
         /// <br/>            
-        /// <br/>Filtering by textID or chapter:
-        /// <br/>* Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-        /// <br/>* Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// <br/>Filtering by text id or chapter:
+        /// <br/>* Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
+        /// <br/>* Filters can also be supplied via the `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range).
         /// <br/>* All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
         /// <br/>Filter - train on all or none
-        /// <br/>* If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
-        /// <br/>* If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
-        /// <br/>* If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
+        /// <br/>* If `trainOn` or `pretranslate` is not provided, all corpora will be used for training or pretranslation respectively
+        /// <br/>* If a corpus is selected for training or pretranslation and neither `scriptureRange` nor `textIds` is defined, all of the selected corpus will be used.
+        /// <br/>* If a corpus is selected for training or pretranslation and an empty `scriptureRange` or `textIds` is defined, none of the selected corpus will be used.
         /// <br/>* If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
         /// <br/>            
-        /// <br/>Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
+        /// <br/>Specify the corpora and text ids/scripture ranges within those corpora to pretranslate. When a corpus is selected for pretranslation,
         /// <br/>the following text will be pretranslated:
-        /// <br/>* Text segments that are in the source and not the target (untranslated)
-        /// <br/>* Text segments that are in the source and the target, but where that target segment is not trained on.
+        /// <br/>* Text segments that are in the source but do not exist in the target.
+        /// <br/>* Text segments that are in the source and the target, but because of `trainOn` filtering, have not been trained on.
         /// <br/>If the engine does not support pretranslation, these fields have no effect.
-        /// <br/>Pretranslating has the same filtering as training.
+        /// <br/>Pretranslating uses the same filtering as training.
         /// <br/>            
-        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        /// <br/>The `options` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
         /// <br/>See [smt-transfer job settings documentation](https://github.com/sillsdev/serval/wiki/SMT-Transfer-Build-Options) about configuring job parameters.
         /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
         /// <br/>            
-        /// <br/>When using a parallel corpus:
-        /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
-        /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), only the first of the targets that includes that textId/book will be used for that textId/book.
+        /// <br/>Note that when using a parallel corpus:
+        /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
+        /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -2561,7 +2562,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2574,7 +2575,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2587,10 +2588,10 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Let a link to download the NMT translation model of the last build that was successfully saved.
+        /// Get a link to download the NMT translation model of the last build that was successfully saved.
         /// </summary>
         /// <remarks>
-        /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
+        /// If an nmt build was successful and `isModelPersisted` is `true` for the engine,
         /// <br/>then the model from the most recent successful build can be downloaded.
         /// <br/>            
         /// <br/>The endpoint will return a URL that can be used to download the model for up to 1 hour
@@ -2753,25 +2754,25 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **name**: (optional) A name to help identify and distinguish the file.
+        /// <br/>* **`name`**: (optional) A name to help identify and distinguish the translation engine.
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
-        /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **type**: **smt-transfer** or **nmt** or **echo**
-        /// <br/>* **isModelPersisted**: (optional) - see below
+        /// <br/>* **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+        /// <br/>* **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
+        /// <br/>* **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`**
+        /// <br/>* **`isModelPersisted`**: (optional) - see below
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
-        /// <br/>* **IsModelPersisted**: (default to true) All models are persistent and can be updated with train-segment.  False is not supported.
+        /// <br/>* **`isModelPersisted`**: (default to `true`) All models are persistent and can be updated with train-segment.  False is not supported.
         /// <br/>### nmt
         /// <br/>The Neural Machine Translation engine is primarily used for pretranslations.  It is fine-tuned from Meta's NLLB-200. Valid IETF language tags provided to Serval will be converted to [NLLB-200 codes](https://github.com/facebookresearch/flores/tree/main/flores200#languages-in-flores-200).  See more about language tag resolution [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
-        /// <br/>* **IsModelPersisted**: (default to false) Whether the model can be downloaded by the client after it has been successfully built.
+        /// <br/>* **`isModelPersisted`**: (default to `false`) Whether the model can be downloaded by the client after it has been successfully built.
         /// <br/>            
         /// <br/>If you use a language among NLLB's supported languages, Serval will utilize everything the NLLB-200 model already knows about that language when translating. If the language you are working with is not among NLLB's supported languages, the language code will have no effect.
         /// <br/>            
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### echo
-        /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or Smt. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or smt-transfer. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -2779,7 +2780,7 @@ namespace Serval.Client
         /// <br/>      "sourceLanguage": "el",
         /// <br/>      "targetLanguage": "en",
         /// <br/>      "type": "nmt"
-        /// <br/>      "IsModelPersisted": true
+        /// <br/>      "isModelPersisted": true
         /// <br/>    }
         /// </remarks>
         /// <param name="engineConfig">The translation engine configuration (see above)</param>
@@ -3328,7 +3329,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Translates a segment of text into the top N results
+        /// Returns the top N translations of a segment
         /// </summary>
         /// <param name="id">The translation engine id</param>
         /// <param name="n">The number of translations to generate</param>
@@ -3597,7 +3598,7 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// A segment pair consists of a source and target segment as well as a boolean flag `sentenceStart`
-        /// <br/>that should be set to true if this segment pair forms the beginning of a sentence. (This information
+        /// <br/>that should be set to `true` if this segment pair forms the beginning of a sentence. (This information
         /// <br/>will be used to reconstruct proper capitalization when training/inferencing).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
@@ -3728,19 +3729,19 @@ namespace Serval.Client
         /// ## Parameters
         /// <br/>* **name**: A name to help identify and distinguish the corpus from other corpora
         /// <br/>  * The name does not have to be unique since the corpus is uniquely identified by an auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-        /// <br/>  * Normally, this is the same as the engine sourceLanguage.  This may change for future engines as a means of transfer learning.
-        /// <br/>* **targetLanguage**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
-        /// <br/>* **SourceFiles**: The source files associated with the corpus
-        /// <br/>  * **FileId**: The unique id referencing the uploaded file
-        /// <br/>  * **TextId**: The client-defined name to associate source and target files.
-        /// <br/>    * If the TextIds in the SourceFiles and TargetFiles match, they will be used to train the engine.
-        /// <br/>    * If selected for pretranslation when building, all SourceFiles that have no TargetFile, or lines of text in a SourceFile that have missing or blank lines in the TargetFile will be pretranslated.
-        /// <br/>    * If a TextId is used more than once in SourceFiles, the sources will be randomly and evenly mixed for training.
-        /// <br/>    * For pretranslating, multiple sources with the same TextId will be combined, but the first source will always take precedence (no random mixing).
-        /// <br/>    * For Paratext projects, TextId will be ignored - multiple Paratext source projects will always be mixed (as if they have the same TextId).
-        /// <br/>* **TargetFiles**: The target files associated with the corpus
-        /// <br/>  * Same as SourceFiles, except only a single instance of a TextID or a single paratext project is supported.  There is no mixing or combining of multiple targets.
+        /// <br/>* **`sourceLanguage`**: The source language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+        /// <br/>  * Normally, this is the same as the engine's `sourceLanguage`.  This may change for future engines as a means of transfer learning.
+        /// <br/>* **`targetLanguage`**: The target language code (See documentation on endpoint /translation/engines/ - "Create a new translation engine" for details on language codes).
+        /// <br/>* **`sourceFiles`**: The source files associated with the corpus
+        /// <br/>  * **`fileId`**: The unique id referencing the uploaded file
+        /// <br/>  * **`textId`**: The client-defined name to associate source and target files.
+        /// <br/>    * If the text ids in the source files and target files match, they will be used to train the engine.
+        /// <br/>    * If selected for pretranslation when building, all source files that have no target file, or lines of text in a source file that have missing or blank lines in the target file will be pretranslated.
+        /// <br/>    * If a text id is used more than once in source files, the sources will be randomly and evenly mixed for training.
+        /// <br/>    * For pretranslating, multiple sources with the same text id will be combined, but the first source will always take precedence (no random mixing).
+        /// <br/>    * For Paratext projects, text id will be ignored - multiple Paratext source projects will always be mixed (as if they have the same text id).
+        /// <br/>* **`targetFiles`**: The target files associated with the corpus
+        /// <br/>  * Same as `sourceFiles`, except only a single instance of a text id or a single Paratext project is supported.  There is no mixing or combining of multiple targets.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -4202,16 +4203,17 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Remove a corpus from a translation engine
+        /// Remove a corpus from a translation engine (obsolete - use parallel corpora instead)
         /// </summary>
         /// <remarks>
         /// Removing a corpus will remove all pretranslations associated with that corpus.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusId">The corpus id</param>
-        /// <param name="deleteFiles">If true, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
+        /// <param name="deleteFiles">If `true`, all files associated with the corpus will be deleted as well (even if they are associated with other corpora). If false, no files will be deleted.</param>
         /// <returns>The corpus was deleted successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
         public virtual async System.Threading.Tasks.Task DeleteCorpusAsync(string id, string corpusId, bool? deleteFiles = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
@@ -4319,8 +4321,8 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **SourceCorpusIds**: The source corpora associated with the parallel corpus
-        /// <br/>* **TargetCorpusIds**: The target corpora associated with the parallel corpus
+        /// <br/>* **`sourceCorpusIds`**: The source corpora associated with the parallel corpus
+        /// <br/>* **`targetCorpusIds`**: The target corpora associated with the parallel corpus
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -4887,11 +4889,11 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
-        /// <br/>* **TextId**: The TextId of the SourceFile defined when the corpus was created.
-        /// <br/>* **Refs** (a list of strings): A list of references including:
-        /// <br/>  * The references defined in the SourceFile per line, if any.
-        /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-        /// <br/>* **Translation**: the text of the pretranslation
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`translation`**: the text of the pretranslation
         /// <br/>            
         /// <br/>Pretranslations can be filtered by text id if provided.
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
@@ -4901,7 +4903,7 @@ namespace Serval.Client
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -4929,7 +4931,11 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (textId != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("textId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("text-id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (textIdCamelCase != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("textId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textIdCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -5021,11 +5027,11 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
-        /// <br/>* **TextId**: The TextId of the SourceFile defined when the corpus was created.
-        /// <br/>* **Refs** (a list of strings): A list of references including:
-        /// <br/>  * The references defined in the SourceFile per line, if any.
-        /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-        /// <br/>* **Translation**: the text of the pretranslation
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`translation`**: the text of the pretranslation
         /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
@@ -5151,7 +5157,7 @@ namespace Serval.Client
         /// Get a pretranslated Scripture book in USFM format.
         /// </summary>
         /// <remarks>
-        /// The text that populates the USFM structure can be controlled by the `textOrigin` parameter:
+        /// The text that populates the USFM structure can be controlled by the `text-origin` parameter:
         /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
         /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
         /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
@@ -5162,17 +5168,17 @@ namespace Serval.Client
         /// <br/>* `Source`: The source book is used as the template.
         /// <br/>* `Target`: The target book is used as the template.
         /// <br/>            
-        /// <br/>The intra-verse USFM markers are handled in the following way:
-        /// <br/>* All verse and non-verse text is stripped of all intra-verse USFM to be pretranslated (if the book is chosen).
+        /// <br/>The intra-segment USFM markers are handled in the following way:
+        /// <br/>* Each verse and non-verse text segment is stripped of all intra-segment USFM.
         /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
         /// <br/>            
-        /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraphMarkerBehavior`, `embedBehavior`, and `styleMarkerBehavior` parameters.
+        /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraph-marker-behavior`, `embed-behavior`, and `style-marker-behavior` parameters.
         /// <br/>* `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
         /// <br/>* `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
         /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
         /// <br/>            
-        /// <br/>Quote normalization behavior is controlled by the `quoteNormalizationBehavior` parameter options:
-        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data.
+        /// <br/>Quote normalization behavior is controlled by the `quote-normalization-behavior` parameter options:
+        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data. **This is the default**.
         /// <br/>* `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
         /// <br/>            
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
@@ -5446,37 +5452,37 @@ namespace Serval.Client
         /// Starts a build job for a translation engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds/scriptureRanges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
+        /// Specify the corpora and text ids/scripture ranges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
         /// <br/>Specifying a corpus:
-        /// <br/>* A (legacy) corpus is selected by specifying CorpusId and a parallel corpus is selected by specifying ParallelCorpusId.
-        /// <br/>* A parallel corpus can be further filtered by specifying particular CorpusIds in SourceFilters or TargetFilters.
+        /// <br/>* A (legacy) corpus is selected by specifying `corpusId` and a parallel corpus is selected by specifying `parallelCorpusId`.
+        /// <br/>* A parallel corpus can be further filtered by specifying particular corpusIds in `sourceFilters` or `targetFilters`.
         /// <br/>            
-        /// <br/>Filtering by textID or chapter:
-        /// <br/>* Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-        /// <br/>* Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// <br/>Filtering by text id or chapter:
+        /// <br/>* Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
+        /// <br/>* Filters can also be supplied via the `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range).
         /// <br/>* All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
         /// <br/>Filter - train on all or none
-        /// <br/>* If trainOn or pretranslate is not provided, all corpora will be used for training or pretranslation respectively
-        /// <br/>* If a corpus is selected for training or pretranslation and neither scriptureRange nor textIds are defined, all of the selected corpus will be used.
-        /// <br/>* If a corpus is selected for training or pretranslation and an empty scriptureRange or textIds is defined, none of the selected corpus will be used.
+        /// <br/>* If `trainOn` or `pretranslate` is not provided, all corpora will be used for training or pretranslation respectively
+        /// <br/>* If a corpus is selected for training or pretranslation and neither `scriptureRange` nor `textIds` is defined, all of the selected corpus will be used.
+        /// <br/>* If a corpus is selected for training or pretranslation and an empty `scriptureRange` or `textIds` is defined, none of the selected corpus will be used.
         /// <br/>* If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
         /// <br/>            
-        /// <br/>Specify the corpora and textIds/scriptureRanges within those corpora to pretranslate.  When a corpus is selected for pretranslation,
+        /// <br/>Specify the corpora and text ids/scripture ranges within those corpora to pretranslate. When a corpus is selected for pretranslation,
         /// <br/>the following text will be pretranslated:
-        /// <br/>* Text segments that are in the source and not the target (untranslated)
-        /// <br/>* Text segments that are in the source and the target, but where that target segment is not trained on.
+        /// <br/>* Text segments that are in the source but do not exist in the target.
+        /// <br/>* Text segments that are in the source and the target, but because of `trainOn` filtering, have not been trained on.
         /// <br/>If the engine does not support pretranslation, these fields have no effect.
-        /// <br/>Pretranslating has the same filtering as training.
+        /// <br/>Pretranslating uses the same filtering as training.
         /// <br/>            
-        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        /// <br/>The `options` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
         /// <br/>See [smt-transfer job settings documentation](https://github.com/sillsdev/serval/wiki/SMT-Transfer-Build-Options) about configuring job parameters.
         /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
         /// <br/>            
-        /// <br/>When using a parallel corpus:
-        /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
-        /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same textIds (for text files or Paratext Projects) or books (for Paratext Projects only using the scriptureRange), only the first of the targets that includes that textId/book will be used for that textId/book.
+        /// <br/>Note that when using a parallel corpus:
+        /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
+        /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -5617,7 +5623,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5644,7 +5650,11 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (minRevision != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (minRevisionCamelCase != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -5741,7 +5751,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5764,7 +5774,11 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (minRevision != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (minRevisionCamelCase != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -5981,10 +5995,10 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Let a link to download the NMT translation model of the last build that was successfully saved.
+        /// Get a link to download the NMT translation model of the last build that was successfully saved.
         /// </summary>
         /// <remarks>
-        /// If a Nmt build was successful and IsModelPersisted is `true` for the engine,
+        /// If an nmt build was successful and `isModelPersisted` is `true` for the engine,
         /// <br/>then the model from the most recent successful build can be downloaded.
         /// <br/>            
         /// <br/>The endpoint will return a URL that can be used to download the model for up to 1 hour
@@ -6230,19 +6244,17 @@ namespace Serval.Client
         /// Get information regarding a language for a given engine type
         /// </summary>
         /// <remarks>
-        /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
-        /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
-        /// <br/>language is an appropriate candidate for a source language or if two languages can be translated between
+        /// This endpoint exists primarily to support `nmt` model-training since `echo` and `smt-transfer` engines support all languages equally. Given a language tag, it provides the ISO 639-3 code that the tag maps to internally
+        /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a language is a good candidate for a source language.
         /// <br/>**Base Models available**
-        /// <br/>* **NLLB-200**: This is the only current base translation model available.
-        /// <br/>  * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
-        /// <br/>without training.
+        /// <br/>* **NLLB-200**: This is the only base NMT translation model currently available.
+        /// <br/>  * The languages supported by the base model can be found [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md).
         /// <br/>Response format:
-        /// <br/>* **EngineType**: See above
-        /// <br/>* **IsNative**: Whether the base translation model supports this language without fine-tuning.
-        /// <br/>* **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+        /// <br/>* **`engineType`**: See above
+        /// <br/>* **`isNative`**: Whether the base translation model supports this language without fine-tuning.
+        /// <br/>* **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
         /// </remarks>
-        /// <param name="engineType">A valid engine type: nmt or echo</param>
+        /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer</param>
         /// <param name="language">The language to retrieve information on.</param>
         /// <returns>Language information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -6401,19 +6413,17 @@ namespace Serval.Client
         /// Get information regarding a language for a given engine type
         /// </summary>
         /// <remarks>
-        /// This endpoint is to support Nmt models.  It specifies the ISO 639-3 code that the language maps to
-        /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a
-        /// <br/>language is an appropriate candidate for a source language or if two languages can be translated between
+        /// This endpoint exists primarily to support `nmt` model-training since `echo` and `smt-transfer` engines support all languages equally. Given a language tag, it provides the ISO 639-3 code that the tag maps to internally
+        /// <br/>and whether it is supported in the NLLB 200 model without training.  This is useful for determining if a language is a good candidate for a source language.
         /// <br/>**Base Models available**
-        /// <br/>* **NLLB-200**: This is the only current base translation model available.
-        /// <br/>  * The languages included in the base model are [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md)
-        /// <br/>without training.
+        /// <br/>* **NLLB-200**: This is the only base NMT translation model currently available.
+        /// <br/>  * The languages supported by the base model can be found [here](https://github.com/facebookresearch/flores/blob/main/nllb_seed/README.md).
         /// <br/>Response format:
-        /// <br/>* **EngineType**: See above
-        /// <br/>* **IsNative**: Whether the base translation model supports this language without fine-tuning.
-        /// <br/>* **InternalCode**: The translation models language code that the language maps to according to [these rules](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
+        /// <br/>* **`engineType`**: See above
+        /// <br/>* **`isNative`**: Whether the base translation model supports this language without fine-tuning.
+        /// <br/>* **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
         /// </remarks>
-        /// <param name="engineType">A valid engine type: nmt or echo</param>
+        /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer</param>
         /// <param name="language">The language to retrieve information on.</param>
         /// <returns>Language information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -7199,12 +7209,12 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **name**: (optional) A name to help identify and distinguish the file.
+        /// <br/>* **`name`**: (optional) A name to help identify and distinguish the file.
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
-        /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **type**: **statistical** or **echo-word-alignment**
+        /// <br/>* **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+        /// <br/>* **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
+        /// <br/>* **type**: **`statistical`** or **`echo-word-alignment`**
         /// <br/>### statistical
         /// <br/>The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
         /// <br/>### echo-word-alignment
@@ -7258,8 +7268,8 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **SourceCorpusIds**: The source corpora associated with the parallel corpus
-        /// <br/>* **TargetCorpusIds**: The target corpora associated with the parallel corpus
+        /// <br/>* **`sourceCorpusIds`**: The source corpora associated with the parallel corpus
+        /// <br/>* **`targetCorpusIds`**: The target corpora associated with the parallel corpus
         /// </remarks>
         /// <param name="id">The engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -7319,13 +7329,13 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// Word alignments are arranged in a list of dictionaries with the following fields per word alignment:
-        /// <br/>* **TextId**: The TextId of the SourceFile defined when the corpus was created.
-        /// <br/>* **Refs** (a list of strings): A list of references including:
-        /// <br/>  * The references defined in the SourceFile per line, if any.
-        /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-        /// <br/>* **SourceTokens**: the tokenized source segment
-        /// <br/>* **TargetTokens**: the tokenized target segment
-        /// <br/>* **Alignment**: a list of aligned word pairs with associated scores
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`sourceTokens`**: the tokenized source segment
+        /// <br/>* **`targetTokens`**: the tokenized target segment
+        /// <br/>* **`alignment`**: a list of aligned word pairs with associated scores
         /// <br/>            
         /// <br/>Word alignments can be filtered by text id if provided.
         /// <br/>Only word alignments for the most recent successful build of the engine are returned.
@@ -7335,7 +7345,7 @@ namespace Serval.Client
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The word alignments</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignment>> GetAllWordAlignmentsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignment>> GetAllWordAlignmentsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -7351,18 +7361,16 @@ namespace Serval.Client
         /// Starts a build job for a engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used. Only parallel corpora are supported.
-        /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
-        /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-        /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// Specify the corpora and textIds to train on. If no `trainOn` field is provided, all corpora will be used. Only parallel corpora are supported.
+        /// <br/>Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
+        /// <br/>Filters can also be supplied via `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
         /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
-        /// <br/>Specify the corpora or textIds to word align on.
-        /// <br/>When a corpus or textId is selected for word align on, only text segments that are in both the source and the target will be aligned.
+        /// <br/>Specify the corpora or text ids to word align on.
+        /// <br/>When a corpus or text id is selected for word align on, only text segments that are in both the source and the target will be aligned.
         /// <br/>            
-        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        /// <br/>The `options` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [statistical alignment job settings documentation](https://github.com/sillsdev/serval/wiki/Statistical-Alignment-Build-Options) about configuring job parameters.
-        /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
         /// </remarks>
         /// <param name="id">The engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -7389,7 +7397,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<WordAlignmentBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -7402,7 +7410,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<WordAlignmentBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -7561,12 +7569,12 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **name**: (optional) A name to help identify and distinguish the file.
+        /// <br/>* **`name`**: (optional) A name to help identify and distinguish the file.
         /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-        /// <br/>* **sourceLanguage**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
-        /// <br/>* **targetLanguage**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **type**: **statistical** or **echo-word-alignment**
+        /// <br/>* **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+        /// <br/>* **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
+        /// <br/>* **type**: **`statistical`** or **`echo-word-alignment`**
         /// <br/>### statistical
         /// <br/>The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
         /// <br/>### echo-word-alignment
@@ -8019,8 +8027,8 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// ## Parameters
-        /// <br/>* **SourceCorpusIds**: The source corpora associated with the parallel corpus
-        /// <br/>* **TargetCorpusIds**: The target corpora associated with the parallel corpus
+        /// <br/>* **`sourceCorpusIds`**: The source corpora associated with the parallel corpus
+        /// <br/>* **`targetCorpusIds`**: The target corpora associated with the parallel corpus
         /// </remarks>
         /// <param name="id">The engine id</param>
         /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
@@ -8587,13 +8595,13 @@ namespace Serval.Client
         /// </summary>
         /// <remarks>
         /// Word alignments are arranged in a list of dictionaries with the following fields per word alignment:
-        /// <br/>* **TextId**: The TextId of the SourceFile defined when the corpus was created.
-        /// <br/>* **Refs** (a list of strings): A list of references including:
-        /// <br/>  * The references defined in the SourceFile per line, if any.
-        /// <br/>  * An auto-generated reference of `[TextId]:[lineNumber]`, 1 indexed.
-        /// <br/>* **SourceTokens**: the tokenized source segment
-        /// <br/>* **TargetTokens**: the tokenized target segment
-        /// <br/>* **Alignment**: a list of aligned word pairs with associated scores
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`sourceTokens`**: the tokenized source segment
+        /// <br/>* **`targetTokens`**: the tokenized target segment
+        /// <br/>* **`alignment`**: a list of aligned word pairs with associated scores
         /// <br/>            
         /// <br/>Word alignments can be filtered by text id if provided.
         /// <br/>Only word alignments for the most recent successful build of the engine are returned.
@@ -8603,7 +8611,7 @@ namespace Serval.Client
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The word alignments</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignment>> GetAllWordAlignmentsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignment>> GetAllWordAlignmentsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -8631,7 +8639,11 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (textId != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("textId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("text-id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (textIdCamelCase != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("textId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textIdCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -8826,18 +8838,16 @@ namespace Serval.Client
         /// Starts a build job for a engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and textIds to train on. If no "trainOn" field is provided, all corpora will be used. Only parallel corpora are supported.
-        /// <br/>Paratext Projects, you may flag a subset of books for training by including their [abbreviations]
-        /// <br/>Paratext projects can be filtered by [book](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs) using the textId for training.
-        /// <br/>Filters can also be supplied via scriptureRange parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// Specify the corpora and textIds to train on. If no `trainOn` field is provided, all corpora will be used. Only parallel corpora are supported.
+        /// <br/>Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
+        /// <br/>Filters can also be supplied via `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
         /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
-        /// <br/>Specify the corpora or textIds to word align on.
-        /// <br/>When a corpus or textId is selected for word align on, only text segments that are in both the source and the target will be aligned.
+        /// <br/>Specify the corpora or text ids to word align on.
+        /// <br/>When a corpus or text id is selected for word align on, only text segments that are in both the source and the target will be aligned.
         /// <br/>            
-        /// <br/>The `"options"` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
+        /// <br/>The `options` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
         /// <br/>See [statistical alignment job settings documentation](https://github.com/sillsdev/serval/wiki/Statistical-Alignment-Build-Options) about configuring job parameters.
-        /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
         /// </remarks>
         /// <param name="id">The engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -8978,7 +8988,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<WordAlignmentBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -9005,7 +9015,11 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (minRevision != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (minRevisionCamelCase != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -9102,7 +9116,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<WordAlignmentBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -9125,7 +9139,11 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (minRevision != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (minRevisionCamelCase != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 

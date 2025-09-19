@@ -85,7 +85,6 @@ public class CorporaTests
     }
 
     [Test]
-    // [TestCase(new[] { Scopes.ReadFiles }, 401)] // TODO Potentially test 401 if needed
     [TestCase(new[] { Scopes.ReadFiles }, 200)]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403)]
     public async Task GetAllAsync(IEnumerable<string> scope, int expectedStatusCode)
@@ -98,9 +97,6 @@ public class CorporaTests
                 Assert.That(results, Is.Not.Null);
                 Assert.That(results.Count, Is.EqualTo(2));
                 Assert.That(results.All(c => c.Revision == 1), Is.True);
-                break;
-            case 401:
-                // goto case 403; // If you choose to handle 401 as 403
                 break;
             case 403:
             default:
@@ -115,7 +111,6 @@ public class CorporaTests
     }
 
     [Test]
-    // [TestCase(new[] { Scopes.ReadFiles }, 401, "corpus_id_1")] // 401 scenario if desired
     [TestCase(new[] { Scopes.ReadFiles }, 200, CORPUS_ID1)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, CORPUS_ID3)]
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403, CORPUS_ID1)]

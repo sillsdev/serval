@@ -1406,7 +1406,7 @@ public class EngineServiceTests
             return engine;
         }
 
-        public async Task<Engine> CreateEngineWithMulitipleTextFilesAsync()
+        public async Task<Engine> CreateEngineWithMultipleTextFilesAsync()
         {
             var engine = new Engine
             {

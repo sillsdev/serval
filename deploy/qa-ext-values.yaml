@@ -6,7 +6,7 @@ emailsToAlert: john_lambert@sil.org
 enableTls: true
 namespace: serval
 auth0Domain: dev-sillsdev.auth0.com
-lokiTenent: serval-tenant
+lokiTenant: serval-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
 servalImage: ghcr.io/sillsdev/serval:1.11.0-rc.1
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.10.0
