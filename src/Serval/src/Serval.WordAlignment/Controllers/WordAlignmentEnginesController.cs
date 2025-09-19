@@ -415,10 +415,12 @@ public class WordAlignmentEnginesController(
     public async Task<ActionResult<IEnumerable<WordAlignmentDto>>> GetAllWordAlignmentsAsync(
         [NotNull] string id,
         [NotNull] string corpusId,
-        [FromQuery] string? textId,
+        [FromQuery(Name = "text-id")] string? textId,
+        [FromQuery(Name = "textId")] string? textIdCamelCase,
         CancellationToken cancellationToken
     )
     {
+        textId ??= textIdCamelCase;
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         if (!engine.ParallelCorpora.Any(c => c.Id == corpusId))
@@ -503,10 +505,12 @@ public class WordAlignmentEnginesController(
     public async Task<ActionResult<WordAlignmentBuildDto>> GetBuildAsync(
         [NotNull] string id,
         [NotNull] string buildId,
-        [FromQuery] long? minRevision,
+        [FromQuery(Name = "min-revision")] long? minRevision,
+        [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
         CancellationToken cancellationToken
     )
     {
+        minRevision ??= minRevisionCamelCase;
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
@@ -609,10 +613,12 @@ public class WordAlignmentEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<WordAlignmentBuildDto>> GetCurrentBuildAsync(
         [NotNull] string id,
-        [FromQuery] long? minRevision,
+        [FromQuery(Name = "min-revision")] long? minRevision,
+        [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
         CancellationToken cancellationToken
     )
     {
+        minRevision ??= minRevisionCamelCase;
         await AuthorizeAsync(id, cancellationToken);
         if (minRevision != null)
         {
