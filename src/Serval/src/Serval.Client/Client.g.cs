@@ -2462,8 +2462,8 @@ namespace Serval.Client
         /// <br/>* `Source`: The source book is used as the template.
         /// <br/>* `Target`: The target book is used as the template.
         /// <br/>            
-        /// <br/>The intra-verse USFM markers are handled in the following way:
-        /// <br/>* Each verse and non-verse text unit is stripped of all intra-verse USFM.
+        /// <br/>The intra-segment USFM markers are handled in the following way:
+        /// <br/>* Each verse and non-verse text segment is stripped of all intra-segment USFM.
         /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
         /// <br/>            
         /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraph-marker-behavior`, `embed-behavior`, and `style-marker-behavior` parameters.
@@ -5164,8 +5164,8 @@ namespace Serval.Client
         /// <br/>* `Source`: The source book is used as the template.
         /// <br/>* `Target`: The target book is used as the template.
         /// <br/>            
-        /// <br/>The intra-verse USFM markers are handled in the following way:
-        /// <br/>* Each verse and non-verse text unit is stripped of all intra-verse USFM.
+        /// <br/>The intra-segment USFM markers are handled in the following way:
+        /// <br/>* Each verse and non-verse text segment is stripped of all intra-segment USFM.
         /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
         /// <br/>            
         /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraph-marker-behavior`, `embed-behavior`, and `style-marker-behavior` parameters.
