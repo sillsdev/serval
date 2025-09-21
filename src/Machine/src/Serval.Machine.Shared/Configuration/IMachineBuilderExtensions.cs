@@ -219,11 +219,7 @@ public static class IMachineBuilderExtensions
             {
                 o.AddRepository<TranslationEngine>(
                     "translation_engines",
-                    mapSetup: ms =>
-                    {
-                        ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
-                        ms.SetIgnoreExtraElements(true);
-                    },
+                    mapSetup: ms => ms.SetIgnoreExtraElements(true),
                     init: async c =>
                     {
                         await c.Indexes.CreateOrUpdateAsync(
@@ -240,7 +236,6 @@ public static class IMachineBuilderExtensions
                 );
                 o.AddRepository<WordAlignmentEngine>(
                     "word_alignment_engines",
-                    mapSetup: ms => ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId)),
                     init: async c =>
                     {
                         await c.Indexes.CreateOrUpdateAsync(
@@ -259,7 +254,6 @@ public static class IMachineBuilderExtensions
                     "locks",
                     mapSetup: ms =>
                     {
-                        ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
                         if (!BsonClassMap.IsClassMapRegistered(typeof(Lock)))
                         {
                             BsonClassMap.RegisterClassMap<Lock>(cm =>
@@ -273,11 +267,8 @@ public static class IMachineBuilderExtensions
                 o.AddRepository<TrainSegmentPair>(
                     "train_segment_pairs",
                     mapSetup: ms =>
-                    {
-                        ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
                         ms.MapMember(m => m.TranslationEngineRef)
-                            .SetSerializer(new StringSerializer(BsonType.ObjectId));
-                    },
+                            .SetSerializer(new StringSerializer(BsonType.ObjectId)),
                     init: c =>
                         c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<TrainSegmentPair>(

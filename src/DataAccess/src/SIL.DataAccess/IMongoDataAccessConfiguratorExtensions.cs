@@ -5,12 +5,18 @@ public static class IMongoDataAccessConfiguratorExtensions
     public static IMongoDataAccessConfigurator AddRepository<T>(
         this IMongoDataAccessConfigurator configurator,
         string collectionName,
+        bool mapIdToObjectId = true,
         Action<BsonClassMap<T>>? mapSetup = null,
         Func<IMongoCollection<T>, Task>? init = null
     )
         where T : IEntity
     {
-        DataAccessClassMap.RegisterClass<T>(cm => mapSetup?.Invoke(cm));
+        DataAccessClassMap.RegisterClass<T>(cm =>
+        {
+            if (mapIdToObjectId)
+                cm.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
+            mapSetup?.Invoke(cm);
+        });
 
         if (init is not null)
         {

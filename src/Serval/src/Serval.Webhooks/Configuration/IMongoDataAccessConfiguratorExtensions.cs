@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +8,6 @@ public static class IMongoDataAccessConfiguratorExtensions
     {
         configurator.AddRepository<Webhook>(
             "webhooks.hooks",
-            mapSetup: ms => ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId)),
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(

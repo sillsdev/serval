@@ -15,7 +15,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             "word_alignment.engines",
             mapSetup: ms =>
             {
-                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 if (!BsonClassMap.IsClassMapRegistered(typeof(ParallelCorpus)))
                 {
                     BsonClassMap.RegisterClassMap<ParallelCorpus>(cm =>
@@ -55,8 +54,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             "word_alignment.builds",
             mapSetup: ms =>
             {
-                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
-                ms.MapMember(m => m.EngineRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 if (!BsonClassMap.IsClassMapRegistered(typeof(TrainingCorpus)))
                 {
                     BsonClassMap.RegisterClassMap<TrainingCorpus>(cm =>
@@ -104,7 +101,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             "word_alignment.word_alignments",
             mapSetup: ms =>
             {
-                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 ms.MapMember(m => m.CorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 ms.MapMember(m => m.EngineRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
             },

@@ -15,7 +15,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             "translation.engines",
             mapSetup: ms =>
             {
-                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 if (!BsonClassMap.IsClassMapRegistered(typeof(Corpus)))
                 {
                     BsonClassMap.RegisterClassMap<Corpus>(cm =>
@@ -68,7 +67,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             "translation.builds",
             mapSetup: ms =>
             {
-                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 ms.MapMember(m => m.EngineRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 if (!BsonClassMap.IsClassMapRegistered(typeof(TrainingCorpus)))
                 {
@@ -132,7 +130,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             "translation.pretranslations",
             mapSetup: ms =>
             {
-                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 ms.MapMember(m => m.CorpusRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 ms.MapMember(m => m.EngineRef).SetSerializer(new StringSerializer(BsonType.ObjectId));
             },

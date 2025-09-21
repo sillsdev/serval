@@ -12,7 +12,6 @@ public static class IMongoDataAccessConfiguratorExtensions
     {
         configurator.AddRepository<DataFile>(
             "data_files.files",
-            mapSetup: ms => ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId)),
             init: c =>
                 c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<DataFile>(Builders<DataFile>.IndexKeys.Ascending(p => p.Owner))
@@ -21,7 +20,6 @@ public static class IMongoDataAccessConfiguratorExtensions
 
         configurator.AddRepository<DeletedFile>(
             "data_files.deleted_files",
-            mapSetup: ms => ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId)),
             init: c =>
                 c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<DeletedFile>(Builders<DeletedFile>.IndexKeys.Ascending(p => p.DeletedAt))
@@ -31,7 +29,6 @@ public static class IMongoDataAccessConfiguratorExtensions
             "corpora.corpus",
             mapSetup: ms =>
             {
-                ms.MapIdMember(m => m.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
                 if (!BsonClassMap.IsClassMapRegistered(typeof(CorpusFile)))
                 {
                     BsonClassMap.RegisterClassMap<CorpusFile>(cm =>
