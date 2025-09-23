@@ -1481,8 +1481,8 @@ public class TranslationEngineTests
             ECHO_ENGINE1_ID,
             TestParallelCorpusConfigNoCorpora
         );
-        PretranslateCorpusConfig wacc = new() { ParallelCorpusId = addedCorpus.Id };
-        TranslationBuildConfig tbc = new() { Pretranslate = [wacc] };
+        PretranslateCorpusConfig pcc = new() { ParallelCorpusId = addedCorpus.Id };
+        TranslationBuildConfig tbc = new() { Pretranslate = [pcc] };
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
@@ -2255,10 +2255,13 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public async Task GetLanguageInfoAsync()
+    [TestCase("Nmt")]
+    [TestCase("SmtTransfer")]
+    [TestCase("Echo")]
+    public async Task GetLanguageInfoAsync(string engineType)
     {
         TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient();
-        Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync("Nmt", "Alphabet");
+        Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync(engineType, "Alphabet");
         Assert.Multiple(() =>
         {
             Assert.That(languageInfo.InternalCode, Is.EqualTo("abc_123"));
@@ -2515,6 +2518,8 @@ public class TranslationEngineTests
             NmtClient
                 .TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.Unimplemented));
+
+            SmtClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
         }
 
         public ServalWebApplicationFactory Factory { get; }
@@ -2525,6 +2530,7 @@ public class TranslationEngineTests
         public IRepository<Build> Builds { get; }
         public TranslationEngineApi.TranslationEngineApiClient EchoClient { get; }
         public TranslationEngineApi.TranslationEngineApiClient NmtClient { get; }
+        public TranslationEngineApi.TranslationEngineApiClient SmtClient { get; }
 
         public TranslationEnginesClient CreateTranslationEnginesClient(IEnumerable<string>? scope = null)
         {
@@ -2577,6 +2583,9 @@ public class TranslationEngineTests
                         grpcClientFactory
                             .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
                             .Returns(NmtClient);
+                        grpcClientFactory
+                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("SmtTransfer")
+                            .Returns(SmtClient);
                         services.AddSingleton(grpcClientFactory);
                     });
                 })
@@ -2585,6 +2594,16 @@ public class TranslationEngineTests
                 .GetQueueSizeAsync(Arg.Any<GetQueueSizeRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new GetQueueSizeResponse() { Size = 0 }));
             NmtClient
+                .GetLanguageInfoAsync(Arg.Any<GetLanguageInfoRequest>(), null, null, Arg.Any<CancellationToken>())
+                .Returns(
+                    CreateAsyncUnaryCall(new GetLanguageInfoResponse() { InternalCode = "abc_123", IsNative = true })
+                );
+            SmtClient
+                .GetLanguageInfoAsync(Arg.Any<GetLanguageInfoRequest>(), null, null, Arg.Any<CancellationToken>())
+                .Returns(
+                    CreateAsyncUnaryCall(new GetLanguageInfoResponse() { InternalCode = "abc_123", IsNative = true })
+                );
+            EchoClient
                 .GetLanguageInfoAsync(Arg.Any<GetLanguageInfoRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(
                     CreateAsyncUnaryCall(new GetLanguageInfoResponse() { InternalCode = "abc_123", IsNative = true })

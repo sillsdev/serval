@@ -79,6 +79,14 @@ public class NmtEngineServiceTests
         Assert.That(engine.TargetLanguage, Is.EqualTo("en"));
     }
 
+    [Test]
+    public void GetLanguageInfo()
+    {
+        using var env = new TestEnvironment();
+        env.Service.IsLanguageNativeToModel("en", out string internalCode);
+        Assert.That(internalCode, Is.EqualTo("eng_Latn"));
+    }
+
     private class TestEnvironment : DisposableBase
     {
         private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
