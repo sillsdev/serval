@@ -2363,7 +2363,7 @@ namespace Serval.Client
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         [System.Obsolete]
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllCorpusPretranslationsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllCorpusPretranslationsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2514,7 +2514,7 @@ namespace Serval.Client
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string parallelCorpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string parallelCorpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2653,7 +2653,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2666,7 +2666,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -4427,7 +4427,7 @@ namespace Serval.Client
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         [System.Obsolete]
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllCorpusPretranslationsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllCorpusPretranslationsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -4456,10 +4456,6 @@ namespace Serval.Client
                     if (textId != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("text-id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (textIdCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("textId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textIdCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -5457,7 +5453,7 @@ namespace Serval.Client
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string parallelCorpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string parallelCorpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5486,10 +5482,6 @@ namespace Serval.Client
                     if (textId != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("text-id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (textIdCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("textId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textIdCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -6177,7 +6169,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -6205,10 +6197,6 @@ namespace Serval.Client
                     if (minRevision != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (minRevisionCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -6305,7 +6293,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -6329,10 +6317,6 @@ namespace Serval.Client
                     if (minRevision != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (minRevisionCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
