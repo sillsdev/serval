@@ -602,7 +602,7 @@ public class TranslationEnginesController(
         [NotNull] string id,
         [NotNull] string corpusId,
         [FromQuery(Name = "text-id")] string? textId,
-        [FromQuery(Name = "textId")] string? textIdCamelCase,
+        [OpenApiIgnore] [FromQuery(Name = "textId")] string? textIdCamelCase,
         CancellationToken cancellationToken
     )
     {
@@ -1022,7 +1022,7 @@ public class TranslationEnginesController(
         [NotNull] string id,
         [NotNull] string parallelCorpusId,
         [FromQuery(Name = "text-id")] string? textId,
-        [FromQuery(Name = "textId")] string? textIdCamelCase,
+        [OpenApiIgnore] [FromQuery(Name = "textId")] string? textIdCamelCase,
         CancellationToken cancellationToken
     )
     {
@@ -1278,7 +1278,7 @@ public class TranslationEnginesController(
         [NotNull] string id,
         [NotNull] string buildId,
         [FromQuery(Name = "min-revision")] long? minRevision,
-        [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
+        [OpenApiIgnore] [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
         CancellationToken cancellationToken
     )
     {
@@ -1408,7 +1408,7 @@ public class TranslationEnginesController(
     public async Task<ActionResult<TranslationBuildDto>> GetCurrentBuildAsync(
         [NotNull] string id,
         [FromQuery(Name = "min-revision")] long? minRevision,
-        [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
+        [OpenApiIgnore] [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
         CancellationToken cancellationToken
     )
     {
