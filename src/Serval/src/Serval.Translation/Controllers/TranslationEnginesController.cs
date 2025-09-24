@@ -1022,11 +1022,9 @@ public class TranslationEnginesController(
         [NotNull] string id,
         [NotNull] string parallelCorpusId,
         [FromQuery(Name = "text-id")] string? textId,
-        [OpenApiIgnore] [FromQuery(Name = "textId")] string? textIdCamelCase,
         CancellationToken cancellationToken
     )
     {
-        textId ??= textIdCamelCase;
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         if (!engine.ParallelCorpora.Any(c => c.Id == parallelCorpusId))
