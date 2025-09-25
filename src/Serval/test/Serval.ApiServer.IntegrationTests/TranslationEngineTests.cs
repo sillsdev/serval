@@ -60,16 +60,6 @@ public class TranslationEngineTests
             }
         };
 
-    private static readonly TranslationCorpusConfig TestCorpusConfigScripture =
-        new()
-        {
-            Name = "TestCorpus",
-            SourceLanguage = "en",
-            TargetLanguage = "en",
-            SourceFiles = { new TranslationCorpusFileConfig { FileId = FILE3_SRC_ZIP_ID } },
-            TargetFiles = { new TranslationCorpusFileConfig { FileId = FILE4_TRG_ZIP_ID } }
-        };
-
     private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigEmptySource =
         new()
         {
@@ -84,6 +74,13 @@ public class TranslationEngineTests
             Name = "TestCorpus",
             SourceCorpusIds = [],
             TargetCorpusIds = [],
+        };
+    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigScripture =
+        new()
+        {
+            Name = "TestCorpus",
+            SourceCorpusIds = [SOURCE_CORPUS_ID_PT],
+            TargetCorpusIds = [TARGET_CORPUS_ID_PT],
         };
 
     private const string ECHO_ENGINE1_ID = "e00000000000000000000001";
@@ -101,7 +98,9 @@ public class TranslationEngineTests
     private const string FILE4_FILENAME = "file_d";
     private const string SOURCE_CORPUS_ID_1 = "cc0000000000000000000001";
     private const string SOURCE_CORPUS_ID_2 = "cc0000000000000000000002";
-    private const string TARGET_CORPUS_ID = "cc0000000000000000000003";
+    private const string SOURCE_CORPUS_ID_PT = "cc0000000000000000000003";
+    private const string TARGET_CORPUS_ID = "cc0000000000000000000004";
+    private const string TARGET_CORPUS_ID_PT = "cc0000000000000000000005";
     private const string EMPTY_CORPUS_ID = "cc0000000000000000000006";
 
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
@@ -214,12 +213,26 @@ public class TranslationEngineTests
             Owner = "client1",
             Files = [new() { FileRef = srcFile.Id, TextId = "all" }]
         };
+        var srcCorpusParatext = new DataFiles.Models.Corpus
+        {
+            Id = SOURCE_CORPUS_ID_PT,
+            Language = "en",
+            Owner = "client1",
+            Files = [new() { FileRef = srcParatextFile.Id }]
+        };
         var trgCorpus = new DataFiles.Models.Corpus
         {
             Id = TARGET_CORPUS_ID,
             Language = "en",
             Owner = "client1",
             Files = [new() { FileRef = trgFile.Id, TextId = "all" }]
+        };
+        var trgCorpusParatext = new DataFiles.Models.Corpus
+        {
+            Id = TARGET_CORPUS_ID_PT,
+            Language = "en",
+            Owner = "client1",
+            Files = [new() { FileRef = trgParatextFile.Id }]
         };
         var emptyCorpus = new DataFiles.Models.Corpus
         {
@@ -228,7 +241,9 @@ public class TranslationEngineTests
             Owner = "client1",
             Files = []
         };
-        await _env.Corpora.InsertAllAsync([srcCorpus, srcCorpus2, trgCorpus, emptyCorpus]);
+        await _env.Corpora.InsertAllAsync(
+            [srcCorpus, srcCorpus2, srcCorpusParatext, trgCorpus, emptyCorpus, trgCorpusParatext]
+        );
     }
 
     [Test]
@@ -1174,7 +1189,10 @@ public class TranslationEngineTests
     public async Task GetAllPretranslationsAsync_Exists()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         var pret = new Translation.Models.Pretranslation
@@ -1221,7 +1239,10 @@ public class TranslationEngineTests
     public async Task GetAllPretranslationsAsync_EngineNotBuilt()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
 
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(
             () => client.GetAllPretranslationsAsync(ECHO_ENGINE1_ID, addedCorpus.Id)
@@ -1233,7 +1254,10 @@ public class TranslationEngineTests
     public async Task GetAllPretranslationsAsync_TextIdExists()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         var pret = new Translation.Models.Pretranslation
@@ -1259,7 +1283,10 @@ public class TranslationEngineTests
     public async Task GetAllPretranslationsAsync_TextIdDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         var pret = new Translation.Models.Pretranslation
@@ -1639,12 +1666,11 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public async Task GetPretranslatedUsfmAsync_EmptyCorpus()
+    public async Task GetCorpusPretranslatedUsfmAsync_EmptyCorpus()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
         TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id };
-        TranslationBuildConfig tbc = new() { TrainOn = [tcc], };
         //Below code is copy-pasted from EngineService.DeleteAllCorpusFilesAsync
         async Task DeleteFilesFromCorpora(string dataFileId)
         {
@@ -1667,7 +1693,7 @@ public class TranslationEngineTests
 
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
-            await client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT");
+            await client.GetCorpusPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT");
         });
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
@@ -2131,7 +2157,10 @@ public class TranslationEngineTests
     public async Task GetPretranslatedUsfmAsync_BookExists()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfigScripture
+        );
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         await _env.Builds.InsertAsync(
@@ -2175,7 +2204,10 @@ public class TranslationEngineTests
     public async Task GetPretranslationsByTextId()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfigScripture
+        );
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         var pret = new Translation.Models.Pretranslation
@@ -2213,7 +2245,10 @@ public class TranslationEngineTests
     public async Task GetPretranslatedUsfmAsync_BookDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfigScripture);
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfigScripture
+        );
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
         await _env.Builds.InsertAsync(

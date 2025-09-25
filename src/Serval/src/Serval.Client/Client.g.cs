@@ -2344,6 +2344,97 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
+        /// Get all pretranslations in a corpus or parallel corpus of a translation engine
+        /// </summary>
+        /// <remarks>
+        /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`translation`**: the text of the pretranslation
+        /// <br/>            
+        /// <br/>Pretranslations can be filtered by text id if provided.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="textId">The text id (optional)</param>
+        /// <returns>The pretranslations</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllCorpusPretranslationsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get all pretranslations for the specified text in a corpus or parallel corpus of a translation engine
+        /// </summary>
+        /// <remarks>
+        /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`translation`**: the text of the pretranslation
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="textId">The text id</param>
+        /// <returns>The pretranslations</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetCorpusPretranslationsByTextIdAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get a pretranslated Scripture book in USFM format.
+        /// </summary>
+        /// <remarks>
+        /// The text that populates the USFM structure can be controlled by the `text-origin` parameter:
+        /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
+        /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
+        /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
+        /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
+        /// <br/>            
+        /// <br/>The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
+        /// <br/>* `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
+        /// <br/>* `Source`: The source book is used as the template.
+        /// <br/>* `Target`: The target book is used as the template.
+        /// <br/>            
+        /// <br/>The intra-segment USFM markers are handled in the following way:
+        /// <br/>* Each verse and non-verse text segment is stripped of all intra-segment USFM.
+        /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
+        /// <br/>            
+        /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraph-marker-behavior`, `embed-behavior`, and `style-marker-behavior` parameters.
+        /// <br/>* `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
+        /// <br/>* `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
+        /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
+        /// <br/>            
+        /// <br/>Quote normalization behavior is controlled by the `quote-normalization-behavior` parameter options:
+        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data. **This is the default**.
+        /// <br/>* `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="textId">The text id</param>
+        /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
+        /// <param name="template">The source or target book to use as the USFM template.</param>
+        /// <param name="paragraphMarkerBehavior">The behavior of paragraph markers.</param>
+        /// <param name="embedBehavior">The behavior of embed markers.</param>
+        /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
+        /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
+        /// <returns>The book in USFM format</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
+        System.Threading.Tasks.Task<string> GetCorpusPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
         /// Add a parallel corpus to a translation engine
         /// </summary>
         /// <remarks>
@@ -2405,7 +2496,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all pretranslations in a corpus or parallel corpus of a translation engine
+        /// Get all pretranslations in a parallel corpus of a translation engine
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -2419,15 +2510,15 @@ namespace Serval.Client
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string parallelCorpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all pretranslations for the specified text in a corpus or parallel corpus of a translation engine
+        /// Get all pretranslations for the specified text in a parallel corpus of a translation engine
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -2440,11 +2531,11 @@ namespace Serval.Client
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
         /// <param name="textId">The text id</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetPretranslationsByTextIdAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetPretranslationsByTextIdAsync(string id, string parallelCorpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2479,7 +2570,7 @@ namespace Serval.Client
         /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
         /// <param name="textId">The text id</param>
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <param name="template">The source or target book to use as the USFM template.</param>
@@ -2489,7 +2580,7 @@ namespace Serval.Client
         /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string parallelCorpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2562,7 +2653,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -2575,7 +2666,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -4317,6 +4408,465 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
+        /// Get all pretranslations in a corpus or parallel corpus of a translation engine
+        /// </summary>
+        /// <remarks>
+        /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`translation`**: the text of the pretranslation
+        /// <br/>            
+        /// <br/>Pretranslations can be filtered by text id if provided.
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="textId">The text id (optional)</param>
+        /// <returns>The pretranslations</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllCorpusPretranslationsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (corpusId == null)
+                throw new System.ArgumentNullException("corpusId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "translation/engines/{id}/corpora/{corpusId}/pretranslations"
+                    urlBuilder_.Append("translation/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pretranslations");
+                    urlBuilder_.Append('?');
+                    if (textId != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("text-id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<Pretranslation>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 409)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get all pretranslations for the specified text in a corpus or parallel corpus of a translation engine
+        /// </summary>
+        /// <remarks>
+        /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`translation`**: the text of the pretranslation
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="textId">The text id</param>
+        /// <returns>The pretranslations</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetCorpusPretranslationsByTextIdAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (corpusId == null)
+                throw new System.ArgumentNullException("corpusId");
+
+            if (textId == null)
+                throw new System.ArgumentNullException("textId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}"
+                    urlBuilder_.Append("translation/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pretranslations/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<Pretranslation>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 409)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get a pretranslated Scripture book in USFM format.
+        /// </summary>
+        /// <remarks>
+        /// The text that populates the USFM structure can be controlled by the `text-origin` parameter:
+        /// <br/>* `PreferExisting`: The existing and pretranslated texts are merged into the USFM, preferring existing text. **This is the default**.
+        /// <br/>* `PreferPretranslated`: The existing and pretranslated texts are merged into the USFM, preferring pretranslated text.
+        /// <br/>* `OnlyExisting`: Return the existing target USFM file with no modifications (except updating the USFM id if needed).
+        /// <br/>* `OnlyPretranslated`: Only the pretranslated text is returned; all existing text in the target USFM is removed.
+        /// <br/>            
+        /// <br/>The source or target book can be used as the USFM template for the pretranslated text. The template can be controlled by the `template` parameter:
+        /// <br/>* `Auto`: The target book is used as the template if it exists; otherwise, the source book is used. **This is the default**.
+        /// <br/>* `Source`: The source book is used as the template.
+        /// <br/>* `Target`: The target book is used as the template.
+        /// <br/>            
+        /// <br/>The intra-segment USFM markers are handled in the following way:
+        /// <br/>* Each verse and non-verse text segment is stripped of all intra-segment USFM.
+        /// <br/>* Reference (\r) and remark (\rem) markers are not translated but carried through from the source to the target.
+        /// <br/>            
+        /// <br/>Preserving or stripping different types of USFM markers can be controlled by the `paragraph-marker-behavior`, `embed-behavior`, and `style-marker-behavior` parameters.
+        /// <br/>* `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
+        /// <br/>* `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
+        /// <br/>* `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
+        /// <br/>            
+        /// <br/>Quote normalization behavior is controlled by the `quote-normalization-behavior` parameter options:
+        /// <br/>* `Normalized`: The quotes in the pretranslated USFM are normalized quotes (typically straight quotes: ', ") in the style of the source data. **This is the default**.
+        /// <br/>* `Denormalized`: The quotes in the pretranslated USFM are denormalized into the style of the target data. Quote denormalization may not be successful in all contexts. A remark will be added to the USFM listing the chapters that were successfully denormalized.
+        /// <br/>            
+        /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
+        /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
+        /// </remarks>
+        /// <param name="id">The translation engine id</param>
+        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="textId">The text id</param>
+        /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
+        /// <param name="template">The source or target book to use as the USFM template.</param>
+        /// <param name="paragraphMarkerBehavior">The behavior of paragraph markers.</param>
+        /// <param name="embedBehavior">The behavior of embed markers.</param>
+        /// <param name="styleMarkerBehavior">The behavior of style markers.</param>
+        /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
+        /// <returns>The book in USFM format</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        [System.Obsolete]
+        public virtual async System.Threading.Tasks.Task<string> GetCorpusPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (corpusId == null)
+                throw new System.ArgumentNullException("corpusId");
+
+            if (textId == null)
+                throw new System.ArgumentNullException("textId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}/usfm"
+                    urlBuilder_.Append("translation/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pretranslations/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/usfm");
+                    urlBuilder_.Append('?');
+                    if (textOrigin != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("text-origin")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textOrigin, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (template != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("template")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(template, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (paragraphMarkerBehavior != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("paragraph-marker-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(paragraphMarkerBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (embedBehavior != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("embed-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(embedBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (styleMarkerBehavior != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("style-marker-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(styleMarkerBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (quoteNormalizationBehavior != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("quotation-mark-behavior")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(quoteNormalizationBehavior, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            var result_ = (string)System.Convert.ChangeType(responseData_, typeof(string));
+                            return result_;
+                        }
+                        else
+                        if (status_ == 204)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The specified book does not exist in the source or target corpus.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The corpus is not a valid Scripture corpus.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the translation engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 409)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
         /// Add a parallel corpus to a translation engine
         /// </summary>
         /// <remarks>
@@ -4885,7 +5435,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all pretranslations in a corpus or parallel corpus of a translation engine
+        /// Get all pretranslations in a parallel corpus of a translation engine
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -4899,17 +5449,17 @@ namespace Serval.Client
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
         /// <param name="textId">The text id (optional)</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetAllPretranslationsAsync(string id, string parallelCorpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
-            if (corpusId == null)
-                throw new System.ArgumentNullException("corpusId");
+            if (parallelCorpusId == null)
+                throw new System.ArgumentNullException("parallelCorpusId");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -4922,20 +5472,16 @@ namespace Serval.Client
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "translation/engines/{id}/corpora/{corpusId}/pretranslations"
+                    // Operation Path: "translation/engines/{id}/parallel-corpora/{parallelCorpusId}/pretranslations"
                     urlBuilder_.Append("translation/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/corpora/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/parallel-corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/pretranslations");
                     urlBuilder_.Append('?');
                     if (textId != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("text-id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (textIdCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("textId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textIdCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -4987,7 +5533,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or parallel corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
@@ -5023,7 +5569,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all pretranslations for the specified text in a corpus or parallel corpus of a translation engine
+        /// Get all pretranslations for the specified text in a parallel corpus of a translation engine
         /// </summary>
         /// <remarks>
         /// Pretranslations are arranged in a list of dictionaries with the following fields per pretranslation:
@@ -5036,17 +5582,17 @@ namespace Serval.Client
         /// <br/>Only pretranslations for the most recent successful build of the engine are returned.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
         /// <param name="textId">The text id</param>
         /// <returns>The pretranslations</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetPretranslationsByTextIdAsync(string id, string corpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<Pretranslation>> GetPretranslationsByTextIdAsync(string id, string parallelCorpusId, string textId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
-            if (corpusId == null)
-                throw new System.ArgumentNullException("corpusId");
+            if (parallelCorpusId == null)
+                throw new System.ArgumentNullException("parallelCorpusId");
 
             if (textId == null)
                 throw new System.ArgumentNullException("textId");
@@ -5062,11 +5608,11 @@ namespace Serval.Client
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}"
+                    // Operation Path: "translation/engines/{id}/parallel-corpora/{parallelCorpusId}/pretranslations/{textId}"
                     urlBuilder_.Append("translation/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/corpora/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/parallel-corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/pretranslations/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -5118,7 +5664,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or parallel corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
@@ -5185,7 +5731,7 @@ namespace Serval.Client
         /// <br/>The USFM parsing and marker types used are defined here: [this wiki](https://github.com/sillsdev/serval/wiki/USFM-Parsing-and-Translation).
         /// </remarks>
         /// <param name="id">The translation engine id</param>
-        /// <param name="corpusId">The corpus id or parallel corpus id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
         /// <param name="textId">The text id</param>
         /// <param name="textOrigin">The source[s] of the data to populate the USFM file with.</param>
         /// <param name="template">The source or target book to use as the USFM template.</param>
@@ -5195,13 +5741,13 @@ namespace Serval.Client
         /// <param name="quoteNormalizationBehavior">The normalization behavior of quotes.</param>
         /// <returns>The book in USFM format</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string corpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<string> GetPretranslatedUsfmAsync(string id, string parallelCorpusId, string textId, PretranslationUsfmTextOrigin? textOrigin = null, PretranslationUsfmTemplate? template = null, PretranslationUsfmMarkerBehavior? paragraphMarkerBehavior = null, PretranslationUsfmMarkerBehavior? embedBehavior = null, PretranslationUsfmMarkerBehavior? styleMarkerBehavior = null, PretranslationNormalizationBehavior? quoteNormalizationBehavior = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
-            if (corpusId == null)
-                throw new System.ArgumentNullException("corpusId");
+            if (parallelCorpusId == null)
+                throw new System.ArgumentNullException("parallelCorpusId");
 
             if (textId == null)
                 throw new System.ArgumentNullException("textId");
@@ -5217,11 +5763,11 @@ namespace Serval.Client
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "translation/engines/{id}/corpora/{corpusId}/pretranslations/{textId}/usfm"
+                    // Operation Path: "translation/engines/{id}/parallel-corpora/{parallelCorpusId}/pretranslations/{textId}/usfm"
                     urlBuilder_.Append("translation/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/corpora/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/parallel-corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/pretranslations/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/usfm");
@@ -5291,7 +5837,7 @@ namespace Serval.Client
                         if (status_ == 400)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The corpus is not a valid Scripture corpus.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The parallel corpus does not contain a valid Scripture corpus, or the USFM is invalid.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 401)
@@ -5309,7 +5855,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or parallel corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 409)
@@ -5623,7 +6169,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5651,10 +6197,6 @@ namespace Serval.Client
                     if (minRevision != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (minRevisionCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -5751,7 +6293,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetCurrentBuildAsync(string id, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -5775,10 +6317,6 @@ namespace Serval.Client
                     if (minRevision != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (minRevisionCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -10252,61 +10790,6 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationParallelCorpus
-    {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Id { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Url { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public ResourceLink Engine { get; set; } = new ResourceLink();
-
-        [Newtonsoft.Json.JsonProperty("sourceCorpora", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<ResourceLink> SourceCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
-
-        [Newtonsoft.Json.JsonProperty("targetCorpora", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<ResourceLink> TargetCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationParallelCorpusConfig
-    {
-        /// <summary>
-        /// The corpus name.
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Name { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("sourceCorpusIds", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> SourceCorpusIds { get; set; } = new System.Collections.ObjectModel.Collection<string>();
-
-        [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> TargetCorpusIds { get; set; } = new System.Collections.ObjectModel.Collection<string>();
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class TranslationParallelCorpusUpdateConfig
-    {
-        [Newtonsoft.Json.JsonProperty("sourceCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<string>? SourceCorpusIds { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<string>? TargetCorpusIds { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class Pretranslation
     {
         [Newtonsoft.Json.JsonProperty("textId", Required = Newtonsoft.Json.Required.Always)]
@@ -10380,6 +10863,61 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Denormalized")]
         Denormalized = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TranslationParallelCorpus
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Id { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Url { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("engine", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public ResourceLink Engine { get; set; } = new ResourceLink();
+
+        [Newtonsoft.Json.JsonProperty("sourceCorpora", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<ResourceLink> SourceCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
+
+        [Newtonsoft.Json.JsonProperty("targetCorpora", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<ResourceLink> TargetCorpora { get; set; } = new System.Collections.ObjectModel.Collection<ResourceLink>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TranslationParallelCorpusConfig
+    {
+        /// <summary>
+        /// The corpus name.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Name { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceCorpusIds", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> SourceCorpusIds { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> TargetCorpusIds { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TranslationParallelCorpusUpdateConfig
+    {
+        [Newtonsoft.Json.JsonProperty("sourceCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? SourceCorpusIds { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? TargetCorpusIds { get; set; } = default!;
 
     }
 
