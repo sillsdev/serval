@@ -50,13 +50,22 @@ public class MissingServicesTests
         {
             string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT1");
             string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
-            await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
-            string cId = await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
-            await _helperClient.BuildEngineAsync(engineId);
-            IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
-                engineId,
-                cId
+            ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
+            books = ["3JN.txt"];
+            ParallelCorpusConfig pretranslateCorpus = await _helperClient.MakeParallelTextCorpus(
+                books,
+                "es",
+                "en",
+                true
             );
+            string corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(
+                engineId,
+                pretranslateCorpus,
+                false
+            );
+            await _helperClient.BuildEngineAsync(engineId);
+            _ = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(engineId, corpusId);
         });
     }
 
