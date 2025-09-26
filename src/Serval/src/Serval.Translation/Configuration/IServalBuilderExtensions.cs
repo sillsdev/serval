@@ -14,9 +14,6 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
 
-        builder.Services.AddSingleton<EngineCleanupService>();
-        builder.Services.AddSingleton<BuildCleanupService>();
-
         var translationOptions = new TranslationOptions();
         builder.Configuration.GetSection(TranslationOptions.Key).Bind(translationOptions);
 
@@ -32,6 +29,14 @@ public static class IServalBuilderExtensions
             );
             builder.Services.AddHealthChecks().AddCheck<GrpcServiceHealthCheck>(engine.Type);
         }
+
+        builder.Services.AddOutbox(x =>
+        {
+            x.AddConsumer<EngineCreateConsumer>();
+            x.AddConsumer<EngineUpdateConsumer>();
+            x.AddConsumer<EngineDeleteConsumer>();
+            x.AddConsumer<EngineStartBuildConsumer>();
+        });
 
         return builder;
     }

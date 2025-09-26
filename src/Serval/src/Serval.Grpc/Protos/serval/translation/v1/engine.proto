@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 import "serval/translation/v1/common.proto";
 
 service TranslationEngineApi {
-    rpc Create(CreateRequest) returns (CreateResponse);
+    rpc Create(CreateRequest) returns (google.protobuf.Empty);
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
     rpc Update(UpdateRequest) returns (google.protobuf.Empty);
     rpc Translate(TranslateRequest) returns (TranslateResponse);
@@ -29,9 +29,6 @@ message CreateRequest {
     optional bool is_model_persisted = 6;
 }
 
-message CreateResponse {
-    bool is_model_persisted = 1;
-}
 message DeleteRequest {
     string engine_type = 1;
     string engine_id = 2;

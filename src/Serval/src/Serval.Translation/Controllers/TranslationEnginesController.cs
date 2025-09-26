@@ -1115,7 +1115,7 @@ public class TranslationEnginesController(
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
     /// <response code="404">The engine does not exist.</response>
-    /// <response code="409">There is already an active or pending build or a build in the process of being canceled.</response>
+    /// <response code="409">There is already an active/pending build or a build in the process of being canceled.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPost("{id}/builds")]
@@ -1138,7 +1138,8 @@ public class TranslationEnginesController(
         await AuthorizeAsync(engine);
         Build build = Map(engine, buildConfig, deploymentVersion);
 
-        await _engineService.StartBuildAsync(build, cancellationToken);
+        if (!await _engineService.StartBuildAsync(build, cancellationToken))
+            return Conflict();
 
         TranslationBuildDto dto = Map(build);
         return Created(dto.Url, dto);
@@ -1408,8 +1409,7 @@ public class TranslationEnginesController(
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
             Corpora = [],
-            IsModelPersisted = source.IsModelPersisted,
-            IsInitialized = false
+            IsModelPersisted = source.IsModelPersisted
         };
     }
 
@@ -1422,8 +1422,7 @@ public class TranslationEnginesController(
             Pretranslate = Map(engine, source.Pretranslate),
             TrainOn = Map(engine, source.TrainOn),
             Options = Map(source.Options),
-            DeploymentVersion = deploymentVersion,
-            IsInitialized = false
+            DeploymentVersion = deploymentVersion
         };
     }
 
