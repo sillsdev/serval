@@ -19,4 +19,4 @@ global using Serval.Shared.Services;
 global using Serval.Shared.Utils;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
-global using SIL.ObjectModel;
+global using SIL.ServiceToolkit.Services;

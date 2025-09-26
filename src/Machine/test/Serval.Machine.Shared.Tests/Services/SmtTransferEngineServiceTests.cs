@@ -708,7 +708,7 @@ public class SmtTransferEngineServiceTests
                         _env.SharedFileService,
                         _env._lockFactory,
                         _env.TrainSegmentPairs,
-                        new ParallelCorpusPreprocessingService(new CorpusService())
+                        new ParallelCorpusPreprocessingService(new TextCorpusService())
                     )
                     {
                         TrainJobRunnerType = _env._trainJobRunnerType

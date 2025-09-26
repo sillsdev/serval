@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using MassTransit.Mediator;
+using Serval.Translation.Configuration;
 using Serval.Translation.V1;
 
 namespace Serval.Translation.Services;
@@ -109,8 +110,11 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -165,7 +169,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -182,8 +187,11 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = [] }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -240,7 +248,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -257,8 +266,11 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -315,7 +327,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -332,8 +345,11 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -388,7 +404,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -406,8 +423,11 @@ public class EngineServiceTests
                 Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus1" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -462,7 +482,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -480,8 +501,11 @@ public class EngineServiceTests
                 Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus2" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -582,7 +606,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -617,8 +642,11 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -695,7 +723,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -712,8 +741,11 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -768,7 +800,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -787,28 +820,17 @@ public class EngineServiceTests
                     new TrainingCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new()
-                            {
-                                CorpusRef = "parallel-corpus1-source1",
-                                TextIds = new List<string> { "MAT" }
-                            }
-                        },
-                        TargetFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new()
-                            {
-                                CorpusRef = "parallel-corpus1-target1",
-                                TextIds = new List<string> { "MAT" }
-                            }
-                        }
+                        SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", TextIds = ["MAT"] }],
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }]
                     }
                 ]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -899,7 +921,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -918,29 +941,18 @@ public class EngineServiceTests
                     new TrainingCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new()
-                            {
-                                CorpusRef = "parallel-corpus1-source1",
-                                TextIds = new List<string> { "MAT" }
-                            }
-                        },
-                        TargetFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new()
-                            {
-                                CorpusRef = "parallel-corpus1-target1",
-                                TextIds = new List<string> { "MAT" }
-                            }
-                        }
+                        SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", TextIds = ["MAT"] }],
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }]
                     }
                 ],
                 Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus1" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -999,7 +1011,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1018,29 +1031,18 @@ public class EngineServiceTests
                     new TrainingCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new()
-                            {
-                                CorpusRef = "parallel-corpus1-source1",
-                                TextIds = new List<string> { "MAT" }
-                            }
-                        },
-                        TargetFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new()
-                            {
-                                CorpusRef = "parallel-corpus1-target1",
-                                TextIds = new List<string> { "MAT" }
-                            }
-                        }
+                        SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", TextIds = ["MAT"] }],
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }]
                     }
                 ],
                 Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus2" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1147,7 +1149,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1166,28 +1169,17 @@ public class EngineServiceTests
                     new TrainingCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new()
-                            {
-                                CorpusRef = "parallel-corpus1-source1",
-                                TextIds = new List<string>() { "MAT", "MRK" }
-                            }
-                        },
-                        TargetFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new()
-                            {
-                                CorpusRef = "parallel-corpus1-target1",
-                                TextIds = new List<string>() { "MAT", "MRK" }
-                            }
-                        }
+                        SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", TextIds = ["MAT", "MRK"] }],
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT", "MRK"] }]
                     }
                 ]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1278,7 +1270,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1297,14 +1290,11 @@ public class EngineServiceTests
                     new TrainingCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = new List<ParallelCorpusFilter>()
-                        {
+                        SourceFilters =
+                        [
                             new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" }
-                        },
-                        TargetFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 1;MRK" }
-                        }
+                        ],
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 1;MRK" }]
                     }
                 ],
                 Pretranslate =
@@ -1312,16 +1302,16 @@ public class EngineServiceTests
                     new PretranslateCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = new List<ParallelCorpusFilter>()
-                        {
-                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 2" }
-                        }
+                        SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 2" }]
                     }
                 ]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1439,7 +1429,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1458,22 +1449,25 @@ public class EngineServiceTests
                     new TrainingCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = new List<ParallelCorpusFilter>()
-                        {
+                        SourceFilters =
+                        [
                             new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1-2;MRK 1-2" },
                             new() { CorpusRef = "parallel-corpus1-source2", ScriptureRange = "MAT 3;MRK 1" }
-                        },
-                        TargetFilters = new List<ParallelCorpusFilter>()
-                        {
+                        ],
+                        TargetFilters =
+                        [
                             new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 2-3;MRK 2" },
                             new() { CorpusRef = "parallel-corpus1-target2", ScriptureRange = "MAT 1;MRK 1-2" }
-                        }
+                        ]
                     }
                 ]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1600,7 +1594,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1621,24 +1616,24 @@ public class EngineServiceTests
                             new TrainingCorpus
                             {
                                 ParallelCorpusRef = "parallel-corpus1",
-                                SourceFilters = new List<ParallelCorpusFilter>()
-                                {
+                                SourceFilters =
+                                [
                                     new()
                                     {
                                         CorpusRef = "parallel-corpus1-source1",
                                         ScriptureRange = "MAT",
                                         TextIds = []
                                     }
-                                },
-                                TargetFilters = new List<ParallelCorpusFilter>()
-                                {
+                                ],
+                                TargetFilters =
+                                [
                                     new()
                                     {
                                         CorpusRef = "parallel-corpus1-target1",
                                         ScriptureRange = "MAT",
                                         TextIds = []
                                     }
-                                }
+                                ]
                             }
                         ]
                     }
@@ -1659,8 +1654,11 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { ParallelCorpusRef = "parallel-corpus1" }]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1743,7 +1741,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1753,8 +1752,11 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
         await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1837,7 +1839,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1856,16 +1859,19 @@ public class EngineServiceTests
                     new TrainingCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = new List<ParallelCorpusFilter>()
-                        {
+                        SourceFilters =
+                        [
                             new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" }
-                        },
+                        ],
                     }
                 ]
             }
         );
-        _ = env.TranslationServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1959,7 +1965,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -2288,9 +2295,7 @@ public class EngineServiceTests
             TranslationServiceClient
                 .CancelBuildAsync(Arg.Any<CancelBuildRequest>())
                 .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
-            TranslationServiceClient
-                .CreateAsync(Arg.Any<CreateRequest>())
-                .Returns(CreateAsyncUnaryCall(new CreateResponse()));
+            TranslationServiceClient.CreateAsync(Arg.Any<CreateRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
             TranslationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
             TranslationServiceClient
                 .StartBuildAsync(Arg.Any<StartBuildRequest>())
@@ -2324,7 +2329,16 @@ public class EngineServiceTests
                         languageCode: "en"
                     )
                 );
+
             Pretranslations = new MemoryRepository<Pretranslation>();
+            OutboxService = Substitute.For<IOutboxService>();
+            IOptionsMonitor<TranslationOptions> translationOptions = Substitute.For<
+                IOptionsMonitor<TranslationOptions>
+            >();
+            translationOptions.CurrentValue.Returns(
+                new TranslationOptions { Engines = [new EngineInfo { Type = "Smt" }] }
+            );
+
             Service = new EngineService(
                 Engines,
                 new MemoryRepository<Build>(),
@@ -2334,7 +2348,9 @@ public class EngineServiceTests
                 dataFileOptions,
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
-                scriptureDataFileService
+                scriptureDataFileService,
+                OutboxService,
+                translationOptions
             );
         }
 
@@ -2342,6 +2358,7 @@ public class EngineServiceTests
         public IRepository<Engine> Engines { get; }
         public IRepository<Pretranslation> Pretranslations { get; }
         public TranslationEngineApi.TranslationEngineApiClient TranslationServiceClient { get; }
+        public IOutboxService OutboxService { get; }
 
         public async Task<Engine> CreateEngineWithTextFilesAsync()
         {
@@ -2352,8 +2369,8 @@ public class EngineServiceTests
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "Smt",
-                Corpora = new Models.Corpus[]
-                {
+                Corpora =
+                [
                     new()
                     {
                         Id = "corpus1",
@@ -2380,7 +2397,7 @@ public class EngineServiceTests
                             }
                         ],
                     }
-                }
+                ]
             };
             await Engines.InsertAsync(engine);
             return engine;
@@ -2395,8 +2412,8 @@ public class EngineServiceTests
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "Smt",
-                Corpora = new Models.Corpus[]
-                {
+                Corpora =
+                [
                     new()
                     {
                         Id = "corpus1",
@@ -2449,7 +2466,7 @@ public class EngineServiceTests
                             }
                         ],
                     }
-                }
+                ]
             };
             await Engines.InsertAsync(engine);
             return engine;
@@ -2464,8 +2481,8 @@ public class EngineServiceTests
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 Type = "Smt",
-                Corpora = new Models.Corpus[]
-                {
+                Corpora =
+                [
                     new()
                     {
                         Id = "corpus1",
@@ -2492,7 +2509,7 @@ public class EngineServiceTests
                             }
                         ],
                     }
-                }
+                ]
             };
             await Engines.InsertAsync(engine);
             return engine;
@@ -2512,8 +2529,8 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "parallel-corpus1",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
-                        {
+                        SourceCorpora =
+                        [
                             new()
                             {
                                 Id = "parallel-corpus1-source1",
@@ -2546,7 +2563,7 @@ public class EngineServiceTests
                                     }
                                 ]
                             }
-                        },
+                        ],
                         TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
                             new()

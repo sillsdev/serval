@@ -1,4 +1,7 @@
-﻿namespace Serval.ApiServer;
+﻿using Serval.Translation.Configuration;
+using Serval.WordAlignment.Configuration;
+
+namespace Serval.ApiServer;
 
 public class ServalWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -17,6 +20,24 @@ public class ServalWebApplicationFactory : WebApplicationFactory<Program>
             services.Configure<MongoDataAccessOptions>(options =>
                 options.Url = new MongoUrl("mongodb://localhost:27017/serval_test")
             );
+
+            services.Configure<TranslationOptions>(options =>
+            {
+                options.Engines =
+                [
+                    new Translation.Configuration.EngineInfo { Type = "Echo" },
+                    new Translation.Configuration.EngineInfo { Type = "Nmt" }
+                ];
+            });
+
+            services.Configure<WordAlignmentOptions>(options =>
+            {
+                options.Engines =
+                [
+                    new WordAlignment.Configuration.EngineInfo { Type = "EchoWordAlignment" },
+                    new WordAlignment.Configuration.EngineInfo { Type = "Statistical" }
+                ];
+            });
 
             services.AddHangfire(c =>
                 c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)

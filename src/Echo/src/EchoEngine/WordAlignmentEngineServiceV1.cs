@@ -1,6 +1,6 @@
 ﻿using Serval.WordAlignment.V1;
 
-namespace EchoWordAlignmentEngine;
+namespace EchoEngine;
 
 public class WordAlignmentEngineServiceV1(
     BackgroundTaskQueue taskQueue,
@@ -16,7 +16,7 @@ public class WordAlignmentEngineServiceV1(
     {
         if (request.SourceLanguage != request.TargetLanguage)
         {
-            Status status = new Status(StatusCode.InvalidArgument, "Source and target languages must be the same");
+            var status = new Status(StatusCode.InvalidArgument, "Source and target languages must be the same");
             throw new RpcException(status);
         }
         return Task.FromResult(Empty);
@@ -30,9 +30,7 @@ public class WordAlignmentEngineServiceV1(
     public static IEnumerable<AlignedWordPair> GenerateAlignedWordPairs(int number)
     {
         if (number < 0)
-        {
             throw new ArgumentOutOfRangeException(nameof(number), "Number must be non-negative");
-        }
         return Enumerable
             .Range(0, number)
             .Select(i => new AlignedWordPair
@@ -206,7 +204,7 @@ public class WordAlignmentEngineServiceV1(
     {
         // Only either textIds or Scripture Range will be used at a time
         // TextIds may be an empty array, so prefer that if both are empty (which applies to both scripture and text)
-        if (noFilter || (chapters is null && textIds is null))
+        if (noFilter || chapters is null && textIds is null)
             return FilterChoice.None;
         if (chapters is null || chapters.Count == 0)
             return FilterChoice.TextIds;

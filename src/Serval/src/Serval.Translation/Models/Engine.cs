@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Models;
 
-public record Engine : IOwnedEntity, IInitializableEntity
+public record Engine : IOwnedEntity
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
@@ -16,6 +16,5 @@ public record Engine : IOwnedEntity, IInitializableEntity
     public int ModelRevision { get; init; }
     public double Confidence { get; init; }
     public int CorpusSize { get; init; }
-    public bool? IsInitialized { get; set; }
     public DateTime? DateCreated { get; set; }
 }

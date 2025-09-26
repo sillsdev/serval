@@ -86,7 +86,7 @@ public class ParallelCorpusPreprocessingServiceTests
         private readonly TempDirectory _tempDir = new TempDirectory(name: "ParallelCorpusProcessingServiceTests");
 
         public IParallelCorpusPreprocessingService Processor { get; } =
-            new ParallelCorpusPreprocessingService(new CorpusService());
+            new ParallelCorpusPreprocessingService(new TextCorpusService());
 
         public ParallelCorpus GetCorpus(bool paratextProject)
         {

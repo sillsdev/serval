@@ -10,7 +10,9 @@ public class EngineService(
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
     ILoggerFactory loggerFactory,
-    IScriptureDataFileService scriptureDataFileService
+    IScriptureDataFileService scriptureDataFileService,
+    IOutboxService outboxService,
+    IOptionsMonitor<WordAlignmentOptions> wordAlignmentOptions
 ) : OwnedEntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Build> _builds = builds;
@@ -20,24 +22,15 @@ public class EngineService(
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
-
-    public override async Task<Engine> GetAsync(string id, CancellationToken cancellationToken = default)
-    {
-        Engine engine = await base.GetAsync(id, cancellationToken);
-        if (!(engine.IsInitialized ?? true))
-            throw new EntityNotFoundException($"Could not find the {typeof(Engine).Name} '{id}'.");
-        return engine;
-    }
+    private readonly IOutboxService _outboxService = outboxService;
+    private readonly IOptionsMonitor<WordAlignmentOptions> _wordAlignmentOptions = wordAlignmentOptions;
 
     public override async Task<IEnumerable<Engine>> GetAllAsync(
         string owner,
         CancellationToken cancellationToken = default
     )
     {
-        return await Entities.GetAllAsync(
-            e => e.Owner == owner && (e.IsInitialized == null || e.IsInitialized.Value),
-            cancellationToken
-        );
+        return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
     public async Task<Models.WordAlignmentResult> GetWordAlignmentAsync(
@@ -66,49 +59,36 @@ public class EngineService(
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            engine.DateCreated = DateTime.UtcNow;
-            await Entities.InsertAsync(engine, cancellationToken);
-            WordAlignmentEngineApi.WordAlignmentEngineApiClient? client =
-                _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
-            if (client is null)
-                throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
+        if (!_wordAlignmentOptions.CurrentValue.Engines.Any(e => e.Type == engine.Type))
+            throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
 
-            var request = new CreateRequest
+        engine.DateCreated = DateTime.UtcNow;
+
+        CreateRequest request =
+            new()
             {
                 EngineType = engine.Type,
                 EngineId = engine.Id,
                 SourceLanguage = engine.SourceLanguage,
                 TargetLanguage = engine.TargetLanguage
             };
+        if (engine.Name is not null)
+            request.EngineName = engine.Name;
 
-            if (engine.Name is not null)
-                request.EngineName = engine.Name;
-            await client.CreateAsync(request, cancellationToken: cancellationToken);
-            await Entities.UpdateAsync(
-                engine,
-                u => u.Set(e => e.IsInitialized, true),
-                cancellationToken: CancellationToken.None
-            );
-        }
-        catch (RpcException rpcex)
-        {
-            await Entities.DeleteAsync(engine, CancellationToken.None);
-            if (rpcex.StatusCode == StatusCode.InvalidArgument)
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
             {
-                throw new InvalidOperationException(
-                    $"Unable to create engine {engine.Id} because of an invalid argument: {rpcex.Status.Detail}",
-                    rpcex
+                await Entities.InsertAsync(engine, cancellationToken);
+                await _outboxService.EnqueueMessageAsync(
+                    EngineOutboxConstants.OutboxId,
+                    EngineOutboxConstants.Create,
+                    engine.Id,
+                    request,
+                    cancellationToken: ct
                 );
-            }
-            throw;
-        }
-        catch
-        {
-            await Entities.DeleteAsync(engine, CancellationToken.None);
-            throw;
-        }
+            },
+            cancellationToken
+        );
         return engine;
     }
 
@@ -118,12 +98,7 @@ public class EngineService(
         if (engine is null)
             throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
-        WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
-            _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
-        await client.DeleteAsync(
-            new DeleteRequest { EngineType = engine.Type, EngineId = engine.Id },
-            cancellationToken: cancellationToken
-        );
+        DeleteRequest request = new() { EngineType = engine.Type, EngineId = engine.Id };
 
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
@@ -131,8 +106,15 @@ public class EngineService(
                 await Entities.DeleteAsync(engineId, ct);
                 await _builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
                 await _wordAlignments.DeleteAllAsync(wa => wa.EngineRef == engineId, ct);
+                await _outboxService.EnqueueMessageAsync(
+                    EngineOutboxConstants.OutboxId,
+                    EngineOutboxConstants.Delete,
+                    engine.Id,
+                    request,
+                    cancellationToken: ct
+                );
             },
-            CancellationToken.None
+            cancellationToken
         );
     }
 
@@ -151,32 +133,23 @@ public class EngineService(
         }
     }
 
-    public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
+    public async Task<bool> StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
         build.DateCreated = DateTime.UtcNow;
         Engine engine = await GetAsync(build.EngineRef, cancellationToken);
-        await _builds.InsertAsync(build, cancellationToken);
 
-        WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
-            _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
+        Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef);
+        Dictionary<string, WordAlignmentCorpus>? wordAlignOn = build.WordAlignOn?.ToDictionary(c =>
+            c.ParallelCorpusRef
+        );
+        IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
+            .ParallelCorpora.Where(pc =>
+                trainOn == null || trainOn.ContainsKey(pc.Id) || wordAlignOn == null || wordAlignOn.ContainsKey(pc.Id)
+            )
+            .ToList();
 
-        try
-        {
-            StartBuildRequest request;
-            Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
-            Dictionary<string, WordAlignmentCorpus>? wordAlignOn = build.WordAlignOn?.ToDictionary(c =>
-                c.ParallelCorpusRef!
-            );
-            IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
-                .ParallelCorpora.Where(pc =>
-                    trainOn == null
-                    || trainOn.ContainsKey(pc.Id)
-                    || wordAlignOn == null
-                    || wordAlignOn.ContainsKey(pc.Id)
-                )
-                .ToList();
-
-            request = new StartBuildRequest
+        StartBuildRequest request =
+            new()
             {
                 EngineType = engine.Type,
                 EngineId = engine.Id,
@@ -195,48 +168,58 @@ public class EngineService(
                 }
             };
 
-            if (build.Options is not null)
-                request.Options = JsonSerializer.Serialize(build.Options);
+        if (build.Options is not null)
+            request.Options = JsonSerializer.Serialize(build.Options);
 
-            // Log the build request summary
+        // Log the build request summary
+        try
+        {
+            var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
+            // correct build options parsing
+            buildRequestSummary.Remove("Options");
             try
             {
-                var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
-                // correct build options parsing
-                buildRequestSummary.Remove("Options");
-                try
-                {
-                    buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
-                }
-                catch (JsonException)
-                {
-                    buildRequestSummary.Add(
-                        "Options",
-                        "Build \"Options\" failed parsing: " + (request.Options ?? "null")
-                    );
-                }
-                buildRequestSummary.Add("Event", "BuildRequest");
-                buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
-                buildRequestSummary.Add("ClientId", engine.Owner);
-                _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
+                buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
             }
             catch (JsonException)
             {
-                _logger.LogInformation("Error parsing build request summary.");
-                _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
+                buildRequestSummary.Add("Options", "Build \"Options\" failed parsing: " + (request.Options ?? "null"));
             }
-            await client.StartBuildAsync(request, cancellationToken: cancellationToken);
-            await _builds.UpdateAsync(
-                b => b.Id == build.Id,
-                u => u.Set(e => e.IsInitialized, true),
-                cancellationToken: CancellationToken.None
-            );
+            buildRequestSummary.Add("Event", "BuildRequest");
+            buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
+            buildRequestSummary.Add("ClientId", engine.Owner);
+            _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
         }
-        catch
+        catch (JsonException)
         {
-            await _builds.DeleteAsync(build, CancellationToken.None);
-            throw;
+            _logger.LogInformation("Error parsing build request summary.");
+            _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
         }
+
+        return await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                if (
+                    await _builds.ExistsAsync(
+                        b => b.EngineRef == engine.Id && (b.State == JobState.Active || b.State == JobState.Pending),
+                        ct
+                    )
+                )
+                {
+                    return false;
+                }
+                await _builds.InsertAsync(build, cancellationToken);
+                await _outboxService.EnqueueMessageAsync(
+                    EngineOutboxConstants.OutboxId,
+                    EngineOutboxConstants.StartBuild,
+                    engine.Id,
+                    request,
+                    cancellationToken: ct
+                );
+                return true;
+            },
+            cancellationToken
+        );
     }
 
     public async Task<Build?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
@@ -270,7 +253,7 @@ public class EngineService(
     )
     {
         return Entities.UpdateAsync(
-            e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
+            e => e.Id == engineId,
             u => u.Add(e => e.ParallelCorpora, corpus),
             cancellationToken: cancellationToken
         );
@@ -289,10 +272,7 @@ public class EngineService(
             async (ct) =>
             {
                 Engine? engine = await Entities.UpdateAsync(
-                    e =>
-                        e.Id == engineId
-                        && (e.IsInitialized == null || e.IsInitialized.Value)
-                        && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
+                    e => e.Id == engineId && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
                     u =>
                     {
                         if (sourceCorpora is not null)
@@ -336,7 +316,7 @@ public class EngineService(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
-                    e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
+                    e => e.Id == engineId,
                     u => u.RemoveAll(e => e.ParallelCorpora, c => c.Id == parallelCorpusId),
                     returnOriginal: true,
                     cancellationToken: ct
