@@ -5576,7 +5576,7 @@ namespace Serval.Client
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("There is already an active or pending build or a build in the process of being canceled.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("There is already an active/pending build or a build in the process of being canceled.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -8941,7 +8941,7 @@ namespace Serval.Client
                         if (status_ == 409)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("There is already an active or pending build or a build in the process of being canceled.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("There is already an active/pending build or a build in the process of being canceled.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)

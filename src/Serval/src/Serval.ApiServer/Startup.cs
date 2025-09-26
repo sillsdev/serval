@@ -83,6 +83,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 cfg.AddDataFilesRepositories();
                 cfg.AddWebhooksRepositories();
             })
+            .AddMongoOutbox()
+            .AddOutboxDeliveryService()
             .AddTranslation()
             .AddWordAlignment()
             .AddDataFiles()

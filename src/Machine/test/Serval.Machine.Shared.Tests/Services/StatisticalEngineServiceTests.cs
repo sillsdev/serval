@@ -455,7 +455,7 @@ public class StatisticalEngineServiceTests
                         Substitute.For<ILogger<WordAlignmentPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
-                        new ParallelCorpusPreprocessingService(new CorpusService())
+                        new ParallelCorpusPreprocessingService(new TextCorpusService())
                     )
                     {
                         TrainJobRunnerType = _env._trainJobRunnerType

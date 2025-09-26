@@ -1,6 +1,6 @@
 ﻿using Serval.Translation.V1;
 
-namespace EchoTranslationEngine;
+namespace EchoEngine;
 
 public class TranslationEngineServiceV1(
     BackgroundTaskQueue taskQueue,
@@ -13,14 +13,14 @@ public class TranslationEngineServiceV1(
     private readonly IParallelCorpusPreprocessingService _parallelCorpusPreprocessingService =
         parallelCorpusPreprocessingService;
 
-    public override Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
+    public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
         if (request.SourceLanguage != request.TargetLanguage)
         {
-            Status status = new Status(StatusCode.InvalidArgument, "Source and target languages must be the same");
+            var status = new Status(StatusCode.InvalidArgument, "Source and target languages must be the same");
             throw new RpcException(status);
         }
-        return Task.FromResult(new CreateResponse { IsModelPersisted = true });
+        return Task.FromResult(Empty);
     }
 
     public override Task<CancelBuildResponse> CancelBuild(CancelBuildRequest request, ServerCallContext context)
@@ -97,9 +97,7 @@ public class TranslationEngineServiceV1(
     {
         var cts = new CancellationTokenSource();
         if (!_taskQueue.ActiveBuilds.TryAdd(request.EngineId, (request.BuildId, cts)))
-        {
             throw new RpcException(new Status(StatusCode.AlreadyExists, "A build is already in progress."));
-        }
 
         await _taskQueue.QueueBackgroundWorkItemAsync(
             async (services, cancellationToken) =>
@@ -141,9 +139,7 @@ public class TranslationEngineServiceV1(
                                 }
                             );
                             if (cts.IsCancellationRequested)
-                            {
                                 throw new OperationCanceledException(cts.Token);
-                            }
 
                             return Task.CompletedTask;
                         },
@@ -340,7 +336,7 @@ public class TranslationEngineServiceV1(
     {
         // Only either textIds or Scripture Range will be used at a time
         // TextIds may be an empty array, so prefer that if both are empty (which applies to both scripture and text)
-        if (noFilter || (chapters is null && textIds is null))
+        if (noFilter || chapters is null && textIds is null)
             return FilterChoice.None;
         if (chapters is null || chapters.Count == 0)
             return FilterChoice.TextIds;

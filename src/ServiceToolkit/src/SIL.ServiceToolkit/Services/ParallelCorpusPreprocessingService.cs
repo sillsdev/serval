@@ -1,8 +1,9 @@
 namespace SIL.ServiceToolkit.Services;
 
-public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : IParallelCorpusPreprocessingService
+public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusService)
+    : IParallelCorpusPreprocessingService
 {
-    private readonly ICorpusService _corpusService = corpusService;
+    private readonly ITextCorpusService _textCorpusService = textCorpusService;
     private const int Seed = 1234;
 
     public (QuoteConventionAnalysis?, QuoteConventionAnalysis?) AnalyzeParallelCorpus(ParallelCorpus parallelCorpus)
@@ -44,7 +45,7 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
         foreach (ParallelCorpus corpus in corpora)
         {
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpus
-                .SourceCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
+                .SourceCorpora.SelectMany(c => _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
                 .ToArray();
 
             if (sourceCorpora.Length == 0)
@@ -59,7 +60,7 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
                 .ToArray();
 
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
-                .TargetCorpora.SelectMany(c => _corpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
+                .TargetCorpora.SelectMany(c => _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
                 .ToArray();
 
             ITextCorpus[] targetTrainingCorpora = targetCorpora
@@ -100,10 +101,10 @@ public class ParallelCorpusPreprocessingService(ICorpusService corpusService) : 
 
             if (useKeyTerms)
             {
-                ITextCorpus[]? sourceTermCorpora = _corpusService
+                ITextCorpus[]? sourceTermCorpora = _textCorpusService
                     .CreateTermCorpora(sourceCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
                     .ToArray();
-                ITextCorpus[]? targetTermCorpora = _corpusService
+                ITextCorpus[]? targetTermCorpora = _textCorpusService
                     .CreateTermCorpora(targetCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
                     .ToArray();
                 if (sourceTermCorpora is not null && targetTermCorpora is not null)

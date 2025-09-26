@@ -1,4 +1,4 @@
-﻿namespace Serval.Shared.Services;
+﻿namespace SIL.ServiceToolkit.Services;
 
 public interface IZipContainer : IDisposable
 {

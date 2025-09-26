@@ -1,6 +1,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Serval.Translation.Models;
 using Serval.Translation.V1;
+using SIL.ServiceToolkit.Services;
 using static Serval.ApiServer.Utils;
 using Phase = Serval.Client.Phase;
 using PhaseStage = Serval.Client.PhaseStage;
@@ -2357,7 +2358,7 @@ public class TranslationEngineTests
             EchoClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             EchoClient
                 .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new CreateResponse()));
+                .Returns(CreateAsyncUnaryCall(new Empty()));
             EchoClient
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));
@@ -2502,7 +2503,7 @@ public class TranslationEngineTests
             NmtClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
             NmtClient
                 .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new CreateResponse()));
+                .Returns(CreateAsyncUnaryCall(new Empty()));
             NmtClient
                 .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
                 .Returns(CreateAsyncUnaryCall(new Empty()));

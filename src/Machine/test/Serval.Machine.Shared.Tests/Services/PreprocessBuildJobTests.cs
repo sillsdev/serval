@@ -314,8 +314,8 @@ public class PreprocessBuildJobTests
         env.PersistModel(); // MRK does not contain verse data, so there is no inferencing
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MRK"]);
 
-        env.CorpusService = Substitute.For<ICorpusService>();
-        env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+        env.TextCorpusService = Substitute.For<ITextCorpusService>();
+        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
             .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
         Assert.DoesNotThrowAsync(async () =>
         {
@@ -328,8 +328,8 @@ public class PreprocessBuildJobTests
     {
         using TestEnvironment env = new();
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["MAT"], inferenceTextIds: ["MRK"]);
-        env.CorpusService = Substitute.For<ICorpusService>();
-        env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+        env.TextCorpusService = Substitute.For<ITextCorpusService>();
+        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
             .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
         Assert.ThrowsAsync<ArgumentException>(async () =>
         {
@@ -342,8 +342,8 @@ public class PreprocessBuildJobTests
     {
         using TestEnvironment env = new();
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MAT"]);
-        env.CorpusService = Substitute.For<ICorpusService>();
-        env.CorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+        env.TextCorpusService = Substitute.For<ITextCorpusService>();
+        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
             .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
         Assert.ThrowsAsync<ArgumentException>(async () =>
         {
@@ -466,7 +466,7 @@ Target one, chapter one, verse nine and ten.
         private readonly TempDirectory _tempDir;
 
         public ISharedFileService SharedFileService { get; }
-        public ICorpusService CorpusService { get; set; }
+        public ITextCorpusService TextCorpusService { get; set; }
         public IPlatformService PlatformService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
@@ -669,7 +669,7 @@ Target one, chapter one, verse nine and ten.
                 }
             );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
-            CorpusService = new CorpusService();
+            TextCorpusService = new TextCorpusService();
             PlatformService = Substitute.For<IPlatformService>();
             PlatformService.EngineGroup.Returns(EngineGroup.Translation);
             LockFactory = new DistributedReaderWriterLockFactory(
@@ -758,7 +758,7 @@ Target one, chapter one, verse nine and ten.
                         BuildJobService,
                         SharedFileService,
                         new LanguageTagService(),
-                        new ParallelCorpusPreprocessingService(CorpusService)
+                        new ParallelCorpusPreprocessingService(TextCorpusService)
                     );
                 }
                 case EngineType.SmtTransfer:
@@ -772,7 +772,7 @@ Target one, chapter one, verse nine and ten.
                         SharedFileService,
                         LockFactory,
                         TrainSegmentPairs,
-                        new ParallelCorpusPreprocessingService(CorpusService)
+                        new ParallelCorpusPreprocessingService(TextCorpusService)
                     );
                 }
                 default:

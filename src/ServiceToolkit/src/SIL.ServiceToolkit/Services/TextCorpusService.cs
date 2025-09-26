@@ -1,6 +1,6 @@
 ﻿namespace SIL.ServiceToolkit.Services;
 
-public class CorpusService : ICorpusService
+public class TextCorpusService : ITextCorpusService
 {
     public IEnumerable<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files)
     {

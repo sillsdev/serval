@@ -121,19 +121,25 @@ public class StatisticalEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        bool building = !await _buildJobService.StartBuildJobAsync(
-            BuildJobRunnerType.Hangfire,
-            EngineType.Statistical,
-            engineId,
-            buildId,
-            BuildStage.Preprocess,
-            corpora,
-            buildOptions,
+        await _dataAccessContext.WithTransactionAsync(
+            async ct =>
+            {
+                bool building = !await _buildJobService.StartBuildJobAsync(
+                    BuildJobRunnerType.Hangfire,
+                    EngineType.Statistical,
+                    engineId,
+                    buildId,
+                    BuildStage.Preprocess,
+                    corpora,
+                    buildOptions,
+                    ct
+                );
+                // If there is a pending/running build, then no need to start a new one.
+                if (building)
+                    await _platformService.BuildCanceledAsync(buildId, ct);
+            },
             cancellationToken
         );
-        // If there is a pending/running build, then no need to start a new one.
-        if (building)
-            throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
         StatisticalEngineState state = _stateService.Get(engineId);
         state.Touch();

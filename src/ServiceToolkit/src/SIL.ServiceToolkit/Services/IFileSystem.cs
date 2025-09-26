@@ -6,4 +6,5 @@ public interface IFileSystem
     void CreateDirectory(string path);
     Stream OpenWrite(string path);
     Stream OpenRead(string path);
+    IZipContainer OpenZipFile(string path);
 }

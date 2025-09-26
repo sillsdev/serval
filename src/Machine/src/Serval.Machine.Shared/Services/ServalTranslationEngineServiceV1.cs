@@ -12,10 +12,10 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         es => es.Type
     );
 
-    public override async Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
+    public override async Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        TranslationEngine translationEngine = await engineService.CreateAsync(
+        await engineService.CreateAsync(
             request.EngineId,
             request.HasEngineName ? request.EngineName : null,
             request.SourceLanguage,
@@ -23,7 +23,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             request.HasIsModelPersisted ? request.IsModelPersisted : null,
             context.CancellationToken
         );
-        return new CreateResponse { IsModelPersisted = translationEngine.IsModelPersisted };
+        return Empty;
     }
 
     public override async Task<Empty> Delete(DeleteRequest request, ServerCallContext context)
@@ -105,20 +105,13 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         SIL.ServiceToolkit.Models.ParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
-        try
-        {
-            await engineService.StartBuildAsync(
-                request.EngineId,
-                request.BuildId,
-                request.HasOptions ? request.Options : null,
-                corpora,
-                context.CancellationToken
-            );
-        }
-        catch (InvalidOperationException e)
-        {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
-        }
+        await engineService.StartBuildAsync(
+            request.EngineId,
+            request.BuildId,
+            request.HasOptions ? request.Options : null,
+            corpora,
+            context.CancellationToken
+        );
         return Empty;
     }
 

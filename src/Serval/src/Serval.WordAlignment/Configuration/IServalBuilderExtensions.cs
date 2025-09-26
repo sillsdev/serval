@@ -14,9 +14,6 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IWordAlignmentService, WordAlignmentService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
 
-        builder.Services.AddSingleton<EngineCleanupService>();
-        builder.Services.AddSingleton<BuildCleanupService>();
-
         var wordAlignmentOptions = new WordAlignmentOptions();
         builder.Configuration.GetSection(WordAlignmentOptions.Key).Bind(wordAlignmentOptions);
 
@@ -32,6 +29,13 @@ public static class IServalBuilderExtensions
             );
             builder.Services.AddHealthChecks().AddCheck<GrpcServiceHealthCheck>(engine.Type);
         }
+
+        builder.Services.AddOutbox(x =>
+        {
+            x.AddConsumer<EngineCreateConsumer>();
+            x.AddConsumer<EngineDeleteConsumer>();
+            x.AddConsumer<EngineStartBuildConsumer>();
+        });
 
         return builder;
     }

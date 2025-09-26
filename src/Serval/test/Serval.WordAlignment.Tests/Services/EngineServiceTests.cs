@@ -1,5 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Serval.WordAlignment.Configuration;
 using Serval.WordAlignment.V1;
+using SIL.ServiceToolkit.Services;
 
 namespace Serval.WordAlignment.Services;
 
@@ -76,8 +78,11 @@ public class EngineServiceTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -134,7 +139,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -165,8 +171,11 @@ public class EngineServiceTests
                 ]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -225,7 +234,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -256,8 +266,11 @@ public class EngineServiceTests
                 ]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -316,7 +329,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -341,8 +355,11 @@ public class EngineServiceTests
                 ]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -399,7 +416,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -417,8 +435,11 @@ public class EngineServiceTests
                 WordAlignOn = [new WordAlignmentCorpus { ParallelCorpusRef = "corpus1" }]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -475,7 +496,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -493,8 +515,11 @@ public class EngineServiceTests
                 WordAlignOn = [new WordAlignmentCorpus { ParallelCorpusRef = "corpus2" }]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -599,7 +624,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -672,8 +698,11 @@ public class EngineServiceTests
                 ]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -752,7 +781,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -783,8 +813,11 @@ public class EngineServiceTests
                 ]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -841,7 +874,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -874,8 +908,11 @@ public class EngineServiceTests
                 ]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1002,7 +1039,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1029,8 +1067,11 @@ public class EngineServiceTests
                 ]
             }
         );
-        _ = env.WordAlignmentServiceClient.Received()
-            .StartBuildAsync(
+        _ = env.OutboxService.Received()
+            .EnqueueMessageAsync(
+                EngineOutboxConstants.OutboxId,
+                EngineOutboxConstants.StartBuild,
+                engineId,
                 new StartBuildRequest
                 {
                     BuildId = BUILD1_ID,
@@ -1124,7 +1165,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                }
+                },
+                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -1329,6 +1371,13 @@ public class EngineServiceTests
                 );
 
             WordAlignments = new MemoryRepository<Models.WordAlignment>();
+            OutboxService = Substitute.For<IOutboxService>();
+            IOptionsMonitor<WordAlignmentOptions> wordAlignmentOptions = Substitute.For<
+                IOptionsMonitor<WordAlignmentOptions>
+            >();
+            wordAlignmentOptions.CurrentValue.Returns(
+                new WordAlignmentOptions { Engines = [new EngineInfo { Type = "Statistical" }] }
+            );
 
             Service = new EngineService(
                 Engines,
@@ -1338,7 +1387,9 @@ public class EngineServiceTests
                 dataFileOptions,
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
-                scriptureDataFileService
+                scriptureDataFileService,
+                OutboxService,
+                wordAlignmentOptions
             );
         }
 
@@ -1346,6 +1397,7 @@ public class EngineServiceTests
         public IRepository<Engine> Engines { get; }
         public IRepository<Models.WordAlignment> WordAlignments { get; }
         public WordAlignmentEngineApi.WordAlignmentEngineApiClient WordAlignmentServiceClient { get; }
+        public IOutboxService OutboxService { get; }
 
         public async Task<Engine> CreateEngineWithTextFilesAsync()
         {

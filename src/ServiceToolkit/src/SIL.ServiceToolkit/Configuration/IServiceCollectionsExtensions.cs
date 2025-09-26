@@ -5,7 +5,7 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection AddParallelCorpusPreprocessor(this IServiceCollection services)
     {
         services.TryAddSingleton<IParallelCorpusPreprocessingService, ParallelCorpusPreprocessingService>();
-        services.TryAddSingleton<ICorpusService, CorpusService>();
+        services.TryAddSingleton<ITextCorpusService, TextCorpusService>();
         return services;
     }
 

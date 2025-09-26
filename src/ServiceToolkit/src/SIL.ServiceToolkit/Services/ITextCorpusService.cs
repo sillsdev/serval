@@ -1,6 +1,6 @@
 ﻿namespace SIL.ServiceToolkit.Services;
 
-public interface ICorpusService
+public interface ITextCorpusService
 {
     IEnumerable<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files);
     IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> corpusFiles);
