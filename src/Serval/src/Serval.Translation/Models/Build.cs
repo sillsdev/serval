@@ -1,6 +1,6 @@
 namespace Serval.Translation.Models;
 
-public record Build : IInitializableEntity
+public record Build : IEntity
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
@@ -17,7 +17,6 @@ public record Build : IInitializableEntity
     public IReadOnlyDictionary<string, object>? Options { get; init; }
     public string? DeploymentVersion { get; init; }
     public IReadOnlyDictionary<string, string> ExecutionData { get; init; } = new Dictionary<string, string>();
-    public bool? IsInitialized { get; set; }
     public DateTime? DateCreated { get; set; }
     public IReadOnlyList<BuildPhase>? Phases { get; init; }
     public IReadOnlyList<ParallelCorpusAnalysis>? Analysis { get; init; }

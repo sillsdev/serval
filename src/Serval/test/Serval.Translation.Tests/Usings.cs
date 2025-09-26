@@ -16,3 +16,4 @@ global using Serval.Translation.Models;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
 global using SIL.Scripture;
+global using SIL.ServiceToolkit.Services;

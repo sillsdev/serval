@@ -9,3 +9,4 @@ global using Serval.Shared.Configuration;
 global using Serval.Shared.Utils;
 global using SIL.Machine.Corpora;
 global using SIL.Scripture;
+global using SIL.ServiceToolkit.Services;

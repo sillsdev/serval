@@ -556,7 +556,7 @@ public class WordAlignmentEnginesController(
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
-    /// <response code="409">There is already an active or pending build or a build in the process of being canceled.</response>
+    /// <response code="409">There is already an active/pending build or a build in the process of being canceled.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateWordAlignmentEngines)]
     [HttpPost("{id}/builds")]
@@ -578,7 +578,8 @@ public class WordAlignmentEnginesController(
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         Build build = Map(engine, buildConfig, deploymentVersion);
-        await _engineService.StartBuildAsync(build, cancellationToken);
+        if (!await _engineService.StartBuildAsync(build, cancellationToken))
+            return Conflict();
 
         WordAlignmentBuildDto dto = Map(build);
         return Created(dto.Url, dto);
@@ -1076,8 +1077,7 @@ public class WordAlignmentEnginesController(
             TargetLanguage = source.TargetLanguage,
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
-            ParallelCorpora = [],
-            IsInitialized = false
+            ParallelCorpora = []
         };
     }
 

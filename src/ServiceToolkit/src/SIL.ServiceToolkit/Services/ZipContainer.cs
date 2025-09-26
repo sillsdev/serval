@@ -1,6 +1,4 @@
-﻿using System.IO.Compression;
-
-namespace Serval.Shared.Services;
+﻿namespace SIL.ServiceToolkit.Services;
 
 public class ZipContainer(string fileName) : DisposableBase, IZipContainer
 {

@@ -329,7 +329,7 @@ public class NmtEngineServiceTests
                         _env.BuildJobService,
                         _env.SharedFileService,
                         new LanguageTagService(),
-                        new ParallelCorpusPreprocessingService(new CorpusService())
+                        new ParallelCorpusPreprocessingService(new TextCorpusService())
                     );
                 }
                 if (jobType == typeof(TranslationPostprocessBuildJob))

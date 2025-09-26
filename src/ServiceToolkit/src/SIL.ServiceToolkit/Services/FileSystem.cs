@@ -22,4 +22,9 @@ public class FileSystem : IFileSystem
     {
         return File.OpenRead(path);
     }
+
+    public IZipContainer OpenZipFile(string path)
+    {
+        return new ZipContainer(path);
+    }
 }

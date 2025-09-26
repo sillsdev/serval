@@ -60,20 +60,13 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
     {
         IWordAlignmentEngineService engineService = GetEngineService(request.EngineType);
         SIL.ServiceToolkit.Models.ParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
-        try
-        {
-            await engineService.StartBuildAsync(
-                request.EngineId,
-                request.BuildId,
-                request.HasOptions ? request.Options : null,
-                corpora,
-                context.CancellationToken
-            );
-        }
-        catch (InvalidOperationException e)
-        {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
-        }
+        await engineService.StartBuildAsync(
+            request.EngineId,
+            request.BuildId,
+            request.HasOptions ? request.Options : null,
+            corpora,
+            context.CancellationToken
+        );
         return Empty;
     }
 

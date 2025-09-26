@@ -12,7 +12,9 @@ public class EngineService(
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
     ILoggerFactory loggerFactory,
-    IScriptureDataFileService scriptureDataFileService
+    IScriptureDataFileService scriptureDataFileService,
+    IOutboxService outboxService,
+    IOptionsMonitor<TranslationOptions> translationOptions
 ) : OwnedEntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Build> _builds = builds;
@@ -23,24 +25,15 @@ public class EngineService(
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
     private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
-
-    public override async Task<Engine> GetAsync(string id, CancellationToken cancellationToken = default)
-    {
-        Engine engine = await base.GetAsync(id, cancellationToken);
-        if (!(engine.IsInitialized ?? true))
-            throw new EntityNotFoundException($"Could not find the {typeof(Engine).Name} '{id}'.");
-        return engine;
-    }
+    private readonly IOutboxService _outboxService = outboxService;
+    private readonly IOptionsMonitor<TranslationOptions> _translationOptions = translationOptions;
 
     public override async Task<IEnumerable<Engine>> GetAllAsync(
         string owner,
         CancellationToken cancellationToken = default
     )
     {
-        return await Entities.GetAllAsync(
-            e => e.Owner == owner && (e.IsInitialized == null || e.IsInitialized.Value),
-            cancellationToken
-        );
+        return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
     public async Task<Models.TranslationResult> TranslateAsync(
@@ -139,60 +132,38 @@ public class EngineService(
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            engine.DateCreated = DateTime.UtcNow;
-            await Entities.InsertAsync(engine, cancellationToken);
-            TranslationEngineApi.TranslationEngineApiClient? client =
-                _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-            if (client is null)
-                throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
+        if (!_translationOptions.CurrentValue.Engines.Any(e => e.Type == engine.Type))
+            throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
 
-            var request = new CreateRequest
+        engine.DateCreated = DateTime.UtcNow;
+
+        CreateRequest request =
+            new()
             {
                 EngineType = engine.Type,
                 EngineId = engine.Id,
                 SourceLanguage = engine.SourceLanguage,
                 TargetLanguage = engine.TargetLanguage
             };
-            if (engine.IsModelPersisted is not null)
-                request.IsModelPersisted = engine.IsModelPersisted.Value;
+        if (engine.IsModelPersisted is not null)
+            request.IsModelPersisted = engine.IsModelPersisted.Value;
+        if (engine.Name is not null)
+            request.EngineName = engine.Name;
 
-            if (engine.Name is not null)
-                request.EngineName = engine.Name;
-            CreateResponse createResponse = await client.CreateAsync(request, cancellationToken: cancellationToken);
-            // IsModelPersisted may be updated by the engine with the respective default.
-            engine = engine with
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
             {
-                IsModelPersisted = createResponse.IsModelPersisted
-            };
-            await Entities.UpdateAsync(
-                engine,
-                u =>
-                {
-                    u.Set(e => e.IsInitialized, true);
-                    u.Set(e => e.IsModelPersisted, engine.IsModelPersisted);
-                },
-                cancellationToken: CancellationToken.None
-            );
-        }
-        catch (RpcException rpcex)
-        {
-            await Entities.DeleteAsync(engine, CancellationToken.None);
-            if (rpcex.StatusCode == StatusCode.InvalidArgument)
-            {
-                throw new InvalidOperationException(
-                    $"Unable to create engine {engine.Id} because of an invalid argument: {rpcex.Status.Detail}",
-                    rpcex
+                await Entities.InsertAsync(engine, ct);
+                await _outboxService.EnqueueMessageAsync(
+                    EngineOutboxConstants.OutboxId,
+                    EngineOutboxConstants.Create,
+                    engine.Id,
+                    request,
+                    cancellationToken: ct
                 );
-            }
-            throw;
-        }
-        catch
-        {
-            await Entities.DeleteAsync(engine, CancellationToken.None);
-            throw;
-        }
+            },
+            cancellationToken
+        );
         return engine;
     }
 
@@ -212,6 +183,15 @@ public class EngineService(
         if (targetLanguage == "")
             targetLanguage = engine.TargetLanguage;
 
+        UpdateRequest request =
+            new()
+            {
+                EngineType = engine.Type,
+                EngineId = engine.Id,
+                SourceLanguage = sourceLanguage,
+                TargetLanguage = targetLanguage
+            };
+
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
@@ -225,20 +205,15 @@ public class EngineService(
                     cancellationToken: ct
                 );
                 await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
-                TranslationEngineApi.TranslationEngineApiClient client =
-                    _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-                await client.UpdateAsync(
-                    new UpdateRequest
-                    {
-                        EngineType = engine.Type,
-                        EngineId = engine.Id,
-                        SourceLanguage = sourceLanguage,
-                        TargetLanguage = targetLanguage
-                    },
+                await _outboxService.EnqueueMessageAsync(
+                    EngineOutboxConstants.OutboxId,
+                    EngineOutboxConstants.Update,
+                    engine.Id,
+                    request,
                     cancellationToken: ct
                 );
             },
-            cancellationToken: cancellationToken
+            cancellationToken
         );
     }
 
@@ -248,12 +223,7 @@ public class EngineService(
         if (engine is null)
             throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
 
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.DeleteAsync(
-            new DeleteRequest { EngineType = engine.Type, EngineId = engine.Id },
-            cancellationToken: cancellationToken
-        );
+        DeleteRequest request = new() { EngineType = engine.Type, EngineId = engine.Id };
 
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
@@ -261,8 +231,15 @@ public class EngineService(
                 await Entities.DeleteAsync(engineId, ct);
                 await _builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
                 await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
+                await _outboxService.EnqueueMessageAsync(
+                    EngineOutboxConstants.OutboxId,
+                    EngineOutboxConstants.Delete,
+                    engine.Id,
+                    request,
+                    cancellationToken: ct
+                );
             },
-            CancellationToken.None
+            cancellationToken
         );
     }
 
@@ -281,129 +258,130 @@ public class EngineService(
         }
     }
 
-    public async Task StartBuildAsync(Build build, CancellationToken cancellationToken = default)
+    public async Task<bool> StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
         build.DateCreated = DateTime.UtcNow;
         Engine engine = await GetAsync(build.EngineRef, cancellationToken);
-        await _builds.InsertAsync(build, cancellationToken);
+        StartBuildRequest request;
+        if (engine.ParallelCorpora.Any())
+        {
+            Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
+            Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c =>
+                c.ParallelCorpusRef!
+            );
+            IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
+                .ParallelCorpora.Where(pc =>
+                    trainOn == null
+                    || trainOn.ContainsKey(pc.Id)
+                    || pretranslate == null
+                    || pretranslate.ContainsKey(pc.Id)
+                )
+                .ToList();
 
-        TranslationEngineApi.TranslationEngineApiClient client =
-            _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
+            request = new StartBuildRequest
+            {
+                EngineType = engine.Type,
+                EngineId = engine.Id,
+                BuildId = build.Id,
+                Corpora =
+                {
+                    parallelCorpora.Select(c =>
+                        Map(
+                            c,
+                            trainOn?.GetValueOrDefault(c.Id),
+                            pretranslate?.GetValueOrDefault(c.Id),
+                            trainOn is null,
+                            pretranslate is null
+                        )
+                    )
+                }
+            };
+        }
+        else
+        {
+            Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
+            Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef!);
+            IReadOnlyList<Corpus> corpora = engine
+                .Corpora.Where(c =>
+                    trainOn == null
+                    || trainOn.ContainsKey(c.Id)
+                    || pretranslate == null
+                    || pretranslate.ContainsKey(c.Id)
+                )
+                .ToList();
 
+            request = new StartBuildRequest
+            {
+                EngineType = engine.Type,
+                EngineId = engine.Id,
+                BuildId = build.Id,
+                Corpora =
+                {
+                    corpora.Select(c =>
+                        Map(
+                            c,
+                            trainOn?.GetValueOrDefault(c.Id),
+                            pretranslate?.GetValueOrDefault(c.Id),
+                            trainOn is null,
+                            pretranslate is null
+                        )
+                    )
+                }
+            };
+        }
+
+        if (build.Options is not null)
+            request.Options = JsonSerializer.Serialize(build.Options);
+
+        // Log the build request summary
         try
         {
-            StartBuildRequest request;
-            if (engine.ParallelCorpora.Any())
-            {
-                Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
-                Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c =>
-                    c.ParallelCorpusRef!
-                );
-                IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
-                    .ParallelCorpora.Where(pc =>
-                        trainOn == null
-                        || trainOn.ContainsKey(pc.Id)
-                        || pretranslate == null
-                        || pretranslate.ContainsKey(pc.Id)
-                    )
-                    .ToList();
-
-                request = new StartBuildRequest
-                {
-                    EngineType = engine.Type,
-                    EngineId = engine.Id,
-                    BuildId = build.Id,
-                    Corpora =
-                    {
-                        parallelCorpora.Select(c =>
-                            Map(
-                                c,
-                                trainOn?.GetValueOrDefault(c.Id),
-                                pretranslate?.GetValueOrDefault(c.Id),
-                                trainOn is null,
-                                pretranslate is null
-                            )
-                        )
-                    }
-                };
-            }
-            else
-            {
-                Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
-                Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c =>
-                    c.CorpusRef!
-                );
-                IReadOnlyList<Corpus> corpora = engine
-                    .Corpora.Where(c =>
-                        trainOn == null
-                        || trainOn.ContainsKey(c.Id)
-                        || pretranslate == null
-                        || pretranslate.ContainsKey(c.Id)
-                    )
-                    .ToList();
-
-                request = new StartBuildRequest
-                {
-                    EngineType = engine.Type,
-                    EngineId = engine.Id,
-                    BuildId = build.Id,
-                    Corpora =
-                    {
-                        corpora.Select(c =>
-                            Map(
-                                c,
-                                trainOn?.GetValueOrDefault(c.Id),
-                                pretranslate?.GetValueOrDefault(c.Id),
-                                trainOn is null,
-                                pretranslate is null
-                            )
-                        )
-                    }
-                };
-            }
-
-            if (build.Options is not null)
-                request.Options = JsonSerializer.Serialize(build.Options);
-
-            // Log the build request summary
+            var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
+            // correct build options parsing
+            buildRequestSummary.Remove("Options");
             try
             {
-                var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
-                // correct build options parsing
-                buildRequestSummary.Remove("Options");
-                try
-                {
-                    buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
-                }
-                catch (JsonException)
-                {
-                    buildRequestSummary.Add(
-                        "Options",
-                        "Build \"Options\" failed parsing: " + (request.Options ?? "null")
-                    );
-                }
-                buildRequestSummary.Add("Event", "BuildRequest");
-                buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
-                buildRequestSummary.Add("ClientId", engine.Owner);
-                _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
+                buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
             }
             catch (JsonException)
             {
-                _logger.LogInformation("Error parsing build request summary.");
-                _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
+                buildRequestSummary.Add("Options", "Build \"Options\" failed parsing: " + (request.Options ?? "null"));
             }
-            await client.StartBuildAsync(request, cancellationToken: cancellationToken);
-            await _builds.UpdateAsync(
-                b => b.Id == build.Id,
-                u => u.Set(e => e.IsInitialized, true),
-                cancellationToken: CancellationToken.None
-            );
+            buildRequestSummary.Add("Event", "BuildRequest");
+            buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
+            buildRequestSummary.Add("ClientId", engine.Owner);
+            _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
         }
-        catch
+        catch (JsonException)
         {
-            await _builds.DeleteAsync(build, CancellationToken.None);
-            throw;
+            _logger.LogInformation("Error parsing build request summary.");
+            _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
         }
+
+        return await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                if (
+                    await _builds.ExistsAsync(
+                        b => b.EngineRef == engine.Id && (b.State == JobState.Active || b.State == JobState.Pending),
+                        ct
+                    )
+                )
+                {
+                    return false;
+                }
+                await _builds.InsertAsync(build, ct);
+                await _outboxService.EnqueueMessageAsync(
+                    EngineOutboxConstants.OutboxId,
+                    EngineOutboxConstants.StartBuild,
+                    engine.Id,
+                    request,
+                    cancellationToken: ct
+                );
+                return true;
+            },
+            cancellationToken
+        );
     }
 
     public async Task<Build?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
@@ -456,13 +434,13 @@ public class EngineService(
     public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
     {
         return Entities.UpdateAsync(
-            e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
+            e => e.Id == engineId,
             u => u.Add(e => e.Corpora, corpus),
             cancellationToken: cancellationToken
         );
     }
 
-    public async Task<Models.Corpus> UpdateCorpusAsync(
+    public async Task<Corpus> UpdateCorpusAsync(
         string engineId,
         string corpusId,
         IReadOnlyList<Shared.Models.CorpusFile>? sourceFiles,
@@ -475,10 +453,7 @@ public class EngineService(
             async (ct) =>
             {
                 Engine? engine = await Entities.UpdateAsync(
-                    e =>
-                        e.Id == engineId
-                        && (e.IsInitialized == null || e.IsInitialized.Value)
-                        && e.Corpora.Any(c => c.Id == corpusId),
+                    e => e.Id == engineId && e.Corpora.Any(c => c.Id == corpusId),
                     u =>
                     {
                         if (sourceFiles is not null)
@@ -522,7 +497,7 @@ public class EngineService(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
-                    e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
+                    e => e.Id == engineId,
                     u => u.RemoveAll(e => e.Corpora, c => c.Id == corpusId),
                     returnOriginal: true,
                     cancellationToken: ct
@@ -557,7 +532,7 @@ public class EngineService(
     )
     {
         return Entities.UpdateAsync(
-            e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
+            e => e.Id == engineId,
             u => u.Add(e => e.ParallelCorpora, corpus),
             cancellationToken: cancellationToken
         );
@@ -576,10 +551,7 @@ public class EngineService(
             async (ct) =>
             {
                 Engine? engine = await Entities.UpdateAsync(
-                    e =>
-                        e.Id == engineId
-                        && (e.IsInitialized == null || e.IsInitialized.Value)
-                        && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
+                    e => e.Id == engineId && e.ParallelCorpora.Any(c => c.Id == parallelCorpusId),
                     u =>
                     {
                         if (sourceCorpora is not null)
@@ -624,7 +596,7 @@ public class EngineService(
             async (ct) =>
             {
                 originalEngine = await Entities.UpdateAsync(
-                    e => e.Id == engineId && (e.IsInitialized == null || e.IsInitialized.Value),
+                    e => e.Id == engineId,
                     u => u.RemoveAll(e => e.ParallelCorpora, c => c.Id == parallelCorpusId),
                     returnOriginal: true,
                     cancellationToken: ct
