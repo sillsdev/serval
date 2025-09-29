@@ -135,80 +135,89 @@ public class EngineService(
 
     public async Task<bool> StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
-        build.DateCreated = DateTime.UtcNow;
-        Engine engine = await GetAsync(build.EngineRef, cancellationToken);
-
-        Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef);
-        Dictionary<string, WordAlignmentCorpus>? wordAlignOn = build.WordAlignOn?.ToDictionary(c =>
-            c.ParallelCorpusRef
-        );
-        IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
-            .ParallelCorpora.Where(pc =>
-                trainOn == null || trainOn.ContainsKey(pc.Id) || wordAlignOn == null || wordAlignOn.ContainsKey(pc.Id)
-            )
-            .ToList();
-
-        StartBuildRequest request =
-            new()
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                BuildId = build.Id,
-                Corpora =
-                {
-                    parallelCorpora.Select(c =>
-                        Map(
-                            c,
-                            trainOn?.GetValueOrDefault(c.Id),
-                            wordAlignOn?.GetValueOrDefault(c.Id),
-                            trainOn is null,
-                            wordAlignOn is null
-                        )
-                    )
-                }
-            };
-
-        if (build.Options is not null)
-            request.Options = JsonSerializer.Serialize(build.Options);
-
-        // Log the build request summary
-        try
-        {
-            var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
-            // correct build options parsing
-            buildRequestSummary.Remove("Options");
-            try
-            {
-                buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
-            }
-            catch (JsonException)
-            {
-                buildRequestSummary.Add("Options", "Build \"Options\" failed parsing: " + (request.Options ?? "null"));
-            }
-            buildRequestSummary.Add("Event", "BuildRequest");
-            buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
-            buildRequestSummary.Add("ClientId", engine.Owner);
-            _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
-        }
-        catch (JsonException)
-        {
-            _logger.LogInformation("Error parsing build request summary.");
-            _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
-        }
-
         return await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 if (
                     await _builds.ExistsAsync(
-                        b => b.EngineRef == engine.Id && (b.State == JobState.Active || b.State == JobState.Pending),
+                        b =>
+                            b.EngineRef == build.EngineRef
+                            && (b.State == JobState.Active || b.State == JobState.Pending),
                         ct
                     )
                 )
                 {
                     return false;
                 }
+
+                build.DateCreated = DateTime.UtcNow;
                 await _builds.InsertAsync(build, cancellationToken);
+
+                Engine engine = await GetAsync(build.EngineRef, cancellationToken);
+                Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef);
+                Dictionary<string, WordAlignmentCorpus>? wordAlignOn = build.WordAlignOn?.ToDictionary(c =>
+                    c.ParallelCorpusRef
+                );
+                IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
+                    .ParallelCorpora.Where(pc =>
+                        trainOn == null
+                        || trainOn.ContainsKey(pc.Id)
+                        || wordAlignOn == null
+                        || wordAlignOn.ContainsKey(pc.Id)
+                    )
+                    .ToList();
+
+                StartBuildRequest request =
+                    new()
+                    {
+                        EngineType = engine.Type,
+                        EngineId = engine.Id,
+                        BuildId = build.Id,
+                        Corpora =
+                        {
+                            parallelCorpora.Select(c =>
+                                Map(
+                                    c,
+                                    trainOn?.GetValueOrDefault(c.Id),
+                                    wordAlignOn?.GetValueOrDefault(c.Id),
+                                    trainOn is null,
+                                    wordAlignOn is null
+                                )
+                            )
+                        }
+                    };
+
+                if (build.Options is not null)
+                    request.Options = JsonSerializer.Serialize(build.Options);
+
+                // Log the build request summary
+                try
+                {
+                    var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
+                    // correct build options parsing
+                    buildRequestSummary.Remove("Options");
+                    try
+                    {
+                        buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
+                    }
+                    catch (JsonException)
+                    {
+                        buildRequestSummary.Add(
+                            "Options",
+                            "Build \"Options\" failed parsing: " + (request.Options ?? "null")
+                        );
+                    }
+                    buildRequestSummary.Add("Event", "BuildRequest");
+                    buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
+                    buildRequestSummary.Add("ClientId", engine.Owner);
+                    _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
+                }
+                catch (JsonException)
+                {
+                    _logger.LogInformation("Error parsing build request summary.");
+                    _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
+                }
+
                 await _outboxService.EnqueueMessageAsync(
                     EngineOutboxConstants.OutboxId,
                     EngineOutboxConstants.StartBuild,

@@ -4,11 +4,13 @@ namespace EchoEngine;
 
 public class TranslationEngineServiceV1(
     BackgroundTaskQueue taskQueue,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    TranslationPlatformApi.TranslationPlatformApiClient platformApiClient
 ) : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
+    private readonly TranslationPlatformApi.TranslationPlatformApiClient _platformApiClient = platformApiClient;
 
     private readonly IParallelCorpusPreprocessingService _parallelCorpusPreprocessingService =
         parallelCorpusPreprocessingService;
@@ -97,7 +99,12 @@ public class TranslationEngineServiceV1(
     {
         var cts = new CancellationTokenSource();
         if (!_taskQueue.ActiveBuilds.TryAdd(request.EngineId, (request.BuildId, cts)))
-            throw new RpcException(new Status(StatusCode.AlreadyExists, "A build is already in progress."));
+        {
+            await _platformApiClient.BuildCanceledAsync(
+                new BuildCanceledRequest { BuildId = request.BuildId },
+                cancellationToken: context.CancellationToken
+            );
+        }
 
         await _taskQueue.QueueBackgroundWorkItemAsync(
             async (services, cancellationToken) =>
