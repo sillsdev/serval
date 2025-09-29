@@ -260,117 +260,128 @@ public class EngineService(
 
     public async Task<bool> StartBuildAsync(Build build, CancellationToken cancellationToken = default)
     {
-        build.DateCreated = DateTime.UtcNow;
-        Engine engine = await GetAsync(build.EngineRef, cancellationToken);
-        StartBuildRequest request;
-        if (engine.ParallelCorpora.Any())
-        {
-            Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
-            Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c =>
-                c.ParallelCorpusRef!
-            );
-            IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
-                .ParallelCorpora.Where(pc =>
-                    trainOn == null
-                    || trainOn.ContainsKey(pc.Id)
-                    || pretranslate == null
-                    || pretranslate.ContainsKey(pc.Id)
-                )
-                .ToList();
-
-            request = new StartBuildRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                BuildId = build.Id,
-                Corpora =
-                {
-                    parallelCorpora.Select(c =>
-                        Map(
-                            c,
-                            trainOn?.GetValueOrDefault(c.Id),
-                            pretranslate?.GetValueOrDefault(c.Id),
-                            trainOn is null,
-                            pretranslate is null
-                        )
-                    )
-                }
-            };
-        }
-        else
-        {
-            Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
-            Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c => c.CorpusRef!);
-            IReadOnlyList<Corpus> corpora = engine
-                .Corpora.Where(c =>
-                    trainOn == null
-                    || trainOn.ContainsKey(c.Id)
-                    || pretranslate == null
-                    || pretranslate.ContainsKey(c.Id)
-                )
-                .ToList();
-
-            request = new StartBuildRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                BuildId = build.Id,
-                Corpora =
-                {
-                    corpora.Select(c =>
-                        Map(
-                            c,
-                            trainOn?.GetValueOrDefault(c.Id),
-                            pretranslate?.GetValueOrDefault(c.Id),
-                            trainOn is null,
-                            pretranslate is null
-                        )
-                    )
-                }
-            };
-        }
-
-        if (build.Options is not null)
-            request.Options = JsonSerializer.Serialize(build.Options);
-
-        // Log the build request summary
-        try
-        {
-            var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
-            // correct build options parsing
-            buildRequestSummary.Remove("Options");
-            try
-            {
-                buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
-            }
-            catch (JsonException)
-            {
-                buildRequestSummary.Add("Options", "Build \"Options\" failed parsing: " + (request.Options ?? "null"));
-            }
-            buildRequestSummary.Add("Event", "BuildRequest");
-            buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
-            buildRequestSummary.Add("ClientId", engine.Owner);
-            _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
-        }
-        catch (JsonException)
-        {
-            _logger.LogInformation("Error parsing build request summary.");
-            _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
-        }
-
         return await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 if (
                     await _builds.ExistsAsync(
-                        b => b.EngineRef == engine.Id && (b.State == JobState.Active || b.State == JobState.Pending),
+                        b =>
+                            b.EngineRef == build.EngineRef
+                            && (b.State == JobState.Active || b.State == JobState.Pending),
                         ct
                     )
                 )
                 {
                     return false;
                 }
+
+                build.DateCreated = DateTime.UtcNow;
                 await _builds.InsertAsync(build, ct);
+
+                Engine engine = await GetAsync(build.EngineRef, cancellationToken);
+                StartBuildRequest request;
+                if (engine.ParallelCorpora.Any())
+                {
+                    Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c =>
+                        c.ParallelCorpusRef!
+                    );
+                    Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c =>
+                        c.ParallelCorpusRef!
+                    );
+                    IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
+                        .ParallelCorpora.Where(pc =>
+                            trainOn == null
+                            || trainOn.ContainsKey(pc.Id)
+                            || pretranslate == null
+                            || pretranslate.ContainsKey(pc.Id)
+                        )
+                        .ToList();
+
+                    request = new StartBuildRequest
+                    {
+                        EngineType = engine.Type,
+                        EngineId = engine.Id,
+                        BuildId = build.Id,
+                        Corpora =
+                        {
+                            parallelCorpora.Select(c =>
+                                Map(
+                                    c,
+                                    trainOn?.GetValueOrDefault(c.Id),
+                                    pretranslate?.GetValueOrDefault(c.Id),
+                                    trainOn is null,
+                                    pretranslate is null
+                                )
+                            )
+                        }
+                    };
+                }
+                else
+                {
+                    Dictionary<string, TrainingCorpus>? trainOn = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
+                    Dictionary<string, PretranslateCorpus>? pretranslate = build.Pretranslate?.ToDictionary(c =>
+                        c.CorpusRef!
+                    );
+                    IReadOnlyList<Corpus> corpora = engine
+                        .Corpora.Where(c =>
+                            trainOn == null
+                            || trainOn.ContainsKey(c.Id)
+                            || pretranslate == null
+                            || pretranslate.ContainsKey(c.Id)
+                        )
+                        .ToList();
+
+                    request = new StartBuildRequest
+                    {
+                        EngineType = engine.Type,
+                        EngineId = engine.Id,
+                        BuildId = build.Id,
+                        Corpora =
+                        {
+                            corpora.Select(c =>
+                                Map(
+                                    c,
+                                    trainOn?.GetValueOrDefault(c.Id),
+                                    pretranslate?.GetValueOrDefault(c.Id),
+                                    trainOn is null,
+                                    pretranslate is null
+                                )
+                            )
+                        }
+                    };
+                }
+
+                if (build.Options is not null)
+                    request.Options = JsonSerializer.Serialize(build.Options);
+
+                // Log the build request summary
+                try
+                {
+                    var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
+                    // correct build options parsing
+                    buildRequestSummary.Remove("Options");
+                    try
+                    {
+                        buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
+                    }
+                    catch (JsonException)
+                    {
+                        buildRequestSummary.Add(
+                            "Options",
+                            "Build \"Options\" failed parsing: " + (request.Options ?? "null")
+                        );
+                    }
+                    buildRequestSummary.Add("Event", "BuildRequest");
+                    buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
+                    buildRequestSummary.Add("ClientId", engine.Owner);
+                    _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
+                }
+                catch (JsonException)
+                {
+                    _logger.LogInformation("Error parsing build request summary.");
+                    _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
+                }
+
                 await _outboxService.EnqueueMessageAsync(
                     EngineOutboxConstants.OutboxId,
                     EngineOutboxConstants.StartBuild,
