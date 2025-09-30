@@ -36,30 +36,39 @@ public class EngineService(
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public async Task<Models.TranslationResult> TranslateAsync(
+    public async Task<Models.TranslationResult?> TranslateAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
     )
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
+        if (engine.ModelRevision == 0)
+            return null;
 
         TranslationEngineApi.TranslationEngineApiClient client =
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        TranslateResponse response = await client.TranslateAsync(
-            new TranslateRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                N = 1,
-                Segment = segment
-            },
-            cancellationToken: cancellationToken
-        );
-        return Map(response.Results[0]);
+        try
+        {
+            TranslateResponse response = await client.TranslateAsync(
+                new TranslateRequest
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    N = 1,
+                    Segment = segment
+                },
+                cancellationToken: cancellationToken
+            );
+            return Map(response.Results[0]);
+        }
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        {
+            return null;
+        }
     }
 
-    public async Task<IEnumerable<Models.TranslationResult>> TranslateAsync(
+    public async Task<IEnumerable<Models.TranslationResult>?> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -67,45 +76,63 @@ public class EngineService(
     )
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
+        if (engine.ModelRevision == 0)
+            return null;
 
         TranslationEngineApi.TranslationEngineApiClient client =
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        TranslateResponse response = await client.TranslateAsync(
-            new TranslateRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                N = n,
-                Segment = segment
-            },
-            cancellationToken: cancellationToken
-        );
-        return response.Results.Select(Map);
+        try
+        {
+            TranslateResponse response = await client.TranslateAsync(
+                new TranslateRequest
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    N = n,
+                    Segment = segment
+                },
+                cancellationToken: cancellationToken
+            );
+            return response.Results.Select(Map);
+        }
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        {
+            return null;
+        }
     }
 
-    public async Task<Models.WordGraph> GetWordGraphAsync(
+    public async Task<Models.WordGraph?> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
     )
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
+        if (engine.ModelRevision == 0)
+            return null;
 
         TranslationEngineApi.TranslationEngineApiClient client =
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        GetWordGraphResponse response = await client.GetWordGraphAsync(
-            new GetWordGraphRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                Segment = segment
-            },
-            cancellationToken: cancellationToken
-        );
-        return Map(response.WordGraph);
+        try
+        {
+            GetWordGraphResponse response = await client.GetWordGraphAsync(
+                new GetWordGraphRequest
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    Segment = segment
+                },
+                cancellationToken: cancellationToken
+            );
+            return Map(response.WordGraph);
+        }
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        {
+            return null;
+        }
     }
 
-    public async Task TrainSegmentPairAsync(
+    public async Task<bool> TrainSegmentPairAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -114,20 +141,30 @@ public class EngineService(
     )
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
+        if (engine.ModelRevision == 0)
+            return false;
 
         TranslationEngineApi.TranslationEngineApiClient client =
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        await client.TrainSegmentPairAsync(
-            new TrainSegmentPairRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceSegment = sourceSegment,
-                TargetSegment = targetSegment,
-                SentenceStart = sentenceStart
-            },
-            cancellationToken: cancellationToken
-        );
+        try
+        {
+            await client.TrainSegmentPairAsync(
+                new TrainSegmentPairRequest
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    SourceSegment = sourceSegment,
+                    TargetSegment = targetSegment,
+                    SentenceStart = sentenceStart
+                },
+                cancellationToken: cancellationToken
+            );
+            return true;
+        }
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        {
+            return false;
+        }
     }
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
@@ -135,25 +172,25 @@ public class EngineService(
         if (!_translationOptions.CurrentValue.Engines.Any(e => e.Type == engine.Type))
             throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
 
-        engine.DateCreated = DateTime.UtcNow;
-
-        CreateRequest request =
-            new()
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceLanguage = engine.SourceLanguage,
-                TargetLanguage = engine.TargetLanguage
-            };
-        if (engine.IsModelPersisted is not null)
-            request.IsModelPersisted = engine.IsModelPersisted.Value;
-        if (engine.Name is not null)
-            request.EngineName = engine.Name;
-
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
+                engine.DateCreated = DateTime.UtcNow;
                 await Entities.InsertAsync(engine, ct);
+
+                CreateRequest request =
+                    new()
+                    {
+                        EngineType = engine.Type,
+                        EngineId = engine.Id,
+                        SourceLanguage = engine.SourceLanguage,
+                        TargetLanguage = engine.TargetLanguage
+                    };
+                if (engine.IsModelPersisted is not null)
+                    request.IsModelPersisted = engine.IsModelPersisted.Value;
+                if (engine.Name is not null)
+                    request.EngineName = engine.Name;
+
                 await _outboxService.EnqueueMessageAsync(
                     EngineOutboxConstants.OutboxId,
                     EngineOutboxConstants.Create,
@@ -169,42 +206,35 @@ public class EngineService(
 
     public async Task UpdateAsync(
         string engineId,
-        string sourceLanguage = "",
-        string targetLanguage = "",
+        string? sourceLanguage,
+        string? targetLanguage,
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await Entities.GetAsync(engineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
-
-        if (sourceLanguage == "")
-            sourceLanguage = engine.SourceLanguage;
-        if (targetLanguage == "")
-            targetLanguage = engine.TargetLanguage;
-
-        UpdateRequest request =
-            new()
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceLanguage = sourceLanguage,
-                TargetLanguage = targetLanguage
-            };
-
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                await Entities.UpdateAsync(
-                    engine,
+                Engine? engine = await Entities.UpdateAsync(
+                    engineId,
                     u =>
                     {
-                        u.Set(e => e.SourceLanguage, sourceLanguage);
-                        u.Set(e => e.TargetLanguage, targetLanguage);
+                        if (sourceLanguage is not null)
+                            u.Set(e => e.SourceLanguage, sourceLanguage);
+                        if (targetLanguage is not null)
+                            u.Set(e => e.TargetLanguage, targetLanguage);
                     },
                     cancellationToken: ct
                 );
+                if (engine is null)
+                    throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
                 await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
+
+                UpdateRequest request = new() { EngineType = engine.Type, EngineId = engine.Id };
+                if (sourceLanguage is not null)
+                    request.SourceLanguage = sourceLanguage;
+                if (targetLanguage is not null)
+                    request.TargetLanguage = targetLanguage;
+
                 await _outboxService.EnqueueMessageAsync(
                     EngineOutboxConstants.OutboxId,
                     EngineOutboxConstants.Update,
@@ -219,18 +249,18 @@ public class EngineService(
 
     public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        Engine? engine = await Entities.GetAsync(engineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
-
-        DeleteRequest request = new() { EngineType = engine.Type, EngineId = engine.Id };
-
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                await Entities.DeleteAsync(engineId, ct);
+                Engine? engine = await Entities.DeleteAsync(engineId, ct);
+                if (engine is null)
+                    throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
+
                 await _builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
                 await _pretranslations.DeleteAllAsync(pt => pt.EngineRef == engineId, ct);
+
+                DeleteRequest request = new() { EngineType = engine.Type, EngineId = engine.Id };
+
                 await _outboxService.EnqueueMessageAsync(
                     EngineOutboxConstants.OutboxId,
                     EngineOutboxConstants.Delete,
@@ -278,7 +308,7 @@ public class EngineService(
                 build.DateCreated = DateTime.UtcNow;
                 await _builds.InsertAsync(build, ct);
 
-                Engine engine = await GetAsync(build.EngineRef, cancellationToken);
+                Engine engine = await GetAsync(build.EngineRef, ct);
                 StartBuildRequest request;
                 if (engine.ParallelCorpora.Any())
                 {
@@ -397,9 +427,7 @@ public class EngineService(
 
     public async Task<Build?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        Engine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
+        Engine engine = await GetAsync(engineId, cancellationToken);
 
         TranslationEngineApi.TranslationEngineApiClient client =
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
@@ -411,38 +439,43 @@ public class EngineService(
             );
             return await _builds.GetAsync(cancelBuildResponse.BuildId, cancellationToken);
         }
-        catch (RpcException re)
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
         {
-            if (re.StatusCode is StatusCode.Aborted)
-                return null;
-            throw;
+            return null;
         }
     }
 
-    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+    public async Task<ModelDownloadUrl?> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await GetAsync(engineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
+        Engine engine = await GetAsync(engineId, cancellationToken);
+        if (engine.ModelRevision == 0)
+            return null;
 
         TranslationEngineApi.TranslationEngineApiClient client =
             _grpcClientFactory.CreateClient<TranslationEngineApi.TranslationEngineApiClient>(engine.Type);
-        GetModelDownloadUrlResponse result = await client.GetModelDownloadUrlAsync(
-            new GetModelDownloadUrlRequest { EngineType = engine.Type, EngineId = engine.Id },
-            cancellationToken: cancellationToken
-        );
-        return new ModelDownloadUrl
+        try
         {
-            Url = result.Url,
-            ModelRevision = result.ModelRevision,
-            ExpiresAt = result.ExpiresAt.ToDateTime()
-        };
+            GetModelDownloadUrlResponse result = await client.GetModelDownloadUrlAsync(
+                new GetModelDownloadUrlRequest { EngineType = engine.Type, EngineId = engine.Id },
+                cancellationToken: cancellationToken
+            );
+            return new ModelDownloadUrl
+            {
+                Url = result.Url,
+                ModelRevision = result.ModelRevision,
+                ExpiresAt = result.ExpiresAt.ToDateTime()
+            };
+        }
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        {
+            return null;
+        }
     }
 
-    public Task AddCorpusAsync(string engineId, Models.Corpus corpus, CancellationToken cancellationToken = default)
+    public Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default)
     {
         return Entities.UpdateAsync(
             e => e.Id == engineId,

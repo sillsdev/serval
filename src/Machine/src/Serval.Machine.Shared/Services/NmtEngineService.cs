@@ -28,7 +28,7 @@ public class NmtEngineService(
 
     private const int MinutesToExpire = 60;
 
-    public async Task<TranslationEngine> CreateAsync(
+    public async Task CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
@@ -37,24 +37,22 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        var translationEngine = await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+        try
+        {
+            var translationEngine = new TranslationEngine
             {
-                var translationEngine = new TranslationEngine
-                {
-                    EngineId = engineId,
-                    SourceLanguage = sourceLanguage,
-                    TargetLanguage = targetLanguage,
-                    Type = EngineType.Nmt,
-                    IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
-                };
-                await _engines.InsertAsync(translationEngine, ct);
-                await _buildJobService.CreateEngineAsync(engineId, engineName, ct);
-                return translationEngine;
-            },
-            cancellationToken: cancellationToken
-        );
-        return translationEngine;
+                EngineId = engineId,
+                SourceLanguage = sourceLanguage,
+                TargetLanguage = targetLanguage,
+                Type = EngineType.Nmt,
+                IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
+            };
+            await _engines.InsertAsync(translationEngine, cancellationToken);
+        }
+        catch (DuplicateKeyException)
+        {
+            // this method is idempotent, so ignore if the engine already exists
+        }
     }
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
@@ -67,8 +65,8 @@ public class NmtEngineService(
 
     public async Task UpdateAsync(
         string engineId,
-        string sourceLanguage,
-        string targetLanguage,
+        string? sourceLanguage,
+        string? targetLanguage,
         CancellationToken cancellationToken = default
     )
     {
@@ -78,8 +76,10 @@ public class NmtEngineService(
             e => e.EngineId == engineId,
             u =>
             {
-                u.Set(e => e.SourceLanguage, sourceLanguage);
-                u.Set(e => e.TargetLanguage, targetLanguage);
+                if (sourceLanguage is not null)
+                    u.Set(e => e.SourceLanguage, sourceLanguage);
+                if (targetLanguage is not null)
+                    u.Set(e => e.TargetLanguage, targetLanguage);
             },
             cancellationToken: cancellationToken
         );
@@ -114,12 +114,9 @@ public class NmtEngineService(
         );
     }
 
-    public async Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        string? buildId = await CancelBuildJobAsync(engineId, cancellationToken);
-        if (buildId is null)
-            throw new InvalidOperationException("The engine is not currently building.");
-        return buildId;
+        return CancelBuildJobAsync(engineId, cancellationToken);
     }
 
     public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
@@ -211,7 +208,7 @@ public class NmtEngineService(
     {
         TranslationEngine? engine = await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
-            throw new InvalidOperationException($"The engine {engineId} does not exist.");
+            throw new EngineNotFoundException($"The engine {engineId} does not exist.");
         return engine;
     }
 }

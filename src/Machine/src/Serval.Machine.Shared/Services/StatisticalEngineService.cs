@@ -22,7 +22,7 @@ public class StatisticalEngineService(
 
     public EngineType Type => EngineType.Statistical;
 
-    public async Task<WordAlignmentEngine> CreateAsync(
+    public async Task CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
@@ -30,26 +30,24 @@ public class StatisticalEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        WordAlignmentEngine wordAlignmentEngine = await _dataAccessContext.WithTransactionAsync(
-            async ct =>
+        try
+        {
+            var waEngine = new WordAlignmentEngine
             {
-                var waEngine = new WordAlignmentEngine
-                {
-                    EngineId = engineId,
-                    SourceLanguage = sourceLanguage,
-                    TargetLanguage = targetLanguage,
-                    Type = EngineType.Statistical,
-                };
-                await _engines.InsertAsync(waEngine, ct);
-                await _buildJobService.CreateEngineAsync(engineId, engineName, ct);
-                return waEngine;
-            },
-            cancellationToken: cancellationToken
-        );
+                EngineId = engineId,
+                SourceLanguage = sourceLanguage,
+                TargetLanguage = targetLanguage,
+                Type = EngineType.Statistical,
+            };
+            await _engines.InsertAsync(waEngine, cancellationToken);
+        }
+        catch (DuplicateKeyException)
+        {
+            // this method is idempotent, so ignore if the engine already exists
+        }
 
         StatisticalEngineState state = _stateService.Get(engineId);
         state.InitNew();
-        return wordAlignmentEngine;
     }
 
     public async Task<WordAlignmentResult> AlignAsync(
@@ -145,11 +143,11 @@ public class StatisticalEngineService(
         state.Touch();
     }
 
-    public async Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
         string? buildId = await CancelBuildJobAsync(engineId, cancellationToken);
         if (buildId is null)
-            throw new InvalidOperationException("The engine is not currently building.");
+            return null;
 
         StatisticalEngineState state = _stateService.Get(engineId);
         state.Touch();
@@ -180,7 +178,7 @@ public class StatisticalEngineService(
     {
         WordAlignmentEngine? engine = await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
-            throw new InvalidOperationException($"The engine {engineId} does not exist.");
+            throw new EngineNotFoundException($"The engine {engineId} does not exist.");
         return engine;
     }
 

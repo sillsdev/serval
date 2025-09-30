@@ -70,16 +70,18 @@ public class StatisticalPostprocessBuildJob(
         return await @lock.WriterLockAsync(
             async ct =>
             {
-                await using (
-                    Stream engineStream = await SharedFileService.OpenReadAsync($"builds/{buildId}/model.tar.gz", ct)
-                )
-                {
-                    await _wordAlignmentModelFactory.UpdateEngineFromAsync(
-                        Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId),
-                        engineStream,
-                        ct
-                    );
-                }
+                // Save the model to a temporary directory on Windows to avoid file locking issues. The directory will
+                // be moved the next time the engine is used.
+                string engineDir = Path.Combine(
+                    _engineOptions.CurrentValue.EnginesDir,
+                    OperatingSystem.IsWindows() ? engineId + "-new" : engineId
+                );
+                await using Stream engineStream = await SharedFileService.OpenReadAsync(
+                    $"builds/{buildId}/model.tar.gz",
+                    ct
+                );
+
+                await _wordAlignmentModelFactory.UpdateEngineFromAsync(engineDir, engineStream, ct);
                 return 0;
             },
             _engineOptions.CurrentValue.SaveModelTimeout

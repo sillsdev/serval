@@ -22,7 +22,7 @@ public class SmtTransferEngineService(
 
     public EngineType Type => EngineType.SmtTransfer;
 
-    public async Task<TranslationEngine> CreateAsync(
+    public async Task CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
@@ -31,35 +31,25 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        if (isModelPersisted == false)
+        try
         {
-            throw new NotSupportedException(
-                "SMT transfer engines do not support non-persisted models."
-                    + "Please remove the isModelPersisted parameter or set it to true."
-            );
-        }
-
-        TranslationEngine translationEngine = await _dataAccessContext.WithTransactionAsync(
-            async ct =>
+            var translationEngine = new TranslationEngine
             {
-                var translationEngine = new TranslationEngine
-                {
-                    EngineId = engineId,
-                    SourceLanguage = sourceLanguage,
-                    TargetLanguage = targetLanguage,
-                    Type = EngineType.SmtTransfer,
-                    IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
-                };
-                await _engines.InsertAsync(translationEngine, ct);
-                await _buildJobService.CreateEngineAsync(engineId, engineName, ct);
-                return translationEngine;
-            },
-            cancellationToken: cancellationToken
-        );
+                EngineId = engineId,
+                SourceLanguage = sourceLanguage,
+                TargetLanguage = targetLanguage,
+                Type = EngineType.SmtTransfer,
+                IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
+            };
+            await _engines.InsertAsync(translationEngine, cancellationToken);
+        }
+        catch (DuplicateKeyException)
+        {
+            // this method is idempotent, so ignore if the engine already exists
+        }
 
         SmtTransferEngineState state = _stateService.Get(engineId);
         state.InitNew();
-        return translationEngine;
     }
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
@@ -87,8 +77,8 @@ public class SmtTransferEngineService(
 
     public async Task UpdateAsync(
         string engineId,
-        string sourceLanguage,
-        string targetLanguage,
+        string? sourceLanguage,
+        string? targetLanguage,
         CancellationToken cancellationToken = default
     )
     {
@@ -96,8 +86,10 @@ public class SmtTransferEngineService(
             e => e.EngineId == engineId,
             u =>
             {
-                u.Set(e => e.SourceLanguage, sourceLanguage);
-                u.Set(e => e.TargetLanguage, targetLanguage);
+                if (sourceLanguage is not null)
+                    u.Set(e => e.SourceLanguage, sourceLanguage);
+                if (targetLanguage is not null)
+                    u.Set(e => e.TargetLanguage, targetLanguage);
             },
             cancellationToken: cancellationToken
         );
@@ -113,7 +105,7 @@ public class SmtTransferEngineService(
         TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
         SmtTransferEngineState state = _stateService.Get(engineId);
         if (state.IsMarkedForDeletion)
-            throw new InvalidOperationException("Engine is marked for deletion.");
+            throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         IReadOnlyList<TranslationResult> results = await @lock.ReaderLockAsync(
@@ -139,7 +131,7 @@ public class SmtTransferEngineService(
         TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
         SmtTransferEngineState state = _stateService.Get(engineId);
         if (state.IsMarkedForDeletion)
-            throw new InvalidOperationException("Engine is marked for deletion.");
+            throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         WordGraph result = await @lock.ReaderLockAsync(
@@ -166,7 +158,7 @@ public class SmtTransferEngineService(
     {
         SmtTransferEngineState state = _stateService.Get(engineId);
         if (state.IsMarkedForDeletion)
-            throw new InvalidOperationException("Engine is marked for deletion.");
+            throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         await @lock.WriterLockAsync(
@@ -227,11 +219,11 @@ public class SmtTransferEngineService(
         state.Touch();
     }
 
-    public async Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
         string? buildId = await CancelBuildJobAsync(engineId, cancellationToken);
         if (buildId is null)
-            throw new InvalidOperationException("The engine is not currently building.");
+            return null;
 
         SmtTransferEngineState state = _stateService.Get(engineId);
         state.Touch();
@@ -276,7 +268,7 @@ public class SmtTransferEngineService(
     {
         TranslationEngine? engine = await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
-            throw new InvalidOperationException($"The engine {engineId} does not exist.");
+            throw new EngineNotFoundException($"The engine {engineId} does not exist.");
         return engine;
     }
 
@@ -284,7 +276,7 @@ public class SmtTransferEngineService(
     {
         TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
         if (engine.BuildRevision == 0)
-            throw new EngineNotBuiltException("The engine must be built first.");
+            throw new EngineNotBuiltException($"The engine {engineId} must be built first.");
         return engine;
     }
 }

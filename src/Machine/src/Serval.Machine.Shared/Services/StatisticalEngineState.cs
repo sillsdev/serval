@@ -45,6 +45,15 @@ public class StatisticalEngineState(
                 Unload();
             }
 
+            if (OperatingSystem.IsWindows())
+            {
+                string newEngineDir = EngineDir + "-new";
+                if (Directory.Exists(newEngineDir))
+                {
+                    Directory.Delete(EngineDir, true);
+                    Directory.Move(newEngineDir, EngineDir);
+                }
+            }
             _wordAlignmentModel ??= _wordAlignmentModelFactory.Create(EngineDir);
             CurrentBuildRevision = buildRevision;
             return _wordAlignmentModel;
@@ -55,6 +64,8 @@ public class StatisticalEngineState(
     {
         Unload();
         _wordAlignmentModelFactory.Cleanup(EngineDir);
+        if (OperatingSystem.IsWindows())
+            _wordAlignmentModelFactory.Cleanup(EngineDir + "-new");
     }
 
     public void Commit(int buildRevision, TimeSpan inactiveTimeout)
