@@ -56,6 +56,15 @@ public class SmtTransferEngineState(
                 LatinWordTokenizer tokenizer = new();
                 LatinWordDetokenizer detokenizer = new();
                 ITruecaser truecaser = _truecaserFactory.Create(EngineDir);
+                if (OperatingSystem.IsWindows())
+                {
+                    string newEngineDir = EngineDir + "-new";
+                    if (Directory.Exists(newEngineDir))
+                    {
+                        CopyDirectoryContents(newEngineDir, EngineDir);
+                        Directory.Delete(newEngineDir, true);
+                    }
+                }
                 _smtModel = _smtModelFactory.Create(EngineDir, tokenizer, detokenizer, truecaser);
                 ITranslationEngine? transferEngine = _transferEngineFactory.Create(
                     EngineDir,
@@ -77,6 +86,8 @@ public class SmtTransferEngineState(
     {
         Unload();
         _smtModelFactory.Cleanup(EngineDir);
+        if (OperatingSystem.IsWindows())
+            _smtModelFactory.Cleanup(EngineDir + "-new");
         _transferEngineFactory.Cleanup(EngineDir);
         _truecaserFactory.Cleanup(EngineDir);
     }
@@ -126,6 +137,22 @@ public class SmtTransferEngineState(
         _smtModel = null;
         _hybridEngine = null;
         CurrentBuildRevision = -1;
+    }
+
+    private static void CopyDirectoryContents(string sourceDir, string destDir)
+    {
+        if (!Directory.Exists(destDir))
+            Directory.CreateDirectory(destDir);
+        foreach (string file in Directory.GetFiles(sourceDir))
+        {
+            string destFile = Path.Combine(destDir, Path.GetFileName(file));
+            File.Copy(file, destFile, true);
+        }
+        foreach (string dir in Directory.GetDirectories(sourceDir))
+        {
+            string destSubDir = Path.Combine(destDir, Path.GetFileName(dir));
+            CopyDirectoryContents(dir, destSubDir);
+        }
     }
 
     protected override void DisposeManagedResources()

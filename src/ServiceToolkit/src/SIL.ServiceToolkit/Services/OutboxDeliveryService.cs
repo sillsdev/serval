@@ -20,6 +20,7 @@ public class OutboxDeliveryService(
         Dictionary<(string, string), IOutboxConsumer> consumers = scope
             .ServiceProvider.GetServices<IOutboxConsumer>()
             .ToDictionary(o => (o.OutboxId, o.Method));
+        await ProcessMessagesAsync(consumers, messages, stoppingToken);
         using ISubscription<OutboxMessage> subscription = await messages.SubscribeAsync(e => true, stoppingToken);
         while (true)
         {

@@ -36,21 +36,23 @@ public class SmtTransferPostprocessBuildJob(
         return await @lock.WriterLockAsync(
             async ct =>
             {
+                // Save the model to a temporary directory on Windows to avoid file locking issues. The directory will
+                // be moved the next time the engine is used.
+                string engineDir = Path.Combine(
+                    _engineOptions.CurrentValue.EnginesDir,
+                    OperatingSystem.IsWindows() ? engineId + "-new" : engineId
+                );
                 await using (
                     Stream engineStream = await SharedFileService.OpenReadAsync($"builds/{buildId}/model.tar.gz", ct)
                 )
                 {
-                    await _smtModelFactory.UpdateEngineFromAsync(
-                        Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId),
-                        engineStream,
-                        ct
-                    );
+                    await _smtModelFactory.UpdateEngineFromAsync(engineDir, engineStream, ct);
                 }
                 IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
                     p => p.TranslationEngineRef == engineId,
                     ct
                 );
-                TrainOnNewSegmentPairs(engineId, segmentPairs, ct);
+                TrainOnNewSegmentPairs(engineDir, segmentPairs, ct);
                 await Engines.UpdateAsync(
                     engineId,
                     u => u.Set(e => e.CollectTrainSegmentPairs, false),
@@ -63,12 +65,11 @@ public class SmtTransferPostprocessBuildJob(
     }
 
     private void TrainOnNewSegmentPairs(
-        string engineId,
+        string engineDir,
         IReadOnlyList<TrainSegmentPair> segmentPairs,
         CancellationToken cancellationToken
     )
     {
-        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         var tokenizer = new LatinWordTokenizer();
         var detokenizer = new LatinWordDetokenizer();
         ITruecaser truecaser = _truecaserFactory.Create(engineDir);

@@ -38,20 +38,12 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
     )
     {
         IWordAlignmentEngineService engineService = GetEngineService(request.EngineType);
-        WordAlignmentResult result;
-        try
-        {
-            result = await engineService.AlignAsync(
-                request.EngineId,
-                request.SourceSegment,
-                request.TargetSegment,
-                context.CancellationToken
-            );
-        }
-        catch (EngineNotBuiltException e)
-        {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
-        }
+        WordAlignmentResult result = await engineService.AlignAsync(
+            request.EngineId,
+            request.SourceSegment,
+            request.TargetSegment,
+            context.CancellationToken
+        );
 
         return new GetWordAlignmentResponse { Result = result };
     }
@@ -73,15 +65,9 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
     public override async Task<CancelBuildResponse> CancelBuild(CancelBuildRequest request, ServerCallContext context)
     {
         IWordAlignmentEngineService engineService = GetEngineService(request.EngineType);
-        string buildId;
-        try
-        {
-            buildId = await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
-        }
-        catch (InvalidOperationException e)
-        {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
-        }
+        string? buildId = await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
+        if (buildId is null)
+            throw new RpcException(new Status(StatusCode.Aborted, "There is no build currently running."));
         return new CancelBuildResponse() { BuildId = buildId };
     }
 

@@ -2038,13 +2038,11 @@ public class EngineServiceTests
     public async Task UpdateAsync_ShouldNotUpdateSourceLanguage_WhenSourceLanguageNotProvided()
     {
         var env = new TestEnvironment();
-        var engine = await env.CreateEngineWithTextFilesAsync();
+        Engine engine = await env.CreateEngineWithTextFilesAsync();
 
-        var request = new TranslationEngineUpdateConfigDto { SourceLanguage = "", TargetLanguage = "fr" };
+        await env.Service.UpdateAsync(engine.Id, sourceLanguage: null, targetLanguage: "fr");
 
-        await env.Service.UpdateAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
-
-        var updatedEngine = await env.Engines.GetAsync(engine.Id);
+        Engine? updatedEngine = await env.Engines.GetAsync(engine.Id);
 
         Assert.That(updatedEngine, Is.Not.Null);
         Assert.That(updatedEngine.SourceLanguage, Is.Not.Null);
@@ -2057,13 +2055,11 @@ public class EngineServiceTests
     public async Task UpdateAsync_ShouldNotUpdateTargetLanguage_WhenTargetLanguageNotProvided()
     {
         var env = new TestEnvironment();
-        var engine = await env.CreateEngineWithTextFilesAsync();
+        Engine engine = await env.CreateEngineWithTextFilesAsync();
 
-        var request = new TranslationEngineUpdateConfigDto { SourceLanguage = "en", TargetLanguage = "" };
+        await env.Service.UpdateAsync(engine.Id, sourceLanguage: "en", targetLanguage: null);
 
-        await env.Service.UpdateAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
-
-        var updatedEngine = await env.Engines.GetAsync(engine.Id);
+        Engine? updatedEngine = await env.Engines.GetAsync(engine.Id);
 
         Assert.That(updatedEngine, Is.Not.Null);
         Assert.That(updatedEngine.SourceLanguage, Is.Not.Null);
@@ -2076,13 +2072,11 @@ public class EngineServiceTests
     public async Task UpdateAsync_ShouldNotUpdate_WhenSourceAndTargetLanguagesNotProvided()
     {
         var env = new TestEnvironment();
-        var engine = await env.CreateEngineWithTextFilesAsync();
+        Engine engine = await env.CreateEngineWithTextFilesAsync();
 
-        var request = new TranslationEngineUpdateConfigDto { SourceLanguage = "", TargetLanguage = "" };
+        await env.Service.UpdateAsync(engine.Id, sourceLanguage: null, targetLanguage: null);
 
-        await env.Service.UpdateAsync(engine.Id, request.SourceLanguage, request.TargetLanguage);
-
-        var updatedEngine = await env.Engines.GetAsync(engine.Id);
+        Engine? updatedEngine = await env.Engines.GetAsync(engine.Id);
 
         Assert.That(updatedEngine, Is.Not.Null);
         Assert.That(updatedEngine.SourceLanguage, Is.Not.Null);
@@ -2397,7 +2391,8 @@ public class EngineServiceTests
                             }
                         ],
                     }
-                ]
+                ],
+                ModelRevision = 1
             };
             await Engines.InsertAsync(engine);
             return engine;

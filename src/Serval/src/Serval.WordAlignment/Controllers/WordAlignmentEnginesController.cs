@@ -181,12 +181,14 @@ public class WordAlignmentEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        WordAlignmentResult result = await _engineService.GetWordAlignmentAsync(
+        WordAlignmentResult? result = await _engineService.GetWordAlignmentAsync(
             id,
             wordAlignmentRequest.SourceSegment,
             wordAlignmentRequest.TargetSegment,
             cancellationToken
         );
+        if (result is null)
+            return Conflict();
         _logger.LogInformation("Got word alignment for engine {EngineId}", id);
         return Ok(Map(result));
     }

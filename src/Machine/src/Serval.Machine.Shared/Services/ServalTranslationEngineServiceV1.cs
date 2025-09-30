@@ -38,8 +38,8 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         await engineService.UpdateAsync(
             request.EngineId,
-            request.SourceLanguage,
-            request.TargetLanguage,
+            request.HasSourceLanguage ? request.SourceLanguage : null,
+            request.HasTargetLanguage ? request.TargetLanguage : null,
             context.CancellationToken
         );
         return Empty;
@@ -48,20 +48,12 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     public override async Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        IEnumerable<SIL.Machine.Translation.TranslationResult> results;
-        try
-        {
-            results = await engineService.TranslateAsync(
-                request.EngineId,
-                request.N,
-                request.Segment,
-                context.CancellationToken
-            );
-        }
-        catch (EngineNotBuiltException e)
-        {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
-        }
+        IEnumerable<SIL.Machine.Translation.TranslationResult> results = await engineService.TranslateAsync(
+            request.EngineId,
+            request.N,
+            request.Segment,
+            context.CancellationToken
+        );
 
         return new TranslateResponse { Results = { results.Select(Map) } };
     }
@@ -72,19 +64,11 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     )
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        SIL.Machine.Translation.WordGraph wordGraph;
-        try
-        {
-            wordGraph = await engineService.GetWordGraphAsync(
-                request.EngineId,
-                request.Segment,
-                context.CancellationToken
-            );
-        }
-        catch (EngineNotBuiltException e)
-        {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
-        }
+        SIL.Machine.Translation.WordGraph wordGraph = await engineService.GetWordGraphAsync(
+            request.EngineId,
+            request.Segment,
+            context.CancellationToken
+        );
         return new GetWordGraphResponse { WordGraph = Map(wordGraph) };
     }
 
@@ -118,15 +102,9 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     public override async Task<CancelBuildResponse> CancelBuild(CancelBuildRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        string? buildId;
-        try
-        {
-            buildId = await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
-        }
-        catch (InvalidOperationException e)
-        {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
-        }
+        string? buildId = await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
+        if (buildId is null)
+            throw new RpcException(new Status(StatusCode.Aborted, "There is no build currently running."));
         return new CancelBuildResponse() { BuildId = buildId };
     }
 

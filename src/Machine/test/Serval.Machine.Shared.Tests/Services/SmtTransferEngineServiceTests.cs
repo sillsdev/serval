@@ -106,10 +106,10 @@ public class SmtTransferEngineServiceTests
     }
 
     [Test]
-    public void CancelBuildAsync_NotBuilding()
+    public async Task CancelBuildAsync_NotBuilding()
     {
         using var env = new TestEnvironment();
-        Assert.ThrowsAsync<InvalidOperationException>(() => env.Service.CancelBuildAsync(EngineId1));
+        Assert.That(await env.Service.CancelBuildAsync(EngineId1), Is.Null);
     }
 
     [Test]
