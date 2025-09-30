@@ -6,7 +6,6 @@
 [TypeFilter(typeof(NotSupportedExceptionFilter))]
 [TypeFilter(typeof(ServiceUnavailableExceptionFilter))]
 [TypeFilter(typeof(ErrorResultFilter))]
-[TypeFilter(typeof(AbortedRpcExceptionFilter))]
 [TypeFilter(typeof(NotFoundExceptionFilter))]
 [TypeFilter(typeof(ForbiddenExceptionFilter))]
 [TypeFilter(typeof(BadRequestExceptionFilter))]

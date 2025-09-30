@@ -413,6 +413,8 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<CancellationInterceptor>();
             options.Interceptors.Add<UnimplementedInterceptor>();
             options.Interceptors.Add<TimeoutInterceptor>();
+            options.Interceptors.Add<AbortedInterceptor>();
+            options.Interceptors.Add<NotFoundInterceptor>();
         });
 
         IEnumerable<EngineType> engineTypes =
@@ -446,6 +448,8 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<CancellationInterceptor>();
             options.Interceptors.Add<UnimplementedInterceptor>();
             options.Interceptors.Add<TimeoutInterceptor>();
+            options.Interceptors.Add<AbortedInterceptor>();
+            options.Interceptors.Add<NotFoundInterceptor>();
         });
 
         IEnumerable<EngineType> engineTypes =

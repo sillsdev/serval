@@ -14,6 +14,7 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
 
+        builder.Services.Configure<TranslationOptions>(builder.Configuration.GetSection(TranslationOptions.Key));
         var translationOptions = new TranslationOptions();
         builder.Configuration.GetSection(TranslationOptions.Key).Bind(translationOptions);
 

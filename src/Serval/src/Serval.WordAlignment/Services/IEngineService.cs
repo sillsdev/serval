@@ -8,7 +8,7 @@ public interface IEngineService
     Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default);
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<WordAlignmentResult> GetWordAlignmentAsync(
+    Task<WordAlignmentResult?> GetWordAlignmentAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
