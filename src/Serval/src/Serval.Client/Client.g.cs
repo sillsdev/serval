@@ -10533,13 +10533,11 @@ namespace Serval.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class TranslationEngineUpdateConfig
     {
-        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string SourceLanguage { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? SourceLanguage { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TargetLanguage { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? TargetLanguage { get; set; } = default!;
 
     }
 

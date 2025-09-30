@@ -302,8 +302,6 @@ public class ServalApiTests
     public async Task NmtLargeBatchAndDownload()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT3", isModelPersisted: true);
-        TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
-        Assert.That(engine.IsModelPersisted, Is.True);
         string[] books = ["bible_LARGEFILE.txt"];
         ParallelCorpusConfig train_corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
         ParallelCorpusConfig pretranslate_corpus = await _helperClient.MakeParallelTextCorpus(
@@ -333,9 +331,6 @@ public class ServalApiTests
     public async Task GetNmtCancelAndRestartBuild()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT2");
-        TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(engineId);
-        // NMT engines auto-fill IsModelPersisted as false
-        Assert.That(engine.IsModelPersisted, Is.False);
         string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
         ParallelCorpusConfig corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
         string corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, corpus, false);
@@ -385,8 +380,6 @@ public class ServalApiTests
     {
         //Create smt engine
         string smtEngineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT5");
-        TranslationEngine engine = await _helperClient.TranslationEnginesClient.GetAsync(smtEngineId);
-        Assert.That(engine.IsModelPersisted, Is.True); // SMT engines auto-fill IsModelPersisted as true
 
         //Try to get word graph - should fail: the engine is not built
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>

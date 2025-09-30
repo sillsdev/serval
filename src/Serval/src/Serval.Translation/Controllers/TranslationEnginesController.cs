@@ -200,7 +200,12 @@ public class TranslationEnginesController(
             return BadRequest("sourceLanguage or targetLanguage is required.");
         }
 
-        await _engineService.UpdateAsync(id, request.SourceLanguage, request.TargetLanguage, cancellationToken);
+        await _engineService.UpdateAsync(
+            id,
+            string.IsNullOrWhiteSpace(request.SourceLanguage) ? null : request.SourceLanguage,
+            string.IsNullOrWhiteSpace(request.TargetLanguage) ? null : request.TargetLanguage,
+            cancellationToken
+        );
 
         return Ok();
     }
@@ -236,7 +241,9 @@ public class TranslationEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        TranslationResult result = await _engineService.TranslateAsync(id, segment, cancellationToken);
+        TranslationResult? result = await _engineService.TranslateAsync(id, segment, cancellationToken);
+        if (result is null)
+            return Conflict();
         _logger.LogInformation("Translated segment for engine {EngineId}", id);
         return Ok(Map(result));
     }
@@ -274,7 +281,14 @@ public class TranslationEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(id, n, segment, cancellationToken);
+        IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(
+            id,
+            n,
+            segment,
+            cancellationToken
+        );
+        if (results is null)
+            return Conflict();
         _logger.LogInformation("Translated {n} segments for engine {EngineId}", n, id);
         return Ok(results.Select(Map));
     }
@@ -310,7 +324,9 @@ public class TranslationEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        WordGraph wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
+        WordGraph? wordGraph = await _engineService.GetWordGraphAsync(id, segment, cancellationToken);
+        if (wordGraph is null)
+            return Conflict();
         _logger.LogInformation("Got word graph for engine {EngineId}", id);
         return Ok(Map(wordGraph));
     }
@@ -351,13 +367,18 @@ public class TranslationEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        await _engineService.TrainSegmentPairAsync(
-            id,
-            segmentPair.SourceSegment,
-            segmentPair.TargetSegment,
-            segmentPair.SentenceStart,
-            cancellationToken
-        );
+        if (
+            !await _engineService.TrainSegmentPairAsync(
+                id,
+                segmentPair.SourceSegment,
+                segmentPair.TargetSegment,
+                segmentPair.SentenceStart,
+                cancellationToken
+            )
+        )
+        {
+            return Conflict();
+        }
         _logger.LogInformation("Trained segment pair for engine {EngineId}", id);
         return Ok();
     }
@@ -1508,7 +1529,9 @@ public class TranslationEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        ModelDownloadUrl modelInfo = await _engineService.GetModelDownloadUrlAsync(id, cancellationToken);
+        ModelDownloadUrl? modelInfo = await _engineService.GetModelDownloadUrlAsync(id, cancellationToken);
+        if (modelInfo is null)
+            return NotFound();
         return Ok(Map(modelInfo));
     }
 

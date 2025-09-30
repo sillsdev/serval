@@ -9,29 +9,29 @@ public interface IEngineService
 
     Task UpdateAsync(
         string engineId,
-        string sourceLanguage,
-        string targetLanguage,
+        string? sourceLanguage,
+        string? targetLanguage,
         CancellationToken cancellationToken = default
     );
 
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<TranslationResult> TranslateAsync(
+    Task<TranslationResult?> TranslateAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
     );
 
-    Task<IEnumerable<TranslationResult>> TranslateAsync(
+    Task<IEnumerable<TranslationResult>?> TranslateAsync(
         string engineId,
         int n,
         string segment,
         CancellationToken cancellationToken = default
     );
 
-    Task<WordGraph> GetWordGraphAsync(string engineId, string segment, CancellationToken cancellationToken = default);
+    Task<WordGraph?> GetWordGraphAsync(string engineId, string segment, CancellationToken cancellationToken = default);
 
-    Task TrainSegmentPairAsync(
+    Task<bool> TrainSegmentPairAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -43,7 +43,7 @@ public interface IEngineService
 
     Task<Build?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<ModelDownloadUrl?> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default);
     Task<Corpus> UpdateCorpusAsync(

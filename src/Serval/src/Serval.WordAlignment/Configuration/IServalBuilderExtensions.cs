@@ -14,6 +14,7 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IWordAlignmentService, WordAlignmentService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
 
+        builder.Services.Configure<WordAlignmentOptions>(builder.Configuration.GetSection(WordAlignmentOptions.Key));
         var wordAlignmentOptions = new WordAlignmentOptions();
         builder.Configuration.GetSection(WordAlignmentOptions.Key).Bind(wordAlignmentOptions);
 

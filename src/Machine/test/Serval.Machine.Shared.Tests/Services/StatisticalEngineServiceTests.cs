@@ -101,10 +101,10 @@ public class StatisticalEngineServiceTests
 
     [TestCase(BuildJobRunnerType.Hangfire)]
     [TestCase(BuildJobRunnerType.ClearML)]
-    public void CancelBuildAsync_NotBuilding(BuildJobRunnerType trainJobRunnerType)
+    public async Task CancelBuildAsync_NotBuilding(BuildJobRunnerType trainJobRunnerType)
     {
         using var env = new TestEnvironment(trainJobRunnerType);
-        Assert.ThrowsAsync<InvalidOperationException>(() => env.Service.CancelBuildAsync(EngineId1));
+        Assert.That(await env.Service.CancelBuildAsync(EngineId1), Is.Null);
     }
 
     [TestCase(BuildJobRunnerType.Hangfire)]

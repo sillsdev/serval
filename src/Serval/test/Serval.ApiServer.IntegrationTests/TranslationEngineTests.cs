@@ -121,7 +121,8 @@ public class TranslationEngineTests
             TargetLanguage = "en",
             Type = "Echo",
             Owner = "client1",
-            Corpora = []
+            Corpora = [],
+            ModelRevision = 1
         };
         var e1 = new Engine
         {
@@ -131,7 +132,8 @@ public class TranslationEngineTests
             TargetLanguage = "en",
             Type = "Echo",
             Owner = "client1",
-            Corpora = []
+            Corpora = [],
+            ModelRevision = 1
         };
         var e2 = new Engine
         {
@@ -141,7 +143,8 @@ public class TranslationEngineTests
             TargetLanguage = "en",
             Type = "Echo",
             Owner = "client2",
-            Corpora = []
+            Corpora = [],
+            ModelRevision = 1
         };
         var be0 = new Engine
         {
@@ -151,7 +154,8 @@ public class TranslationEngineTests
             TargetLanguage = "es",
             Type = "SMTTransfer",
             Owner = "client1",
-            Corpora = []
+            Corpora = [],
+            ModelRevision = 1
         };
         var ce0 = new Engine
         {
@@ -161,10 +165,11 @@ public class TranslationEngineTests
             TargetLanguage = "es",
             Type = "Nmt",
             Owner = "client1",
-            Corpora = []
+            Corpora = [],
+            ModelRevision = 1
         };
 
-        await _env.Engines.InsertAllAsync(new[] { e0, e1, e2, be0, ce0 });
+        await _env.Engines.InsertAllAsync([e0, e1, e2, be0, ce0]);
 
         var srcFile = new DataFiles.Models.DataFile
         {

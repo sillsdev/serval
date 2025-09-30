@@ -43,10 +43,10 @@ public class NmtEngineServiceTests
     }
 
     [Test]
-    public void CancelBuildAsync_NotBuilding()
+    public async Task CancelBuildAsync_NotBuilding()
     {
         using var env = new TestEnvironment();
-        Assert.ThrowsAsync<InvalidOperationException>(() => env.Service.CancelBuildAsync("engine1"));
+        Assert.That(await env.Service.CancelBuildAsync("engine1"), Is.Null);
     }
 
     [Test]

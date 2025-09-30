@@ -87,7 +87,8 @@ public class WordAlignmentEngineTests
             TargetLanguage = "en",
             Type = "EchoWordAlignment",
             Owner = "client1",
-            ParallelCorpora = []
+            ParallelCorpora = [],
+            ModelRevision = 1
         };
         var e1 = new Engine
         {
@@ -97,7 +98,8 @@ public class WordAlignmentEngineTests
             TargetLanguage = "en",
             Type = "EchoWordAlignment",
             Owner = "client1",
-            ParallelCorpora = []
+            ParallelCorpora = [],
+            ModelRevision = 1
         };
         var e2 = new Engine
         {
@@ -107,7 +109,8 @@ public class WordAlignmentEngineTests
             TargetLanguage = "en",
             Type = "EchoWordAlignment",
             Owner = "client2",
-            ParallelCorpora = []
+            ParallelCorpora = [],
+            ModelRevision = 1
         };
         var se0 = new Engine
         {
@@ -117,7 +120,8 @@ public class WordAlignmentEngineTests
             TargetLanguage = "es",
             Type = "Statistical",
             Owner = "client1",
-            ParallelCorpora = []
+            ParallelCorpora = [],
+            ModelRevision = 1
         };
 
         await _env.Engines.InsertAllAsync([e0, e1, e2, se0]);

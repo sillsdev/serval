@@ -6,7 +6,7 @@ public interface IWordAlignmentEngineService
 {
     EngineType Type { get; }
 
-    Task<WordAlignmentEngine> CreateAsync(
+    Task CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
@@ -30,7 +30,7 @@ public interface IWordAlignmentEngineService
         CancellationToken cancellationToken = default
     );
 
-    Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     int GetQueueSize();
 }

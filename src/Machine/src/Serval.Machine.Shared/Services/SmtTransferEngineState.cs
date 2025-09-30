@@ -56,6 +56,15 @@ public class SmtTransferEngineState(
                 LatinWordTokenizer tokenizer = new();
                 LatinWordDetokenizer detokenizer = new();
                 ITruecaser truecaser = _truecaserFactory.Create(EngineDir);
+                if (OperatingSystem.IsWindows())
+                {
+                    string newEngineDir = EngineDir + "-new";
+                    if (Directory.Exists(newEngineDir))
+                    {
+                        Directory.Delete(EngineDir, true);
+                        Directory.Move(newEngineDir, EngineDir);
+                    }
+                }
                 _smtModel = _smtModelFactory.Create(EngineDir, tokenizer, detokenizer, truecaser);
                 ITranslationEngine? transferEngine = _transferEngineFactory.Create(
                     EngineDir,
@@ -77,6 +86,8 @@ public class SmtTransferEngineState(
     {
         Unload();
         _smtModelFactory.Cleanup(EngineDir);
+        if (OperatingSystem.IsWindows())
+            _smtModelFactory.Cleanup(EngineDir + "-new");
         _transferEngineFactory.Cleanup(EngineDir);
         _truecaserFactory.Cleanup(EngineDir);
     }

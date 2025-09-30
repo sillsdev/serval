@@ -37,8 +37,8 @@ message DeleteRequest {
 message UpdateRequest {
     string engine_type = 1;
     string engine_id = 2;
-    string source_language = 3;
-    string target_language = 4;
+    optional string source_language = 3;
+    optional string target_language = 4;
 }
 
 message TranslateRequest {

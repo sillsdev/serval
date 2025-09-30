@@ -1452,7 +1452,8 @@ public class EngineServiceTests
                             }
                         }
                     }
-                ]
+                ],
+                ModelRevision = 1
             };
             await Engines.InsertAsync(engine);
             return engine;

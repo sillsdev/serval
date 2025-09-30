@@ -33,7 +33,7 @@ public class EngineService(
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public async Task<Models.WordAlignmentResult> GetWordAlignmentAsync(
+    public async Task<Models.WordAlignmentResult?> GetWordAlignmentAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -41,20 +41,29 @@ public class EngineService(
     )
     {
         Engine engine = await GetAsync(engineId, cancellationToken);
+        if (engine.ModelRevision == 0)
+            return null;
 
         WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
             _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
-        GetWordAlignmentResponse response = await client.GetWordAlignmentAsync(
-            new GetWordAlignmentRequest
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceSegment = sourceSegment,
-                TargetSegment = targetSegment
-            },
-            cancellationToken: cancellationToken
-        );
-        return Map(response.Result);
+        try
+        {
+            GetWordAlignmentResponse response = await client.GetWordAlignmentAsync(
+                new GetWordAlignmentRequest
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    SourceSegment = sourceSegment,
+                    TargetSegment = targetSegment
+                },
+                cancellationToken: cancellationToken
+            );
+            return Map(response.Result);
+        }
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        {
+            return null;
+        }
     }
 
     public override async Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default)
@@ -62,23 +71,23 @@ public class EngineService(
         if (!_wordAlignmentOptions.CurrentValue.Engines.Any(e => e.Type == engine.Type))
             throw new InvalidOperationException($"'{engine.Type}' is an invalid engine type.");
 
-        engine.DateCreated = DateTime.UtcNow;
-
-        CreateRequest request =
-            new()
-            {
-                EngineType = engine.Type,
-                EngineId = engine.Id,
-                SourceLanguage = engine.SourceLanguage,
-                TargetLanguage = engine.TargetLanguage
-            };
-        if (engine.Name is not null)
-            request.EngineName = engine.Name;
-
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
+                engine.DateCreated = DateTime.UtcNow;
                 await Entities.InsertAsync(engine, cancellationToken);
+
+                CreateRequest request =
+                    new()
+                    {
+                        EngineType = engine.Type,
+                        EngineId = engine.Id,
+                        SourceLanguage = engine.SourceLanguage,
+                        TargetLanguage = engine.TargetLanguage
+                    };
+                if (engine.Name is not null)
+                    request.EngineName = engine.Name;
+
                 await _outboxService.EnqueueMessageAsync(
                     EngineOutboxConstants.OutboxId,
                     EngineOutboxConstants.Create,
@@ -94,18 +103,18 @@ public class EngineService(
 
     public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        Engine? engine = await Entities.GetAsync(engineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
-
-        DeleteRequest request = new() { EngineType = engine.Type, EngineId = engine.Id };
-
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                await Entities.DeleteAsync(engineId, ct);
+                Engine? engine = await Entities.DeleteAsync(engineId, ct);
+                if (engine is null)
+                    throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
+
                 await _builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
                 await _wordAlignments.DeleteAllAsync(wa => wa.EngineRef == engineId, ct);
+
+                DeleteRequest request = new() { EngineType = engine.Type, EngineId = engine.Id };
+
                 await _outboxService.EnqueueMessageAsync(
                     EngineOutboxConstants.OutboxId,
                     EngineOutboxConstants.Delete,
@@ -247,11 +256,9 @@ public class EngineService(
             );
             return await _builds.GetAsync(cancelBuildResponse.BuildId, cancellationToken);
         }
-        catch (RpcException re)
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
         {
-            if (re.StatusCode is StatusCode.Aborted)
-                return null;
-            throw;
+            return null;
         }
     }
 

@@ -4,7 +4,7 @@ public interface ITranslationEngineService
 {
     EngineType Type { get; }
 
-    Task<TranslationEngine> CreateAsync(
+    Task CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
@@ -16,8 +16,8 @@ public interface ITranslationEngineService
 
     Task UpdateAsync(
         string engineId,
-        string sourceLanguage,
-        string targetLanguage,
+        string? sourceLanguage,
+        string? targetLanguage,
         CancellationToken cancellationToken = default
     );
 
@@ -46,7 +46,7 @@ public interface ITranslationEngineService
         CancellationToken cancellationToken = default
     );
 
-    Task<string> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
