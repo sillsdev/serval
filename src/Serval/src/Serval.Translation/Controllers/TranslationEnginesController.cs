@@ -715,7 +715,7 @@ public class TranslationEnginesController(
     ///
     /// Preserving or stripping different types of USFM markers can be controlled by the `paragraph-marker-behavior`, `embed-behavior`, and `style-marker-behavior` parameters.
     /// * `PushToEnd`: The USFM markers (or the entire embed) are preserved and placed at the end of the verse. **This is the default for paragraph markers and embeds**.
-    /// * `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language.**.
+    /// * `TryToPlace`: The USFM markers (or the entire embed) are placed in approximately the right location within the verse. **This option is only available for paragraph markers. Quality of placement may differ from language to language. Only works when `template` is set to `Source`**.
     /// * `Strip`: The USFM markers (or the entire embed) are removed. **This is the default for style markers**.
     ///
     /// Quote normalization behavior is controlled by the `quote-normalization-behavior` parameter options:

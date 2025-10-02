@@ -43,7 +43,7 @@ public class NmtPreprocessBuildJob(
             string targetQuotationConventionName = targetQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
             if (
                 !string.IsNullOrWhiteSpace(sourceQuotationConventionName)
-                || !string.IsNullOrWhiteSpace(sourceQuotationConventionName)
+                || !string.IsNullOrWhiteSpace(targetQuotationConventionName)
             )
             {
                 parallelCorpusAnalysis.Add(
