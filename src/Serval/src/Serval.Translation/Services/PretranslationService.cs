@@ -148,11 +148,13 @@ public class PretranslationService(
             .OrderBy(p => p.ScriptureRefs[0]);
 
         List<IUsfmUpdateBlockHandler> updateBlockHandlers = [];
-        if (paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition)
+        if (
+            paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition
+            && template == PretranslationUsfmTemplate.Source
+        )
+        {
             updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler());
-
-        if (paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition)
-            updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler());
+        }
 
         string usfm = "";
         // Update the target book if it exists
@@ -183,7 +185,9 @@ public class PretranslationService(
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
                             updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks
+                            remarks: remarks,
+                            errorHandler: (_) => true,
+                            compareSegments: false
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.PreferPretranslated:
@@ -197,7 +201,9 @@ public class PretranslationService(
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
                             updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks
+                            remarks: remarks,
+                            errorHandler: (_) => true,
+                            compareSegments: false
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -211,7 +217,9 @@ public class PretranslationService(
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
                             updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks
+                            remarks: remarks,
+                            errorHandler: (_) => true,
+                            compareSegments: false
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyPretranslated:
@@ -225,7 +233,9 @@ public class PretranslationService(
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
                             updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks
+                            remarks: remarks,
+                            errorHandler: (_) => true,
+                            compareSegments: false
                         ) ?? "";
                     break;
             }
@@ -255,7 +265,9 @@ public class PretranslationService(
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
                             updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks
+                            remarks: remarks,
+                            errorHandler: (_) => true,
+                            compareSegments: true
                         ) ?? "";
                     break;
                 case PretranslationUsfmTextOrigin.OnlyExisting:
@@ -269,7 +281,9 @@ public class PretranslationService(
                             embedBehavior: Map(embedBehavior),
                             styleBehavior: Map(styleMarkerBehavior),
                             updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks
+                            remarks: remarks,
+                            errorHandler: (_) => true,
+                            compareSegments: true
                         ) ?? "";
                     break;
             }
@@ -289,31 +303,20 @@ public class PretranslationService(
 
     private static string DenormalizeQuotationMarks(string usfm, ParallelCorpusAnalysis analysis)
     {
-        QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
-            analysis.SourceQuoteConvention
-        );
-        if (sourceQuoteConvention is null)
-            return usfm;
-
         QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             analysis.TargetQuoteConvention
         );
         if (targetQuoteConvention is null)
             return usfm;
 
-        QuotationMarkDenormalizationFirstPass quotationMarkDenormalizationFirstPass =
-            new(sourceQuoteConvention, targetQuoteConvention);
+        QuotationMarkDenormalizationFirstPass quotationMarkDenormalizationFirstPass = new(targetQuoteConvention);
 
         UsfmParser.Parse(usfm, quotationMarkDenormalizationFirstPass);
         List<QuotationMarkUpdateStrategy> bestChapterStrategies =
             quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
 
         QuotationMarkDenormalizationUsfmUpdateBlockHandler quotationMarkDenormalizer =
-            new(
-                sourceQuoteConvention,
-                targetQuoteConvention,
-                new QuotationMarkUpdateSettings(chapterStrategies: bestChapterStrategies)
-            );
+            new(targetQuoteConvention, new QuotationMarkUpdateSettings(chapterStrategies: bestChapterStrategies));
         List<string> remarks = [];
         if (bestChapterStrategies.Any(s => s != QuotationMarkUpdateStrategy.Skip))
         {
