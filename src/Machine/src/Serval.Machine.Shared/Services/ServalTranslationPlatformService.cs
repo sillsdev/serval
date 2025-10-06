@@ -178,7 +178,6 @@ public class ServalTranslationPlatformService(
                 new ParallelCorpusAnalysisResult
                 {
                     ParallelCorpusId = analysis.ParallelCorpusRef,
-                    SourceQuoteConvention = analysis.SourceQuoteConvention,
                     TargetQuoteConvention = analysis.TargetQuoteConvention,
                 }
             );

@@ -6,19 +6,8 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
     private readonly ITextCorpusService _textCorpusService = textCorpusService;
     private const int Seed = 1234;
 
-    public (QuoteConventionAnalysis?, QuoteConventionAnalysis?) AnalyzeParallelCorpus(ParallelCorpus parallelCorpus)
+    public QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus parallelCorpus)
     {
-        var sourceHandler = new QuoteConventionDetector();
-        foreach (MonolingualCorpus sourceMonolingualCorpus in parallelCorpus.SourceCorpora)
-        {
-            foreach (CorpusFile file in sourceMonolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
-            {
-                using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
-                var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
-                quoteConventionDetector.GetQuoteConventionAnalysis(sourceHandler);
-            }
-        }
-
         var targetHandler = new QuoteConventionDetector();
         foreach (MonolingualCorpus targetMonolingualCorpus in parallelCorpus.TargetCorpora)
         {
@@ -26,11 +15,23 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
             {
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
                 var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
-                quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler);
+                Dictionary<string, List<int>>? chapters = null;
+                if (targetMonolingualCorpus.TrainOnTextIds is not null)
+                {
+                    chapters = targetMonolingualCorpus.TrainOnTextIds.ToDictionary(id => id, _ => new List<int>());
+                }
+                else if (targetMonolingualCorpus.TrainOnChapters is not null)
+                {
+                    chapters = targetMonolingualCorpus.TrainOnChapters.ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value.ToList()
+                    );
+                }
+                quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler, chapters);
             }
         }
 
-        return (sourceHandler.DetectQuotationConvention(), targetHandler.DetectQuotationConvention());
+        return targetHandler.DetectQuoteConvention();
     }
 
     public async Task PreprocessAsync(

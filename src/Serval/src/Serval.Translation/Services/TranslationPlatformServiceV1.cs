@@ -307,7 +307,6 @@ public class TranslationPlatformServiceV1(
             .Select(a => new ParallelCorpusAnalysis
             {
                 ParallelCorpusRef = a.ParallelCorpusId,
-                SourceQuoteConvention = a.SourceQuoteConvention,
                 TargetQuoteConvention = a.TargetQuoteConvention,
             })
             .ToList();

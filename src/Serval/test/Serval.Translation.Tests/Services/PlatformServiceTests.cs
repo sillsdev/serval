@@ -198,7 +198,6 @@ public class PlatformServiceTests
             new ParallelCorpusAnalysis
             {
                 ParallelCorpusRef = "parallelCorpus01",
-                SourceQuoteConvention = "standard_english",
                 TargetQuoteConvention = "typewriter_english",
             },
         ];
@@ -208,7 +207,6 @@ public class PlatformServiceTests
             new ParallelCorpusAnalysisResult
             {
                 ParallelCorpusId = "parallelCorpus01",
-                SourceQuoteConvention = "standard_english",
                 TargetQuoteConvention = "typewriter_english",
             }
         );
