@@ -8,16 +8,14 @@ public class ParallelCorpusPreprocessingServiceTests
     {
         using var env = new TestEnvironment();
         ParallelCorpus parallelCorpus = env.GetCorpus(paratextProject: true);
-        const string ExpectedSourceName = "standard_english";
         const string ExpectedTargetName = "typewriter_english";
 
-        (QuoteConventionAnalysis? sourceQuotationConvention, QuoteConventionAnalysis? targetQuotationConvention) =
-            env.Processor.AnalyzeParallelCorpus(parallelCorpus);
+        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetCorpusQuoteConvention(
+            parallelCorpus
+        );
 
         Assert.Multiple(() =>
         {
-            Assert.That(sourceQuotationConvention, Is.Not.Null);
-            Assert.That(sourceQuotationConvention!.BestQuoteConvention.Name, Is.EqualTo(ExpectedSourceName));
             Assert.That(targetQuotationConvention, Is.Not.Null);
             Assert.That(targetQuotationConvention!.BestQuoteConvention.Name, Is.EqualTo(ExpectedTargetName));
         });
@@ -29,12 +27,12 @@ public class ParallelCorpusPreprocessingServiceTests
         using var env = new TestEnvironment();
         ParallelCorpus parallelCorpus = env.GetCorpus(paratextProject: false);
 
-        (QuoteConventionAnalysis? sourceQuotationConvention, QuoteConventionAnalysis? targetQuotationConvention) =
-            env.Processor.AnalyzeParallelCorpus(parallelCorpus);
+        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetCorpusQuoteConvention(
+            parallelCorpus
+        );
 
         Assert.Multiple(() =>
         {
-            Assert.That(sourceQuotationConvention, Is.Null);
             Assert.That(targetQuotationConvention, Is.Null);
         });
     }

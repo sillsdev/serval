@@ -2164,7 +2164,6 @@ public class TranslationEnginesController(
         return new ParallelCorpusAnalysisDto
         {
             ParallelCorpusRef = source.ParallelCorpusRef,
-            SourceQuoteConvention = "",
             TargetQuoteConvention = source.TargetQuoteConvention,
         };
     }

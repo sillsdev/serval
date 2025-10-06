@@ -37,8 +37,8 @@ public class NmtPreprocessBuildJob(
         List<ParallelCorpusAnalysis> parallelCorpusAnalysis = [];
         foreach (ParallelCorpus parallelCorpus in corpora)
         {
-            (QuoteConventionAnalysis? _, QuoteConventionAnalysis? targetQuotationConvention) =
-                ParallelCorpusPreprocessingService.AnalyzeParallelCorpus(parallelCorpus);
+            QuoteConventionAnalysis? targetQuotationConvention =
+                ParallelCorpusPreprocessingService.AnalyzeTargetCorpusQuoteConvention(parallelCorpus);
             string targetQuotationConventionName = targetQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(targetQuotationConventionName))
             {
