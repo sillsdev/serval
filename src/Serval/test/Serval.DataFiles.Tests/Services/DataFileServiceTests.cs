@@ -83,6 +83,39 @@ public class DataFileServiceTests
     }
 
     [Test]
+    public void UpdateAsync_GetAsyncFails()
+    {
+        var env = new TestEnvironment();
+
+        // We will use the mediator to cancel the token, which will cause GetAsync() to fail
+        // What we are testing for is GetAsync() failing due to network or other connectivity issues, token cancellation being one source
+        var cts = new CancellationTokenSource();
+        env.Mediator.When(x => x.Publish(Arg.Any<DataFileUpdated>(), Arg.Any<CancellationToken>()))
+            .Do(_ => cts.Cancel());
+
+        // Set up a valid existing file
+        env.DataFiles.Add(DefaultDataFile with { });
+        using var fileStream = new MemoryStream();
+        env.FileSystem.OpenWrite(Arg.Any<string>()).Returns(fileStream);
+        string content = "This is a file.";
+        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
+        {
+            Assert.ThrowsAsync<OperationCanceledException>(
+                () => env.Service.UpdateAsync(DataFileId, stream, cts.Token)
+            );
+        }
+
+        // Verify the file was updated
+        DataFile dataFile = env.DataFiles.Get(DataFileId);
+        Assert.That(dataFile.Revision, Is.EqualTo(2));
+        Assert.That(Encoding.UTF8.GetString(fileStream.ToArray()), Is.EqualTo(content));
+        DeletedFile deletedFile = env.DeletedFiles.Entities.Single();
+        Assert.That(deletedFile.Filename, Is.EqualTo("file1.txt"));
+
+        env.FileSystem.DidNotReceive().DeleteFile(Arg.Any<string>());
+    }
+
+    [Test]
     public void UpdateAsync_DoesNotExist()
     {
         var env = new TestEnvironment();

@@ -40,7 +40,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
         string path = GetDataFilePath(filename);
         try
         {
-            using Stream fileStream = _fileSystem.OpenWrite(path);
+            await using Stream fileStream = _fileSystem.OpenWrite(path);
             await stream.CopyToAsync(fileStream, cancellationToken);
             await Entities.InsertAsync(dataFile with { Filename = filename }, cancellationToken);
         }
@@ -67,10 +67,10 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
         bool deleteFile = false;
         try
         {
-            using (Stream fileStream = _fileSystem.OpenWrite(path))
+            await using (Stream fileStream = _fileSystem.OpenWrite(path))
                 await stream.CopyToAsync(fileStream, cancellationToken);
             await _dataAccessContext.WithTransactionAsync(
-                async (ct) =>
+                async ct =>
                 {
                     DataFile? originalDataFile = await Entities.UpdateAsync(
                         id,
@@ -79,21 +79,16 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
                         cancellationToken: ct
                     );
                     if (originalDataFile is null)
-                    {
                         throw new EntityNotFoundException($"Could not find the DataFile '{id}'.");
-                    }
-                    else
-                    {
-                        await _deletedFiles.InsertAsync(
-                            new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
-                            cancellationToken: ct
-                        );
-                    }
+
+                    await _deletedFiles.InsertAsync(
+                        new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
+                        cancellationToken: ct
+                    );
                     await _mediator.Publish(new DataFileUpdated { DataFileId = id, Filename = filename }, ct);
                 },
                 cancellationToken: cancellationToken
             );
-            return await GetAsync(id, cancellationToken);
         }
         catch
         {
@@ -105,12 +100,13 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
             if (deleteFile)
                 _fileSystem.DeleteFile(path);
         }
+
+        return await GetAsync(id, cancellationToken);
     }
 
-    public override async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
-    {
+    public override async Task DeleteAsync(string id, CancellationToken cancellationToken = default) =>
         await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
                 DataFile? dataFile = await Entities.DeleteAsync(id, ct);
                 if (dataFile is null)
@@ -124,10 +120,6 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
             },
             cancellationToken: cancellationToken
         );
-    }
 
-    private string GetDataFilePath(string filename)
-    {
-        return Path.Combine(_options.CurrentValue.FilesDirectory, filename);
-    }
+    private string GetDataFilePath(string filename) => Path.Combine(_options.CurrentValue.FilesDirectory, filename);
 }
