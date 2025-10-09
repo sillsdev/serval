@@ -22,12 +22,24 @@ public class OutboxDeliveryService(
             .ToDictionary(o => (o.OutboxId, o.Method));
         await ProcessMessagesAsync(consumers, messages, stoppingToken);
         using ISubscription<OutboxMessage> subscription = await messages.SubscribeAsync(e => true, stoppingToken);
-        while (true)
+        while (!stoppingToken.IsCancellationRequested)
         {
-            await subscription.WaitForChangeAsync(cancellationToken: stoppingToken);
-            if (stoppingToken.IsCancellationRequested)
+            try
+            {
+                await subscription.WaitForChangeAsync(cancellationToken: stoppingToken);
+                stoppingToken.ThrowIfCancellationRequested();
+                await ProcessMessagesAsync(consumers, messages, stoppingToken);
+            }
+            catch (TimeoutException e)
+            {
+                _logger.LogWarning(e, "Change stream interrupted, trying again...");
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
+            catch (OperationCanceledException e)
+            {
+                _logger.LogInformation(e, "Cancellation requested, service is stopping...");
                 break;
-            await ProcessMessagesAsync(consumers, messages, stoppingToken);
+            }
         }
     }
 
