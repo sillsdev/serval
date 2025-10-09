@@ -7,4 +7,5 @@ public record ParallelCorpusAnalysisDto
     [Obsolete]
     public string? SourceQuoteConvention { get; init; }
     public required string TargetQuoteConvention { get; init; }
+    public bool CanDenormalizeQuotes { get; init; }
 }

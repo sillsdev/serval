@@ -291,7 +291,7 @@ public class PretranslationService(
         if (
             quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized
             && build.Analysis is not null
-            && build.Analysis.Any(a => a.ParallelCorpusRef == corpusId)
+            && build.Analysis.Any(a => a.ParallelCorpusRef == corpusId && a.CanDenormalizeQuotes)
         )
         {
             ParallelCorpusAnalysis analysis = build.Analysis.Single(c => c.ParallelCorpusRef == corpusId);

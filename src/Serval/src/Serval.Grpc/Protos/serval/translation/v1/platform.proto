@@ -82,8 +82,7 @@ message UpdateParallelCorpusAnalysisRequest {
 
 message ParallelCorpusAnalysisResult {
 	string parallel_corpus_id = 1;
-	string source_quote_convention = 2;
-	string target_quote_convention = 3;
+	string target_quote_convention = 2;
 }
 
 message Phase {
