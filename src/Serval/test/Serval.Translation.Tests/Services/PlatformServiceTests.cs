@@ -199,6 +199,7 @@ public class PlatformServiceTests
             {
                 ParallelCorpusRef = "parallelCorpus01",
                 TargetQuoteConvention = "typewriter_english",
+                CanDenormalizeQuotes = true
             },
         ];
 

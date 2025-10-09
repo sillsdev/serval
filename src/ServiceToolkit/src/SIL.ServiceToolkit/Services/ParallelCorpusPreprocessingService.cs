@@ -27,7 +27,10 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                         kvp => kvp.Value.ToList()
                     );
                 }
-                quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler, chapters);
+                if (chapters != null)
+                    quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler, chapters);
+                else
+                    quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler);
             }
         }
 
