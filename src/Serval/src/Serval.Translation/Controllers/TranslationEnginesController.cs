@@ -2165,6 +2165,7 @@ public class TranslationEnginesController(
         {
             ParallelCorpusRef = source.ParallelCorpusRef,
             TargetQuoteConvention = source.TargetQuoteConvention,
+            SourceQuoteConvention = "ignore",
             CanDenormalizeQuotes = source.CanDenormalizeQuotes
         };
     }
