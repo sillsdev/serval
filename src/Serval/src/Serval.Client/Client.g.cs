@@ -11110,13 +11110,16 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string ParallelCorpusRef { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("sourceQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string SourceQuoteConvention { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("sourceQuoteConvention", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
+        public string? SourceQuoteConvention { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("targetQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TargetQuoteConvention { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("canDenormalizeQuotes", Required = Newtonsoft.Json.Required.Always)]
+        public bool CanDenormalizeQuotes { get; set; } = default!;
 
     }
 

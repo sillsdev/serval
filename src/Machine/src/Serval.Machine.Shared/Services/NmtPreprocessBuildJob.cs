@@ -37,20 +37,15 @@ public class NmtPreprocessBuildJob(
         List<ParallelCorpusAnalysis> parallelCorpusAnalysis = [];
         foreach (ParallelCorpus parallelCorpus in corpora)
         {
-            (QuoteConventionAnalysis? sourceQuotationConvention, QuoteConventionAnalysis? targetQuotationConvention) =
-                ParallelCorpusPreprocessingService.AnalyzeParallelCorpus(parallelCorpus);
-            string sourceQuotationConventionName = sourceQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
+            QuoteConventionAnalysis? targetQuotationConvention =
+                ParallelCorpusPreprocessingService.AnalyzeTargetCorpusQuoteConvention(parallelCorpus);
             string targetQuotationConventionName = targetQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
-            if (
-                !string.IsNullOrWhiteSpace(sourceQuotationConventionName)
-                || !string.IsNullOrWhiteSpace(targetQuotationConventionName)
-            )
+            if (!string.IsNullOrWhiteSpace(targetQuotationConventionName))
             {
                 parallelCorpusAnalysis.Add(
                     new ParallelCorpusAnalysis
                     {
                         ParallelCorpusRef = parallelCorpus.Id,
-                        SourceQuoteConvention = sourceQuotationConventionName,
                         TargetQuoteConvention = targetQuotationConventionName,
                     }
                 );

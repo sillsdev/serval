@@ -307,15 +307,18 @@ public class TranslationPlatformServiceV1(
             .Select(a => new ParallelCorpusAnalysis
             {
                 ParallelCorpusRef = a.ParallelCorpusId,
-                SourceQuoteConvention = a.SourceQuoteConvention,
                 TargetQuoteConvention = a.TargetQuoteConvention,
+                CanDenormalizeQuotes = a.TargetQuoteConvention != ""
             })
             .ToList();
         if (analysis.Count > 0)
         {
             await _builds.UpdateAsync(
                 b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
-                u => u.Set(b => b.Analysis, analysis),
+                u =>
+                {
+                    u.Set(b => b.Analysis, analysis);
+                },
                 cancellationToken: context.CancellationToken
             );
         }
