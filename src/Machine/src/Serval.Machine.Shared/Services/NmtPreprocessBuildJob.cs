@@ -40,16 +40,13 @@ public class NmtPreprocessBuildJob(
             QuoteConventionAnalysis? targetQuotationConvention =
                 ParallelCorpusPreprocessingService.AnalyzeTargetCorpusQuoteConvention(parallelCorpus);
             string targetQuotationConventionName = targetQuotationConvention?.BestQuoteConvention.Name ?? string.Empty;
-            if (!string.IsNullOrWhiteSpace(targetQuotationConventionName))
-            {
-                parallelCorpusAnalysis.Add(
-                    new ParallelCorpusAnalysis
-                    {
-                        ParallelCorpusRef = parallelCorpus.Id,
-                        TargetQuoteConvention = targetQuotationConventionName,
-                    }
-                );
-            }
+            parallelCorpusAnalysis.Add(
+                new ParallelCorpusAnalysis
+                {
+                    ParallelCorpusRef = parallelCorpus.Id,
+                    TargetQuoteConvention = targetQuotationConventionName,
+                }
+            );
         }
 
         await PlatformService.UpdateParallelCorpusAnalysisAsync(
