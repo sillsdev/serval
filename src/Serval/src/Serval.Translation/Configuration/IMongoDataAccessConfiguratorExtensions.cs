@@ -30,7 +30,7 @@ public static class IMongoDataAccessConfiguratorExtensions
         configurator.AddRepository<Build>(
             "translation.builds",
             mapSetup: m => m.SetIgnoreExtraElements(true),
-            init: async c =>
+            init: static async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
@@ -50,6 +50,18 @@ public static class IMongoDataAccessConfiguratorExtensions
                         Builders<Build>.Filter.Exists(b => b.Progress, false)
                     ),
                     new BsonDocument("$rename", new BsonDocument("percentCompleted", "progress"))
+                );
+                // migrate by adding canDenormalizeQuotes field
+                await c.UpdateManyAsync(
+                    Builders<Build>.Filter.And(
+                        Builders<Build>.Filter.Exists(b => b.Analysis, true),
+                        Builders<Build>.Filter.Ne(b => b.Analysis, null),
+                        Builders<Build>.Filter.ElemMatch(
+                            b => b.Analysis,
+                            Builders<ParallelCorpusAnalysis>.Filter.Exists(a => a.CanDenormalizeQuotes, false)
+                        )
+                    ),
+                    Builders<Build>.Update.Set(b => b.Analysis!.AllElements().CanDenormalizeQuotes, false)
                 );
             }
         );
