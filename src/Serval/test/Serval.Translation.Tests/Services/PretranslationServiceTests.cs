@@ -453,8 +453,7 @@ public class PretranslationServiceTests
                             new ParallelCorpusAnalysis()
                             {
                                 ParallelCorpusRef = "corpus1",
-                                TargetQuoteConvention = "standard_english",
-                                CanDenormalizeQuotes = true
+                                TargetQuoteConvention = "standard_english"
                             }
                         ]
                     },
@@ -468,8 +467,7 @@ public class PretranslationServiceTests
                             new ParallelCorpusAnalysis()
                             {
                                 ParallelCorpusRef = "parallel_corpus1",
-                                TargetQuoteConvention = "standard_english",
-                                CanDenormalizeQuotes = true
+                                TargetQuoteConvention = "standard_english"
                             }
                         ]
                     }
