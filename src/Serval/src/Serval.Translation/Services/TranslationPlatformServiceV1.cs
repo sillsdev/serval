@@ -307,8 +307,7 @@ public class TranslationPlatformServiceV1(
             .Select(a => new ParallelCorpusAnalysis
             {
                 ParallelCorpusRef = a.ParallelCorpusId,
-                TargetQuoteConvention = a.TargetQuoteConvention,
-                CanDenormalizeQuotes = a.TargetQuoteConvention != ""
+                TargetQuoteConvention = a.TargetQuoteConvention
             })
             .ToList();
         if (analysis.Count > 0)

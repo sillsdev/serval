@@ -30,7 +30,7 @@ public static class IMongoDataAccessConfiguratorExtensions
         configurator.AddRepository<Build>(
             "translation.builds",
             mapSetup: m => m.SetIgnoreExtraElements(true),
-            init: async c =>
+            init: static async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
