@@ -60,17 +60,13 @@ public class ServalApiTests
             engineId,
             new WordAlignmentRequest { SourceSegment = "espíritu verdad", TargetSegment = "espíritu verdad" }
         );
-        Assert.That(
-            tResult.Alignment.First(),
-            Is.EqualTo(
-                new AlignedWordPair
-                {
-                    SourceIndex = 0,
-                    TargetIndex = 0,
-                    Score = 1.0
-                }
-            )
-        );
+        AlignedWordPair pair = tResult.Alignment.First();
+        Assert.Multiple(() =>
+        {
+            Assert.That(pair.SourceIndex, Is.EqualTo(0));
+            Assert.That(pair.TargetIndex, Is.EqualTo(0));
+            Assert.That(pair.Score, Is.EqualTo(1.0).Within(1e-6)); // tolerate tiny fp deviations
+        });
     }
 
     [Test]
