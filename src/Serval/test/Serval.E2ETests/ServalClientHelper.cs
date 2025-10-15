@@ -159,7 +159,7 @@ public class ServalClientHelper : IAsyncDisposable
             _authToken = await GetAuth0AuthenticationAsync(authUrl, _audience, clientId, clientSecret);
             _httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {_authToken}");
         }
-        await ClearEnginesAsync();
+        await ClearTestDataAsync();
     }
 
     public void Setup()
@@ -199,7 +199,7 @@ public class ServalClientHelper : IAsyncDisposable
         return WordAlignmentBuildConfig;
     }
 
-    public async Task ClearEnginesAsync()
+    public async Task ClearTestDataAsync()
     {
         IList<TranslationEngine> existingTranslationEngines = await TranslationEnginesClient.GetAllAsync();
         foreach (TranslationEngine translationEngine in existingTranslationEngines)
@@ -207,11 +207,26 @@ public class ServalClientHelper : IAsyncDisposable
             if (translationEngine.Name?.Contains(_prefix) ?? false)
                 await TranslationEnginesClient.DeleteAsync(translationEngine.Id);
         }
+
         IList<WordAlignmentEngine> existingWordAlignmentEngines = await WordAlignmentEnginesClient.GetAllAsync();
         foreach (WordAlignmentEngine wordAlignmentEngine in existingWordAlignmentEngines)
         {
             if (wordAlignmentEngine.Name?.Contains(_prefix) ?? false)
                 await WordAlignmentEnginesClient.DeleteAsync(wordAlignmentEngine.Id);
+        }
+
+        IList<Corpus> existingCorpora = await CorporaClient.GetAllAsync();
+        foreach (Corpus corpus in existingCorpora)
+        {
+            if (corpus.Name?.Contains(_prefix) ?? false)
+                await CorporaClient.DeleteAsync(corpus.Id);
+        }
+
+        IList<DataFile> existingDataFiles = await DataFilesClient.GetAllAsync();
+        foreach (DataFile dataFile in existingDataFiles)
+        {
+            if (dataFile.Name?.Contains(_prefix) ?? false)
+                await DataFilesClient.DeleteAsync(dataFile.Id);
         }
     }
 
@@ -229,7 +244,7 @@ public class ServalClientHelper : IAsyncDisposable
             TranslationEngine engine = await TranslationEnginesClient.CreateAsync(
                 new TranslationEngineConfig
                 {
-                    Name = name,
+                    Name = _prefix + name,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
                     Type = engineType,
@@ -244,7 +259,7 @@ public class ServalClientHelper : IAsyncDisposable
             WordAlignmentEngine engine = await WordAlignmentEnginesClient.CreateAsync(
                 new WordAlignmentEngineConfig
                 {
-                    Name = name,
+                    Name = _prefix + name,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
                     Type = engineType,
@@ -451,7 +466,7 @@ public class ServalClientHelper : IAsyncDisposable
         CorpusConfig targetCorpusConfig =
             new()
             {
-                Name = "None",
+                Name = _prefix + "Target",
                 Language = targetLanguage,
                 Files = targetFileConfig
             };
@@ -480,7 +495,7 @@ public class ServalClientHelper : IAsyncDisposable
         CorpusConfig sourceCorpusConfig =
             new()
             {
-                Name = "None",
+                Name = _prefix + "Source",
                 Language = sourceLanguage,
                 Files = sourceFileConfig
             };
@@ -646,7 +661,7 @@ public class ServalClientHelper : IAsyncDisposable
     public async ValueTask TearDown()
     {
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
-            await ClearEnginesAsync();
+            await ClearTestDataAsync();
     }
 
     public ValueTask DisposeAsync()
