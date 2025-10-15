@@ -2,6 +2,7 @@ namespace Serval.E2ETests;
 
 [TestFixture]
 [Category("E2EMissingServices")]
+[Explicit("These are only run from the missing services E2E tests")]
 public class MissingServicesTests
 {
     private ServalClientHelper _helperClient;
