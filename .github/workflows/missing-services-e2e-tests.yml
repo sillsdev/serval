@@ -16,16 +16,32 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       ClearML_AccessKey: ${{ secrets.ClearML_AccessKey }}
       ClearML_SecretKey: ${{ secrets.ClearML_SecretKey }}
+      CLEARML_GPU_QUEUE: autoscaler
+      CLEARML_CPU_QUEUE: autoscaler.cpu_only
       SERVAL_HOST_URL: http://localhost
       SERVAL_AUTH_URL: https://sil-appbuilder.auth0.com
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
+
+        # get version of machine.py - MACHINE_PY_IMAGE will force the docker compose to use the proper version of machine.py
+      - name: Install regctl
+        uses: iarekylew00t/regctl-installer@v1
+
+      - name: Set proper version of Machine.py
+        run: |
+          export MACHINE_PY_IMAGE=ghcr.io/sillsdev/machine.py:$(regctl image config ghcr.io/sillsdev/machine.py | jq -r ".config.Labels[\"org.opencontainers.image.version\"]") && \
+          echo "MACHINE_PY_IMAGE=$MACHINE_PY_IMAGE" >> $GITHUB_ENV && \
+          echo "MACHINE_PY_CPU_IMAGE=$MACHINE_PY_IMAGE.cpu_only" >> $GITHUB_ENV
+
+      - name: Confirm proper version of Machine.py
+        run: |
+          echo $MACHINE_PY_IMAGE $MACHINE_PY_CPU_IMAGE
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.0.x
 
       - name: Get Machine
         run: cd .. && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../serval && dotnet build
