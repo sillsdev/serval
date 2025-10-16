@@ -25,6 +25,7 @@ public static class IServiceCollectionExtensions
             new StringIdStoredAsObjectIdConvention(),
             new CamelCaseElementNameConvention(),
             new EnumRepresentationConvention(BsonType.String),
+            new IgnoreExtraElementsConvention(true),
             new IgnoreIfNullConvention(true),
             new ObjectRefConvention()
         );
