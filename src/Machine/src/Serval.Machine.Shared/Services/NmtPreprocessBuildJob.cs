@@ -24,7 +24,7 @@ public class NmtPreprocessBuildJob(
 
     protected override bool ResolveLanguageCodeForBaseModel(string languageCode, out string resolvedCode)
     {
-        return _languageTagService.ConvertToFlores200Code(languageCode, out resolvedCode);
+        return _languageTagService.ConvertToFlores200Code(languageCode, out resolvedCode).LanguageInScriptIsKnown;
     }
 
     protected override async Task UpdateParallelCorpusAnalysisAsync(
@@ -55,5 +55,37 @@ public class NmtPreprocessBuildJob(
             parallelCorpusAnalysis,
             cancellationToken
         );
+    }
+
+    protected override IReadOnlyList<string> GetWarnings(
+        int trainCount,
+        int inferenceCount,
+        string sourceLanguageTag,
+        string targetLanguageTag,
+        IReadOnlyList<ParallelCorpus> corpora
+    )
+    {
+        List<string> warnings =
+        [
+            .. base.GetWarnings(trainCount, inferenceCount, sourceLanguageTag, targetLanguageTag, corpora)
+        ];
+
+        // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere
+        if (trainCount < 600 && trainCount != 0)
+        {
+            warnings.Add($"Only {trainCount} segments were selected for training.");
+        }
+
+        if (!_languageTagService.ConvertToFlores200Code(sourceLanguageTag, out string resolvedCode).ScriptIsKnown)
+        {
+            warnings.Add($"The script for the source language '{resolvedCode}' is not in Flores-200");
+        }
+
+        if (!_languageTagService.ConvertToFlores200Code(sourceLanguageTag, out resolvedCode).ScriptIsKnown)
+        {
+            warnings.Add($"The script for the target language '{resolvedCode}' is not in Flores-200");
+        }
+
+        return warnings;
     }
 }

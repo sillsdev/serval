@@ -2,5 +2,8 @@
 
 public interface ILanguageTagService
 {
-    bool ConvertToFlores200Code(string languageTag, out string flores200Code);
+    (bool LanguageInScriptIsKnown, bool ScriptIsKnown) ConvertToFlores200Code(
+        string languageTag,
+        out string flores200Code
+    );
 }

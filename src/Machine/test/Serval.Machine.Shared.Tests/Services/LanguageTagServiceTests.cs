@@ -37,14 +37,25 @@ public class LanguageTagServiceTests
     [TestCase("en", "eng_Latn", true)]
     [TestCase("ms", "zsm_Latn", true)]
     [TestCase("cmn", "zho_Hans", true)]
-    [TestCase("xyz", "xyz", false)]
-    public void GetLanguageInfoAsync(string languageCode, string? resolvedLanguageCode, bool nativeLanguageSupport)
+    [TestCase("xyz-Latn", "xyz_Latn", false)]
+    [TestCase("xyz", "xyz", false, false)]
+    [TestCase("lif-Limb", "lif_Limb", false, false)]
+    public void GetLanguageInfoAsync(
+        string languageCode,
+        string? resolvedLanguageCode,
+        bool nativeLanguageSupport,
+        bool nativeScriptSupport = true
+    )
     {
-        bool isNative = new LanguageTagService().ConvertToFlores200Code(languageCode, out string internalCode);
+        (bool isNative, bool scriptIsKnown) = new LanguageTagService().ConvertToFlores200Code(
+            languageCode,
+            out string internalCode
+        );
         Assert.Multiple(() =>
         {
             Assert.That(internalCode, Is.EqualTo(resolvedLanguageCode));
             Assert.That(isNative, Is.EqualTo(nativeLanguageSupport));
+            Assert.That(scriptIsKnown, Is.EqualTo(nativeScriptSupport));
         });
     }
 }
