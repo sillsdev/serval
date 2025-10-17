@@ -123,6 +123,18 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
+    public async Task RunAsync_BuildWarnings()
+    {
+        using TestEnvironment env = new();
+        ParallelCorpus corpus1 = env.DefaultParatextCorpus;
+
+        await env.RunBuildJobAsync(corpus1, useKeyTerms: true);
+
+        Assert.That(env.ExecutionData.ContainsKey("warnings"));
+        Assert.That(env.ExecutionData["warnings"] as List<string>, Has.Count.EqualTo(8));
+    }
+
+    [Test]
     public async Task RunAsync_EnableKeyTerms()
     {
         using TestEnvironment env = new();
@@ -480,6 +492,9 @@ Target one, chapter one, verse nine and ten.
         public ParallelCorpus DefaultParatextCorpus { get; }
         public ParallelCorpus DefaultMixedSourceParatextCorpus { get; }
 
+        public IReadOnlyDictionary<string, object> ExecutionData { get; private set; } =
+            new Dictionary<string, object>();
+
         public TestEnvironment()
         {
             if (!Sldr.IsInitialized)
@@ -672,6 +687,12 @@ Target one, chapter one, verse nine and ten.
             TextCorpusService = new TextCorpusService();
             PlatformService = Substitute.For<IPlatformService>();
             PlatformService.EngineGroup.Returns(EngineGroup.Translation);
+            PlatformService.UpdateBuildExecutionDataAsync(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Do<IReadOnlyDictionary<string, object>>(data => ExecutionData = data),
+                Arg.Any<CancellationToken>()
+            );
             LockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
                 new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),

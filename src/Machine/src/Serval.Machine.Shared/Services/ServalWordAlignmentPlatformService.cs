@@ -149,7 +149,7 @@ public class ServalWordAlignmentPlatformService(
     public async Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        IReadOnlyDictionary<string, string> executionData,
+        IReadOnlyDictionary<string, object> executionData,
         CancellationToken cancellationToken = default
     )
     {

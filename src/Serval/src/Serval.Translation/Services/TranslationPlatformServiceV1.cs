@@ -279,13 +279,29 @@ public class TranslationPlatformServiceV1(
         ServerCallContext context
     )
     {
+        static object Map(Value value)
+        {
+            if (value.HasStringValue)
+            {
+                return value.StringValue;
+            }
+            else if (value.HasNumberValue)
+            {
+                return value.NumberValue;
+            }
+            else if (value.ListValue.Values.Count > 0)
+            {
+                return new List<string>(value.ListValue.Values.Select(v => v.StringValue));
+            }
+            return -1;
+        }
         await _builds.UpdateAsync(
             b => b.Id == request.BuildId,
             u =>
             {
                 // initialize ExecutionData if it's null
-                foreach (KeyValuePair<string, string> entry in request.ExecutionData)
-                    u.Set(b => b.ExecutionData[entry.Key], entry.Value);
+                foreach (KeyValuePair<string, Value> entry in request.ExecutionData.Fields)
+                    u.Set(b => b.ExecutionData[entry.Key], Map(entry.Value));
             },
             cancellationToken: context.CancellationToken
         );

@@ -149,12 +149,36 @@ public class ServalTranslationPlatformService(
     public async Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        IReadOnlyDictionary<string, string> executionData,
+        IReadOnlyDictionary<string, object> executionData,
         CancellationToken cancellationToken = default
     )
     {
-        var request = new UpdateBuildExecutionDataRequest { EngineId = engineId, BuildId = buildId };
-        request.ExecutionData.Add((IDictionary<string, string>)executionData);
+        var request = new UpdateBuildExecutionDataRequest
+        {
+            EngineId = engineId,
+            BuildId = buildId,
+            ExecutionData = new Google.Protobuf.WellKnownTypes.Struct()
+        };
+        foreach (KeyValuePair<string, object> kvp in executionData)
+        {
+            var value = new Google.Protobuf.WellKnownTypes.Value();
+            if (kvp.Value is string stringValue)
+            {
+                value.StringValue = stringValue;
+            }
+            else if (kvp.Value is int numberValue)
+            {
+                value.NumberValue = numberValue;
+            }
+            else if (kvp.Value is List<string> listValue)
+            {
+                value.ListValue = new Google.Protobuf.WellKnownTypes.ListValue();
+                value.ListValue.Values.AddRange(
+                    listValue.Select(s => new Google.Protobuf.WellKnownTypes.Value() { StringValue = s })
+                );
+            }
+            request.ExecutionData.Fields.Add(kvp.Key, value);
+        }
         await _outboxService.EnqueueMessageAsync(
             outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
             method: ServalTranslationPlatformOutboxConstants.UpdateBuildExecutionData,

@@ -122,7 +122,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            ExecutionData = new Dictionary<string, string>
+            ExecutionData = new Dictionary<string, object>
             {
                 { "trainCount", "0" },
                 { "pretranslateCount", "0" },
@@ -147,8 +147,14 @@ public class PlatformServiceTests
         Assert.That(staticCount, Is.EqualTo(0));
 
         var updateRequest = new UpdateBuildExecutionDataRequest() { BuildId = "123", EngineId = engine.Id };
-        updateRequest.ExecutionData.Add(
-            new Dictionary<string, string> { { "trainCount", "4" }, { "pretranslateCount", "5" } }
+
+        updateRequest.ExecutionData.Fields.Add(
+            "trainCount",
+            new Google.Protobuf.WellKnownTypes.Value() { StringValue = "4" }
+        );
+        updateRequest.ExecutionData.Fields.Add(
+            "pretranslateCount",
+            new Google.Protobuf.WellKnownTypes.Value() { StringValue = "5" }
         );
 
         await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
