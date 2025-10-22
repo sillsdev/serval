@@ -11,7 +11,6 @@ public static class IMongoDataAccessConfiguratorExtensions
     {
         configurator.AddRepository<Engine>(
             "word_alignment.engines",
-            mapSetup: m => m.SetIgnoreExtraElements(true),
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
@@ -24,7 +23,6 @@ public static class IMongoDataAccessConfiguratorExtensions
         );
         configurator.AddRepository<Build>(
             "word_alignment.builds",
-            mapSetup: m => m.SetIgnoreExtraElements(true),
             init: async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(

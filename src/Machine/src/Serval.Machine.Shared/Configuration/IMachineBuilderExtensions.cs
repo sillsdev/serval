@@ -216,7 +216,6 @@ public static class IMachineBuilderExtensions
             {
                 o.AddRepository<TranslationEngine>(
                     "translation_engines",
-                    mapSetup: m => m.SetIgnoreExtraElements(true),
                     init: async c =>
                     {
                         await c.Indexes.CreateOrUpdateAsync(
