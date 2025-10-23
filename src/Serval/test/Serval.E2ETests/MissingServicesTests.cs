@@ -10,8 +10,15 @@ public class MissingServicesTests
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
-        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true);
-        await _helperClient.InitAsync();
+        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSslErrors: true);
+        try
+        {
+            await _helperClient.InitAsync();
+        }
+        catch (ServalApiException)
+        {
+            // An error will be thrown when the services are missing
+        }
     }
 
     [SetUp]
@@ -38,7 +45,8 @@ public class MissingServicesTests
         {
             string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT3");
             string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
-            await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
+            ParallelCorpusConfig corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, corpus, false);
             await _helperClient.BuildEngineAsync(engineId);
         });
     }
@@ -76,8 +84,12 @@ public class MissingServicesTests
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT1");
         string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
-        await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
-        await _helperClient.AddTextCorpusToEngineAsync(engineId, ["3JN.txt"], "es", "en", true);
+        ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "es", true);
+        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
+        books = ["3JN.txt"];
+        ParallelCorpusConfig pretranslateCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "es", true);
+        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, pretranslateCorpus, true);
+
         await _helperClient.BuildEngineAsync(engineId);
         IList<TranslationBuild> builds = await _helperClient.TranslationEnginesClient.GetAllBuildsAsync(engineId);
         Assert.That(builds.First().State, Is.EqualTo(JobState.Faulted));
@@ -103,7 +115,8 @@ public class MissingServicesTests
         {
             string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT3");
             string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
-            await _helperClient.AddTextCorpusToEngineAsync(engineId, books, "es", "en", false);
+            ParallelCorpusConfig corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, corpus, false);
             await _helperClient.BuildEngineAsync(engineId);
         });
         Assert.That(ex, Is.Not.Null);
@@ -113,7 +126,14 @@ public class MissingServicesTests
     [TearDown]
     public async Task TearDown()
     {
-        await _helperClient.TearDown();
+        try
+        {
+            await _helperClient.TearDown();
+        }
+        catch (ServalApiException)
+        {
+            // An error will be thrown when the services are missing
+        }
     }
 
     [OneTimeTearDown]
