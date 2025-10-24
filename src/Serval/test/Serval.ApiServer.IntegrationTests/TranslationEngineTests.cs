@@ -2195,7 +2195,7 @@ public class TranslationEngineTests
             Is.EqualTo(
                 @"\id MAT - TRG
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph and embed markers were moved to the end of the verse. Style markers were removed.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \h
 \c 1
 \p
