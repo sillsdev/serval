@@ -321,7 +321,7 @@ public class PretranslationService(
         if (bestChapterStrategies.Any(s => s != QuotationMarkUpdateStrategy.Skip))
         {
             string quotationDenormalizationRemark =
-                "Quotation marks in the following chapters have been automatically denormalized after translation: "
+                "The quote style in the following chapters has been automatically adjusted to match the rest of the project: "
                 + string.Join(
                     ", ",
                     bestChapterStrategies
