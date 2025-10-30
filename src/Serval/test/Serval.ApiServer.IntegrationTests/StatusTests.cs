@@ -26,7 +26,7 @@ public class StatusTests
                 HealthReport healthReport = await client.GetHealthAsync();
                 Assert.That(healthReport, Is.Not.Null);
                 Assert.That(healthReport.Status.ToString(), Is.Not.EqualTo("Healthy"));
-                Assert.That(healthReport.Results, Has.Count.EqualTo(8));
+                Assert.That(healthReport.Results, Has.Count.EqualTo(9));
                 break;
             case 403:
                 ex = Assert.ThrowsAsync<ServalApiException>(async () =>
