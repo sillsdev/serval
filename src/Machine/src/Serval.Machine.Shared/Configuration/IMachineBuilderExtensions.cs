@@ -269,6 +269,7 @@ public static class IMachineBuilderExtensions
         if (connectionString is null)
             throw new InvalidOperationException("Mongo connection string is required");
         builder.Services.AddOutbox(builder.Configuration, x => x.UseMongo(connectionString));
+        builder.Services.AddHealthChecks().AddCheck<OutboxHealthCheck>("Outbox message queue");
         return builder;
     }
 

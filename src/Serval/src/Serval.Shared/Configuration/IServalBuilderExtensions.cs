@@ -42,6 +42,7 @@ public static class IServalBuilderExtensions
         if (mongoConnectionString is null)
             throw new InvalidOperationException("Mongo connection string not configured");
         builder.Services.AddOutbox(builder.Configuration, x => x.UseMongo(mongoConnectionString));
+        builder.Services.AddHealthChecks().AddCheck<OutboxHealthCheck>("Outbox message queue");
         return builder;
     }
 
