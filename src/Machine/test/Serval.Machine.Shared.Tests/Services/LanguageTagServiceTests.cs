@@ -34,28 +34,26 @@ public class LanguageTagServiceTests
     }
 
     [Test]
-    [TestCase("en", "eng_Latn", true)]
-    [TestCase("ms", "zsm_Latn", true)]
-    [TestCase("cmn", "zho_Hans", true)]
-    [TestCase("xyz-Latn", "xyz_Latn", false)]
-    [TestCase("xyz", "xyz", false, false)]
-    [TestCase("lif-Limb", "lif_Limb", false, false)]
+    [TestCase("en", "eng_Latn", Flores200Support.LanguageAndScript)]
+    [TestCase("ms", "zsm_Latn", Flores200Support.LanguageAndScript)]
+    [TestCase("cmn", "zho_Hans", Flores200Support.LanguageAndScript)]
+    [TestCase("xyz-Latn", "xyz_Latn", Flores200Support.None)]
+    [TestCase("xyz", "xyz", Flores200Support.None)]
+    [TestCase("lif-Limb", "lif_Limb", Flores200Support.None)]
     public void GetLanguageInfoAsync(
         string languageCode,
         string? resolvedLanguageCode,
-        bool nativeLanguageSupport,
-        bool nativeScriptSupport = true
+        Flores200Support flores200Support
     )
     {
-        (bool isNative, bool scriptIsKnown) = new LanguageTagService().ConvertToFlores200Code(
+        Flores200Support support = new LanguageTagService().ConvertToFlores200Code(
             languageCode,
             out string internalCode
         );
         Assert.Multiple(() =>
         {
             Assert.That(internalCode, Is.EqualTo(resolvedLanguageCode));
-            Assert.That(isNative, Is.EqualTo(nativeLanguageSupport));
-            Assert.That(scriptIsKnown, Is.EqualTo(nativeScriptSupport));
+            Assert.That(flores200Support, Is.EqualTo(support));
         });
     }
 }

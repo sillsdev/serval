@@ -8,10 +8,10 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
     public IReadOnlyList<(
         string CorpusId,
-        IReadOnlyList<UsfmVersificationMismatch> Mismatches
+        IReadOnlyList<UsfmVersificationError> Errors
     )> AnalyzeUsfmVersification(ParallelCorpus parallelCorpus)
     {
-        List<(string CorpusId, IReadOnlyList<UsfmVersificationMismatch> Mismatches)> mismatchesPerCorpus = [];
+        List<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> errorsPerCorpus = [];
         foreach (
             MonolingualCorpus monolingualCorpus in parallelCorpus.SourceCorpora.Concat(parallelCorpus.TargetCorpora)
         )
@@ -19,15 +19,15 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
             foreach (CorpusFile file in monolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
             {
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
-                IReadOnlyList<UsfmVersificationMismatch> mismatches =
-                    new ZipParatextProjectVersificationMismatchDetector(zipArchive).GetUsfmVersificationMismatches();
-                if (mismatches.Count > 0)
+                IReadOnlyList<UsfmVersificationError> errors =
+                    new ZipParatextProjectVersificationErrorDetector(zipArchive).GetUsfmVersificationErrors();
+                if (errors.Count > 0)
                 {
-                    mismatchesPerCorpus.Add((monolingualCorpus.Id, mismatches));
+                    errorsPerCorpus.Add((monolingualCorpus.Id, errors));
                 }
             }
         }
-        return mismatchesPerCorpus;
+        return errorsPerCorpus;
     }
 
     public QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus parallelCorpus)
