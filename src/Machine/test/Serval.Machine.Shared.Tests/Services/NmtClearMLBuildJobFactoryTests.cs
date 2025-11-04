@@ -108,14 +108,14 @@ run(args)
                 .Returns(x =>
                 {
                     x[1] = "spa_Latn";
-                    return (true, true);
+                    return Flores200Support.LanguageAndScript;
                 });
             LanguageTagService
                 .ConvertToFlores200Code("en", out anyStringArg)
                 .Returns(x =>
                 {
                     x[1] = "eng_Latn";
-                    return (true, true);
+                    return Flores200Support.LanguageAndScript;
                 });
             BuildJobFactory = new NmtClearMLBuildJobFactory(SharedFileService, LanguageTagService, Engines);
         }

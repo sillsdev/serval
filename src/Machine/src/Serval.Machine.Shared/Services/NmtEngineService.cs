@@ -186,7 +186,7 @@ public class NmtEngineService(
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)
     {
-        return _languageTagService.ConvertToFlores200Code(language, out internalCode).LanguageInScriptIsKnown;
+        return _languageTagService.ConvertToFlores200Code(language, out internalCode) == Flores200Support.LanguageAndScript;
     }
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

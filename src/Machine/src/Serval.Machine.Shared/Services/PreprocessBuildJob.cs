@@ -168,17 +168,17 @@ public abstract class PreprocessBuildJob<TEngine>(
         {
             IReadOnlyList<(
                 string MonolingualCorpusId,
-                IReadOnlyList<UsfmVersificationMismatch> Mismatches
-            )> mismatchesPerCorpus = ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus);
+                IReadOnlyList<UsfmVersificationError> errors
+            )> errorsPerCorpus = ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus);
 
             foreach (
-                (string monolingualCorpusId, IReadOnlyList<UsfmVersificationMismatch> mismatches) in mismatchesPerCorpus
+                (string monolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors) in errorsPerCorpus
             )
             {
-                foreach (UsfmVersificationMismatch mismatch in mismatches)
+                foreach (UsfmVersificationError error in errors)
                 {
                     warnings.Add(
-                        $"USFM does not match project versification for parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId}: Expected verse {mismatch.ExpectedVerseRef}, Actual verse {mismatch.ActualVerseRef}, Mismatch type {mismatch.Type}"
+                        $"USFM does not match project versification for parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId}: Expected verse {error.ExpectedVerseRef}, Actual verse {error.ActualVerseRef}, Mismatch type {error.Type}"
                     );
                 }
             }

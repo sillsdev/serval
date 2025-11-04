@@ -1,8 +1,15 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
+public enum Flores200Support
+{
+    LanguageAndScript,
+    OnlyScript,
+    None
+}
+
 public interface ILanguageTagService
 {
-    (bool LanguageInScriptIsKnown, bool ScriptIsKnown) ConvertToFlores200Code(
+    Flores200Support ConvertToFlores200Code(
         string languageTag,
         out string flores200Code
     );

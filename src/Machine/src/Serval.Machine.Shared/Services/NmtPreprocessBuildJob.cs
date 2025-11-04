@@ -24,7 +24,7 @@ public class NmtPreprocessBuildJob(
 
     protected override bool ResolveLanguageCodeForBaseModel(string languageCode, out string resolvedCode)
     {
-        return _languageTagService.ConvertToFlores200Code(languageCode, out resolvedCode).LanguageInScriptIsKnown;
+        return _languageTagService.ConvertToFlores200Code(languageCode, out resolvedCode) == Flores200Support.LanguageAndScript;
     }
 
     protected override async Task UpdateParallelCorpusAnalysisAsync(
@@ -76,12 +76,12 @@ public class NmtPreprocessBuildJob(
             warnings.Add($"Only {trainCount} segments were selected for training.");
         }
 
-        if (!_languageTagService.ConvertToFlores200Code(sourceLanguageTag, out string resolvedCode).ScriptIsKnown)
+        if (_languageTagService.ConvertToFlores200Code(sourceLanguageTag, out string resolvedCode) == Flores200Support.None)
         {
             warnings.Add($"The script for the source language '{resolvedCode}' is not in Flores-200");
         }
 
-        if (!_languageTagService.ConvertToFlores200Code(sourceLanguageTag, out resolvedCode).ScriptIsKnown)
+        if (_languageTagService.ConvertToFlores200Code(targetLanguageTag, out resolvedCode) == Flores200Support.None)
         {
             warnings.Add($"The script for the target language '{resolvedCode}' is not in Flores-200");
         }

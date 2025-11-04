@@ -3,7 +3,7 @@ namespace SIL.ServiceToolkit.Services;
 public interface IParallelCorpusPreprocessingService
 {
     QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus corpus);
-    IReadOnlyList<(string CorpusId, IReadOnlyList<UsfmVersificationMismatch> Mismatches)> AnalyzeUsfmVersification(
+    IReadOnlyList<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> AnalyzeUsfmVersification(
         ParallelCorpus corpus
     );
 
