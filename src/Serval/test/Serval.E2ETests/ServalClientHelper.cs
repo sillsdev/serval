@@ -460,27 +460,15 @@ public class ServalClientHelper : IAsyncDisposable
             );
         }
 
-        var sourceFileConfig = new List<TranslationCorpusFileConfig>();
-
-        if (sourceLanguage == targetLanguage && !inference)
-        {
-            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
-            // if pretranslating, we need to upload the source separately
-            // if different languages, we are not echoing.
-        }
-        else
-        {
-            sourceFileConfig.AddRange(
-                sourceFiles.Select((s, i) => new TranslationCorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })
-            );
-        }
-
         TranslationCorpus response = await TranslationEnginesClient.AddCorpusAsync(
             id: engineId,
             new TranslationCorpusConfig
             {
                 Name = "None",
-                SourceFiles = sourceFileConfig,
+                SourceFiles =
+                [
+                    .. sourceFiles.Select((s, i) => new TranslationCorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })
+                ],
                 SourceLanguage = sourceLanguage,
                 TargetFiles = targetFileConfig,
                 TargetLanguage = targetLanguage
@@ -526,29 +514,17 @@ public class ServalClientHelper : IAsyncDisposable
         Corpus? targetCorpus =
             targetCorpusConfig.Files.Count > 0 ? await CorporaClient.CreateAsync(targetCorpusConfig) : null;
 
-        var sourceFileConfig = new List<CorpusFileConfig>();
-
-        if (sourceLanguage == targetLanguage && !inference)
-        {
-            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
-            // if pretranslating, we need to upload the source separately
-            // if different languages, we are not echoing.
-        }
-        else
-        {
-            DataFile sourceFile = await DataFilesClient.CreateAsync(
-                file: new FileParameter(data: File.OpenRead(sourceZipFile), fileName: Path.GetFileName(sourceZipFile)),
-                format: FileFormat.Paratext,
-                name: $"{_prefix}{sourceLanguage}_zip"
-            );
-            sourceFileConfig.Add(new CorpusFileConfig { FileId = sourceFile.Id, TextId = "test_data" });
-        }
+        DataFile sourceFile = await DataFilesClient.CreateAsync(
+            file: new FileParameter(data: File.OpenRead(sourceZipFile), fileName: Path.GetFileName(sourceZipFile)),
+            format: FileFormat.Paratext,
+            name: $"{_prefix}{sourceLanguage}_zip"
+        );
 
         var sourceCorpusConfig = new CorpusConfig()
         {
             Name = $"{_prefix}Source",
             Language = sourceLanguage,
-            Files = sourceFileConfig
+            Files = [new CorpusFileConfig { FileId = sourceFile.Id, TextId = "test_data" }]
         };
 
         Corpus sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);
@@ -588,26 +564,11 @@ public class ServalClientHelper : IAsyncDisposable
         Corpus? targetCorpus =
             targetCorpusConfig.Files.Count > 0 ? await CorporaClient.CreateAsync(targetCorpusConfig) : null;
 
-        var sourceFileConfig = new List<CorpusFileConfig>();
-
-        if (sourceLanguage == targetLanguage && !inference)
-        {
-            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
-            // if pretranslating, we need to upload the source separately
-            // if different languages, we are not echoing.
-        }
-        else
-        {
-            sourceFileConfig.AddRange(
-                sourceFiles.Select((s, i) => new CorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })
-            );
-        }
-
         var sourceCorpusConfig = new CorpusConfig()
         {
             Name = $"{_prefix}Source",
             Language = sourceLanguage,
-            Files = sourceFileConfig
+            Files = [.. sourceFiles.Select((s, i) => new CorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })]
         };
 
         Corpus sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);

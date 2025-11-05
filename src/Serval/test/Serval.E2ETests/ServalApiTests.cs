@@ -157,6 +157,11 @@ public class ServalApiTests
                 ],
             }
         ];
+
+        // Validate that a build can be started and canceled twice
+        await StartAndCancelTwiceAsync(engineId);
+
+        // Validate an NMT build using text files
         string buildId = await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans1 = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
@@ -184,41 +189,6 @@ public class ServalApiTests
         Assert.That(pretranslateCount, Is.GreaterThan(0));
 
         Assert.That(lTrans2, Has.Count.EqualTo(13)); // just 2 John
-    }
-
-    [Test]
-    public async Task Nmt_CancelAndRestartBuild()
-    {
-        string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT2");
-        (string parallelCorpusId, ParallelCorpusConfig parallelCorpusConfig) =
-            await _helperClient.AddParatextCorpusToEngineAsync(engineId, "es", "en", false);
-        _helperClient.TranslationBuildConfig.TrainOn =
-        [
-            new TrainingCorpusConfig
-            {
-                ParallelCorpusId = parallelCorpusId,
-                SourceFilters =
-                [
-                    new ParallelCorpusFilterConfig { CorpusId = parallelCorpusConfig.SourceCorpusIds.Single() },
-                ],
-                TargetFilters =
-                [
-                    new ParallelCorpusFilterConfig { CorpusId = parallelCorpusConfig.TargetCorpusIds.Single() },
-                ],
-            }
-        ];
-        _helperClient.TranslationBuildConfig.Pretranslate =
-        [
-            new PretranslateCorpusConfig
-            {
-                ParallelCorpusId = parallelCorpusId,
-                SourceFilters =
-                [
-                    new ParallelCorpusFilterConfig { CorpusId = parallelCorpusConfig.SourceCorpusIds.Single() },
-                ],
-            }
-        ];
-        await StartAndCancelTwiceAsync(engineId);
     }
 
     [Test]
@@ -402,6 +372,9 @@ public class ServalApiTests
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(409));
 
+        // Validate that a build can be started and canceled twice
+        await StartAndCancelTwiceAsync(engineId);
+
         // Validate suggestion where one word is the corpus
         string corpusId1 = await _helperClient.AddTextCorpusToEngineAsync(
             engineId,
@@ -493,20 +466,6 @@ public class ServalApiTests
             Is.True,
             message: $"Best translation should have been 'truth' but returned word graph: \n{JsonSerializer.Serialize(result)}"
         );
-    }
-
-    [Test]
-    public async Task Smt_CancelAndRestartBuild()
-    {
-        string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT2");
-        await _helperClient.AddParatextCorpusToEngineAsync(engineId, "es", "en", false);
-
-        await StartAndCancelTwiceAsync(engineId);
-
-        // do a job normally and make sure it works.
-        await _helperClient.BuildEngineAsync(engineId);
-        TranslationResult tResult = await _helperClient.TranslationEnginesClient.TranslateAsync(engineId, "Espíritu");
-        Assert.That(tResult.Translation.Contains("spirit"));
     }
 
     [Test]
