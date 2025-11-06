@@ -3,6 +3,7 @@ namespace Serval.E2ETests;
 [TestFixture]
 [Category("E2E")]
 [Category("slow")]
+[Explicit("These are only manually run occasionally due to their speed")]
 public class ServalApiSlowTests
 {
     private ServalClientHelper _helperClient;
@@ -10,7 +11,7 @@ public class ServalApiSlowTests
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
-        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSSLErrors: true);
+        _helperClient = new ServalClientHelper("https://serval-api.org/", ignoreSslErrors: true);
         await _helperClient.InitAsync();
     }
 
@@ -21,10 +22,22 @@ public class ServalApiSlowTests
     }
 
     [Test]
-    public async Task GetSmtWholeBible()
+    [Obsolete("Legacy corpora are deprecated")]
+    public async Task GetSmtWholeBible_LegacyCorpus()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT2");
-        await _helperClient.AddTextCorpusToEngineAsync(engineId, ["bible.txt"], "es", "en", false);
+        await _helperClient.AddLegacyCorpusToEngineAsync(engineId, ["bible.txt"], "es", "en", false);
+        await _helperClient.BuildEngineAsync(engineId);
+        TranslationResult tResult = await _helperClient.TranslationEnginesClient.TranslateAsync(engineId, "Espíritu");
+        Assert.That(tResult.Translation, Is.EqualTo("Spirit"));
+    }
+
+    [Test]
+    public async Task GetSmtWholeBible_ParallelCorpus()
+    {
+        string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT2");
+        ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(["bible.txt"], "es", "en", false);
+        await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
         await _helperClient.BuildEngineAsync(engineId);
         TranslationResult tResult = await _helperClient.TranslationEnginesClient.TranslateAsync(engineId, "Espíritu");
         Assert.That(tResult.Translation, Is.EqualTo("Spirit"));

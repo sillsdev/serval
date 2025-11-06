@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using ApiExample;
+using Duende.AccessTokenManagement;
 using Duende.IdentityModel.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,15 +48,15 @@ static ServiceProvider SetupServices()
             TokenClientName,
             client =>
             {
-                client.TokenEndpoint = servalOptions.TokenUrl;
-                client.ClientId = servalOptions.ClientId;
-                client.ClientSecret = servalOptions.ClientSecret;
+                client.TokenEndpoint = new Uri(servalOptions.TokenUrl, UriKind.Absolute);
+                client.ClientId = ClientId.Parse(servalOptions.ClientId);
+                client.ClientSecret = ClientSecret.Parse(servalOptions.ClientSecret);
                 client.Parameters = new Parameters { { "audience", servalOptions.Audience } };
             }
         );
     services.AddClientCredentialsHttpClient(
         HttpClientName,
-        TokenClientName,
+        ClientCredentialsClientName.Parse(TokenClientName),
         configureClient: client => client.BaseAddress = new Uri(servalOptions.ApiServer)
     );
     services.AddHttpClient(HttpClientName).SetHandlerLifetime(TimeSpan.FromMinutes(5));
@@ -188,6 +189,7 @@ async Task CreatePreTranslationEngineAsync(CancellationToken cancellationToken)
         // The generated translation will be very, very inaccurate.
         JObject options = [];
         options.Add("max_steps", 20);
+        options.Add("tags", "api-example");
 
         // We will train on one book, and translate two books
         var translationBuildConfig = new TranslationBuildConfig

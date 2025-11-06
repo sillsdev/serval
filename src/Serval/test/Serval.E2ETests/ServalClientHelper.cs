@@ -1,7 +1,5 @@
 namespace Serval.E2ETests;
 
-#pragma warning disable CS0612 // Type or member is obsolete
-
 public enum EngineGroup
 {
     Translation,
@@ -114,11 +112,11 @@ public class ServalClientHelper : IAsyncDisposable
     private readonly string _prefix;
     private readonly string _audience;
 
-    public ServalClientHelper(string audience, string prefix = "SCE_", bool ignoreSSLErrors = false)
+    public ServalClientHelper(string audience, string prefix = "SCE_", bool ignoreSslErrors = false)
     {
         _audience = audience;
         //setup http client
-        if (ignoreSSLErrors)
+        if (ignoreSslErrors)
         {
             HttpClientHandler handler = GetHttHandlerToIgnoreSslErrors();
             _httpClient = new HttpClient(handler);
@@ -159,7 +157,7 @@ public class ServalClientHelper : IAsyncDisposable
             _authToken = await GetAuth0AuthenticationAsync(authUrl, _audience, clientId, clientSecret);
             _httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {_authToken}");
         }
-        await ClearEnginesAsync();
+        await ClearTestDataAsync();
     }
 
     public void Setup()
@@ -199,7 +197,7 @@ public class ServalClientHelper : IAsyncDisposable
         return WordAlignmentBuildConfig;
     }
 
-    public async Task ClearEnginesAsync()
+    public async Task ClearTestDataAsync()
     {
         IList<TranslationEngine> existingTranslationEngines = await TranslationEnginesClient.GetAllAsync();
         foreach (TranslationEngine translationEngine in existingTranslationEngines)
@@ -207,11 +205,26 @@ public class ServalClientHelper : IAsyncDisposable
             if (translationEngine.Name?.Contains(_prefix) ?? false)
                 await TranslationEnginesClient.DeleteAsync(translationEngine.Id);
         }
+
         IList<WordAlignmentEngine> existingWordAlignmentEngines = await WordAlignmentEnginesClient.GetAllAsync();
         foreach (WordAlignmentEngine wordAlignmentEngine in existingWordAlignmentEngines)
         {
             if (wordAlignmentEngine.Name?.Contains(_prefix) ?? false)
                 await WordAlignmentEnginesClient.DeleteAsync(wordAlignmentEngine.Id);
+        }
+
+        IList<Corpus> existingCorpora = await CorporaClient.GetAllAsync();
+        foreach (Corpus corpus in existingCorpora)
+        {
+            if (corpus.Name?.Contains(_prefix) ?? false)
+                await CorporaClient.DeleteAsync(corpus.Id);
+        }
+
+        IList<DataFile> existingDataFiles = await DataFilesClient.GetAllAsync();
+        foreach (DataFile dataFile in existingDataFiles)
+        {
+            if (dataFile.Name?.Contains(_prefix) ?? false)
+                await DataFilesClient.DeleteAsync(dataFile.Id);
         }
     }
 
@@ -229,7 +242,7 @@ public class ServalClientHelper : IAsyncDisposable
             TranslationEngine engine = await TranslationEnginesClient.CreateAsync(
                 new TranslationEngineConfig
                 {
-                    Name = name,
+                    Name = _prefix + name,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
                     Type = engineType,
@@ -244,7 +257,7 @@ public class ServalClientHelper : IAsyncDisposable
             WordAlignmentEngine engine = await WordAlignmentEnginesClient.CreateAsync(
                 new WordAlignmentEngineConfig
                 {
-                    Name = name,
+                    Name = _prefix + name,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
                     Type = engineType,
@@ -343,7 +356,88 @@ public class ServalClientHelper : IAsyncDisposable
         }
     }
 
+    public async Task<(string, ParallelCorpusConfig)> AddParatextCorpusToEngineAsync(
+        string engineId,
+        string sourceLanguage,
+        string targetLanguage,
+        bool inference
+    )
+    {
+        string tempDirectory = Path.GetTempPath();
+        string sourceZipFile = Path.Combine(tempDirectory, $"{sourceLanguage}_source.zip");
+        string targetZipFile = Path.Combine(tempDirectory, $"{targetLanguage}_target.zip");
+        try
+        {
+            string dataDirectory = Path.GetFullPath(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "data")
+            );
+            ZipFile.CreateFromDirectory(Path.Combine(dataDirectory, $"{sourceLanguage}_usfm"), sourceZipFile);
+            ZipFile.CreateFromDirectory(Path.Combine(dataDirectory, $"{targetLanguage}_usfm"), targetZipFile);
+            ParallelCorpusConfig parallelCorpus = await MakeParallelParatextCorpus(
+                sourceZipFile,
+                targetZipFile,
+                sourceLanguage,
+                targetLanguage,
+                inference
+            );
+            return (await AddParallelTextCorpusToEngineAsync(engineId, parallelCorpus, inference), parallelCorpus);
+        }
+        finally
+        {
+            File.Delete(sourceZipFile);
+            File.Delete(targetZipFile);
+        }
+    }
+
     public async Task<string> AddTextCorpusToEngineAsync(
+        string engineId,
+        string[] books,
+        string sourceLanguage,
+        string targetLanguage,
+        bool inference,
+        bool legacyCorpus
+    )
+    {
+        if (legacyCorpus)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await AddLegacyCorpusToEngineAsync(
+                engineId,
+                [.. books.Select(b => $"{b}.txt")],
+                sourceLanguage,
+                targetLanguage,
+                inference
+            );
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+        else
+        {
+            ParallelCorpusConfig parallelCorpus = await MakeParallelTextCorpus(
+                [.. books.Select(b => $"{b}.txt")],
+                sourceLanguage,
+                targetLanguage,
+                inference
+            );
+            return await AddParallelTextCorpusToEngineAsync(engineId, parallelCorpus, inference);
+        }
+    }
+
+    public async Task DeleteCorpusAsync(string engineId, string corpusId, bool legacyCorpus)
+    {
+        if (legacyCorpus)
+        {
+#pragma warning disable CS0612 // Type or member is obsolete
+            await TranslationEnginesClient.DeleteCorpusAsync(engineId, corpusId);
+#pragma warning restore CS0612 // Type or member is obsolete
+        }
+        else
+        {
+            await TranslationEnginesClient.DeleteParallelCorpusAsync(engineId, corpusId);
+        }
+    }
+
+    [Obsolete("Legacy corpora are deprecated")]
+    public async Task<string> AddLegacyCorpusToEngineAsync(
         string engineId,
         string[] filesToAdd,
         string sourceLanguage,
@@ -355,46 +449,15 @@ public class ServalClientHelper : IAsyncDisposable
         if (engineGroup == EngineGroup.WordAlignment)
             throw new ArgumentException("Word alignment engines do not support non-parallel corpora.");
 
-        List<DataFile> sourceFiles = await UploadFilesAsync(
-            filesToAdd,
-            FileFormat.Text,
-            sourceLanguage,
-            isTarget: false
-        );
+        List<DataFile> sourceFiles = await UploadTextFilesAsync(filesToAdd, sourceLanguage, isTarget: false);
 
         var targetFileConfig = new List<TranslationCorpusFileConfig>();
         if (!inference)
         {
-            List<DataFile> targetFiles = await UploadFilesAsync(
-                filesToAdd,
-                FileFormat.Text,
-                targetLanguage,
-                isTarget: true
+            List<DataFile> targetFiles = await UploadTextFilesAsync(filesToAdd, targetLanguage, isTarget: true);
+            targetFileConfig.AddRange(
+                targetFiles.Select((t, i) => new TranslationCorpusFileConfig { FileId = t.Id, TextId = filesToAdd[i] })
             );
-            foreach (var item in targetFiles.Select((file, i) => new { i, file }))
-            {
-                targetFileConfig.Add(
-                    new TranslationCorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] }
-                );
-            }
-        }
-
-        var sourceFileConfig = new List<TranslationCorpusFileConfig>();
-
-        if (sourceLanguage == targetLanguage && !inference)
-        {
-            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
-            // if pretranslating, we need to upload the source separately
-            // if different languages, we are not echoing.
-        }
-        else
-        {
-            for (int i = 0; i < sourceFiles.Count; i++)
-            {
-                sourceFileConfig.Add(
-                    new TranslationCorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] }
-                );
-            }
         }
 
         TranslationCorpus response = await TranslationEnginesClient.AddCorpusAsync(
@@ -402,7 +465,10 @@ public class ServalClientHelper : IAsyncDisposable
             new TranslationCorpusConfig
             {
                 Name = "None",
-                SourceFiles = sourceFileConfig,
+                SourceFiles =
+                [
+                    .. sourceFiles.Select((s, i) => new TranslationCorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })
+                ],
                 SourceLanguage = sourceLanguage,
                 TargetFiles = targetFileConfig,
                 TargetLanguage = targetLanguage
@@ -419,6 +485,57 @@ public class ServalClientHelper : IAsyncDisposable
         return response.Id;
     }
 
+    public async Task<ParallelCorpusConfig> MakeParallelParatextCorpus(
+        string sourceZipFile,
+        string targetZipFile,
+        string sourceLanguage,
+        string targetLanguage,
+        bool inference
+    )
+    {
+        var targetFileConfig = new List<CorpusFileConfig>();
+        if (!inference)
+        {
+            DataFile targetFile = await DataFilesClient.CreateAsync(
+                file: new FileParameter(data: File.OpenRead(targetZipFile), fileName: Path.GetFileName(targetZipFile)),
+                format: FileFormat.Paratext,
+                name: $"{_prefix}{targetLanguage}_zip"
+            );
+            targetFileConfig.Add(new CorpusFileConfig { FileId = targetFile.Id, TextId = "test_data" });
+        }
+
+        var targetCorpusConfig = new CorpusConfig()
+        {
+            Name = $"{_prefix}Target",
+            Language = targetLanguage,
+            Files = targetFileConfig
+        };
+
+        Corpus? targetCorpus =
+            targetCorpusConfig.Files.Count > 0 ? await CorporaClient.CreateAsync(targetCorpusConfig) : null;
+
+        DataFile sourceFile = await DataFilesClient.CreateAsync(
+            file: new FileParameter(data: File.OpenRead(sourceZipFile), fileName: Path.GetFileName(sourceZipFile)),
+            format: FileFormat.Paratext,
+            name: $"{_prefix}{sourceLanguage}_zip"
+        );
+
+        var sourceCorpusConfig = new CorpusConfig()
+        {
+            Name = $"{_prefix}Source",
+            Language = sourceLanguage,
+            Files = [new CorpusFileConfig { FileId = sourceFile.Id, TextId = "test_data" }]
+        };
+
+        Corpus sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);
+
+        var parallelCorpusConfig = new TranslationParallelCorpusConfig() { SourceCorpusIds = { sourceCorpus.Id } };
+        if (targetCorpus is not null)
+            parallelCorpusConfig.TargetCorpusIds.Add(targetCorpus.Id);
+
+        return new ParallelCorpusConfig(parallelCorpusConfig);
+    }
+
     public async Task<ParallelCorpusConfig> MakeParallelTextCorpus(
         string[] filesToAdd,
         string sourceLanguage,
@@ -426,68 +543,37 @@ public class ServalClientHelper : IAsyncDisposable
         bool inference
     )
     {
-        List<DataFile> sourceFiles = await UploadFilesAsync(
-            filesToAdd,
-            FileFormat.Text,
-            sourceLanguage,
-            isTarget: false
-        );
+        List<DataFile> sourceFiles = await UploadTextFilesAsync(filesToAdd, sourceLanguage, isTarget: false);
 
         var targetFileConfig = new List<CorpusFileConfig>();
         if (!inference)
         {
-            List<DataFile> targetFiles = await UploadFilesAsync(
-                filesToAdd,
-                FileFormat.Text,
-                targetLanguage,
-                isTarget: true
+            List<DataFile> targetFiles = await UploadTextFilesAsync(filesToAdd, targetLanguage, isTarget: true);
+            targetFileConfig.AddRange(
+                targetFiles.Select((t, i) => new CorpusFileConfig { FileId = t.Id, TextId = filesToAdd[i] })
             );
-            foreach (var item in targetFiles.Select((file, i) => new { i, file }))
-            {
-                targetFileConfig.Add(new CorpusFileConfig { FileId = item.file.Id, TextId = filesToAdd[item.i] });
-            }
         }
 
-        CorpusConfig targetCorpusConfig =
-            new()
-            {
-                Name = "None",
-                Language = targetLanguage,
-                Files = targetFileConfig
-            };
+        var targetCorpusConfig = new CorpusConfig()
+        {
+            Name = $"{_prefix}Target",
+            Language = targetLanguage,
+            Files = targetFileConfig
+        };
 
         Corpus? targetCorpus =
-            targetCorpusConfig.Files.Count > 0
-                ? targetCorpus = await CorporaClient.CreateAsync(targetCorpusConfig)
-                : null;
+            targetCorpusConfig.Files.Count > 0 ? await CorporaClient.CreateAsync(targetCorpusConfig) : null;
 
-        var sourceFileConfig = new List<CorpusFileConfig>();
-
-        if (sourceLanguage == targetLanguage && !inference)
+        var sourceCorpusConfig = new CorpusConfig()
         {
-            // if it's the same language, and we are not pretranslating, do nothing (echo for suggestions)
-            // if pretranslating, we need to upload the source separately
-            // if different languages, we are not echoing.
-        }
-        else
-        {
-            for (int i = 0; i < sourceFiles.Count; i++)
-            {
-                sourceFileConfig.Add(new CorpusFileConfig { FileId = sourceFiles[i].Id, TextId = filesToAdd[i] });
-            }
-        }
+            Name = $"{_prefix}Source",
+            Language = sourceLanguage,
+            Files = [.. sourceFiles.Select((s, i) => new CorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })]
+        };
 
-        CorpusConfig sourceCorpusConfig =
-            new()
-            {
-                Name = "None",
-                Language = sourceLanguage,
-                Files = sourceFileConfig
-            };
+        Corpus sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);
 
-        var sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);
-
-        TranslationParallelCorpusConfig parallelCorpusConfig = new() { SourceCorpusIds = { sourceCorpus.Id } };
+        var parallelCorpusConfig = new TranslationParallelCorpusConfig() { SourceCorpusIds = { sourceCorpus.Id } };
         if (targetCorpus is not null)
             parallelCorpusConfig.TargetCorpusIds.Add(targetCorpus.Id);
 
@@ -536,9 +622,8 @@ public class ServalClientHelper : IAsyncDisposable
         return parallelCorpus.Id;
     }
 
-    public async Task<List<DataFile>> UploadFilesAsync(
+    public async Task<List<DataFile>> UploadTextFilesAsync(
         IEnumerable<string> filesToAdd,
-        FileFormat fileFormat,
         string language,
         bool isTarget
     )
@@ -578,7 +663,7 @@ public class ServalClientHelper : IAsyncDisposable
                 throw new FileNotFoundException($"The corpus file {filePath} does not exist!");
             DataFile response = await DataFilesClient.CreateAsync(
                 file: new FileParameter(data: File.OpenRead(filePath), fileName: fileName),
-                format: fileFormat,
+                format: FileFormat.Text,
                 name: fullName
             );
             fileList.Add(response);
@@ -622,10 +707,7 @@ public class ServalClientHelper : IAsyncDisposable
             new()
             {
                 ClientCertificateOptions = ClientCertificateOption.Manual,
-                ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
-                {
-                    return true;
-                }
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
             };
         return handler;
     }
@@ -646,7 +728,7 @@ public class ServalClientHelper : IAsyncDisposable
     public async ValueTask TearDown()
     {
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
-            await ClearEnginesAsync();
+            await ClearTestDataAsync();
     }
 
     public ValueTask DisposeAsync()
@@ -656,5 +738,3 @@ public class ServalClientHelper : IAsyncDisposable
         return new ValueTask(Task.CompletedTask);
     }
 }
-
-#pragma warning restore CS0612 // Type or member is obsolete
