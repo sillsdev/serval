@@ -89,8 +89,6 @@ public class TranslationPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        string resolvedSourceLanguage,
-        string resolvedTargetLanguage,
         IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
@@ -114,8 +112,6 @@ public class TranslationPreprocessBuildJob(
                 { "NumPretranslateRows", pretranslateCount },
                 { "EngineSourceLanguageTag", sourceLanguageTag },
                 { "EngineTargetLanguageTag", targetLanguageTag },
-                { "SourceLanguageResolved", resolvedSourceLanguage },
-                { "TargetLanguageResolved", resolvedTargetLanguage },
                 { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) }
             };
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
@@ -126,8 +122,6 @@ public class TranslationPreprocessBuildJob(
             { "warnings", warnings },
             { "engineSourceLanguageTag", sourceLanguageTag },
             { "engineTargetLanguageTag", targetLanguageTag },
-            { "resolvedSourceLanguage", resolvedSourceLanguage },
-            { "resolvedTargetLanguage", resolvedTargetLanguage },
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }

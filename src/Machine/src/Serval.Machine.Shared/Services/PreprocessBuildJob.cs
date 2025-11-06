@@ -41,15 +41,6 @@ public abstract class PreprocessBuildJob<TEngine>(
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
-        bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(
-            engine.SourceLanguage,
-            out string resolvedSourceLanguage
-        );
-        bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(
-            engine.TargetLanguage,
-            out string resolvedTargetLanguage
-        );
-
         (int trainCount, int inferenceCount) = await WriteDataFilesAsync(
             buildId,
             data,
@@ -64,20 +55,11 @@ public abstract class PreprocessBuildJob<TEngine>(
             inferenceCount,
             engine.SourceLanguage,
             engine.TargetLanguage,
-            resolvedSourceLanguage,
-            resolvedTargetLanguage,
             data,
             cancellationToken
         );
 
         await UpdateParallelCorpusAnalysisAsync(engineId, buildId, data, cancellationToken);
-
-        if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
-        {
-            throw new InvalidOperationException(
-                $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
-            );
-        }
 
         if (inferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
         {
@@ -108,8 +90,6 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        string resolvedSourceLanguage,
-        string resolvedTargetLanguage,
         IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken
     );
@@ -148,12 +128,6 @@ public abstract class PreprocessBuildJob<TEngine>(
         }
     }
 
-    protected virtual bool ResolveLanguageCodeForBaseModel(string languageCode, out string resolvedCode)
-    {
-        resolvedCode = languageCode;
-        return true;
-    }
-
     protected virtual IReadOnlyList<string> GetWarnings(
         int trainCount,
         int inferenceCount,
@@ -166,14 +140,10 @@ public abstract class PreprocessBuildJob<TEngine>(
 
         foreach (ParallelCorpus parallelCorpus in corpora)
         {
-            IReadOnlyList<(
-                string MonolingualCorpusId,
-                IReadOnlyList<UsfmVersificationError> errors
-            )> errorsPerCorpus = ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus);
+            IReadOnlyList<(string MonolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors)> errorsPerCorpus =
+                ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus);
 
-            foreach (
-                (string monolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors) in errorsPerCorpus
-            )
+            foreach ((string monolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors) in errorsPerCorpus)
             {
                 foreach (UsfmVersificationError error in errors)
                 {
