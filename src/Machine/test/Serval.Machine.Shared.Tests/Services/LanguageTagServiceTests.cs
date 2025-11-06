@@ -43,17 +43,17 @@ public class LanguageTagServiceTests
     public void GetLanguageInfoAsync(
         string languageCode,
         string? resolvedLanguageCode,
-        Flores200Support flores200Support
+        Flores200Support expectedFlores200Support
     )
     {
-        Flores200Support support = new LanguageTagService().ConvertToFlores200Code(
+        Flores200Support flores200support = new LanguageTagService().ConvertToFlores200Code(
             languageCode,
             out string internalCode
         );
         Assert.Multiple(() =>
         {
             Assert.That(internalCode, Is.EqualTo(resolvedLanguageCode));
-            Assert.That(flores200Support, Is.EqualTo(support));
+            Assert.That(flores200support, Is.EqualTo(expectedFlores200Support));
         });
     }
 }

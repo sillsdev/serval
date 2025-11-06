@@ -1,15 +1,12 @@
 namespace Serval.Shared.Services;
 
-public class ZipParatextProjectFileHandler(IZipContainer container, ParatextProjectSettings? settings = null)
-    : IParatextProjectFileHandler
+public class ZipParatextProjectFileHandler(IZipContainer container) : IParatextProjectFileHandler
 {
     private readonly IZipContainer _projectContainer = container;
-    private readonly ParatextProjectSettings _settings =
-        settings ?? new ZipParatextProjectSettingsParser(container).Parse();
 
-    public ParatextProjectSettings GetSettings()
+    public UsfmStylesheet CreateStylesheet(string fileName)
     {
-        return _settings;
+        throw new NotImplementedException();
     }
 
     public bool Exists(string fileName)
@@ -20,5 +17,10 @@ public class ZipParatextProjectFileHandler(IZipContainer container, ParatextProj
     public Stream Open(string fileName)
     {
         return _projectContainer.OpenEntry(fileName);
+    }
+
+    public string? Find(string extension)
+    {
+        return _projectContainer.Entries.FirstOrDefault(e => e.EndsWith(extension));
     }
 }
