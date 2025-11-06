@@ -9,8 +9,5 @@ public enum Flores200Support
 
 public interface ILanguageTagService
 {
-    Flores200Support ConvertToFlores200Code(
-        string languageTag,
-        out string flores200Code
-    );
+    Flores200Support ConvertToFlores200Code(string languageTag, out string flores200Code);
 }
