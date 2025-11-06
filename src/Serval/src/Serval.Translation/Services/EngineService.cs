@@ -432,6 +432,8 @@ public class EngineService(
             b => b.EngineRef == engine.Id && (b.State == JobState.Active || b.State == JobState.Pending),
             cancellationToken
         );
+        if (currentBuild is null)
+            return null;
 
         CancelBuildRequest request = new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id };
         await _outboxService.EnqueueMessageAsync(
