@@ -796,13 +796,16 @@ public class WordAlignmentEnginesController(
         if (source is null)
             return null;
 
+        if (source.Select(p => p.ParallelCorpusId).Distinct().Count() != source.Count)
+            throw new InvalidOperationException("Each ParallelCorpusId may only be specified once.");
+
         var corpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
         var wordAlignmentCorpora = new List<WordAlignmentCorpus>();
         foreach (WordAlignmentCorpusConfigDto cc in source)
         {
             if (cc.ParallelCorpusId == null)
             {
-                throw new InvalidOperationException($"One of ParallelCorpusId and CorpusId must be set.");
+                throw new InvalidOperationException($"ParallelCorpusId must be set.");
             }
             if (!corpusIds.Contains(cc.ParallelCorpusId))
             {
@@ -847,6 +850,9 @@ public class WordAlignmentEnginesController(
     {
         if (source is null)
             return null;
+
+        if (source.Select(p => p.ParallelCorpusId).Distinct().Count() != source.Count)
+            throw new InvalidOperationException($"Each ParallelCorpusId may only be specified once.");
 
         var corpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
         var trainingCorpora = new List<TrainingCorpus>();

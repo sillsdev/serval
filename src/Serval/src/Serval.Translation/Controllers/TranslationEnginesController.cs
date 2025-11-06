@@ -1686,6 +1686,22 @@ public class TranslationEnginesController(
         if (source is null)
             return null;
 
+        if (
+            source.Where(p => p.ParallelCorpusId != null).Select(p => p.ParallelCorpusId).Distinct().Count()
+            != source.Count(p => p.ParallelCorpusId != null)
+        )
+        {
+            throw new InvalidOperationException($"Each ParallelCorpusId may only be specified once.");
+        }
+
+        if (
+            source.Where(p => p.CorpusId != null).Select(p => p.CorpusId).Distinct().Count()
+            != source.Count(p => p.CorpusId != null)
+        )
+        {
+            throw new InvalidOperationException($"Each CorpusId may only be specified once.");
+        }
+
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
         var parallelCorpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
         var pretranslateCorpora = new List<PretranslateCorpus>();
@@ -1774,6 +1790,22 @@ public class TranslationEnginesController(
     {
         if (source is null)
             return null;
+
+        if (
+            source.Where(p => p.ParallelCorpusId != null).Select(p => p.ParallelCorpusId).Distinct().Count()
+            != source.Count(p => p.ParallelCorpusId != null)
+        )
+        {
+            throw new InvalidOperationException($"Each ParallelCorpusId may only be specified once.");
+        }
+
+        if (
+            source.Where(p => p.CorpusId != null).Select(p => p.CorpusId).Distinct().Count()
+            != source.Count(p => p.CorpusId != null)
+        )
+        {
+            throw new InvalidOperationException($"Each CorpusId may only be specified once.");
+        }
 
         var corpusIds = new HashSet<string>(engine.Corpora.Select(c => c.Id));
         var parallelCorpusIds = new HashSet<string>(engine.ParallelCorpora.Select(c => c.Id));
