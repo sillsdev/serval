@@ -6,4 +6,5 @@ public class OutboxOptions
 
     public string OutboxDir { get; set; } = "outbox";
     public TimeSpan MessageExpirationTimeout { get; set; } = TimeSpan.FromHours(48);
+    public int HealthyMessageLimit { get; set; } = 25;
 }

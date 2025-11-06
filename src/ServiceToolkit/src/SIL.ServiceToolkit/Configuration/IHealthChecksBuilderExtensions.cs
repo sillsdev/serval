@@ -7,4 +7,10 @@ public static class IHealthChecksBuilderExtensions
         builder.AddCheck<HangfireHealthCheck>(name);
         return builder;
     }
+
+    public static IHealthChecksBuilder AddOutbox(this IHealthChecksBuilder builder, string name = "Outbox")
+    {
+        builder.AddCheck<OutboxHealthCheck>(name);
+        return builder;
+    }
 }
