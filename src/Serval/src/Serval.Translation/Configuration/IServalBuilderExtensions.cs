@@ -37,6 +37,7 @@ public static class IServalBuilderExtensions
             x.AddConsumer<EngineUpdateConsumer>();
             x.AddConsumer<EngineDeleteConsumer>();
             x.AddConsumer<EngineStartBuildConsumer>();
+            x.AddConsumer<EngineCancelBuildConsumer>();
         });
 
         return builder;
