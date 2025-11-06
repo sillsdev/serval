@@ -8,4 +8,5 @@ public static class EngineOutboxConstants
     public const string Update = "Update";
     public const string Delete = "Delete";
     public const string StartBuild = "StartBuild";
+    public const string CancelBuild = "CancelBuild";
 }
