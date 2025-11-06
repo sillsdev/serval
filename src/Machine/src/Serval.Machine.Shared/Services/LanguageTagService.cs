@@ -37,10 +37,7 @@ public class LanguageTagService : ILanguageTagService
     /// <param name="languageTag">The language tag to convert</param>
     /// <param name="flores200Code">The converted Flores-200 code</param>
     /// <returns> Is the language in the Flores-200 list and is the script in the Flores-200 list</returns>
-    public Flores200Support ConvertToFlores200Code(
-        string languageTag,
-        out string flores200Code
-    )
+    public Flores200Support ConvertToFlores200Code(string languageTag, out string flores200Code)
     {
         if (_parser.TryParse(languageTag, out string? languageCode, out string? scriptCode))
             flores200Code = $"{languageCode}_{scriptCode}";
