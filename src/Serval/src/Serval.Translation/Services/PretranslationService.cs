@@ -351,13 +351,13 @@ public class PretranslationService(
     /// <para>Remarks are generated in the format:</para>
     /// <list type="bullet">
     /// <item><description>
-    /// Paragraph, embed and style markers were moved to the end of the verse.
+    /// Paragraph breaks, embed markers, and style markers were moved to the end of the verse.
     /// </description></item>
     /// <item><description>
-    /// Paragraph markers were moved to the end of the verse. Embed markers have positions preserved. Style markers were removed.
+    /// Paragraph breaks were moved to the end of the verse. Embed markers have positions preserved. Style markers were removed.
     /// </description></item>
     /// <item><description>
-    /// Paragraph and style markers were moved to the end of the verse. Embed markers were removed.
+    /// Paragraph breaks and style markers were moved to the end of the verse. Embed markers were removed.
     /// </description></item>
     /// </list>
     /// </remarks>
@@ -374,9 +374,9 @@ public class PretranslationService(
             { PretranslationUsfmMarkerBehavior.Strip, [] },
         };
 
-        behaviorMap[paragraphMarkerBehavior].Add("paragraph");
-        behaviorMap[embedBehavior].Add("embed");
-        behaviorMap[styleMarkerBehavior].Add("style");
+        behaviorMap[paragraphMarkerBehavior].Add("paragraph breaks");
+        behaviorMap[embedBehavior].Add("embed markers");
+        behaviorMap[styleMarkerBehavior].Add("style markers");
 
         IEnumerable<string> sentences = behaviorMap
             .Where(kvp => kvp.Value.Count > 0)
@@ -392,7 +392,7 @@ public class PretranslationService(
                     PretranslationUsfmMarkerBehavior.Strip => "were removed",
                     _ => "have unknown behavior",
                 };
-                return $"{markers} markers {behavior}.";
+                return $"{markers} {behavior}.";
             });
 
         return string.Join(" ", sentences);
