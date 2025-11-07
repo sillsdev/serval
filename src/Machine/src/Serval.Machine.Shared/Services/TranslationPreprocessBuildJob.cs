@@ -87,11 +87,20 @@ public class TranslationPreprocessBuildJob(
         string buildId,
         int trainCount,
         int pretranslateCount,
-        string srcLang,
-        string trgLang,
+        string sourceLanguageTag,
+        string targetLanguageTag,
+        IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
     {
+        IReadOnlyList<string> warnings = GetWarnings(
+            trainCount,
+            pretranslateCount,
+            sourceLanguageTag,
+            targetLanguageTag,
+            corpora
+        );
+
         // Log summary of build data
         JsonObject buildPreprocessSummary =
             new()
@@ -101,14 +110,18 @@ public class TranslationPreprocessBuildJob(
                 { "BuildId", buildId },
                 { "NumTrainRows", trainCount },
                 { "NumPretranslateRows", pretranslateCount },
-                { "SourceLanguageResolved", srcLang },
-                { "TargetLanguageResolved", trgLang }
+                { "EngineSourceLanguageTag", sourceLanguageTag },
+                { "EngineTargetLanguageTag", targetLanguageTag },
+                { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) }
             };
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
-        var executionData = new Dictionary<string, string>()
+        var executionData = new Dictionary<string, object>()
         {
-            { "trainCount", trainCount.ToString(CultureInfo.InvariantCulture) },
-            { "pretranslateCount", pretranslateCount.ToString(CultureInfo.InvariantCulture) }
+            { "trainCount", trainCount },
+            { "pretranslateCount", pretranslateCount },
+            { "warnings", warnings },
+            { "engineSourceLanguageTag", sourceLanguageTag },
+            { "engineTargetLanguageTag", targetLanguageTag },
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }

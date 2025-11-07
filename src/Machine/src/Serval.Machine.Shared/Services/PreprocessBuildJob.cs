@@ -41,9 +41,6 @@ public abstract class PreprocessBuildJob<TEngine>(
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
-        bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.SourceLanguage, out string srcLang);
-        bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.TargetLanguage, out string trgLang);
-
         (int trainCount, int inferenceCount) = await WriteDataFilesAsync(
             buildId,
             data,
@@ -56,19 +53,13 @@ public abstract class PreprocessBuildJob<TEngine>(
             buildId,
             trainCount,
             inferenceCount,
-            srcLang,
-            trgLang,
+            engine.SourceLanguage,
+            engine.TargetLanguage,
+            data,
             cancellationToken
         );
 
         await UpdateParallelCorpusAnalysisAsync(engineId, buildId, data, cancellationToken);
-
-        if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
-        {
-            throw new InvalidOperationException(
-                $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
-            );
-        }
 
         if (inferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
         {
@@ -97,8 +88,9 @@ public abstract class PreprocessBuildJob<TEngine>(
         string buildId,
         int trainCount,
         int inferenceCount,
-        string srcLang,
-        string trgLang,
+        string sourceLanguageTag,
+        string targetLanguageTag,
+        IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken
     );
 
@@ -136,9 +128,31 @@ public abstract class PreprocessBuildJob<TEngine>(
         }
     }
 
-    protected virtual bool ResolveLanguageCodeForBaseModel(string languageCode, out string resolvedCode)
+    protected virtual IReadOnlyList<string> GetWarnings(
+        int trainCount,
+        int inferenceCount,
+        string sourceLanguageTag,
+        string targetLanguageTag,
+        IReadOnlyList<ParallelCorpus> corpora
+    )
     {
-        resolvedCode = languageCode;
-        return true;
+        List<string> warnings = [];
+
+        foreach (ParallelCorpus parallelCorpus in corpora)
+        {
+            IReadOnlyList<(string MonolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors)> errorsPerCorpus =
+                ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus);
+
+            foreach ((string monolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors) in errorsPerCorpus)
+            {
+                foreach (UsfmVersificationError error in errors)
+                {
+                    warnings.Add(
+                        $"USFM does not match project versification for parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId}: Expected verse {error.ExpectedVerseRef}, Actual verse {error.ActualVerseRef}, Mismatch type {error.Type}"
+                    );
+                }
+            }
+        }
+        return warnings;
     }
 }

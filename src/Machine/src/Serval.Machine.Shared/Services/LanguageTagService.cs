@@ -2,12 +2,17 @@
 
 public class LanguageTagService : ILanguageTagService
 {
-    private readonly Dictionary<string, string> _flores200Languages = InitializeFlores200Languages();
+    private readonly HashSet<string> _flores200Languages = [];
+    private readonly HashSet<string> _flores200Scripts = [];
     private readonly LanguageTagParser _parser = new();
 
-    private static Dictionary<string, string> InitializeFlores200Languages()
+    public LanguageTagService()
     {
-        Dictionary<string, string> flores200Languages = [];
+        InitializeFlores200Languages();
+    }
+
+    private void InitializeFlores200Languages()
+    {
         using var floresStream = Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream("Serval.Machine.Shared.data.flores200languages.csv");
@@ -21,23 +26,31 @@ public class LanguageTagService : ILanguageTagService
             if (line is null)
                 continue;
             string[] values = line.Split(',');
-            flores200Languages[values[1].Trim()] = values[0].Trim();
+            _flores200Languages.Add(values[1].Trim());
+            _flores200Scripts.Add(values[1].Trim().Split('_')[1]);
         }
-        return flores200Languages;
     }
 
-    /**
-     * Converts a language tag to a Flores 200 code
-     * @param {string} languageTag - The language tag to convert
-     * @param out {string} flores200Code - The converted Flores 200 code
-     * @returns {bool} is the language is the Flores 200 list
-     */
-    public bool ConvertToFlores200Code(string languageTag, out string flores200Code)
+    /// <summary>
+    /// Converts a language tag to a Flores-200 code
+    /// </summary>
+    /// <param name="languageTag">The language tag to convert</param>
+    /// <param name="flores200Code">The converted Flores-200 code</param>
+    /// <returns> Is the language in the Flores-200 list and is the script in the Flores-200 list</returns>
+    public Flores200Support ConvertToFlores200Code(string languageTag, out string flores200Code)
     {
         if (_parser.TryParse(languageTag, out string? languageCode, out string? scriptCode))
             flores200Code = $"{languageCode}_{scriptCode}";
         else
             flores200Code = languageTag;
-        return _flores200Languages.ContainsKey(flores200Code);
+        if (_flores200Scripts.Contains(scriptCode ?? ""))
+        {
+            if (_flores200Languages.Contains(flores200Code))
+            {
+                return Flores200Support.LanguageAndScript;
+            }
+            return Flores200Support.OnlyScript;
+        }
+        return Flores200Support.None;
     }
 }

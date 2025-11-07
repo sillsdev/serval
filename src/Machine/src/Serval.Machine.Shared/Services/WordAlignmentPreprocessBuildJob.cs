@@ -87,11 +87,20 @@ public class WordAlignmentPreprocessBuildJob(
         string buildId,
         int trainCount,
         int wordAlignCount,
-        string srcLang,
-        string trgLang,
+        string sourceLanguageTag,
+        string targetLanguageTag,
+        IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
     {
+        IReadOnlyList<string> warnings = GetWarnings(
+            trainCount,
+            wordAlignCount,
+            sourceLanguageTag,
+            targetLanguageTag,
+            corpora
+        );
+
         // Log summary of build data
         JsonObject buildPreprocessSummary =
             new()
@@ -101,14 +110,18 @@ public class WordAlignmentPreprocessBuildJob(
                 { "BuildId", buildId },
                 { "NumTrainRows", trainCount },
                 { "NumWordAlignRows", wordAlignCount },
-                { "SourceLanguageResolved", srcLang },
-                { "TargetLanguageResolved", trgLang }
+                { "EngineSourceLanguageTag", sourceLanguageTag },
+                { "EngineTargetLanguageTag", targetLanguageTag },
+                { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) }
             };
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
-        var executionData = new Dictionary<string, string>()
+        var executionData = new Dictionary<string, object>()
         {
-            { "trainCount", trainCount.ToString(CultureInfo.InvariantCulture) },
-            { "wordAlignCount", wordAlignCount.ToString(CultureInfo.InvariantCulture) }
+            { "trainCount", trainCount },
+            { "wordAlignCount", wordAlignCount },
+            { "warnings", warnings },
+            { "engineSourceLanguageTag", sourceLanguageTag },
+            { "engineTargetLanguageTag", targetLanguageTag },
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }

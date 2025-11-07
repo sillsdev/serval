@@ -6,6 +6,30 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
     private readonly ITextCorpusService _textCorpusService = textCorpusService;
     private const int Seed = 1234;
 
+    public IReadOnlyList<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> AnalyzeUsfmVersification(
+        ParallelCorpus parallelCorpus
+    )
+    {
+        List<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> errorsPerCorpus = [];
+        foreach (
+            MonolingualCorpus monolingualCorpus in parallelCorpus.SourceCorpora.Concat(parallelCorpus.TargetCorpora)
+        )
+        {
+            foreach (CorpusFile file in monolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
+            {
+                using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
+                IReadOnlyList<UsfmVersificationError> errors = new ZipParatextProjectVersificationErrorDetector(
+                    zipArchive
+                ).GetUsfmVersificationErrors();
+                if (errors.Count > 0)
+                {
+                    errorsPerCorpus.Add((monolingualCorpus.Id, errors));
+                }
+            }
+        }
+        return errorsPerCorpus;
+    }
+
     public QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus parallelCorpus)
     {
         var targetHandler = new QuoteConventionDetector();
