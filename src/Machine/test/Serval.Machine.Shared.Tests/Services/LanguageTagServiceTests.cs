@@ -37,7 +37,7 @@ public class LanguageTagServiceTests
     [TestCase("en", "eng_Latn", Flores200Support.LanguageAndScript)]
     [TestCase("ms", "zsm_Latn", Flores200Support.LanguageAndScript)]
     [TestCase("cmn", "zho_Hans", Flores200Support.LanguageAndScript)]
-    [TestCase("xyz-Latn", "xyz_Latn", Flores200Support.None)]
+    [TestCase("xyz-Latn", "xyz_Latn", Flores200Support.OnlyScript)]
     [TestCase("xyz", "xyz", Flores200Support.None)]
     [TestCase("lif-Limb", "lif_Limb", Flores200Support.None)]
     public void GetLanguageInfoAsync(

@@ -146,7 +146,12 @@ public class PlatformServiceTests
         Assert.That(pretranslateCount, Is.EqualTo(0));
         Assert.That(staticCount, Is.EqualTo(0));
 
-        var updateRequest = new UpdateBuildExecutionDataRequest() { BuildId = "123", EngineId = engine.Id };
+        var updateRequest = new UpdateBuildExecutionDataRequest()
+        {
+            BuildId = "123",
+            EngineId = engine.Id,
+            ExecutionData = new Google.Protobuf.WellKnownTypes.Struct()
+        };
 
         updateRequest.ExecutionData.Fields.Add(
             "trainCount",
