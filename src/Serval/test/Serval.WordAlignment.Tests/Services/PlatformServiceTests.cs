@@ -120,7 +120,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            ExecutionData = new Dictionary<string, string>
+            ExecutionData = new Dictionary<string, object>
             {
                 { "trainCount", "0" },
                 { "wordAlignCount", "0" },
@@ -144,9 +144,20 @@ public class PlatformServiceTests
         Assert.That(wordAlignmentCount, Is.EqualTo(0));
         Assert.That(staticCount, Is.EqualTo(0));
 
-        var updateRequest = new UpdateBuildExecutionDataRequest() { BuildId = "123", EngineId = engine.Id };
-        updateRequest.ExecutionData.Add(
-            new Dictionary<string, string> { { "trainCount", "4" }, { "wordAlignCount", "5" } }
+        var updateRequest = new UpdateBuildExecutionDataRequest()
+        {
+            BuildId = "123",
+            EngineId = engine.Id,
+            ExecutionData = new Google.Protobuf.WellKnownTypes.Struct()
+        };
+
+        updateRequest.ExecutionData.Fields.Add(
+            "trainCount",
+            new Google.Protobuf.WellKnownTypes.Value() { StringValue = "4" }
+        );
+        updateRequest.ExecutionData.Fields.Add(
+            "wordAlignCount",
+            new Google.Protobuf.WellKnownTypes.Value() { StringValue = "5" }
         );
 
         await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
