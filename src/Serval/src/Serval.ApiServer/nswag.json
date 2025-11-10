@@ -73,7 +73,7 @@
       "requiredPropertiesMustBeDefined": true,
       "dateType": "System.DateTimeOffset",
       "jsonConverters": null,
-      "anyType": "Newtonsoft.Json.Linq.JToken",
+      "anyType": "object",
       "dateTimeType": "System.DateTimeOffset",
       "timeType": "System.TimeSpan",
       "timeSpanType": "System.TimeSpan",
