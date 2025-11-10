@@ -14,5 +14,5 @@ ClearMLQueue: production
 MongoConnectionPrefix: qa_
 SharedFileLocation: s3://silnlp/ext-qa/
 servalClaimSize: 11Gi
-machineClaimSize: 20Gi
+machineClaimSize: 25Gi
 enableEcho: true
