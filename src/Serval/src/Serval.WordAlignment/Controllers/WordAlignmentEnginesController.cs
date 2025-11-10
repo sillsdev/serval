@@ -978,7 +978,7 @@ public class WordAlignmentEnginesController(
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
-            ExecutionData = source.ExecutionData,
+            ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList()
         };
     }
@@ -1096,6 +1096,18 @@ public class WordAlignmentEnginesController(
             Stage = (PhaseStage)source.Stage,
             Step = source.Step,
             StepCount = source.StepCount
+        };
+    }
+
+    private static WordAlignmentExecutionDataDto Map(ExecutionData source)
+    {
+        return new WordAlignmentExecutionDataDto
+        {
+            TrainCount = source.TrainCount ?? 0,
+            WordAlignCount = source.WordAlignCount ?? 0,
+            Warnings = source.Warnings ?? [],
+            EngineSourceLanguageTag = source.EngineSourceLanguageTag,
+            EngineTargetLanguageTag = source.EngineTargetLanguageTag,
         };
     }
 }

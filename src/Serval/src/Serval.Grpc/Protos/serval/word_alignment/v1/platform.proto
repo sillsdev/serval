@@ -4,7 +4,6 @@ package serval.word_alignment.v1;
 
 import "google/protobuf/empty.proto";
 import "serval/word_alignment/v1/common.proto";
-import "google/protobuf/struct.proto";
 
 
 service WordAlignmentPlatformApi {
@@ -71,7 +70,7 @@ message InsertWordAlignmentsRequest {
 message UpdateBuildExecutionDataRequest {
     string engine_id = 1;
     string build_id = 2;
-    google.protobuf.Struct execution_data = 3;
+    ExecutionData execution_data = 3;
 }
 
 message Phase {
@@ -83,4 +82,12 @@ message Phase {
 enum PhaseStage {
     PHASE_STAGE_TRAIN = 0;
     PHASE_STAGE_INFERENCE = 1;
+}
+
+message ExecutionData {
+    int32 train_count = 1;
+    int32 word_align_count = 2;
+    repeated string warnings = 3;
+    string engine_source_language_tag = 4;
+    string engine_target_language_tag = 5;
 }

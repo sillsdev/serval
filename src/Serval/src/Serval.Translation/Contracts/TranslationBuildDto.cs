@@ -31,7 +31,7 @@ public record TranslationBuildDto
     /// </example>
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
-    public IReadOnlyDictionary<string, object>? ExecutionData { get; init; }
+    public required ExecutionDataDto ExecutionData { get; init; }
     public IReadOnlyList<PhaseDto>? Phases { get; init; }
     public IReadOnlyList<ParallelCorpusAnalysisDto>? Analysis { get; init; }
 }

@@ -1,5 +1,5 @@
-using System.Globalization;
 using Serval.WordAlignment.V1;
+using ExecutionData = Serval.WordAlignment.Models.ExecutionData;
 
 namespace Serval.WordAlignment.Services;
 
@@ -120,12 +120,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            ExecutionData = new Dictionary<string, object>
-            {
-                { "trainCount", "0" },
-                { "wordAlignCount", "0" },
-                { "staticCount", "0" }
-            }
+            ExecutionData = new ExecutionData { TrainCount = 0, WordAlignCount = 0 }
         };
         await env.Builds.InsertAsync(build);
 
@@ -133,46 +128,25 @@ public class PlatformServiceTests
 
         var executionData = build.ExecutionData;
 
-        Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("wordAlignCount"));
-
-        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int wordAlignmentCount = Convert.ToInt32(executionData["wordAlignCount"], CultureInfo.InvariantCulture);
-        int staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
-
-        Assert.That(trainCount, Is.EqualTo(0));
-        Assert.That(wordAlignmentCount, Is.EqualTo(0));
-        Assert.That(staticCount, Is.EqualTo(0));
+        Assert.That(executionData.TrainCount, Is.EqualTo(0));
+        Assert.That(executionData.WordAlignCount, Is.EqualTo(0));
 
         var updateRequest = new UpdateBuildExecutionDataRequest()
         {
             BuildId = "123",
             EngineId = engine.Id,
-            ExecutionData = new Google.Protobuf.WellKnownTypes.Struct()
+            ExecutionData = new V1.ExecutionData { TrainCount = 4, WordAlignCount = 5, }
         };
-
-        updateRequest.ExecutionData.Fields.Add(
-            "trainCount",
-            new Google.Protobuf.WellKnownTypes.Value() { StringValue = "4" }
-        );
-        updateRequest.ExecutionData.Fields.Add(
-            "wordAlignCount",
-            new Google.Protobuf.WellKnownTypes.Value() { StringValue = "5" }
-        );
 
         await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        executionData = build!.ExecutionData;
+        executionData = build?.ExecutionData;
 
-        trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        wordAlignmentCount = Convert.ToInt32(executionData["wordAlignCount"], CultureInfo.InvariantCulture);
-        staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
-
-        Assert.That(trainCount, Is.GreaterThan(0));
-        Assert.That(wordAlignmentCount, Is.GreaterThan(0));
-        Assert.That(staticCount, Is.EqualTo(0));
+        Assert.That(executionData, Is.Not.Null);
+        Assert.That(executionData.TrainCount, Is.GreaterThan(0));
+        Assert.That(executionData.WordAlignCount, Is.GreaterThan(0));
     }
 
     [Test]

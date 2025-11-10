@@ -1,5 +1,5 @@
-using System.Globalization;
 using Serval.Translation.V1;
+using ExecutionData = Serval.Translation.Models.ExecutionData;
 using ParallelCorpus = Serval.Shared.Models.ParallelCorpus;
 using PhaseStage = Serval.Translation.V1.PhaseStage;
 
@@ -122,12 +122,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            ExecutionData = new Dictionary<string, object>
-            {
-                { "trainCount", "0" },
-                { "pretranslateCount", "0" },
-                { "staticCount", "0" }
-            }
+            ExecutionData = new ExecutionData { TrainCount = 0, PretranslateCount = 0 }
         };
         await env.Builds.InsertAsync(build);
 
@@ -135,46 +130,25 @@ public class PlatformServiceTests
 
         var executionData = build.ExecutionData;
 
-        Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("pretranslateCount"));
-
-        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int pretranslateCount = Convert.ToInt32(executionData["pretranslateCount"], CultureInfo.InvariantCulture);
-        int staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
-
-        Assert.That(trainCount, Is.EqualTo(0));
-        Assert.That(pretranslateCount, Is.EqualTo(0));
-        Assert.That(staticCount, Is.EqualTo(0));
+        Assert.That(executionData.TrainCount, Is.EqualTo(0));
+        Assert.That(executionData.PretranslateCount, Is.EqualTo(0));
 
         var updateRequest = new UpdateBuildExecutionDataRequest()
         {
             BuildId = "123",
             EngineId = engine.Id,
-            ExecutionData = new Google.Protobuf.WellKnownTypes.Struct()
+            ExecutionData = new V1.ExecutionData { TrainCount = 4, PretranslateCount = 5, }
         };
-
-        updateRequest.ExecutionData.Fields.Add(
-            "trainCount",
-            new Google.Protobuf.WellKnownTypes.Value() { StringValue = "4" }
-        );
-        updateRequest.ExecutionData.Fields.Add(
-            "pretranslateCount",
-            new Google.Protobuf.WellKnownTypes.Value() { StringValue = "5" }
-        );
 
         await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        executionData = build!.ExecutionData;
+        executionData = build?.ExecutionData;
 
-        trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        pretranslateCount = Convert.ToInt32(executionData["pretranslateCount"], CultureInfo.InvariantCulture);
-        staticCount = Convert.ToInt32(executionData["staticCount"], CultureInfo.InvariantCulture);
-
-        Assert.That(trainCount, Is.GreaterThan(0));
-        Assert.That(pretranslateCount, Is.GreaterThan(0));
-        Assert.That(staticCount, Is.EqualTo(0));
+        Assert.That(executionData, Is.Not.Null);
+        Assert.That(executionData.TrainCount, Is.GreaterThan(0));
+        Assert.That(executionData.PretranslateCount, Is.GreaterThan(0));
     }
 
     [Test]

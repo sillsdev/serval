@@ -10979,8 +10979,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("deploymentVersion", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? DeploymentVersion { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IDictionary<string, object>? ExecutionData { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public ExecutionData ExecutionData { get; set; } = new ExecutionData();
 
         [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
@@ -11072,6 +11073,33 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Canceled")]
         Canceled = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ExecutionData
+    {
+        [Newtonsoft.Json.JsonProperty("trainCount", Required = Newtonsoft.Json.Required.Always)]
+        public int TrainCount { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("pretranslateCount", Required = Newtonsoft.Json.Required.Always)]
+        public int PretranslateCount { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("warnings", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("engineSourceLanguageTag", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? EngineSourceLanguageTag { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("engineTargetLanguageTag", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? EngineTargetLanguageTag { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("resolvedSourceLanguage", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ResolvedSourceLanguage { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("resolvedTargetLanguage", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ResolvedTargetLanguage { get; set; } = default!;
 
     }
 
@@ -11554,8 +11582,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("deploymentVersion", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? DeploymentVersion { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IDictionary<string, object>? ExecutionData { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public WordAlignmentExecutionData ExecutionData { get; set; } = new WordAlignmentExecutionData();
 
         [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
@@ -11573,6 +11602,27 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<ParallelCorpusFilter>? TargetFilters { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WordAlignmentExecutionData
+    {
+        [Newtonsoft.Json.JsonProperty("trainCount", Required = Newtonsoft.Json.Required.Always)]
+        public int TrainCount { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("wordAlignCount", Required = Newtonsoft.Json.Required.Always)]
+        public int WordAlignCount { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("warnings", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("engineSourceLanguageTag", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? EngineSourceLanguageTag { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("engineTargetLanguageTag", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? EngineTargetLanguageTag { get; set; } = default!;
 
     }
 

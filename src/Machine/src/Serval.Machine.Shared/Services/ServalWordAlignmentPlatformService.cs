@@ -149,7 +149,7 @@ public class ServalWordAlignmentPlatformService(
     public async Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        IReadOnlyDictionary<string, object> executionData,
+        BuildExecutionData executionData,
         CancellationToken cancellationToken = default
     )
     {
@@ -157,28 +157,16 @@ public class ServalWordAlignmentPlatformService(
         {
             EngineId = engineId,
             BuildId = buildId,
-            ExecutionData = new Google.Protobuf.WellKnownTypes.Struct()
+            ExecutionData = new ExecutionData
+            {
+                TrainCount = executionData.TrainCount ?? 0,
+                WordAlignCount = executionData.WordAlignCount ?? 0,
+                EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
+                EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
+            }
         };
-        foreach (KeyValuePair<string, object> kvp in executionData)
-        {
-            var value = new Google.Protobuf.WellKnownTypes.Value();
-            if (kvp.Value is string stringValue)
-            {
-                value.StringValue = stringValue;
-            }
-            else if (kvp.Value is int numberValue)
-            {
-                value.NumberValue = numberValue;
-            }
-            else if (kvp.Value is List<string> listValue)
-            {
-                value.ListValue = new Google.Protobuf.WellKnownTypes.ListValue();
-                value.ListValue.Values.AddRange(
-                    listValue.Select(s => new Google.Protobuf.WellKnownTypes.Value() { StringValue = s })
-                );
-            }
-            request.ExecutionData.Fields.Add(kvp.Key, value);
-        }
+        foreach (string warning in executionData.Warnings ?? [])
+            request.ExecutionData.Warnings.Add(warning);
         await _outboxService.EnqueueMessageAsync(
             outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
             method: ServalWordAlignmentPlatformOutboxConstants.UpdateBuildExecutionData,

@@ -4,7 +4,6 @@ package serval.translation.v1;
 
 import "google/protobuf/empty.proto";
 import "serval/translation/v1/common.proto";
-import "google/protobuf/struct.proto";
 
 
 service TranslationPlatformApi {
@@ -72,7 +71,7 @@ message InsertPretranslationsRequest {
 message UpdateBuildExecutionDataRequest {
     string engine_id = 1;
     string build_id = 2;
-    google.protobuf.Struct execution_data = 3;
+    ExecutionData execution_data = 3;
 }
 
 message UpdateParallelCorpusAnalysisRequest {
@@ -95,4 +94,14 @@ message Phase {
 enum PhaseStage {
     PHASE_STAGE_TRAIN = 0;
     PHASE_STAGE_INFERENCE = 1;
+}
+
+message ExecutionData {
+    int32 train_count = 1;
+    int32 pretranslate_count = 2;
+    repeated string warnings = 3;
+    string engine_source_language_tag = 4;
+    string engine_target_language_tag = 5;
+    string resolved_source_language = 6;
+    string resolved_target_language = 7;
 }

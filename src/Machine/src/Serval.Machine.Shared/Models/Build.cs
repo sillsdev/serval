@@ -29,5 +29,5 @@ public record Build
     public required BuildJobRunnerType BuildJobRunner { get; init; }
     public required BuildStage Stage { get; init; }
     public string? Options { get; set; }
-    public IReadOnlyDictionary<string, object> ExecutionData { get; init; } = new Dictionary<string, object>();
+    public required BuildExecutionData ExecutionData { get; init; }
 }

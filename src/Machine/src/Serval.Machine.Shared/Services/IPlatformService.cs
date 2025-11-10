@@ -33,7 +33,7 @@ public interface IPlatformService
     Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        IReadOnlyDictionary<string, object> executionData,
+        BuildExecutionData executionData,
         CancellationToken cancellationToken = default
     );
 

@@ -115,13 +115,13 @@ public class WordAlignmentPreprocessBuildJob(
                 { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) }
             };
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
-        var executionData = new Dictionary<string, object>()
+        var executionData = new BuildExecutionData()
         {
-            { "trainCount", trainCount },
-            { "wordAlignCount", wordAlignCount },
-            { "warnings", warnings },
-            { "engineSourceLanguageTag", sourceLanguageTag },
-            { "engineTargetLanguageTag", targetLanguageTag },
+            TrainCount = trainCount,
+            WordAlignCount = wordAlignCount,
+            Warnings = warnings,
+            EngineSourceLanguageTag = sourceLanguageTag,
+            EngineTargetLanguageTag = targetLanguageTag
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }

@@ -343,30 +343,20 @@ public class WordAlignmentPlatformServiceV1(
         ServerCallContext context
     )
     {
-        static object Map(Value value)
-        {
-            if (value.HasStringValue)
-            {
-                return value.StringValue;
-            }
-            else if (value.HasNumberValue)
-            {
-                return value.NumberValue;
-            }
-            else if (value.ListValue.Values.Count > 0)
-            {
-                return new List<string>(value.ListValue.Values.Select(v => v.StringValue));
-            }
-            return -1;
-        }
         await _builds.UpdateAsync(
             b => b.Id == request.BuildId,
             u =>
-            {
-                // initialize ExecutionData if it's null
-                foreach (KeyValuePair<string, Value> entry in request.ExecutionData.Fields)
-                    u.Set(b => b.ExecutionData[entry.Key], Map(entry.Value));
-            },
+                u.Set(
+                    b => b.ExecutionData,
+                    new Models.ExecutionData
+                    {
+                        TrainCount = request.ExecutionData.TrainCount,
+                        WordAlignCount = request.ExecutionData.WordAlignCount,
+                        Warnings = [.. request.ExecutionData.Warnings],
+                        EngineSourceLanguageTag = request.ExecutionData.EngineSourceLanguageTag,
+                        EngineTargetLanguageTag = request.ExecutionData.EngineTargetLanguageTag
+                    }
+                ),
             cancellationToken: context.CancellationToken
         );
 

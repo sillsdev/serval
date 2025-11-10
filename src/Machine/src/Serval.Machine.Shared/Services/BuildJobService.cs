@@ -102,7 +102,8 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
                             BuildJobRunner = runner.Type,
                             Stage = stage,
                             JobState = BuildJobState.Pending,
-                            Options = buildOptions
+                            Options = buildOptions,
+                            ExecutionData = new BuildExecutionData()
                         }
                     ),
                 cancellationToken: cancellationToken
