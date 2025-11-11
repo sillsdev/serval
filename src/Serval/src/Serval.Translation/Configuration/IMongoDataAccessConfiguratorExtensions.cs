@@ -39,7 +39,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                 // migrate by adding ExecutionData field
                 await c.UpdateManyAsync(
                     Builders<Build>.Filter.Exists(b => b.ExecutionData, false),
-                    Builders<Build>.Update.Set(b => b.ExecutionData, new Dictionary<string, object>())
+                    Builders<Build>.Update.Set(b => b.ExecutionData, new ExecutionData())
                 );
                 // migrate the percentCompleted field to the progress field
                 await c.UpdateManyAsync(

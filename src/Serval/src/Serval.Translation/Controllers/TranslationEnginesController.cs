@@ -1960,7 +1960,7 @@ public class TranslationEnginesController(
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
-            ExecutionData = source.ExecutionData,
+            ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList(),
             Analysis = source.Analysis?.Select(Map).ToList(),
         };
@@ -2199,6 +2199,20 @@ public class TranslationEnginesController(
             TargetQuoteConvention = source.TargetQuoteConvention,
             SourceQuoteConvention = "ignore",
             CanDenormalizeQuotes = source.TargetQuoteConvention != ""
+        };
+    }
+
+    private static ExecutionDataDto Map(ExecutionData source)
+    {
+        return new ExecutionDataDto
+        {
+            TrainCount = source.TrainCount ?? 0,
+            PretranslateCount = source.PretranslateCount ?? 0,
+            Warnings = source.Warnings ?? [],
+            EngineSourceLanguageTag = source.EngineSourceLanguageTag,
+            EngineTargetLanguageTag = source.EngineTargetLanguageTag,
+            ResolvedSourceLanguage = source.ResolvedSourceLanguage,
+            ResolvedTargetLanguage = source.ResolvedTargetLanguage,
         };
     }
 }

@@ -110,7 +110,8 @@ public class ClearMLMonitorServiceTests
                 JobId = jobId,
                 JobState = jobState,
                 BuildJobRunner = BuildJobRunnerType.ClearML,
-                Stage = stage
+                Stage = stage,
+                ExecutionData = new BuildExecutionData()
             },
             SourceLanguage = "en",
             TargetLanguage = "fr",

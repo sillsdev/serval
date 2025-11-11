@@ -346,11 +346,17 @@ public class WordAlignmentPlatformServiceV1(
         await _builds.UpdateAsync(
             b => b.Id == request.BuildId,
             u =>
-            {
-                // initialize ExecutionData if it's null
-                foreach (KeyValuePair<string, string> entry in request.ExecutionData)
-                    u.Set(b => b.ExecutionData[entry.Key], entry.Value);
-            },
+                u.Set(
+                    b => b.ExecutionData,
+                    new Models.ExecutionData
+                    {
+                        TrainCount = request.ExecutionData.TrainCount,
+                        WordAlignCount = request.ExecutionData.WordAlignCount,
+                        Warnings = [.. request.ExecutionData.Warnings],
+                        EngineSourceLanguageTag = request.ExecutionData.EngineSourceLanguageTag,
+                        EngineTargetLanguageTag = request.ExecutionData.EngineTargetLanguageTag
+                    }
+                ),
             cancellationToken: context.CancellationToken
         );
 

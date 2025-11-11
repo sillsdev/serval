@@ -103,15 +103,15 @@ public class NmtPreprocessBuildJob(
                 { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) }
             };
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
-        var executionData = new Dictionary<string, object>()
+        var executionData = new BuildExecutionData()
         {
-            { "trainCount", trainCount },
-            { "pretranslateCount", pretranslateCount },
-            { "warnings", warnings },
-            { "engineSourceLanguageTag", sourceLanguageTag },
-            { "engineTargetLanguageTag", targetLanguageTag },
-            { "resolvedSourceLanguage", resolvedSourceLanguage },
-            { "resolvedTargetLanguage", resolvedTargetLanguage },
+            TrainCount = trainCount,
+            PretranslateCount = pretranslateCount,
+            Warnings = warnings,
+            EngineSourceLanguageTag = sourceLanguageTag,
+            EngineTargetLanguageTag = targetLanguageTag,
+            ResolvedSourceLanguage = resolvedSourceLanguage,
+            ResolvedTargetLanguage = resolvedTargetLanguage
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }

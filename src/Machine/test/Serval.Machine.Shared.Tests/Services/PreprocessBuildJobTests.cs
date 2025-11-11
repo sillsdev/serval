@@ -129,9 +129,7 @@ public class PreprocessBuildJobTests
         ParallelCorpus corpus1 = env.DefaultParatextCorpus;
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: true);
-
-        Assert.That(env.ExecutionData.ContainsKey("warnings"));
-        Assert.That(env.ExecutionData["warnings"] as List<string>, Has.Count.EqualTo(8));
+        Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(8));
     }
 
     [Test]
@@ -492,8 +490,7 @@ Target one, chapter one, verse nine and ten.
         public ParallelCorpus DefaultParatextCorpus { get; }
         public ParallelCorpus DefaultMixedSourceParatextCorpus { get; }
 
-        public IReadOnlyDictionary<string, object> ExecutionData { get; private set; } =
-            new Dictionary<string, object>();
+        public BuildExecutionData ExecutionData { get; private set; } = new BuildExecutionData();
 
         public TestEnvironment()
         {
@@ -639,7 +636,8 @@ Target one, chapter one, verse nine and ten.
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
                         BuildJobRunner = BuildJobRunnerType.Hangfire,
-                        Stage = BuildStage.Preprocess
+                        Stage = BuildStage.Preprocess,
+                        ExecutionData = new BuildExecutionData()
                     }
                 }
             );
@@ -659,7 +657,8 @@ Target one, chapter one, verse nine and ten.
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
                         BuildJobRunner = BuildJobRunnerType.Hangfire,
-                        Stage = BuildStage.Preprocess
+                        Stage = BuildStage.Preprocess,
+                        ExecutionData = new BuildExecutionData()
                     }
                 }
             );
@@ -679,7 +678,8 @@ Target one, chapter one, verse nine and ten.
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
                         BuildJobRunner = BuildJobRunnerType.Hangfire,
-                        Stage = BuildStage.Preprocess
+                        Stage = BuildStage.Preprocess,
+                        ExecutionData = new BuildExecutionData()
                     }
                 }
             );
@@ -690,7 +690,7 @@ Target one, chapter one, verse nine and ten.
             PlatformService.UpdateBuildExecutionDataAsync(
                 Arg.Any<string>(),
                 Arg.Any<string>(),
-                Arg.Do<IReadOnlyDictionary<string, object>>(data => ExecutionData = data),
+                Arg.Do<BuildExecutionData>(data => ExecutionData = data),
                 Arg.Any<CancellationToken>()
             );
             LockFactory = new DistributedReaderWriterLockFactory(

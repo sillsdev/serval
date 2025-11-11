@@ -149,12 +149,24 @@ public class ServalWordAlignmentPlatformService(
     public async Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        IReadOnlyDictionary<string, object> executionData,
+        BuildExecutionData executionData,
         CancellationToken cancellationToken = default
     )
     {
-        var request = new UpdateBuildExecutionDataRequest { EngineId = engineId, BuildId = buildId };
-        request.ExecutionData.Add((IDictionary<string, string>)executionData);
+        var request = new UpdateBuildExecutionDataRequest
+        {
+            EngineId = engineId,
+            BuildId = buildId,
+            ExecutionData = new ExecutionData
+            {
+                TrainCount = executionData.TrainCount ?? 0,
+                WordAlignCount = executionData.WordAlignCount ?? 0,
+                EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
+                EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
+            }
+        };
+        foreach (string warning in executionData.Warnings ?? [])
+            request.ExecutionData.Warnings.Add(warning);
         await _outboxService.EnqueueMessageAsync(
             outboxId: ServalWordAlignmentPlatformOutboxConstants.OutboxId,
             method: ServalWordAlignmentPlatformOutboxConstants.UpdateBuildExecutionData,

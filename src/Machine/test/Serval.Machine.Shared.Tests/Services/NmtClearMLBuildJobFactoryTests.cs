@@ -92,7 +92,8 @@ run(args)
                         JobId = "job1",
                         BuildJobRunner = BuildJobRunnerType.ClearML,
                         Stage = BuildStage.Train,
-                        JobState = BuildJobState.Pending
+                        JobState = BuildJobState.Pending,
+                        ExecutionData = new BuildExecutionData()
                     }
                 }
             );
