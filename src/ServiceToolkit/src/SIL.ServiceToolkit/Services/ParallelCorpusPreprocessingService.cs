@@ -186,18 +186,16 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         textCorpus = textCorpus.Transform(CleanSegment);
         if (corpus.InferenceTextIds is not null)
         {
-            return textCorpus.FilterTexts(corpus.InferenceTextIds).Where(row =>
-            row.Ref is not ScriptureRef sr || !sr.Path.Any(e => ignoreMarkers.Contains(e.Name))
-        );
+            textCorpus = textCorpus.FilterTexts(corpus.InferenceTextIds);
         }
-        if (corpus.InferenceChapters is not null)
+        else if (corpus.InferenceChapters is not null)
         {
-            return textCorpus
+            textCorpus = textCorpus
                 .FilterTexts(corpus.InferenceChapters.Keys)
-                .Where(row => row.Ref is not ScriptureRef sr || (IsInChapters(sr, corpus.InferenceChapters) && !sr.Path.Any(e => ignoreMarkers.Contains(e.Name))));
+                .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.InferenceChapters));
         }
         return textCorpus.Where(row =>
-            row.Ref is not ScriptureRef sr || !sr.Path.Any(e => ignoreMarkers.Contains(e.Name))
+            row.Ref is not ScriptureRef sr || !HasIgnorableMarker(sr, ignoreMarkers)
         );
     }
 
@@ -352,6 +350,11 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         return selection.TryGetValue(sr.Book, out HashSet<int>? chapters)
             && chapters != null
             && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum));
+    }
+
+    private static bool HasIgnorableMarker(ScriptureRef sr, HashSet<string> ignoreMarkers)
+    {
+        return sr.Path.Any(e => ignoreMarkers.Contains(e.Name));
     }
 
     private static TextRow CleanSegment(TextRow row)
