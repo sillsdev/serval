@@ -11,6 +11,7 @@ public interface IParallelCorpusPreprocessingService
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
         Func<Row, bool, ParallelCorpus, Task> inference,
-        bool useKeyTerms = false
+        bool useKeyTerms = false,
+        HashSet<string>? ignoreUsfmMarkers = null
     );
 }
