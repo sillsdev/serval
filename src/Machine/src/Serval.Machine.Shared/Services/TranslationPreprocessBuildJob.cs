@@ -74,7 +74,8 @@ public class TranslationPreprocessBuildJob(
                 if (pretranslateWriter.BytesPending > 1024 * 1024)
                     await pretranslateWriter.FlushAsync();
             },
-            (bool?)buildOptionsObject?["use_key_terms"] ?? true
+            (bool?)buildOptionsObject?["use_key_terms"] ?? true,
+            ["rem", "r"]
         );
 
         pretranslateWriter.WriteEndArray();
