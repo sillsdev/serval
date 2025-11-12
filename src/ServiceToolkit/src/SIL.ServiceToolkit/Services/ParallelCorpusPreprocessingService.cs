@@ -194,9 +194,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 .FilterTexts(corpus.InferenceChapters.Keys)
                 .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.InferenceChapters));
         }
-        return textCorpus.Where(row =>
-            row.Ref is not ScriptureRef sr || !HasIgnorableMarker(sr, ignoreMarkers)
-        );
+        return textCorpus.Where(row => row.Ref is not ScriptureRef sr || !HasIgnorableMarker(sr, ignoreMarkers));
     }
 
     private static ITextCorpus FilterTrainingCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
