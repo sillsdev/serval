@@ -12,6 +12,6 @@ public interface IParallelCorpusPreprocessingService
         Func<Row, Task> train,
         Func<Row, bool, ParallelCorpus, Task> inference,
         bool useKeyTerms = false,
-        HashSet<string>? ignoreUsfmTokens = null
+        HashSet<string>? ignoreUsfmMarkers = null
     );
 }

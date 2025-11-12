@@ -75,7 +75,7 @@ public class TranslationPreprocessBuildJob(
                     await pretranslateWriter.FlushAsync();
             },
             (bool?)buildOptionsObject?["use_key_terms"] ?? true,
-            ["rem", "r"]
+            ignoreUsfmMarkers: ["rem", "r"]
         );
 
         pretranslateWriter.WriteEndArray();

@@ -66,10 +66,10 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         Func<Row, Task> train,
         Func<Row, bool, ParallelCorpus, Task> inference,
         bool useKeyTerms = false,
-        HashSet<string>? ignoreUsfmTokens = null
+        HashSet<string>? ignoreUsfmMarkers = null
     )
     {
-        ignoreUsfmTokens ??= [];
+        ignoreUsfmMarkers ??= [];
 
         bool parallelTrainingDataPresent = false;
         List<Row> keyTermTrainingData = new();
@@ -87,7 +87,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 .ToArray();
 
             ITextCorpus[] sourcePretranslateCorpora = sourceCorpora
-                .Select(sc => FilterPretranslateCorpora(sc.Corpus, sc.TextCorpus, ignoreUsfmTokens))
+                .Select(sc => FilterPretranslateCorpora(sc.Corpus, sc.TextCorpus, ignoreUsfmMarkers))
                 .ToArray();
 
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
@@ -99,7 +99,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 .ToArray();
 
             ITextCorpus targetPretranslateCorpus = targetCorpora
-                .Select(tc => FilterPretranslateCorpora(tc.Corpus, tc.TextCorpus, ignoreUsfmTokens))
+                .Select(tc => FilterPretranslateCorpora(tc.Corpus, tc.TextCorpus, ignoreUsfmMarkers))
                 .ToArray()
                 .ChooseRandom(Seed);
 
@@ -180,7 +180,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
     private static ITextCorpus FilterPretranslateCorpora(
         MonolingualCorpus corpus,
         ITextCorpus textCorpus,
-        HashSet<string> ignoreMarkers
+        HashSet<string> ignoreUsfmMarkers
     )
     {
         textCorpus = textCorpus.Transform(CleanSegment);
@@ -194,7 +194,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 .FilterTexts(corpus.InferenceChapters.Keys)
                 .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.InferenceChapters));
         }
-        return textCorpus.Where(row => row.Ref is not ScriptureRef sr || !HasIgnorableMarker(sr, ignoreMarkers));
+        return textCorpus.Where(row => row.Ref is not ScriptureRef sr || !HasIgnorableMarker(sr, ignoreUsfmMarkers));
     }
 
     private static ITextCorpus FilterTrainingCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
@@ -350,9 +350,9 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
             && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum));
     }
 
-    private static bool HasIgnorableMarker(ScriptureRef sr, HashSet<string> ignoreMarkers)
+    private static bool HasIgnorableMarker(ScriptureRef sr, HashSet<string> ignoreUsfmMarkers)
     {
-        return sr.Path.Any(e => ignoreMarkers.Contains(e.Name));
+        return sr.Path.Any(e => ignoreUsfmMarkers.Contains(e.Name));
     }
 
     private static TextRow CleanSegment(TextRow row)
