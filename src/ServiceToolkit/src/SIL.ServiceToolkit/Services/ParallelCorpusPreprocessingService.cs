@@ -65,9 +65,12 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         IReadOnlyList<ParallelCorpus> corpora,
         Func<Row, Task> train,
         Func<Row, bool, ParallelCorpus, Task> inference,
-        bool useKeyTerms = false
+        bool useKeyTerms = false,
+        HashSet<string>? ignoreUsfmTokens = null
     )
     {
+        ignoreUsfmTokens ??= [];
+
         bool parallelTrainingDataPresent = false;
         List<Row> keyTermTrainingData = new();
         foreach (ParallelCorpus corpus in corpora)
@@ -84,7 +87,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 .ToArray();
 
             ITextCorpus[] sourcePretranslateCorpora = sourceCorpora
-                .Select(sc => FilterPretranslateCorpora(sc.Corpus, sc.TextCorpus))
+                .Select(sc => FilterPretranslateCorpora(sc.Corpus, sc.TextCorpus, ignoreUsfmTokens))
                 .ToArray();
 
             (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
@@ -96,7 +99,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 .ToArray();
 
             ITextCorpus targetPretranslateCorpus = targetCorpora
-                .Select(tc => FilterPretranslateCorpora(tc.Corpus, tc.TextCorpus))
+                .Select(tc => FilterPretranslateCorpora(tc.Corpus, tc.TextCorpus, ignoreUsfmTokens))
                 .ToArray()
                 .ChooseRandom(Seed);
 
@@ -174,20 +177,28 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         }
     }
 
-    private static ITextCorpus FilterPretranslateCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)
+    private static ITextCorpus FilterPretranslateCorpora(
+        MonolingualCorpus corpus,
+        ITextCorpus textCorpus,
+        HashSet<string> ignoreMarkers
+    )
     {
         textCorpus = textCorpus.Transform(CleanSegment);
         if (corpus.InferenceTextIds is not null)
         {
-            return textCorpus.FilterTexts(corpus.InferenceTextIds);
+            return textCorpus.FilterTexts(corpus.InferenceTextIds).Where(row =>
+            row.Ref is not ScriptureRef sr || !sr.Path.Any(e => ignoreMarkers.Contains(e.Name))
+        );
         }
         if (corpus.InferenceChapters is not null)
         {
             return textCorpus
                 .FilterTexts(corpus.InferenceChapters.Keys)
-                .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.InferenceChapters));
+                .Where(row => row.Ref is not ScriptureRef sr || (IsInChapters(sr, corpus.InferenceChapters) && !sr.Path.Any(e => ignoreMarkers.Contains(e.Name))));
         }
-        return textCorpus;
+        return textCorpus.Where(row =>
+            row.Ref is not ScriptureRef sr || !sr.Path.Any(e => ignoreMarkers.Contains(e.Name))
+        );
     }
 
     private static ITextCorpus FilterTrainingCorpora(MonolingualCorpus corpus, ITextCorpus textCorpus)

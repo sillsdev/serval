@@ -38,7 +38,7 @@ public class ParallelCorpusPreprocessingServiceTests
     }
 
     [Test]
-    public async Task TestParallelCorpusPreprocessor()
+    public async Task TestParallelCorpusPreprocessor_FileFormatText()
     {
         using var env = new TestEnvironment();
         IReadOnlyList<ParallelCorpus> corpora = [env.GetCorpus(paratextProject: false)];
@@ -68,6 +68,47 @@ public class ParallelCorpusPreprocessingServiceTests
         {
             Assert.That(trainCount, Is.EqualTo(2));
             Assert.That(inferenceCount, Is.EqualTo(3));
+        });
+    }
+
+    [Test]
+    public async Task TestParallelCorpusPreprocessor_FileFormatParatext()
+    {
+        using var env = new TestEnvironment();
+        IReadOnlyList<ParallelCorpus> corpora = [env.GetCorpus(paratextProject: true)];
+        int trainCount = 0;
+        int inferenceCount = 0;
+        var trainRefs = new List<string>();
+        var inferenceRefs = new List<string>();
+        await env.Processor.PreprocessAsync(
+            corpora,
+            row =>
+            {
+                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                {
+                    trainCount++;
+                    trainRefs.Add(row.Refs[0].ToString() ?? "");
+                }
+                return Task.CompletedTask;
+            },
+            (row, isInTrainingData, _) =>
+            {
+                if (row.SourceSegment.Length > 0 && !isInTrainingData)
+                {
+                    inferenceCount++;
+                    inferenceRefs.Add(row.Refs[0].ToString() ?? "");
+                }
+
+                return Task.CompletedTask;
+            },
+            false,
+            ["mt"]
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(trainCount, Is.EqualTo(5));
+            Assert.That(inferenceCount, Is.EqualTo(12));
         });
     }
 

@@ -207,6 +207,21 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
+    public async Task RunAsync_DoNotPretranslateRemark()
+    {
+        using TestEnvironment env = new();
+        ParallelCorpus corpus1 = env.DefaultParatextCorpus;
+
+        await env.RunBuildJobAsync(corpus1);
+
+        Assert.That(
+            await env.GetPretranslateCountAsync(),
+            Is.EqualTo(14),
+            JsonSerializer.Serialize(await env.GetPretranslationsAsync())
+        );
+    }
+
+    [Test]
     public async Task RunAsync_TrainOnChapters()
     {
         using TestEnvironment env = new();
@@ -239,8 +254,8 @@ public class PreprocessBuildJobTests
         (int src1Count, int src2Count, int trgCount, int termCount) = await env.GetTrainCountAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(9));
-            Assert.That(src2Count, Is.EqualTo(6));
+            Assert.That(src1Count, Is.EqualTo(7));
+            Assert.That(src2Count, Is.EqualTo(14));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
@@ -454,7 +469,7 @@ Target one, chapter one, verse nine and ten.
                 trg
             );
             Assert.That(pretranslations, Is.Not.Null);
-            Assert.That(pretranslations!.Count, Is.EqualTo(7));
+            Assert.That(pretranslations!.Count, Is.EqualTo(7), pretranslations.ToString());
             Assert.That(
                 pretranslations[2]!["translation"]!.ToString(),
                 Is.EqualTo("Source one, chapter twelve, verse one.")
