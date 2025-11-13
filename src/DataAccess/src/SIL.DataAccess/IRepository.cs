@@ -5,6 +5,15 @@ public interface IRepository<T>
 {
     Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<T>> GetAllAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<T>> GetAllWithJoinAsync<T2, TKey>(
+        Expression<Func<T, bool>> thisFilter,
+        Expression<Func<T2, bool>> otherFilter,
+        IRepository<T2> otherRepository,
+        Expression<Func<T, TKey>> thisKey,
+        Expression<Func<T2, TKey>> otherKey,
+        CancellationToken cancellationToken = default
+    )
+        where T2 : IEntity;
     Task<bool> ExistsAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
 
     Task InsertAsync(T entity, CancellationToken cancellationToken = default);
