@@ -142,17 +142,11 @@ public class PretranslationService(
                     ScriptureRefs: (IReadOnlyList<ScriptureRef>)
                         p.Refs.Select(r =>
                         {
-                            try
-                            {
-                                return ScriptureRef.Parse(r, targetSettings.Versification);
-                            }
-                            catch (VerseRefException)
-                            {
-                                return null;
-                            }
+                            bool parsed = ScriptureRef.TryParse(r, out ScriptureRef sr, targetSettings.Versification);
+                            return new { Parsed = parsed, ScriptureRef = sr };
                         })
-                            .Where(r => r != null)
-                            .Select(r => r!)
+                            .Where(r => r.Parsed)
+                            .Select(r => r.ScriptureRef)
                             .ToArray(),
                     p,
                     paragraphMarkerBehavior,
