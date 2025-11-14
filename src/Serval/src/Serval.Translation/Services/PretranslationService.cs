@@ -1,7 +1,6 @@
 ﻿using SIL.Machine.Corpora;
 using SIL.Machine.PunctuationAnalysis;
 using SIL.Machine.Translation;
-using SIL.Scripture;
 
 namespace Serval.Translation.Services;
 
@@ -142,7 +141,7 @@ public class PretranslationService(
                     ScriptureRefs: (IReadOnlyList<ScriptureRef>)
                         p.Refs.Select(r =>
                         {
-                            bool parsed = ScriptureRef.TryParse(r, out ScriptureRef sr, targetSettings.Versification);
+                            bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
                             return new { Parsed = parsed, ScriptureRef = sr };
                         })
                             .Where(r => r.Parsed)
