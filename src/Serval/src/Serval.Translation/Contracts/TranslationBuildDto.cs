@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Serval.Translation.Contracts;
 
 public record TranslationBuildDto
@@ -31,6 +33,8 @@ public record TranslationBuildDto
     /// </example>
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
+
+    [JsonIgnore]
     public IReadOnlyDictionary<string, string>? ExecutionData { get; init; }
     public IReadOnlyList<PhaseDto>? Phases { get; init; }
     public IReadOnlyList<ParallelCorpusAnalysisDto>? Analysis { get; init; }

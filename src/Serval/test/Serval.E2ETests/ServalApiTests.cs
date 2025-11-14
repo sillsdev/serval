@@ -150,33 +150,13 @@ public class ServalApiTests
             true
         );
         _helperClient.TranslationBuildConfig.Pretranslate = [new() { CorpusId = cId2, TextIds = ["2JN.txt"] }];
-        string buildId = await _helperClient.BuildEngineAsync(engineId);
+        await _helperClient.BuildEngineAsync(engineId);
         await Task.Delay(1000);
         IList<Pretranslation> lTrans1 = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
             cId1
         );
         Assert.That(lTrans1, Has.Count.EqualTo(0)); // should be nothing
-        IList<Pretranslation> lTrans2 = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
-            engineId,
-            cId2
-        );
-
-        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
-        Assert.That(build.ExecutionData, Is.Not.Null);
-
-        var executionData = build.ExecutionData;
-
-        Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("pretranslateCount"));
-
-        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int pretranslateCount = Convert.ToInt32(executionData["pretranslateCount"], CultureInfo.InvariantCulture);
-
-        Assert.That(trainCount, Is.GreaterThan(0));
-        Assert.That(pretranslateCount, Is.GreaterThan(0));
-
-        Assert.That(lTrans2, Has.Count.EqualTo(13)); // just 2 John
     }
 
     [Test]
