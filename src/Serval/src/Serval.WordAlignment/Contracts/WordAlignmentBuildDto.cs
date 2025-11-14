@@ -1,4 +1,6 @@
-﻿namespace Serval.WordAlignment.Contracts;
+﻿using System.Text.Json.Serialization;
+
+namespace Serval.WordAlignment.Contracts;
 
 public record WordAlignmentBuildDto
 {
@@ -31,6 +33,8 @@ public record WordAlignmentBuildDto
     /// </example>
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
+
+    [JsonIgnore]
     public IReadOnlyDictionary<string, string>? ExecutionData { get; init; }
     public IReadOnlyList<PhaseDto>? Phases { get; init; }
 }

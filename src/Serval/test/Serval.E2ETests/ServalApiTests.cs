@@ -523,18 +523,6 @@ public class ServalApiTests
         });
 
         WordAlignmentBuild build = await _helperClient.WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId);
-        Assert.That(build.ExecutionData, Is.Not.Null);
-
-        var executionData = build.ExecutionData;
-
-        Assert.That(executionData, Contains.Key("trainCount"));
-        Assert.That(executionData, Contains.Key("wordAlignCount"));
-
-        int trainCount = Convert.ToInt32(executionData["trainCount"], CultureInfo.InvariantCulture);
-        int wordAlignmentCount = Convert.ToInt32(executionData["wordAlignCount"], CultureInfo.InvariantCulture);
-
-        Assert.That(trainCount, Is.GreaterThan(0));
-        Assert.That(wordAlignmentCount, Is.GreaterThan(0));
 
         IList<Client.WordAlignment> wordAlignments =
             await _helperClient.WordAlignmentEnginesClient.GetAllWordAlignmentsAsync(engineId, corpusId);

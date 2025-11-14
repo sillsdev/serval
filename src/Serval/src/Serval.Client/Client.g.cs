@@ -10996,9 +10996,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("deploymentVersion", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? DeploymentVersion { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("executionData", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IDictionary<string, string>? ExecutionData { get; set; } = default!;
-
         [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
 
