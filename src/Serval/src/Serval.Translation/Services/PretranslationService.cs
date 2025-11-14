@@ -139,12 +139,20 @@ public class PretranslationService(
             .Select(p =>
                 (
                     ScriptureRefs: (IReadOnlyList<ScriptureRef>)
-                        p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToArray(),
+                        p.Refs.Select(r =>
+                        {
+                            bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
+                            return new { Parsed = parsed, ScriptureRef = sr };
+                        })
+                            .Where(r => r.Parsed)
+                            .Select(r => r.ScriptureRef)
+                            .ToArray(),
                     p,
                     paragraphMarkerBehavior,
                     styleMarkerBehavior
                 )
             )
+            .Where(p => p.ScriptureRefs.Any())
             .OrderBy(p => p.ScriptureRefs[0]);
 
         List<IUsfmUpdateBlockHandler> updateBlockHandlers = [];

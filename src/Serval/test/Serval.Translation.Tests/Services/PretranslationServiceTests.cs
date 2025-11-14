@@ -362,6 +362,69 @@ public class PretranslationServiceTests
         Assert.That(Regex.Matches(usfm, @"\\rem"), Has.Count.EqualTo(2));
     }
 
+    [Test]
+    public void GetUsfmAsync_BadPretranslationVerseRef()
+    {
+        using TestEnvironment env = new();
+
+        env.Pretranslations.Replace(
+            new()
+            {
+                Id = "pt1",
+                EngineRef = "engine1",
+                ModelRevision = 1,
+                CorpusRef = "corpus1",
+                TextId = "MAT",
+                Refs = ["MAT 1:"],
+                Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
+                SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
+                TranslationTokens =
+                [
+                    "Chapter",
+                    "1",
+                    ",",
+                    "verse",
+                    "1",
+                    ".",
+                    "\"",
+                    "Translated",
+                    "new",
+                    "paragraph",
+                    "\""
+                ],
+                Alignment =
+                [
+                    new() { SourceIndex = 2, TargetIndex = 0 },
+                    new() { SourceIndex = 3, TargetIndex = 1 },
+                    new() { SourceIndex = 4, TargetIndex = 2 },
+                    new() { SourceIndex = 5, TargetIndex = 3 },
+                    new() { SourceIndex = 6, TargetIndex = 4 },
+                    new() { SourceIndex = 7, TargetIndex = 5 },
+                    new() { SourceIndex = 8, TargetIndex = 7 },
+                    new() { SourceIndex = 8, TargetIndex = 8 },
+                    new() { SourceIndex = 9, TargetIndex = 9 },
+                ]
+            }
+        );
+
+        // Should not crash when parsing "MAT 1:"
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            string usfm = await env.Service.GetUsfmAsync(
+                engineId: "engine1",
+                modelRevision: 1,
+                corpusId: "corpus1",
+                textId: "MAT",
+                textOrigin: PretranslationUsfmTextOrigin.OnlyPretranslated,
+                template: PretranslationUsfmTemplate.Source,
+                paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.Preserve,
+                embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
+                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
+                quoteNormalizationBehavior: PretranslationNormalizationBehavior.Normalized
+            );
+        });
+    }
+
     private class TestEnvironment : IDisposable
     {
         public TestEnvironment()
