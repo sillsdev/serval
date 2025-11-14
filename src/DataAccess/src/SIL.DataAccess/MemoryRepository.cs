@@ -109,7 +109,39 @@ public class MemoryRepository<T> : IRepository<T>
         cancellationToken.ThrowIfCancellationRequested();
         using (await _lock.LockAsync(cancellationToken))
         {
-            return Entities.AsQueryable().Where(filter).ToList();
+            return [.. Entities.AsQueryable().Where(filter)];
+        }
+    }
+
+    public async Task<IReadOnlyList<T>> GetAllWithJoinAsync<T2, TKey>(
+        Expression<Func<T, bool>> thisFilter,
+        Expression<Func<T2, bool>> otherFilter,
+        IRepository<T2> otherRepository,
+        Expression<Func<T, TKey>> thisKey,
+        Expression<Func<T2, TKey>> otherKey,
+        CancellationToken cancellationToken = default
+    )
+        where T2 : IEntity
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using (await _lock.LockAsync(cancellationToken))
+        {
+            if (otherRepository is not MemoryRepository<T2> otherMemoryRepository)
+                throw new NotSupportedException();
+
+            return
+            [
+                .. Entities
+                .Where(thisFilter.Compile())
+                .GroupJoin(
+                    otherMemoryRepository.Entities.Where(otherFilter.Compile()),
+                    thisKey.Compile(),
+                    otherKey.Compile(),
+                    (t, t2) => new { T = t, T2 = t2 }
+                )
+                .Where(x => x.T2.Any())
+                .Select(x => x.T)
+            ];
         }
     }
 

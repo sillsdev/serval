@@ -1315,6 +1315,53 @@ public class TranslationEngineTests
     }
 
     [Test]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID, true)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE3_ID, false)] // Engine is not owned
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID, false)] // Arbitrary unrelated privilege
+    public async Task GetAllBuildsCreatedAfterAsync(
+        IEnumerable<string> scope,
+        int expectedStatusCode,
+        string createBuildForEngineId,
+        bool buildWillBeRetrieved
+    )
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
+        Build? build = new Build { EngineRef = createBuildForEngineId, DateCreated = DateTime.UtcNow };
+        await _env.Builds.InsertAsync(build);
+        switch (expectedStatusCode)
+        {
+            case 200:
+                ICollection<TranslationBuild> results = await client.GetAllBuildsCreatedAfterAsync(
+                    DateTime.UtcNow.AddHours(-1)
+                );
+                if (buildWillBeRetrieved)
+                {
+                    Assert.That(results, Is.Not.Empty);
+                    Assert.Multiple(() =>
+                    {
+                        Assert.That(results.First().Revision, Is.EqualTo(1));
+                        Assert.That(results.First().Id, Is.EqualTo(build?.Id));
+                        Assert.That(results.First().State, Is.EqualTo(JobState.Pending));
+                    });
+                }
+                else
+                {
+                    Assert.That(results, Is.Empty);
+                }
+                break;
+            case 403:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.GetAllBuildsCreatedAfterAsync(DateTime.UtcNow);
+                });
+                break;
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, SMT_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege

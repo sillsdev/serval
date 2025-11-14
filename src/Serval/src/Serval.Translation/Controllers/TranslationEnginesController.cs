@@ -1535,6 +1535,29 @@ public class TranslationEnginesController(
         return Ok(Map(modelInfo));
     }
 
+    /// <summary>
+    /// Get all builds for your translation engines that created after the specified date.
+    /// </summary>
+    /// <param name="createdAfter">The date and time in UTC that the builds were created after (optional).</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">The engines</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation.</response>
+    /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
+    [Authorize(Scopes.ReadTranslationEngines)]
+    [HttpGet("builds")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IEnumerable<TranslationBuildDto>> GetAllBuildsCreatedAfterAsync(
+        [FromQuery(Name = "created-after")] DateTime? createdAfter,
+        CancellationToken cancellationToken
+    )
+    {
+        return (await _buildService.GetAllForOwnerAsync(Owner, createdAfter, cancellationToken)).Select(Map);
+    }
+
     private async Task AuthorizeAsync(string id, CancellationToken cancellationToken)
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);

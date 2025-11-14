@@ -4,7 +4,8 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
     where T : IEntity
 {
     private readonly IMongoDataAccessContext _context = context;
-    private readonly IMongoCollection<T> _collection = collection;
+
+    internal IMongoCollection<T> Collection { get; } = collection;
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
@@ -12,12 +13,12 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         {
             if (_context.Session is not null)
             {
-                return await _collection
+                return await Collection
                     .AsQueryable(_context.Session)
                     .FirstOrDefaultAsync(filter, cancellationToken)
                     .ConfigureAwait(false);
             }
-            return await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken).ConfigureAwait(false);
+            return await Collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken).ConfigureAwait(false);
         }
         catch (FormatException)
         {
@@ -34,13 +35,71 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         {
             if (_context.Session is not null)
             {
-                return await _collection
+                return await Collection
                     .AsQueryable(_context.Session)
                     .Where(filter)
                     .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
-            return await _collection.AsQueryable().Where(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
+            return await Collection.AsQueryable().Where(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (FormatException)
+        {
+            return [];
+        }
+    }
+
+    public async Task<IReadOnlyList<T>> GetAllWithJoinAsync<T2, TKey>(
+        Expression<Func<T, bool>> thisFilter,
+        Expression<Func<T2, bool>> otherFilter,
+        IRepository<T2> otherRepository,
+        Expression<Func<T, TKey>> thisKey,
+        Expression<Func<T2, TKey>> otherKey,
+        CancellationToken cancellationToken = default
+    )
+        where T2 : IEntity
+    {
+        try
+        {
+            if (otherRepository is not MongoRepository<T2> otherMongoRepository)
+                throw new NotSupportedException();
+
+            // Note: The MongoDB driver does not perform a Lookup pipeline if it contains a Where(),
+            // and if a Where() with an Any() is placed after the Lookup(), you cannot pass an
+            // Expression<Func<T, TKey>> (as the Results are not IQueryable), and if you pass a Func<T, TKey>,
+            // it complains you have passed a constant expression, not a lambda expression. This appears
+            // to be an idiosyncracy of LINQ3, as manually typing an expression into the Any() works fine.
+            // Thus, we retrieve the Lookup results into memory and perform the otherFilter there.
+            if (_context.Session is not null)
+            {
+                return
+                [
+                    .. (
+                    await Collection
+                        .AsQueryable(_context.Session)
+                        .Where(thisFilter)
+                        .Lookup(otherMongoRepository.Collection, thisKey, otherKey)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false)
+                )
+                    .Where(t => t.Results.AsQueryable().Any(otherFilter))
+                    .Select(t => t.Local)
+                ];
+            }
+
+            return
+            [
+                .. (
+                    await Collection
+                        .AsQueryable()
+                        .Where(thisFilter)
+                        .Lookup(otherMongoRepository.Collection, thisKey, otherKey)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false)
+                )
+                    .Where(t => t.Results.AsQueryable().Any(otherFilter))
+                    .Select(t => t.Local)
+            ];
         }
         catch (FormatException)
         {
@@ -54,12 +113,12 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         {
             if (_context.Session is not null)
             {
-                return await _collection
+                return await Collection
                     .AsQueryable(_context.Session)
                     .AnyAsync(filter, cancellationToken)
                     .ConfigureAwait(false);
             }
-            return await _collection.AsQueryable().AnyAsync(filter, cancellationToken).ConfigureAwait(false);
+            return await Collection.AsQueryable().AnyAsync(filter, cancellationToken).ConfigureAwait(false);
         }
         catch (FormatException)
         {
@@ -74,15 +133,13 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
             {
                 if (_context.Session is not null)
                 {
-                    await _collection
+                    await Collection
                         .InsertOneAsync(_context.Session, entity, cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
                 }
                 else
                 {
-                    await _collection
-                        .InsertOneAsync(entity, cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
+                    await Collection.InsertOneAsync(entity, cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
             })
             .ConfigureAwait(false);
@@ -97,13 +154,13 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
             {
                 if (_context.Session is not null)
                 {
-                    await _collection
+                    await Collection
                         .InsertManyAsync(_context.Session, entities, cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
                 }
                 else
                 {
-                    await _collection
+                    await Collection
                         .InsertManyAsync(entities, cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
                 }
@@ -135,13 +192,13 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         {
             if (_context.Session is not null)
             {
-                entity = await _collection
+                entity = await Collection
                     .FindOneAndUpdateAsync(_context.Session, filter, updateDef, options, cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
-                entity = await _collection
+                entity = await Collection
                     .FindOneAndUpdateAsync(filter, updateDef, options, cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -171,13 +228,13 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         {
             if (_context.Session is not null)
             {
-                result = await _collection
+                result = await Collection
                     .UpdateManyAsync(_context.Session, filter, updateDef, updateOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
-                result = await _collection
+                result = await Collection
                     .UpdateManyAsync(filter, updateDef, updateOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -195,11 +252,11 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         {
             if (_context.Session is not null)
             {
-                return await _collection
+                return await Collection
                     .FindOneAndDeleteAsync(_context.Session, filter, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
-            return await _collection
+            return await Collection
                 .FindOneAndDeleteAsync(filter, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -219,13 +276,13 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         {
             if (_context.Session is not null)
             {
-                result = await _collection
+                result = await Collection
                     .DeleteManyAsync(_context.Session, filter, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
-                result = await _collection
+                result = await Collection
                     .DeleteManyAsync(filter, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -244,11 +301,11 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
     {
         var filterDef = new ExpressionFilterDefinition<T>(filter);
         BsonDocument renderedFilter = filterDef.Render(
-            new RenderArgs<T>(_collection.DocumentSerializer, _collection.Settings.SerializerRegistry)
+            new RenderArgs<T>(Collection.DocumentSerializer, Collection.Settings.SerializerRegistry)
         );
         var findCommand = new BsonDocument
         {
-            { "find", _collection.CollectionNamespace.CollectionName },
+            { "find", Collection.CollectionNamespace.CollectionName },
             { "filter", renderedFilter },
             { "limit", 1 },
             { "singleBatch", true }
@@ -256,7 +313,7 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         BsonDocument result;
         if (_context.Session is not null)
         {
-            result = await _collection
+            result = await Collection
                 .Database.RunCommandAsync<BsonDocument>(
                     _context.Session,
                     findCommand,
@@ -266,14 +323,14 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         }
         else
         {
-            result = await _collection
+            result = await Collection
                 .Database.RunCommandAsync<BsonDocument>(findCommand, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         BsonDocument? initialEntityDoc = result["cursor"]["firstBatch"].AsBsonArray.FirstOrDefault()?.AsBsonDocument;
         T? initialEntity = initialEntityDoc is null ? default : BsonSerializer.Deserialize<T>(initialEntityDoc);
         var timestamp = (BsonTimestamp)result["operationTime"];
-        var subscription = new MongoSubscription<T>(_context, _collection, filter.Compile(), timestamp, initialEntity);
+        var subscription = new MongoSubscription<T>(_context, Collection, filter.Compile(), timestamp, initialEntity);
         return subscription;
     }
 
