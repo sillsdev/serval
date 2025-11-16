@@ -109,7 +109,14 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                Owner = "owner1"
+            }
+        );
         _ = env.OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
@@ -184,6 +191,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = [] }]
             }
         );
@@ -263,6 +271,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
             }
         );
@@ -342,6 +351,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }]
             }
         );
@@ -419,6 +429,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }],
                 Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus1" }]
             }
@@ -497,6 +508,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }],
                 Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus2" }]
             }
@@ -623,6 +635,7 @@ public class EngineServiceTests
                     {
                         Id = BUILD1_ID,
                         EngineRef = engineId,
+                        Owner = "owner1",
                         TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }]
                     }
                 )
@@ -639,6 +652,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
             }
         );
@@ -738,6 +752,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
             }
         );
@@ -815,6 +830,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn =
                 [
                     new TrainingCorpus
@@ -936,6 +952,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn =
                 [
                     new TrainingCorpus
@@ -1026,6 +1043,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn =
                 [
                     new TrainingCorpus
@@ -1164,6 +1182,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn =
                 [
                     new TrainingCorpus
@@ -1285,6 +1304,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn =
                 [
                     new TrainingCorpus
@@ -1444,6 +1464,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn =
                 [
                     new TrainingCorpus
@@ -1611,6 +1632,7 @@ public class EngineServiceTests
                     {
                         Id = BUILD1_ID,
                         EngineRef = engineId,
+                        Owner = "owner1",
                         TrainOn =
                         [
                             new TrainingCorpus
@@ -1651,6 +1673,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn = [new TrainingCorpus { ParallelCorpusRef = "parallel-corpus1" }]
             }
         );
@@ -1751,7 +1774,14 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
-        await env.Service.StartBuildAsync(new Build { Id = BUILD1_ID, EngineRef = engineId });
+        await env.Service.StartBuildAsync(
+            new Build
+            {
+                Id = BUILD1_ID,
+                EngineRef = engineId,
+                Owner = "owner1",
+            }
+        );
         _ = env.OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
@@ -1854,6 +1884,7 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
+                Owner = "owner1",
                 TrainOn =
                 [
                     new TrainingCorpus

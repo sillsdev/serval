@@ -1,0 +1,141 @@
+namespace Serval.Translation.Controllers;
+
+#pragma warning disable CS0612 // Type or member is obsolete
+
+public abstract class TranslationControllerBase(IAuthorizationService authService, IUrlService urlService)
+    : ServalControllerBase(authService)
+{
+    private readonly IUrlService _urlService = urlService;
+
+    protected TranslationBuildDto Map(Build source) =>
+        new TranslationBuildDto
+        {
+            Id = source.Id,
+            Url = _urlService.GetUrl(Endpoints.GetTranslationBuild, new { id = source.EngineRef, buildId = source.Id }),
+            Revision = source.Revision,
+            Name = source.Name,
+            Engine = new ResourceLinkDto
+            {
+                Id = source.EngineRef,
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.EngineRef })
+            },
+            TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
+            Pretranslate = source.Pretranslate?.Select(s => Map(source.EngineRef, s)).ToList(),
+            Step = source.Step,
+            PercentCompleted = source.Progress,
+            Progress = source.Progress,
+            Message = source.Message,
+            QueueDepth = source.QueueDepth,
+            State = source.State,
+            DateFinished = source.DateFinished,
+            Options = source.Options,
+            DeploymentVersion = source.DeploymentVersion,
+            ExecutionData = Map(source.ExecutionData),
+            Phases = source.Phases?.Select(Map).ToList(),
+            Analysis = source.Analysis?.Select(Map).ToList(),
+        };
+
+    private PretranslateCorpusDto Map(string engineId, PretranslateCorpus source) =>
+        new PretranslateCorpusDto
+        {
+            Corpus =
+                source.CorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.CorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetTranslationCorpus,
+                            new { id = engineId, corpusId = source.CorpusRef }
+                        )
+                    }
+                    : null,
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange,
+            ParallelCorpus =
+                source.ParallelCorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.ParallelCorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetParallelTranslationCorpus,
+                            new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
+                        )
+                    }
+                    : null,
+            SourceFilters = source.SourceFilters?.Select(Map).ToList()
+        };
+
+    private TrainingCorpusDto Map(string engineId, TrainingCorpus source) =>
+        new TrainingCorpusDto
+        {
+            Corpus =
+                source.CorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.CorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetTranslationCorpus,
+                            new { id = engineId, corpusId = source.CorpusRef }
+                        )
+                    }
+                    : null,
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange,
+            ParallelCorpus =
+                source.ParallelCorpusRef != null
+                    ? new ResourceLinkDto
+                    {
+                        Id = source.ParallelCorpusRef,
+                        Url = _urlService.GetUrl(
+                            Endpoints.GetParallelTranslationCorpus,
+                            new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
+                        )
+                    }
+                    : null,
+            SourceFilters = source.SourceFilters?.Select(Map).ToList(),
+            TargetFilters = source.TargetFilters?.Select(Map).ToList()
+        };
+
+    private ParallelCorpusFilterDto Map(ParallelCorpusFilter source) =>
+        new ParallelCorpusFilterDto
+        {
+            Corpus = new ResourceLinkDto
+            {
+                Id = source.CorpusRef,
+                Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.CorpusRef })
+            },
+            TextIds = source.TextIds,
+            ScriptureRange = source.ScriptureRange
+        };
+
+    private static PhaseDto Map(BuildPhase source) =>
+        new PhaseDto
+        {
+            Stage = (PhaseStage)source.Stage,
+            Step = source.Step,
+            StepCount = source.StepCount
+        };
+
+    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source) =>
+        new ParallelCorpusAnalysisDto
+        {
+            ParallelCorpusRef = source.ParallelCorpusRef,
+            TargetQuoteConvention = source.TargetQuoteConvention,
+            SourceQuoteConvention = "ignore",
+            CanDenormalizeQuotes = source.TargetQuoteConvention != ""
+        };
+
+    private static ExecutionDataDto Map(ExecutionData source) =>
+        new ExecutionDataDto
+        {
+            TrainCount = source.TrainCount ?? 0,
+            PretranslateCount = source.PretranslateCount ?? 0,
+            Warnings = source.Warnings ?? [],
+            EngineSourceLanguageTag = source.EngineSourceLanguageTag,
+            EngineTargetLanguageTag = source.EngineTargetLanguageTag,
+            ResolvedSourceLanguage = source.ResolvedSourceLanguage,
+            ResolvedTargetLanguage = source.ResolvedTargetLanguage,
+        };
+}
+
+#pragma warning restore CS0612 // Type or member is obsolete

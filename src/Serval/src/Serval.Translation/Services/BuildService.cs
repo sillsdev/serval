@@ -1,10 +1,23 @@
 ﻿namespace Serval.Translation.Services;
 
-public class BuildService(IRepository<Build> builds) : EntityServiceBase<Build>(builds), IBuildService
+public class BuildService(IRepository<Build> builds) : OwnedEntityServiceBase<Build>(builds), IBuildService
 {
-    public async Task<IEnumerable<Build>> GetAllAsync(string parentId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Build>> GetAllAsync(
+        string ownerId,
+        string parentId,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await Entities.GetAllAsync(e => e.EngineRef == parentId, cancellationToken);
+        return await Entities.GetAllAsync(e => e.Owner == ownerId && e.EngineRef == parentId, cancellationToken);
+    }
+
+    public async Task<IEnumerable<Build>> GetAllCreatedAfterAsync(
+        string owner,
+        DateTime? createdAfter,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await Entities.GetAllAsync(b => b.Owner == owner && b.DateCreated > createdAfter, cancellationToken);
     }
 
     public Task<Build?> GetActiveAsync(string parentId, CancellationToken cancellationToken = default)

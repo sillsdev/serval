@@ -1,11 +1,12 @@
 namespace Serval.Translation.Models;
 
-public record Build : IEntity
+public record Build : IOwnedEntity
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
     public string? Name { get; init; }
     public required string EngineRef { get; init; }
+    public required string Owner { get; init; }
     public IReadOnlyList<TrainingCorpus>? TrainOn { get; init; }
     public IReadOnlyList<PretranslateCorpus>? Pretranslate { get; init; }
     public int Step { get; init; }
