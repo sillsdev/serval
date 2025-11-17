@@ -2,13 +2,13 @@ externalHost: qa-int.serval-api.org
 environment: Staging
 deploymentVersion: 'internal-qa'
 alertEmail: int-qa-serval-alerts@languagetechnology.org
-emailsToAlert: john_lambert@sil.org
+emailsToAlert: eli_lowry@sil.org
 enableTls: true
 namespace: nlp
 auth0Domain: sil-appbuilder.auth0.com
 lokiTenant: nlp-tenant
 lokiUrl: http://loki-distributed-gateway.loki.svc.cluster.local
-servalImage: ghcr.io/sillsdev/serval:1.12.0-rc.3
+servalImage: ghcr.io/sillsdev/serval:1.12.0-rc.4
 ClearMLDockerImage: ghcr.io/sillsdev/machine.py:1.10.0
 ClearMLQueue: production
 MongoConnectionPrefix: qa_int_
