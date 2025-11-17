@@ -23,7 +23,14 @@ public class PlatformServiceTests
                 Corpora = []
             }
         );
-        await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
+        await env.Builds.InsertAsync(
+            new Build()
+            {
+                Id = "b0",
+                EngineRef = "e0",
+                Owner = "owner1"
+            }
+        );
         await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Active));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.True);
@@ -77,7 +84,14 @@ public class PlatformServiceTests
                 Corpora = []
             }
         );
-        await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
+        await env.Builds.InsertAsync(
+            new Build()
+            {
+                Id = "b0",
+                EngineRef = "e0",
+                Owner = "owner1"
+            }
+        );
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.Null);
         Assert.That(env.Builds.Get("b0").Progress, Is.Null);
         var request = new UpdateBuildStatusRequest
@@ -122,6 +136,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
+            Owner = "owner1",
             ExecutionData = new ExecutionData { TrainCount = 0, PretranslateCount = 0 }
         };
         await env.Builds.InsertAsync(build);
@@ -175,7 +190,12 @@ public class PlatformServiceTests
         };
         await env.Engines.InsertAsync(engine);
 
-        var build = new Build { Id = "123", EngineRef = "e0" };
+        var build = new Build
+        {
+            Id = "123",
+            EngineRef = "e0",
+            Owner = "owner1"
+        };
         await env.Builds.InsertAsync(build);
 
         List<ParallelCorpusAnalysis> expected =
@@ -208,7 +228,12 @@ public class PlatformServiceTests
     {
         var env = new TestEnvironment();
 
-        var build = new Build { Id = "123", EngineRef = "e0" };
+        var build = new Build
+        {
+            Id = "123",
+            EngineRef = "e0",
+            Owner = "owner1"
+        };
         await env.Builds.InsertAsync(build);
 
         var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = "e0" };
@@ -235,7 +260,12 @@ public class PlatformServiceTests
         };
         await env.Engines.InsertAsync(engine);
 
-        var build = new Build { Id = "123", EngineRef = "e0" };
+        var build = new Build
+        {
+            Id = "123",
+            EngineRef = "e0",
+            Owner = "owner1"
+        };
         await env.Builds.InsertAsync(build);
 
         var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = engine.Id };

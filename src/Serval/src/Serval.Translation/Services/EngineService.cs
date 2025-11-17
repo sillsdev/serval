@@ -28,14 +28,6 @@ public class EngineService(
     private readonly IOutboxService _outboxService = outboxService;
     private readonly IOptionsMonitor<TranslationOptions> _translationOptions = translationOptions;
 
-    public override async Task<IEnumerable<Engine>> GetAllAsync(
-        string owner,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
-    }
-
     public async Task<Models.TranslationResult?> TranslateAsync(
         string engineId,
         string segment,

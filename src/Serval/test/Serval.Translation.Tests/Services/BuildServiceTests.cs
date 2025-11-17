@@ -6,6 +6,79 @@ public class BuildServiceTests
     const string BUILD1_ID = "b00000000000000000000001";
 
     [Test]
+    public async Task GetAllAsync_Success()
+    {
+        var builds = new MemoryRepository<Build>(
+            [
+                new Build
+                {
+                    Id = "build1",
+                    EngineRef = "engine1",
+                    Owner = "user1"
+                },
+                new Build
+                {
+                    Id = "build2",
+                    EngineRef = "engine2",
+                    Owner = "user2"
+                },
+            ]
+        );
+        var service = new BuildService(builds);
+
+        // SUT
+        IEnumerable<Build> actual = await service.GetAllAsync("user1");
+        Assert.That(actual.Count, Is.EqualTo(1));
+        Assert.That(actual.Single().Id, Is.EqualTo("build1"));
+    }
+
+    [Test]
+    public async Task GetAllCreatedAfterAsync_Success()
+    {
+        var builds = new MemoryRepository<Build>(
+            [
+                new Build
+                {
+                    Id = "build1",
+                    EngineRef = "engine1",
+                    Owner = "user1",
+                    DateCreated = new DateTime(2025, 01, 01)
+                },
+                new Build
+                {
+                    Id = "build2",
+                    EngineRef = "engine1",
+                    Owner = "user1",
+                    DateCreated = new DateTime(2025, 01, 03)
+                },
+                new Build
+                {
+                    Id = "build3",
+                    EngineRef = "engine2",
+                    Owner = "user2",
+                    DateCreated = new DateTime(2025, 01, 04)
+                },
+                new Build
+                {
+                    Id = "build4",
+                    EngineRef = "engine3",
+                    Owner = "user1",
+                    DateCreated = new DateTime(2025, 01, 05)
+                }
+            ]
+        );
+        var service = new BuildService(builds);
+
+        // SUT
+        IEnumerable<Build> actual = await service.GetAllCreatedAfterAsync("user1", new DateTime(2025, 01, 02));
+        Assert.That(actual.Count, Is.EqualTo(2));
+        // Build 1 is missed because it is too old
+        Assert.That(actual.First().Id, Is.EqualTo("build2"));
+        // Build 3 is missed because it is for another user
+        Assert.That(actual.Last().Id, Is.EqualTo("build4"));
+    }
+
+    [Test]
     public async Task GetActiveNewerRevisionAsync_Insert()
     {
         var builds = new MemoryRepository<Build>();
@@ -15,6 +88,7 @@ public class BuildServiceTests
         {
             Id = BUILD1_ID,
             EngineRef = "engine1",
+            Owner = "user1",
             Progress = 0.1
         };
         await builds.InsertAsync(build);
@@ -29,7 +103,12 @@ public class BuildServiceTests
     {
         var builds = new MemoryRepository<Build>();
         var service = new BuildService(builds);
-        var build = new Build { Id = BUILD1_ID, EngineRef = "engine1" };
+        var build = new Build
+        {
+            Id = BUILD1_ID,
+            EngineRef = "engine1",
+            Owner = "user1"
+        };
         await builds.InsertAsync(build);
         Task<EntityChange<Build>> task = service.GetNewerRevisionAsync(build.Id, 2);
         await builds.UpdateAsync(build, u => u.Set(b => b.Progress, 0.1));
@@ -44,7 +123,12 @@ public class BuildServiceTests
     {
         var builds = new MemoryRepository<Build>();
         var service = new BuildService(builds);
-        var build = new Build { Id = BUILD1_ID, EngineRef = "engine1" };
+        var build = new Build
+        {
+            Id = BUILD1_ID,
+            EngineRef = "engine1",
+            Owner = "user1"
+        };
         await builds.InsertAsync(build);
         Task<EntityChange<Build>> task = service.GetNewerRevisionAsync(build.Id, 2);
         await builds.DeleteAsync(build);
@@ -55,7 +139,8 @@ public class BuildServiceTests
     [Test]
     public async Task GetNewerRevisionAsync_DoesNotExist()
     {
-        var service = new BuildService(new MemoryRepository<Build>());
+        var builds = new MemoryRepository<Build>();
+        var service = new BuildService(builds);
         EntityChange<Build> change = await service.GetNewerRevisionAsync("build1", 2);
         Assert.That(change.Type, Is.EqualTo(EntityChangeType.Delete));
     }

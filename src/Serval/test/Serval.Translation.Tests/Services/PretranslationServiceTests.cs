@@ -510,6 +510,7 @@ public class PretranslationServiceTests
                     {
                         Id = "build1",
                         EngineRef = "engine1",
+                        Owner = "owner1",
                         DateFinished = DateTime.UnixEpoch,
                         Analysis =
                         [
@@ -524,6 +525,7 @@ public class PretranslationServiceTests
                     {
                         Id = "build2",
                         EngineRef = "parallel_engine1",
+                        Owner = "owner1",
                         DateFinished = DateTime.UnixEpoch,
                         Analysis =
                         [

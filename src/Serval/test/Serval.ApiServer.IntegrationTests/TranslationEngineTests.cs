@@ -416,7 +416,12 @@ public class TranslationEngineTests
         {
             case 200:
                 await _env.Builds.InsertAsync(
-                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                    new Build
+                    {
+                        EngineRef = engineId,
+                        Owner = "client1",
+                        State = Shared.Contracts.JobState.Completed
+                    }
                 );
                 Client.TranslationResult result = await client.TranslateAsync(engineId, "This is a test .");
                 Assert.That(result.Translation, Is.EqualTo("This is a test ."));
@@ -469,7 +474,12 @@ public class TranslationEngineTests
         {
             case 200:
                 await _env.Builds.InsertAsync(
-                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                    new Build
+                    {
+                        EngineRef = engineId,
+                        Owner = "client1",
+                        State = Shared.Contracts.JobState.Completed
+                    }
                 );
                 ICollection<Client.TranslationResult> results = await client.TranslateNAsync(
                     engineId,
@@ -528,7 +538,12 @@ public class TranslationEngineTests
             case 200:
                 TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 await _env.Builds.InsertAsync(
-                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                    new Build
+                    {
+                        EngineRef = engineId,
+                        Owner = "client1",
+                        State = Shared.Contracts.JobState.Completed
+                    }
                 );
                 Client.WordGraph wg = await client.GetWordGraphAsync(engineId, "This is a test .");
                 Assert.Multiple(() =>
@@ -592,7 +607,12 @@ public class TranslationEngineTests
             case 200:
                 TranslationCorpus addedCorpus = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 await _env.Builds.InsertAsync(
-                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
+                    new Build
+                    {
+                        EngineRef = engineId,
+                        Owner = "client1",
+                        State = Shared.Contracts.JobState.Completed
+                    }
                 );
                 await client.TrainSegmentAsync(engineId, sp);
                 break;
@@ -1315,6 +1335,58 @@ public class TranslationEngineTests
     }
 
     [Test]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE1_ID, true)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, ECHO_ENGINE3_ID, false)] // Engine is not owned
+    [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID, false)] // Arbitrary unrelated privilege
+    public async Task GetAllBuildsCreatedAfterAsync(
+        IEnumerable<string> scope,
+        int expectedStatusCode,
+        string createBuildForEngineId,
+        bool buildOwnedByClient
+    )
+    {
+        TranslationBuildsClient client = _env.CreateTranslationBuildsClient(scope);
+        Build? build = new Build
+        {
+            EngineRef = createBuildForEngineId,
+            Owner = buildOwnedByClient ? "client1" : "client2",
+            DateCreated = DateTime.UtcNow
+        };
+        await _env.Builds.InsertAsync(build);
+        switch (expectedStatusCode)
+        {
+            case 200:
+                ICollection<TranslationBuild> results = await client.GetAllBuildsCreatedAfterAsync(
+                    DateTime.UtcNow.AddHours(-1)
+                );
+                if (buildOwnedByClient)
+                {
+                    Assert.That(results, Is.Not.Empty);
+                    Assert.Multiple(() =>
+                    {
+                        Assert.That(results.First().Revision, Is.EqualTo(1));
+                        Assert.That(results.First().Id, Is.EqualTo(build?.Id));
+                        Assert.That(results.First().State, Is.EqualTo(JobState.Pending));
+                    });
+                }
+                else
+                {
+                    Assert.That(results, Is.Empty);
+                }
+                break;
+            case 403:
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.GetAllBuildsCreatedAfterAsync(DateTime.UtcNow);
+                });
+                break;
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, SMT_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID, false)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
@@ -1329,7 +1401,7 @@ public class TranslationEngineTests
         Build? build = null;
         if (addBuild)
         {
-            build = new Build { EngineRef = engineId };
+            build = new Build { EngineRef = engineId, Owner = "client1" };
             await _env.Builds.InsertAsync(build);
         }
         switch (expectedStatusCode)
@@ -1374,7 +1446,7 @@ public class TranslationEngineTests
         Build? build = null;
         if (addBuild)
         {
-            build = new Build { EngineRef = engineId };
+            build = new Build { EngineRef = engineId, Owner = "client1" };
             await _env.Builds.InsertAsync(build);
         }
 
@@ -1785,6 +1857,7 @@ public class TranslationEngineTests
             build = new Build
             {
                 EngineRef = engineId,
+                Owner = "client1",
                 Phases =
                 [
                     new BuildPhase
@@ -1868,7 +1941,12 @@ public class TranslationEngineTests
                 Arg.Any<CancellationToken>()
             )
                 .Returns(CreateAsyncUnaryCall(new CancelBuildResponse() { BuildId = buildId }));
-            var build = new Build { Id = buildId, EngineRef = engineId };
+            var build = new Build
+            {
+                Id = buildId,
+                EngineRef = engineId,
+                Owner = "client1"
+            };
             await _env.Builds.InsertAsync(build);
         }
 
@@ -2174,6 +2252,7 @@ public class TranslationEngineTests
             {
                 Id = "b10000000000000000000000",
                 EngineRef = ECHO_ENGINE1_ID,
+                Owner = "client1",
                 Revision = 1,
                 DateFinished = DateTime.UnixEpoch,
             }
@@ -2262,6 +2341,7 @@ public class TranslationEngineTests
             {
                 Id = "b10000000000000000000000",
                 EngineRef = ECHO_ENGINE1_ID,
+                Owner = "client1",
                 Revision = 1,
                 DateFinished = DateTime.UnixEpoch,
             }
@@ -2572,6 +2652,30 @@ public class TranslationEngineTests
         public TranslationEngineApi.TranslationEngineApiClient EchoClient { get; }
         public TranslationEngineApi.TranslationEngineApiClient NmtClient { get; }
         public TranslationEngineApi.TranslationEngineApiClient SmtClient { get; }
+
+        public TranslationBuildsClient CreateTranslationBuildsClient(IEnumerable<string>? scope = null)
+        {
+            scope ??= [Scopes.ReadTranslationEngines,];
+            HttpClient httpClient = Factory
+                .WithWebHostBuilder(builder =>
+                {
+                    builder.ConfigureTestServices(services =>
+                    {
+                        GrpcClientFactory grpcClientFactory = Substitute.For<GrpcClientFactory>();
+                        grpcClientFactory
+                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Echo")
+                            .Returns(EchoClient);
+                        grpcClientFactory
+                            .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
+                            .Returns(NmtClient);
+                        services.AddSingleton(grpcClientFactory);
+                        services.AddTransient(CreateFileSystem);
+                    });
+                })
+                .CreateClient();
+            httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
+            return new TranslationBuildsClient(httpClient);
+        }
 
         public TranslationEnginesClient CreateTranslationEnginesClient(IEnumerable<string>? scope = null)
         {

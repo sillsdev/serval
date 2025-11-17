@@ -31,6 +31,9 @@ public static class IMongoDataAccessConfiguratorExtensions
             init: static async c =>
             {
                 await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.Owner))
+                );
+                await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
                 );
                 await c.Indexes.CreateOrUpdateAsync(
@@ -49,6 +52,15 @@ public static class IMongoDataAccessConfiguratorExtensions
                     ),
                     new BsonDocument("$rename", new BsonDocument("percentCompleted", "progress"))
                 );
+                // migrate by duplicating the owner field from build
+                await c.Aggregate()
+                    .Match(Builders<Build>.Filter.Exists(b => b.Owner, false))
+                    .Lookup("translation.engines", "engineRef", "_id", "engine")
+                    .Unwind("engine", new AggregateUnwindOptions<BsonDocument> { PreserveNullAndEmptyArrays = true })
+                    .AppendStage<BsonDocument>(new BsonDocument("$set", new BsonDocument("owner", "$engine.owner")))
+                    .AppendStage<BsonDocument>(new BsonDocument("$unset", "engine"))
+                    .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
+                    .ToListAsync();
             }
         );
         configurator.AddRepository<Pretranslation>(
