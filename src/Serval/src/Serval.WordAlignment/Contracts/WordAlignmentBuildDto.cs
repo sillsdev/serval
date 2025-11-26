@@ -22,6 +22,7 @@ public record WordAlignmentBuildDto
     /// The current build job state.
     /// </summary>
     public required JobState State { get; init; }
+    public DateTime? DateCreated { get; init; }
     public DateTime? DateFinished { get; init; }
 
     /// <example>

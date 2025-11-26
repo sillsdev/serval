@@ -27,6 +27,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Message = source.Message,
             QueueDepth = source.QueueDepth,
             State = source.State,
+            DateCreated = source.DateCreated,
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
