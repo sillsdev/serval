@@ -944,7 +944,8 @@ public class WordAlignmentEnginesController(
             IsBuilding = source.IsBuilding,
             ModelRevision = source.ModelRevision,
             Confidence = Math.Round(source.Confidence, 8),
-            CorpusSize = source.CorpusSize
+            CorpusSize = source.CorpusSize,
+            DateCreated = source.DateCreated,
         };
     }
 
@@ -975,6 +976,7 @@ public class WordAlignmentEnginesController(
             Message = source.Message,
             QueueDepth = source.QueueDepth,
             State = source.State,
+            DateCreated = source.DateCreated,
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,

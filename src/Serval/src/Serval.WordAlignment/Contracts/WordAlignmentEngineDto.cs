@@ -12,4 +12,5 @@ public record WordAlignmentEngineDto
     public required int ModelRevision { get; init; }
     public required double Confidence { get; init; }
     public required int CorpusSize { get; init; }
+    public DateTime? DateCreated { get; init; }
 }

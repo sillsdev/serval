@@ -10774,6 +10774,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public JobState State { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("dateCreated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTimeOffset? DateCreated { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("dateFinished", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTimeOffset? DateFinished { get; set; } = default!;
 
@@ -10995,6 +10998,9 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("corpusSize", Required = Newtonsoft.Json.Required.Always)]
         public int CorpusSize { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("dateCreated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTimeOffset? DateCreated { get; set; } = default!;
 
     }
 
@@ -11652,6 +11658,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("corpusSize", Required = Newtonsoft.Json.Required.Always)]
         public int CorpusSize { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("dateCreated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTimeOffset? DateCreated { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -11846,6 +11855,9 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public JobState State { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("dateCreated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTimeOffset? DateCreated { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("dateFinished", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTimeOffset? DateFinished { get; set; } = default!;

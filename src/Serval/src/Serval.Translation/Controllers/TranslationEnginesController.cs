@@ -1933,7 +1933,8 @@ public class TranslationEnginesController(
             IsBuilding = source.IsBuilding,
             ModelRevision = source.ModelRevision,
             Confidence = Math.Round(source.Confidence, 8),
-            CorpusSize = source.CorpusSize
+            CorpusSize = source.CorpusSize,
+            DateCreated = source.DateCreated,
         };
     }
 
