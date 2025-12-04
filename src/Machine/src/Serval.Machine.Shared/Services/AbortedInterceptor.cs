@@ -14,7 +14,7 @@ public class AbortedInterceptor : Interceptor
         }
         catch (EngineNotBuiltException e)
         {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
+            throw new RpcException(new Status(StatusCode.FailedPrecondition, e.Message, e));
         }
     }
 }

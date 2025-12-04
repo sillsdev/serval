@@ -393,7 +393,7 @@ public class WordAlignmentEngineTests
                     null,
                     Arg.Any<CancellationToken>()
                 )
-                    .Returns(CreateAsyncUnaryCall<GetWordAlignmentResponse>(StatusCode.Aborted));
+                    .Returns(CreateAsyncUnaryCall<GetWordAlignmentResponse>(StatusCode.FailedPrecondition));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.AlignAsync(
@@ -1528,7 +1528,7 @@ public class WordAlignmentEngineTests
         var tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc] };
         WordAlignmentBuild build = await client.StartBuildAsync(engineId, tbc);
         _env.StatisticalClient.StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-            .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
+            .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.FailedPrecondition));
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             build = await client.StartBuildAsync(engineId, tbc);

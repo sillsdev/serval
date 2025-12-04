@@ -83,13 +83,14 @@ public class OutboxDeliveryService(
                         case StatusCode.Cancelled:
                             _logger.LogWarning(e, "Platform Message sending failure: {statusCode}", e.StatusCode);
                             return;
-                        case StatusCode.Aborted:
                         case StatusCode.DeadlineExceeded:
                         case StatusCode.Internal:
                         case StatusCode.ResourceExhausted:
                         case StatusCode.Unknown:
                             abortMessageGroup = !await CheckIfFinalMessageAttempt(messages, message, e);
                             break;
+                        case StatusCode.Aborted:
+                        case StatusCode.FailedPrecondition:
                         case StatusCode.InvalidArgument:
                         default:
                             // log error
