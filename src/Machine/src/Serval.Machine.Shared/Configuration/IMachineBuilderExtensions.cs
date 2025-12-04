@@ -413,7 +413,7 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<CancellationInterceptor>();
             options.Interceptors.Add<UnimplementedInterceptor>();
             options.Interceptors.Add<TimeoutInterceptor>();
-            options.Interceptors.Add<AbortedInterceptor>();
+            options.Interceptors.Add<FailedPreconditionInterceptor>();
             options.Interceptors.Add<NotFoundInterceptor>();
         });
 
@@ -448,7 +448,7 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<CancellationInterceptor>();
             options.Interceptors.Add<UnimplementedInterceptor>();
             options.Interceptors.Add<TimeoutInterceptor>();
-            options.Interceptors.Add<AbortedInterceptor>();
+            options.Interceptors.Add<FailedPreconditionInterceptor>();
             options.Interceptors.Add<NotFoundInterceptor>();
         });
 

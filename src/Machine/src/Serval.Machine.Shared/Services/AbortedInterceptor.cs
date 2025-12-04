@@ -1,6 +1,6 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class AbortedInterceptor : Interceptor
+public class FailedPreconditionInterceptor : Interceptor
 {
     public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
         TRequest request,
