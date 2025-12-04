@@ -54,7 +54,7 @@ public class EngineService(
             );
             return Map(response.Results[0]);
         }
-        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
         {
             return null;
         }
@@ -87,7 +87,7 @@ public class EngineService(
             );
             return response.Results.Select(Map);
         }
-        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
         {
             return null;
         }
@@ -118,7 +118,7 @@ public class EngineService(
             );
             return Map(response.WordGraph);
         }
-        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
         {
             return null;
         }
@@ -153,7 +153,7 @@ public class EngineService(
             );
             return true;
         }
-        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
         {
             return false;
         }
@@ -463,7 +463,7 @@ public class EngineService(
                 ExpiresAt = result.ExpiresAt.ToDateTime()
             };
         }
-        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
         {
             return null;
         }

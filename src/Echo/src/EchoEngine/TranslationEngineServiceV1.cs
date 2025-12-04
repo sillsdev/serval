@@ -35,7 +35,7 @@ public class TranslationEngineServiceV1(
             return Task.FromResult(new CancelBuildResponse { BuildId = build.buildId });
         }
 
-        throw new RpcException(new Status(StatusCode.Aborted, "No build running"));
+        throw new RpcException(new Status(StatusCode.FailedPrecondition, "No build running"));
     }
 
     public override Task<Empty> Delete(DeleteRequest request, ServerCallContext context)
