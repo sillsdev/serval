@@ -104,7 +104,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         string? buildId = await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
         if (buildId is null)
-            throw new RpcException(new Status(StatusCode.Aborted, "There is no build currently running."));
+            throw new RpcException(new Status(StatusCode.FailedPrecondition, "There is no build currently running."));
         return new CancelBuildResponse() { BuildId = buildId };
     }
 
@@ -129,7 +129,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         }
         catch (InvalidOperationException e)
         {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+            throw new RpcException(new Status(StatusCode.FailedPrecondition, e.Message));
         }
         catch (FileNotFoundException e)
         {
