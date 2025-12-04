@@ -60,7 +60,7 @@ public class EngineService(
             );
             return Map(response.Result);
         }
-        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.Aborted)
+        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
         {
             return null;
         }

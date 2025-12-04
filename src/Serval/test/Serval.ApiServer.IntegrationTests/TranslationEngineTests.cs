@@ -434,7 +434,7 @@ public class TranslationEngineTests
             case 409:
             {
                 _env.EchoClient.TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
-                    .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.Aborted));
+                    .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.FailedPrecondition));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.TranslateAsync(engineId, "This is a test .");
@@ -497,7 +497,7 @@ public class TranslationEngineTests
             case 409:
             {
                 _env.EchoClient.TranslateAsync(Arg.Any<TranslateRequest>(), null, null, Arg.Any<CancellationToken>())
-                    .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.Aborted));
+                    .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.FailedPrecondition));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.TranslateNAsync(engineId, 1, "This is a test .");
@@ -560,7 +560,7 @@ public class TranslationEngineTests
                     null,
                     Arg.Any<CancellationToken>()
                 )
-                    .Returns(CreateAsyncUnaryCall<GetWordGraphResponse>(StatusCode.Aborted));
+                    .Returns(CreateAsyncUnaryCall<GetWordGraphResponse>(StatusCode.FailedPrecondition));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetWordGraphAsync(engineId, "This is a test .");
@@ -624,7 +624,7 @@ public class TranslationEngineTests
                     null,
                     Arg.Any<CancellationToken>()
                 )
-                    .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
+                    .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.FailedPrecondition));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.TrainSegmentAsync(engineId, sp);
@@ -2228,7 +2228,7 @@ public class TranslationEngineTests
         var tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
         TranslationBuild build = await client.StartBuildAsync(engineId, tbc);
         _env.NmtClient.StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-            .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.Aborted));
+            .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.FailedPrecondition));
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             build = await client.StartBuildAsync(engineId, tbc);

@@ -67,7 +67,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         IWordAlignmentEngineService engineService = GetEngineService(request.EngineType);
         string? buildId = await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
         if (buildId is null)
-            throw new RpcException(new Status(StatusCode.Aborted, "There is no build currently running."));
+            throw new RpcException(new Status(StatusCode.FailedPrecondition, "There is no build currently running."));
         return new CancelBuildResponse() { BuildId = buildId };
     }
 
