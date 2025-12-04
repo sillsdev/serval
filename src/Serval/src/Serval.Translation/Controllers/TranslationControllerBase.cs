@@ -114,7 +114,8 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
         {
             Stage = (PhaseStage)source.Stage,
             Step = source.Step,
-            StepCount = source.StepCount
+            StepCount = source.StepCount,
+            Started = source.Started,
         };
 
     private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source) =>
