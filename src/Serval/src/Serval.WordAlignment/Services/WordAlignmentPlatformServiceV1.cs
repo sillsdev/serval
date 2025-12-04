@@ -262,7 +262,8 @@ public class WordAlignmentPlatformServiceV1(
                             {
                                 Stage = (BuildPhaseStage)p.Stage,
                                 Step = p.HasStep ? p.Step : null,
-                                StepCount = p.HasStepCount ? p.StepCount : null
+                                StepCount = p.HasStepCount ? p.StepCount : null,
+                                Started = p.Started?.ToDateTime(),
                             })
                             .ToList()
                     );

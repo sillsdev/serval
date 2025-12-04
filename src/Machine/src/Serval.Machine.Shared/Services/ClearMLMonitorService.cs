@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Shared.Services;
 
 public class ClearMLMonitorService(
     IServiceProvider services,
@@ -419,12 +419,14 @@ public class ClearMLMonitorService(
                 Stage = BuildPhaseStage.Inference,
                 Step = GetUserPropertyInt(task, "inference_step"),
                 StepCount = GetUserPropertyInt(task, "inference_step_count"),
+                Started = GetUserPropertyDateTime(task, "inference_started"),
             },
             new BuildPhase
             {
                 Stage = BuildPhaseStage.Train,
                 Step = GetUserPropertyInt(task, "train_step"),
                 StepCount = GetUserPropertyInt(task, "train_step_count"),
+                Started = GetUserPropertyDateTime(task, "train_started"),
             }
         ];
     }
@@ -445,6 +447,13 @@ public class ClearMLMonitorService(
             return null;
 
         return paramsItem.Value;
+    }
+
+    private static DateTime? GetUserPropertyDateTime(ClearMLTask task, string name)
+    {
+        return DateTime.TryParse(GetUserProperty(task, name), out DateTime value)
+            ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
+            : null;
     }
 
     private static int? GetUserPropertyInt(ClearMLTask task, string name)

@@ -1097,7 +1097,8 @@ public class WordAlignmentEnginesController(
         {
             Stage = (PhaseStage)source.Stage,
             Step = source.Step,
-            StepCount = source.StepCount
+            StepCount = source.StepCount,
+            Started = source.Started,
         };
     }
 
