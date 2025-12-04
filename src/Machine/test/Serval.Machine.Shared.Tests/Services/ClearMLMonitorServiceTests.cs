@@ -444,6 +444,8 @@ public class ClearMLMonitorServiceTests
                     ),
                     queuePosition.Value,
                     Arg.Any<IReadOnlyCollection<BuildPhase>>(),
+                    Arg.Any<DateTime?>(),
+                    Arg.Any<DateTime?>(),
                     Arg.Any<CancellationToken>()
                 );
         }
@@ -460,6 +462,8 @@ public class ClearMLMonitorServiceTests
                     ),
                     Arg.Any<int>(),
                     Arg.Any<IReadOnlyCollection<BuildPhase>>(),
+                    Arg.Any<DateTime?>(),
+                    Arg.Any<DateTime?>(),
                     Arg.Any<CancellationToken>()
                 );
         }

@@ -83,6 +83,8 @@ public class ServalTranslationPlatformService(
         ProgressStatus progressStatus,
         int? queueDepth = null,
         IReadOnlyCollection<BuildPhase>? phases = null,
+        DateTime? started = null,
+        DateTime? completed = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -104,6 +106,11 @@ public class ServalTranslationPlatformService(
                 phase.Started = buildPhase.Started.Value.ToTimestamp();
             request.Phases.Add(phase);
         }
+
+        if (started is not null)
+            request.Started = started.Value.ToTimestamp();
+        if (completed is not null)
+            request.Completed = completed.Value.ToTimestamp();
 
         // just try to send it - if it fails, it fails.
         await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);

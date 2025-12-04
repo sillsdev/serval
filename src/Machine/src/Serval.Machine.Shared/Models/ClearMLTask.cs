@@ -23,6 +23,8 @@ public record ClearMLTask
     public string? StatusReason { get; init; }
     public string? StatusMessage { get; init; }
     public required DateTime Created { get; init; }
+    public DateTime? Started { get; init; }
+    public DateTime? Completed { get; init; }
     public int? LastIteration { get; init; }
     public int ActiveDuration { get; init; }
     public required IReadOnlyDictionary<

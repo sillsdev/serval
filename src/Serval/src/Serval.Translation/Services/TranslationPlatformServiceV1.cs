@@ -268,6 +268,11 @@ public class TranslationPlatformServiceV1(
                             .ToList()
                     );
                 }
+
+                if (request.Started is not null)
+                    u.Set(b => b.DateStarted, request.Started.ToDateTime());
+                if (request.Completed is not null)
+                    u.Set(b => b.DateCompleted, request.Completed.ToDateTime());
             },
             cancellationToken: context.CancellationToken
         );

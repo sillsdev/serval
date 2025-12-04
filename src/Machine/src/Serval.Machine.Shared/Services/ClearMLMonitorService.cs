@@ -1,4 +1,4 @@
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 public class ClearMLMonitorService(
     IServiceProvider services,
@@ -135,6 +135,8 @@ public class ClearMLMonitorService(
                         //CurrentBuild.BuildId should always equal the corresponding task.Name
                         queuePositionsPerEngineType[engine.Type][engine.CurrentBuild.BuildId] + 1,
                         GetPhases(task),
+                        task.Started,
+                        task.Completed,
                         cancellationToken
                     );
                 }
@@ -176,6 +178,8 @@ public class ClearMLMonitorService(
                                 new ProgressStatus(task.LastIteration ?? 0, progress, message),
                                 queueDepth: 0,
                                 GetPhases(task),
+                                task.Started,
+                                task.Completed,
                                 cancellationToken
                             );
                             break;
@@ -190,6 +194,8 @@ public class ClearMLMonitorService(
                                 new ProgressStatus(task.LastIteration ?? 0, percentCompleted: 1.0, message),
                                 queueDepth: 0,
                                 GetPhases(task),
+                                task.Started,
+                                task.Completed,
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
@@ -271,7 +277,14 @@ public class ClearMLMonitorService(
             },
             cancellationToken: cancellationToken
         );
-        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, null, cancellationToken);
+        await UpdateTrainJobStatus(
+            platformService,
+            buildId,
+            new ProgressStatus(0),
+            0,
+            null,
+            cancellationToken: cancellationToken
+        );
         _logger.LogInformation("Build started ({BuildId})", buildId);
         return success;
     }
@@ -385,6 +398,8 @@ public class ClearMLMonitorService(
         ProgressStatus progressStatus,
         int? queueDepth = null,
         IReadOnlyCollection<BuildPhase>? phases = null,
+        DateTime? started = null,
+        DateTime? completed = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -395,7 +410,15 @@ public class ClearMLMonitorService(
         {
             return;
         }
-        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, phases, cancellationToken);
+        await platformService.UpdateBuildStatusAsync(
+            buildId,
+            progressStatus,
+            queueDepth,
+            phases,
+            started,
+            completed,
+            cancellationToken
+        );
         _curBuildStatus[buildId] = progressStatus;
     }
 
