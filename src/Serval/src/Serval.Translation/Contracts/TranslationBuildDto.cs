@@ -23,6 +23,8 @@ public record TranslationBuildDto
     /// </summary>
     public required JobState State { get; init; }
     public DateTime? DateCreated { get; init; }
+    public DateTime? DateStarted { get; set; }
+    public DateTime? DateCompleted { get; set; }
     public DateTime? DateFinished { get; init; }
 
     /// <example>

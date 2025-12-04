@@ -28,6 +28,8 @@ message UpdateBuildStatusRequest {
     optional string message = 4;
     optional int32 queue_depth = 5;
     repeated Phase phases = 6;
+    optional google.protobuf.Timestamp started = 7;
+    optional google.protobuf.Timestamp completed = 8;
 }
 
 message BuildStartedRequest {

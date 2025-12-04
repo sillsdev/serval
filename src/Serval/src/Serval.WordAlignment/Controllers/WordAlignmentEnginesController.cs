@@ -977,6 +977,8 @@ public class WordAlignmentEnginesController(
             QueueDepth = source.QueueDepth,
             State = source.State,
             DateCreated = source.DateCreated,
+            DateStarted = source.DateStarted,
+            DateCompleted = source.DateCompleted,
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
