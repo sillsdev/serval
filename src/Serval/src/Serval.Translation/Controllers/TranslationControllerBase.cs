@@ -28,6 +28,8 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             QueueDepth = source.QueueDepth,
             State = source.State,
             DateCreated = source.DateCreated,
+            DateStarted = source.DateStarted,
+            DateCompleted = source.DateCompleted,
             DateFinished = source.DateFinished,
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
@@ -114,7 +116,8 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
         {
             Stage = (PhaseStage)source.Stage,
             Step = source.Step,
-            StepCount = source.StepCount
+            StepCount = source.StepCount,
+            Started = source.Started,
         };
 
     private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source) =>

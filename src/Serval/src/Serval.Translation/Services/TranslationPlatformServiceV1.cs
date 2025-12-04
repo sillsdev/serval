@@ -262,11 +262,17 @@ public class TranslationPlatformServiceV1(
                             {
                                 Stage = (BuildPhaseStage)p.Stage,
                                 Step = p.HasStep ? p.Step : null,
-                                StepCount = p.HasStepCount ? p.StepCount : null
+                                StepCount = p.HasStepCount ? p.StepCount : null,
+                                Started = p.Started?.ToDateTime(),
                             })
                             .ToList()
                     );
                 }
+
+                if (request.Started is not null)
+                    u.Set(b => b.DateStarted, request.Started.ToDateTime());
+                if (request.Completed is not null)
+                    u.Set(b => b.DateCompleted, request.Completed.ToDateTime());
             },
             cancellationToken: context.CancellationToken
         );

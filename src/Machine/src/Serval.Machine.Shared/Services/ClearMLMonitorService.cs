@@ -135,6 +135,8 @@ public class ClearMLMonitorService(
                         //CurrentBuild.BuildId should always equal the corresponding task.Name
                         queuePositionsPerEngineType[engine.Type][engine.CurrentBuild.BuildId] + 1,
                         GetPhases(task),
+                        task.Started,
+                        task.Completed,
                         cancellationToken
                     );
                 }
@@ -176,6 +178,8 @@ public class ClearMLMonitorService(
                                 new ProgressStatus(task.LastIteration ?? 0, progress, message),
                                 queueDepth: 0,
                                 GetPhases(task),
+                                task.Started,
+                                task.Completed,
                                 cancellationToken
                             );
                             break;
@@ -190,6 +194,8 @@ public class ClearMLMonitorService(
                                 new ProgressStatus(task.LastIteration ?? 0, percentCompleted: 1.0, message),
                                 queueDepth: 0,
                                 GetPhases(task),
+                                task.Started,
+                                task.Completed,
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
@@ -271,7 +277,14 @@ public class ClearMLMonitorService(
             },
             cancellationToken: cancellationToken
         );
-        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, null, cancellationToken);
+        await UpdateTrainJobStatus(
+            platformService,
+            buildId,
+            new ProgressStatus(0),
+            0,
+            null,
+            cancellationToken: cancellationToken
+        );
         _logger.LogInformation("Build started ({BuildId})", buildId);
         return success;
     }
@@ -385,6 +398,8 @@ public class ClearMLMonitorService(
         ProgressStatus progressStatus,
         int? queueDepth = null,
         IReadOnlyCollection<BuildPhase>? phases = null,
+        DateTime? started = null,
+        DateTime? completed = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -395,7 +410,15 @@ public class ClearMLMonitorService(
         {
             return;
         }
-        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, phases, cancellationToken);
+        await platformService.UpdateBuildStatusAsync(
+            buildId,
+            progressStatus,
+            queueDepth,
+            phases,
+            started,
+            completed,
+            cancellationToken
+        );
         _curBuildStatus[buildId] = progressStatus;
     }
 
@@ -419,12 +442,14 @@ public class ClearMLMonitorService(
                 Stage = BuildPhaseStage.Inference,
                 Step = GetUserPropertyInt(task, "inference_step"),
                 StepCount = GetUserPropertyInt(task, "inference_step_count"),
+                Started = GetUserPropertyDateTime(task, "inference_started"),
             },
             new BuildPhase
             {
                 Stage = BuildPhaseStage.Train,
                 Step = GetUserPropertyInt(task, "train_step"),
                 StepCount = GetUserPropertyInt(task, "train_step_count"),
+                Started = GetUserPropertyDateTime(task, "train_started"),
             }
         ];
     }
@@ -445,6 +470,13 @@ public class ClearMLMonitorService(
             return null;
 
         return paramsItem.Value;
+    }
+
+    private static DateTime? GetUserPropertyDateTime(ClearMLTask task, string name)
+    {
+        return DateTime.TryParse(GetUserProperty(task, name), out DateTime value)
+            ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
+            : null;
     }
 
     private static int? GetUserPropertyInt(ClearMLTask task, string name)

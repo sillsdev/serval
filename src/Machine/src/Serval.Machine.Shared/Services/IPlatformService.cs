@@ -10,6 +10,8 @@ public interface IPlatformService
         ProgressStatus progressStatus,
         int? queueDepth = null,
         IReadOnlyCollection<BuildPhase>? phases = null,
+        DateTime? started = null,
+        DateTime? completed = null,
         CancellationToken cancellationToken = default
     );
     Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default);
