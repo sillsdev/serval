@@ -11,8 +11,8 @@ public class ServalUsfmTests
     [Test]
     [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
     /*
-   In order to run this test on specific projects, place the Paratext projects or Paratext project zips in the Corpora/TestData/project/ folder.
-   If only testing one project, you can instead place the project in the Corpora/TestData/ folder and rename it to "project"
+   In order to run this test on specific projects, place the Paratext projects or Paratext project zips in the data/project/ folder.
+   If only testing one project, you can instead place the project in the data/ folder and rename it to "project"
    */
     public async Task CreateUsfmFile()
     {
