@@ -1,4 +1,5 @@
-﻿using Serval.WordAlignment.V1;
+﻿using Google.Protobuf.WellKnownTypes;
+using Serval.WordAlignment.V1;
 using Phase = Serval.WordAlignment.V1.Phase;
 
 namespace Serval.Machine.Shared.Services;
@@ -82,6 +83,8 @@ public class ServalWordAlignmentPlatformService(
         ProgressStatus progressStatus,
         int? queueDepth = null,
         IReadOnlyCollection<BuildPhase>? phases = null,
+        DateTime? started = null,
+        DateTime? completed = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -99,8 +102,15 @@ public class ServalWordAlignmentPlatformService(
                 phase.Step = buildPhase.Step.Value;
             if (buildPhase.StepCount is not null)
                 phase.StepCount = buildPhase.StepCount.Value;
+            if (buildPhase.Started is not null)
+                phase.Started = buildPhase.Started.Value.ToTimestamp();
             request.Phases.Add(phase);
         }
+
+        if (started is not null)
+            request.Started = started.Value.ToTimestamp();
+        if (completed is not null)
+            request.Completed = completed.Value.ToTimestamp();
 
         // just try to send it - if it fails, it fails.
         await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);

@@ -16,7 +16,7 @@ public class ClearMLService(
         new()
         {
             PropertyNamingPolicy = JsonNamingPolicy,
-            Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
+            Converters = { new CustomEnumConverterFactory(JsonNamingPolicy), new UtcDateTimeConverter() }
         };
 
     private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
@@ -217,6 +217,8 @@ public class ClearMLService(
             "status_reason",
             "status_message",
             "created",
+            "started",
+            "completed",
             "active_duration",
             "last_metrics",
             "runtime",

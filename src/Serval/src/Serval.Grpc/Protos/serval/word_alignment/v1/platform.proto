@@ -3,6 +3,7 @@ syntax = "proto3";
 package serval.word_alignment.v1;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 import "serval/word_alignment/v1/common.proto";
 
 
@@ -27,6 +28,8 @@ message UpdateBuildStatusRequest {
     optional string message = 4;
     optional int32 queue_depth = 5;
     repeated Phase phases = 6;
+    optional google.protobuf.Timestamp started = 7;
+    optional google.protobuf.Timestamp completed = 8;
 }
 
 message BuildStartedRequest {
@@ -77,6 +80,7 @@ message Phase {
     PhaseStage stage = 1;
     optional int32 step = 2;
     optional int32 step_count = 3;
+    optional google.protobuf.Timestamp started = 4;
 }
 
 enum PhaseStage {

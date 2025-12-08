@@ -19,6 +19,8 @@ public record Build : IOwnedEntity
     public string? DeploymentVersion { get; init; }
     public ExecutionData ExecutionData { get; init; } = new ExecutionData();
     public DateTime? DateCreated { get; set; }
+    public DateTime? DateStarted { get; set; }
+    public DateTime? DateCompleted { get; set; }
     public IReadOnlyList<BuildPhase>? Phases { get; init; }
     public IReadOnlyList<ParallelCorpusAnalysis>? Analysis { get; init; }
 }
