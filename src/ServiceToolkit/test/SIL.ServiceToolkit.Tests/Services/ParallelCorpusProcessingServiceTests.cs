@@ -33,7 +33,8 @@ public class ParallelCorpusPreprocessingServiceTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(targetQuotationConvention, Is.Null);
+            Assert.That(targetQuotationConvention, Is.Not.Null);
+            Assert.That(targetQuotationConvention!.BestQuoteConvention, Is.Null);
         });
     }
 

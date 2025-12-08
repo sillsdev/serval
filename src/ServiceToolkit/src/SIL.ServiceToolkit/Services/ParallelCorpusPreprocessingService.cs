@@ -1,3 +1,5 @@
+using SIL.Scripture;
+
 namespace SIL.ServiceToolkit.Services;
 
 public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusService)
@@ -32,33 +34,36 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
     public QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus parallelCorpus)
     {
-        var targetHandler = new QuoteConventionDetector();
+        List<QuoteConventionAnalysis> analyses = [];
         foreach (MonolingualCorpus targetMonolingualCorpus in parallelCorpus.TargetCorpora)
         {
             foreach (CorpusFile file in targetMonolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
             {
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
                 var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
-                Dictionary<string, List<int>>? chapters = null;
+                Dictionary<int, List<int>>? chapters = null;
                 if (targetMonolingualCorpus.TrainOnTextIds is not null)
                 {
-                    chapters = targetMonolingualCorpus.TrainOnTextIds.ToDictionary(id => id, _ => new List<int>());
+                    chapters = targetMonolingualCorpus.TrainOnTextIds.ToDictionary(
+                        id => Canon.BookIdToNumber(id),
+                        _ => new List<int>()
+                    );
                 }
                 else if (targetMonolingualCorpus.TrainOnChapters is not null)
                 {
                     chapters = targetMonolingualCorpus.TrainOnChapters.ToDictionary(
-                        kvp => kvp.Key,
+                        kvp => Canon.BookIdToNumber(kvp.Key),
                         kvp => kvp.Value.ToList()
                     );
                 }
                 if (chapters != null)
-                    quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler, chapters);
+                    analyses.Add(quoteConventionDetector.GetQuoteConventionAnalysis(chapters));
                 else
-                    quoteConventionDetector.GetQuoteConventionAnalysis(targetHandler);
+                    analyses.Add(quoteConventionDetector.GetQuoteConventionAnalysis());
             }
         }
 
-        return targetHandler.DetectQuoteConvention();
+        return QuoteConventionAnalysis.CombineWithWeightedAverage(analyses);
     }
 
     public async Task PreprocessAsync(
