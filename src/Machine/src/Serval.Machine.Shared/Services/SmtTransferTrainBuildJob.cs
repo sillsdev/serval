@@ -38,8 +38,14 @@ public class SmtTransferTrainBuildJob(
         await DownloadDataAsync(buildId, corpusDir, cancellationToken);
 
         // assemble corpus
-        ITextCorpus sourceCorpus = new TextFileTextCorpus(Path.Combine(corpusDir, "train.src.txt"));
-        ITextCorpus targetCorpus = new TextFileTextCorpus(Path.Combine(corpusDir, "train.trg.txt"));
+        ITextCorpus sourceCorpus = new TextFileTextCorpus(
+            Path.Combine(corpusDir, "train.src.txt"),
+            Path.Combine(corpusDir, "train.key-terms.src.txt")
+        );
+        ITextCorpus targetCorpus = new TextFileTextCorpus(
+            Path.Combine(corpusDir, "train.trg.txt"),
+            Path.Combine(corpusDir, "train.key-terms.trg.txt")
+        );
         IParallelTextCorpus parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
 
         // train SMT model
@@ -106,6 +112,20 @@ public class SmtTransferTrainBuildJob(
         );
         await using FileStream tgtFileStream = File.Create(Path.Combine(corpusDir, "train.trg.txt"));
         await tgtText.CopyToAsync(tgtFileStream, cancellationToken);
+
+        await using Stream srcKeyTermsText = await _sharedFileService.OpenReadAsync(
+            $"builds/{buildId}/train.key-terms.src.txt",
+            cancellationToken
+        );
+        await using FileStream srcKeyTermsFileStream = File.Create(Path.Combine(corpusDir, "train.key-terms.src.txt"));
+        await srcKeyTermsText.CopyToAsync(srcKeyTermsFileStream, cancellationToken);
+
+        await using Stream tgtKeyTermsText = await _sharedFileService.OpenReadAsync(
+            $"builds/{buildId}/train.key-terms.trg.txt",
+            cancellationToken
+        );
+        await using FileStream tgtKeyTermsFileStream = File.Create(Path.Combine(corpusDir, "train.key-terms.trg.txt"));
+        await tgtKeyTermsFileStream.CopyToAsync(tgtKeyTermsText, cancellationToken);
     }
 
     private async Task<(int TrainCorpusSize, double Confidence)> TrainAsync(
