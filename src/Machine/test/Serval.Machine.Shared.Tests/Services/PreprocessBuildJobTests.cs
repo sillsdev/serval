@@ -978,6 +978,10 @@ Target one, chapter one, verse nine and ten.
         {
             using StreamReader srcReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.src.txt"));
             using StreamReader trgReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.trg.txt"));
+            using StreamReader srcTermReader =
+                new(await SharedFileService.OpenReadAsync("builds/build1/train.key-terms.src.txt"));
+            using StreamReader trgTermReader =
+                new(await SharedFileService.OpenReadAsync("builds/build1/train.key-terms.trg.txt"));
             int src1Count = 0;
             int src2Count = 0;
             int trgCount = 0;
@@ -998,8 +1002,17 @@ Target one, chapter one, verse nine and ten.
                 else if (srcLine.Length == 0)
                     trgCount++;
                 else
-                    termCount++;
+                    throw new ArgumentException("Unexpected line in test output");
             }
+
+            while (
+                (srcLine = await srcTermReader.ReadLineAsync()) is not null
+                && (trgLine = await trgTermReader.ReadLineAsync()) is not null
+            )
+            {
+                termCount++;
+            }
+
             return (src1Count, src2Count, trgCount, termCount);
         }
 

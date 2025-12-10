@@ -68,7 +68,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
     public async Task PreprocessAsync(
         IReadOnlyList<ParallelCorpus> corpora,
-        Func<Row, Task> train,
+        Func<Row, bool, Task> train,
         Func<Row, bool, ParallelCorpus, Task> inference,
         bool useKeyTerms = false,
         HashSet<string>? ignoreUsfmMarkers = null
@@ -128,7 +128,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
             foreach (Row row in CollapseRanges(trainingRows))
             {
-                await train(row);
+                await train(row, false);
                 if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                 {
                     parallelTrainingDataPresent = true;
@@ -177,7 +177,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         {
             foreach (Row row in keyTermTrainingData)
             {
-                await train(row);
+                await train(row, true);
             }
         }
     }

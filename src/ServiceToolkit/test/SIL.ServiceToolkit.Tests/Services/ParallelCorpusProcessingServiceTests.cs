@@ -47,7 +47,7 @@ public class ParallelCorpusPreprocessingServiceTests
         int inferenceCount = 0;
         await env.Processor.PreprocessAsync(
             corpora,
-            row =>
+            (row, _) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
@@ -83,7 +83,7 @@ public class ParallelCorpusPreprocessingServiceTests
         var inferenceRefs = new List<string>();
         await env.Processor.PreprocessAsync(
             corpora,
-            row =>
+            (row, _) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                 {
