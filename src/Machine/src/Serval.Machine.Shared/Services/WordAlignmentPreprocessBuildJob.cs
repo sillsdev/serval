@@ -7,7 +7,8 @@ public class WordAlignmentPreprocessBuildJob(
     ILogger<WordAlignmentPreprocessBuildJob> logger,
     IBuildJobService<WordAlignmentEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IOptionsMonitor<BuildJobOptions> options
 )
     : PreprocessBuildJob<WordAlignmentEngine>(
         platformService,
@@ -16,7 +17,8 @@ public class WordAlignmentPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        parallelCorpusPreprocessingService
+        parallelCorpusPreprocessingService,
+        options
     )
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(

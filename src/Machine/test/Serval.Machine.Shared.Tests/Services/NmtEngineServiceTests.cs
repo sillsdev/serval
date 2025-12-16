@@ -146,8 +146,8 @@ public class NmtEngineServiceTests
                 .When(x => x.StopTaskAsync("job1", Arg.Any<CancellationToken>()))
                 .Do(_ => _cancellationTokenSource.Cancel());
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
-            buildJobOptions.CurrentValue.Returns(
+            BuildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            BuildJobOptions.CurrentValue.Returns(
                 new BuildJobOptions
                 {
                     ClearML =
@@ -181,7 +181,7 @@ public class NmtEngineServiceTests
                                 Engines
                             )
                         ],
-                        buildJobOptions
+                        BuildJobOptions
                     )
                 ],
                 Engines
@@ -193,7 +193,7 @@ public class NmtEngineServiceTests
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
-                buildJobOptions,
+                BuildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             _jobServer = CreateJobServer();
@@ -207,6 +207,7 @@ public class NmtEngineServiceTests
         public IClearMLService ClearMLService { get; }
         public ISharedFileService SharedFileService { get; }
         public IBuildJobService<TranslationEngine> BuildJobService { get; }
+        public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public void PersistModel()
         {
@@ -329,7 +330,8 @@ public class NmtEngineServiceTests
                         _env.BuildJobService,
                         _env.SharedFileService,
                         new LanguageTagService(),
-                        new ParallelCorpusPreprocessingService(new TextCorpusService())
+                        new ParallelCorpusPreprocessingService(new TextCorpusService()),
+                        _env.BuildJobOptions
                     );
                 }
                 if (jobType == typeof(TranslationPostprocessBuildJob))
@@ -343,7 +345,7 @@ public class NmtEngineServiceTests
                         _env.BuildJobService,
                         Substitute.For<ILogger<TranslationPostprocessBuildJob>>(),
                         _env.SharedFileService,
-                        buildJobOptions
+                        _env.BuildJobOptions
                     );
                 }
                 return base.ActivateJob(jobType);

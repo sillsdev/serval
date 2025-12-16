@@ -4,7 +4,7 @@ public interface IParallelCorpusPreprocessingService
 {
     QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus corpus);
     IReadOnlyList<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> AnalyzeUsfmVersification(
-        ParallelCorpus corpus
+        ParallelCorpus parallelCorpus
     );
 
     Task PreprocessAsync(

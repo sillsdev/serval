@@ -130,6 +130,11 @@ public class PreprocessBuildJobTests
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: true);
         Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(8));
+
+        env.BuildJobOptions.CurrentValue.Returns(new BuildJobOptions() { MaxWarnings = 2 });
+        await env.RunBuildJobAsync(corpus1, useKeyTerms: true);
+        // Two warnings after truncation + one warning mentioning that warnings were truncated
+        Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(3));
     }
 
     [Test]
@@ -474,6 +479,11 @@ Target one, chapter one, verse nine and ten.
                 pretranslations[2]!["translation"]!.ToString(),
                 Is.EqualTo("Source one, chapter twelve, verse one.")
             );
+            Assert.That(
+                env.ExecutionData.Warnings,
+                Has.Count.EqualTo(16),
+                JsonSerializer.Serialize(env.ExecutionData.Warnings)
+            );
         });
     }
 
@@ -794,7 +804,8 @@ Target one, chapter one, verse nine and ten.
                         BuildJobService,
                         SharedFileService,
                         new LanguageTagService(),
-                        new ParallelCorpusPreprocessingService(TextCorpusService)
+                        new ParallelCorpusPreprocessingService(TextCorpusService),
+                        BuildJobOptions
                     );
                 }
                 case EngineType.SmtTransfer:
@@ -808,7 +819,8 @@ Target one, chapter one, verse nine and ten.
                         SharedFileService,
                         LockFactory,
                         TrainSegmentPairs,
-                        new ParallelCorpusPreprocessingService(TextCorpusService)
+                        new ParallelCorpusPreprocessingService(TextCorpusService),
+                        BuildJobOptions
                     );
                 }
                 default:
