@@ -14,22 +14,46 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
     {
         List<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> errorsPerCorpus = [];
         foreach (
-            MonolingualCorpus monolingualCorpus in parallelCorpus.SourceCorpora.Concat(parallelCorpus.TargetCorpora)
+            (CorpusFile file, MonolingualCorpus monolingualCorpus, bool isSource) in parallelCorpus
+                .SourceCorpora.SelectMany(c =>
+                    c.Files.Where(f => f.Format == FileFormat.Paratext).Select(f => (f, c, true))
+                )
+                .Concat(
+                    parallelCorpus.TargetCorpora.SelectMany(c =>
+                        c.Files.Where(f => f.Format == FileFormat.Paratext).Select(f => (f, c, false))
+                    )
+                )
+                .DistinctBy(tuple => tuple.f.Location)
         )
         {
-            foreach (CorpusFile file in monolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
+            using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
+            IReadOnlyList<UsfmVersificationError> errors = new ZipParatextProjectVersificationErrorDetector(
+                zipArchive
+            ).GetUsfmVersificationErrors(books: GetBooks(monolingualCorpus, isSource));
+            if (errors.Count > 0)
             {
-                using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
-                IReadOnlyList<UsfmVersificationError> errors = new ZipParatextProjectVersificationErrorDetector(
-                    zipArchive
-                ).GetUsfmVersificationErrors();
-                if (errors.Count > 0)
-                {
-                    errorsPerCorpus.Add((monolingualCorpus.Id, errors));
-                }
+                errorsPerCorpus.Add((monolingualCorpus.Id, errors));
             }
         }
         return errorsPerCorpus;
+    }
+
+    private static HashSet<int> GetBooks(MonolingualCorpus corpus, bool isSource)
+    {
+        List<string> books = [];
+        if (corpus.InferenceTextIds != null)
+            books.AddRange(corpus.InferenceTextIds);
+        else if (corpus.InferenceChapters != null)
+            books.AddRange(corpus.InferenceChapters.Keys);
+
+        if (isSource)
+        {
+            if (corpus.TrainOnTextIds != null)
+                books.AddRange(corpus.TrainOnTextIds);
+            else if (corpus.TrainOnChapters != null)
+                books.AddRange(corpus.TrainOnChapters.Keys);
+        }
+        return [.. books.Select(bookName => Canon.BookIdToNumber(bookName))];
     }
 
     public QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus parallelCorpus)

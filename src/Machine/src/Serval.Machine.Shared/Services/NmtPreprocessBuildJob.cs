@@ -87,6 +87,14 @@ public class NmtPreprocessBuildJob(
             corpora
         );
 
+        int maxWarnings = 100;
+        if (warnings.Count > maxWarnings)
+        {
+            string tooManyWarningsWarning =
+                $"There were {warnings.Count} warnings. Only the first {maxWarnings} are shown.";
+            warnings = [tooManyWarningsWarning, .. warnings.Take(maxWarnings)];
+        }
+
         // Log summary of build data
         JsonObject buildPreprocessSummary =
             new()
