@@ -124,7 +124,7 @@ public class TranslationEngineServiceV1(
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
                         request.Corpora.Select(Map).ToList(),
-                        row => Task.CompletedTask,
+                        (_, _) => Task.CompletedTask,
                         (row, _, corpus) =>
                         {
                             string[] tokens = row.SourceSegment.Split();

@@ -35,6 +35,11 @@ public class TranslationPreprocessBuildJob(
         await using StreamWriter targetTrainWriter =
             new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
 
+        await using StreamWriter sourceKeyTermsTrainWriter =
+            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.key-terms.src.txt", cancellationToken));
+        await using StreamWriter targetKeyTermsTrainWriter =
+            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.key-terms.trg.txt", cancellationToken));
+
         await using Stream pretranslateStream = await SharedFileService.OpenWriteAsync(
             $"builds/{buildId}/pretranslate.src.json",
             cancellationToken
@@ -46,12 +51,20 @@ public class TranslationPreprocessBuildJob(
         pretranslateWriter.WriteStartArray();
         await ParallelCorpusPreprocessingService.PreprocessAsync(
             corpora,
-            async row =>
+            async (row, trainingDataType) =>
             {
                 if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
                 {
-                    await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                    await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+                    if (trainingDataType == TrainingDataType.KeyTerms)
+                    {
+                        await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                        await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+                    }
+                    else
+                    {
+                        await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                        await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+                    }
                 }
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;

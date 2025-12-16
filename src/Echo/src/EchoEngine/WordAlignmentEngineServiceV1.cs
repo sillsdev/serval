@@ -79,7 +79,7 @@ public class WordAlignmentEngineServiceV1(
                     List<InsertWordAlignmentsRequest> wordAlignmentsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
                         request.Corpora.Select(Map).ToList(),
-                        row => Task.CompletedTask,
+                        (_, _) => Task.CompletedTask,
                         (row, _, corpus) =>
                         {
                             wordAlignmentsRequests.Add(
