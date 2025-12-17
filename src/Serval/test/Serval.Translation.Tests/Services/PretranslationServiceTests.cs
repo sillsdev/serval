@@ -425,6 +425,18 @@ public class PretranslationServiceTests
         });
     }
 
+    [Test]
+    [TestCase(new int[] { 1, 2, 3 }, "1-3")]
+    [TestCase(new int[] { 1, 3, 4 }, "1, 3-4")]
+    [TestCase(new int[] { 2, 3, 4, 6, 8, 9 }, "2-4, 6, 8-9")]
+    [TestCase(new int[] { 1, 3, 2 }, "1-3")]
+    [TestCase(new int[] { 1 }, "1")]
+    public void GetChapterRanges(int[] chapterNumbers, string expectedRangeString)
+    {
+        string actualRangeString = PretranslationService.GetChapterRangesString(chapterNumbers.ToList());
+        Assert.That(actualRangeString, Is.EqualTo(expectedRangeString));
+    }
+
     private class TestEnvironment : IDisposable
     {
         public TestEnvironment()
