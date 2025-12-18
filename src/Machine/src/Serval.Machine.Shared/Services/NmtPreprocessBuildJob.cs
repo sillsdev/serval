@@ -8,7 +8,8 @@ public class NmtPreprocessBuildJob(
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     ILanguageTagService languageTagService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
         platformService,
@@ -17,7 +18,8 @@ public class NmtPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        parallelCorpusPreprocessingService
+        parallelCorpusPreprocessingService,
+        options
     )
 {
     private readonly ILanguageTagService _languageTagService = languageTagService;
@@ -87,7 +89,7 @@ public class NmtPreprocessBuildJob(
             corpora
         );
 
-        int maxWarnings = 100;
+        int maxWarnings = BuildJobOptions.MaxWarnings;
         if (warnings.Count > maxWarnings)
         {
             string tooManyWarningsWarning =

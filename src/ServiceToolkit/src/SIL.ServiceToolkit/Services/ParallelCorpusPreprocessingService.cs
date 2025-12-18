@@ -38,20 +38,31 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         return errorsPerCorpus;
     }
 
-    private static HashSet<int> GetBooks(MonolingualCorpus corpus, bool isSource)
+    private static HashSet<int>? GetBooks(MonolingualCorpus corpus, bool isSource)
     {
+        if (!corpus.IsFiltered)
+            return null;
+
         List<string> books = [];
-        if (corpus.InferenceTextIds != null)
-            books.AddRange(corpus.InferenceTextIds);
-        else if (corpus.InferenceChapters != null)
-            books.AddRange(corpus.InferenceChapters.Keys);
+        if (corpus.TrainOnTextIds != null)
+        {
+            books.AddRange(corpus.TrainOnTextIds);
+        }
+        else if (corpus.TrainOnChapters != null)
+        {
+            books.AddRange(corpus.TrainOnChapters.Keys);
+        }
 
         if (isSource)
         {
-            if (corpus.TrainOnTextIds != null)
-                books.AddRange(corpus.TrainOnTextIds);
-            else if (corpus.TrainOnChapters != null)
-                books.AddRange(corpus.TrainOnChapters.Keys);
+            if (corpus.InferenceTextIds != null)
+            {
+                books.AddRange(corpus.InferenceTextIds);
+            }
+            else if (corpus.InferenceChapters != null)
+            {
+                books.AddRange(corpus.InferenceChapters.Keys);
+            }
         }
         return [.. books.Select(bookName => Canon.BookIdToNumber(bookName))];
     }
