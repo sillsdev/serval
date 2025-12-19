@@ -7,7 +7,8 @@ public class TranslationPreprocessBuildJob(
     ILogger<PreprocessBuildJob<TranslationEngine>> logger,
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IOptionsMonitor<BuildJobOptions> options
 )
     : PreprocessBuildJob<TranslationEngine>(
         platformService,
@@ -16,7 +17,8 @@ public class TranslationPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        parallelCorpusPreprocessingService
+        parallelCorpusPreprocessingService,
+        options
     )
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(

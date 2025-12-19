@@ -6,4 +6,5 @@ public class BuildJobOptions
 
     public IList<ClearMLBuildQueue> ClearML { get; set; } = new List<ClearMLBuildQueue>();
     public bool PreserveBuildFiles { get; set; } = false;
+    public int MaxWarnings { get; set; } = 1000;
 }

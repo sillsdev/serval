@@ -179,8 +179,8 @@ public class StatisticalEngineServiceTests
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
-            var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
-            buildJobOptions.CurrentValue.Returns(
+            BuildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            BuildJobOptions.CurrentValue.Returns(
                 new BuildJobOptions
                 {
                     ClearML =
@@ -219,7 +219,7 @@ public class StatisticalEngineServiceTests
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
-                buildJobOptions,
+                BuildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService<WordAlignmentEngine>(
@@ -228,7 +228,7 @@ public class StatisticalEngineServiceTests
                     new ClearMLBuildJobRunner(
                         ClearMLService,
                         [new StatisticalClearMLBuildJobFactory(SharedFileService, Engines)],
-                        buildJobOptions
+                        BuildJobOptions
                     )
                 ],
                 Engines
@@ -252,6 +252,7 @@ public class StatisticalEngineServiceTests
         public ISharedFileService SharedFileService { get; }
 
         public IBuildJobService<WordAlignmentEngine> BuildJobService { get; }
+        public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public async Task CommitAsync(TimeSpan inactiveTimeout)
         {
@@ -455,7 +456,8 @@ public class StatisticalEngineServiceTests
                         Substitute.For<ILogger<WordAlignmentPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
-                        new ParallelCorpusPreprocessingService(new TextCorpusService())
+                        new ParallelCorpusPreprocessingService(new TextCorpusService()),
+                        _env.BuildJobOptions
                     )
                     {
                         TrainJobRunnerType = _env._trainJobRunnerType
@@ -465,8 +467,6 @@ public class StatisticalEngineServiceTests
                 {
                     var engineOptions = Substitute.For<IOptionsMonitor<StatisticalEngineOptions>>();
                     engineOptions.CurrentValue.Returns(new StatisticalEngineOptions());
-                    var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
-                    buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new StatisticalPostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -476,7 +476,7 @@ public class StatisticalEngineServiceTests
                         _env.SharedFileService,
                         _env._lockFactory,
                         _env.WordAlignmentModelFactory,
-                        buildJobOptions,
+                        _env.BuildJobOptions,
                         engineOptions
                     );
                 }

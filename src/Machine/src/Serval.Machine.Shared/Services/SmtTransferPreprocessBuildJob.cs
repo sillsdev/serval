@@ -9,7 +9,8 @@ public class SmtTransferPreprocessBuildJob(
     ISharedFileService sharedFileService,
     IDistributedReaderWriterLockFactory lockFactory,
     IRepository<TrainSegmentPair> trainSegmentPairs,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
         platformService,
@@ -18,7 +19,8 @@ public class SmtTransferPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        parallelCorpusPreprocessingService
+        parallelCorpusPreprocessingService,
+        options
     )
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;

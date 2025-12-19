@@ -7,7 +7,8 @@ public abstract class PreprocessBuildJob<TEngine>(
     ILogger<PreprocessBuildJob<TEngine>> logger,
     IBuildJobService<TEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IOptionsMonitor<BuildJobOptions> options
 )
     : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>(
         platformService,
@@ -24,7 +25,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
-
+    protected readonly BuildJobOptions BuildJobOptions = options.CurrentValue;
     protected readonly ISharedFileService SharedFileService = sharedFileService;
     protected readonly IParallelCorpusPreprocessingService ParallelCorpusPreprocessingService =
         parallelCorpusPreprocessingService;
@@ -148,7 +149,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                 foreach (UsfmVersificationError error in errors)
                 {
                     warnings.Add(
-                        $"USFM does not match project versification for parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId}: Expected verse {error.ExpectedVerseRef}, Actual verse {error.ActualVerseRef}, Mismatch type {error.Type}"
+                        $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})"
                     );
                 }
             }

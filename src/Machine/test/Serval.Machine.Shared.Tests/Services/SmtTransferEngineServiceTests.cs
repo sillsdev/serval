@@ -288,8 +288,8 @@ public class SmtTransferEngineServiceTests
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
-            var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
-            buildJobOptions.CurrentValue.Returns(
+            BuildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            BuildJobOptions.CurrentValue.Returns(
                 new BuildJobOptions
                 {
                     ClearML =
@@ -335,7 +335,7 @@ public class SmtTransferEngineServiceTests
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
-                buildJobOptions,
+                BuildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService<TranslationEngine>(
@@ -344,7 +344,7 @@ public class SmtTransferEngineServiceTests
                     new ClearMLBuildJobRunner(
                         ClearMLService,
                         [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
-                        buildJobOptions
+                        BuildJobOptions
                     )
                 ],
                 Engines
@@ -365,6 +365,7 @@ public class SmtTransferEngineServiceTests
         public ITruecaser Truecaser { get; }
         public ITrainer TruecaserTrainer { get; }
         public IPlatformService PlatformService { get; }
+        public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public IClearMLService ClearMLService { get; }
         public IClearMLQueueService ClearMLMonitorService { get; }
@@ -708,7 +709,8 @@ public class SmtTransferEngineServiceTests
                         _env.SharedFileService,
                         _env._lockFactory,
                         _env.TrainSegmentPairs,
-                        new ParallelCorpusPreprocessingService(new TextCorpusService())
+                        new ParallelCorpusPreprocessingService(new TextCorpusService()),
+                        _env.BuildJobOptions
                     )
                     {
                         TrainJobRunnerType = _env._trainJobRunnerType
@@ -718,8 +720,6 @@ public class SmtTransferEngineServiceTests
                 {
                     var engineOptions = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
                     engineOptions.CurrentValue.Returns(new SmtTransferEngineOptions());
-                    var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
-                    buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
                     return new SmtTransferPostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -731,7 +731,7 @@ public class SmtTransferEngineServiceTests
                         _env.TrainSegmentPairs,
                         _env.SmtModelFactory,
                         _env._truecaserFactory,
-                        buildJobOptions,
+                        _env.BuildJobOptions,
                         engineOptions
                     );
                 }
