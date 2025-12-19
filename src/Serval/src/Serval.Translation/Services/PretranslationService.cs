@@ -320,32 +320,87 @@ public class PretranslationService(
         QuotationMarkDenormalizationFirstPass quotationMarkDenormalizationFirstPass = new(targetQuoteConvention);
 
         UsfmParser.Parse(usfm, quotationMarkDenormalizationFirstPass);
-        List<QuotationMarkUpdateStrategy> bestChapterStrategies =
+        List<(int ChapterNumber, QuotationMarkUpdateStrategy Strategy)> bestChapterStrategies =
             quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
 
         QuotationMarkDenormalizationUsfmUpdateBlockHandler quotationMarkDenormalizer =
-            new(targetQuoteConvention, new QuotationMarkUpdateSettings(chapterStrategies: bestChapterStrategies));
+            new(
+                targetQuoteConvention,
+                new QuotationMarkUpdateSettings(
+                    chapterStrategies: bestChapterStrategies.Select(tuple => tuple.Strategy).ToList()
+                )
+            );
+        int denormalizableChapterCount = bestChapterStrategies.Count(tup =>
+            tup.Strategy != QuotationMarkUpdateStrategy.Skip
+        );
         List<string> remarks = [];
-        if (bestChapterStrategies.Any(s => s != QuotationMarkUpdateStrategy.Skip))
+        string quotationDenormalizationRemark;
+        if (denormalizableChapterCount == bestChapterStrategies.Count)
         {
-            string quotationDenormalizationRemark =
+            quotationDenormalizationRemark =
+                "The quote style in all chapters has been automatically adjusted to match the rest of the project.";
+        }
+        else if (denormalizableChapterCount > 0)
+        {
+            quotationDenormalizationRemark =
                 "The quote style in the following chapters has been automatically adjusted to match the rest of the project: "
-                + string.Join(
-                    ", ",
+                + GetChapterRangesString(
                     bestChapterStrategies
-                        .Select((strategy, index) => (strategy, index))
-                        .Where(tuple => tuple.strategy != QuotationMarkUpdateStrategy.Skip)
-                        .Select(tuple => tuple.index + 1)
+                        .Where(tuple => tuple.Strategy != QuotationMarkUpdateStrategy.Skip)
+                        .Select(tuple => tuple.ChapterNumber)
+                        .ToList()
                 )
                 + ".";
-            remarks.Add(quotationDenormalizationRemark);
         }
+        else
+        {
+            quotationDenormalizationRemark =
+                "The quote style was not automatically adjusted to match the rest of your project in any chapters.";
+        }
+        remarks.Add(quotationDenormalizationRemark);
 
         var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer], remarks: remarks);
         UsfmParser.Parse(usfm, updater);
 
         usfm = updater.GetUsfm();
         return usfm;
+    }
+
+    public static string GetChapterRangesString(List<int> chapterNumbers)
+    {
+        chapterNumbers = chapterNumbers.Order().ToList();
+        int start = chapterNumbers[0];
+        int end = chapterNumbers[0];
+        List<string> chapterRangeStrings = [];
+        foreach (int chapterNumber in chapterNumbers[1..])
+        {
+            if (chapterNumber == end + 1)
+            {
+                end = chapterNumber;
+            }
+            else
+            {
+                if (start == end)
+                {
+                    chapterRangeStrings.Add(start.ToString(CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    chapterRangeStrings.Add($"{start}-{end}");
+                }
+                start = chapterNumber;
+                end = chapterNumber;
+            }
+        }
+        if (start == end)
+        {
+            chapterRangeStrings.Add(start.ToString(CultureInfo.InvariantCulture));
+        }
+        else
+        {
+            chapterRangeStrings.Add($"{start}-{end}");
+        }
+        return string.Join(", ", chapterRangeStrings);
     }
 
     /// <summary>
