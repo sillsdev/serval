@@ -36,6 +36,8 @@ spec:
               value: $(mongodb_connection)machine
             - name: ASPNETCORE_ConnectionStrings__Serval
               value: http://serval-api:81
+            - name: Bugsnag__ReleaseStage
+              value: {{ .Values.bugsnagReleaseStage}}
               {{- template "secrets.clearml" . }}
               {{- template "secrets.s3" . }}
           image: {{ .Values.servalImage}}

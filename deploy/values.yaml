@@ -16,3 +16,4 @@ SharedFileLocation: s3://silnlp/production/
 servalClaimSize: 15Gi
 machineClaimSize: 100Gi
 enableEcho: true
+bugsnagReleaseStage: Production

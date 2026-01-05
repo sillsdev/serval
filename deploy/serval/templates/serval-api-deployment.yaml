@@ -60,6 +60,8 @@ spec:
               value: Statistical
             - name: ASPNETCORE_WordAlignment__Engines__1__Address
               value: http://machine-engine
+            - name: Bugsnag__ReleaseStage
+              value: {{ .Values.bugsnagReleaseStage}}
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: serval-api
