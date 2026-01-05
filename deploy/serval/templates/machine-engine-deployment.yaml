@@ -38,6 +38,7 @@ spec:
               value: http://serval-api:81
               {{- template "secrets.clearml" . }}
               {{- template "secrets.s3" . }}
+              {{- template "secrets.bugsnag" . }}
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: machine-engine

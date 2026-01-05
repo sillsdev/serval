@@ -34,6 +34,7 @@ spec:
               value: http://serval-api:81
             - name: ASPNETCORE_ConnectionStrings__WordAlignmentPlatformApi
               value: http://serval-api:81
+              {{- template "secrets.bugsnag" . }}
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: echo

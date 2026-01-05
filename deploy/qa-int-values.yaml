@@ -16,3 +16,4 @@ SharedFileLocation: s3://silnlp/int-qa/
 servalClaimSize: 6Gi
 machineClaimSize: 20Gi
 enableEcho: true
+bugsnagReleaseStage: Staging
