@@ -16,3 +16,4 @@ SharedFileLocation: s3://silnlp/ext-qa/
 servalClaimSize: 11Gi
 machineClaimSize: 25Gi
 enableEcho: true
+bugsnagReleaseStage: QA
