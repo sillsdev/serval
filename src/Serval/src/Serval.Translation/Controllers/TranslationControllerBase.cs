@@ -7,8 +7,12 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
 {
     private readonly IUrlService _urlService = urlService;
 
-    protected TranslationBuildDto Map(Build source) =>
-        new TranslationBuildDto
+    protected TranslationBuildDto Map(Build source)
+    {
+        string targetQuoteConvention =
+            source.Analysis?.Select(sa => sa.TargetQuoteConvention).FirstOrDefault(qc => qc != "") ?? "";
+
+        return new TranslationBuildDto
         {
             Id = source.Id,
             Url = _urlService.GetUrl(Endpoints.GetTranslationBuild, new { id = source.EngineRef, buildId = source.Id }),
@@ -35,10 +39,9 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList(),
-            Analysis = source
-                .Analysis?.Select(a => Map(a, source.Analysis?.Any(sa => sa.TargetQuoteConvention != "") ?? false))
-                .ToList(),
+            Analysis = source.Analysis?.Select(a => Map(a, targetQuoteConvention)).ToList(),
         };
+    }
 
     private PretranslateCorpusDto Map(string engineId, PretranslateCorpus source) =>
         new PretranslateCorpusDto
@@ -122,13 +125,13 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Started = source.Started,
         };
 
-    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source, bool canDenormalize) =>
+    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source, string targetQuoteConvention) =>
         new ParallelCorpusAnalysisDto
         {
             ParallelCorpusRef = source.ParallelCorpusRef,
             TargetQuoteConvention = source.TargetQuoteConvention,
             SourceQuoteConvention = "ignore",
-            CanDenormalizeQuotes = canDenormalize
+            CanDenormalizeQuotes = targetQuoteConvention != ""
         };
 
     private static ExecutionDataDto Map(ExecutionData source) =>
