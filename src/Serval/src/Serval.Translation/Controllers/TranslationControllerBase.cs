@@ -35,7 +35,9 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList(),
-            Analysis = source.Analysis?.Select(Map).ToList(),
+            Analysis = source
+                .Analysis?.Select(a => Map(a, source.Analysis?.Any(sa => sa.TargetQuoteConvention != "") ?? false))
+                .ToList(),
         };
 
     private PretranslateCorpusDto Map(string engineId, PretranslateCorpus source) =>
@@ -120,13 +122,13 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Started = source.Started,
         };
 
-    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source) =>
+    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source, bool canDenormalize) =>
         new ParallelCorpusAnalysisDto
         {
             ParallelCorpusRef = source.ParallelCorpusRef,
             TargetQuoteConvention = source.TargetQuoteConvention,
             SourceQuoteConvention = "ignore",
-            CanDenormalizeQuotes = source.TargetQuoteConvention != ""
+            CanDenormalizeQuotes = canDenormalize
         };
 
     private static ExecutionDataDto Map(ExecutionData source) =>

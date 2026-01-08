@@ -299,10 +299,12 @@ public class PretranslationService(
         if (
             quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized
             && build.Analysis is not null
-            && build.Analysis.Any(a => a.ParallelCorpusRef == corpusId && a.TargetQuoteConvention != "")
+            && build.Analysis.Any(a => a.TargetQuoteConvention != "")
         )
         {
-            ParallelCorpusAnalysis analysis = build.Analysis.Single(c => c.ParallelCorpusRef == corpusId);
+            ParallelCorpusAnalysis analysis =
+                build.Analysis.FirstOrDefault(a => a.TargetQuoteConvention != "" && a.ParallelCorpusRef == corpusId)
+                ?? build.Analysis.First(a => a.TargetQuoteConvention != "");
             usfm = DenormalizeQuotationMarks(usfm, analysis);
         }
 
