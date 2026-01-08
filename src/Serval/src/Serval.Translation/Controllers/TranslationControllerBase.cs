@@ -129,7 +129,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
         new ParallelCorpusAnalysisDto
         {
             ParallelCorpusRef = source.ParallelCorpusRef,
-            TargetQuoteConvention = source.TargetQuoteConvention,
+            TargetQuoteConvention = targetQuoteConvention,
             SourceQuoteConvention = "ignore",
             CanDenormalizeQuotes = targetQuoteConvention != ""
         };
