@@ -121,11 +121,19 @@ public class TranslationEngineServiceV1(
                         cancellationToken: linkedCts.Token
                     );
 
+                    int trainCount = 0;
+                    int pretranslateCount = 0;
+
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
                         request.Corpora.Select(Map).ToList(),
-                        (_, _) => Task.CompletedTask,
-                        (row, _, corpus) =>
+                        (row, _) =>
+                        {
+                            if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                                trainCount++;
+                            return Task.CompletedTask;
+                        },
+                        (row, isInTrainingData, corpus) =>
                         {
                             string[] tokens = row.SourceSegment.Split();
                             pretranslationsRequests.Add(
@@ -146,6 +154,8 @@ public class TranslationEngineServiceV1(
                                     }
                                 }
                             );
+                            if (row.SourceSegment.Length > 0 && !isInTrainingData)
+                                pretranslateCount++;
                             if (cts.IsCancellationRequested)
                                 throw new OperationCanceledException(cts.Token);
 
@@ -166,6 +176,28 @@ public class TranslationEngineServiceV1(
                         await call.RequestStream.CompleteAsync();
                         await call;
                     }
+
+                    string sourceLanguage =
+                        request.Corpora.FirstOrDefault()?.SourceCorpora.FirstOrDefault()?.Language ?? string.Empty;
+                    string targetLanguage =
+                        request.Corpora.FirstOrDefault()?.TargetCorpora.FirstOrDefault()?.Language ?? string.Empty;
+                    await client.UpdateBuildExecutionDataAsync(
+                        new UpdateBuildExecutionDataRequest
+                        {
+                            EngineId = request.EngineId,
+                            BuildId = request.BuildId,
+                            ExecutionData = new ExecutionData
+                            {
+                                TrainCount = trainCount,
+                                PretranslateCount = pretranslateCount,
+                                EngineSourceLanguageTag = sourceLanguage,
+                                EngineTargetLanguageTag = targetLanguage,
+                                ResolvedSourceLanguage = sourceLanguage,
+                                ResolvedTargetLanguage = targetLanguage,
+                            },
+                        },
+                        cancellationToken: linkedCts.Token
+                    );
 
                     await client.BuildCompletedAsync(
                         new BuildCompletedRequest { BuildId = request.BuildId, Confidence = 1.0 },

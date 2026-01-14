@@ -76,11 +76,18 @@ public class WordAlignmentEngineServiceV1(
 
                 try
                 {
+                    int trainCount = 0;
+                    int wordAlignCount = 0;
                     List<InsertWordAlignmentsRequest> wordAlignmentsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
                         request.Corpora.Select(Map).ToList(),
-                        (_, _) => Task.CompletedTask,
-                        (row, _, corpus) =>
+                        (row, _) =>
+                        {
+                            if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                                trainCount++;
+                            return Task.CompletedTask;
+                        },
+                        (row, isInTrainingData, corpus) =>
                         {
                             wordAlignmentsRequests.Add(
                                 new InsertWordAlignmentsRequest
@@ -100,6 +107,8 @@ public class WordAlignmentEngineServiceV1(
                                     }
                                 }
                             );
+                            if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0 && !isInTrainingData)
+                                wordAlignCount++;
                             return Task.CompletedTask;
                         },
                         false
@@ -115,6 +124,26 @@ public class WordAlignmentEngineServiceV1(
                             await call.RequestStream.WriteAsync(request, cancellationToken);
                         }
                     }
+
+                    string sourceLanguage =
+                        request.Corpora.FirstOrDefault()?.SourceCorpora.FirstOrDefault()?.Language ?? string.Empty;
+                    string targetLanguage =
+                        request.Corpora.FirstOrDefault()?.TargetCorpora.FirstOrDefault()?.Language ?? string.Empty;
+                    await client.UpdateBuildExecutionDataAsync(
+                        new UpdateBuildExecutionDataRequest
+                        {
+                            EngineId = request.EngineId,
+                            BuildId = request.BuildId,
+                            ExecutionData = new ExecutionData
+                            {
+                                TrainCount = trainCount,
+                                WordAlignCount = wordAlignCount,
+                                EngineSourceLanguageTag = sourceLanguage,
+                                EngineTargetLanguageTag = targetLanguage,
+                            },
+                        },
+                        cancellationToken: cancellationToken
+                    );
 
                     await client.BuildCompletedAsync(
                         new BuildCompletedRequest { BuildId = request.BuildId, Confidence = 1.0 },
