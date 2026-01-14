@@ -74,6 +74,26 @@ public class WordAlignmentEngineServiceV1(
                     cancellationToken: cancellationToken
                 );
 
+                string sourceLanguage =
+                    request.Corpora.FirstOrDefault()?.SourceCorpora.FirstOrDefault()?.Language ?? string.Empty;
+                string targetLanguage =
+                    request.Corpora.FirstOrDefault()?.TargetCorpora.FirstOrDefault()?.Language ?? string.Empty;
+                await client.UpdateBuildExecutionDataAsync(
+                    new UpdateBuildExecutionDataRequest
+                    {
+                        EngineId = request.EngineId,
+                        BuildId = request.BuildId,
+                        ExecutionData = new ExecutionData
+                        {
+                            TrainCount = 0,
+                            WordAlignCount = 0,
+                            EngineSourceLanguageTag = sourceLanguage,
+                            EngineTargetLanguageTag = targetLanguage,
+                        },
+                    },
+                    cancellationToken: cancellationToken
+                );
+
                 try
                 {
                     List<InsertWordAlignmentsRequest> wordAlignmentsRequests = [];

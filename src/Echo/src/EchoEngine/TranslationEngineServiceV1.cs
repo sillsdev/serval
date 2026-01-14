@@ -121,6 +121,28 @@ public class TranslationEngineServiceV1(
                         cancellationToken: linkedCts.Token
                     );
 
+                    string sourceLanguage =
+                        request.Corpora.FirstOrDefault()?.SourceCorpora.FirstOrDefault()?.Language ?? string.Empty;
+                    string targetLanguage =
+                        request.Corpora.FirstOrDefault()?.TargetCorpora.FirstOrDefault()?.Language ?? string.Empty;
+                    await client.UpdateBuildExecutionDataAsync(
+                        new UpdateBuildExecutionDataRequest
+                        {
+                            EngineId = request.EngineId,
+                            BuildId = request.BuildId,
+                            ExecutionData = new ExecutionData
+                            {
+                                TrainCount = 0,
+                                PretranslateCount = 0,
+                                EngineSourceLanguageTag = sourceLanguage,
+                                EngineTargetLanguageTag = targetLanguage,
+                                ResolvedSourceLanguage = sourceLanguage,
+                                ResolvedTargetLanguage = targetLanguage,
+                            },
+                        },
+                        cancellationToken: linkedCts.Token
+                    );
+
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
                         request.Corpora.Select(Map).ToList(),
