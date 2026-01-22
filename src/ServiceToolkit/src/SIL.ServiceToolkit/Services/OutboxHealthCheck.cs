@@ -1,10 +1,9 @@
 namespace SIL.ServiceToolkit.Services;
 
-public class OutboxHealthCheck(IOptions<OutboxOptions> options, IRepository<OutboxMessage> messages) : IHealthCheck
+public class OutboxHealthCheck(IMemoryCache cache, IOptions<OutboxOptions> options, IRepository<OutboxMessage> messages)
+    : IHealthCheck
 {
-    private readonly IOptions<OutboxOptions> _options = options;
-    private readonly IRepository<OutboxMessage> _messages = messages;
-    private int _numConsecutiveFailures = 0;
+    private const string FailureCountKey = "OutboxHealthCheck.ConsecutiveFailures";
     private readonly AsyncLock _lock = new AsyncLock();
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -12,19 +11,20 @@ public class OutboxHealthCheck(IOptions<OutboxOptions> options, IRepository<Outb
         CancellationToken cancellationToken = default
     )
     {
-        int count = (await _messages.GetAllAsync(cancellationToken)).Count;
-        if (count > _options.Value.HealthyMessageLimit)
+        int count = (await messages.GetAllAsync(cancellationToken)).Count;
+        if (count > options.Value.HealthyMessageLimit)
         {
             using (await _lock.LockAsync(cancellationToken))
             {
-                _numConsecutiveFailures++;
-                return _numConsecutiveFailures > 3
+                int numConsecutiveFailures = cache.Get<int>(FailureCountKey);
+                cache.Set(FailureCountKey, ++numConsecutiveFailures);
+                return numConsecutiveFailures > 3
                     ? HealthCheckResult.Unhealthy("Outbox messages are accumulating.")
                     : HealthCheckResult.Degraded("Outbox messages are accumulating.");
             }
         }
         using (await _lock.LockAsync(cancellationToken))
-            _numConsecutiveFailures = 0;
+            cache.Set(FailureCountKey, 0);
         return HealthCheckResult.Healthy("Outbox messages are being processed successfully");
     }
 }

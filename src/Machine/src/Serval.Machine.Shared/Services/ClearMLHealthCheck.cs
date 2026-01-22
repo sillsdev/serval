@@ -3,16 +3,16 @@ namespace Serval.Machine.Shared.Services;
 public class ClearMLHealthCheck(
     IClearMLAuthenticationService clearMLAuthenticationService,
     IHttpClientFactory httpClientFactory,
+    IMemoryCache cache,
     IOptionsMonitor<BuildJobOptions> buildJobOptions
 ) : IHealthCheck
 {
+    private const string FailureCountKey = "ClearMLHealthCheck.ConsecutiveFailures";
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
-    private readonly IClearMLAuthenticationService _clearMLAuthenticationService = clearMLAuthenticationService;
     private readonly ISet<string> _queuesMonitored = buildJobOptions
         .CurrentValue.ClearML.Select(x => x.Queue)
         .ToHashSet();
 
-    private int _numConsecutiveFailures = 0;
     private readonly AsyncLock _lock = new AsyncLock();
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -33,15 +33,16 @@ public class ClearMLHealthCheck(
             }
 
             using (await _lock.LockAsync(cancellationToken))
-                _numConsecutiveFailures = 0;
+                cache.Set(FailureCountKey, 0);
             return HealthCheckResult.Healthy("ClearML is available");
         }
         catch (Exception e)
         {
             using (await _lock.LockAsync(cancellationToken))
             {
-                _numConsecutiveFailures++;
-                return _numConsecutiveFailures > 3
+                int numConsecutiveFailures = cache.Get<int>(FailureCountKey);
+                cache.Set(FailureCountKey, ++numConsecutiveFailures);
+                return numConsecutiveFailures > 3
                     ? HealthCheckResult.Unhealthy(exception: e)
                     : HealthCheckResult.Degraded(exception: e);
             }
@@ -61,7 +62,7 @@ public class ClearMLHealthCheck(
         };
         request.Headers.Add(
             "Authorization",
-            $"Bearer {await _clearMLAuthenticationService.GetAuthTokenAsync(cancellationToken)}"
+            $"Bearer {await clearMLAuthenticationService.GetAuthTokenAsync(cancellationToken)}"
         );
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
