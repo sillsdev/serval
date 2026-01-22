@@ -7,8 +7,8 @@ public static class IServiceCollectionExtensions
         if (!Sldr.IsInitialized)
             Sldr.Initialize();
 
+        services.AddMemoryCache();
         services.AddSingleton<ISharedFileService, SharedFileService>();
-        services.AddSingleton<S3HealthCheck>();
         services.AddHealthChecks().AddCheck<S3HealthCheck>("S3 Bucket");
 
         services.AddSingleton<ILanguageTagService, LanguageTagService>();

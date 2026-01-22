@@ -34,6 +34,7 @@ global using Hangfire.Mongo.Migration.Strategies;
 global using Hangfire.Mongo.Migration.Strategies.Backup;
 global using Hangfire.States;
 global using Microsoft.AspNetCore.Routing;
+global using Microsoft.Extensions.Caching.Memory;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Diagnostics.HealthChecks;

@@ -127,7 +127,6 @@ public static class IMachineBuilderExtensions
         builder
             .Services.AddHttpClient("ClearML-NoRetry")
             .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!));
-        builder.Services.AddSingleton<ClearMLHealthCheck>();
 
         builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
 
