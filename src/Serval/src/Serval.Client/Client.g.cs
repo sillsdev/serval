@@ -52,7 +52,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Application Version
+        /// Get the Application Version on publicly available endpoint.
         /// </summary>
         /// <remarks>
         /// Provides the version of the application
@@ -279,7 +279,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Application Version
+        /// Get the Application Version on publicly available endpoint.
         /// </summary>
         /// <remarks>
         /// Provides the version of the application
@@ -333,18 +333,6 @@ namespace Serval.Client
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
-                        }
-                        else
-                        if (status_ == 401)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 403)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation", status_, responseText_, headers_, null);
                         }
                         else
                         {

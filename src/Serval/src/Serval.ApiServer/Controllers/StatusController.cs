@@ -64,17 +64,14 @@ public class StatusController(
     }
 
     /// <summary>
-    /// Application Version
+    /// Get the Application Version on publicly available endpoint.
     /// </summary>
     /// <remarks>Provides the version of the application</remarks>
     /// <response code="200">Application Version</response>
     /// <response code="401">The client is not authenticated</response>
     /// <response code="403">The authenticated client cannot perform the operation</response>
-    [Authorize(Scopes.ReadStatus)]
     [HttpGet("deployment-info")]
     [ProducesResponseType(typeof(DeploymentInfoDto), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public ActionResult<DeploymentInfoDto> GetDeploymentInfo()
     {
         string deploymentVersion = _configuration.GetValue<string>("DeploymentVersion") ?? "Unknown";
