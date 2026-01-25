@@ -11,6 +11,8 @@ public class TestAuthHandler(
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        if (Context.Request.Headers["Scope"].Count == 0)
+            return Task.FromResult(AuthenticateResult.NoResult());
         string scope = Context.Request.Headers["Scope"][0]!;
         string authority = $"https://{_configuration["Auth:Domain"]}/";
         Claim[] claims =
