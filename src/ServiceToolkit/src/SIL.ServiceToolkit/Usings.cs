@@ -9,6 +9,7 @@ global using System.Text.RegularExpressions;
 global using Grpc.Core;
 global using Grpc.Core.Interceptors;
 global using Hangfire;
+global using Microsoft.Extensions.Caching.Memory;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.DependencyInjection.Extensions;

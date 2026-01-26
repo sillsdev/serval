@@ -9,6 +9,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddFeatureManagement();
+        services.AddMemoryCache();
         services.AddRouting(o => o.LowercaseUrls = true);
 
         var apiOptions = new ApiOptions();
