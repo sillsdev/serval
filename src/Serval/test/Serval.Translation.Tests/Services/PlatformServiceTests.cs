@@ -198,7 +198,7 @@ public class PlatformServiceTests
         };
         await env.Builds.InsertAsync(build);
 
-        string expected = "parallelCorpus01";
+        string expected = "typewriter_english";
 
         var updateRequest = new UpdateTargetQuoteConventionRequest
         {
@@ -264,7 +264,7 @@ public class PlatformServiceTests
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        Assert.That(build?.TargetQuoteConvention, Is.Null);
+        Assert.That(build?.TargetQuoteConvention, Is.EqualTo(""));
     }
 
     [Test]
