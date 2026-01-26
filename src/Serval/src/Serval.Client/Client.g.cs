@@ -10790,6 +10790,13 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("analysis", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<ParallelCorpusAnalysis>? Analysis { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("targetQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string TargetQuoteConvention { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("canDenormalizeQuotes", Required = Newtonsoft.Json.Required.Always)]
+        public bool CanDenormalizeQuotes { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]

@@ -307,8 +307,8 @@ public class TranslationPlatformServiceV1(
         return new Empty();
     }
 
-    public override async Task<Empty> UpdateParallelCorpusAnalysis(
-        UpdateParallelCorpusAnalysisRequest request,
+    public override async Task<Empty> UpdateTargetQuoteConvention(
+        UpdateTargetQuoteConventionRequest request,
         ServerCallContext context
     )
     {
@@ -316,25 +316,14 @@ public class TranslationPlatformServiceV1(
         Engine? engine = await _engines.GetAsync(request.EngineId, context.CancellationToken);
         if (engine == null)
             return Empty;
-        var analysis = request
-            .ParallelCorpusAnalysis.Where(p => engine.ParallelCorpora.Select(pc => pc.Id).Contains(p.ParallelCorpusId))
-            .Select(a => new ParallelCorpusAnalysis
+        await _builds.UpdateAsync(
+            b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
+            u =>
             {
-                ParallelCorpusRef = a.ParallelCorpusId,
-                TargetQuoteConvention = a.TargetQuoteConvention
-            })
-            .ToList();
-        if (analysis.Count > 0)
-        {
-            await _builds.UpdateAsync(
-                b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
-                u =>
-                {
-                    u.Set(b => b.Analysis, analysis);
-                },
-                cancellationToken: context.CancellationToken
-            );
-        }
+                u.Set(b => b.TargetQuoteConvention, request.TargetQuoteConvention);
+            },
+            cancellationToken: context.CancellationToken
+        );
 
         return Empty;
     }

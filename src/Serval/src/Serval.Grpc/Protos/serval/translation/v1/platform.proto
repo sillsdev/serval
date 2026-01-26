@@ -18,7 +18,7 @@ service TranslationPlatformApi {
     rpc IncrementEngineCorpusSize(IncrementEngineCorpusSizeRequest) returns (google.protobuf.Empty);
     rpc InsertPretranslations(stream InsertPretranslationsRequest) returns (google.protobuf.Empty);
     rpc UpdateBuildExecutionData(UpdateBuildExecutionDataRequest) returns (google.protobuf.Empty);
-    rpc UpdateParallelCorpusAnalysis(UpdateParallelCorpusAnalysisRequest) returns (google.protobuf.Empty);
+    rpc UpdateTargetQuoteConvention(UpdateTargetQuoteConventionRequest) returns (google.protobuf.Empty);
 }
 
 message UpdateBuildStatusRequest {
@@ -77,15 +77,10 @@ message UpdateBuildExecutionDataRequest {
     ExecutionData execution_data = 3;
 }
 
-message UpdateParallelCorpusAnalysisRequest {
+message UpdateTargetQuoteConventionRequest {
 	string engine_id = 1;
 	string build_id = 2;
-	repeated ParallelCorpusAnalysisResult parallel_corpus_analysis = 3;
-}
-
-message ParallelCorpusAnalysisResult {
-	string parallel_corpus_id = 1;
-	string target_quote_convention = 2;
+    optional string target_quote_convention = 3;
 }
 
 message Phase {

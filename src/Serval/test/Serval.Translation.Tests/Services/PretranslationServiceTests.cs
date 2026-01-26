@@ -531,7 +531,8 @@ public class PretranslationServiceTests
                                 ParallelCorpusRef = "corpus1",
                                 TargetQuoteConvention = "standard_english"
                             }
-                        ]
+                        ],
+                        TargetQuoteConvention = "standard_english"
                     },
                     new()
                     {
@@ -546,7 +547,8 @@ public class PretranslationServiceTests
                                 ParallelCorpusRef = "parallel_corpus1",
                                 TargetQuoteConvention = "standard_english"
                             }
-                        ]
+                        ],
+                        TargetQuoteConvention = "standard_english"
                     }
                 ]
             );
