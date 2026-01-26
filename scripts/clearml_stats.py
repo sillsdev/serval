@@ -2,6 +2,7 @@
 import json
 import os
 import pickle
+from typing import Generator
 import pytz
 from tqdm import tqdm
 from datetime import datetime
@@ -10,6 +11,7 @@ import numpy as np
 import pandas as pd
 import regex as re
 from clearml.backend_api.session.client import APIClient
+from clearml import Task
 from matplotlib import pyplot as plt
 
 clearml_stats_path = os.path.join(os.path.dirname(__file__), "clearml_stats")
@@ -56,6 +58,9 @@ class clearml_stats:
         self._lang_name_to_code = self._create_language_name_to_code()
         self._project_id_to_task_id: dict[str, list[str]] = {}
         if len(self._tasks) == 0 or len(self._projects) == 0 or refresh:
+            if refresh:
+                self._tasks = {}
+                self._projects = {}
             self.update_tasks_and_projects()
             self._tasks: dict[str, dict] = self._read_tasks()
             self._projects: dict[str, dict] = self._read_projects()
@@ -68,10 +73,10 @@ class clearml_stats:
 
     def update_tasks_and_projects(self):
         last_update = self._last_update()
-        project_list = self._get_project_list(last_update)
-        task_list = self._get_task_list(last_update)
-        self._update_tasks(task_list)
-        self._update_projects(project_list)
+        projects = self._get_projects(last_update)
+        tasks = self._get_tasks(last_update)
+        self._update_tasks(tasks)
+        self._update_projects(projects)
 
     def get_tasks_by_project(self, project_name_filter: str = "") -> pd.DataFrame:
         if project_name_filter == "":
@@ -123,49 +128,56 @@ class clearml_stats:
             )  # Jan 1 2022 at 1 am - i.e., before FT drafting was released
         return pd.to_datetime(max([v["created"] for v in self._tasks.values()]))
 
-    def _get_project_list(self, last_update: datetime) -> list:
-        project_list = []
+    def _get_projects(self, last_update: datetime) -> Generator:
         page = 0
         while True:
             new_projects = self._client.projects.get_all(
                 page=page, page_size=PAGE_SIZE, order_by=["-created"]
             )
             if len(new_projects) == 0:
-                break
-            project_list += new_projects
+                return
             page += 1
             time_of_last_project = pd.to_datetime(new_projects[-1].data.created)
             print(
                 f"Update project list-> Time: {time_of_last_project}, current page: {page}, total projects so far: {page*PAGE_SIZE}"
             )
+            for project in new_projects:
+                yield project
             if last_update > time_of_last_project:
-                break
-        return project_list
+                return
 
-    def _get_task_list(self, last_update: datetime) -> list:
-        task_list = []
+    def _get_tasks(self, last_update: datetime) -> Generator[Task, None, None]:
         page = 0
         while True:
             new_tasks = self._client.tasks.get_all(
                 page=page, page_size=PAGE_SIZE, order_by=["-created"]
             )
             if len(new_tasks) == 0:
-                break
-            task_list += new_tasks
+                return
             page += 1
             time_of_last_task = pd.to_datetime(new_tasks[-1].data.created)
-            print(
-                f"Update tasks list-> Time: {time_of_last_task}, current page: {page}, total tasks so far: {page*PAGE_SIZE}"
-            )
+            for task in new_tasks:
+                yield task
             if last_update > time_of_last_task:
                 break
-        return task_list
 
-    def _update_tasks(self, task_list):
+    def _update_tasks(self, new_task_generator: Generator[Task, None, None]):
         tasks = self._tasks
-        new_tasks = [task for task in task_list if task.id not in tasks]
+        new_tasks = (task for task in new_task_generator if task.id not in tasks)
+        task_fields = set(
+            [
+                "script",
+                "script_args",
+                "hyperparams",
+                "project",
+                "execution",
+                "id",
+                "started",
+                "completed",
+            ]
+        )
         for task in tqdm(new_tasks):
-            data = task.data.to_dict()
+            data = {k: v for k, v in task.data.to_dict().items() if k in task_fields}
             try:
                 script = data["script"]["diff"][:-11]
                 args = script.split("args = ")
@@ -178,20 +190,22 @@ class clearml_stats:
                 )
             except:
                 data["script_args"] = {}
+            data["tags"] = task.tags
             tasks[task.id] = data
         self._save_tasks(tasks)
 
-    def _update_projects(self, project_list: list):
+    def _update_projects(self, new_projects_generator: Generator):
         projects = self._projects
-        new_projects = [
-            project for project in project_list if project.id not in projects
-        ]
+        new_projects = (
+            project for project in new_projects_generator if project.id not in projects
+        )
         for project in new_projects:
             projects[project.id] = {}
             projects[project.id]["name"] = project.name
             projects[project.id]["first_run"] = None
             projects[project.id]["last_run"] = None
             projects[project.id]["tasks"] = []
+            projects[project.id]["tags"] = []
         for id, task in self._tasks.items():
             if task["project"] not in projects:
                 projects[task["project"]] = {}
@@ -199,6 +213,9 @@ class clearml_stats:
                 projects[task["project"]]["first_run"] = None
                 projects[task["project"]]["last_run"] = None
                 projects[task["project"]]["tasks"] = []
+                projects[task["project"]]["tags"] = (
+                    task["tags"] if "tags" in task else []
+                )
             if id in projects[task["project"]]["tasks"]:
                 continue
             if "started" in task:
@@ -261,6 +278,7 @@ class clearml_stats:
                 "first_run": "min",
                 "last_run": "max",
                 "tasks": "sum",
+                "tags": "first",
             }
         )
         self._language_projects_df["num_tasks"] = self._language_projects_df[
@@ -284,7 +302,6 @@ class clearml_stats:
         self._language_projects_df.to_csv(
             language_project_output_filename, date_format="%Y/%m/%d"
         )
-        print(self._language_projects_df.index, self._language_projects_df.columns)
 
     def _assign_project_type(self):
         for project_id in self._projects:
@@ -369,11 +386,18 @@ class clearml_stats:
                                 "value"
                             ].replace("'", '"')
                         )[0]
-                        self._projects[project_id]["src_lang"] = (
-                            config["src"][0].split("-")[0]
-                            if isinstance(config["src"], list)
-                            else config["src"].split("-")[0]
-                        )
+                        if isinstance(config["src"], list):
+                            self._projects[project_id]["src_lang"] = (
+                                config["src"][0].split("-")[0]
+                                if isinstance(config["src"][0], str)
+                                else config["src"][0]["name"].split("-")[0]
+                            )
+
+                        else:
+                            self._projects[project_id]["src_lang"] = config[
+                                "src"
+                            ].split("-")[0]
+
                         if len(self._projects[project_id]["src_lang"]) == 2:
                             two_letter_tag = self._projects[project_id]["src_lang"]
                             self._projects[project_id]["src_lang"] = task[
@@ -385,12 +409,16 @@ class clearml_stats:
                             )[
                                 0
                             ]
-
-                        self._projects[project_id]["trg_lang"] = (
-                            config["trg"][0].split("-")[0]
-                            if isinstance(config["trg"], list)
-                            else config["trg"].split("-")[0]
-                        )
+                        if isinstance(config["trg"], list):
+                            self._projects[project_id]["trg_lang"] = (
+                                config["trg"][0].split("-")[0]
+                                if isinstance(config["trg"][0], str)
+                                else config["trg"][0]["name"].split("-")[0]
+                            )
+                        else:
+                            self._projects[project_id]["trg_lang"] = config[
+                                "trg"
+                            ].split("-")[0]
                         if len(self._projects[project_id]["trg_lang"]) == 2:
                             two_letter_tag = self._projects[project_id]["trg_lang"]
                             self._projects[project_id]["trg_lang"] = task[
