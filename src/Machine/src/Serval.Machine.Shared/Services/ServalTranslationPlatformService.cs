@@ -188,28 +188,23 @@ public class ServalTranslationPlatformService(
         );
     }
 
-    public async Task UpdateParallelCorpusAnalysisAsync(
+    public async Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyCollection<ParallelCorpusAnalysis> parallelCorpusAnalysis,
+        string quoteConvention,
         CancellationToken cancellationToken = default
     )
     {
-        var content = new UpdateParallelCorpusAnalysisRequest { EngineId = engineId, BuildId = buildId };
-        foreach (ParallelCorpusAnalysis analysis in parallelCorpusAnalysis)
+        var content = new UpdateTargetQuoteConventionRequest
         {
-            content.ParallelCorpusAnalysis.Add(
-                new ParallelCorpusAnalysisResult
-                {
-                    ParallelCorpusId = analysis.ParallelCorpusRef,
-                    TargetQuoteConvention = analysis.TargetQuoteConvention,
-                }
-            );
-        }
+            EngineId = engineId,
+            BuildId = buildId,
+            TargetQuoteConvention = quoteConvention
+        };
 
         await _outboxService.EnqueueMessageAsync(
             outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.UpdateParallelCorpusAnalysis,
+            method: ServalTranslationPlatformOutboxConstants.UpdateTargetQuoteConvention,
             groupId: engineId,
             content,
             cancellationToken: cancellationToken

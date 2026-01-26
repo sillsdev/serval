@@ -298,24 +298,19 @@ public class PretranslationService(
         }
         if (
             quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized
-            && build.Analysis is not null
-            && build.Analysis.Any(a => a.TargetQuoteConvention != "")
+            && build.TargetQuoteConvention is not null
+            && build.TargetQuoteConvention != ""
         )
         {
-            ParallelCorpusAnalysis analysis =
-                build.Analysis.FirstOrDefault(a => a.TargetQuoteConvention != "" && a.ParallelCorpusRef == corpusId)
-                ?? build.Analysis.First(a => a.TargetQuoteConvention != "");
-            usfm = DenormalizeQuotationMarks(usfm, analysis);
+            usfm = DenormalizeQuotationMarks(usfm, build.TargetQuoteConvention);
         }
 
         return usfm;
     }
 
-    private static string DenormalizeQuotationMarks(string usfm, ParallelCorpusAnalysis analysis)
+    private static string DenormalizeQuotationMarks(string usfm, string quoteConvention)
     {
-        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
-            analysis.TargetQuoteConvention
-        );
+        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(quoteConvention);
         if (targetQuoteConvention is null)
             return usfm;
 
