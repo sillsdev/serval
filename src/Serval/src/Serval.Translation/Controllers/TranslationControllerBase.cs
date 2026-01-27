@@ -9,8 +9,15 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
 
     protected TranslationBuildDto Map(Build source)
     {
-        string targetQuoteConvention = source.TargetQuoteConvention ?? "";
-
+        string targetQuoteConvention = "";
+        if (source.TargetQuoteConvention != null)
+        {
+            targetQuoteConvention = source.TargetQuoteConvention;
+        }
+        else if (source.Analysis?.Any(a => a.TargetQuoteConvention != "") ?? false)
+        {
+            targetQuoteConvention = source.Analysis.First(a => a.TargetQuoteConvention != "").TargetQuoteConvention;
+        }
         return new TranslationBuildDto
         {
             Id = source.Id,
