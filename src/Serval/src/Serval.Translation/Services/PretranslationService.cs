@@ -298,8 +298,7 @@ public class PretranslationService(
         }
         if (
             quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized
-            && build.TargetQuoteConvention is not null
-            && build.TargetQuoteConvention != ""
+            && !string.IsNullOrEmpty(build.TargetQuoteConvention)
         )
         {
             usfm = DenormalizeQuotationMarks(usfm, build.TargetQuoteConvention);
