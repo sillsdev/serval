@@ -39,6 +39,6 @@ public record TranslationBuildDto
 
     [Obsolete]
     public IReadOnlyList<ParallelCorpusAnalysisDto>? Analysis { get; init; }
-    public required string TargetQuoteConvention { get; init; }
-    public required bool CanDenormalizeQuotes { get; init; }
+    public string? TargetQuoteConvention { get; init; }
+    public bool CanDenormalizeQuotes { get; init; }
 }

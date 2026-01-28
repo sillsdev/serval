@@ -232,7 +232,7 @@ public class PlatformServiceTests
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        Assert.That(build?.Analysis, Is.Null);
+        Assert.That(build?.TargetQuoteConvention, Is.EqualTo(""));
     }
 
     [Test]

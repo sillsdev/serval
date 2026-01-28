@@ -10791,9 +10791,8 @@ namespace Serval.Client
         [System.Obsolete]
         public System.Collections.Generic.IList<ParallelCorpusAnalysis>? Analysis { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("targetQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TargetQuoteConvention { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("targetQuoteConvention", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? TargetQuoteConvention { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("canDenormalizeQuotes", Required = Newtonsoft.Json.Required.Always)]
         public bool CanDenormalizeQuotes { get; set; } = default!;

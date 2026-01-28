@@ -1259,7 +1259,13 @@ public class TranslationEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        return Ok((await _buildService.GetAllAsync(Owner, id, cancellationToken)).Select(Map));
+        return Ok(
+            await Task.WhenAll(
+                (await _buildService.GetAllAsync(Owner, id, cancellationToken)).Select(async b =>
+                    Map(b, await _engineService.GetAsync(b.EngineRef, cancellationToken))
+                )
+            )
+        );
     }
 
     /// <summary>
@@ -1314,13 +1320,16 @@ public class TranslationEnginesController(
             {
                 EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
                 EntityChangeType.Delete => NotFound(),
-                _ => Ok(Map(change.Entity!)),
+                _
+                    => Ok(
+                        Map(change.Entity!, await _engineService.GetAsync(change.Entity!.EngineRef, cancellationToken))
+                    ),
             };
         }
         else
         {
             Build build = await _buildService.GetAsync(buildId, cancellationToken);
-            return Ok(Map(build));
+            return Ok(Map(build, await _engineService.GetAsync(build.EngineRef, cancellationToken)));
         }
     }
 
@@ -1394,7 +1403,7 @@ public class TranslationEnginesController(
         if (!await _engineService.StartBuildAsync(build, cancellationToken))
             return Conflict();
 
-        TranslationBuildDto dto = Map(build);
+        TranslationBuildDto dto = Map(build, await _engineService.GetAsync(build.EngineRef, cancellationToken));
         return Created(dto.Url, dto);
     }
 
@@ -1445,7 +1454,10 @@ public class TranslationEnginesController(
             {
                 EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
                 EntityChangeType.Delete => NoContent(),
-                _ => Ok(Map(change.Entity!)),
+                _
+                    => Ok(
+                        Map(change.Entity!, await _engineService.GetAsync(change.Entity!.EngineRef, cancellationToken))
+                    ),
             };
         }
         else
@@ -1454,7 +1466,7 @@ public class TranslationEnginesController(
             if (build == null)
                 return NoContent();
 
-            return Ok(Map(build));
+            return Ok(Map(build, await _engineService.GetAsync(build.EngineRef, cancellationToken)));
         }
     }
 
@@ -1490,7 +1502,7 @@ public class TranslationEnginesController(
         Build? build = await _engineService.CancelBuildAsync(id, cancellationToken);
         if (build is null)
             return NoContent();
-        return Ok(Map(build));
+        return Ok(Map(build, await _engineService.GetAsync(build.EngineRef, cancellationToken)));
     }
 
     /// <summary>

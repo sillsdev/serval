@@ -7,17 +7,10 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
 {
     private readonly IUrlService _urlService = urlService;
 
-    protected TranslationBuildDto Map(Build source)
+    protected TranslationBuildDto Map(Build source, Engine engine)
     {
-        string targetQuoteConvention = "";
-        if (source.TargetQuoteConvention != null)
-        {
-            targetQuoteConvention = source.TargetQuoteConvention;
-        }
-        else if (source.Analysis?.Any(a => a.TargetQuoteConvention != "") ?? false)
-        {
-            targetQuoteConvention = source.Analysis.First(a => a.TargetQuoteConvention != "").TargetQuoteConvention;
-        }
+        string targetQuoteConvention = source.TargetQuoteConvention ?? "";
+
         return new TranslationBuildDto
         {
             Id = source.Id,
@@ -45,7 +38,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList(),
-            Analysis = source.Analysis?.Select(a => Map(a, targetQuoteConvention)).ToList(),
+            Analysis = Map(engine, targetQuoteConvention).ToList(),
             TargetQuoteConvention = targetQuoteConvention,
             CanDenormalizeQuotes = targetQuoteConvention != ""
         };
@@ -133,14 +126,14 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Started = source.Started,
         };
 
-    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source, string targetQuoteConvention) =>
-        new ParallelCorpusAnalysisDto
+    private static IEnumerable<ParallelCorpusAnalysisDto> Map(Engine engine, string targetQuoteConvention) =>
+        engine.ParallelCorpora.Select(pc => new ParallelCorpusAnalysisDto
         {
-            ParallelCorpusRef = source.ParallelCorpusRef,
+            ParallelCorpusRef = pc.Id,
             TargetQuoteConvention = targetQuoteConvention,
             SourceQuoteConvention = "ignore",
             CanDenormalizeQuotes = targetQuoteConvention != ""
-        };
+        });
 
     private static ExecutionDataDto Map(ExecutionData source) =>
         new ExecutionDataDto

@@ -22,6 +22,5 @@ public record Build : IOwnedEntity
     public DateTime? DateStarted { get; set; }
     public DateTime? DateCompleted { get; set; }
     public IReadOnlyList<BuildPhase>? Phases { get; init; }
-    public IReadOnlyList<ParallelCorpusAnalysis>? Analysis { get; init; }
     public string? TargetQuoteConvention { get; init; }
 }
