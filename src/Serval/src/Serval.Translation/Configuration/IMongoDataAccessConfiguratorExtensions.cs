@@ -62,7 +62,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                     .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
                     .ToListAsync();
 
-                //migrate by adding TargetQuoteConvention field populated from deprecated analysis field
+                //migrate by adding TargetQuoteConvention field populated from analysis field
                 await c.Aggregate()
                     .Match(Builders<Build>.Filter.Exists(b => b.TargetQuoteConvention, false))
                     .Match(Builders<Build>.Filter.Exists("analysis"))
