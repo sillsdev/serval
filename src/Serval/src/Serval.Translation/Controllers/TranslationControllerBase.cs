@@ -126,10 +126,10 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Started = source.Started,
         };
 
-    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis analysis, string targetQuoteConvention) =>
+    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source, string targetQuoteConvention) =>
         new ParallelCorpusAnalysisDto
         {
-            ParallelCorpusRef = analysis.ParallelCorpusRef,
+            ParallelCorpusRef = source.ParallelCorpusRef,
             TargetQuoteConvention = targetQuoteConvention,
             SourceQuoteConvention = "ignore",
             CanDenormalizeQuotes = targetQuoteConvention != ""
