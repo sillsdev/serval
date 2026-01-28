@@ -524,14 +524,6 @@ public class PretranslationServiceTests
                         EngineRef = "engine1",
                         Owner = "owner1",
                         DateFinished = DateTime.UnixEpoch,
-                        Analysis =
-                        [
-                            new ParallelCorpusAnalysis()
-                            {
-                                ParallelCorpusRef = "corpus1",
-                                TargetQuoteConvention = "standard_english"
-                            }
-                        ],
                         TargetQuoteConvention = "standard_english"
                     },
                     new()
@@ -540,14 +532,6 @@ public class PretranslationServiceTests
                         EngineRef = "parallel_engine1",
                         Owner = "owner1",
                         DateFinished = DateTime.UnixEpoch,
-                        Analysis =
-                        [
-                            new ParallelCorpusAnalysis()
-                            {
-                                ParallelCorpusRef = "parallel_corpus1",
-                                TargetQuoteConvention = "standard_english"
-                            }
-                        ],
                         TargetQuoteConvention = "standard_english"
                     }
                 ]
