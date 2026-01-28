@@ -63,19 +63,19 @@ public static class IMongoDataAccessConfiguratorExtensions
                     .ToListAsync();
 
                 //migrate by adding TargetQuoteConvention field populated from deprecated analysis field
-                // await c.Aggregate()
-                //     .Match(Builders<Build>.Filter.Exists(b => b.TargetQuoteConvention, false))
-                //     .Match(Builders<Build>.Filter.Exists("analysis"))
-                //     .Unwind("analysis")
-                //     .Match(Builders<BsonDocument>.Filter.Ne("$analysis.targetQuoteConvention", ""))
-                //     .AppendStage<BsonDocument>(
-                //         new BsonDocument(
-                //             "$set",
-                //             new BsonDocument("targetQuoteConvention", "$analysis.targetQuoteConvention")
-                //         )
-                //     )
-                //     .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
-                //     .ToListAsync();
+                await c.Aggregate()
+                    .Match(Builders<Build>.Filter.Exists(b => b.TargetQuoteConvention, false))
+                    .Match(Builders<Build>.Filter.Exists("analysis"))
+                    .Unwind("analysis")
+                    .Match(Builders<BsonDocument>.Filter.Ne("analysis.targetQuoteConvention", ""))
+                    .AppendStage<BsonDocument>(
+                        new BsonDocument(
+                            "$set",
+                            new BsonDocument("targetQuoteConvention", "$analysis.targetQuoteConvention")
+                        )
+                    )
+                    .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
+                    .ToListAsync();
             }
         );
         configurator.AddRepository<Pretranslation>(
