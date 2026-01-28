@@ -39,10 +39,10 @@ public interface IPlatformService
         CancellationToken cancellationToken = default
     );
 
-    Task UpdateParallelCorpusAnalysisAsync(
+    Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyCollection<ParallelCorpusAnalysis> parallelCorpusAnalysis,
+        string quoteConvention,
         CancellationToken cancellationToken = default
     );
 }

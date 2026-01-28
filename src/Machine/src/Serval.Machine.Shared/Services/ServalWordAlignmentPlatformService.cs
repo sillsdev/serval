@@ -186,14 +186,14 @@ public class ServalWordAlignmentPlatformService(
         );
     }
 
-    public Task UpdateParallelCorpusAnalysisAsync(
+    public Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyCollection<ParallelCorpusAnalysis> parallelCorpusAnalysis,
+        string targetQuoteConvention,
         CancellationToken cancellationToken = default
     )
     {
-        // Word alignment does not support parallel corpus analysis
+        // Word alignment does not support quote convention analysis
         return Task.CompletedTask;
     }
 }

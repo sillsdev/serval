@@ -60,7 +60,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             cancellationToken
         );
 
-        await UpdateParallelCorpusAnalysisAsync(engineId, buildId, data, cancellationToken);
+        await UpdateTargetQuoteConventionAsync(engineId, buildId, data, cancellationToken);
 
         if (inferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
         {
@@ -95,7 +95,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         CancellationToken cancellationToken
     );
 
-    protected virtual Task UpdateParallelCorpusAnalysisAsync(
+    protected virtual Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpus> corpora,

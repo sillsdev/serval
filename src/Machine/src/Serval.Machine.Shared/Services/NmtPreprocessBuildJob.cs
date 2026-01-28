@@ -30,32 +30,30 @@ public class NmtPreprocessBuildJob(
             == Flores200Support.LanguageAndScript;
     }
 
-    protected override async Task UpdateParallelCorpusAnalysisAsync(
+    protected override async Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
     {
-        List<ParallelCorpusAnalysis> parallelCorpusAnalysis = [];
+        List<QuoteConventionAnalysis> quoteConventionAnalyses = [];
         foreach (ParallelCorpus parallelCorpus in corpora)
         {
-            QuoteConventionAnalysis? targetQuotationConvention =
+            QuoteConventionAnalysis? targetQuotationConventionAnalysis =
                 ParallelCorpusPreprocessingService.AnalyzeTargetCorpusQuoteConvention(parallelCorpus);
-            string targetQuotationConventionName = targetQuotationConvention?.BestQuoteConvention?.Name ?? string.Empty;
-            parallelCorpusAnalysis.Add(
-                new ParallelCorpusAnalysis
-                {
-                    ParallelCorpusRef = parallelCorpus.Id,
-                    TargetQuoteConvention = targetQuotationConventionName,
-                }
-            );
+            if (targetQuotationConventionAnalysis != null)
+                quoteConventionAnalyses.Add(targetQuotationConventionAnalysis);
         }
 
-        await PlatformService.UpdateParallelCorpusAnalysisAsync(
+        string overallTargetQuoteConventionAnalysis =
+            QuoteConventionAnalysis.CombineWithWeightedAverage(quoteConventionAnalyses)?.BestQuoteConvention?.Name
+            ?? string.Empty;
+
+        await PlatformService.UpdateTargetQuoteConventionAsync(
             engineId,
             buildId,
-            parallelCorpusAnalysis,
+            overallTargetQuoteConventionAnalysis,
             cancellationToken
         );
     }

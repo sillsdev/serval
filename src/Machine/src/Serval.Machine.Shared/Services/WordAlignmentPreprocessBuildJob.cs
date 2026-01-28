@@ -142,7 +142,7 @@ public class WordAlignmentPreprocessBuildJob(
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }
 
-    protected override Task UpdateParallelCorpusAnalysisAsync(
+    protected override Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpus> corpora,
