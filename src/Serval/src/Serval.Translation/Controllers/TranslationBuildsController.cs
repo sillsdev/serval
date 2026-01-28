@@ -6,12 +6,10 @@ namespace Serval.Translation.Controllers;
 public class TranslationBuildsController(
     IAuthorizationService authService,
     IBuildService buildService,
-    IUrlService urlService,
-    IEngineService engineService
+    IUrlService urlService
 ) : TranslationControllerBase(authService, urlService)
 {
     private readonly IBuildService _buildService = buildService;
-    private readonly IEngineService _engineService = engineService;
 
     /// <summary>
     /// Get all builds for your translation engines that are created after the specified date.
@@ -42,8 +40,6 @@ public class TranslationBuildsController(
         {
             builds = await _buildService.GetAllCreatedAfterAsync(Owner, createdAfter, cancellationToken);
         }
-        return await Task.WhenAll(
-            builds.Select(async b => Map(b, await _engineService.GetAsync(b.EngineRef, cancellationToken)))
-        );
+        return builds.Select(Map);
     }
 }

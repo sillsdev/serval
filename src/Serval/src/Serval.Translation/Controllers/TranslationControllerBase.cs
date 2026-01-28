@@ -7,7 +7,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
 {
     private readonly IUrlService _urlService = urlService;
 
-    protected TranslationBuildDto Map(Build source, Engine engine)
+    protected TranslationBuildDto Map(Build source)
     {
         string targetQuoteConvention = source.TargetQuoteConvention ?? "";
 
@@ -38,7 +38,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList(),
-            Analysis = Map(engine, targetQuoteConvention).ToList(),
+            Analysis = source.Analysis?.Select(a => Map(a, targetQuoteConvention)).ToList(),
             TargetQuoteConvention = targetQuoteConvention,
             CanDenormalizeQuotes = targetQuoteConvention != ""
         };
@@ -126,14 +126,14 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Started = source.Started,
         };
 
-    private static IEnumerable<ParallelCorpusAnalysisDto> Map(Engine engine, string targetQuoteConvention) =>
-        engine.ParallelCorpora.Select(pc => new ParallelCorpusAnalysisDto
+    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis analysis, string targetQuoteConvention) =>
+        new ParallelCorpusAnalysisDto
         {
-            ParallelCorpusRef = pc.Id,
+            ParallelCorpusRef = analysis.ParallelCorpusRef,
             TargetQuoteConvention = targetQuoteConvention,
             SourceQuoteConvention = "ignore",
             CanDenormalizeQuotes = targetQuoteConvention != ""
-        });
+        };
 
     private static ExecutionDataDto Map(ExecutionData source) =>
         new ExecutionDataDto
