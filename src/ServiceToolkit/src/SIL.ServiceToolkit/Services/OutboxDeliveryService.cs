@@ -20,15 +20,43 @@ public class OutboxDeliveryService(
         Dictionary<(string, string), IOutboxConsumer> consumers = scope
             .ServiceProvider.GetServices<IOutboxConsumer>()
             .ToDictionary(o => (o.OutboxId, o.Method));
-        await ProcessMessagesAsync(consumers, messages, stoppingToken);
+        TimeSpan timeout = await ProcessMessagesAsync(consumers, messages, stoppingToken)
+            ? TimeSpan.Zero // Success - no timeout retry
+            : TimeSpan.FromSeconds(30); // Failed - retry after 30 seconds max
         using ISubscription<OutboxMessage> subscription = await messages.SubscribeAsync(e => true, stoppingToken);
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                await subscription.WaitForChangeAsync(cancellationToken: stoppingToken);
+                // This token is used to retry messages according to an exponential backoff
+                // to ensure that messages that fail to send are resent in a timely manner,
+                // not just only when a new message arrives in the outbox.
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                if (timeout > TimeSpan.Zero)
+                    cts.CancelAfter(timeout);
+                try
+                {
+                    await subscription.WaitForChangeAsync(cancellationToken: cts.Token);
+                }
+                catch (OperationCanceledException)
+                    when (!stoppingToken.IsCancellationRequested && cts.IsCancellationRequested)
+                {
+                    // Timeout reached
+                }
+
                 stoppingToken.ThrowIfCancellationRequested();
-                await ProcessMessagesAsync(consumers, messages, stoppingToken);
+                if (await ProcessMessagesAsync(consumers, messages, stoppingToken))
+                    // Processed - No timeout
+                    timeout = TimeSpan.Zero;
+                else if (timeout == TimeSpan.Zero)
+                    // First failure - wait 30 seconds
+                    timeout = TimeSpan.FromSeconds(30);
+                else if (timeout < TimeSpan.FromMinutes(15))
+                    // Exponential backoff for subsequent failures
+                    timeout *= 2;
+                else
+                    // Maximum timeout of 15 minutes
+                    timeout = timeout = TimeSpan.FromMinutes(15);
             }
             catch (TimeoutException e)
             {
@@ -48,7 +76,16 @@ public class OutboxDeliveryService(
         _fileSystem.CreateDirectory(_options.CurrentValue.OutboxDir);
     }
 
-    internal async Task ProcessMessagesAsync(
+    /// <summary>
+    /// Processes the messages.
+    /// </summary>
+    /// <param name="consumers">The consumers.</param>
+    /// <param name="messages">The messages.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>
+    /// <c>true</c> if messages were successfully processed (not necessarily sent), otherwise <c>false</c>.
+    /// </returns>
+    internal async Task<bool> ProcessMessagesAsync(
         Dictionary<(string, string), IOutboxConsumer> consumers,
         IRepository<OutboxMessage> messages,
         CancellationToken cancellationToken = default
@@ -56,7 +93,7 @@ public class OutboxDeliveryService(
     {
         bool anyMessages = await messages.ExistsAsync(m => true, cancellationToken);
         if (!anyMessages)
-            return;
+            return true;
 
         IReadOnlyList<OutboxMessage> curMessages = await messages.GetAllAsync(cancellationToken);
 
@@ -82,7 +119,7 @@ public class OutboxDeliveryService(
                         case StatusCode.PermissionDenied:
                         case StatusCode.Cancelled:
                             _logger.LogWarning(e, "Platform Message sending failure: {statusCode}", e.StatusCode);
-                            return;
+                            return false;
                         case StatusCode.DeadlineExceeded:
                         case StatusCode.Internal:
                         case StatusCode.ResourceExhausted:
@@ -93,7 +130,7 @@ public class OutboxDeliveryService(
                         case StatusCode.FailedPrecondition:
                         case StatusCode.InvalidArgument:
                         default:
-                            // log error
+                            // delete message and log error
                             await PermanentlyFailedMessage(messages, message, e);
                             break;
                     }
@@ -107,6 +144,8 @@ public class OutboxDeliveryService(
                     break;
             }
         }
+
+        return true;
     }
 
     private async Task ProcessGroupMessagesAsync(
