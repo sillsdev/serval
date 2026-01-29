@@ -167,7 +167,7 @@ public class PlatformServiceTests
     }
 
     [Test]
-    public async Task UpdateParallelCorpusAnalysisAsync()
+    public async Task UpdateTargetQuoteConventionAsync()
     {
         var env = new TestEnvironment();
 
@@ -198,33 +198,29 @@ public class PlatformServiceTests
         };
         await env.Builds.InsertAsync(build);
 
-        List<ParallelCorpusAnalysis> expected =
-        [
-            new ParallelCorpusAnalysis
-            {
-                ParallelCorpusRef = "parallelCorpus01",
-                TargetQuoteConvention = "typewriter_english",
-            },
-        ];
+        string expected = "typewriter_english";
 
-        var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = engine.Id };
-        updateRequest.ParallelCorpusAnalysis.Add(
-            new ParallelCorpusAnalysisResult
-            {
-                ParallelCorpusId = "parallelCorpus01",
-                TargetQuoteConvention = "typewriter_english",
-            }
-        );
+        var updateRequest = new UpdateTargetQuoteConventionRequest
+        {
+            BuildId = "123",
+            EngineId = engine.Id,
+            TargetQuoteConvention = "typewriter_english"
+        };
 
-        await env.PlatformService.UpdateParallelCorpusAnalysis(updateRequest, env.ServerCallContext);
+        await env.PlatformService.UpdateTargetQuoteConvention(updateRequest, env.ServerCallContext);
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        Assert.That(build?.Analysis, Is.EqualTo(expected));
+        Assert.Multiple(() =>
+        {
+            Assert.That(build?.TargetQuoteConvention, Is.EqualTo(expected));
+            Assert.That(build?.Analysis, Has.Count.EqualTo(1));
+        });
+        Assert.That(build?.Analysis?[0].TargetQuoteConvention, Is.EqualTo(expected));
     }
 
     [Test]
-    public async Task UpdateParallelCorpusAnalysisAsync_NoEngine()
+    public async Task UpdateTargetQuoteConventionAsync_NoEngine()
     {
         var env = new TestEnvironment();
 
@@ -236,16 +232,20 @@ public class PlatformServiceTests
         };
         await env.Builds.InsertAsync(build);
 
-        var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = "e0" };
-        await env.PlatformService.UpdateParallelCorpusAnalysis(updateRequest, env.ServerCallContext);
+        var updateRequest = new UpdateTargetQuoteConventionRequest { BuildId = "123", EngineId = "e0" };
+        await env.PlatformService.UpdateTargetQuoteConvention(updateRequest, env.ServerCallContext);
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        Assert.That(build?.Analysis, Is.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(build?.TargetQuoteConvention, Is.Null);
+            Assert.That(build?.Analysis, Is.Null);
+        });
     }
 
     [Test]
-    public async Task UpdateParallelCorpusAnalysisAsync_NoParallelCorpora()
+    public async Task UpdateTargetQuoteConventionAsync_NoParallelCorpora()
     {
         var env = new TestEnvironment();
 
@@ -268,12 +268,16 @@ public class PlatformServiceTests
         };
         await env.Builds.InsertAsync(build);
 
-        var updateRequest = new UpdateParallelCorpusAnalysisRequest { BuildId = "123", EngineId = engine.Id };
-        await env.PlatformService.UpdateParallelCorpusAnalysis(updateRequest, env.ServerCallContext);
+        var updateRequest = new UpdateTargetQuoteConventionRequest { BuildId = "123", EngineId = engine.Id };
+        await env.PlatformService.UpdateTargetQuoteConvention(updateRequest, env.ServerCallContext);
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        Assert.That(build?.Analysis, Is.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(build?.TargetQuoteConvention, Is.EqualTo(""));
+            Assert.That(build?.Analysis, Has.Count.EqualTo(0));
+        });
     }
 
     [Test]

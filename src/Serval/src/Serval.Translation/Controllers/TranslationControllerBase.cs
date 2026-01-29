@@ -9,8 +9,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
 
     protected TranslationBuildDto Map(Build source)
     {
-        string targetQuoteConvention =
-            source.Analysis?.Select(sa => sa.TargetQuoteConvention).FirstOrDefault(qc => qc != "") ?? "";
+        string targetQuoteConvention = source.TargetQuoteConvention ?? "";
 
         return new TranslationBuildDto
         {
@@ -40,6 +39,8 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList(),
             Analysis = source.Analysis?.Select(a => Map(a, targetQuoteConvention)).ToList(),
+            TargetQuoteConvention = targetQuoteConvention,
+            CanDenormalizeQuotes = targetQuoteConvention != ""
         };
     }
 
