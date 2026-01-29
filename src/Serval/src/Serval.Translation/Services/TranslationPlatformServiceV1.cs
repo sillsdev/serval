@@ -316,11 +316,19 @@ public class TranslationPlatformServiceV1(
         Engine? engine = await _engines.GetAsync(request.EngineId, context.CancellationToken);
         if (engine == null)
             return Empty;
+        var analysis = engine
+            .ParallelCorpora.Select(pc => new ParallelCorpusAnalysis
+            {
+                ParallelCorpusRef = pc.Id,
+                TargetQuoteConvention = request.TargetQuoteConvention
+            })
+            .ToList();
         await _builds.UpdateAsync(
             b => b.Id == request.BuildId && b.EngineRef == request.EngineId,
             u =>
             {
                 u.Set(b => b.TargetQuoteConvention, request.TargetQuoteConvention);
+                u.Set(b => b.Analysis, analysis);
             },
             cancellationToken: context.CancellationToken
         );
