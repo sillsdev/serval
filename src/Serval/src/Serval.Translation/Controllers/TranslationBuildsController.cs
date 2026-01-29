@@ -31,15 +31,13 @@ public class TranslationBuildsController(
         CancellationToken cancellationToken
     )
     {
-        IEnumerable<Build> builds;
         if (createdAfter is null)
         {
-            builds = await _buildService.GetAllAsync(Owner, cancellationToken);
+            return (await _buildService.GetAllAsync(Owner, cancellationToken)).Select(Map);
         }
         else
         {
-            builds = await _buildService.GetAllCreatedAfterAsync(Owner, createdAfter, cancellationToken);
+            return (await _buildService.GetAllCreatedAfterAsync(Owner, createdAfter, cancellationToken)).Select(Map);
         }
-        return builds.Select(Map);
     }
 }
