@@ -1,4 +1,4 @@
-﻿namespace SIL.ServiceToolkit.Services;
+namespace SIL.ServiceToolkit.Services;
 
 public class OutboxDeliveryService(
     IServiceProvider services,
@@ -184,7 +184,7 @@ public class OutboxDeliveryService(
         }
         else
         {
-            await LogFailedAttempt(messages, message, e);
+            LogFailedAttempt(message, e);
             return false;
         }
     }
@@ -203,14 +203,12 @@ public class OutboxDeliveryService(
         await messages.DeleteAsync(message.Id);
     }
 
-    private async Task LogFailedAttempt(IRepository<OutboxMessage> messages, OutboxMessage message, Exception e)
+    private void LogFailedAttempt(OutboxMessage message, Exception e)
     {
         // log error
-        await messages.UpdateAsync(m => m.Id == message.Id, b => b.Inc(m => m.Attempts, 1));
         _logger.LogError(
             e,
-            "Attempt {Attempts}.  Failed to process message {Id}: {Method} with content {Content} and error message: {ErrorMessage}",
-            message.Attempts + 1,
+            "Failed to process message {Id}: {Method} with content {Content} and error message: {ErrorMessage}",
             message.Id,
             message.Method,
             message.Content,
