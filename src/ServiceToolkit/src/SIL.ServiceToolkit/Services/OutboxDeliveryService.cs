@@ -1,4 +1,4 @@
-namespace SIL.ServiceToolkit.Services;
+﻿namespace SIL.ServiceToolkit.Services;
 
 public class OutboxDeliveryService(
     IServiceProvider services,
@@ -124,20 +124,20 @@ public class OutboxDeliveryService(
                         case StatusCode.Internal:
                         case StatusCode.ResourceExhausted:
                         case StatusCode.Unknown:
-                            abortMessageGroup = !await CheckIfFinalMessageAttempt(messages, message, e);
+                            abortMessageGroup = !await CheckIfFinalMessageAttemptAsync(messages, message, e);
                             break;
                         case StatusCode.Aborted:
                         case StatusCode.FailedPrecondition:
                         case StatusCode.InvalidArgument:
                         default:
                             // delete message and log error
-                            await PermanentlyFailedMessage(messages, message, e);
+                            await PermanentlyFailedMessageAsync(messages, message, e);
                             break;
                     }
                 }
                 catch (Exception e)
                 {
-                    await PermanentlyFailedMessage(messages, message, e);
+                    await PermanentlyFailedMessageAsync(messages, message, e);
                     break;
                 }
                 if (abortMessageGroup)
@@ -171,7 +171,7 @@ public class OutboxDeliveryService(
         _fileSystem.DeleteFile(filePath);
     }
 
-    private async Task<bool> CheckIfFinalMessageAttempt(
+    private async Task<bool> CheckIfFinalMessageAttemptAsync(
         IRepository<OutboxMessage> messages,
         OutboxMessage message,
         Exception e
@@ -179,7 +179,7 @@ public class OutboxDeliveryService(
     {
         if (message.Created < DateTimeOffset.UtcNow.Subtract(_options.CurrentValue.MessageExpirationTimeout))
         {
-            await PermanentlyFailedMessage(messages, message, e);
+            await PermanentlyFailedMessageAsync(messages, message, e);
             return true;
         }
         else
@@ -189,7 +189,11 @@ public class OutboxDeliveryService(
         }
     }
 
-    private async Task PermanentlyFailedMessage(IRepository<OutboxMessage> messages, OutboxMessage message, Exception e)
+    private async Task PermanentlyFailedMessageAsync(
+        IRepository<OutboxMessage> messages,
+        OutboxMessage message,
+        Exception e
+    )
     {
         // log error
         _logger.LogError(
