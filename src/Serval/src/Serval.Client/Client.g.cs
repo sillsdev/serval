@@ -11310,9 +11310,17 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TextId { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("sourceRefs", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> Refs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> SourceRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("targetRefs", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> TargetRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
+        public System.Collections.Generic.IList<string>? Refs { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -11791,9 +11799,17 @@ namespace Serval.Client
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string TextId { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Always)]
+        [Newtonsoft.Json.JsonProperty("sourceRefs", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> Refs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+        public System.Collections.Generic.IList<string> SourceRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("targetRefs", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> TargetRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
+        public System.Collections.Generic.IList<string>? Refs { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceTokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]

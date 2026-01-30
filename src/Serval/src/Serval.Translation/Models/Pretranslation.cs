@@ -8,6 +8,8 @@ public class Pretranslation : IEntity
     public int ModelRevision { get; init; }
     public required string CorpusRef { get; init; }
     public required string TextId { get; init; }
+    public required IReadOnlyList<string> SourceRefs { get; init; }
+    public required IReadOnlyList<string> TargetRefs { get; init; }
     public required IReadOnlyList<string> Refs { get; init; }
     public required string Translation { get; init; }
     public IEnumerable<string>? SourceTokens { get; init; }

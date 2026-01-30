@@ -131,29 +131,15 @@ public class PretranslationService(
         );
 
         IEnumerable<(
-            IReadOnlyList<ScriptureRef> ScriptureRefs,
+            IReadOnlyList<ScriptureRef> SourceScriptureRefs,
+            IReadOnlyList<ScriptureRef> TargetScriptureRefs,
             Pretranslation Pretranslation,
             PretranslationUsfmMarkerBehavior ParagraphBehavior,
             PretranslationUsfmMarkerBehavior StyleBehavior
         )> pretranslationRows = pretranslations
-            .Select(p =>
-                (
-                    ScriptureRefs: (IReadOnlyList<ScriptureRef>)
-                        p.Refs.Select(r =>
-                        {
-                            bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
-                            return new { Parsed = parsed, ScriptureRef = sr };
-                        })
-                            .Where(r => r.Parsed)
-                            .Select(r => r.ScriptureRef)
-                            .ToArray(),
-                    p,
-                    paragraphMarkerBehavior,
-                    styleMarkerBehavior
-                )
-            )
-            .Where(p => p.ScriptureRefs.Any())
-            .OrderBy(p => p.ScriptureRefs[0]);
+            .Select(p => Map(p, sourceSettings, targetSettings, paragraphMarkerBehavior, styleMarkerBehavior))
+            .Where(p => p.TargetScriptureRefs.Any())
+            .OrderBy(p => p.TargetScriptureRefs[0]);
 
         List<IUsfmUpdateBlockHandler> updateBlockHandlers = [];
         if (
@@ -172,7 +158,9 @@ public class PretranslationService(
             // use relaxed references since the USFM structure may not be the same
             pretranslationRows = pretranslationRows.Select(p =>
                 (
-                    (IReadOnlyList<ScriptureRef>)p.ScriptureRefs.Select(r => r.ToRelaxed()).ToArray(),
+                    // we won't use the source refs
+                    (IReadOnlyList<ScriptureRef>)[],
+                    (IReadOnlyList<ScriptureRef>)p.TargetScriptureRefs.Select(r => r.ToRelaxed()).ToArray(),
                     p.Pretranslation,
                     p.ParagraphBehavior,
                     p.StyleBehavior
@@ -186,7 +174,7 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslationRows.Select(Map).ToList(),
+                            pretranslationRows.Select(pr => Map(pr, isSource: false)).ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
@@ -202,7 +190,7 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslationRows.Select(Map).ToList(),
+                            pretranslationRows.Select(pr => Map(pr, isSource: false)).ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.PreferNew,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
@@ -234,7 +222,7 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslationRows.Select(Map).ToList(),
+                            pretranslationRows.Select(pr => Map(pr, isSource: false)).ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
@@ -266,7 +254,7 @@ public class PretranslationService(
                     usfm =
                         updater.UpdateUsfm(
                             textId,
-                            pretranslationRows.Select(Map).ToList(),
+                            pretranslationRows.Select(pr => Map(pr, isSource: true)).ToList(),
                             fullName: targetSettings.FullName,
                             textBehavior: UpdateUsfmTextBehavior.StripExisting,
                             paragraphBehavior: Map(paragraphMarkerBehavior),
@@ -305,6 +293,60 @@ public class PretranslationService(
         }
 
         return usfm;
+    }
+
+    private static (
+        IReadOnlyList<ScriptureRef> SourceScriptureRefs,
+        IReadOnlyList<ScriptureRef> TargetScriptureRefs,
+        Pretranslation Pretranslation,
+        PretranslationUsfmMarkerBehavior ParagraphMarkerBehavior,
+        PretranslationUsfmMarkerBehavior StyleMarkerBehavior
+    ) Map(
+        Pretranslation pretranslation,
+        ParatextProjectSettings sourceSettings,
+        ParatextProjectSettings targetSettings,
+        PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
+        PretranslationUsfmMarkerBehavior styleMarkerBehavior
+    )
+    {
+        IReadOnlyList<ScriptureRef> sourceScriptureRefs,
+            targetScriptureRefs;
+        if (pretranslation.TargetRefs.Any())
+        {
+            sourceScriptureRefs = pretranslation
+                .SourceRefs.Select(r =>
+                {
+                    bool parsed = ScriptureRef.TryParse(r, sourceSettings.Versification, out ScriptureRef sr);
+                    return new { Parsed = parsed, ScriptureRef = sr };
+                })
+                .Where(r => r.Parsed)
+                .Select(r => r.ScriptureRef)
+                .ToArray();
+            targetScriptureRefs = pretranslation
+                .TargetRefs.Select(r =>
+                {
+                    bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
+                    return new { Parsed = parsed, ScriptureRef = sr };
+                })
+                .Where(r => r.Parsed)
+                .Select(r => r.ScriptureRef)
+                .ToArray();
+        }
+        else
+        {
+            sourceScriptureRefs = [];
+            targetScriptureRefs = targetScriptureRefs = pretranslation
+                .Refs.Select(r =>
+                {
+                    bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
+                    return new { Parsed = parsed, ScriptureRef = sr };
+                })
+                .Where(r => r.Parsed)
+                .Select(r => r.ScriptureRef)
+                .ToArray();
+        }
+
+        return (sourceScriptureRefs, targetScriptureRefs, pretranslation, paragraphMarkerBehavior, styleMarkerBehavior);
     }
 
     private static string DenormalizeQuotationMarks(string usfm, string quoteConvention)
@@ -491,15 +533,19 @@ public class PretranslationService(
 
     private static UpdateUsfmRow Map(
         (
-            IReadOnlyList<ScriptureRef> ScriptureRefs,
+            IReadOnlyList<ScriptureRef> SourceScriptureRefs,
+            IReadOnlyList<ScriptureRef> TargetScriptureRefs,
             Pretranslation Pretranslation,
             PretranslationUsfmMarkerBehavior ParagraphBehavior,
             PretranslationUsfmMarkerBehavior StyleBehavior
-        ) pretranslationRow
+        ) pretranslationRow,
+        bool isSource
     )
     {
         return new UpdateUsfmRow(
-            pretranslationRow.ScriptureRefs,
+            isSource && pretranslationRow.SourceScriptureRefs.Any()
+                ? pretranslationRow.SourceScriptureRefs
+                : pretranslationRow.TargetScriptureRefs,
             pretranslationRow.Pretranslation.Translation,
             pretranslationRow.Pretranslation.Alignment is not null
                 ? new Dictionary<string, object>

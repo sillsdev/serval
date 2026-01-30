@@ -40,7 +40,8 @@ public class ServalUsfmTests
                 )
                 .Select(p => new UpdateUsfmRow(
                     (IReadOnlyList<ScriptureRef>)(
-                        p?.Refs.Select(r => ScriptureRef.Parse(r, settings.Versification).ToRelaxed()).ToArray() ?? []
+                        p?.TargetRefs.Select(r => ScriptureRef.Parse(r, settings.Versification).ToRelaxed()).ToArray()
+                        ?? []
                     ),
                     p?.Translation ?? ""
                 ))

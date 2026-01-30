@@ -7,7 +7,7 @@ namespace Serval.Machine.Shared.Consumers;
 public class TranslationInsertPretranslationsConsumerTests
 {
     [Test]
-    public async Task HandleMessageAsync()
+    public async Task HandleMessageAsync_Refs()
     {
         TestEnvironment env = new();
 
@@ -40,7 +40,51 @@ public class TranslationInsertPretranslationsConsumerTests
                     EngineId = "engine1",
                     CorpusId = "corpus1",
                     TextId = "MAT",
-                    Refs = { "MAT 1:1" },
+                    SourceRefs = { },
+                    TargetRefs = { "MAT 1:1" },
+                    Translation = "translation"
+                },
+                Arg.Any<CancellationToken>()
+            );
+    }
+
+    [Test]
+    public async Task HandleMessageAsync_SourceAndTargetRefs()
+    {
+        TestEnvironment env = new();
+
+        await using (MemoryStream stream = new())
+        {
+            var obj = new JsonObject();
+            await JsonSerializer.SerializeAsync(
+                stream,
+                new JsonArray
+                {
+                    new JsonObject
+                    {
+                        ["corpusId"] = "corpus1",
+                        ["textId"] = "MAT",
+                        ["sourceRefs"] = new JsonArray { "MAT 1:1" },
+                        ["targetRefs"] = new JsonArray { "MAT 1:1" },
+                        ["translation"] = "translation"
+                    }
+                }
+            );
+
+            stream.Seek(0, SeekOrigin.Begin);
+            await env.Consumer.HandleMessageAsync("engine1", stream);
+        }
+
+        _ = env.Client.Received(1).InsertPretranslations();
+        _ = env.PretranslationWriter.Received(1)
+            .WriteAsync(
+                new InsertPretranslationsRequest
+                {
+                    EngineId = "engine1",
+                    CorpusId = "corpus1",
+                    TextId = "MAT",
+                    SourceRefs = { "MAT 1:1" },
+                    TargetRefs = { "MAT 1:1" },
                     Translation = "translation"
                 },
                 Arg.Any<CancellationToken>()

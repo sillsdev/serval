@@ -375,6 +375,8 @@ public class PretranslationServiceTests
                 ModelRevision = 1,
                 CorpusRef = "corpus1",
                 TextId = "MAT",
+                SourceRefs = ["MAT 1:"],
+                TargetRefs = ["MAT 1:"],
                 Refs = ["MAT 1:"],
                 Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
                 SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
@@ -545,6 +547,8 @@ public class PretranslationServiceTests
                         ModelRevision = 1,
                         CorpusRef = "corpus1",
                         TextId = "MAT",
+                        SourceRefs = ["MAT 1:1"],
+                        TargetRefs = ["MAT 1:1"],
                         Refs = ["MAT 1:1"],
                         Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
                         SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
@@ -582,6 +586,8 @@ public class PretranslationServiceTests
                         ModelRevision = 1,
                         CorpusRef = "corpus1",
                         TextId = "MAT",
+                        SourceRefs = ["MAT 1:2"],
+                        TargetRefs = ["MAT 1:2"],
                         Refs = ["MAT 1:2"],
                         Translation = "Chapter 1, verse 2."
                     },
@@ -593,6 +599,8 @@ public class PretranslationServiceTests
                         CorpusRef = "parallel_corpus1",
                         TextId = "MAT",
                         Refs = ["MAT 1:1"],
+                        SourceRefs = ["MAT 1:1"],
+                        TargetRefs = ["MAT 1:1"],
                         Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
                         SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
                         TranslationTokens =
@@ -630,6 +638,8 @@ public class PretranslationServiceTests
                         CorpusRef = "parallel_corpus1",
                         TextId = "MAT",
                         Refs = ["MAT 1:2"],
+                        SourceRefs = ["MAT 1:2"],
+                        TargetRefs = ["MAT 1:2"],
                         Translation = "Chapter 1, verse 2."
                     }
                 ]
