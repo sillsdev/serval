@@ -95,7 +95,8 @@ public class WordAlignmentEngineServiceV1(
                                     EngineId = request.EngineId,
                                     CorpusId = corpus.Id,
                                     TextId = row.TextId,
-                                    Refs = { row.Refs.Select(r => r.ToString()) },
+                                    SourceRefs = { row.SourceRefs.Select(r => r.ToString()) },
+                                    TargetRefs = { row.TargetRefs.Select(r => r.ToString()) },
                                     SourceTokens = { row.SourceSegment.Split() },
                                     TargetTokens = { row.TargetSegment.Split() },
                                     Alignment =

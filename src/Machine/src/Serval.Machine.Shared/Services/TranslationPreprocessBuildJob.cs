@@ -79,7 +79,7 @@ public class TranslationPreprocessBuildJob(
                     pretranslateWriter.WriteString("corpusId", corpus.Id);
                     pretranslateWriter.WriteString("textId", row.TextId);
                     pretranslateWriter.WriteStartArray("refs");
-                    foreach (object rowRef in row.Refs)
+                    foreach (object rowRef in row.TargetRefs)
                         pretranslateWriter.WriteStringValue(rowRef.ToString());
                     pretranslateWriter.WriteEndArray();
                     pretranslateWriter.WriteString("translation", row.SourceSegment);

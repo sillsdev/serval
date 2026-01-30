@@ -1226,6 +1226,8 @@ public class TranslationEngineTests
             CorpusRef = addedCorpus.Id,
             TextId = "all",
             EngineRef = ECHO_ENGINE1_ID,
+            SourceRefs = ["ref1", "ref2"],
+            TargetRefs = ["ref1", "ref2"],
             Refs = ["ref1", "ref2"],
             Translation = "translation",
             ModelRevision = 1
@@ -1291,6 +1293,8 @@ public class TranslationEngineTests
             CorpusRef = addedCorpus.Id,
             TextId = "all",
             EngineRef = ECHO_ENGINE1_ID,
+            SourceRefs = ["ref1", "ref2"],
+            TargetRefs = ["ref1", "ref2"],
             Refs = ["ref1", "ref2"],
             Translation = "translation",
             ModelRevision = 1
@@ -1320,6 +1324,8 @@ public class TranslationEngineTests
             CorpusRef = addedCorpus.Id,
             TextId = "all",
             EngineRef = ECHO_ENGINE1_ID,
+            SourceRefs = ["ref1", "ref2"],
+            TargetRefs = ["ref1", "ref2"],
             Refs = ["ref1", "ref2"],
             Translation = "translation",
             ModelRevision = 1
@@ -2262,6 +2268,8 @@ public class TranslationEngineTests
             CorpusRef = addedCorpus.Id,
             TextId = "MAT",
             EngineRef = ECHO_ENGINE1_ID,
+            SourceRefs = ["MAT 1:1"],
+            TargetRefs = ["MAT 1:1"],
             Refs = ["MAT 1:1"],
             Translation = "translation",
             ModelRevision = 1
@@ -2300,6 +2308,8 @@ public class TranslationEngineTests
             CorpusRef = addedCorpus.Id,
             TextId = "MAT",
             EngineRef = ECHO_ENGINE1_ID,
+            SourceRefs = ["MAT 1:1"],
+            TargetRefs = ["MAT 1:1"],
             Refs = ["MAT 1:1"],
             Translation = "translation",
             ModelRevision = 1

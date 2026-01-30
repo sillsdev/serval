@@ -2127,6 +2127,8 @@ public class EngineServiceTests
                 EngineRef = "engine1",
                 CorpusRef = "corpus1",
                 Refs = ["ref1"],
+                SourceRefs = ["ref1"],
+                TargetRefs = ["ref1"],
                 TextId = "textId1",
                 Translation = "translation"
             };
@@ -2148,6 +2150,8 @@ public class EngineServiceTests
                 EngineRef = "engine1",
                 CorpusRef = "parallel-corpus1",
                 Refs = ["ref1"],
+                SourceRefs = ["ref1"],
+                TargetRefs = ["ref1"],
                 TextId = "textId1",
                 Translation = "translation"
             };
@@ -2174,6 +2178,8 @@ public class EngineServiceTests
                 EngineRef = "engine1",
                 CorpusRef = "corpus1",
                 Refs = ["ref1"],
+                SourceRefs = ["ref1"],
+                TargetRefs = ["ref1"],
                 TextId = "textId1",
                 Translation = "translation"
             };
@@ -2195,6 +2201,8 @@ public class EngineServiceTests
                 EngineRef = "engine1",
                 CorpusRef = "corpus1",
                 Refs = ["ref1"],
+                SourceRefs = ["ref1"],
+                TargetRefs = ["ref1"],
                 TextId = "textId1",
                 Translation = "translation"
             };

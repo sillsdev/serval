@@ -1066,6 +1066,8 @@ public class WordAlignmentEnginesController(
         return new WordAlignmentDto
         {
             TextId = source.TextId,
+            SourceRefs = source.SourceRefs,
+            TargetRefs = source.TargetRefs,
             Refs = source.Refs,
             SourceTokens = source.SourceTokens.ToList(),
             TargetTokens = source.TargetTokens.ToList(),

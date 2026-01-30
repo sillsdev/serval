@@ -31,10 +31,11 @@ public class WordAlignmentInsertWordAlignmentsConsumer(WordAlignmentPlatformApi.
             await call.RequestStream.WriteAsync(
                 new InsertWordAlignmentsRequest
                 {
-                    EngineId = (string)content,
+                    EngineId = content,
                     CorpusId = wordAlignment.CorpusId,
                     TextId = wordAlignment.TextId,
-                    Refs = { wordAlignment.Refs },
+                    SourceRefs = { wordAlignment.SourceRefs },
+                    TargetRefs = { wordAlignment.TargetRefs },
                     SourceTokens = { wordAlignment.SourceTokens },
                     TargetTokens = { wordAlignment.TargetTokens },
                     Alignment = { Map(wordAlignment.Alignment) }
@@ -78,7 +79,8 @@ public class WordAlignmentInsertWordAlignmentsConsumer(WordAlignmentPlatformApi.
             }
             string corpusId = "",
                 textId = "";
-            IReadOnlyList<string> refs = [],
+            IReadOnlyList<string> sourceRefs = [],
+                targetRefs = [],
                 sourceTokens = [],
                 targetTokens = [];
             IReadOnlyList<SIL.Machine.Corpora.AlignedWordPair> alignedWordPairs = [];
@@ -99,7 +101,15 @@ public class WordAlignmentInsertWordAlignmentsConsumer(WordAlignmentPlatformApi.
                             break;
                         case "refs":
                             reader.Read();
-                            refs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "sourceRefs":
+                            reader.Read();
+                            sourceRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "targetRefs":
+                            reader.Read();
+                            targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
                             break;
                         case "sourceTokens":
                             reader.Read();
@@ -124,7 +134,8 @@ public class WordAlignmentInsertWordAlignmentsConsumer(WordAlignmentPlatformApi.
             {
                 CorpusId = corpusId,
                 TextId = textId,
-                Refs = refs,
+                SourceRefs = sourceRefs,
+                TargetRefs = targetRefs,
                 Alignment = alignedWordPairs,
                 SourceTokens = sourceTokens,
                 TargetTokens = targetTokens

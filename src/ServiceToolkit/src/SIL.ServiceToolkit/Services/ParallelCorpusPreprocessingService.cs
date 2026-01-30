@@ -189,7 +189,9 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                         )
                     )
                     {
-                        keyTermTrainingData.Add(new Row(row.TextId, row.Refs, row.SourceText, row.TargetText, 1));
+                        keyTermTrainingData.Add(
+                            new Row(row.TextId, row.SourceRefs, row.TargetRefs, row.SourceText, row.TargetText, 1)
+                        );
                     }
                 }
             }
@@ -257,7 +259,8 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
     {
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
-        List<object> refs = [];
+        List<object> sourceRefs = [];
+        List<object> targetRefs = [];
         string textId = "";
         bool hasUnfinishedRange = false;
 
@@ -269,17 +272,25 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 && (!row.IsSourceInRange || row.IsSourceRangeStart)
             )
             {
-                yield return new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+                yield return new Row(
+                    textId,
+                    sourceRefs,
+                    targetRefs,
+                    srcSegBuffer.ToString(),
+                    trgSegBuffer.ToString(),
+                    1
+                );
 
                 srcSegBuffer.Clear();
                 trgSegBuffer.Clear();
-                refs.Clear();
+                targetRefs.Clear();
 
                 hasUnfinishedRange = false;
             }
 
             textId = row.TextId;
-            refs.AddRange(row.TargetRefs);
+            sourceRefs.AddRange(row.SourceRefs);
+            targetRefs.AddRange(row.TargetRefs);
             if (row.SourceText.Length > 0)
             {
                 if (srcSegBuffer.Length > 0)
@@ -299,15 +310,16 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 continue;
             }
 
-            yield return new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+            yield return new Row(textId, sourceRefs, targetRefs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
 
             srcSegBuffer.Clear();
             trgSegBuffer.Clear();
-            refs.Clear();
+            sourceRefs.Clear();
+            targetRefs.Clear();
         }
         if (hasUnfinishedRange)
         {
-            yield return new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+            yield return new Row(textId, sourceRefs, targetRefs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
         }
     }
 
@@ -315,7 +327,8 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
     {
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
-        List<object> refs = [];
+        List<object> sourceRefs = [];
+        List<object> targetRefs = [];
         string textId = "";
         bool hasUnfinishedRange = false;
         bool isInTrainingData = false;
@@ -331,19 +344,21 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
             )
             {
                 yield return (
-                    new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1),
+                    new Row(textId, sourceRefs, targetRefs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1),
                     isInTrainingData
                 );
 
                 srcSegBuffer.Clear();
                 trgSegBuffer.Clear();
-                refs.Clear();
+                sourceRefs.Clear();
+                targetRefs.Clear();
                 isInTrainingData = false;
                 hasUnfinishedRange = false;
             }
 
             textId = row.TextId;
-            refs.AddRange(row.NRefs[2].Count > 0 ? row.NRefs[2] : row.NRefs[1]);
+            sourceRefs.AddRange(row.NRefs[0]);
+            targetRefs.AddRange(row.NRefs[2].Count > 0 ? row.NRefs[2] : row.NRefs[1]);
             isInTrainingData = isInTrainingData || row.Text(2).Length > 0;
 
             if (row.Text(0).Length > 0)
@@ -365,16 +380,23 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 continue;
             }
 
-            yield return (new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1), isInTrainingData);
+            yield return (
+                new Row(textId, sourceRefs, targetRefs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1),
+                isInTrainingData
+            );
 
             srcSegBuffer.Clear();
             trgSegBuffer.Clear();
-            refs.Clear();
+            sourceRefs.Clear();
+            targetRefs.Clear();
             isInTrainingData = false;
         }
         if (hasUnfinishedRange)
         {
-            yield return (new Row(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1), isInTrainingData);
+            yield return (
+                new Row(textId, sourceRefs, targetRefs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1),
+                isInTrainingData
+            );
         }
     }
 

@@ -88,7 +88,7 @@ public class ParallelCorpusPreprocessingServiceTests
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                 {
                     trainCount++;
-                    trainRefs.Add(row.Refs[0].ToString() ?? "");
+                    trainRefs.Add(row.TargetRefs[0].ToString() ?? "");
                 }
                 return Task.CompletedTask;
             },
@@ -97,7 +97,7 @@ public class ParallelCorpusPreprocessingServiceTests
                 if (row.SourceSegment.Length > 0 && !isInTrainingData)
                 {
                     inferenceCount++;
-                    inferenceRefs.Add(row.Refs[0].ToString() ?? "");
+                    inferenceRefs.Add(row.TargetRefs[0].ToString() ?? "");
                 }
 
                 return Task.CompletedTask;
