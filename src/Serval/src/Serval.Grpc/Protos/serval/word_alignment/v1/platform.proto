@@ -64,10 +64,11 @@ message InsertWordAlignmentsRequest {
     string engine_id = 1;
     string corpus_id = 2;
     string text_id = 3;
-    repeated string refs = 4;
-    repeated string source_tokens = 5;
-    repeated string target_tokens = 6;
-    repeated AlignedWordPair alignment = 7;
+    repeated string source_refs = 4;
+    repeated string target_refs = 5;
+    repeated string source_tokens = 6;
+    repeated string target_tokens = 7;
+    repeated AlignedWordPair alignment = 8;
 }
 
 message UpdateBuildExecutionDataRequest {

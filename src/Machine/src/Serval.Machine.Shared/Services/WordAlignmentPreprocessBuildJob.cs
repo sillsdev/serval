@@ -79,7 +79,7 @@ public class WordAlignmentPreprocessBuildJob(
                     wordAlignmentWriter.WriteString("corpusId", corpus.Id);
                     wordAlignmentWriter.WriteString("textId", row.TextId);
                     wordAlignmentWriter.WriteStartArray("refs");
-                    foreach (object rowRef in row.Refs)
+                    foreach (object rowRef in row.TargetRefs)
                         wordAlignmentWriter.WriteStringValue(rowRef.ToString());
                     wordAlignmentWriter.WriteEndArray();
                     wordAlignmentWriter.WriteString("source", row.SourceSegment);

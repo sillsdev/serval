@@ -319,7 +319,9 @@ public class WordAlignmentPlatformServiceV1(
                     ModelRevision = nextModelRevision,
                     CorpusRef = request.CorpusId,
                     TextId = request.TextId,
-                    Refs = request.Refs.ToList(),
+                    SourceRefs = request.SourceRefs.ToList(),
+                    TargetRefs = request.TargetRefs.ToList(),
+                    Refs = request.TargetRefs.ToList(),
                     SourceTokens = request.SourceTokens.ToList(),
                     TargetTokens = request.TargetTokens.ToList(),
                     Alignment = request

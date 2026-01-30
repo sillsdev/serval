@@ -33,7 +33,8 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
                 EngineId = content,
                 CorpusId = pretranslation.CorpusId,
                 TextId = pretranslation.TextId,
-                Refs = { pretranslation.Refs },
+                SourceRefs = { pretranslation.SourceRefs },
+                TargetRefs = { pretranslation.TargetRefs },
                 Translation = pretranslation.Translation,
                 SourceTokens = { pretranslation.SourceTokens },
                 TranslationTokens = { pretranslation.TranslationTokens },
@@ -74,7 +75,8 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
             string corpusId = "",
                 textId = "",
                 translation = "";
-            IReadOnlyList<string> refs = [],
+            IReadOnlyList<string> sourceRefs = [],
+                targetRefs = [],
                 sourceTokens = [],
                 translationTokens = [];
             IReadOnlyList<SIL.Machine.Corpora.AlignedWordPair> alignedWordPairs = [];
@@ -95,7 +97,15 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
                             break;
                         case "refs":
                             reader.Read();
-                            refs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "sourceRefs":
+                            reader.Read();
+                            sourceRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "targetRefs":
+                            reader.Read();
+                            targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
                             break;
                         case "translation":
                             reader.Read();
@@ -126,7 +136,8 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
             {
                 CorpusId = corpusId,
                 TextId = textId,
-                Refs = refs,
+                SourceRefs = sourceRefs,
+                TargetRefs = targetRefs,
                 Translation = translation,
                 Alignment = alignedWordPairs,
                 SourceTokens = sourceTokens,
