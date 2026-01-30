@@ -349,60 +349,6 @@ public class PretranslationService(
         return (sourceScriptureRefs, targetScriptureRefs, pretranslation, paragraphMarkerBehavior, styleMarkerBehavior);
     }
 
-    private static (
-        IReadOnlyList<ScriptureRef> SourceScriptureRefs,
-        IReadOnlyList<ScriptureRef> TargetScriptureRefs,
-        Pretranslation Pretranslation,
-        PretranslationUsfmMarkerBehavior ParagraphMarkerBehavior,
-        PretranslationUsfmMarkerBehavior StyleMarkerBehavior
-    ) Map(
-        Pretranslation pretranslation,
-        ParatextProjectSettings sourceSettings,
-        ParatextProjectSettings targetSettings,
-        PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
-        PretranslationUsfmMarkerBehavior styleMarkerBehavior
-    )
-    {
-        IReadOnlyList<ScriptureRef> sourceScriptureRefs,
-            targetScriptureRefs;
-        if (pretranslation.TargetRefs.Any())
-        {
-            sourceScriptureRefs = pretranslation
-                .SourceRefs.Select(r =>
-                {
-                    bool parsed = ScriptureRef.TryParse(r, sourceSettings.Versification, out ScriptureRef sr);
-                    return new { Parsed = parsed, ScriptureRef = sr };
-                })
-                .Where(r => r.Parsed)
-                .Select(r => r.ScriptureRef)
-                .ToArray();
-            targetScriptureRefs = pretranslation
-                .TargetRefs.Select(r =>
-                {
-                    bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
-                    return new { Parsed = parsed, ScriptureRef = sr };
-                })
-                .Where(r => r.Parsed)
-                .Select(r => r.ScriptureRef)
-                .ToArray();
-        }
-        else
-        {
-            sourceScriptureRefs = [];
-            targetScriptureRefs = targetScriptureRefs = pretranslation
-                .Refs.Select(r =>
-                {
-                    bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
-                    return new { Parsed = parsed, ScriptureRef = sr };
-                })
-                .Where(r => r.Parsed)
-                .Select(r => r.ScriptureRef)
-                .ToArray();
-        }
-
-        return (sourceScriptureRefs, targetScriptureRefs, pretranslation, paragraphMarkerBehavior, styleMarkerBehavior);
-    }
-
     private static string DenormalizeQuotationMarks(string usfm, string quoteConvention)
     {
         QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(quoteConvention);
