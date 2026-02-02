@@ -62,19 +62,47 @@ public static class IMongoDataAccessConfiguratorExtensions
                     .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
                     .ToListAsync();
 
-                //migrate by adding TargetQuoteConvention field populated from analysis field
+                // migrate by adding TargetQuoteConvention field populated from analysis field
                 await c.Aggregate()
                     .Match(Builders<Build>.Filter.Exists(b => b.TargetQuoteConvention, false))
                     .Match(Builders<Build>.Filter.Exists("analysis"))
-                    .Unwind("analysis")
-                    .Match(Builders<BsonDocument>.Filter.Ne("analysis.targetQuoteConvention", ""))
                     .AppendStage<BsonDocument>(
                         new BsonDocument(
                             "$set",
-                            new BsonDocument("targetQuoteConvention", "$analysis.targetQuoteConvention")
+                            new BsonDocument(
+                                "targetQuoteConvention",
+                                new BsonDocument(
+                                    "$first",
+                                    new BsonDocument(
+                                        "$map",
+                                        new BsonDocument
+                                        {
+                                            {
+                                                "input",
+                                                new BsonDocument(
+                                                    "$filter",
+                                                    new BsonDocument
+                                                    {
+                                                        { "input", "$analysis" },
+                                                        { "as", "a" },
+                                                        {
+                                                            "cond",
+                                                            new BsonDocument(
+                                                                "$ne",
+                                                                new BsonArray { "$$a.targetQuoteConvention", "" }
+                                                            )
+                                                        }
+                                                    }
+                                                )
+                                            },
+                                            { "as", "a" },
+                                            { "in", "$$a.targetQuoteConvention" }
+                                        }
+                                    )
+                                )
+                            )
                         )
                     )
-                    .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
                     .ToListAsync();
             }
         );
