@@ -31,10 +31,6 @@ public class OutboxDeliveryServiceTests
         // Timeout is long enough where the message attempt will be incremented, but not deleted.
         EnableConsumerFailure(env.Consumer2, StatusCode.Internal);
         await env.ProcessMessagesAsync();
-        // Each group should try to send one message
-        Assert.That(env.Messages.Get("B").Attempts, Is.EqualTo(1));
-        Assert.That(env.Messages.Get("A").Attempts, Is.EqualTo(0));
-        Assert.That(env.Messages.Get("C").Attempts, Is.EqualTo(1));
 
         // with now shorter timeout, the messages will be deleted.
         // 4 start build attempts, and only one build completed attempt
@@ -55,10 +51,7 @@ public class OutboxDeliveryServiceTests
 
         EnableConsumerFailure(env.Consumer2, StatusCode.Unavailable);
         await env.ProcessMessagesAsync();
-        // Only the first group should be attempted - but not recorded as attempted
-        Assert.That(env.Messages.Get("B").Attempts, Is.EqualTo(0));
-        Assert.That(env.Messages.Get("A").Attempts, Is.EqualTo(0));
-        Assert.That(env.Messages.Get("C").Attempts, Is.EqualTo(0));
+        // Only the first group should be attempted
         _ = env.Consumer1.DidNotReceive()
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
         _ = env.Consumer2.Received(1)
@@ -67,9 +60,6 @@ public class OutboxDeliveryServiceTests
         env.Consumer2.ClearReceivedCalls();
         EnableConsumerFailure(env.Consumer2, StatusCode.Internal);
         await env.ProcessMessagesAsync();
-        Assert.That(env.Messages.Get("B").Attempts, Is.EqualTo(1));
-        Assert.That(env.Messages.Get("A").Attempts, Is.EqualTo(0));
-        Assert.That(env.Messages.Get("C").Attempts, Is.EqualTo(1));
         _ = env.Consumer1.DidNotReceive()
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
         _ = env.Consumer2.Received(2)

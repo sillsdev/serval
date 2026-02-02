@@ -11,5 +11,4 @@ public record OutboxMessage : IEntity
     public required string Content { get; init; }
     public required bool HasContentStream { get; init; }
     public DateTimeOffset Created { get; init; } = DateTimeOffset.UtcNow;
-    public int Attempts { get; init; }
 }
