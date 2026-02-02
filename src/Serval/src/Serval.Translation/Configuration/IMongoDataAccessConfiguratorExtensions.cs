@@ -72,37 +72,49 @@ public static class IMongoDataAccessConfiguratorExtensions
                             new BsonDocument(
                                 "targetQuoteConvention",
                                 new BsonDocument(
-                                    "$first",
-                                    new BsonDocument(
-                                        "$map",
-                                        new BsonDocument
-                                        {
-                                            {
-                                                "input",
-                                                new BsonDocument(
-                                                    "$filter",
-                                                    new BsonDocument
+                                    "$ifNull",
+                                    new BsonArray()
+                                    {
+                                        new BsonDocument(
+                                            "$first",
+                                            new BsonDocument(
+                                                "$map",
+                                                new BsonDocument
+                                                {
                                                     {
-                                                        { "input", "$analysis" },
-                                                        { "as", "a" },
-                                                        {
-                                                            "cond",
-                                                            new BsonDocument(
-                                                                "$ne",
-                                                                new BsonArray { "$$a.targetQuoteConvention", "" }
-                                                            )
-                                                        }
-                                                    }
-                                                )
-                                            },
-                                            { "as", "a" },
-                                            { "in", "$$a.targetQuoteConvention" }
-                                        }
-                                    )
+                                                        "input",
+                                                        new BsonDocument(
+                                                            "$filter",
+                                                            new BsonDocument
+                                                            {
+                                                                { "input", "$analysis" },
+                                                                { "as", "a" },
+                                                                {
+                                                                    "cond",
+                                                                    new BsonDocument(
+                                                                        "$ne",
+                                                                        new BsonArray
+                                                                        {
+                                                                            "$$a.targetQuoteConvention",
+                                                                            ""
+                                                                        }
+                                                                    )
+                                                                }
+                                                            }
+                                                        )
+                                                    },
+                                                    { "as", "a" },
+                                                    { "in", "$$a.targetQuoteConvention" }
+                                                }
+                                            )
+                                        ),
+                                        ""
+                                    }
                                 )
                             )
                         )
                     )
+                    .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
                     .ToListAsync();
             }
         );
