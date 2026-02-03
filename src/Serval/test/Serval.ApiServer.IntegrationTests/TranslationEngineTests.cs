@@ -1,4 +1,5 @@
 using Google.Protobuf.WellKnownTypes;
+using Serval.Translation.Configuration;
 using Serval.Translation.Models;
 using Serval.Translation.V1;
 using SIL.ServiceToolkit.Services;
@@ -2459,6 +2460,52 @@ public class TranslationEngineTests
         Assert.That(newEngine2.ParallelCorpora[0].TargetCorpora[0].Files.Count, Is.EqualTo(1));
     }
 
+    [Test]
+    public async Task MongoMigration_TargetQuoteConvention()
+    {
+        await _env.Builds.InsertAsync(
+            new Build()
+            {
+                Id = "111111111111111111111111",
+                EngineRef = NMT_ENGINE1_ID,
+                Owner = "client1",
+                Analysis =
+                [
+                    new Shared.Models.ParallelCorpusAnalysis()
+                    {
+                        ParallelCorpusRef = "111111111111111111111112",
+                        TargetQuoteConvention = ""
+                    },
+                    new Shared.Models.ParallelCorpusAnalysis()
+                    {
+                        ParallelCorpusRef = "111111111111111111111113",
+                        TargetQuoteConvention = "standard_english"
+                    }
+                ]
+            }
+        );
+
+        Build? unmigratedBuild = await _env.Builds.GetAsync(b => b.Id == "111111111111111111111111");
+        Assert.That(unmigratedBuild, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(unmigratedBuild.Analysis, Has.Count.EqualTo(2));
+            Assert.That(unmigratedBuild.TargetQuoteConvention, Is.Null);
+        });
+
+        await MongoMigrations.MigrateTargetQuoteConvention(
+            _env.MongoClient.GetDatabase("serval_test").GetCollection<Build>("translation.builds")
+        );
+
+        Build? migratedBuild = await _env.Builds.GetAsync(b => b.Id == "111111111111111111111111");
+        Assert.That(migratedBuild, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(migratedBuild.Analysis, Has.Count.EqualTo(2));
+            Assert.That(migratedBuild.TargetQuoteConvention, Is.EqualTo("standard_english"));
+        });
+    }
+
     [TearDown]
     public void TearDown()
     {
@@ -2468,11 +2515,11 @@ public class TranslationEngineTests
     private class TestEnvironment : DisposableBase
     {
         private readonly IServiceScope _scope;
-        private readonly MongoClient _mongoClient;
+        public readonly MongoClient MongoClient;
 
         public TestEnvironment()
         {
-            _mongoClient = new MongoClient();
+            MongoClient = new MongoClient();
             ResetDatabases();
 
             Factory = new ServalWebApplicationFactory();
@@ -2795,8 +2842,8 @@ public class TranslationEngineTests
 
         public void ResetDatabases()
         {
-            _mongoClient.DropDatabase("serval_test");
-            _mongoClient.DropDatabase("serval_test_jobs");
+            MongoClient.DropDatabase("serval_test");
+            MongoClient.DropDatabase("serval_test_jobs");
         }
 
         private static IFileSystem CreateFileSystem(IServiceProvider sp)
