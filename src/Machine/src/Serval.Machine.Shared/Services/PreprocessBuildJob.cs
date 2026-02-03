@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Trace = System.Diagnostics.Trace;
+
+namespace Serval.Machine.Shared.Services;
 
 public abstract class PreprocessBuildJob<TEngine>(
     IPlatformService platformService,
@@ -139,21 +141,34 @@ public abstract class PreprocessBuildJob<TEngine>(
     {
         List<string> warnings = [];
 
-        foreach (ParallelCorpus parallelCorpus in corpora)
+        // Listen to the trace messages from libpalaso, and record them as warnings
+        var listener = new WarningsTraceListener(warnings, "USFM Parsing error: ");
+        try
         {
-            IReadOnlyList<(string MonolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors)> errorsPerCorpus =
-                ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus);
-
-            foreach ((string monolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors) in errorsPerCorpus)
+            Trace.Listeners.Add(listener);
+            foreach (ParallelCorpus parallelCorpus in corpora)
             {
-                foreach (UsfmVersificationError error in errors)
+                IReadOnlyList<(
+                    string MonolingualCorpusId,
+                    IReadOnlyList<UsfmVersificationError> errors
+                )> errorsPerCorpus = ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus);
+
+                foreach ((string monolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors) in errorsPerCorpus)
                 {
-                    warnings.Add(
-                        $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})"
-                    );
+                    foreach (UsfmVersificationError error in errors)
+                    {
+                        warnings.Add(
+                            $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})"
+                        );
+                    }
                 }
             }
         }
+        finally
+        {
+            Trace.Listeners.Remove(listener);
+        }
+
         return warnings;
     }
 }
