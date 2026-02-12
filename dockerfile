@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-noble AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build-env
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y g++ curl cmake
@@ -14,7 +14,7 @@ RUN dotnet publish ./src/Machine/src/Serval.Machine.EngineServer/Serval.Machine.
 RUN dotnet publish ./src/Machine/src/Serval.Machine.JobServer/Serval.Machine.JobServer.csproj -c Release -o out_machine_job_server
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-noble as production
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS production
 # libgomp needed for thot
 RUN apt-get update && apt-get install -y libgomp1
 WORKDIR /app
