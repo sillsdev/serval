@@ -19,7 +19,7 @@ public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) :
             TargetDetokenizer = detokenizer,
             LowercaseSource = true,
             LowercaseTarget = true,
-            Truecaser = truecaser
+            Truecaser = truecaser,
         };
         return model;
     }
@@ -36,7 +36,7 @@ public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) :
             SourceTokenizer = tokenizer,
             TargetTokenizer = tokenizer,
             LowercaseSource = true,
-            LowercaseTarget = true
+            LowercaseTarget = true,
         };
         return trainer;
     }

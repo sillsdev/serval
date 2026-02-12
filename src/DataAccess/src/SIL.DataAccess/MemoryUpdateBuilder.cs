@@ -333,7 +333,7 @@ public class MemoryUpdateBuilder<T>(Expression<Func<T, bool>> filter, T entity, 
                         nameof(DataAccessExtensions.AllElements) => ArrayPosition.All,
                         nameof(DataAccessExtensions.FirstMatchingElement) => ArrayPosition.FirstMatching,
                         "get_Item" => ExpressionHelper.FindConstantValue(methodExpr.Arguments[0]),
-                        _ => throw new ArgumentException("Invalid method call in field expression.", nameof(field))
+                        _ => throw new ArgumentException("Invalid method call in field expression.", nameof(field)),
                     };
 
                     break;

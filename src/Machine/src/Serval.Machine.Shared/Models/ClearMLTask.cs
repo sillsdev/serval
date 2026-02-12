@@ -11,7 +11,7 @@ public enum ClearMLTaskStatus
     Closed,
     Failed,
     Completed,
-    Unknown
+    Unknown,
 }
 
 public record ClearMLTask

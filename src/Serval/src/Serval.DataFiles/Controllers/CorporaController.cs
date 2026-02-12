@@ -165,7 +165,7 @@ public class CorporaController(
             Owner = Owner,
             Name = corpusConfig.Name,
             Language = corpusConfig.Language,
-            Files = await MapAsync(corpusConfig.Files, cancellationToken)
+            Files = await MapAsync(corpusConfig.Files, cancellationToken),
         };
     }
 
@@ -194,7 +194,7 @@ public class CorporaController(
             Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.Id }),
             Name = source.Name,
             Revision = source.Revision,
-            Files = source.Files.Select(Map).ToList()
+            Files = source.Files.Select(Map).ToList(),
         };
     }
 
@@ -205,9 +205,9 @@ public class CorporaController(
             File = new ResourceLinkDto
             {
                 Id = source.FileRef,
-                Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.FileRef })
+                Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.FileRef }),
             },
-            TextId = source.TextId
+            TextId = source.TextId,
         };
     }
 }

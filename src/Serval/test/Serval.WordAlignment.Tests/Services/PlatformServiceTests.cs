@@ -18,7 +18,7 @@ public class PlatformServiceTests
                 Type = "nmt",
                 SourceLanguage = "en",
                 TargetLanguage = "es",
-                ParallelCorpora = []
+                ParallelCorpora = [],
             }
         );
         await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
@@ -72,7 +72,7 @@ public class PlatformServiceTests
                 Type = "nmt",
                 SourceLanguage = "en",
                 TargetLanguage = "es",
-                ParallelCorpora = []
+                ParallelCorpora = [],
             }
         );
         await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
@@ -82,14 +82,14 @@ public class PlatformServiceTests
         {
             BuildId = "b0",
             QueueDepth = 1,
-            Progress = 0.5
+            Progress = 0.5,
         };
         request.Phases.Add(
             new Phase
             {
                 Stage = PhaseStage.Train,
                 Step = 2,
-                StepCount = 3
+                StepCount = 3,
             }
         );
         await env.PlatformService.UpdateBuildStatus(request, env.ServerCallContext);
@@ -112,7 +112,7 @@ public class PlatformServiceTests
             Type = "nmt",
             SourceLanguage = "en",
             TargetLanguage = "es",
-            ParallelCorpora = []
+            ParallelCorpora = [],
         };
         await env.Engines.InsertAsync(engine);
 
@@ -120,7 +120,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            ExecutionData = new ExecutionData { TrainCount = 0, WordAlignCount = 0 }
+            ExecutionData = new ExecutionData { TrainCount = 0, WordAlignCount = 0 },
         };
         await env.Builds.InsertAsync(build);
 
@@ -135,7 +135,7 @@ public class PlatformServiceTests
         {
             BuildId = "123",
             EngineId = engine.Id,
-            ExecutionData = new V1.ExecutionData { TrainCount = 4, WordAlignCount = 5, }
+            ExecutionData = new V1.ExecutionData { TrainCount = 4, WordAlignCount = 5 },
         };
 
         await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
@@ -161,7 +161,7 @@ public class PlatformServiceTests
                 Type = "nmt",
                 SourceLanguage = "en",
                 TargetLanguage = "es",
-                ParallelCorpora = []
+                ParallelCorpora = [],
             }
         );
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(0));

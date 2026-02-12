@@ -38,7 +38,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
         {
             BucketName = _bucketName,
             Prefix = _basePath + Normalize(path),
-            MaxKeys = 1
+            MaxKeys = 1,
         };
 
         ListObjectsV2Response response = await _client.ListObjectsV2Async(request, cancellationToken);
@@ -59,7 +59,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
         {
             BucketName = _bucketName,
             Prefix = _basePath + (string.IsNullOrEmpty(path) ? "" : Normalize(path, includeTrailingSlash: true)),
-            Delimiter = recurse ? "" : "/"
+            Delimiter = recurse ? "" : "/",
         };
 
         ListObjectsV2Response response = await _client.ListObjectsV2Async(request, cancellationToken);
@@ -81,8 +81,8 @@ public class S3FileStorage : DisposableBase, IFileStorage
                     Expires = expiresAt,
                     ResponseHeaderOverrides = new ResponseHeaderOverrides
                     {
-                        ContentDisposition = new ContentDisposition() { FileName = Path.GetFileName(path) }.ToString()
-                    }
+                        ContentDisposition = new ContentDisposition() { FileName = Path.GetFileName(path) }.ToString(),
+                    },
                 }
             )
         );

@@ -31,7 +31,7 @@ public class TransferEngineFactory : ITransferEngineFactory
                 SourceTokenizer = tokenizer,
                 TargetDetokenizer = detokenizer,
                 LowercaseSource = true,
-                Truecaser = truecaser
+                Truecaser = truecaser,
             };
         }
         return transferEngine;

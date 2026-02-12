@@ -74,7 +74,7 @@ public class SmtTransferEngineState(
                 );
                 _hybridEngine = new HybridTranslationEngine(_smtModel, transferEngine)
                 {
-                    TargetDetokenizer = detokenizer
+                    TargetDetokenizer = detokenizer,
                 };
             }
             CurrentBuildRevision = buildRevision;

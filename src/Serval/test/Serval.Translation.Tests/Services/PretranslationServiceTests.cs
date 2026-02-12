@@ -392,7 +392,7 @@ public class PretranslationServiceTests
                     "Translated",
                     "new",
                     "paragraph",
-                    "\""
+                    "\"",
                 ],
                 Alignment =
                 [
@@ -405,7 +405,7 @@ public class PretranslationServiceTests
                     new() { SourceIndex = 8, TargetIndex = 7 },
                     new() { SourceIndex = 8, TargetIndex = 8 },
                     new() { SourceIndex = 9, TargetIndex = 9 },
-                ]
+                ],
             }
         );
 
@@ -443,207 +443,199 @@ public class PretranslationServiceTests
     {
         public TestEnvironment()
         {
-            CorpusFile file1 =
+            CorpusFile file1 = new()
+            {
+                Id = "file1",
+                Filename = "file1.zip",
+                Format = Shared.Contracts.FileFormat.Paratext,
+                TextId = "project1",
+            };
+            CorpusFile file2 = new()
+            {
+                Id = "file2",
+                Filename = "file2.zip",
+                Format = Shared.Contracts.FileFormat.Paratext,
+                TextId = "project1",
+            };
+            Engines = new MemoryRepository<Engine>([
                 new()
                 {
-                    Id = "file1",
-                    Filename = "file1.zip",
-                    Format = Shared.Contracts.FileFormat.Paratext,
-                    TextId = "project1"
-                };
-            CorpusFile file2 =
+                    Id = "engine1",
+                    Owner = "owner1",
+                    SourceLanguage = "en",
+                    TargetLanguage = "en",
+                    Type = "nmt",
+                    ModelRevision = 1,
+                    Corpora =
+                    [
+                        new()
+                        {
+                            Id = "corpus1",
+                            SourceLanguage = "en",
+                            TargetLanguage = "en",
+                            SourceFiles = [file1],
+                            TargetFiles = [file2],
+                        },
+                    ],
+                },
                 new()
                 {
-                    Id = "file2",
-                    Filename = "file2.zip",
-                    Format = Shared.Contracts.FileFormat.Paratext,
-                    TextId = "project1"
-                };
-            Engines = new MemoryRepository<Engine>(
-                [
-                    new()
-                    {
-                        Id = "engine1",
-                        Owner = "owner1",
-                        SourceLanguage = "en",
-                        TargetLanguage = "en",
-                        Type = "nmt",
-                        ModelRevision = 1,
-                        Corpora =
-                        [
-                            new()
+                    Id = "parallel_engine1",
+                    Owner = "owner1",
+                    SourceLanguage = "en",
+                    TargetLanguage = "en",
+                    Type = "nmt",
+                    ModelRevision = 1,
+                    ParallelCorpora =
+                    [
+                        new()
+                        {
+                            Id = "parallel_corpus1",
+                            SourceCorpora = new List<MonolingualCorpus>()
                             {
-                                Id = "corpus1",
-                                SourceLanguage = "en",
-                                TargetLanguage = "en",
-                                SourceFiles = [file1],
-                                TargetFiles = [file2],
-                            }
-                        ]
-                    },
-                    new()
-                    {
-                        Id = "parallel_engine1",
-                        Owner = "owner1",
-                        SourceLanguage = "en",
-                        TargetLanguage = "en",
-                        Type = "nmt",
-                        ModelRevision = 1,
-                        ParallelCorpora =
-                        [
-                            new()
-                            {
-                                Id = "parallel_corpus1",
-                                SourceCorpora = new List<MonolingualCorpus>()
+                                new()
                                 {
-                                    new()
-                                    {
-                                        Id = "src_1",
-                                        Language = "en",
-                                        Files = [file1],
-                                    }
+                                    Id = "src_1",
+                                    Language = "en",
+                                    Files = [file1],
                                 },
-                                TargetCorpora = new List<MonolingualCorpus>()
+                            },
+                            TargetCorpora = new List<MonolingualCorpus>()
+                            {
+                                new()
                                 {
-                                    new()
-                                    {
-                                        Id = "trg_1",
-                                        Language = "es",
-                                        Files = [file2],
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                ]
-            );
+                                    Id = "trg_1",
+                                    Language = "es",
+                                    Files = [file2],
+                                },
+                            },
+                        },
+                    ],
+                },
+            ]);
 
-            Builds = new MemoryRepository<Build>(
-                [
-                    new()
-                    {
-                        Id = "build1",
-                        EngineRef = "engine1",
-                        Owner = "owner1",
-                        DateFinished = DateTime.UnixEpoch,
-                        TargetQuoteConvention = "standard_english"
-                    },
-                    new()
-                    {
-                        Id = "build2",
-                        EngineRef = "parallel_engine1",
-                        Owner = "owner1",
-                        DateFinished = DateTime.UnixEpoch,
-                        TargetQuoteConvention = "standard_english"
-                    }
-                ]
-            );
-            Pretranslations = new MemoryRepository<Pretranslation>(
-                [
-                    new()
-                    {
-                        Id = "pt1",
-                        EngineRef = "engine1",
-                        ModelRevision = 1,
-                        CorpusRef = "corpus1",
-                        TextId = "MAT",
-                        SourceRefs = ["MAT 1:1"],
-                        TargetRefs = ["MAT 1:1"],
-                        Refs = ["MAT 1:1"],
-                        Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
-                        SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
-                        TranslationTokens =
-                        [
-                            "Chapter",
-                            "1",
-                            ",",
-                            "verse",
-                            "1",
-                            ".",
-                            "\"",
-                            "Translated",
-                            "new",
-                            "paragraph",
-                            "\""
-                        ],
-                        Alignment =
-                        [
-                            new() { SourceIndex = 2, TargetIndex = 0 },
-                            new() { SourceIndex = 3, TargetIndex = 1 },
-                            new() { SourceIndex = 4, TargetIndex = 2 },
-                            new() { SourceIndex = 5, TargetIndex = 3 },
-                            new() { SourceIndex = 6, TargetIndex = 4 },
-                            new() { SourceIndex = 7, TargetIndex = 5 },
-                            new() { SourceIndex = 8, TargetIndex = 7 },
-                            new() { SourceIndex = 8, TargetIndex = 8 },
-                            new() { SourceIndex = 9, TargetIndex = 9 },
-                        ]
-                    },
-                    new()
-                    {
-                        Id = "pt2",
-                        EngineRef = "engine1",
-                        ModelRevision = 1,
-                        CorpusRef = "corpus1",
-                        TextId = "MAT",
-                        SourceRefs = ["MAT 1:2"],
-                        TargetRefs = ["MAT 1:2"],
-                        Refs = ["MAT 1:2"],
-                        Translation = "Chapter 1, verse 2."
-                    },
-                    new()
-                    {
-                        Id = "pt3",
-                        EngineRef = "parallel_engine1",
-                        ModelRevision = 1,
-                        CorpusRef = "parallel_corpus1",
-                        TextId = "MAT",
-                        Refs = ["MAT 1:1"],
-                        SourceRefs = ["MAT 1:1"],
-                        TargetRefs = ["MAT 1:1"],
-                        Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
-                        SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
-                        TranslationTokens =
-                        [
-                            "Chapter",
-                            "1",
-                            ",",
-                            "verse",
-                            "1",
-                            ".",
-                            "\"",
-                            "Translated",
-                            "new",
-                            "paragraph",
-                            "\""
-                        ],
-                        Alignment =
-                        [
-                            new() { SourceIndex = 2, TargetIndex = 0 },
-                            new() { SourceIndex = 3, TargetIndex = 1 },
-                            new() { SourceIndex = 4, TargetIndex = 2 },
-                            new() { SourceIndex = 5, TargetIndex = 3 },
-                            new() { SourceIndex = 6, TargetIndex = 4 },
-                            new() { SourceIndex = 7, TargetIndex = 5 },
-                            new() { SourceIndex = 8, TargetIndex = 7 },
-                            new() { SourceIndex = 8, TargetIndex = 8 },
-                            new() { SourceIndex = 9, TargetIndex = 9 },
-                        ]
-                    },
-                    new()
-                    {
-                        Id = "pt4",
-                        EngineRef = "parallel_engine1",
-                        ModelRevision = 1,
-                        CorpusRef = "parallel_corpus1",
-                        TextId = "MAT",
-                        Refs = ["MAT 1:2"],
-                        SourceRefs = ["MAT 1:2"],
-                        TargetRefs = ["MAT 1:2"],
-                        Translation = "Chapter 1, verse 2."
-                    }
-                ]
-            );
+            Builds = new MemoryRepository<Build>([
+                new()
+                {
+                    Id = "build1",
+                    EngineRef = "engine1",
+                    Owner = "owner1",
+                    DateFinished = DateTime.UnixEpoch,
+                    TargetQuoteConvention = "standard_english",
+                },
+                new()
+                {
+                    Id = "build2",
+                    EngineRef = "parallel_engine1",
+                    Owner = "owner1",
+                    DateFinished = DateTime.UnixEpoch,
+                    TargetQuoteConvention = "standard_english",
+                },
+            ]);
+            Pretranslations = new MemoryRepository<Pretranslation>([
+                new()
+                {
+                    Id = "pt1",
+                    EngineRef = "engine1",
+                    ModelRevision = 1,
+                    CorpusRef = "corpus1",
+                    TextId = "MAT",
+                    SourceRefs = ["MAT 1:1"],
+                    TargetRefs = ["MAT 1:1"],
+                    Refs = ["MAT 1:1"],
+                    Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
+                    SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
+                    TranslationTokens =
+                    [
+                        "Chapter",
+                        "1",
+                        ",",
+                        "verse",
+                        "1",
+                        ".",
+                        "\"",
+                        "Translated",
+                        "new",
+                        "paragraph",
+                        "\"",
+                    ],
+                    Alignment =
+                    [
+                        new() { SourceIndex = 2, TargetIndex = 0 },
+                        new() { SourceIndex = 3, TargetIndex = 1 },
+                        new() { SourceIndex = 4, TargetIndex = 2 },
+                        new() { SourceIndex = 5, TargetIndex = 3 },
+                        new() { SourceIndex = 6, TargetIndex = 4 },
+                        new() { SourceIndex = 7, TargetIndex = 5 },
+                        new() { SourceIndex = 8, TargetIndex = 7 },
+                        new() { SourceIndex = 8, TargetIndex = 8 },
+                        new() { SourceIndex = 9, TargetIndex = 9 },
+                    ],
+                },
+                new()
+                {
+                    Id = "pt2",
+                    EngineRef = "engine1",
+                    ModelRevision = 1,
+                    CorpusRef = "corpus1",
+                    TextId = "MAT",
+                    SourceRefs = ["MAT 1:2"],
+                    TargetRefs = ["MAT 1:2"],
+                    Refs = ["MAT 1:2"],
+                    Translation = "Chapter 1, verse 2.",
+                },
+                new()
+                {
+                    Id = "pt3",
+                    EngineRef = "parallel_engine1",
+                    ModelRevision = 1,
+                    CorpusRef = "parallel_corpus1",
+                    TextId = "MAT",
+                    Refs = ["MAT 1:1"],
+                    SourceRefs = ["MAT 1:1"],
+                    TargetRefs = ["MAT 1:1"],
+                    Translation = "Chapter 1, verse 1. \"Translated new paragraph\"",
+                    SourceTokens = ["SRC", "-", "Chapter", "one", ",", "verse", "one", ".", "new", "paragraph"],
+                    TranslationTokens =
+                    [
+                        "Chapter",
+                        "1",
+                        ",",
+                        "verse",
+                        "1",
+                        ".",
+                        "\"",
+                        "Translated",
+                        "new",
+                        "paragraph",
+                        "\"",
+                    ],
+                    Alignment =
+                    [
+                        new() { SourceIndex = 2, TargetIndex = 0 },
+                        new() { SourceIndex = 3, TargetIndex = 1 },
+                        new() { SourceIndex = 4, TargetIndex = 2 },
+                        new() { SourceIndex = 5, TargetIndex = 3 },
+                        new() { SourceIndex = 6, TargetIndex = 4 },
+                        new() { SourceIndex = 7, TargetIndex = 5 },
+                        new() { SourceIndex = 8, TargetIndex = 7 },
+                        new() { SourceIndex = 8, TargetIndex = 8 },
+                        new() { SourceIndex = 9, TargetIndex = 9 },
+                    ],
+                },
+                new()
+                {
+                    Id = "pt4",
+                    EngineRef = "parallel_engine1",
+                    ModelRevision = 1,
+                    CorpusRef = "parallel_corpus1",
+                    TextId = "MAT",
+                    Refs = ["MAT 1:2"],
+                    SourceRefs = ["MAT 1:2"],
+                    TargetRefs = ["MAT 1:2"],
+                    Translation = "Chapter 1, verse 2.",
+                },
+            ]);
             ScriptureDataFileService = Substitute.For<IScriptureDataFileService>();
             ScriptureDataFileService.GetParatextProjectSettings("file1.zip").Returns(CreateProjectSettings("SRC"));
             ScriptureDataFileService.GetParatextProjectSettings("file2.zip").Returns(CreateProjectSettings("TRG"));
@@ -663,17 +655,15 @@ public class PretranslationServiceTests
             {
                 var updater = type switch
                 {
-                    "SRC"
-                        => new Shared.Services.ZipParatextProjectTextUpdater(
-                            zipSubstituteSource,
-                            CreateProjectSettings("SRC")
-                        ),
-                    "TRG"
-                        => new Shared.Services.ZipParatextProjectTextUpdater(
-                            zipSubstituteTarget,
-                            CreateProjectSettings("TRG")
-                        ),
-                    _ => throw new ArgumentException()
+                    "SRC" => new Shared.Services.ZipParatextProjectTextUpdater(
+                        zipSubstituteSource,
+                        CreateProjectSettings("SRC")
+                    ),
+                    "TRG" => new Shared.Services.ZipParatextProjectTextUpdater(
+                        zipSubstituteTarget,
+                        CreateProjectSettings("TRG")
+                    ),
+                    _ => throw new ArgumentException(),
                 };
                 TextUpdaters.Add(updater);
                 return updater;

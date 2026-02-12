@@ -51,8 +51,8 @@ public class StatisticalEngineServiceTests
                             Language = "es",
                             Files = [],
                             TrainOnTextIds = null,
-                            InferenceTextIds = null
-                        }
+                            InferenceTextIds = null,
+                        },
                     },
                     TargetCorpora = new List<MonolingualCorpus>()
                     {
@@ -61,14 +61,15 @@ public class StatisticalEngineServiceTests
                             Id = "trg",
                             Language = "en",
                             Files = [],
-                            TrainOnTextIds = null
-                        }
+                            TrainOnTextIds = null,
+                        },
                     },
-                }
+                },
             ]
         );
         await env.WaitForBuildToFinishAsync();
-        _ = env.WordAlignmentBatchTrainer.Received()
+        _ = env
+            .WordAlignmentBatchTrainer.Received()
             .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
         _ = env.WordAlignmentBatchTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
         engine = env.Engines.Get(EngineId1);
@@ -190,9 +191,9 @@ public class StatisticalEngineServiceTests
                             EngineType = EngineType.Statistical,
                             ModelType = "thot",
                             DockerImage = "default",
-                            Queue = "default"
-                        }
-                    ]
+                            Queue = "default",
+                        },
+                    ],
                 }
             );
             ClearMLService = Substitute.For<IClearMLService>();
@@ -229,7 +230,7 @@ public class StatisticalEngineServiceTests
                         ClearMLService,
                         [new StatisticalClearMLBuildJobFactory(SharedFileService, Engines)],
                         BuildJobOptions
-                    )
+                    ),
                 ],
                 Engines
             );
@@ -460,7 +461,7 @@ public class StatisticalEngineServiceTests
                         _env.BuildJobOptions
                     )
                     {
-                        TrainJobRunnerType = _env._trainJobRunnerType
+                        TrainJobRunnerType = _env._trainJobRunnerType,
                     };
                 }
                 if (jobType == typeof(StatisticalPostprocessBuildJob))

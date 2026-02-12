@@ -37,7 +37,7 @@ public class WordAlignmentEngineServiceV1(
             {
                 SourceIndex = i,
                 TargetIndex = i,
-                Score = 1.0
+                Score = 1.0,
             });
     }
 
@@ -56,8 +56,8 @@ public class WordAlignmentEngineServiceV1(
             {
                 SourceTokens = { sourceTokens },
                 TargetTokens = { targetTokens },
-                Alignment = { GenerateAlignedWordPairs(minLength) }
-            }
+                Alignment = { GenerateAlignedWordPairs(minLength) },
+            },
         };
         return Task.FromResult(response);
     }
@@ -101,11 +101,12 @@ public class WordAlignmentEngineServiceV1(
                                     TargetTokens = { row.TargetSegment.Split() },
                                     Alignment =
                                     {
-                                        row.SourceSegment.Split()
+                                        row
+                                            .SourceSegment.Split()
                                             .Select(
                                                 (_, i) => new AlignedWordPair() { SourceIndex = i, TargetIndex = i }
-                                            )
-                                    }
+                                            ),
+                                    },
                                 }
                             );
                             if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0 && !isInTrainingData)
@@ -177,7 +178,7 @@ public class WordAlignmentEngineServiceV1(
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
-            TargetCorpora = source.TargetCorpora.Select(Map).ToList()
+            TargetCorpora = source.TargetCorpora.Select(Map).ToList(),
         };
     }
 
@@ -205,7 +206,7 @@ public class WordAlignmentEngineServiceV1(
             TrainOnChapters = trainingFilter == FilterChoice.Chapters ? trainOnChapters : null,
             TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? trainOnTextIds : null,
             InferenceChapters = wordAlignFilter == FilterChoice.Chapters ? wordAlignChapters : null,
-            InferenceTextIds = wordAlignFilter == FilterChoice.TextIds ? wordAlignTextIds : null
+            InferenceTextIds = wordAlignFilter == FilterChoice.TextIds ? wordAlignTextIds : null,
         };
     }
 
@@ -215,7 +216,7 @@ public class WordAlignmentEngineServiceV1(
         {
             Location = source.Location,
             Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
-            TextId = source.TextId
+            TextId = source.TextId,
         };
     }
 
@@ -223,7 +224,7 @@ public class WordAlignmentEngineServiceV1(
     {
         Chapters,
         TextIds,
-        None
+        None,
     }
 
     private static FilterChoice GetFilterChoice(

@@ -73,16 +73,15 @@ public class S3WriteStream(
         {
             _stream.Position = 0;
             int partNumber = _uploadResponses.Count + 1;
-            UploadPartRequest request =
-                new()
-                {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    UploadId = _uploadId,
-                    PartNumber = partNumber,
-                    InputStream = _stream,
-                    PartSize = MaxPartSize
-                };
+            UploadPartRequest request = new()
+            {
+                BucketName = _bucketName,
+                Key = _key,
+                UploadId = _uploadId,
+                PartNumber = partNumber,
+                InputStream = _stream,
+                PartSize = MaxPartSize,
+            };
             request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
                 (_, e) =>
                 {
@@ -128,13 +127,12 @@ public class S3WriteStream(
                 if (_uploadResponses.Count == 0)
                 {
                     AbortAsync().WaitAndUnwrapException();
-                    PutObjectRequest request =
-                        new()
-                        {
-                            BucketName = _bucketName,
-                            Key = _key,
-                            ContentBody = ""
-                        };
+                    PutObjectRequest request = new()
+                    {
+                        BucketName = _bucketName,
+                        Key = _key,
+                        ContentBody = "",
+                    };
                     PutObjectResponse response = _client.PutObjectAsync(request).WaitAndUnwrapException();
                     if (response.HttpStatusCode != HttpStatusCode.OK)
                     {
@@ -147,13 +145,12 @@ public class S3WriteStream(
                 {
                     try
                     {
-                        CompleteMultipartUploadRequest request =
-                            new()
-                            {
-                                BucketName = _bucketName,
-                                Key = _key,
-                                UploadId = _uploadId
-                            };
+                        CompleteMultipartUploadRequest request = new()
+                        {
+                            BucketName = _bucketName,
+                            Key = _key,
+                            UploadId = _uploadId,
+                        };
                         request.AddPartETags(_uploadResponses);
                         CompleteMultipartUploadResponse response = _client
                             .CompleteMultipartUploadAsync(request)
@@ -187,13 +184,12 @@ public class S3WriteStream(
             if (_uploadResponses.Count == 0)
             {
                 await AbortAsync();
-                PutObjectRequest request =
-                    new()
-                    {
-                        BucketName = _bucketName,
-                        Key = _key,
-                        ContentBody = ""
-                    };
+                PutObjectRequest request = new()
+                {
+                    BucketName = _bucketName,
+                    Key = _key,
+                    ContentBody = "",
+                };
                 PutObjectResponse response = await _client.PutObjectAsync(request);
                 if (response.HttpStatusCode != HttpStatusCode.OK)
                 {
@@ -206,13 +202,12 @@ public class S3WriteStream(
             }
             try
             {
-                CompleteMultipartUploadRequest request =
-                    new()
-                    {
-                        BucketName = _bucketName,
-                        Key = _key,
-                        UploadId = _uploadId
-                    };
+                CompleteMultipartUploadRequest request = new()
+                {
+                    BucketName = _bucketName,
+                    Key = _key,
+                    UploadId = _uploadId,
+                };
                 request.AddPartETags(_uploadResponses);
                 CompleteMultipartUploadResponse response = await _client.CompleteMultipartUploadAsync(request);
                 if (response.HttpStatusCode != HttpStatusCode.OK)
@@ -238,13 +233,12 @@ public class S3WriteStream(
     {
         if (e is not null)
             _logger.LogError(e, "Aborted upload {UploadId} to {BucketName}/{Key}", _uploadId, _bucketName, _key);
-        AbortMultipartUploadRequest abortMPURequest =
-            new()
-            {
-                BucketName = _bucketName,
-                Key = _key,
-                UploadId = _uploadId
-            };
+        AbortMultipartUploadRequest abortMPURequest = new()
+        {
+            BucketName = _bucketName,
+            Key = _key,
+            UploadId = _uploadId,
+        };
         await _client.AbortMultipartUploadAsync(abortMPURequest);
     }
 }

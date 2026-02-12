@@ -26,7 +26,7 @@ public class ServalWebApplicationFactory : WebApplicationFactory<Program>
                 options.Engines =
                 [
                     new Translation.Configuration.EngineInfo { Type = "Echo" },
-                    new Translation.Configuration.EngineInfo { Type = "Nmt" }
+                    new Translation.Configuration.EngineInfo { Type = "Nmt" },
                 ];
             });
 
@@ -35,7 +35,7 @@ public class ServalWebApplicationFactory : WebApplicationFactory<Program>
                 options.Engines =
                 [
                     new WordAlignment.Configuration.EngineInfo { Type = "EchoWordAlignment" },
-                    new WordAlignment.Configuration.EngineInfo { Type = "Statistical" }
+                    new WordAlignment.Configuration.EngineInfo { Type = "Statistical" },
                 ];
             });
 
@@ -50,10 +50,10 @@ public class ServalWebApplicationFactory : WebApplicationFactory<Program>
                             MigrationOptions = new MongoMigrationOptions
                             {
                                 MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                                BackupStrategy = new CollectionMongoBackupStrategy()
+                                BackupStrategy = new CollectionMongoBackupStrategy(),
                             },
                             CheckConnection = true,
-                            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+                            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
                         }
                     )
             );

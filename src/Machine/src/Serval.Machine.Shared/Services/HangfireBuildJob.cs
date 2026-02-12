@@ -158,6 +158,6 @@ public abstract class HangfireBuildJob<TEngine, TData>(
         Completed,
         Faulted,
         Canceled,
-        Restarting
+        Restarting,
     }
 }

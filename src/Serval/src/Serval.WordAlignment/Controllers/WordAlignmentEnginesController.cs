@@ -16,8 +16,10 @@ public class WordAlignmentEnginesController(
     ILogger<WordAlignmentEnginesController> logger
 ) : ServalControllerBase(authService)
 {
-    private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
-        new() { Converters = { new ObjectToInferredTypesConverter() } };
+    private static readonly JsonSerializerOptions ObjectJsonSerializerOptions = new()
+    {
+        Converters = { new ObjectToInferredTypesConverter() },
+    };
 
     private readonly IEngineService _engineService = engineService;
     private readonly IBuildService _buildService = buildService;
@@ -56,7 +58,6 @@ public class WordAlignmentEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-
     [Authorize(Scopes.ReadWordAlignmentEngines)]
     [HttpGet("{id}", Name = Endpoints.GetWordAlignmentEngine)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -699,7 +700,7 @@ public class WordAlignmentEnginesController(
         {
             Id = corpusId,
             SourceCorpora = await MapAsync(getDataFileClient, source.SourceCorpusIds, cancellationToken),
-            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken)
+            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken),
         };
     }
 
@@ -736,7 +737,7 @@ public class WordAlignmentEnginesController(
                                 Id = f.File.DataFileId,
                                 Filename = f.File.Filename,
                                 Format = f.File.Format,
-                                TextId = f.TextId
+                                TextId = f.TextId,
                             })
                             .ToList(),
                     }
@@ -759,22 +760,22 @@ public class WordAlignmentEnginesController(
             Engine = new ResourceLinkDto
             {
                 Id = engineId,
-                Url = _urlService.GetUrl(Endpoints.GetWordAlignmentEngine, new { id = engineId })
+                Url = _urlService.GetUrl(Endpoints.GetWordAlignmentEngine, new { id = engineId }),
             },
             SourceCorpora = source
                 .SourceCorpora.Select(c => new ResourceLinkDto
                 {
                     Id = c.Id,
-                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id })
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id }),
                 })
                 .ToList(),
             TargetCorpora = source
                 .TargetCorpora.Select(c => new ResourceLinkDto
                 {
                     Id = c.Id,
-                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id })
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id }),
                 })
-                .ToList()
+                .ToList(),
         };
     }
 
@@ -787,7 +788,7 @@ public class WordAlignmentEnginesController(
             WordAlignOn = Map(engine, source.WordAlignOn),
             TrainOn = Map(engine, source.TrainOn),
             Options = Map(source.Options),
-            DeploymentVersion = deploymentVersion
+            DeploymentVersion = deploymentVersion,
         };
     }
 
@@ -839,7 +840,7 @@ public class WordAlignmentEnginesController(
                 {
                     ParallelCorpusRef = cc.ParallelCorpusId,
                     SourceFilters = cc.SourceFilters?.Select(Map).ToList(),
-                    TargetFilters = cc.TargetFilters?.Select(Map).ToList()
+                    TargetFilters = cc.TargetFilters?.Select(Map).ToList(),
                 }
             );
         }
@@ -893,7 +894,7 @@ public class WordAlignmentEnginesController(
                 {
                     ParallelCorpusRef = cc.ParallelCorpusId,
                     SourceFilters = cc.SourceFilters?.Select(Map).ToList(),
-                    TargetFilters = cc.TargetFilters?.Select(Map).ToList()
+                    TargetFilters = cc.TargetFilters?.Select(Map).ToList(),
                 }
             );
         }
@@ -912,7 +913,7 @@ public class WordAlignmentEnginesController(
         {
             CorpusRef = source.CorpusId,
             TextIds = source.TextIds,
-            ScriptureRange = source.ScriptureRange
+            ScriptureRange = source.ScriptureRange,
         };
     }
 
@@ -966,7 +967,7 @@ public class WordAlignmentEnginesController(
                 Url = _urlService.GetUrl(
                     Endpoints.GetWordAlignmentBuild,
                     new { id = source.EngineRef, buildId = source.Id }
-                )
+                ),
             },
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             WordAlignOn = source.WordAlignOn?.Select(s => Map(source.EngineRef, s)).ToList(),
@@ -983,7 +984,7 @@ public class WordAlignmentEnginesController(
             Options = source.Options,
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = Map(source.ExecutionData),
-            Phases = source.Phases?.Select(Map).ToList()
+            Phases = source.Phases?.Select(Map).ToList(),
         };
     }
 
@@ -999,11 +1000,11 @@ public class WordAlignmentEnginesController(
                         Url = _urlService.GetUrl(
                             Endpoints.GetParallelWordAlignmentCorpus,
                             new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
-                        )
+                        ),
                     }
                     : null,
             SourceFilters = source.SourceFilters?.Select(Map).ToList(),
-            TargetFilters = source.TargetFilters?.Select(Map).ToList()
+            TargetFilters = source.TargetFilters?.Select(Map).ToList(),
         };
     }
 
@@ -1019,11 +1020,11 @@ public class WordAlignmentEnginesController(
                         Url = _urlService.GetUrl(
                             Endpoints.GetParallelWordAlignmentCorpus,
                             new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
-                        )
+                        ),
                     }
                     : null,
             SourceFilters = source.SourceFilters?.Select(Map).ToList(),
-            TargetFilters = source.TargetFilters?.Select(Map).ToList()
+            TargetFilters = source.TargetFilters?.Select(Map).ToList(),
         };
     }
 
@@ -1034,10 +1035,10 @@ public class WordAlignmentEnginesController(
             Corpus = new ResourceLinkDto
             {
                 Id = source.CorpusRef,
-                Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.CorpusRef })
+                Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.CorpusRef }),
             },
             TextIds = source.TextIds,
-            ScriptureRange = source.ScriptureRange
+            ScriptureRange = source.ScriptureRange,
         };
     }
 
@@ -1057,7 +1058,7 @@ public class WordAlignmentEnginesController(
         {
             SourceIndex = source.SourceIndex,
             TargetIndex = source.TargetIndex,
-            Score = source.Score
+            Score = source.Score,
         };
     }
 
@@ -1076,7 +1077,7 @@ public class WordAlignmentEnginesController(
                 {
                     SourceIndex = c.SourceIndex,
                     TargetIndex = c.TargetIndex,
-                    Score = c.Score
+                    Score = c.Score,
                 })
                 .ToList(),
         };
@@ -1091,7 +1092,7 @@ public class WordAlignmentEnginesController(
             TargetLanguage = source.TargetLanguage,
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
-            ParallelCorpora = []
+            ParallelCorpora = [],
         };
     }
 

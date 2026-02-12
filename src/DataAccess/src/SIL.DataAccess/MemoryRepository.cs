@@ -3,14 +3,13 @@ namespace SIL.DataAccess;
 public class MemoryRepository<T> : IRepository<T>
     where T : IEntity
 {
-    private static readonly JsonSerializerSettings Settings =
-        new()
-        {
-            TypeNameHandling = TypeNameHandling.Auto,
-            ContractResolver = new WritableContractResolver(),
-            // add converter to support IReadOnlyList properties that were initialized using collection expressions
-            Converters = { new ReadOnlyCollectionConverter() }
-        };
+    private static readonly JsonSerializerSettings Settings = new()
+    {
+        TypeNameHandling = TypeNameHandling.Auto,
+        ContractResolver = new WritableContractResolver(),
+        // add converter to support IReadOnlyList properties that were initialized using collection expressions
+        Converters = { new ReadOnlyCollectionConverter() },
+    };
 
     private readonly Dictionary<string, string> _entities;
     private readonly Func<T, object>[] _uniqueKeySelectors;

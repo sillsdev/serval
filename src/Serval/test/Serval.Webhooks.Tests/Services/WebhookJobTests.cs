@@ -28,7 +28,7 @@ public class WebhookJobTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = [WebhookEvent.TranslationBuildStarted]
+                Events = [WebhookEvent.TranslationBuildStarted],
             }
         );
         env.MockHttp.Expect("https://test.client.com/hook")
@@ -56,7 +56,7 @@ public class WebhookJobTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = [WebhookEvent.TranslationBuildStarted]
+                Events = [WebhookEvent.TranslationBuildStarted],
             }
         );
         MockedRequest req = env.MockHttp.When("*").Respond(HttpStatusCode.OK);
@@ -78,7 +78,7 @@ public class WebhookJobTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = [WebhookEvent.TranslationBuildStarted]
+                Events = [WebhookEvent.TranslationBuildStarted],
             }
         );
         env.MockHttp.Expect("https://test.client.com/hook")
@@ -89,8 +89,8 @@ public class WebhookJobTests
             .Respond(HttpStatusCode.RequestTimeout);
 
         var payload = new { BuildId = "build1", EngineId = "engine1" };
-        Assert.ThrowsAsync<HttpRequestException>(
-            () => env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None)
+        Assert.ThrowsAsync<HttpRequestException>(() =>
+            env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None)
         );
 
         env.MockHttp.VerifyNoOutstandingExpectation();
@@ -107,7 +107,7 @@ public class WebhookJobTests
                 Url = "https://test.client.com/hook",
                 Secret = "this is a secret",
                 Owner = "client",
-                Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted }
+                Events = new List<WebhookEvent> { WebhookEvent.TranslationBuildStarted },
             }
         );
         env.MockHttp.Expect("https://test.client.com/hook")
@@ -118,8 +118,8 @@ public class WebhookJobTests
             .Throw(new HttpRequestException());
 
         var payload = new { BuildId = "build1", EngineId = "engine1" };
-        Assert.ThrowsAsync<HttpRequestException>(
-            () => env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None)
+        Assert.ThrowsAsync<HttpRequestException>(() =>
+            env.Job.RunAsync(WebhookEvent.TranslationBuildStarted, "client", payload, CancellationToken.None)
         );
 
         env.MockHttp.VerifyNoOutstandingExpectation();

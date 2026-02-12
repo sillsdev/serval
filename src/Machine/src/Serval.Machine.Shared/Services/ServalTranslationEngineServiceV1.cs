@@ -124,7 +124,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             {
                 Url = modelDownloadUrl.Url,
                 ModelRevision = modelDownloadUrl.ModelRevision,
-                ExpiresAt = modelDownloadUrl.ExpiresAt.ToTimestamp()
+                ExpiresAt = modelDownloadUrl.ExpiresAt.ToTimestamp(),
             };
         }
         catch (InvalidOperationException e)
@@ -150,7 +150,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         bool isNative = engineService.IsLanguageNativeToModel(request.Language, out string internalCode);
-        return Task.FromResult(new GetLanguageInfoResponse { InternalCode = internalCode, IsNative = isNative, });
+        return Task.FromResult(new GetLanguageInfoResponse { InternalCode = internalCode, IsNative = isNative });
     }
 
     private ITranslationEngineService GetEngineService(string engineTypeStr)
@@ -182,7 +182,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             Confidences = { source.Confidences },
             Sources = { source.Sources.Select(Map) },
             Alignment = { Map(source.Alignment) },
-            Phrases = { source.Phrases.Select(Map) }
+            Phrases = { source.Phrases.Select(Map) },
         };
     }
 
@@ -193,7 +193,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             SourceTokens = { source.SourceTokens },
             InitialStateScore = source.InitialStateScore,
             FinalStates = { source.FinalStates },
-            Arcs = { source.Arcs.Select(Map) }
+            Arcs = { source.Arcs.Select(Map) },
         };
     }
 
@@ -209,7 +209,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             Confidences = { source.Confidences },
             SourceSegmentStart = source.SourceSegmentRange.Start,
             SourceSegmentEnd = source.SourceSegmentRange.End,
-            Sources = { source.Sources.Select(Map) }
+            Sources = { source.Sources.Select(Map) },
         };
     }
 
@@ -229,10 +229,10 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
                             SIL.Machine.Translation.TranslationSources.Nmt => TranslationSource.Primary,
                             SIL.Machine.Translation.TranslationSources.Transfer => TranslationSource.Secondary,
                             SIL.Machine.Translation.TranslationSources.Prefix => TranslationSource.Human,
-                            _ => TranslationSource.Primary
+                            _ => TranslationSource.Primary,
                         }
-                    )
-            }
+                    ),
+            },
         };
     }
 
@@ -254,7 +254,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         {
             SourceSegmentStart = source.SourceSegmentRange.Start,
             SourceSegmentEnd = source.SourceSegmentRange.End,
-            TargetSegmentCut = source.TargetSegmentCut
+            TargetSegmentCut = source.TargetSegmentCut,
         };
     }
 
@@ -264,7 +264,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
-            TargetCorpora = source.TargetCorpora.Select(Map).ToList()
+            TargetCorpora = source.TargetCorpora.Select(Map).ToList(),
         };
     }
 
@@ -296,7 +296,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
             TrainOnChapters = trainingFilter == FilterChoice.Chapters ? trainOnChapters : null,
             TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? trainOnTextIds : null,
             InferenceChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
-            InferenceTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
+            InferenceTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null,
         };
     }
 
@@ -306,7 +306,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
         {
             Location = source.Location,
             Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
-            TextId = source.TextId
+            TextId = source.TextId,
         };
     }
 
@@ -314,7 +314,7 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
     {
         Chapters,
         TextIds,
-        None
+        None,
     }
 
     private static FilterChoice GetFilterChoice(

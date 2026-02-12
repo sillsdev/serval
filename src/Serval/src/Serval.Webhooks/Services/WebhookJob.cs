@@ -28,7 +28,7 @@ public class WebhookJob(IRepository<Webhook> hooks, HttpClient httpClient, IOpti
             2048,
             2048,
             2048,
-            2048
+            2048,
         },
         LogEvents = true
     )]
@@ -48,7 +48,7 @@ public class WebhookJob(IRepository<Webhook> hooks, HttpClient httpClient, IOpti
             string payloadStr = SerializePayload(webhookEvent, payload);
             var request = new HttpRequestMessage(HttpMethod.Post, hook.Url)
             {
-                Content = new StringContent(payloadStr, Encoding.UTF8, "application/json")
+                Content = new StringContent(payloadStr, Encoding.UTF8, "application/json"),
             };
             byte[] keyBytes = Encoding.UTF8.GetBytes(hook.Secret);
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadStr);
@@ -78,7 +78,7 @@ public class WebhookJob(IRepository<Webhook> hooks, HttpClient httpClient, IOpti
             new WebhookPayload
             {
                 Event = webhookEvent,
-                Payload = JsonSerializer.SerializeToNode(payload, _jsonOptions.JsonSerializerOptions)?.AsObject()
+                Payload = JsonSerializer.SerializeToNode(payload, _jsonOptions.JsonSerializerOptions)?.AsObject(),
             },
             _jsonOptions.JsonSerializerOptions
         );

@@ -211,7 +211,7 @@ public class DistributedReaderWriterLock(
                 {
                     Id = lockId,
                     ExpiresAt = expiresAt,
-                    HostId = _hostId
+                    HostId = _hostId,
                 }
             );
             u.RemoveAll(rwl => rwl.WriterQueue, l => l.Id == lockId);
@@ -238,7 +238,7 @@ public class DistributedReaderWriterLock(
                 {
                     Id = lockId,
                     ExpiresAt = expiresAt,
-                    HostId = _hostId
+                    HostId = _hostId,
                 }
             );
         }

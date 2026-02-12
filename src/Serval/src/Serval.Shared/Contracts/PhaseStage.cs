@@ -3,5 +3,5 @@
 public enum PhaseStage
 {
     Train,
-    Inference
+    Inference,
 }

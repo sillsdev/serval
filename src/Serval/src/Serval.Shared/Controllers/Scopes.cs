@@ -40,6 +40,6 @@ public static class Scopes
             ReadFiles,
             UpdateFiles,
             DeleteFiles,
-            ReadStatus
+            ReadStatus,
         ];
 }

@@ -31,8 +31,8 @@ public class EngineServiceTests
     public void GetWordGraphAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        Assert.ThrowsAsync<EntityNotFoundException>(
-            () => env.Service.GetWordGraphAsync("engine1", "esto es una prueba.")
+        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+            env.Service.GetWordGraphAsync("engine1", "esto es una prueba.")
         );
     }
 
@@ -50,8 +50,8 @@ public class EngineServiceTests
     public void TrainSegmentAsync_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
-        Assert.ThrowsAsync<EntityNotFoundException>(
-            () => env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true)
+        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+            env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true)
         );
     }
 
@@ -60,8 +60,8 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        Assert.DoesNotThrowAsync(
-            () => env.Service.TrainSegmentPairAsync(engineId, "esto es una prueba.", "this is a test.", true)
+        Assert.DoesNotThrowAsync(() =>
+            env.Service.TrainSegmentPairAsync(engineId, "esto es una prueba.", "this is a test.", true)
         );
     }
 
@@ -69,16 +69,15 @@ public class EngineServiceTests
     public async Task CreateAsync()
     {
         var env = new TestEnvironment();
-        Engine engine =
-            new()
-            {
-                Id = "engine1",
-                Owner = "owner1",
-                SourceLanguage = "es",
-                TargetLanguage = "en",
-                Type = "Smt",
-                Corpora = []
-            };
+        Engine engine = new()
+        {
+            Id = "engine1",
+            Owner = "owner1",
+            SourceLanguage = "es",
+            TargetLanguage = "en",
+            Type = "Smt",
+            Corpora = [],
+        };
         await env.Service.CreateAsync(engine);
 
         engine = (await env.Engines.GetAsync("engine1"))!;
@@ -114,10 +113,11 @@ public class EngineServiceTests
             {
                 Id = BUILD1_ID,
                 EngineRef = engineId,
-                Owner = "owner1"
+                Owner = "owner1",
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -145,13 +145,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
-                                    }
-                                }
+                                        TrainOnAll = true,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -166,16 +166,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = true,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -192,10 +192,11 @@ public class EngineServiceTests
                 Id = BUILD1_ID,
                 EngineRef = engineId,
                 Owner = "owner1",
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = [] }]
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = [] }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -224,13 +225,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -246,16 +247,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -272,10 +273,11 @@ public class EngineServiceTests
                 Id = BUILD1_ID,
                 EngineRef = engineId,
                 Owner = "owner1",
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }]
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -304,13 +306,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -326,16 +328,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -352,10 +354,11 @@ public class EngineServiceTests
                 Id = BUILD1_ID,
                 EngineRef = engineId,
                 Owner = "owner1",
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }]
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -383,13 +386,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
-                                    }
-                                }
+                                        TrainOnAll = true,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -404,16 +407,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = true,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -431,10 +434,11 @@ public class EngineServiceTests
                 EngineRef = engineId,
                 Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }],
-                Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus1" }]
+                Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus1" }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -462,13 +466,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
-                                    }
-                                }
+                                        TrainOnAll = true,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -483,16 +487,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = true
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = true,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -510,10 +514,11 @@ public class EngineServiceTests
                 EngineRef = engineId,
                 Owner = "owner1",
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }],
-                Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus2" }]
+                Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus2" }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -541,13 +546,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = false,
-                                        TrainOnAll = true
-                                    }
-                                }
+                                        TrainOnAll = true,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -562,14 +567,14 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = false,
-                                        TrainOnAll = true
-                                    }
-                                }
-                            }
+                                        TrainOnAll = true,
+                                    },
+                                },
+                            },
                         },
                         new V1.ParallelCorpus
                         {
@@ -587,13 +592,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file3.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -608,16 +613,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file4.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "text1"
-                                            }
+                                                TextId = "text1",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -628,17 +633,16 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        Assert.ThrowsAsync<InvalidOperationException>(
-            () =>
-                env.Service.StartBuildAsync(
-                    new Build
-                    {
-                        Id = BUILD1_ID,
-                        EngineRef = engineId,
-                        Owner = "owner1",
-                        TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }]
-                    }
-                )
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
+            env.Service.StartBuildAsync(
+                new Build
+                {
+                    Id = BUILD1_ID,
+                    EngineRef = engineId,
+                    Owner = "owner1",
+                    TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT" }],
+                }
+            )
         );
     }
 
@@ -653,10 +657,11 @@ public class EngineServiceTests
                 Id = BUILD1_ID,
                 EngineRef = engineId,
                 Owner = "owner1",
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }]
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -687,7 +692,7 @@ public class EngineServiceTests
                                             {
                                                 "MRK",
                                                 new ScriptureChapters { Chapters = { } }
-                                            }
+                                            },
                                         },
                                         Files =
                                         {
@@ -695,13 +700,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file1.zip"
-                                            }
+                                                TextId = "file1.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -719,7 +724,7 @@ public class EngineServiceTests
                                             {
                                                 "MRK",
                                                 new ScriptureChapters { Chapters = { } }
-                                            }
+                                            },
                                         },
                                         Files =
                                         {
@@ -727,16 +732,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file2.zip"
-                                            }
+                                                TextId = "file2.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -753,10 +758,11 @@ public class EngineServiceTests
                 Id = BUILD1_ID,
                 EngineRef = engineId,
                 Owner = "owner1",
-                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "" }]
+                TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "" }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -784,13 +790,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file1.zip"
-                                            }
+                                                TextId = "file1.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -805,16 +811,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file2.zip"
-                                            }
+                                                TextId = "file2.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -837,12 +843,13 @@ public class EngineServiceTests
                     {
                         ParallelCorpusRef = "parallel-corpus1",
                         SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", TextIds = ["MAT"] }],
-                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }]
-                    }
-                ]
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }],
+                    },
+                ],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -872,11 +879,11 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MAT"
-                                            }
+                                                TextId = "MAT",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
+                                        TrainOnAll = false,
                                     },
                                     new()
                                     {
@@ -888,13 +895,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file3.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MRK"
-                                            }
+                                                TextId = "MRK",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -911,11 +918,11 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MAT"
-                                            }
+                                                TextId = "MAT",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
+                                        TrainOnAll = false,
                                     },
                                     new()
                                     {
@@ -927,16 +934,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file4.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MRK"
-                                            }
+                                                TextId = "MRK",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -959,13 +966,14 @@ public class EngineServiceTests
                     {
                         ParallelCorpusRef = "parallel-corpus1",
                         SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", TextIds = ["MAT"] }],
-                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }]
-                    }
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }],
+                    },
                 ],
-                Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus1" }]
+                Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus1" }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -995,13 +1003,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MAT"
-                                            }
+                                                TextId = "MAT",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1018,16 +1026,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MAT"
-                                            }
+                                                TextId = "MAT",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -1050,13 +1058,14 @@ public class EngineServiceTests
                     {
                         ParallelCorpusRef = "parallel-corpus1",
                         SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", TextIds = ["MAT"] }],
-                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }]
-                    }
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT"] }],
+                    },
                 ],
-                Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus2" }]
+                Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus2" }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -1086,13 +1095,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MAT"
-                                            }
+                                                TextId = "MAT",
+                                            },
                                         },
                                         PretranslateAll = false,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1109,14 +1118,14 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MAT"
-                                            }
+                                                TextId = "MAT",
+                                            },
                                         },
                                         PretranslateAll = false,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
                         },
                         new V1.ParallelCorpus
                         {
@@ -1135,13 +1144,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file3.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MRK"
-                                            }
+                                                TextId = "MRK",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1157,16 +1166,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file4.txt",
                                                 Format = V1.FileFormat.Text,
-                                                TextId = "MRK"
-                                            }
+                                                TextId = "MRK",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -1189,12 +1198,13 @@ public class EngineServiceTests
                     {
                         ParallelCorpusRef = "parallel-corpus1",
                         SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", TextIds = ["MAT", "MRK"] }],
-                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT", "MRK"] }]
-                    }
-                ]
+                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", TextIds = ["MAT", "MRK"] }],
+                    },
+                ],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -1224,11 +1234,11 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file1.zip"
-                                            }
+                                                TextId = "file1.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
+                                        TrainOnAll = false,
                                     },
                                     new()
                                     {
@@ -1240,13 +1250,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file3.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file3.zip"
-                                            }
+                                                TextId = "file3.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1263,11 +1273,11 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file2.zip"
-                                            }
+                                                TextId = "file2.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
+                                        TrainOnAll = false,
                                     },
                                     new()
                                     {
@@ -1279,16 +1289,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file4.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file4.zip"
-                                            }
+                                                TextId = "file4.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -1312,22 +1322,26 @@ public class EngineServiceTests
                         ParallelCorpusRef = "parallel-corpus1",
                         SourceFilters =
                         [
-                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" }
+                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" },
                         ],
-                        TargetFilters = [new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 1;MRK" }]
-                    }
+                        TargetFilters =
+                        [
+                            new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 1;MRK" },
+                        ],
+                    },
                 ],
                 Pretranslate =
                 [
                     new PretranslateCorpus
                     {
                         ParallelCorpusRef = "parallel-corpus1",
-                        SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 2" }]
-                    }
-                ]
+                        SourceFilters = [new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 2" }],
+                    },
+                ],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -1359,14 +1373,14 @@ public class EngineServiceTests
                                             {
                                                 "MRK",
                                                 new ScriptureChapters { Chapters = { } }
-                                            }
+                                            },
                                         },
                                         PretranslateChapters =
                                         {
                                             {
                                                 "MAT",
                                                 new ScriptureChapters { Chapters = { 2 } }
-                                            }
+                                            },
                                         },
                                         Files =
                                         {
@@ -1374,11 +1388,11 @@ public class EngineServiceTests
                                             {
                                                 Location = "file1.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file1.zip"
-                                            }
+                                                TextId = "file1.zip",
+                                            },
                                         },
                                         PretranslateAll = false,
-                                        TrainOnAll = false
+                                        TrainOnAll = false,
                                     },
                                     new()
                                     {
@@ -1390,13 +1404,13 @@ public class EngineServiceTests
                                             {
                                                 Location = "file3.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file3.zip"
-                                            }
+                                                TextId = "file3.zip",
+                                            },
                                         },
                                         PretranslateAll = false,
-                                        TrainOnAll = false
-                                    }
-                                }
+                                        TrainOnAll = false,
+                                    },
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1415,7 +1429,7 @@ public class EngineServiceTests
                                             {
                                                 "MRK",
                                                 new ScriptureChapters { }
-                                            }
+                                            },
                                         },
                                         Files =
                                         {
@@ -1423,11 +1437,11 @@ public class EngineServiceTests
                                             {
                                                 Location = "file2.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file2.zip"
-                                            }
+                                                TextId = "file2.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
+                                        TrainOnAll = false,
                                     },
                                     new()
                                     {
@@ -1439,16 +1453,16 @@ public class EngineServiceTests
                                             {
                                                 Location = "file4.zip",
                                                 Format = V1.FileFormat.Paratext,
-                                                TextId = "file4.zip"
-                                            }
+                                                TextId = "file4.zip",
+                                            },
                                         },
                                         PretranslateAll = true,
-                                        TrainOnAll = false
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        TrainOnAll = false,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -1473,18 +1487,19 @@ public class EngineServiceTests
                         SourceFilters =
                         [
                             new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1-2;MRK 1-2" },
-                            new() { CorpusRef = "parallel-corpus1-source2", ScriptureRange = "MAT 3;MRK 1" }
+                            new() { CorpusRef = "parallel-corpus1-source2", ScriptureRange = "MAT 3;MRK 1" },
                         ],
                         TargetFilters =
                         [
                             new() { CorpusRef = "parallel-corpus1-target1", ScriptureRange = "MAT 2-3;MRK 2" },
-                            new() { CorpusRef = "parallel-corpus1-target2", ScriptureRange = "MAT 1;MRK 1-2" }
-                        ]
-                    }
-                ]
+                            new() { CorpusRef = "parallel-corpus1-target2", ScriptureRange = "MAT 1;MRK 1-2" },
+                        ],
+                    },
+                ],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -1511,8 +1526,8 @@ public class EngineServiceTests
                                         {
                                             Location = "file1.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file1.zip"
-                                        }
+                                            TextId = "file1.zip",
+                                        },
                                     },
                                     TrainOnChapters =
                                     {
@@ -1523,10 +1538,10 @@ public class EngineServiceTests
                                         {
                                             "MRK",
                                             new ScriptureChapters { Chapters = { 1, 2 } }
-                                        }
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = false
+                                    TrainOnAll = false,
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1538,8 +1553,8 @@ public class EngineServiceTests
                                         {
                                             Location = "file3.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file3.zip"
-                                        }
+                                            TextId = "file3.zip",
+                                        },
                                     },
                                     TrainOnChapters =
                                     {
@@ -1550,11 +1565,11 @@ public class EngineServiceTests
                                         {
                                             "MRK",
                                             new ScriptureChapters { Chapters = { 1 } }
-                                        }
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = false
-                                }
+                                    TrainOnAll = false,
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1568,8 +1583,8 @@ public class EngineServiceTests
                                         {
                                             Location = "file2.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file2.zip"
-                                        }
+                                            TextId = "file2.zip",
+                                        },
                                     },
                                     TrainOnChapters =
                                     {
@@ -1580,10 +1595,10 @@ public class EngineServiceTests
                                         {
                                             "MRK",
                                             new ScriptureChapters { Chapters = { 2 } }
-                                        }
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = false
+                                    TrainOnAll = false,
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1595,8 +1610,8 @@ public class EngineServiceTests
                                         {
                                             Location = "file4.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file4.zip"
-                                        }
+                                            TextId = "file4.zip",
+                                        },
                                     },
                                     TrainOnChapters =
                                     {
@@ -1607,14 +1622,14 @@ public class EngineServiceTests
                                         {
                                             "MRK",
                                             new ScriptureChapters { Chapters = { 1, 2 } }
-                                        }
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = false
-                                }
-                            }
-                        }
-                    }
+                                    TrainOnAll = false,
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -1625,41 +1640,40 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
-        Assert.ThrowsAsync<InvalidOperationException>(
-            () =>
-                env.Service.StartBuildAsync(
-                    new Build
-                    {
-                        Id = BUILD1_ID,
-                        EngineRef = engineId,
-                        Owner = "owner1",
-                        TrainOn =
-                        [
-                            new TrainingCorpus
-                            {
-                                ParallelCorpusRef = "parallel-corpus1",
-                                SourceFilters =
-                                [
-                                    new()
-                                    {
-                                        CorpusRef = "parallel-corpus1-source1",
-                                        ScriptureRange = "MAT",
-                                        TextIds = []
-                                    }
-                                ],
-                                TargetFilters =
-                                [
-                                    new()
-                                    {
-                                        CorpusRef = "parallel-corpus1-target1",
-                                        ScriptureRange = "MAT",
-                                        TextIds = []
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                )
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
+            env.Service.StartBuildAsync(
+                new Build
+                {
+                    Id = BUILD1_ID,
+                    EngineRef = engineId,
+                    Owner = "owner1",
+                    TrainOn =
+                    [
+                        new TrainingCorpus
+                        {
+                            ParallelCorpusRef = "parallel-corpus1",
+                            SourceFilters =
+                            [
+                                new()
+                                {
+                                    CorpusRef = "parallel-corpus1-source1",
+                                    ScriptureRange = "MAT",
+                                    TextIds = [],
+                                },
+                            ],
+                            TargetFilters =
+                            [
+                                new()
+                                {
+                                    CorpusRef = "parallel-corpus1-target1",
+                                    ScriptureRange = "MAT",
+                                    TextIds = [],
+                                },
+                            ],
+                        },
+                    ],
+                }
+            )
         );
     }
 
@@ -1674,10 +1688,11 @@ public class EngineServiceTests
                 Id = BUILD1_ID,
                 EngineRef = engineId,
                 Owner = "owner1",
-                TrainOn = [new TrainingCorpus { ParallelCorpusRef = "parallel-corpus1" }]
+                TrainOn = [new TrainingCorpus { ParallelCorpusRef = "parallel-corpus1" }],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -1704,11 +1719,11 @@ public class EngineServiceTests
                                         {
                                             Location = "file1.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file1.zip"
-                                        }
+                                            TextId = "file1.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
+                                    TrainOnAll = true,
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1720,12 +1735,12 @@ public class EngineServiceTests
                                         {
                                             Location = "file3.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file3.zip"
-                                        }
+                                            TextId = "file3.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
-                                }
+                                    TrainOnAll = true,
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1739,11 +1754,11 @@ public class EngineServiceTests
                                         {
                                             Location = "file2.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file2.zip"
-                                        }
+                                            TextId = "file2.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
+                                    TrainOnAll = true,
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1755,15 +1770,15 @@ public class EngineServiceTests
                                         {
                                             Location = "file4.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file4.zip"
-                                        }
+                                            TextId = "file4.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
-                                }
-                            }
-                        }
-                    }
+                                    TrainOnAll = true,
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -1782,7 +1797,8 @@ public class EngineServiceTests
                 Owner = "owner1",
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -1809,11 +1825,11 @@ public class EngineServiceTests
                                         {
                                             Location = "file1.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file1.zip"
-                                        }
+                                            TextId = "file1.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
+                                    TrainOnAll = true,
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1825,12 +1841,12 @@ public class EngineServiceTests
                                         {
                                             Location = "file3.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file3.zip"
-                                        }
+                                            TextId = "file3.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
-                                }
+                                    TrainOnAll = true,
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1844,11 +1860,11 @@ public class EngineServiceTests
                                         {
                                             Location = "file2.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file2.zip"
-                                        }
+                                            TextId = "file2.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
+                                    TrainOnAll = true,
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1860,15 +1876,15 @@ public class EngineServiceTests
                                         {
                                             Location = "file4.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file4.zip"
-                                        }
+                                            TextId = "file4.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
-                                }
-                            }
-                        }
-                    }
+                                    TrainOnAll = true,
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -1892,13 +1908,14 @@ public class EngineServiceTests
                         ParallelCorpusRef = "parallel-corpus1",
                         SourceFilters =
                         [
-                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" }
+                            new() { CorpusRef = "parallel-corpus1-source1", ScriptureRange = "MAT 1;MRK" },
                         ],
-                    }
-                ]
+                    },
+                ],
             }
         );
-        _ = env.OutboxService.Received()
+        _ = env
+            .OutboxService.Received()
             .EnqueueMessageAsync(
                 EngineOutboxConstants.OutboxId,
                 EngineOutboxConstants.StartBuild,
@@ -1925,8 +1942,8 @@ public class EngineServiceTests
                                         {
                                             Location = "file1.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file1.zip"
-                                        }
+                                            TextId = "file1.zip",
+                                        },
                                     },
                                     TrainOnChapters =
                                     {
@@ -1937,10 +1954,10 @@ public class EngineServiceTests
                                         {
                                             "MRK",
                                             new ScriptureChapters { }
-                                        }
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = false
+                                    TrainOnAll = false,
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1952,12 +1969,12 @@ public class EngineServiceTests
                                         {
                                             Location = "file3.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file3.zip"
-                                        }
+                                            TextId = "file3.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = false
-                                }
+                                    TrainOnAll = false,
+                                },
                             },
                             TargetCorpora =
                             {
@@ -1971,11 +1988,11 @@ public class EngineServiceTests
                                         {
                                             Location = "file2.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file2.zip"
-                                        }
+                                            TextId = "file2.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
+                                    TrainOnAll = true,
                                 },
                                 new V1.MonolingualCorpus()
                                 {
@@ -1987,15 +2004,15 @@ public class EngineServiceTests
                                         {
                                             Location = "file4.zip",
                                             Format = V1.FileFormat.Paratext,
-                                            TextId = "file4.zip"
-                                        }
+                                            TextId = "file4.zip",
+                                        },
                                     },
                                     PretranslateAll = true,
-                                    TrainOnAll = true
-                                }
-                            }
-                        }
-                    }
+                                    TrainOnAll = true,
+                                },
+                            },
+                        },
+                    },
                 },
                 cancellationToken: Arg.Any<CancellationToken>()
             );
@@ -2026,14 +2043,14 @@ public class EngineServiceTests
                     Id = "file1",
                     Filename = "file1.txt",
                     Format = Shared.Contracts.FileFormat.Text,
-                    TextId = "text1"
+                    TextId = "text1",
                 },
                 new()
                 {
                     Id = "file3",
                     Filename = "file3.txt",
                     Format = Shared.Contracts.FileFormat.Text,
-                    TextId = "text2"
+                    TextId = "text2",
                 },
             ],
             null
@@ -2120,18 +2137,17 @@ public class EngineServiceTests
     public async Task DeletePretranslationsWhenCorpusIsUpdatedAsync()
     {
         var env = new TestEnvironment();
-        Pretranslation pretranslation =
-            new()
-            {
-                Id = "pretranslation1",
-                EngineRef = "engine1",
-                CorpusRef = "corpus1",
-                Refs = ["ref1"],
-                SourceRefs = ["ref1"],
-                TargetRefs = ["ref1"],
-                TextId = "textId1",
-                Translation = "translation"
-            };
+        Pretranslation pretranslation = new()
+        {
+            Id = "pretranslation1",
+            EngineRef = "engine1",
+            CorpusRef = "corpus1",
+            Refs = ["ref1"],
+            SourceRefs = ["ref1"],
+            TargetRefs = ["ref1"],
+            TextId = "textId1",
+            Translation = "translation",
+        };
         var engine = await env.CreateEngineWithTextFilesAsync();
         await env.Pretranslations.InsertAsync(pretranslation);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
@@ -2143,18 +2159,17 @@ public class EngineServiceTests
     public async Task DeletePretranslationsWhenParallelCorpusIsUpdatedAsync()
     {
         var env = new TestEnvironment();
-        Pretranslation pretranslation =
-            new()
-            {
-                Id = "pretranslation1",
-                EngineRef = "engine1",
-                CorpusRef = "parallel-corpus1",
-                Refs = ["ref1"],
-                SourceRefs = ["ref1"],
-                TargetRefs = ["ref1"],
-                TextId = "textId1",
-                Translation = "translation"
-            };
+        Pretranslation pretranslation = new()
+        {
+            Id = "pretranslation1",
+            EngineRef = "engine1",
+            CorpusRef = "parallel-corpus1",
+            Refs = ["ref1"],
+            SourceRefs = ["ref1"],
+            TargetRefs = ["ref1"],
+            TextId = "textId1",
+            Translation = "translation",
+        };
         var engine = await env.CreateParallelCorpusEngineWithTextFilesAsync();
         await env.Pretranslations.InsertAsync(pretranslation);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
@@ -2171,18 +2186,17 @@ public class EngineServiceTests
     public async Task DeletePretranslationsWhenCorpusFilesAreDeletedAsync()
     {
         var env = new TestEnvironment();
-        Pretranslation pretranslation =
-            new()
-            {
-                Id = "pretranslation1",
-                EngineRef = "engine1",
-                CorpusRef = "corpus1",
-                Refs = ["ref1"],
-                SourceRefs = ["ref1"],
-                TargetRefs = ["ref1"],
-                TextId = "textId1",
-                Translation = "translation"
-            };
+        Pretranslation pretranslation = new()
+        {
+            Id = "pretranslation1",
+            EngineRef = "engine1",
+            CorpusRef = "corpus1",
+            Refs = ["ref1"],
+            SourceRefs = ["ref1"],
+            TargetRefs = ["ref1"],
+            TextId = "textId1",
+            Translation = "translation",
+        };
         await env.CreateEngineWithTextFilesAsync();
         await env.Pretranslations.InsertAsync(pretranslation);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
@@ -2194,18 +2208,17 @@ public class EngineServiceTests
     public async Task DeletePretranslationsWhenCorpusFilesAreUpdatedAsync()
     {
         var env = new TestEnvironment();
-        Pretranslation pretranslation =
-            new()
-            {
-                Id = "pretranslation1",
-                EngineRef = "engine1",
-                CorpusRef = "corpus1",
-                Refs = ["ref1"],
-                SourceRefs = ["ref1"],
-                TargetRefs = ["ref1"],
-                TextId = "textId1",
-                Translation = "translation"
-            };
+        Pretranslation pretranslation = new()
+        {
+            Id = "pretranslation1",
+            EngineRef = "engine1",
+            CorpusRef = "corpus1",
+            Refs = ["ref1"],
+            SourceRefs = ["ref1"],
+            TargetRefs = ["ref1"],
+            TextId = "textId1",
+            Translation = "translation",
+        };
         await env.CreateEngineWithTextFilesAsync();
         await env.Pretranslations.InsertAsync(pretranslation);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
@@ -2217,8 +2230,8 @@ public class EngineServiceTests
                     Id = "file1",
                     Filename = "newfilename",
                     TextId = "text1",
-                    Format = Shared.Contracts.FileFormat.Text
-                }
+                    Format = Shared.Contracts.FileFormat.Text,
+                },
             ]
         );
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
@@ -2242,7 +2255,7 @@ public class EngineServiceTests
                     new TranslationSources { Values = { V1.TranslationSource.Primary } },
                     new TranslationSources { Values = { V1.TranslationSource.Primary } },
                     new TranslationSources { Values = { V1.TranslationSource.Primary } },
-                    new TranslationSources { Values = { V1.TranslationSource.Primary } }
+                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
                 },
                 Alignment =
                 {
@@ -2250,7 +2263,7 @@ public class EngineServiceTests
                     new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
                     new V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
                     new V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
+                    new V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 },
                 },
                 Phrases =
                 {
@@ -2258,9 +2271,9 @@ public class EngineServiceTests
                     {
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 5,
-                        TargetSegmentCut = 5
-                    }
-                }
+                        TargetSegmentCut = 5,
+                    },
+                },
             };
             var translateResponse = new TranslateResponse { Results = { translationResult } };
             TranslationServiceClient
@@ -2281,12 +2294,12 @@ public class EngineServiceTests
                         Alignment =
                         {
                             new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
+                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
                         },
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 2,
                         Sources = { GetSources(2, false) },
-                        Confidences = { 1.0, 1.0 }
+                        Confidences = { 1.0, 1.0 },
                     },
                     new V1.WordGraphArc
                     {
@@ -2297,12 +2310,12 @@ public class EngineServiceTests
                         Alignment =
                         {
                             new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 }
+                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
                         },
                         SourceSegmentStart = 2,
                         SourceSegmentEnd = 4,
                         Sources = { GetSources(2, false) },
-                        Confidences = { 1.0, 1.0 }
+                        Confidences = { 1.0, 1.0 },
                     },
                     new V1.WordGraphArc
                     {
@@ -2312,14 +2325,14 @@ public class EngineServiceTests
                         TargetTokens = { ".".Split() },
                         Alignment =
                         {
-                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
+                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
                         },
                         SourceSegmentStart = 4,
                         SourceSegmentEnd = 5,
                         Sources = { GetSources(1, false) },
-                        Confidences = { 1.0 }
-                    }
-                }
+                        Confidences = { 1.0 },
+                    },
+                },
             };
             var getWordGraphResponse = new GetWordGraphResponse { WordGraph = wordGraph };
             TranslationServiceClient
@@ -2416,8 +2429,8 @@ public class EngineServiceTests
                                 Id = "file1",
                                 Filename = "file1.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
-                                TextId = "text1"
-                            }
+                                TextId = "text1",
+                            },
                         ],
                         TargetFiles =
                         [
@@ -2426,12 +2439,12 @@ public class EngineServiceTests
                                 Id = "file2",
                                 Filename = "file2.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
-                                TextId = "text1"
-                            }
+                                TextId = "text1",
+                            },
                         ],
-                    }
+                    },
                 ],
-                ModelRevision = 1
+                ModelRevision = 1,
             };
             await Engines.InsertAsync(engine);
             return engine;
@@ -2460,8 +2473,8 @@ public class EngineServiceTests
                                 Id = "file1",
                                 Filename = "file1.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
-                                TextId = "text1"
-                            }
+                                TextId = "text1",
+                            },
                         ],
                         TargetFiles =
                         [
@@ -2470,8 +2483,8 @@ public class EngineServiceTests
                                 Id = "file2",
                                 Filename = "file2.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
-                                TextId = "text1"
-                            }
+                                TextId = "text1",
+                            },
                         ],
                     },
                     new()
@@ -2486,8 +2499,8 @@ public class EngineServiceTests
                                 Id = "file3",
                                 Filename = "file3.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
-                                TextId = "text1"
-                            }
+                                TextId = "text1",
+                            },
                         ],
                         TargetFiles =
                         [
@@ -2496,11 +2509,11 @@ public class EngineServiceTests
                                 Id = "file4",
                                 Filename = "file4.txt",
                                 Format = Shared.Contracts.FileFormat.Text,
-                                TextId = "text1"
-                            }
+                                TextId = "text1",
+                            },
                         ],
-                    }
-                ]
+                    },
+                ],
             };
             await Engines.InsertAsync(engine);
             return engine;
@@ -2529,8 +2542,8 @@ public class EngineServiceTests
                                 Id = "file1",
                                 Filename = "file1.zip",
                                 Format = Shared.Contracts.FileFormat.Paratext,
-                                TextId = "file1.zip"
-                            }
+                                TextId = "file1.zip",
+                            },
                         ],
                         TargetFiles =
                         [
@@ -2539,11 +2552,11 @@ public class EngineServiceTests
                                 Id = "file2",
                                 Filename = "file2.zip",
                                 Format = Shared.Contracts.FileFormat.Paratext,
-                                TextId = "file2.zip"
-                            }
+                                TextId = "file2.zip",
+                            },
                         ],
-                    }
-                ]
+                    },
+                ],
             };
             await Engines.InsertAsync(engine);
             return engine;
@@ -2577,9 +2590,9 @@ public class EngineServiceTests
                                         Id = "file1",
                                         Filename = "file1.txt",
                                         Format = Shared.Contracts.FileFormat.Text,
-                                        TextId = "MAT"
-                                    }
-                                ]
+                                        TextId = "MAT",
+                                    },
+                                ],
                             },
                             new()
                             {
@@ -2593,10 +2606,10 @@ public class EngineServiceTests
                                         Id = "file3",
                                         Filename = "file3.txt",
                                         Format = Shared.Contracts.FileFormat.Text,
-                                        TextId = "MRK"
-                                    }
-                                ]
-                            }
+                                        TextId = "MRK",
+                                    },
+                                ],
+                            },
                         ],
                         TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
@@ -2612,9 +2625,9 @@ public class EngineServiceTests
                                         Id = "file2",
                                         Filename = "file2.txt",
                                         Format = Shared.Contracts.FileFormat.Text,
-                                        TextId = "MAT"
-                                    }
-                                ]
+                                        TextId = "MAT",
+                                    },
+                                ],
                             },
                             new()
                             {
@@ -2628,13 +2641,13 @@ public class EngineServiceTests
                                         Id = "file4",
                                         Filename = "file4.txt",
                                         Format = Shared.Contracts.FileFormat.Text,
-                                        TextId = "MRK"
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                ]
+                                        TextId = "MRK",
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                ],
             };
             await Engines.InsertAsync(engine);
             return engine;
@@ -2668,10 +2681,10 @@ public class EngineServiceTests
                                         Id = "file1",
                                         Filename = "file1.txt",
                                         Format = Shared.Contracts.FileFormat.Text,
-                                        TextId = "MAT"
-                                    }
-                                ]
-                            }
+                                        TextId = "MAT",
+                                    },
+                                ],
+                            },
                         },
                         TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
@@ -2687,11 +2700,11 @@ public class EngineServiceTests
                                         Id = "file2",
                                         Filename = "file2.txt",
                                         Format = Shared.Contracts.FileFormat.Text,
-                                        TextId = "MAT"
-                                    }
-                                ]
-                            }
-                        }
+                                        TextId = "MAT",
+                                    },
+                                ],
+                            },
+                        },
                     },
                     new()
                     {
@@ -2710,10 +2723,10 @@ public class EngineServiceTests
                                         Id = "file3",
                                         Filename = "file3.txt",
                                         Format = Shared.Contracts.FileFormat.Text,
-                                        TextId = "MRK"
-                                    }
-                                ]
-                            }
+                                        TextId = "MRK",
+                                    },
+                                ],
+                            },
                         },
                         TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
@@ -2729,13 +2742,13 @@ public class EngineServiceTests
                                         Id = "file4",
                                         Filename = "file4.txt",
                                         Format = Shared.Contracts.FileFormat.Text,
-                                        TextId = "MRK"
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                ]
+                                        TextId = "MRK",
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                ],
             };
             await Engines.InsertAsync(engine);
             return engine;
@@ -2769,9 +2782,9 @@ public class EngineServiceTests
                                         Id = "file1",
                                         Filename = "file1.zip",
                                         Format = Shared.Contracts.FileFormat.Paratext,
-                                        TextId = "file1.zip"
-                                    }
-                                ]
+                                        TextId = "file1.zip",
+                                    },
+                                ],
                             },
                             new()
                             {
@@ -2785,10 +2798,10 @@ public class EngineServiceTests
                                         Id = "file3",
                                         Filename = "file3.zip",
                                         Format = Shared.Contracts.FileFormat.Paratext,
-                                        TextId = "file3.zip"
-                                    }
-                                ]
-                            }
+                                        TextId = "file3.zip",
+                                    },
+                                ],
+                            },
                         },
                         TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
                         {
@@ -2804,9 +2817,9 @@ public class EngineServiceTests
                                         Id = "file2",
                                         Filename = "file2.zip",
                                         Format = Shared.Contracts.FileFormat.Paratext,
-                                        TextId = "file2.zip"
-                                    }
-                                ]
+                                        TextId = "file2.zip",
+                                    },
+                                ],
                             },
                             new()
                             {
@@ -2820,13 +2833,13 @@ public class EngineServiceTests
                                         Id = "file4",
                                         Filename = "file4.zip",
                                         Format = Shared.Contracts.FileFormat.Paratext,
-                                        TextId = "file4.zip"
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                ]
+                                        TextId = "file4.zip",
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                ],
             };
             await Engines.InsertAsync(engine);
             return engine;

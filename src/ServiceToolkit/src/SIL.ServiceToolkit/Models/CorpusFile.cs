@@ -3,7 +3,7 @@
 public enum FileFormat
 {
     Text = 0,
-    Paratext = 1
+    Paratext = 1,
 }
 
 public record CorpusFile

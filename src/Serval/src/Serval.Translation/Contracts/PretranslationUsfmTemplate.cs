@@ -4,5 +4,5 @@ public enum PretranslationUsfmTemplate
 {
     Auto,
     Source,
-    Target
+    Target,
 }

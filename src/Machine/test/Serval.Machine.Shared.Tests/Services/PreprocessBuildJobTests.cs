@@ -398,7 +398,7 @@ public class PreprocessBuildJobTests
                         Language = "en",
                         Files = [env.ParatextFile("pt-source1")],
                         TrainOnChapters = new() { { "MAT", [1] }, { "LEV", [] } },
-                        InferenceChapters = new() { { "1CH", [] } }
+                        InferenceChapters = new() { { "1CH", [] } },
                     },
                     new()
                     {
@@ -406,7 +406,7 @@ public class PreprocessBuildJobTests
                         Language = "en",
                         Files = [env.ParatextFile("pt-source2")],
                         TrainOnChapters = new() { { "MAT", [1] }, { "MRK", [] } },
-                        InferenceChapters = new() { { "1CH", [] } }
+                        InferenceChapters = new() { { "1CH", [] } },
                     },
                 ],
                 TargetCorpora =
@@ -416,7 +416,7 @@ public class PreprocessBuildJobTests
                         Id = "_1",
                         Language = "en",
                         Files = [env.ParatextFile("pt-target1")],
-                        TrainOnChapters = new() { { "MAT", [1] }, { "MRK", [] } }
+                        TrainOnChapters = new() { { "MAT", [1] }, { "MRK", [] } },
                     },
                     new()
                     {
@@ -427,10 +427,10 @@ public class PreprocessBuildJobTests
                         {
                             { "MAT", [1] },
                             { "MRK", [] },
-                            { "LEV", [] }
-                        }
+                            { "LEV", [] },
+                        },
                     },
-                ]
+                ],
             },
         ];
         await env.RunBuildJobAsync(corpora, useKeyTerms: false);
@@ -540,7 +540,7 @@ Target one, chapter one, verse nine and ten.
                         Language = "es",
                         Files = [TextFile("source1")],
                         TrainOnTextIds = [],
-                        InferenceTextIds = []
+                        InferenceTextIds = [],
                     },
                 ],
                 TargetCorpora =
@@ -550,9 +550,9 @@ Target one, chapter one, verse nine and ten.
                         Id = "trg_1",
                         Language = "en",
                         Files = [TextFile("target1")],
-                        TrainOnTextIds = []
+                        TrainOnTextIds = [],
                     },
-                ]
+                ],
             };
 
             DefaultMixedSourceTextFileCorpus = new()
@@ -579,9 +579,9 @@ Target one, chapter one, verse nine and ten.
                         Language = "en",
                         Files = [TextFile("target1")],
                         TrainOnChapters = null,
-                        TrainOnTextIds = null
+                        TrainOnTextIds = null,
                     },
-                ]
+                ],
             };
 
             DefaultParatextCorpus = new()
@@ -595,7 +595,7 @@ Target one, chapter one, verse nine and ten.
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
                         TrainOnTextIds = null,
-                        InferenceTextIds = null
+                        InferenceTextIds = null,
                     },
                 ],
                 TargetCorpora =
@@ -605,9 +605,9 @@ Target one, chapter one, verse nine and ten.
                         Id = "trg_1",
                         Language = "en",
                         Files = [ParatextFile("pt-target1")],
-                        TrainOnTextIds = null
+                        TrainOnTextIds = null,
                     },
-                ]
+                ],
             };
 
             DefaultMixedSourceParatextCorpus = new()
@@ -621,7 +621,7 @@ Target one, chapter one, verse nine and ten.
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
                         TrainOnTextIds = null,
-                        InferenceTextIds = null
+                        InferenceTextIds = null,
                     },
                     new()
                     {
@@ -629,7 +629,7 @@ Target one, chapter one, verse nine and ten.
                         Language = "es",
                         Files = [ParatextFile("pt-source2")],
                         TrainOnTextIds = null,
-                        InferenceTextIds = null
+                        InferenceTextIds = null,
                     },
                 ],
                 TargetCorpora =
@@ -639,9 +639,9 @@ Target one, chapter one, verse nine and ten.
                         Id = "trg_1",
                         Language = "en",
                         Files = [ParatextFile("pt-target1")],
-                        TrainOnTextIds = null
+                        TrainOnTextIds = null,
                     },
-                ]
+                ],
             };
 
             Engines = new MemoryRepository<TranslationEngine>();
@@ -662,8 +662,8 @@ Target one, chapter one, verse nine and ten.
                         JobState = BuildJobState.Pending,
                         BuildJobRunner = BuildJobRunnerType.Hangfire,
                         Stage = BuildStage.Preprocess,
-                        ExecutionData = new BuildExecutionData()
-                    }
+                        ExecutionData = new BuildExecutionData(),
+                    },
                 }
             );
             Engines.Add(
@@ -683,8 +683,8 @@ Target one, chapter one, verse nine and ten.
                         JobState = BuildJobState.Pending,
                         BuildJobRunner = BuildJobRunnerType.Hangfire,
                         Stage = BuildStage.Preprocess,
-                        ExecutionData = new BuildExecutionData()
-                    }
+                        ExecutionData = new BuildExecutionData(),
+                    },
                 }
             );
             Engines.Add(
@@ -704,8 +704,8 @@ Target one, chapter one, verse nine and ten.
                         JobState = BuildJobState.Pending,
                         BuildJobRunner = BuildJobRunnerType.Hangfire,
                         Stage = BuildStage.Preprocess,
-                        ExecutionData = new BuildExecutionData()
-                    }
+                        ExecutionData = new BuildExecutionData(),
+                    },
                 }
             );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
@@ -735,16 +735,16 @@ Target one, chapter one, verse nine and ten.
                             EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
-                            Queue = "default"
+                            Queue = "default",
                         },
                         new ClearMLBuildQueue()
                         {
                             EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
-                            Queue = "default"
-                        }
-                    ]
+                            Queue = "default",
+                        },
+                    ],
                 }
             );
             ClearMLService = Substitute.For<IClearMLService>();
@@ -781,10 +781,10 @@ Target one, chapter one, verse nine and ten.
                                 Substitute.For<ILanguageTagService>(),
                                 Engines
                             ),
-                            new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)
+                            new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines),
                         ],
                         BuildJobOptions
-                    )
+                    ),
                 ],
                 Engines
             );
@@ -841,7 +841,7 @@ Target one, chapter one, verse nine and ten.
                         Language = "es",
                         Files = [TextFile("source1")],
                         TrainOnTextIds = trainOnTextIds,
-                        InferenceTextIds = inferenceTextIds
+                        InferenceTextIds = inferenceTextIds,
                     },
                 ],
                 TargetCorpora =
@@ -851,9 +851,9 @@ Target one, chapter one, verse nine and ten.
                         Id = "trg_1",
                         Language = "en",
                         Files = [TextFile("target1")],
-                        TrainOnTextIds = trainOnTextIds
+                        TrainOnTextIds = trainOnTextIds,
                     },
-                ]
+                ],
             };
         }
 
@@ -870,7 +870,7 @@ Target one, chapter one, verse nine and ten.
                         Language = sourceLanguage,
                         Files = [TextFile("source1")],
                         TrainOnTextIds = [],
-                        InferenceTextIds = []
+                        InferenceTextIds = [],
                     },
                 ],
                 TargetCorpora =
@@ -880,9 +880,9 @@ Target one, chapter one, verse nine and ten.
                         Id = "trg_1",
                         Language = targetLanguage,
                         Files = [TextFile("target1")],
-                        TrainOnTextIds = []
+                        TrainOnTextIds = [],
                     },
-                ]
+                ],
             };
         }
 
@@ -902,7 +902,7 @@ Target one, chapter one, verse nine and ten.
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
                         TrainOnChapters = trainOnChapters,
-                        InferenceChapters = inferenceChapters
+                        InferenceChapters = inferenceChapters,
                     },
                 ],
                 TargetCorpora =
@@ -912,9 +912,9 @@ Target one, chapter one, verse nine and ten.
                         Id = "trg_1",
                         Language = "en",
                         Files = [ParatextFile("pt-target1")],
-                        TrainOnChapters = trainOnChapters
+                        TrainOnChapters = trainOnChapters,
                     },
-                ]
+                ],
             };
         }
 
@@ -931,7 +931,7 @@ Target one, chapter one, verse nine and ten.
                         Language = "es",
                         Files = [ParatextFile("pt-source1")],
                         TrainOnTextIds = trainOnTextIds,
-                        InferenceTextIds = inferenceTextIds
+                        InferenceTextIds = inferenceTextIds,
                     },
                 ],
                 TargetCorpora =
@@ -941,9 +941,9 @@ Target one, chapter one, verse nine and ten.
                         Id = "trg_1",
                         Language = "en",
                         Files = [ParatextFile("pt-target1")],
-                        TrainOnTextIds = trainOnTextIds
+                        TrainOnTextIds = trainOnTextIds,
                     },
-                ]
+                ],
             };
         }
 
@@ -990,10 +990,12 @@ Target one, chapter one, verse nine and ten.
         {
             using StreamReader srcReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.src.txt"));
             using StreamReader trgReader = new(await SharedFileService.OpenReadAsync("builds/build1/train.trg.txt"));
-            using StreamReader srcTermReader =
-                new(await SharedFileService.OpenReadAsync("builds/build1/train.key-terms.src.txt"));
-            using StreamReader trgTermReader =
-                new(await SharedFileService.OpenReadAsync("builds/build1/train.key-terms.trg.txt"));
+            using StreamReader srcTermReader = new(
+                await SharedFileService.OpenReadAsync("builds/build1/train.key-terms.src.txt")
+            );
+            using StreamReader trgTermReader = new(
+                await SharedFileService.OpenReadAsync("builds/build1/train.key-terms.trg.txt")
+            );
             int src1Count = 0;
             int src2Count = 0;
             int trgCount = 0;
@@ -1030,8 +1032,9 @@ Target one, chapter one, verse nine and ten.
 
         public async Task<JsonArray?> GetPretranslationsAsync()
         {
-            using StreamReader reader =
-                new(await SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"));
+            using StreamReader reader = new(
+                await SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json")
+            );
             return JsonSerializer.Deserialize<JsonArray>(await reader.ReadToEndAsync());
         }
 
@@ -1057,7 +1060,7 @@ Target one, chapter one, verse nine and ten.
             {
                 TextId = name,
                 Format = FileFormat.Paratext,
-                Location = Path.Combine(_tempDir.Path, $"{name}.zip")
+                Location = Path.Combine(_tempDir.Path, $"{name}.zip"),
             };
         }
 
@@ -1067,7 +1070,7 @@ Target one, chapter one, verse nine and ten.
             {
                 TextId = "textId1",
                 Format = FileFormat.Text,
-                Location = Path.Combine(TestDataPath, $"{name}.txt")
+                Location = Path.Combine(TestDataPath, $"{name}.txt"),
             };
         }
 

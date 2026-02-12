@@ -3,5 +3,5 @@
 public enum PretranslationFormat
 {
     Json,
-    Usfm
+    Usfm,
 }

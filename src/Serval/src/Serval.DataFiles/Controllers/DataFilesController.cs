@@ -115,7 +115,7 @@ public class DataFilesController(
             Id = idGenerator.GenerateId(),
             Name = name ?? file.FileName,
             Format = format,
-            Owner = Owner
+            Owner = Owner,
         };
         using (Stream stream = file.OpenReadStream())
         {
@@ -233,7 +233,7 @@ public class DataFilesController(
             Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id }),
             Name = source.Name,
             Format = source.Format,
-            Revision = source.Revision
+            Revision = source.Revision,
         };
     }
 }

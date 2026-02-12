@@ -25,15 +25,14 @@ public class GrpcServiceHealthCheck(GrpcClientFactory grpcClientFactory) : IHeal
             );
         }
         // map health report to health check result
-        HealthCheckResult healthCheckResult =
-            new(
-                status: (HealthStatus)healthCheckResponse.Status,
-                description: context.Registration.Name,
-                exception: string.IsNullOrEmpty(healthCheckResponse.Error)
-                    ? null
-                    : new HealthCheckException(healthCheckResponse.Error),
-                data: healthCheckResponse.Data.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value)
-            );
+        HealthCheckResult healthCheckResult = new(
+            status: (HealthStatus)healthCheckResponse.Status,
+            description: context.Registration.Name,
+            exception: string.IsNullOrEmpty(healthCheckResponse.Error)
+                ? null
+                : new HealthCheckException(healthCheckResponse.Error),
+            data: healthCheckResponse.Data.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value)
+        );
         return healthCheckResult;
     }
 }

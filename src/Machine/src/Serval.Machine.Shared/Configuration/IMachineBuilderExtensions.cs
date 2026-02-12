@@ -140,7 +140,7 @@ public static class IMachineBuilderExtensions
             MigrationOptions = new MongoMigrationOptions
             {
                 MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                BackupStrategy = new CollectionMongoBackupStrategy()
+                BackupStrategy = new CollectionMongoBackupStrategy(),
             },
             CheckConnection = true,
             CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
@@ -320,8 +320,8 @@ public static class IMachineBuilderExtensions
                                 InitialBackoff = TimeSpan.FromSeconds(1),
                                 MaxBackoff = TimeSpan.FromSeconds(5),
                                 BackoffMultiplier = 1.5,
-                                RetryableStatusCodes = { StatusCode.Unavailable }
-                            }
+                                RetryableStatusCodes = { StatusCode.Unavailable },
+                            },
                         },
                         new MethodConfig
                         {
@@ -330,11 +330,11 @@ public static class IMachineBuilderExtensions
                                 new MethodName
                                 {
                                     Service = "serval.translation.v1.TranslationPlatformApi",
-                                    Method = "UpdateTranslationBuildStatus"
-                                }
-                            }
-                        }
-                    }
+                                    Method = "UpdateTranslationBuildStatus",
+                                },
+                            },
+                        },
+                    },
                 };
             });
 
@@ -384,8 +384,8 @@ public static class IMachineBuilderExtensions
                                 InitialBackoff = TimeSpan.FromSeconds(1),
                                 MaxBackoff = TimeSpan.FromSeconds(5),
                                 BackoffMultiplier = 1.5,
-                                RetryableStatusCodes = { StatusCode.Unavailable }
-                            }
+                                RetryableStatusCodes = { StatusCode.Unavailable },
+                            },
                         },
                         new MethodConfig
                         {
@@ -394,11 +394,11 @@ public static class IMachineBuilderExtensions
                                 new MethodName
                                 {
                                     Service = "serval.word_alignment.v1.WordAlignmentPlatformApi",
-                                    Method = "UpdateWordAlignmentBuildStatus"
-                                }
-                            }
-                        }
-                    }
+                                    Method = "UpdateWordAlignmentBuildStatus",
+                                },
+                            },
+                        },
+                    },
                 };
             });
 

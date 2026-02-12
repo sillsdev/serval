@@ -10,29 +10,24 @@ public class StatisticalHangfireBuildJobFactory : IHangfireBuildJobFactory
     {
         return stage switch
         {
-            BuildStage.Preprocess
-                => CreateJob<WordAlignmentEngine, WordAlignmentPreprocessBuildJob, IReadOnlyList<ParallelCorpus>>(
-                    engineId,
-                    buildId,
-                    "statistical",
-                    data,
-                    buildOptions
-                ),
-            BuildStage.Postprocess
-                => CreateJob<WordAlignmentEngine, StatisticalPostprocessBuildJob, (int, double)>(
-                    engineId,
-                    buildId,
-                    "statistical",
-                    data,
-                    buildOptions
-                ),
-            BuildStage.Train
-                => CreateJob<WordAlignmentEngine, StatisticalTrainBuildJob>(
-                    engineId,
-                    buildId,
-                    "statistical",
-                    buildOptions
-                ),
+            BuildStage.Preprocess => CreateJob<
+                WordAlignmentEngine,
+                WordAlignmentPreprocessBuildJob,
+                IReadOnlyList<ParallelCorpus>
+            >(engineId, buildId, "statistical", data, buildOptions),
+            BuildStage.Postprocess => CreateJob<WordAlignmentEngine, StatisticalPostprocessBuildJob, (int, double)>(
+                engineId,
+                buildId,
+                "statistical",
+                data,
+                buildOptions
+            ),
+            BuildStage.Train => CreateJob<WordAlignmentEngine, StatisticalTrainBuildJob>(
+                engineId,
+                buildId,
+                "statistical",
+                buildOptions
+            ),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),
         };
     }

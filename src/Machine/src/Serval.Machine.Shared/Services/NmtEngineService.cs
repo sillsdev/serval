@@ -45,7 +45,7 @@ public class NmtEngineService(
                 SourceLanguage = sourceLanguage,
                 TargetLanguage = targetLanguage,
                 Type = EngineType.Nmt,
-                IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
+                IsModelPersisted = isModelPersisted ?? false, // models are not persisted if not specified
             };
             await _engines.InsertAsync(translationEngine, cancellationToken);
         }
@@ -144,7 +144,7 @@ public class NmtEngineService(
         {
             Url = await _sharedFileService.GetDownloadUrlAsync(filepath, expiresAt),
             ModelRevision = engine.BuildRevision,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
         };
         return modelInfo;
     }

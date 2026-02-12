@@ -31,7 +31,7 @@ public class DistributedReaderWriterLockFactory(
                 {
                     Id = id,
                     ReaderLocks = [],
-                    WriterQueue = []
+                    WriterQueue = [],
                 },
                 cancellationToken
             );

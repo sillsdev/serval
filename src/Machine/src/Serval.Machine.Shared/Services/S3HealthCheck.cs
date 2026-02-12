@@ -17,7 +17,7 @@ public class S3HealthCheck(IMemoryCache cache, IOptions<SharedFileOptions> optio
                 BucketName = new Uri(options.Value.Uri).Host,
                 Prefix = new Uri(options.Value.Uri).AbsolutePath.TrimStart('/'),
                 MaxKeys = 1,
-                Delimiter = string.Empty
+                Delimiter = string.Empty,
             };
 
             await new AmazonS3Client(
@@ -26,7 +26,7 @@ public class S3HealthCheck(IMemoryCache cache, IOptions<SharedFileOptions> optio
                 new AmazonS3Config
                 {
                     MaxErrorRetry = 0, //Do not let health check hang
-                    RegionEndpoint = RegionEndpoint.GetBySystemName(options.Value.S3Region)
+                    RegionEndpoint = RegionEndpoint.GetBySystemName(options.Value.S3Region),
                 }
             ).ListObjectsV2Async(request, cancellationToken);
             using (await _lock.LockAsync(cancellationToken))

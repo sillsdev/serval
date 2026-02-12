@@ -12,10 +12,15 @@ public class StatisticalTrainBuildJob(
 {
     // Using UnsafeRelaxedJsonEscaping to avoid escaping surrogate pairs which can result in invalid UTF-8.
     // This is safe since the data written by this writer is only read internally and only as UTF-8 encoded JSON.
-    private static readonly JsonWriterOptions WordAlignmentWriterOptions =
-        new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonWriterOptions WordAlignmentWriterOptions = new()
+    {
+        Indented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
     private const int BatchSize = 128;
 
     private readonly ISharedFileService _sharedFileService = sharedFileService;
@@ -200,7 +205,7 @@ public class StatisticalTrainBuildJob(
                     targetWriter,
                     wordAlignment with
                     {
-                        Alignment = alignedWordPairs
+                        Alignment = alignedWordPairs,
                     },
                     JsonSerializerOptions
                 );

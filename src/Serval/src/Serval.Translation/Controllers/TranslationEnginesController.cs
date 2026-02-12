@@ -16,8 +16,10 @@ public class TranslationEnginesController(
     ILogger<TranslationEnginesController> logger
 ) : TranslationControllerBase(authService, urlService)
 {
-    private static readonly JsonSerializerOptions ObjectJsonSerializerOptions =
-        new() { Converters = { new ObjectToInferredTypesConverter() } };
+    private static readonly JsonSerializerOptions ObjectJsonSerializerOptions = new()
+    {
+        Converters = { new ObjectToInferredTypesConverter() },
+    };
     private readonly IEngineService _engineService = engineService;
     private readonly IBuildService _buildService = buildService;
     private readonly IPretranslationService _pretranslationService = pretranslationService;
@@ -55,7 +57,6 @@ public class TranslationEnginesController(
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine does not exist.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
-
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}", Name = Endpoints.GetTranslationEngine)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -1555,7 +1556,7 @@ public class TranslationEnginesController(
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
             SourceFiles = await MapAsync(getDataFileClient, source.SourceFiles, cancellationToken),
-            TargetFiles = await MapAsync(getDataFileClient, source.TargetFiles, cancellationToken)
+            TargetFiles = await MapAsync(getDataFileClient, source.TargetFiles, cancellationToken),
         };
     }
 
@@ -1570,7 +1571,7 @@ public class TranslationEnginesController(
         {
             Id = corpusId,
             SourceCorpora = await MapAsync(getDataFileClient, source.SourceCorpusIds, cancellationToken),
-            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken)
+            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken),
         };
     }
 
@@ -1595,7 +1596,7 @@ public class TranslationEnginesController(
                         Id = fileConfig.FileId,
                         Filename = result.Message.Filename,
                         TextId = fileConfig.TextId ?? result.Message.Name,
-                        Format = result.Message.Format
+                        Format = result.Message.Format,
                     }
                 );
             }
@@ -1640,7 +1641,7 @@ public class TranslationEnginesController(
                                 Id = f.File.DataFileId,
                                 Filename = f.File.Filename,
                                 Format = f.File.Format,
-                                TextId = f.TextId ?? f.File.Name
+                                TextId = f.TextId ?? f.File.Name,
                             })
                             .ToList(),
                     }
@@ -1664,7 +1665,7 @@ public class TranslationEnginesController(
             Type = source.Type.ToPascalCase(),
             Owner = Owner,
             Corpora = [],
-            IsModelPersisted = source.IsModelPersisted
+            IsModelPersisted = source.IsModelPersisted,
         };
     }
 
@@ -1678,7 +1679,7 @@ public class TranslationEnginesController(
             Pretranslate = Map(engine, source.Pretranslate),
             TrainOn = Map(engine, source.TrainOn),
             Options = MapOptions(source.Options),
-            DeploymentVersion = deploymentVersion
+            DeploymentVersion = deploymentVersion,
         };
     }
 
@@ -1738,7 +1739,7 @@ public class TranslationEnginesController(
                     {
                         CorpusRef = pcc.CorpusId,
                         TextIds = pcc.TextIds?.ToList(),
-                        ScriptureRange = pcc.ScriptureRange
+                        ScriptureRange = pcc.ScriptureRange,
                     }
                 );
             }
@@ -1779,7 +1780,7 @@ public class TranslationEnginesController(
                     new PretranslateCorpus
                     {
                         ParallelCorpusRef = pcc.ParallelCorpusId,
-                        SourceFilters = pcc.SourceFilters?.Select(Map).ToList()
+                        SourceFilters = pcc.SourceFilters?.Select(Map).ToList(),
                     }
                 );
             }
@@ -1843,7 +1844,7 @@ public class TranslationEnginesController(
                     {
                         CorpusRef = tcc.CorpusId,
                         TextIds = tcc.TextIds?.ToList(),
-                        ScriptureRange = tcc.ScriptureRange
+                        ScriptureRange = tcc.ScriptureRange,
                     }
                 );
             }
@@ -1880,7 +1881,7 @@ public class TranslationEnginesController(
                     {
                         ParallelCorpusRef = tcc.ParallelCorpusId,
                         SourceFilters = tcc.SourceFilters?.Select(Map).ToList(),
-                        TargetFilters = tcc.TargetFilters?.Select(Map).ToList()
+                        TargetFilters = tcc.TargetFilters?.Select(Map).ToList(),
                     }
                 );
             }
@@ -1900,7 +1901,7 @@ public class TranslationEnginesController(
         {
             CorpusRef = source.CorpusId,
             TextIds = source.TextIds,
-            ScriptureRange = source.ScriptureRange
+            ScriptureRange = source.ScriptureRange,
         };
     }
 
@@ -1948,7 +1949,7 @@ public class TranslationEnginesController(
             Confidences = source.Confidences.Select(c => Math.Round(c, 8)).ToList(),
             Sources = source.Sources.ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
-            Phrases = source.Phrases.Select(Map).ToList()
+            Phrases = source.Phrases.Select(Map).ToList(),
         };
     }
 
@@ -1963,7 +1964,7 @@ public class TranslationEnginesController(
         {
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
-            TargetSegmentCut = source.TargetSegmentCut
+            TargetSegmentCut = source.TargetSegmentCut,
         };
     }
 
@@ -1974,7 +1975,7 @@ public class TranslationEnginesController(
             SourceTokens = source.SourceTokens.ToList(),
             InitialStateScore = (float)source.InitialStateScore,
             FinalStates = source.FinalStates.ToHashSet(),
-            Arcs = source.Arcs.Select(Map).ToList()
+            Arcs = source.Arcs.Select(Map).ToList(),
         };
     }
 
@@ -1990,7 +1991,7 @@ public class TranslationEnginesController(
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
             Alignment = source.Alignment.Select(Map).ToList(),
-            Sources = source.Sources.ToList()
+            Sources = source.Sources.ToList(),
         };
     }
 
@@ -2002,7 +2003,7 @@ public class TranslationEnginesController(
             SourceRefs = source.SourceRefs,
             TargetRefs = source.TargetRefs,
             Refs = source.Refs,
-            Translation = source.Translation
+            Translation = source.Translation,
         };
     }
 
@@ -2015,13 +2016,13 @@ public class TranslationEnginesController(
             Engine = new ResourceLinkDto
             {
                 Id = engineId,
-                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId })
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId }),
             },
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
             SourceFiles = source.SourceFiles.Select(Map).ToList(),
-            TargetFiles = source.TargetFiles.Select(Map).ToList()
+            TargetFiles = source.TargetFiles.Select(Map).ToList(),
         };
     }
 
@@ -2034,22 +2035,22 @@ public class TranslationEnginesController(
             Engine = new ResourceLinkDto
             {
                 Id = engineId,
-                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId })
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId }),
             },
             SourceCorpora = source
                 .SourceCorpora.Select(c => new ResourceLinkDto
                 {
                     Id = c.Id,
-                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id })
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id }),
                 })
                 .ToList(),
             TargetCorpora = source
                 .TargetCorpora.Select(c => new ResourceLinkDto
                 {
                     Id = c.Id,
-                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id })
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id }),
                 })
-                .ToList()
+                .ToList(),
         };
     }
 
@@ -2060,9 +2061,9 @@ public class TranslationEnginesController(
             File = new ResourceLinkDto
             {
                 Id = source.Id,
-                Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id })
+                Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id }),
             },
-            TextId = source.TextId
+            TextId = source.TextId,
         };
     }
 
@@ -2072,7 +2073,7 @@ public class TranslationEnginesController(
         {
             Url = source.Url,
             ModelRevision = source.ModelRevision,
-            ExpiresAt = source.ExpiresAt
+            ExpiresAt = source.ExpiresAt,
         };
     }
 }

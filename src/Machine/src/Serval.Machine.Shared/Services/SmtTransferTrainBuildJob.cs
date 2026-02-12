@@ -14,10 +14,15 @@ public class SmtTransferTrainBuildJob(
 {
     // Using UnsafeRelaxedJsonEscaping to avoid escaping surrogate pairs which can result in invalid UTF-8.
     // This is safe since the data written by this writer is only read internally and only as UTF-8 encoded JSON.
-    private static readonly JsonWriterOptions PretranslateWriterOptions =
-        new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonWriterOptions PretranslateWriterOptions = new()
+    {
+        Indented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
     private const int BatchSize = 128;
 
     private readonly ISharedFileService _sharedFileService = sharedFileService;
@@ -215,7 +220,7 @@ public class SmtTransferTrainBuildJob(
                     targetWriter,
                     pretranslation with
                     {
-                        Translation = result.Translation
+                        Translation = result.Translation,
                     },
                     JsonSerializerOptions
                 );

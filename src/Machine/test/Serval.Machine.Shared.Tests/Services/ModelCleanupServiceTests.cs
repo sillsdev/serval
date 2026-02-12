@@ -7,7 +7,7 @@ public class ModelCleanupServiceTests
     [
         "models/engineId1_1.tar.gz",
         "models/engineId2_2.tar.gz",
-        "models/engineId2_3.tar.gz" // only one build ahead - keep
+        "models/engineId2_3.tar.gz", // only one build ahead - keep
     ];
     private static readonly List<string> InvalidFiles =
     [
@@ -16,7 +16,7 @@ public class ModelCleanupServiceTests
         "models/wrongId_1.tar.gz",
         "models/engineId1_badBuildNumber.tar.gz",
         "models/noBuildNumber.tar.gz",
-        "models/engineId1_1.differentExtension"
+        "models/engineId1_1.differentExtension",
     ];
 
     [Test]
@@ -50,7 +50,7 @@ public class ModelCleanupServiceTests
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
-                    IsModelPersisted = true
+                    IsModelPersisted = true,
                 }
             );
             _engines.Add(
@@ -62,7 +62,7 @@ public class ModelCleanupServiceTests
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 2,
-                    IsModelPersisted = true
+                    IsModelPersisted = true,
                 }
             );
 

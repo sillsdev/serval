@@ -20,7 +20,7 @@ public class PlatformServiceTests
                 Type = "nmt",
                 SourceLanguage = "en",
                 TargetLanguage = "es",
-                Corpora = []
+                Corpora = [],
             }
         );
         await env.Builds.InsertAsync(
@@ -28,7 +28,7 @@ public class PlatformServiceTests
             {
                 Id = "b0",
                 EngineRef = "e0",
-                Owner = "owner1"
+                Owner = "owner1",
             }
         );
         await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
@@ -81,7 +81,7 @@ public class PlatformServiceTests
                 Type = "nmt",
                 SourceLanguage = "en",
                 TargetLanguage = "es",
-                Corpora = []
+                Corpora = [],
             }
         );
         await env.Builds.InsertAsync(
@@ -89,7 +89,7 @@ public class PlatformServiceTests
             {
                 Id = "b0",
                 EngineRef = "e0",
-                Owner = "owner1"
+                Owner = "owner1",
             }
         );
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.Null);
@@ -98,14 +98,14 @@ public class PlatformServiceTests
         {
             BuildId = "b0",
             QueueDepth = 1,
-            Progress = 0.5
+            Progress = 0.5,
         };
         request.Phases.Add(
             new Phase
             {
                 Stage = PhaseStage.Train,
                 Step = 2,
-                StepCount = 3
+                StepCount = 3,
             }
         );
         await env.PlatformService.UpdateBuildStatus(request, env.ServerCallContext);
@@ -128,7 +128,7 @@ public class PlatformServiceTests
             Type = "nmt",
             SourceLanguage = "en",
             TargetLanguage = "es",
-            Corpora = []
+            Corpora = [],
         };
         await env.Engines.InsertAsync(engine);
 
@@ -137,7 +137,7 @@ public class PlatformServiceTests
             Id = "123",
             EngineRef = "e0",
             Owner = "owner1",
-            ExecutionData = new ExecutionData { TrainCount = 0, PretranslateCount = 0 }
+            ExecutionData = new ExecutionData { TrainCount = 0, PretranslateCount = 0 },
         };
         await env.Builds.InsertAsync(build);
 
@@ -152,7 +152,7 @@ public class PlatformServiceTests
         {
             BuildId = "123",
             EngineId = engine.Id,
-            ExecutionData = new V1.ExecutionData { TrainCount = 4, PretranslateCount = 5, }
+            ExecutionData = new V1.ExecutionData { TrainCount = 4, PretranslateCount = 5 },
         };
 
         await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
@@ -194,7 +194,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            Owner = "owner1"
+            Owner = "owner1",
         };
         await env.Builds.InsertAsync(build);
 
@@ -204,7 +204,7 @@ public class PlatformServiceTests
         {
             BuildId = "123",
             EngineId = engine.Id,
-            TargetQuoteConvention = "typewriter_english"
+            TargetQuoteConvention = "typewriter_english",
         };
 
         await env.PlatformService.UpdateTargetQuoteConvention(updateRequest, env.ServerCallContext);
@@ -228,7 +228,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            Owner = "owner1"
+            Owner = "owner1",
         };
         await env.Builds.InsertAsync(build);
 
@@ -264,7 +264,7 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            Owner = "owner1"
+            Owner = "owner1",
         };
         await env.Builds.InsertAsync(build);
 
@@ -292,7 +292,7 @@ public class PlatformServiceTests
                 Type = "nmt",
                 SourceLanguage = "en",
                 TargetLanguage = "es",
-                Corpora = []
+                Corpora = [],
             }
         );
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(0));

@@ -96,20 +96,19 @@ public class NmtPreprocessBuildJob(
         }
 
         // Log summary of build data
-        JsonObject buildPreprocessSummary =
-            new()
-            {
-                { "Event", "BuildPreprocess" },
-                { "EngineId", engineId },
-                { "BuildId", buildId },
-                { "NumTrainRows", trainCount },
-                { "NumPretranslateRows", pretranslateCount },
-                { "EngineSourceLanguageTag", sourceLanguageTag },
-                { "EngineTargetLanguageTag", targetLanguageTag },
-                { "SourceLanguageResolved", resolvedSourceLanguage },
-                { "TargetLanguageResolved", resolvedTargetLanguage },
-                { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) }
-            };
+        JsonObject buildPreprocessSummary = new()
+        {
+            { "Event", "BuildPreprocess" },
+            { "EngineId", engineId },
+            { "BuildId", buildId },
+            { "NumTrainRows", trainCount },
+            { "NumPretranslateRows", pretranslateCount },
+            { "EngineSourceLanguageTag", sourceLanguageTag },
+            { "EngineTargetLanguageTag", targetLanguageTag },
+            { "SourceLanguageResolved", resolvedSourceLanguage },
+            { "TargetLanguageResolved", resolvedTargetLanguage },
+            { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) },
+        };
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
         var executionData = new BuildExecutionData()
         {
@@ -119,7 +118,7 @@ public class NmtPreprocessBuildJob(
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
             ResolvedSourceLanguage = resolvedSourceLanguage,
-            ResolvedTargetLanguage = resolvedTargetLanguage
+            ResolvedTargetLanguage = resolvedTargetLanguage,
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }
@@ -134,7 +133,7 @@ public class NmtPreprocessBuildJob(
     {
         List<string> warnings =
         [
-            .. base.GetWarnings(trainCount, inferenceCount, sourceLanguageTag, targetLanguageTag, corpora)
+            .. base.GetWarnings(trainCount, inferenceCount, sourceLanguageTag, targetLanguageTag, corpora),
         ];
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere

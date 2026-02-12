@@ -37,9 +37,11 @@ public class OutboxDeliveryServiceTests
         env.Options.CurrentValue.Returns(new OutboxOptions { MessageExpirationTimeout = TimeSpan.FromMilliseconds(1) });
         await env.ProcessMessagesAsync();
         Assert.That(env.Messages.Count, Is.EqualTo(0));
-        _ = env.Consumer1.Received(1)
+        _ = env
+            .Consumer1.Received(1)
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
-        _ = env.Consumer2.Received(4)
+        _ = env
+            .Consumer2.Received(4)
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
     }
 
@@ -52,26 +54,32 @@ public class OutboxDeliveryServiceTests
         EnableConsumerFailure(env.Consumer2, StatusCode.Unavailable);
         await env.ProcessMessagesAsync();
         // Only the first group should be attempted
-        _ = env.Consumer1.DidNotReceive()
+        _ = env
+            .Consumer1.DidNotReceive()
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
-        _ = env.Consumer2.Received(1)
+        _ = env
+            .Consumer2.Received(1)
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
 
         env.Consumer2.ClearReceivedCalls();
         EnableConsumerFailure(env.Consumer2, StatusCode.Internal);
         await env.ProcessMessagesAsync();
-        _ = env.Consumer1.DidNotReceive()
+        _ = env
+            .Consumer1.DidNotReceive()
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
-        _ = env.Consumer2.Received(2)
+        _ = env
+            .Consumer2.Received(2)
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
 
         env.Consumer2.ClearReceivedCalls();
         DisableConsumerFailure(env.Consumer2);
         await env.ProcessMessagesAsync();
         Assert.That(env.Messages.Count, Is.EqualTo(0));
-        _ = env.Consumer1.Received(1)
+        _ = env
+            .Consumer1.Received(1)
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
-        _ = env.Consumer2.Received(2)
+        _ = env
+            .Consumer2.Received(2)
             .HandleMessageAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
     }
 
@@ -83,7 +91,8 @@ public class OutboxDeliveryServiceTests
 
         await env.ProcessMessagesAsync();
         Assert.That(env.Messages.Count, Is.EqualTo(0));
-        _ = env.Consumer1.Received(1)
+        _ = env
+            .Consumer1.Received(1)
             .HandleMessageAsync("A", Arg.Is<Stream?>(s => s != null), Arg.Any<CancellationToken>());
         env.FileSystem.Received().DeleteFile(Path.Combine("outbox", "A"));
     }
@@ -122,7 +131,7 @@ public class OutboxDeliveryServiceTests
             _consumers = new Dictionary<(string, string), IOutboxConsumer>
             {
                 { (OutboxId, Method1), Consumer1 },
-                { (OutboxId, Method2), Consumer2 }
+                { (OutboxId, Method2), Consumer2 },
             };
 
             FileSystem = Substitute.For<IFileSystem>();
@@ -162,7 +171,7 @@ public class OutboxDeliveryServiceTests
                     GroupId = "A",
                     OutboxRef = OutboxId,
                     Content = "\"A\"",
-                    HasContentStream = false
+                    HasContentStream = false,
                 }
             );
             Messages.Add(
@@ -174,7 +183,7 @@ public class OutboxDeliveryServiceTests
                     OutboxRef = OutboxId,
                     GroupId = "A",
                     Content = "\"B\"",
-                    HasContentStream = false
+                    HasContentStream = false,
                 }
             );
             Messages.Add(
@@ -186,7 +195,7 @@ public class OutboxDeliveryServiceTests
                     OutboxRef = OutboxId,
                     GroupId = "B",
                     Content = "\"C\"",
-                    HasContentStream = false
+                    HasContentStream = false,
                 }
             );
         }
@@ -203,7 +212,7 @@ public class OutboxDeliveryServiceTests
                     GroupId = "A",
                     OutboxRef = OutboxId,
                     Content = "\"A\"",
-                    HasContentStream = true
+                    HasContentStream = true,
                 }
             );
             FileSystem

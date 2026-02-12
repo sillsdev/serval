@@ -46,7 +46,7 @@ public class TranslationPlatformServiceV1(
                     {
                         BuildId = build.Id,
                         EngineId = engine.Id,
-                        Owner = engine.Owner
+                        Owner = engine.Owner,
                     },
                     ct
                 );
@@ -147,7 +147,7 @@ public class TranslationPlatformServiceV1(
                         Owner = engine.Owner,
                         BuildState = build.State,
                         Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value
+                        DateFinished = build.DateFinished!.Value,
                     },
                     ct
                 );
@@ -196,7 +196,7 @@ public class TranslationPlatformServiceV1(
                         Owner = engine.Owner,
                         BuildState = build.State,
                         Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value
+                        DateFinished = build.DateFinished!.Value,
                     },
                     ct
                 );
@@ -298,7 +298,7 @@ public class TranslationPlatformServiceV1(
                         EngineSourceLanguageTag = request.ExecutionData.EngineSourceLanguageTag,
                         EngineTargetLanguageTag = request.ExecutionData.EngineTargetLanguageTag,
                         ResolvedSourceLanguage = request.ExecutionData.ResolvedSourceLanguage,
-                        ResolvedTargetLanguage = request.ExecutionData.ResolvedTargetLanguage
+                        ResolvedTargetLanguage = request.ExecutionData.ResolvedTargetLanguage,
                     }
                 ),
             cancellationToken: context.CancellationToken
@@ -319,7 +319,7 @@ public class TranslationPlatformServiceV1(
             .ParallelCorpora.Select(pc => new ParallelCorpusAnalysis
             {
                 ParallelCorpusRef = pc.Id,
-                TargetQuoteConvention = request.TargetQuoteConvention
+                TargetQuoteConvention = request.TargetQuoteConvention,
             })
             .ToList();
         await _builds.UpdateAsync(
@@ -380,7 +380,7 @@ public class TranslationPlatformServiceV1(
                     Translation = request.Translation,
                     SourceTokens = request.SourceTokens,
                     TranslationTokens = request.TranslationTokens,
-                    Alignment = request.Alignment.Select(Map).ToList()
+                    Alignment = request.Alignment.Select(Map).ToList(),
                 }
             );
             if (batch.Count == PretranslationInsertBatchSize)
@@ -400,7 +400,7 @@ public class TranslationPlatformServiceV1(
         return new Models.AlignedWordPair()
         {
             SourceIndex = alignedWordPair.SourceIndex,
-            TargetIndex = alignedWordPair.TargetIndex
+            TargetIndex = alignedWordPair.TargetIndex,
         };
     }
 }

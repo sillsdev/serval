@@ -8,8 +8,11 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
         ServalTranslationPlatformOutboxConstants.InsertPretranslations
     )
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Converters = { new PretranslationConverter() } };
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new PretranslationConverter() },
+    };
 
     private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
 
@@ -141,7 +144,7 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
                 Translation = translation,
                 Alignment = alignedWordPairs,
                 SourceTokens = sourceTokens,
-                TranslationTokens = translationTokens
+                TranslationTokens = translationTokens,
             };
         }
 

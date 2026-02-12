@@ -26,7 +26,7 @@ public class DataFilesTests
             Owner = "client1",
             Name = NAME1,
             Filename = NAME1,
-            Format = Shared.Contracts.FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text,
         };
         var file2 = new DataFiles.Models.DataFile
         {
@@ -34,7 +34,7 @@ public class DataFilesTests
             Owner = "client1",
             Name = NAME2,
             Filename = NAME2,
-            Format = Shared.Contracts.FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text,
         };
         var file3 = new DataFiles.Models.DataFile
         {
@@ -42,7 +42,7 @@ public class DataFilesTests
             Owner = "client2",
             Name = NAME3,
             Filename = NAME3,
-            Format = Shared.Contracts.FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text,
         };
         await _env.DataFiles.InsertAllAsync(new[] { file1, file2, file3 });
     }

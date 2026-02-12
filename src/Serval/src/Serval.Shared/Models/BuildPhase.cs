@@ -3,7 +3,7 @@
 public enum BuildPhaseStage
 {
     Train,
-    Inference
+    Inference,
 }
 
 public record BuildPhase

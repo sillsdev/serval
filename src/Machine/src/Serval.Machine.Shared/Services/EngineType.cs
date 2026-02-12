@@ -4,11 +4,11 @@ public enum EngineType
 {
     SmtTransfer,
     Nmt,
-    Statistical
+    Statistical,
 }
 
 public enum EngineGroup
 {
     Translation,
-    WordAlignment
+    WordAlignment,
 }

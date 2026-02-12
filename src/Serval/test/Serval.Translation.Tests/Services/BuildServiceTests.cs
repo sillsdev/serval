@@ -8,22 +8,20 @@ public class BuildServiceTests
     [Test]
     public async Task GetAllAsync_Success()
     {
-        var builds = new MemoryRepository<Build>(
-            [
-                new Build
-                {
-                    Id = "build1",
-                    EngineRef = "engine1",
-                    Owner = "user1"
-                },
-                new Build
-                {
-                    Id = "build2",
-                    EngineRef = "engine2",
-                    Owner = "user2"
-                },
-            ]
-        );
+        var builds = new MemoryRepository<Build>([
+            new Build
+            {
+                Id = "build1",
+                EngineRef = "engine1",
+                Owner = "user1",
+            },
+            new Build
+            {
+                Id = "build2",
+                EngineRef = "engine2",
+                Owner = "user2",
+            },
+        ]);
         var service = new BuildService(builds);
 
         // SUT
@@ -35,38 +33,36 @@ public class BuildServiceTests
     [Test]
     public async Task GetAllCreatedAfterAsync_Success()
     {
-        var builds = new MemoryRepository<Build>(
-            [
-                new Build
-                {
-                    Id = "build1",
-                    EngineRef = "engine1",
-                    Owner = "user1",
-                    DateCreated = new DateTime(2025, 01, 01)
-                },
-                new Build
-                {
-                    Id = "build2",
-                    EngineRef = "engine1",
-                    Owner = "user1",
-                    DateCreated = new DateTime(2025, 01, 03)
-                },
-                new Build
-                {
-                    Id = "build3",
-                    EngineRef = "engine2",
-                    Owner = "user2",
-                    DateCreated = new DateTime(2025, 01, 04)
-                },
-                new Build
-                {
-                    Id = "build4",
-                    EngineRef = "engine3",
-                    Owner = "user1",
-                    DateCreated = new DateTime(2025, 01, 05)
-                }
-            ]
-        );
+        var builds = new MemoryRepository<Build>([
+            new Build
+            {
+                Id = "build1",
+                EngineRef = "engine1",
+                Owner = "user1",
+                DateCreated = new DateTime(2025, 01, 01),
+            },
+            new Build
+            {
+                Id = "build2",
+                EngineRef = "engine1",
+                Owner = "user1",
+                DateCreated = new DateTime(2025, 01, 03),
+            },
+            new Build
+            {
+                Id = "build3",
+                EngineRef = "engine2",
+                Owner = "user2",
+                DateCreated = new DateTime(2025, 01, 04),
+            },
+            new Build
+            {
+                Id = "build4",
+                EngineRef = "engine3",
+                Owner = "user1",
+                DateCreated = new DateTime(2025, 01, 05),
+            },
+        ]);
         var service = new BuildService(builds);
 
         // SUT
@@ -89,7 +85,7 @@ public class BuildServiceTests
             Id = BUILD1_ID,
             EngineRef = "engine1",
             Owner = "user1",
-            Progress = 0.1
+            Progress = 0.1,
         };
         await builds.InsertAsync(build);
         EntityChange<Build> change = await task;
@@ -107,7 +103,7 @@ public class BuildServiceTests
         {
             Id = BUILD1_ID,
             EngineRef = "engine1",
-            Owner = "user1"
+            Owner = "user1",
         };
         await builds.InsertAsync(build);
         Task<EntityChange<Build>> task = service.GetNewerRevisionAsync(build.Id, 2);
@@ -127,7 +123,7 @@ public class BuildServiceTests
         {
             Id = BUILD1_ID,
             EngineRef = "engine1",
-            Owner = "user1"
+            Owner = "user1",
         };
         await builds.InsertAsync(build);
         Task<EntityChange<Build>> task = service.GetNewerRevisionAsync(build.Id, 2);

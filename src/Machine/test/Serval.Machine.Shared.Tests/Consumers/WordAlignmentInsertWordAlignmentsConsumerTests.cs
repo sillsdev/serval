@@ -33,8 +33,8 @@ public class WordAlignmentInsertWordAlignmentsConsumerTests
                             "targetTokens",
                             new JsonArray { "targetToken1" }
                         },
-                        { "alignment", "0-0:1.0:1.0" }
-                    }
+                        { "alignment", "0-0:1.0:1.0" },
+                    },
                 }
             );
             stream.Seek(0, SeekOrigin.Begin);
@@ -42,7 +42,8 @@ public class WordAlignmentInsertWordAlignmentsConsumerTests
         }
 
         _ = env.Client.Received(1).InsertWordAlignments();
-        _ = env.WordAlignmentsWriter.Received(1)
+        _ = env
+            .WordAlignmentsWriter.Received(1)
             .WriteAsync(
                 new InsertWordAlignmentsRequest
                 {
@@ -59,9 +60,9 @@ public class WordAlignmentInsertWordAlignmentsConsumerTests
                         {
                             SourceIndex = 0,
                             TargetIndex = 0,
-                            Score = 1.0
-                        }
-                    }
+                            Score = 1.0,
+                        },
+                    },
                 },
                 Arg.Any<CancellationToken>()
             );
@@ -98,8 +99,8 @@ public class WordAlignmentInsertWordAlignmentsConsumerTests
                             "targetTokens",
                             new JsonArray { "targetToken1" }
                         },
-                        { "alignment", "0-0:1.0:1.0" }
-                    }
+                        { "alignment", "0-0:1.0:1.0" },
+                    },
                 }
             );
             stream.Seek(0, SeekOrigin.Begin);
@@ -107,7 +108,8 @@ public class WordAlignmentInsertWordAlignmentsConsumerTests
         }
 
         _ = env.Client.Received(1).InsertWordAlignments();
-        _ = env.WordAlignmentsWriter.Received(1)
+        _ = env
+            .WordAlignmentsWriter.Received(1)
             .WriteAsync(
                 new InsertWordAlignmentsRequest
                 {
@@ -124,9 +126,9 @@ public class WordAlignmentInsertWordAlignmentsConsumerTests
                         {
                             SourceIndex = 0,
                             TargetIndex = 0,
-                            Score = 1.0
-                        }
-                    }
+                            Score = 1.0,
+                        },
+                    },
                 },
                 Arg.Any<CancellationToken>()
             );

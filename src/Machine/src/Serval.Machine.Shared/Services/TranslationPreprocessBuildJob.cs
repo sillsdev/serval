@@ -32,15 +32,19 @@ public class TranslationPreprocessBuildJob(
         if (buildOptions is not null)
             buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
 
-        await using StreamWriter sourceTrainWriter =
-            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken));
-        await using StreamWriter targetTrainWriter =
-            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
+        await using StreamWriter sourceTrainWriter = new(
+            await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken)
+        );
+        await using StreamWriter targetTrainWriter = new(
+            await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken)
+        );
 
-        await using StreamWriter sourceKeyTermsTrainWriter =
-            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.key-terms.src.txt", cancellationToken));
-        await using StreamWriter targetKeyTermsTrainWriter =
-            new(await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.key-terms.trg.txt", cancellationToken));
+        await using StreamWriter sourceKeyTermsTrainWriter = new(
+            await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.key-terms.src.txt", cancellationToken)
+        );
+        await using StreamWriter targetKeyTermsTrainWriter = new(
+            await SharedFileService.OpenWriteAsync($"builds/{buildId}/train.key-terms.trg.txt", cancellationToken)
+        );
 
         await using Stream pretranslateStream = await SharedFileService.OpenWriteAsync(
             $"builds/{buildId}/pretranslate.src.json",
@@ -118,18 +122,17 @@ public class TranslationPreprocessBuildJob(
         );
 
         // Log summary of build data
-        JsonObject buildPreprocessSummary =
-            new()
-            {
-                { "Event", "BuildPreprocess" },
-                { "EngineId", engineId },
-                { "BuildId", buildId },
-                { "NumTrainRows", trainCount },
-                { "NumPretranslateRows", pretranslateCount },
-                { "EngineSourceLanguageTag", sourceLanguageTag },
-                { "EngineTargetLanguageTag", targetLanguageTag },
-                { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) }
-            };
+        JsonObject buildPreprocessSummary = new()
+        {
+            { "Event", "BuildPreprocess" },
+            { "EngineId", engineId },
+            { "BuildId", buildId },
+            { "NumTrainRows", trainCount },
+            { "NumPretranslateRows", pretranslateCount },
+            { "EngineSourceLanguageTag", sourceLanguageTag },
+            { "EngineTargetLanguageTag", targetLanguageTag },
+            { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) },
+        };
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
         var executionData = new BuildExecutionData()
         {
@@ -137,7 +140,7 @@ public class TranslationPreprocessBuildJob(
             PretranslateCount = pretranslateCount,
             Warnings = warnings,
             EngineSourceLanguageTag = sourceLanguageTag,
-            EngineTargetLanguageTag = targetLanguageTag
+            EngineTargetLanguageTag = targetLanguageTag,
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }

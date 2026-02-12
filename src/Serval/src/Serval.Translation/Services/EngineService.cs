@@ -48,7 +48,7 @@ public class EngineService(
                     EngineType = engine.Type,
                     EngineId = engine.Id,
                     N = 1,
-                    Segment = segment
+                    Segment = segment,
                 },
                 cancellationToken: cancellationToken
             );
@@ -81,7 +81,7 @@ public class EngineService(
                     EngineType = engine.Type,
                     EngineId = engine.Id,
                     N = n,
-                    Segment = segment
+                    Segment = segment,
                 },
                 cancellationToken: cancellationToken
             );
@@ -112,7 +112,7 @@ public class EngineService(
                 {
                     EngineType = engine.Type,
                     EngineId = engine.Id,
-                    Segment = segment
+                    Segment = segment,
                 },
                 cancellationToken: cancellationToken
             );
@@ -147,7 +147,7 @@ public class EngineService(
                     EngineId = engine.Id,
                     SourceSegment = sourceSegment,
                     TargetSegment = targetSegment,
-                    SentenceStart = sentenceStart
+                    SentenceStart = sentenceStart,
                 },
                 cancellationToken: cancellationToken
             );
@@ -170,14 +170,13 @@ public class EngineService(
                 engine.DateCreated = DateTime.UtcNow;
                 await Entities.InsertAsync(engine, ct);
 
-                CreateRequest request =
-                    new()
-                    {
-                        EngineType = engine.Type,
-                        EngineId = engine.Id,
-                        SourceLanguage = engine.SourceLanguage,
-                        TargetLanguage = engine.TargetLanguage
-                    };
+                CreateRequest request = new()
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    SourceLanguage = engine.SourceLanguage,
+                    TargetLanguage = engine.TargetLanguage,
+                };
                 if (engine.IsModelPersisted is not null)
                     request.IsModelPersisted = engine.IsModelPersisted.Value;
                 if (engine.Name is not null)
@@ -334,8 +333,8 @@ public class EngineService(
                                     trainOn is null,
                                     pretranslate is null
                                 )
-                            )
-                        }
+                            ),
+                        },
                     };
                 }
                 else
@@ -368,8 +367,8 @@ public class EngineService(
                                     trainOn is null,
                                     pretranslate is null
                                 )
-                            )
-                        }
+                            ),
+                        },
                     };
                 }
 
@@ -460,7 +459,7 @@ public class EngineService(
             {
                 Url = result.Url,
                 ModelRevision = result.ModelRevision,
-                ExpiresAt = result.ExpiresAt.ToDateTime()
+                ExpiresAt = result.ExpiresAt.ToDateTime(),
             };
         }
         catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
@@ -855,7 +854,7 @@ public class EngineService(
         {
             InternalCode = response.InternalCode,
             IsNative = response.IsNative,
-            EngineType = engineType
+            EngineType = engineType,
         };
     }
 
@@ -869,7 +868,7 @@ public class EngineService(
             Confidences = source.Confidences.ToList(),
             Sources = source.Sources.Select(Map).ToList(),
             Alignment = source.Alignment.Select(Map).ToList(),
-            Phrases = source.Phrases.Select(Map).ToList()
+            Phrases = source.Phrases.Select(Map).ToList(),
         };
     }
 
@@ -889,7 +888,7 @@ public class EngineService(
         {
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
-            TargetSegmentCut = source.TargetSegmentCut
+            TargetSegmentCut = source.TargetSegmentCut,
         };
     }
 
@@ -900,7 +899,7 @@ public class EngineService(
             SourceTokens = source.SourceTokens.ToList(),
             InitialStateScore = source.InitialStateScore,
             FinalStates = source.FinalStates.ToHashSet(),
-            Arcs = source.Arcs.Select(Map).ToList()
+            Arcs = source.Arcs.Select(Map).ToList(),
         };
     }
 
@@ -916,7 +915,7 @@ public class EngineService(
             SourceSegmentStart = source.SourceSegmentStart,
             SourceSegmentEnd = source.SourceSegmentEnd,
             Alignment = source.Alignment.Select(Map).ToList(),
-            Sources = source.Sources.Select(Map).ToList()
+            Sources = source.Sources.Select(Map).ToList(),
         };
     }
 
@@ -930,10 +929,16 @@ public class EngineService(
     {
         IEnumerable<V1.CorpusFile> sourceFiles = source.SourceFiles.Select(Map);
         IEnumerable<V1.CorpusFile> targetFiles = source.TargetFiles.Select(Map);
-        V1.MonolingualCorpus sourceCorpus =
-            new() { Language = source.SourceLanguage, Files = { source.SourceFiles.Select(Map) } };
-        V1.MonolingualCorpus targetCorpus =
-            new() { Language = source.TargetLanguage, Files = { source.TargetFiles.Select(Map) } };
+        V1.MonolingualCorpus sourceCorpus = new()
+        {
+            Language = source.SourceLanguage,
+            Files = { source.SourceFiles.Select(Map) },
+        };
+        V1.MonolingualCorpus targetCorpus = new()
+        {
+            Language = source.TargetLanguage,
+            Files = { source.TargetFiles.Select(Map) },
+        };
 
         if (
             trainOnAllCorpora
@@ -1066,7 +1071,7 @@ public class EngineService(
                         trainOnAllSources,
                         pretranslateAllSources
                     )
-                )
+                ),
             },
             TargetCorpora =
             {
@@ -1079,8 +1084,8 @@ public class EngineService(
                         trainOnAllTargets,
                         pretranslateAllTargets
                     )
-                )
-            }
+                ),
+            },
         };
     }
 
@@ -1135,7 +1140,7 @@ public class EngineService(
         {
             Id = inputCorpus.Id,
             Language = inputCorpus.Language,
-            Files = { inputCorpus.Files.Select(Map) }
+            Files = { inputCorpus.Files.Select(Map) },
         };
 
         if (
@@ -1203,7 +1208,7 @@ public class EngineService(
         {
             TextId = source.TextId,
             Format = (V1.FileFormat)source.Format,
-            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
+            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename),
         };
     }
 }

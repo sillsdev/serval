@@ -72,13 +72,13 @@ public class TranslationEngineServiceV1(
                         Enumerable.Repeat(
                             new TranslationSources { Values = { TranslationSource.Primary } },
                             tokens.Length
-                        )
+                        ),
                     },
                     Alignment =
                     {
                         Enumerable
                             .Range(0, tokens.Length)
-                            .Select(i => new AlignedWordPair { SourceIndex = i, TargetIndex = i })
+                            .Select(i => new AlignedWordPair { SourceIndex = i, TargetIndex = i }),
                     },
                     Phrases =
                     {
@@ -86,11 +86,11 @@ public class TranslationEngineServiceV1(
                         {
                             SourceSegmentStart = 0,
                             SourceSegmentEnd = tokens.Length,
-                            TargetSegmentCut = tokens.Length
-                        }
-                    }
-                }
-            }
+                            TargetSegmentCut = tokens.Length,
+                        },
+                    },
+                },
+            },
         };
         return Task.FromResult(response);
     }
@@ -151,8 +151,8 @@ public class TranslationEngineServiceV1(
                                     {
                                         tokens.Select(
                                             (_, i) => new AlignedWordPair() { SourceIndex = i, TargetIndex = i }
-                                        )
-                                    }
+                                        ),
+                                    },
                                 }
                             );
                             if (row.SourceSegment.Length > 0 && !isInTrainingData)
@@ -271,12 +271,12 @@ public class TranslationEngineServiceV1(
                                 SourceSegmentEnd = index + 1,
                                 Alignment =
                                 {
-                                    new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }
-                                }
-                            })
+                                    new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                                },
+                            }),
                     },
-                    FinalStates = { tokens.Length }
-                }
+                    FinalStates = { tokens.Length },
+                },
             }
         );
     }
@@ -290,7 +290,7 @@ public class TranslationEngineServiceV1(
         {
             Url = "https://example.com/model",
             ModelRevision = 1,
-            ExpiresAt = DateTime.UtcNow.AddHours(1).ToTimestamp()
+            ExpiresAt = DateTime.UtcNow.AddHours(1).ToTimestamp(),
         };
         return Task.FromResult(response);
     }
@@ -306,7 +306,7 @@ public class TranslationEngineServiceV1(
     )
     {
         return Task.FromResult(
-            new GetLanguageInfoResponse { InternalCode = request.Language + "_echo", IsNative = true, }
+            new GetLanguageInfoResponse { InternalCode = request.Language + "_echo", IsNative = true }
         );
     }
 
@@ -316,7 +316,7 @@ public class TranslationEngineServiceV1(
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
-            TargetCorpora = source.TargetCorpora.Select(Map).ToList()
+            TargetCorpora = source.TargetCorpora.Select(Map).ToList(),
         };
     }
 
@@ -348,7 +348,7 @@ public class TranslationEngineServiceV1(
             TrainOnChapters = trainingFilter == FilterChoice.Chapters ? trainOnChapters : null,
             TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? trainOnTextIds : null,
             InferenceChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
-            InferenceTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null
+            InferenceTextIds = pretranslateFilter == FilterChoice.TextIds ? pretranslateTextIds : null,
         };
     }
 
@@ -358,7 +358,7 @@ public class TranslationEngineServiceV1(
         {
             Location = source.Location,
             Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
-            TextId = source.TextId
+            TextId = source.TextId,
         };
     }
 
@@ -366,7 +366,7 @@ public class TranslationEngineServiceV1(
     {
         Chapters,
         TextIds,
-        None
+        None,
     }
 
     private static FilterChoice GetFilterChoice(

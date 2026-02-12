@@ -97,6 +97,6 @@ public class TranslationEngineTypesController(IAuthorizationService authService,
         {
             EngineType = source.EngineType.ToKebabCase(),
             IsNative = source.IsNative,
-            InternalCode = source.InternalCode
+            InternalCode = source.InternalCode,
         };
 }

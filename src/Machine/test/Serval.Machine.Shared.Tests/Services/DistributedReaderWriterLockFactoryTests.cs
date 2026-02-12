@@ -13,7 +13,7 @@ public class DistributedReaderWriterLockFactoryTests
                 Id = "resource1",
                 WriterLock = new() { Id = "lock1", HostId = "this_service" },
                 ReaderLocks = [],
-                WriterQueue = []
+                WriterQueue = [],
             }
         );
 
@@ -32,7 +32,7 @@ public class DistributedReaderWriterLockFactoryTests
             {
                 Id = "resource1",
                 ReaderLocks = [new() { Id = "lock1", HostId = "this_service" }],
-                WriterQueue = []
+                WriterQueue = [],
             }
         );
 
@@ -52,7 +52,7 @@ public class DistributedReaderWriterLockFactoryTests
                 Id = "resource1",
                 WriterLock = new() { Id = "lock1", HostId = "other_service" },
                 ReaderLocks = [],
-                WriterQueue = [new() { Id = "lock2", HostId = "this_service" }]
+                WriterQueue = [new() { Id = "lock2", HostId = "this_service" }],
             }
         );
 

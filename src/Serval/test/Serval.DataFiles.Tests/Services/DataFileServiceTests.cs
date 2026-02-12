@@ -4,15 +4,14 @@
 public class DataFileServiceTests
 {
     private const string DataFileId = "df0000000000000000000001";
-    private static readonly DataFile DefaultDataFile =
-        new()
-        {
-            Id = DataFileId,
-            Owner = "owner1",
-            Name = "file1",
-            Filename = "file1.txt",
-            Format = FileFormat.Text
-        };
+    private static readonly DataFile DefaultDataFile = new()
+    {
+        Id = DataFileId,
+        Owner = "owner1",
+        Name = "file1",
+        Filename = "file1.txt",
+        Format = FileFormat.Text,
+    };
 
     [Test]
     public async Task CreateAsync_NoError()
@@ -100,8 +99,8 @@ public class DataFileServiceTests
         string content = "This is a file.";
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
         {
-            Assert.ThrowsAsync<OperationCanceledException>(
-                () => env.Service.UpdateAsync(DataFileId, stream, cts.Token)
+            Assert.ThrowsAsync<OperationCanceledException>(() =>
+                env.Service.UpdateAsync(DataFileId, stream, cts.Token)
             );
         }
 

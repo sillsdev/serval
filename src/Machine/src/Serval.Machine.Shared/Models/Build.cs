@@ -5,20 +5,20 @@ public enum BuildJobState
     None,
     Pending,
     Active,
-    Canceling
+    Canceling,
 }
 
 public enum BuildJobRunnerType
 {
     Hangfire,
-    ClearML
+    ClearML,
 }
 
 public enum BuildStage
 {
     Preprocess,
     Train,
-    Postprocess
+    Postprocess,
 }
 
 public record Build

@@ -15,7 +15,7 @@ public class BuildServiceTests
         {
             Id = BUILD1_ID,
             EngineRef = "engine1",
-            Progress = 0.1
+            Progress = 0.1,
         };
         await builds.InsertAsync(build);
         EntityChange<Build> change = await task;

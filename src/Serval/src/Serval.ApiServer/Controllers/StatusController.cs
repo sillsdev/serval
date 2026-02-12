@@ -79,7 +79,7 @@ public class StatusController(
             new DeploymentInfoDto
             {
                 DeploymentVersion = deploymentVersion,
-                AspNetCoreEnvironment = _env.EnvironmentName
+                AspNetCoreEnvironment = _env.EnvironmentName,
             }
         );
     }
@@ -90,7 +90,7 @@ public class StatusController(
         {
             Status = healthReport.Status.ToString(),
             Results = healthReport.Entries.ToDictionary(f => f.Key, f => Map(f.Value)),
-            TotalDuration = healthReport.TotalDuration.ToString()
+            TotalDuration = healthReport.TotalDuration.ToString(),
         };
     }
 
@@ -105,7 +105,7 @@ public class StatusController(
             Data =
                 healthReportEntry.Data.Count == 0
                     ? null
-                    : healthReportEntry.Data.ToDictionary(f => f.Key, f => f.Value.ToString() ?? string.Empty)
+                    : healthReportEntry.Data.ToDictionary(f => f.Key, f => f.Value.ToString() ?? string.Empty),
         };
     }
 }

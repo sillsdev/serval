@@ -78,7 +78,7 @@ public class StatisticalEngineService(
                 {
                     SourceTokens = { sourceTokens },
                     TargetTokens = { targetTokens },
-                    Alignment = { wordPairs.Select(Map) }
+                    Alignment = { wordPairs.Select(Map) },
                 };
             },
             cancellationToken: cancellationToken
@@ -196,7 +196,7 @@ public class StatisticalEngineService(
         {
             SourceIndex = alignedWordPair.SourceIndex,
             TargetIndex = alignedWordPair.TargetIndex,
-            Score = alignedWordPair.TranslationScore
+            Score = alignedWordPair.TranslationScore,
         };
     }
 }

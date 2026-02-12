@@ -40,16 +40,16 @@ public class MongoMigrations
                                                                 "$ne",
                                                                 new BsonArray { "$$a.targetQuoteConvention", "" }
                                                             )
-                                                        }
+                                                        },
                                                     }
                                                 )
                                             },
                                             { "as", "a" },
-                                            { "in", "$$a.targetQuoteConvention" }
+                                            { "in", "$$a.targetQuoteConvention" },
                                         }
                                     )
                                 ),
-                                ""
+                                "",
                             }
                         )
                     )

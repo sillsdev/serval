@@ -60,21 +60,20 @@ public class ScriptureDataFileServiceTests
         {
             IZipContainer container = Substitute.For<IZipContainer>();
             container.EntryExists("Settings.xml").Returns(true);
-            XElement settingsXml =
-                new(
-                    "ScriptureText",
-                    new XElement("StyleSheet", "usfm.sty"),
-                    new XElement("Name", "PROJ"),
-                    new XElement("FullName", "PROJ"),
-                    new XElement("Encoding", "65001"),
-                    new XElement(
-                        "Naming",
-                        new XAttribute("PrePart", ""),
-                        new XAttribute("PostPart", "PROJ.SFM"),
-                        new XAttribute("BookNameForm", "MAT")
-                    ),
-                    new XElement("BiblicalTermsListSetting", "Major::BiblicalTerms.xml")
-                );
+            XElement settingsXml = new(
+                "ScriptureText",
+                new XElement("StyleSheet", "usfm.sty"),
+                new XElement("Name", "PROJ"),
+                new XElement("FullName", "PROJ"),
+                new XElement("Encoding", "65001"),
+                new XElement(
+                    "Naming",
+                    new XAttribute("PrePart", ""),
+                    new XAttribute("PostPart", "PROJ.SFM"),
+                    new XAttribute("BookNameForm", "MAT")
+                ),
+                new XElement("BiblicalTermsListSetting", "Major::BiblicalTerms.xml")
+            );
             container
                 .OpenEntry("Settings.xml")
                 .Returns(new MemoryStream(Encoding.UTF8.GetBytes(settingsXml.ToString())));

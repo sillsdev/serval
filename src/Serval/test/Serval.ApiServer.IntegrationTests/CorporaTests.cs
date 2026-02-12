@@ -37,7 +37,7 @@ public class CorporaTests
             Owner = "client1",
             Name = FILE_NAME1,
             Filename = FILE_NAME1,
-            Format = Shared.Contracts.FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text,
         };
         var file2 = new DataFiles.Models.DataFile
         {
@@ -45,7 +45,7 @@ public class CorporaTests
             Owner = "client1",
             Name = FILE_NAME2,
             Filename = FILE_NAME2,
-            Format = Shared.Contracts.FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text,
         };
         var file3 = new DataFiles.Models.DataFile
         {
@@ -53,7 +53,7 @@ public class CorporaTests
             Owner = "client2",
             Name = FILE_NAME3,
             Filename = FILE_NAME3,
-            Format = Shared.Contracts.FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text,
         };
         await _env.DataFiles.InsertAllAsync([file1, file2, file3]);
         // Insert some corpora for testing
@@ -63,7 +63,7 @@ public class CorporaTests
             Owner = "client1",
             Name = CORPUS_NAME1,
             Language = "en",
-            Files = [new DataFiles.Models.CorpusFile { FileRef = FILE_ID1 }]
+            Files = [new DataFiles.Models.CorpusFile { FileRef = FILE_ID1 }],
         };
         var corpus2 = new DataFiles.Models.Corpus
         {
@@ -71,7 +71,7 @@ public class CorporaTests
             Owner = "client1",
             Name = CORPUS_NAME2,
             Language = "fr",
-            Files = [new DataFiles.Models.CorpusFile { FileRef = FILE_ID2 }]
+            Files = [new DataFiles.Models.CorpusFile { FileRef = FILE_ID2 }],
         };
         var corpus3 = new DataFiles.Models.Corpus
         {
@@ -79,7 +79,7 @@ public class CorporaTests
             Owner = "client2",
             Name = CORPUS_NAME3,
             Language = "de",
-            Files = [new DataFiles.Models.CorpusFile { FileRef = FILE_ID3 }]
+            Files = [new DataFiles.Models.CorpusFile { FileRef = FILE_ID3 }],
         };
         await _env.Corpora.InsertAllAsync([corpus1, corpus2, corpus3]);
     }
@@ -180,7 +180,7 @@ public class CorporaTests
             case 200:
                 var updateFiles = new List<CorpusFileConfig>
                 {
-                    new() { FileId = FILE_ID1, TextId = "myText" }
+                    new() { FileId = FILE_ID1, TextId = "myText" },
                 };
                 var updatedCorpus = await corporaClient.UpdateAsync(corpusId, updateFiles);
                 Assert.That(updatedCorpus, Is.Not.Null);

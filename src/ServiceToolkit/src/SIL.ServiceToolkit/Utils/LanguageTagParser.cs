@@ -2,17 +2,16 @@
 
 public partial class LanguageTagParser
 {
-    private static readonly Dictionary<string, string> StandardLanguages =
-        new()
-        {
-            { "ar", "arb" },
-            { "ms", "zsm" },
-            { "lv", "lvs" },
-            { "ne", "npi" },
-            { "sw", "swh" },
-            { "cmn", "zh" },
-            { "pes", "fa-IR" }
-        };
+    private static readonly Dictionary<string, string> StandardLanguages = new()
+    {
+        { "ar", "arb" },
+        { "ms", "zsm" },
+        { "lv", "lvs" },
+        { "ne", "npi" },
+        { "sw", "swh" },
+        { "cmn", "zh" },
+        { "pes", "fa-IR" },
+    };
 
     private static readonly Dictionary<string, string> StandardScripts = new() { { "Kore", "Hang" } };
 

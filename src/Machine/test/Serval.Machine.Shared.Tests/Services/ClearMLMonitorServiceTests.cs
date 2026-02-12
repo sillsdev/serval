@@ -111,7 +111,7 @@ public class ClearMLMonitorServiceTests
                 JobState = jobState,
                 BuildJobRunner = BuildJobRunnerType.ClearML,
                 Stage = stage,
-                ExecutionData = new BuildExecutionData()
+                ExecutionData = new BuildExecutionData(),
             },
             SourceLanguage = "en",
             TargetLanguage = "fr",
@@ -145,7 +145,7 @@ public class ClearMLMonitorServiceTests
             LastIteration = lastIteration,
             StatusMessage = statusMessage,
             StatusReason = statusReason,
-            Project = new ClearMLProject { Id = DefaultProjectId }
+            Project = new ClearMLProject { Id = DefaultProjectId },
         };
     }
 
@@ -190,8 +190,8 @@ public class ClearMLMonitorServiceTests
         {
             [ClearMLMonitorService.UserProperties] = new Dictionary<string, ClearMLParamsItem>
             {
-                ["message"] = new ClearMLParamsItem { Name = "message", Value = "Training epoch 5/10" }
-            }
+                ["message"] = new ClearMLParamsItem { Name = "message", Value = "Training epoch 5/10" },
+            },
         };
 
         ClearMLTask task = CreateClearMLTask(
@@ -236,16 +236,16 @@ public class ClearMLMonitorServiceTests
             [ClearMLMonitorService.SummaryMetric] = new Dictionary<string, ClearMLMetricsEvent>
             {
                 [ClearMLMonitorService.TrainCorpusSizeVariant] = new ClearMLMetricsEvent { Value = ExpectedCorpusSize },
-                [ClearMLMonitorService.ConfidenceVariant] = new ClearMLMetricsEvent { Value = ExpectedConfidence }
-            }
+                [ClearMLMonitorService.ConfidenceVariant] = new ClearMLMetricsEvent { Value = ExpectedConfidence },
+            },
         };
 
         var hyperParams = new Dictionary<string, IReadOnlyDictionary<string, ClearMLParamsItem>>
         {
             [ClearMLMonitorService.UserProperties] = new Dictionary<string, ClearMLParamsItem>
             {
-                ["message"] = new ClearMLParamsItem { Name = "message", Value = "Training complete" }
-            }
+                ["message"] = new ClearMLParamsItem { Name = "message", Value = "Training complete" },
+            },
         };
 
         ClearMLTask task = CreateClearMLTask(

@@ -13,7 +13,7 @@ public class ObjectToInferredTypesConverter : JsonConverter<object>
             JsonTokenType.StartObject => JsonSerializer.Deserialize<IDictionary<string, object>>(ref reader, options)!,
             JsonTokenType.String when reader.TryGetDateTime(out DateTime datetime) => datetime,
             JsonTokenType.String => reader.GetString()!,
-            _ => JsonDocument.ParseValue(ref reader).RootElement.Clone()
+            _ => JsonDocument.ParseValue(ref reader).RootElement.Clone(),
         };
 
     public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options) =>

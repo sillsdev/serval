@@ -20,7 +20,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Engine = new ResourceLinkDto
             {
                 Id = source.EngineRef,
-                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.EngineRef })
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.EngineRef }),
             },
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             Pretranslate = source.Pretranslate?.Select(s => Map(source.EngineRef, s)).ToList(),
@@ -40,7 +40,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Phases = source.Phases?.Select(Map).ToList(),
             Analysis = source.Analysis?.Select(a => Map(a, targetQuoteConvention)).ToList(),
             TargetQuoteConvention = targetQuoteConvention,
-            CanDenormalizeQuotes = targetQuoteConvention != ""
+            CanDenormalizeQuotes = targetQuoteConvention != "",
         };
     }
 
@@ -55,7 +55,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
                         Url = _urlService.GetUrl(
                             Endpoints.GetTranslationCorpus,
                             new { id = engineId, corpusId = source.CorpusRef }
-                        )
+                        ),
                     }
                     : null,
             TextIds = source.TextIds,
@@ -68,10 +68,10 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
                         Url = _urlService.GetUrl(
                             Endpoints.GetParallelTranslationCorpus,
                             new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
-                        )
+                        ),
                     }
                     : null,
-            SourceFilters = source.SourceFilters?.Select(Map).ToList()
+            SourceFilters = source.SourceFilters?.Select(Map).ToList(),
         };
 
     private TrainingCorpusDto Map(string engineId, TrainingCorpus source) =>
@@ -85,7 +85,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
                         Url = _urlService.GetUrl(
                             Endpoints.GetTranslationCorpus,
                             new { id = engineId, corpusId = source.CorpusRef }
-                        )
+                        ),
                     }
                     : null,
             TextIds = source.TextIds,
@@ -98,11 +98,11 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
                         Url = _urlService.GetUrl(
                             Endpoints.GetParallelTranslationCorpus,
                             new { id = engineId, parallelCorpusId = source.ParallelCorpusRef }
-                        )
+                        ),
                     }
                     : null,
             SourceFilters = source.SourceFilters?.Select(Map).ToList(),
-            TargetFilters = source.TargetFilters?.Select(Map).ToList()
+            TargetFilters = source.TargetFilters?.Select(Map).ToList(),
         };
 
     private ParallelCorpusFilterDto Map(ParallelCorpusFilter source) =>
@@ -111,10 +111,10 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             Corpus = new ResourceLinkDto
             {
                 Id = source.CorpusRef,
-                Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.CorpusRef })
+                Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = source.CorpusRef }),
             },
             TextIds = source.TextIds,
-            ScriptureRange = source.ScriptureRange
+            ScriptureRange = source.ScriptureRange,
         };
 
     private static PhaseDto Map(BuildPhase source) =>
@@ -132,7 +132,7 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             ParallelCorpusRef = source.ParallelCorpusRef,
             TargetQuoteConvention = targetQuoteConvention,
             SourceQuoteConvention = "ignore",
-            CanDenormalizeQuotes = targetQuoteConvention != ""
+            CanDenormalizeQuotes = targetQuoteConvention != "",
         };
 
     private static ExecutionDataDto Map(ExecutionData source) =>

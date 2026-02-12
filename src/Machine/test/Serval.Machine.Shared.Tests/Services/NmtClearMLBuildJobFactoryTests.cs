@@ -93,8 +93,8 @@ run(args)
                         BuildJobRunner = BuildJobRunnerType.ClearML,
                         Stage = BuildStage.Train,
                         JobState = BuildJobState.Pending,
-                        ExecutionData = new BuildExecutionData()
-                    }
+                        ExecutionData = new BuildExecutionData(),
+                    },
                 }
             );
             Options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();

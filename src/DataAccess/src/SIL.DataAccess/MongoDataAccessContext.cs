@@ -52,7 +52,7 @@ public class MongoDataAccessContext(IMongoClient client) : DisposableBase, IMong
                     ReadConcern.Majority,
                     ReadPreference.Primary,
                     WriteConcern.WMajority
-                )
+                ),
             };
             IClientSessionHandle handle = await _client
                 .StartSessionAsync(sessionOptions, cancellationToken)

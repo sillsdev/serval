@@ -8,8 +8,11 @@ public class WordAlignmentInsertWordAlignmentsConsumer(WordAlignmentPlatformApi.
         ServalWordAlignmentPlatformOutboxConstants.InsertWordAlignments
     )
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Converters = { new WordAlignmentConverter() } };
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new WordAlignmentConverter() },
+    };
 
     private readonly WordAlignmentPlatformApi.WordAlignmentPlatformApiClient _client = client;
 
@@ -38,7 +41,7 @@ public class WordAlignmentInsertWordAlignmentsConsumer(WordAlignmentPlatformApi.
                     TargetRefs = { wordAlignment.TargetRefs },
                     SourceTokens = { wordAlignment.SourceTokens },
                     TargetTokens = { wordAlignment.TargetTokens },
-                    Alignment = { Map(wordAlignment.Alignment) }
+                    Alignment = { Map(wordAlignment.Alignment) },
                 },
                 cancellationToken
             );
@@ -58,7 +61,7 @@ public class WordAlignmentInsertWordAlignmentsConsumer(WordAlignmentPlatformApi.
             {
                 SourceIndex = pair.SourceIndex,
                 TargetIndex = pair.TargetIndex,
-                Score = pair.TranslationScore
+                Score = pair.TranslationScore,
             };
         }
     }
@@ -138,7 +141,7 @@ public class WordAlignmentInsertWordAlignmentsConsumer(WordAlignmentPlatformApi.
                 TargetRefs = targetRefs,
                 Alignment = alignedWordPairs,
                 SourceTokens = sourceTokens,
-                TargetTokens = targetTokens
+                TargetTokens = targetTokens,
             };
         }
 

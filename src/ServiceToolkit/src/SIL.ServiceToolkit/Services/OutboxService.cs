@@ -8,8 +8,10 @@ public class OutboxService(
     IOptionsMonitor<OutboxOptions> options
 ) : IOutboxService
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
 
     static OutboxService()
     {
@@ -61,17 +63,16 @@ public class OutboxService(
                 cancellationToken: cancellationToken
             )
         )!;
-        OutboxMessage outboxMessage =
-            new()
-            {
-                Id = _idGenerator.GenerateId(),
-                Index = outbox.CurrentIndex,
-                OutboxRef = outboxId,
-                Method = method,
-                GroupId = groupId,
-                Content = serializedContent,
-                HasContentStream = stream is not null
-            };
+        OutboxMessage outboxMessage = new()
+        {
+            Id = _idGenerator.GenerateId(),
+            Index = outbox.CurrentIndex,
+            OutboxRef = outboxId,
+            Method = method,
+            GroupId = groupId,
+            Content = serializedContent,
+            HasContentStream = stream is not null,
+        };
         if (stream is null)
         {
             await _messages.InsertAsync(outboxMessage, cancellationToken: cancellationToken);
