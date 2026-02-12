@@ -2,10 +2,8 @@
 
 public static class NUnitExtensions
 {
-    public static EqualConstraint IgnoreLineEndings(this EqualConstraint constraint)
+    public static EqualUsingConstraint<string> IgnoreLineEndings(this EqualStringConstraint constraint)
     {
-        return constraint.Using<string>(
-            (actual, expected) => actual.ReplaceLineEndings() == expected.ReplaceLineEndings()
-        );
+        return constraint.Using(new IgnoreLineEndingsStringComparer());
     }
 }

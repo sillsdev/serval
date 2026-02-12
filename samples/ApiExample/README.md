@@ -4,7 +4,7 @@ This example application will generate a pre-translation USFM draft using the Se
 
 ## Pre-Requisites
 
- * .NET SDK 8.0
+ * .NET SDK 10.0
  * You must have a Serval Client ID and Client Secret before running this example.
 
 ## Setup

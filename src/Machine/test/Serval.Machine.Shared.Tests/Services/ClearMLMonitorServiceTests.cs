@@ -49,6 +49,13 @@ public class ClearMLMonitorServiceTests
         );
     }
 
+    [TearDown]
+    public void TearDown()
+    {
+        _dataAccessContext.Dispose();
+        _service.Dispose();
+    }
+
     private void SetupMocks()
     {
         _clearMLService = Substitute.For<IClearMLService>();

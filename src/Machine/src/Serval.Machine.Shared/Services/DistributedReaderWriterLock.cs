@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Lock = Serval.Machine.Shared.Models.Lock;
+
+namespace Serval.Machine.Shared.Services;
 
 public class DistributedReaderWriterLock(
     string hostId,

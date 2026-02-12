@@ -1264,13 +1264,14 @@ public class WordAlignmentEngineTests
                 Assert.That(
                     result.Phases![0],
                     Is.EqualTo(
-                        new Phase
-                        {
-                            Stage = PhaseStage.Train,
-                            Step = 1,
-                            StepCount = 2,
-                        }
-                    )
+                            new Phase
+                            {
+                                Stage = PhaseStage.Train,
+                                Step = 1,
+                                StepCount = 2,
+                            }
+                        )
+                        .UsingPropertiesComparer()
                 );
                 break;
             }

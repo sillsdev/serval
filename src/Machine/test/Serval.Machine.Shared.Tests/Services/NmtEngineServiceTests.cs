@@ -100,7 +100,7 @@ public class NmtEngineServiceTests
         public TestEnvironment()
         {
             if (!Sldr.IsInitialized)
-                Sldr.Initialize(offlineMode: true);
+                Sldr.Initialize(offlineTestMode: true);
 
             _trainJobFunc = RunNormalTrainJob;
             Engines = new MemoryRepository<TranslationEngine>();

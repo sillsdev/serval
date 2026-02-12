@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -11,11 +11,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Asp.Versioning.Abstractions" Version="6.2.1" />
+		<PackageReference Include="Asp.Versioning.Abstractions" Version="8.1.0" />
 		<PackageReference Include="CaseExtensions" Version="1.1.0" />
-		<PackageReference Include="Grpc.AspNetCore" Version="2.65.0" />
-		<PackageReference Include="MassTransit" Version="8.3.2" />
-		<PackageReference Include="NSwag.Annotations" Version="14.1.0" />
+		<PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />
+		<PackageReference Include="MassTransit" Version="9.0.1" />
+		<PackageReference Include="NSwag.Annotations" Version="14.6.3" />
 	</ItemGroup>
 
 	<ItemGroup>

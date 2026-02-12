@@ -520,7 +520,7 @@ Target one, chapter one, verse nine and ten.
         public TestEnvironment()
         {
             if (!Sldr.IsInitialized)
-                Sldr.Initialize(offlineMode: true);
+                Sldr.Initialize(offlineTestMode: true);
 
             _tempDir = new TempDirectory("PreprocessBuildJobTests");
 
