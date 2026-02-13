@@ -152,7 +152,15 @@ public abstract class PreprocessBuildJob<TEngine>(
                 foreach (UsfmVersificationError error in errors)
                 {
                     warnings.Add(
-                        $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})"
+                        error.Type switch
+                        {
+                            UsfmVersificationErrorType.InvalidChapterNumber =>
+                                $"Invalid chapter number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})",
+                            UsfmVersificationErrorType.InvalidVerseNumber =>
+                                $"Invalid verse number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})",
+                            _ =>
+                                $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})",
+                        }
                     );
                 }
             }
