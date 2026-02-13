@@ -51,3 +51,4 @@ artifacts
 *trg_test*
 *.pyc
 scripts/clearml_stats/*
+.idea

@@ -6,5 +6,5 @@ public enum WebhookEvent
     TranslationBuildFinished,
 
     WordAlignmentBuildStarted,
-    WordAlignmentBuildFinished
+    WordAlignmentBuildFinished,
 }

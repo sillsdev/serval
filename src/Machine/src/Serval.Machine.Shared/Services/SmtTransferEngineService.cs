@@ -39,7 +39,7 @@ public class SmtTransferEngineService(
                 SourceLanguage = sourceLanguage,
                 TargetLanguage = targetLanguage,
                 Type = EngineType.SmtTransfer,
-                IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
+                IsModelPersisted = isModelPersisted ?? true, // models are persisted if not specified
             };
             await _engines.InsertAsync(translationEngine, cancellationToken);
         }
@@ -178,7 +178,7 @@ public class SmtTransferEngineService(
                             TranslationEngineRef = engineId,
                             Source = sourceSegment,
                             Target = targetSegment,
-                            SentenceStart = sentenceStart
+                            SentenceStart = sentenceStart,
                         },
                         CancellationToken.None
                     );

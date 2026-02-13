@@ -18,7 +18,7 @@ public class TestAuthHandler(
         Claim[] claims =
         [
             new Claim(ClaimTypes.NameIdentifier, "client1", null, authority),
-            new Claim("scope", scope, null, authority)
+            new Claim("scope", scope, null, authority),
         ];
         var identity = new ClaimsIdentity(claims, "Test", ClaimTypes.NameIdentifier, null);
         var principal = new ClaimsPrincipal(identity);

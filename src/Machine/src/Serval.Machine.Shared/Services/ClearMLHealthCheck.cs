@@ -58,7 +58,7 @@ public class ClearMLHealthCheck(
     {
         var request = new HttpRequestMessage(HttpMethod.Post, $"{service}.{action}")
         {
-            Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
+            Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"),
         };
         request.Headers.Add(
             "Authorization",

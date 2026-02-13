@@ -13,7 +13,7 @@ public class MemoryRepositoryTests
             {
                 Id = "1",
                 Value = 1,
-                List = [1]
+                List = [1],
             }
         );
 
@@ -301,7 +301,7 @@ public class MemoryRepositoryTests
             new TestEntity()
             {
                 Id = "1",
-                Children = [new Child { Field = 1 }, new Child { Field = 2 }, new Child { Field = 3 }]
+                Children = [new Child { Field = 1 }, new Child { Field = 2 }, new Child { Field = 3 }],
             }
         );
 

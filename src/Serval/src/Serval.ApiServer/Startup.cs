@@ -43,7 +43,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 o.Audience = Configuration["Auth:Audience"];
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
-                    NameClaimType = ClaimTypes.NameIdentifier
+                    NameClaimType = ClaimTypes.NameIdentifier,
                 };
             });
         services.AddHealthChecks().AddOpenIdConnectServer(new Uri(authority), name: "Auth0");
@@ -103,10 +103,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                         MigrationOptions = new MongoMigrationOptions
                         {
                             MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                            BackupStrategy = new CollectionMongoBackupStrategy()
+                            BackupStrategy = new CollectionMongoBackupStrategy(),
                         },
                         CheckConnection = true,
-                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
                     }
                 )
         );
@@ -169,8 +169,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                                 ClientCredentials = new OpenApiOAuthFlow
                                 {
                                     AuthorizationUrl = $"{authority}authorize",
-                                    TokenUrl = $"{authority}oauth/token"
-                                }
+                                    TokenUrl = $"{authority}oauth/token",
+                                },
                             },
                         }
                     );
@@ -247,7 +247,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             settings.OAuth2Client = new OAuth2ClientSettings
             {
                 AppName = "Auth0 M2M App",
-                AdditionalQueryStringParameters = { { "audience", Configuration["Auth:Audience"] } }
+                AdditionalQueryStringParameters = { { "audience", Configuration["Auth:Audience"] } },
             };
             if (env.IsDevelopment())
             {

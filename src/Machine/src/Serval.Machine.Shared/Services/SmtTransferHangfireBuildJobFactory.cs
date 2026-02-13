@@ -10,29 +10,24 @@ public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
     {
         return stage switch
         {
-            BuildStage.Preprocess
-                => CreateJob<TranslationEngine, SmtTransferPreprocessBuildJob, IReadOnlyList<ParallelCorpus>>(
-                    engineId,
-                    buildId,
-                    "smt_transfer",
-                    data,
-                    buildOptions
-                ),
-            BuildStage.Postprocess
-                => CreateJob<TranslationEngine, SmtTransferPostprocessBuildJob, (int, double)>(
-                    engineId,
-                    buildId,
-                    "smt_transfer",
-                    data,
-                    buildOptions
-                ),
-            BuildStage.Train
-                => CreateJob<TranslationEngine, SmtTransferTrainBuildJob>(
-                    engineId,
-                    buildId,
-                    "smt_transfer",
-                    buildOptions
-                ),
+            BuildStage.Preprocess => CreateJob<
+                TranslationEngine,
+                SmtTransferPreprocessBuildJob,
+                IReadOnlyList<ParallelCorpus>
+            >(engineId, buildId, "smt_transfer", data, buildOptions),
+            BuildStage.Postprocess => CreateJob<TranslationEngine, SmtTransferPostprocessBuildJob, (int, double)>(
+                engineId,
+                buildId,
+                "smt_transfer",
+                data,
+                buildOptions
+            ),
+            BuildStage.Train => CreateJob<TranslationEngine, SmtTransferTrainBuildJob>(
+                engineId,
+                buildId,
+                "smt_transfer",
+                buildOptions
+            ),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),
         };
     }

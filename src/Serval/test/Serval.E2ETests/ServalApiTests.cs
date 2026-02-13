@@ -129,7 +129,7 @@ public class ServalApiTests
                     new ParallelCorpusFilterConfig
                     {
                         CorpusId = trainCorpus.SourceCorpusIds.Single(),
-                        TextIds = ["1JN.txt"]
+                        TextIds = ["1JN.txt"],
                     },
                 ],
                 TargetFilters =
@@ -137,10 +137,10 @@ public class ServalApiTests
                     new ParallelCorpusFilterConfig
                     {
                         CorpusId = trainCorpus.TargetCorpusIds.Single(),
-                        TextIds = ["1JN.txt"]
+                        TextIds = ["1JN.txt"],
                     },
                 ],
-            }
+            },
         ];
         _helperClient.TranslationBuildConfig.Pretranslate =
         [
@@ -152,10 +152,10 @@ public class ServalApiTests
                     new ParallelCorpusFilterConfig
                     {
                         CorpusId = pretranslateCorpus.SourceCorpusIds.Single(),
-                        TextIds = ["2JN.txt"]
+                        TextIds = ["2JN.txt"],
                     },
                 ],
-            }
+            },
         ];
 
         // Validate that a build can be started and canceled twice
@@ -237,9 +237,9 @@ public class ServalApiTests
                     new ParallelCorpusFilterConfig
                     {
                         CorpusId = parallelCorpusConfig.SourceCorpusIds.Single(),
-                        ScriptureRange = "1JN"
+                        ScriptureRange = "1JN",
                     },
-                ]
+                ],
             }
         );
         _helperClient.TranslationBuildConfig.Options =
@@ -413,7 +413,7 @@ public class ServalApiTests
             {
                 SourceSegment = "ungidos espíritu",
                 TargetSegment = "unction spirit",
-                SentenceStart = true
+                SentenceStart = true,
             }
         );
         TranslationResult tResult4 = await _helperClient.TranslationEnginesClient.TranslateAsync(
@@ -473,11 +473,11 @@ public class ServalApiTests
         string corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, testCorpus, true);
         _helperClient.WordAlignmentBuildConfig.TrainOn =
         [
-            new TrainingCorpusConfig() { ParallelCorpusId = trainCorpusId }
+            new TrainingCorpusConfig() { ParallelCorpusId = trainCorpusId },
         ];
         _helperClient.WordAlignmentBuildConfig.WordAlignOn =
         [
-            new WordAlignmentCorpusConfig() { ParallelCorpusId = corpusId }
+            new WordAlignmentCorpusConfig() { ParallelCorpusId = corpusId },
         ];
         string buildId = await _helperClient.BuildEngineAsync(engineId);
         WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(

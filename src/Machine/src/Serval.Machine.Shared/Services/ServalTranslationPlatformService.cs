@@ -39,7 +39,7 @@ public class ServalTranslationPlatformService(
             {
                 BuildId = buildId,
                 CorpusSize = trainSize,
-                Confidence = confidence
+                Confidence = confidence,
             },
             cancellationToken: cancellationToken
         );
@@ -97,7 +97,7 @@ public class ServalTranslationPlatformService(
             request.QueueDepth = queueDepth.Value;
         foreach (BuildPhase buildPhase in phases ?? [])
         {
-            var phase = new Phase { Stage = (PhaseStage)buildPhase.Stage, };
+            var phase = new Phase { Stage = (PhaseStage)buildPhase.Stage };
             if (buildPhase.Step is not null)
                 phase.Step = buildPhase.Step.Value;
             if (buildPhase.StepCount is not null)
@@ -174,8 +174,8 @@ public class ServalTranslationPlatformService(
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
                 ResolvedSourceLanguage = executionData.ResolvedSourceLanguage ?? string.Empty,
-                ResolvedTargetLanguage = executionData.ResolvedTargetLanguage ?? string.Empty
-            }
+                ResolvedTargetLanguage = executionData.ResolvedTargetLanguage ?? string.Empty,
+            },
         };
         foreach (string warning in executionData.Warnings ?? [])
             request.ExecutionData.Warnings.Add(warning);
@@ -199,7 +199,7 @@ public class ServalTranslationPlatformService(
         {
             EngineId = engineId,
             BuildId = buildId,
-            TargetQuoteConvention = quoteConvention
+            TargetQuoteConvention = quoteConvention,
         };
 
         await _outboxService.EnqueueMessageAsync(

@@ -23,8 +23,8 @@ public class TranslationInsertPretranslationsConsumerTests
                         ["corpusId"] = "corpus1",
                         ["textId"] = "MAT",
                         ["refs"] = new JsonArray { "MAT 1:1" },
-                        ["translation"] = "translation"
-                    }
+                        ["translation"] = "translation",
+                    },
                 }
             );
 
@@ -33,7 +33,8 @@ public class TranslationInsertPretranslationsConsumerTests
         }
 
         _ = env.Client.Received(1).InsertPretranslations();
-        _ = env.PretranslationWriter.Received(1)
+        _ = env
+            .PretranslationWriter.Received(1)
             .WriteAsync(
                 new InsertPretranslationsRequest
                 {
@@ -42,7 +43,7 @@ public class TranslationInsertPretranslationsConsumerTests
                     TextId = "MAT",
                     SourceRefs = { },
                     TargetRefs = { "MAT 1:1" },
-                    Translation = "translation"
+                    Translation = "translation",
                 },
                 Arg.Any<CancellationToken>()
             );
@@ -66,8 +67,8 @@ public class TranslationInsertPretranslationsConsumerTests
                         ["textId"] = "MAT",
                         ["sourceRefs"] = new JsonArray { "MAT 1:1" },
                         ["targetRefs"] = new JsonArray { "MAT 1:1" },
-                        ["translation"] = "translation"
-                    }
+                        ["translation"] = "translation",
+                    },
                 }
             );
 
@@ -76,7 +77,8 @@ public class TranslationInsertPretranslationsConsumerTests
         }
 
         _ = env.Client.Received(1).InsertPretranslations();
-        _ = env.PretranslationWriter.Received(1)
+        _ = env
+            .PretranslationWriter.Received(1)
             .WriteAsync(
                 new InsertPretranslationsRequest
                 {
@@ -85,7 +87,7 @@ public class TranslationInsertPretranslationsConsumerTests
                     TextId = "MAT",
                     SourceRefs = { "MAT 1:1" },
                     TargetRefs = { "MAT 1:1" },
-                    Translation = "translation"
+                    Translation = "translation",
                 },
                 Arg.Any<CancellationToken>()
             );

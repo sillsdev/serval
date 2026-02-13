@@ -26,8 +26,8 @@ public class ObjectToInferredTypesConverterTest
                 ["Int"] = 12345,
                 ["Float"] = 123.45,
                 ["Bool"] = true,
-                ["Array"] = new List<object> { "one", 2, 3.0, false }
-            }
+                ["Array"] = new List<object> { "one", 2, 3.0, false },
+            },
         };
 
         string objectAsString = JsonSerializer.Serialize(obj);

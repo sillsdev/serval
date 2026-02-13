@@ -19,16 +19,16 @@ public class TranslationBuildFinishedConsumer(IWebhookService webhookService, IU
                     Url = _urlService.GetUrl(
                         Endpoints.GetTranslationBuild,
                         new { id = context.Message.EngineId, buildId = context.Message.BuildId }
-                    )
+                    ),
                 },
                 Engine = new ResourceLinkDto
                 {
                     Id = context.Message.EngineId,
-                    Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = context.Message.EngineId })!
+                    Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = context.Message.EngineId })!,
                 },
                 BuildState = context.Message.BuildState,
                 Message = context.Message.Message,
-                DateFinished = context.Message.DateFinished
+                DateFinished = context.Message.DateFinished,
             },
             context.CancellationToken
         );

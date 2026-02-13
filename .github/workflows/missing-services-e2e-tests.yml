@@ -26,7 +26,7 @@ jobs:
 
         # get version of machine.py - MACHINE_PY_IMAGE will force the docker compose to use the proper version of machine.py
       - name: Install regctl
-        uses: iarekylew00t/regctl-installer@v1
+        uses: iarekylew00t/regctl-installer@v4.0.8
 
       - name: Set proper version of Machine.py
         run: |
@@ -41,7 +41,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Get Machine
         run: cd .. && git clone https://github.com/sillsdev/machine.git && cd machine && dotnet build && cd ../serval && dotnet build
@@ -114,7 +114,7 @@ jobs:
 
       #Coverage export
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>34e222a9-ef76-48f9-869e-338547f9bd25</UserSecretsId>
@@ -12,12 +12,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="icu.net" Version="2.9.0" />
-		<PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.8.0" />
-		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.0" />
-		<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
+		<PackageReference Include="icu.net" Version="3.0.1" />
+		<PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.15.0" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
 		<PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.8.0-beta.1" />
-		<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -26,7 +26,7 @@
 
 	<!-- Include icu.net.dll.config - which is only available after the package is built -->
 	<ItemGroup>
-		<ResolvedFileToPublish Include=".\bin\Release\net8.0\icu.net.dll.config">
+		<ResolvedFileToPublish Include=".\bin\Release\net10.0\icu.net.dll.config">
 			<RelativePath>icu.net.dll.config</RelativePath>
 		</ResolvedFileToPublish>
 	</ItemGroup>

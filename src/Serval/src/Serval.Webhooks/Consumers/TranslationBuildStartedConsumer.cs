@@ -19,13 +19,13 @@ public class TranslationBuildStartedConsumer(IWebhookService webhookService, IUr
                     Url = _urlService.GetUrl(
                         Endpoints.GetTranslationBuild,
                         new { id = context.Message.EngineId, buildId = context.Message.BuildId }
-                    )
+                    ),
                 },
                 Engine = new ResourceLinkDto
                 {
                     Id = context.Message.EngineId,
-                    Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = context.Message.EngineId })
-                }
+                    Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = context.Message.EngineId }),
+                },
             },
             context.CancellationToken
         );

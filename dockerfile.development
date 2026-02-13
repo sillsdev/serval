@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-noble
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble
 WORKDIR /tools
 RUN dotnet tool install --tool-path /tools dotnet-trace \
     && dotnet tool install --tool-path /tools dotnet-counters \

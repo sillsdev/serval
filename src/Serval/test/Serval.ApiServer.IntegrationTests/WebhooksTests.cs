@@ -19,7 +19,7 @@ public class WebhooksTests
             Owner = "client1",
             Url = "/a/url",
             Secret = "s3CreT#",
-            Events = [Webhooks.Contracts.WebhookEvent.TranslationBuildStarted]
+            Events = [Webhooks.Contracts.WebhookEvent.TranslationBuildStarted],
         };
         await _env.Webhooks.InsertAsync(webhook);
     }
@@ -126,7 +126,7 @@ public class WebhooksTests
                     {
                         PayloadUrl = "/a/different/url",
                         Secret = "M0rEs3CreTz#",
-                        Events = { WebhookEvent.TranslationBuildStarted }
+                        Events = { WebhookEvent.TranslationBuildStarted },
                     }
                 );
                 Webhook resultAfterCreate = await client.GetAsync(result.Id);
@@ -141,7 +141,7 @@ public class WebhooksTests
                         {
                             PayloadUrl = "/a/different/url",
                             Secret = "M0rEs3CreTz#",
-                            Events = { WebhookEvent.TranslationBuildStarted }
+                            Events = { WebhookEvent.TranslationBuildStarted },
                         }
                     );
                 });

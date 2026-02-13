@@ -26,11 +26,11 @@ jobs:
       # ASPNETCORE_ENVIRONMENT: Development
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
         # get version of machine.py - MACHINE_PY_IMAGE will force the docker compose to use the proper version of machine.py
       - name: Install regctl
-        uses: iarekylew00t/regctl-installer@v1
+        uses: iarekylew00t/regctl-installer@v4.0.8
 
       - name: Set proper version of Machine.py
         run: |
@@ -43,12 +43,12 @@ jobs:
           echo $MACHINE_PY_IMAGE $MACHINE_PY_CPU_IMAGE
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Start containers
-        run:  dotnet build && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+        run: dotnet build && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
@@ -63,7 +63,7 @@ jobs:
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

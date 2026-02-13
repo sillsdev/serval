@@ -100,7 +100,7 @@ public class NmtEngineServiceTests
         public TestEnvironment()
         {
             if (!Sldr.IsInitialized)
-                Sldr.Initialize(offlineMode: true);
+                Sldr.Initialize(offlineTestMode: true);
 
             _trainJobFunc = RunNormalTrainJob;
             Engines = new MemoryRepository<TranslationEngine>();
@@ -113,7 +113,7 @@ public class NmtEngineServiceTests
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
-                    IsModelPersisted = false
+                    IsModelPersisted = false,
                 }
             );
             _memoryStorage = new Hangfire.InMemory.InMemoryStorage();
@@ -157,16 +157,16 @@ public class NmtEngineServiceTests
                             EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
-                            Queue = "default"
+                            Queue = "default",
                         },
                         new ClearMLBuildQueue()
                         {
                             EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
-                            Queue = "default"
-                        }
-                    ]
+                            Queue = "default",
+                        },
+                    ],
                 }
             );
             BuildJobService = new BuildJobService<TranslationEngine>(
@@ -179,10 +179,10 @@ public class NmtEngineServiceTests
                                 SharedFileService,
                                 Substitute.For<ILanguageTagService>(),
                                 Engines
-                            )
+                            ),
                         ],
                         BuildJobOptions
-                    )
+                    ),
                 ],
                 Engines
             );

@@ -12,12 +12,11 @@ public class ClearMLService(
     private readonly IOptionsMonitor<ClearMLOptions> _options = options;
     private readonly IHostEnvironment _env = env;
     private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
-        new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy,
-            Converters = { new CustomEnumConverterFactory(JsonNamingPolicy), new UtcDateTimeConverter() }
-        };
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy,
+        Converters = { new CustomEnumConverterFactory(JsonNamingPolicy), new UtcDateTimeConverter() },
+    };
 
     private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
     private readonly ILogger<ClearMLService> _logger = logger;
@@ -29,7 +28,7 @@ public class ClearMLService(
         var body = new JsonObject
         {
             ["name"] = $"{_options.CurrentValue.RootProject}/{_options.CurrentValue.Project}/{name}",
-            ["only_fields"] = new JsonArray("id")
+            ["only_fields"] = new JsonArray("id"),
         };
         JsonObject? result = await CallAsync("projects", "get_all", body, cancellationToken);
         var projects = (JsonArray?)result?["data"]?["projects"];
@@ -48,7 +47,7 @@ public class ClearMLService(
     {
         var body = new JsonObject
         {
-            ["name"] = $"{_options.CurrentValue.RootProject}/{_options.CurrentValue.Project}/{name}"
+            ["name"] = $"{_options.CurrentValue.RootProject}/{_options.CurrentValue.Project}/{name}",
         };
         if (description != null)
             body["description"] = description;
@@ -65,7 +64,7 @@ public class ClearMLService(
         {
             ["project"] = id,
             ["delete_contents"] = true,
-            ["force"] = true // needed if there are tasks already in that project.
+            ["force"] = true, // needed if there are tasks already in that project.
         };
         JsonObject? result = await CallAsync("projects", "delete", body, cancellationToken);
         var deleted = (int?)result?["data"]?["deleted"];
@@ -93,7 +92,7 @@ public class ClearMLService(
                 ["image"] = dockerImage,
                 ["arguments"] = "--env ENV_FOR_DYNACONF=" + snakeCaseEnvironment,
             },
-            ["type"] = "training"
+            ["type"] = "training",
         };
         JsonObject? result = await CallAsync("tasks", "create", body, cancellationToken);
         var taskId = (string?)result?["data"]?["id"];
@@ -240,7 +239,7 @@ public class ClearMLService(
         string requestPath = $"{service}.{action}";
         var request = new HttpRequestMessage(HttpMethod.Post, requestPath)
         {
-            Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
+            Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"),
         };
         request.Headers.Add(
             "Authorization",

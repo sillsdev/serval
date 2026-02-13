@@ -39,7 +39,7 @@ public class ServalWordAlignmentPlatformService(
             {
                 BuildId = buildId,
                 CorpusSize = trainSize,
-                Confidence = confidence
+                Confidence = confidence,
             },
             cancellationToken: cancellationToken
         );
@@ -97,7 +97,7 @@ public class ServalWordAlignmentPlatformService(
             request.QueueDepth = queueDepth.Value;
         foreach (BuildPhase buildPhase in phases ?? [])
         {
-            var phase = new Phase { Stage = (PhaseStage)buildPhase.Stage, };
+            var phase = new Phase { Stage = (PhaseStage)buildPhase.Stage };
             if (buildPhase.Step is not null)
                 phase.Step = buildPhase.Step.Value;
             if (buildPhase.StepCount is not null)
@@ -173,7 +173,7 @@ public class ServalWordAlignmentPlatformService(
                 WordAlignCount = executionData.WordAlignCount ?? 0,
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
-            }
+            },
         };
         foreach (string warning in executionData.Warnings ?? [])
             request.ExecutionData.Warnings.Add(warning);

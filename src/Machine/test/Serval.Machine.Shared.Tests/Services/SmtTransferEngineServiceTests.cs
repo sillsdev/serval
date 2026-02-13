@@ -51,8 +51,8 @@ public class SmtTransferEngineServiceTests
                             Language = "es",
                             Files = [],
                             TrainOnTextIds = null,
-                            InferenceTextIds = null
-                        }
+                            InferenceTextIds = null,
+                        },
                     },
                     TargetCorpora = new List<MonolingualCorpus>()
                     {
@@ -61,16 +61,18 @@ public class SmtTransferEngineServiceTests
                             Id = "trg",
                             Language = "en",
                             Files = [],
-                            TrainOnTextIds = null
-                        }
+                            TrainOnTextIds = null,
+                        },
                     },
-                }
+                },
             ]
         );
         await env.WaitForBuildToFinishAsync();
-        _ = env.SmtBatchTrainer.Received()
+        _ = env
+            .SmtBatchTrainer.Received()
             .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
-        _ = env.TruecaserTrainer.Received()
+        _ = env
+            .TruecaserTrainer.Received()
             .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
         _ = env.SmtBatchTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
         _ = env.TruecaserTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
@@ -260,7 +262,7 @@ public class SmtTransferEngineServiceTests
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
-                    IsModelPersisted = true
+                    IsModelPersisted = true,
                 }
             );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
@@ -299,16 +301,16 @@ public class SmtTransferEngineServiceTests
                             EngineType = EngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
-                            Queue = "default"
+                            Queue = "default",
                         },
                         new ClearMLBuildQueue()
                         {
                             EngineType = EngineType.SmtTransfer,
                             ModelType = "thot",
                             DockerImage = "default",
-                            Queue = "default"
-                        }
-                    ]
+                            Queue = "default",
+                        },
+                    ],
                 }
             );
             ClearMLService = Substitute.For<IClearMLService>();
@@ -345,7 +347,7 @@ public class SmtTransferEngineServiceTests
                         ClearMLService,
                         [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
                         BuildJobOptions
-                    )
+                    ),
                 ],
                 Engines
             );
@@ -464,7 +466,7 @@ public class SmtTransferEngineServiceTests
                     TranslationSources.Smt,
                     TranslationSources.Smt,
                     TranslationSources.Smt,
-                    TranslationSources.Smt
+                    TranslationSources.Smt,
                 ],
                 new WordAlignmentMatrix(5, 5)
                 {
@@ -472,7 +474,7 @@ public class SmtTransferEngineServiceTests
                     [1, 1] = true,
                     [2, 2] = true,
                     [3, 3] = true,
-                    [4, 4] = true
+                    [4, 4] = true,
                 },
                 [new Phrase(Range<int>.Create(0, 5), 5)]
             );
@@ -513,7 +515,7 @@ public class SmtTransferEngineServiceTests
                                 Range<int>.Create(4, 5),
                                 GetSources(1, false),
                                 [1.0]
-                            )
+                            ),
                         },
                         [3]
                     )
@@ -554,7 +556,7 @@ public class SmtTransferEngineServiceTests
                             TranslationSources.Transfer,
                             TranslationSources.Transfer,
                             TranslationSources.Transfer,
-                            TranslationSources.Transfer
+                            TranslationSources.Transfer,
                         ],
                         new WordAlignmentMatrix(5, 5)
                         {
@@ -562,7 +564,7 @@ public class SmtTransferEngineServiceTests
                             [1, 1] = true,
                             [2, 2] = true,
                             [3, 3] = true,
-                            [4, 4] = true
+                            [4, 4] = true,
                         },
                         [new Phrase(Range<int>.Create(0, 5), 5)]
                     )
@@ -713,7 +715,7 @@ public class SmtTransferEngineServiceTests
                         _env.BuildJobOptions
                     )
                     {
-                        TrainJobRunnerType = _env._trainJobRunnerType
+                        TrainJobRunnerType = _env._trainJobRunnerType,
                     };
                 }
                 if (jobType == typeof(SmtTransferPostprocessBuildJob))

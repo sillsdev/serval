@@ -126,7 +126,7 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         var options = new FindOneAndUpdateOptions<T>
         {
             IsUpsert = upsert,
-            ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After
+            ReturnDocument = returnOriginal ? ReturnDocument.Before : ReturnDocument.After,
         };
         if (arrayFilters.Count > 0)
             options.ArrayFilters = arrayFilters;
@@ -251,7 +251,7 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
             { "find", _collection.CollectionNamespace.CollectionName },
             { "filter", renderedFilter },
             { "limit", 1 },
-            { "singleBatch", true }
+            { "singleBatch", true },
         };
         BsonDocument result;
         if (_context.Session is not null)

@@ -19,7 +19,7 @@ public class GetDataFileConsumer(IDataFileService dataFileService) : IConsumer<G
                     DataFileId = dataFile.Id,
                     Name = dataFile.Name,
                     Filename = dataFile.Filename,
-                    Format = dataFile.Format
+                    Format = dataFile.Format,
                 }
             );
         }

@@ -112,12 +112,11 @@ public class ClearMLMonitorService(
                         EngineType.SmtTransfer => EngineGroup.Translation,
                         EngineType.Nmt => EngineGroup.Translation,
                         EngineType.Statistical => EngineGroup.WordAlignment,
-                        _
-                            => throw new InvalidEnumArgumentException(
-                                nameof(engine.Type),
-                                (int)engine.Type,
-                                typeof(EngineType)
-                            )
+                        _ => throw new InvalidEnumArgumentException(
+                            nameof(engine.Type),
+                            (int)engine.Type,
+                            typeof(EngineType)
+                        ),
                     }
                 );
                 if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
@@ -450,7 +449,7 @@ public class ClearMLMonitorService(
                 Step = GetUserPropertyInt(task, "train_step"),
                 StepCount = GetUserPropertyInt(task, "train_step_count"),
                 Started = GetUserPropertyDateTime(task, "train_started"),
-            }
+            },
         ];
     }
 

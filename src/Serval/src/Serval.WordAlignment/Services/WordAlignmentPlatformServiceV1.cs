@@ -46,7 +46,7 @@ public class WordAlignmentPlatformServiceV1(
                     {
                         BuildId = build.Id,
                         EngineId = engine.Id,
-                        Owner = engine.Owner
+                        Owner = engine.Owner,
                     },
                     ct
                 );
@@ -98,7 +98,7 @@ public class WordAlignmentPlatformServiceV1(
                         Owner = engine.Owner,
                         BuildState = build.State,
                         Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value
+                        DateFinished = build.DateFinished!.Value,
                     },
                     ct
                 );
@@ -147,7 +147,7 @@ public class WordAlignmentPlatformServiceV1(
                         Owner = engine.Owner,
                         BuildState = build.State,
                         Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value
+                        DateFinished = build.DateFinished!.Value,
                     },
                     ct
                 );
@@ -196,7 +196,7 @@ public class WordAlignmentPlatformServiceV1(
                         Owner = engine.Owner,
                         BuildState = build.State,
                         Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value
+                        DateFinished = build.DateFinished!.Value,
                     },
                     ct
                 );
@@ -329,9 +329,9 @@ public class WordAlignmentPlatformServiceV1(
                         {
                             SourceIndex = a.SourceIndex,
                             TargetIndex = a.TargetIndex,
-                            Score = a.Score
+                            Score = a.Score,
                         })
-                        .ToList()
+                        .ToList(),
                 }
             );
             if (batch.Count == WordAlignmentInsertBatchSize)
@@ -362,7 +362,7 @@ public class WordAlignmentPlatformServiceV1(
                         WordAlignCount = request.ExecutionData.WordAlignCount,
                         Warnings = [.. request.ExecutionData.Warnings],
                         EngineSourceLanguageTag = request.ExecutionData.EngineSourceLanguageTag,
-                        EngineTargetLanguageTag = request.ExecutionData.EngineTargetLanguageTag
+                        EngineTargetLanguageTag = request.ExecutionData.EngineTargetLanguageTag,
                     }
                 ),
             cancellationToken: context.CancellationToken

@@ -57,7 +57,7 @@ public class ClearMLAuthenticationService(
     {
         var request = new HttpRequestMessage(HttpMethod.Post, "auth.login")
         {
-            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+            Content = new StringContent("{}", Encoding.UTF8, "application/json"),
         };
         var authenticationString = $"{_options.CurrentValue.AccessKey}:{_options.CurrentValue.SecretKey}";
         var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));

@@ -47,9 +47,9 @@ public class CorpusService(
                             .Files.Select(f => new CorpusFileResult
                             {
                                 TextId = f.TextId ?? corpusDataFilesDict[f.FileRef].Name,
-                                File = Map(corpusDataFilesDict[f.FileRef])
+                                File = Map(corpusDataFilesDict[f.FileRef]),
                             })
-                            .ToList()
+                            .ToList(),
                     },
                     ct
                 );

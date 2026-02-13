@@ -101,7 +101,7 @@ public class WebhooksController(IAuthorizationService authService, IWebhookServi
             Id = source.Id,
             Url = _urlService.GetUrl(Endpoints.GetWebhook, new { id = source.Id }),
             PayloadUrl = source.Url,
-            Events = source.Events.ToList()
+            Events = source.Events.ToList(),
         };
     }
 
@@ -112,7 +112,7 @@ public class WebhooksController(IAuthorizationService authService, IWebhookServi
             Url = source.PayloadUrl,
             Secret = source.Secret,
             Events = source.Events.ToList(),
-            Owner = Owner
+            Owner = Owner,
         };
     }
 }

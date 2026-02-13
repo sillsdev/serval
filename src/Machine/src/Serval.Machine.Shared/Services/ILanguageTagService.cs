@@ -4,7 +4,7 @@ public enum Flores200Support
 {
     LanguageAndScript,
     OnlyScript,
-    None
+    None,
 }
 
 public interface ILanguageTagService

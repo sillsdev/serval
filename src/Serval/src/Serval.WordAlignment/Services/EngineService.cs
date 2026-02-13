@@ -54,7 +54,7 @@ public class EngineService(
                     EngineType = engine.Type,
                     EngineId = engine.Id,
                     SourceSegment = sourceSegment,
-                    TargetSegment = targetSegment
+                    TargetSegment = targetSegment,
                 },
                 cancellationToken: cancellationToken
             );
@@ -77,14 +77,13 @@ public class EngineService(
                 engine.DateCreated = DateTime.UtcNow;
                 await Entities.InsertAsync(engine, cancellationToken);
 
-                CreateRequest request =
-                    new()
-                    {
-                        EngineType = engine.Type,
-                        EngineId = engine.Id,
-                        SourceLanguage = engine.SourceLanguage,
-                        TargetLanguage = engine.TargetLanguage
-                    };
+                CreateRequest request = new()
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    SourceLanguage = engine.SourceLanguage,
+                    TargetLanguage = engine.TargetLanguage,
+                };
                 if (engine.Name is not null)
                     request.EngineName = engine.Name;
 
@@ -176,25 +175,24 @@ public class EngineService(
                     )
                     .ToList();
 
-                StartBuildRequest request =
-                    new()
+                StartBuildRequest request = new()
+                {
+                    EngineType = engine.Type,
+                    EngineId = engine.Id,
+                    BuildId = build.Id,
+                    Corpora =
                     {
-                        EngineType = engine.Type,
-                        EngineId = engine.Id,
-                        BuildId = build.Id,
-                        Corpora =
-                        {
-                            parallelCorpora.Select(c =>
-                                Map(
-                                    c,
-                                    trainOn?.GetValueOrDefault(c.Id),
-                                    wordAlignOn?.GetValueOrDefault(c.Id),
-                                    trainOn is null,
-                                    wordAlignOn is null
-                                )
+                        parallelCorpora.Select(c =>
+                            Map(
+                                c,
+                                trainOn?.GetValueOrDefault(c.Id),
+                                wordAlignOn?.GetValueOrDefault(c.Id),
+                                trainOn is null,
+                                wordAlignOn is null
                             )
-                        }
-                    };
+                        ),
+                    },
+                };
 
                 if (build.Options is not null)
                     request.Options = JsonSerializer.Serialize(build.Options);
@@ -508,7 +506,7 @@ public class EngineService(
         {
             SourceIndex = source.SourceIndex,
             TargetIndex = source.TargetIndex,
-            Score = source.Score
+            Score = source.Score,
         };
     }
 
@@ -549,7 +547,7 @@ public class EngineService(
                         trainOnAllSources,
                         wordAlignAllSources
                     )
-                )
+                ),
             },
             TargetCorpora =
             {
@@ -562,8 +560,8 @@ public class EngineService(
                         trainOnAllTargets,
                         wordAlignAllTargets
                     )
-                )
-            }
+                ),
+            },
         };
     }
 
@@ -618,7 +616,7 @@ public class EngineService(
         {
             Id = inputCorpus.Id,
             Language = inputCorpus.Language,
-            Files = { inputCorpus.Files.Select(Map) }
+            Files = { inputCorpus.Files.Select(Map) },
         };
 
         if (
@@ -686,7 +684,7 @@ public class EngineService(
         {
             TextId = source.TextId,
             Format = (V1.FileFormat)source.Format,
-            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename)
+            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename),
         };
     }
 }

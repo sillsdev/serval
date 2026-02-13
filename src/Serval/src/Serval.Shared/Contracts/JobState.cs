@@ -6,5 +6,5 @@ public enum JobState
     Active,
     Completed,
     Faulted,
-    Canceled
+    Canceled,
 }

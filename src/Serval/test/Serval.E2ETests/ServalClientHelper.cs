@@ -3,7 +3,7 @@ namespace Serval.E2ETests;
 public enum EngineGroup
 {
     Translation,
-    WordAlignment
+    WordAlignment,
 }
 
 public record Build
@@ -66,7 +66,7 @@ public record ParallelCorpusConfig
         {
             Name = Name,
             SourceCorpusIds = SourceCorpusIds,
-            TargetCorpusIds = TargetCorpusIds
+            TargetCorpusIds = TargetCorpusIds,
         };
     }
 
@@ -76,7 +76,7 @@ public record ParallelCorpusConfig
         {
             Name = Name,
             SourceCorpusIds = SourceCorpusIds,
-            TargetCorpusIds = TargetCorpusIds
+            TargetCorpusIds = TargetCorpusIds,
         };
     }
 
@@ -181,7 +181,7 @@ public class ServalClientHelper : IAsyncDisposable
                         "per_device_train_batch_size": 4
                     }
                 }
-                """
+                """,
         };
         return TranslationBuildConfig;
     }
@@ -192,7 +192,7 @@ public class ServalClientHelper : IAsyncDisposable
         {
             WordAlignOn = [],
             TrainOn = null,
-            Options = null
+            Options = null,
         };
         return WordAlignmentBuildConfig;
     }
@@ -246,7 +246,7 @@ public class ServalClientHelper : IAsyncDisposable
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
                     Type = engineType,
-                    IsModelPersisted = isModelPersisted
+                    IsModelPersisted = isModelPersisted,
                 }
             );
             EngineIdToEngineGroup[engine.Id] = engineGroup;
@@ -467,11 +467,13 @@ public class ServalClientHelper : IAsyncDisposable
                 Name = "None",
                 SourceFiles =
                 [
-                    .. sourceFiles.Select((s, i) => new TranslationCorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })
+                    .. sourceFiles.Select(
+                        (s, i) => new TranslationCorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] }
+                    ),
                 ],
                 SourceLanguage = sourceLanguage,
                 TargetFiles = targetFileConfig,
-                TargetLanguage = targetLanguage
+                TargetLanguage = targetLanguage,
             }
         );
 
@@ -508,7 +510,7 @@ public class ServalClientHelper : IAsyncDisposable
         {
             Name = $"{_prefix}Target",
             Language = targetLanguage,
-            Files = targetFileConfig
+            Files = targetFileConfig,
         };
 
         Corpus? targetCorpus =
@@ -524,7 +526,7 @@ public class ServalClientHelper : IAsyncDisposable
         {
             Name = $"{_prefix}Source",
             Language = sourceLanguage,
-            Files = [new CorpusFileConfig { FileId = sourceFile.Id, TextId = "test_data" }]
+            Files = [new CorpusFileConfig { FileId = sourceFile.Id, TextId = "test_data" }],
         };
 
         Corpus sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);
@@ -558,7 +560,7 @@ public class ServalClientHelper : IAsyncDisposable
         {
             Name = $"{_prefix}Target",
             Language = targetLanguage,
-            Files = targetFileConfig
+            Files = targetFileConfig,
         };
 
         Corpus? targetCorpus =
@@ -568,7 +570,7 @@ public class ServalClientHelper : IAsyncDisposable
         {
             Name = $"{_prefix}Source",
             Language = sourceLanguage,
-            Files = [.. sourceFiles.Select((s, i) => new CorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })]
+            Files = [.. sourceFiles.Select((s, i) => new CorpusFileConfig { FileId = s.Id, TextId = filesToAdd[i] })],
         };
 
         Corpus sourceCorpus = await CorporaClient.CreateAsync(sourceCorpusConfig);
@@ -689,7 +691,7 @@ public class ServalClientHelper : IAsyncDisposable
                     { "client_secret", clientSecret },
                     { "audience", audience },
                 }
-            )
+            ),
         };
         HttpResponseMessage response = await authHttpClient.SendAsync(request);
         if (response.Content is null)
@@ -703,12 +705,11 @@ public class ServalClientHelper : IAsyncDisposable
     private static HttpClientHandler GetHttHandlerToIgnoreSslErrors()
     {
         //ignore ssl errors
-        HttpClientHandler handler =
-            new()
-            {
-                ClientCertificateOptions = ClientCertificateOption.Manual,
-                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
-            };
+        HttpClientHandler handler = new()
+        {
+            ClientCertificateOptions = ClientCertificateOption.Manual,
+            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
+        };
         return handler;
     }
 
@@ -721,7 +722,7 @@ public class ServalClientHelper : IAsyncDisposable
             "Echo" => EngineGroup.Translation,
             "Statistical" => EngineGroup.WordAlignment,
             "EchoWordAlignment" => EngineGroup.WordAlignment,
-            _ => throw new ArgumentOutOfRangeException(engineType, "Unknown engine type")
+            _ => throw new ArgumentOutOfRangeException(engineType, "Unknown engine type"),
         };
     }
 

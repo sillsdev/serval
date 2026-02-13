@@ -102,7 +102,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
-            TargetCorpora = source.TargetCorpora.Select(Map).ToList()
+            TargetCorpora = source.TargetCorpora.Select(Map).ToList(),
         };
     }
 
@@ -134,7 +134,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
             TrainOnChapters = trainingFilter == FilterChoice.Chapters ? trainOnChapters : null,
             TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? trainOnTextIds : null,
             InferenceChapters = wordAlignOnFilter == FilterChoice.Chapters ? wordAlignOnChapters : null,
-            InferenceTextIds = wordAlignOnFilter == FilterChoice.TextIds ? wordAlignOnTextIds : null
+            InferenceTextIds = wordAlignOnFilter == FilterChoice.TextIds ? wordAlignOnTextIds : null,
         };
     }
 
@@ -144,7 +144,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         {
             Location = source.Location,
             Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
-            TextId = source.TextId
+            TextId = source.TextId,
         };
     }
 
@@ -152,7 +152,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
     {
         Chapters,
         TextIds,
-        None
+        None,
     }
 
     private static FilterChoice GetFilterChoice(

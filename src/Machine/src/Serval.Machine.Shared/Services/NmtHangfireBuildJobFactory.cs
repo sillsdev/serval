@@ -10,22 +10,20 @@ public class NmtHangfireBuildJobFactory : IHangfireBuildJobFactory
     {
         return stage switch
         {
-            BuildStage.Preprocess
-                => CreateJob<TranslationEngine, NmtPreprocessBuildJob, IReadOnlyList<ParallelCorpus>>(
-                    engineId,
-                    buildId,
-                    "nmt",
-                    data,
-                    buildOptions
-                ),
-            BuildStage.Postprocess
-                => CreateJob<TranslationEngine, TranslationPostprocessBuildJob, (int, double)>(
-                    engineId,
-                    buildId,
-                    "nmt",
-                    data,
-                    buildOptions
-                ),
+            BuildStage.Preprocess => CreateJob<TranslationEngine, NmtPreprocessBuildJob, IReadOnlyList<ParallelCorpus>>(
+                engineId,
+                buildId,
+                "nmt",
+                data,
+                buildOptions
+            ),
+            BuildStage.Postprocess => CreateJob<TranslationEngine, TranslationPostprocessBuildJob, (int, double)>(
+                engineId,
+                buildId,
+                "nmt",
+                data,
+                buildOptions
+            ),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),
         };
     }

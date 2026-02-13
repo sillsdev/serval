@@ -5,7 +5,7 @@ public enum EntityChangeType
     None,
     Insert,
     Update,
-    Delete
+    Delete,
 }
 
 public readonly record struct EntityChange<T>(EntityChangeType Type, T? Entity)

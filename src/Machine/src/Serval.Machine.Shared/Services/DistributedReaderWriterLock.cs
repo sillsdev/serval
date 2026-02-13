@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Lock = Serval.Machine.Shared.Models.Lock;
+
+namespace Serval.Machine.Shared.Services;
 
 public class DistributedReaderWriterLock(
     string hostId,
@@ -211,7 +213,7 @@ public class DistributedReaderWriterLock(
                 {
                     Id = lockId,
                     ExpiresAt = expiresAt,
-                    HostId = _hostId
+                    HostId = _hostId,
                 }
             );
             u.RemoveAll(rwl => rwl.WriterQueue, l => l.Id == lockId);
@@ -238,7 +240,7 @@ public class DistributedReaderWriterLock(
                 {
                     Id = lockId,
                     ExpiresAt = expiresAt,
-                    HostId = _hostId
+                    HostId = _hostId,
                 }
             );
         }

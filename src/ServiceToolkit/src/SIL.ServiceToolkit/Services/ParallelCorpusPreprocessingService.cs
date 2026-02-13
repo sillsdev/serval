@@ -201,7 +201,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
             {
                 sourcePretranslateCorpus,
                 targetPretranslateCorpus,
-                targetCorpus
+                targetCorpus,
             }.AlignMany([true, false, false]);
 
             foreach ((Row row, bool isInTrainingData) in CollapsePretranslateRanges(pretranslateCorpus.ToArray()))

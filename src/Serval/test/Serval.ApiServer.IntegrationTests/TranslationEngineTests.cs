@@ -16,74 +16,67 @@ namespace Serval.ApiServer;
 [Category("Integration")]
 public class TranslationEngineTests
 {
-    private static readonly TranslationCorpusConfig TestCorpusConfig =
-        new()
+    private static readonly TranslationCorpusConfig TestCorpusConfig = new()
+    {
+        Name = "TestCorpus",
+        SourceLanguage = "en",
+        TargetLanguage = "en",
+        SourceFiles =
         {
-            Name = "TestCorpus",
-            SourceLanguage = "en",
-            TargetLanguage = "en",
-            SourceFiles =
-            {
-                new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" }
-            },
-            TargetFiles =
-            {
-                new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" }
-            }
-        };
-    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfig =
-        new()
+            new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" },
+        },
+        TargetFiles =
         {
-            Name = "TestCorpus",
-            SourceCorpusIds = [SOURCE_CORPUS_ID_1],
-            TargetCorpusIds = [TARGET_CORPUS_ID],
-        };
+            new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" },
+        },
+    };
+    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfig = new()
+    {
+        Name = "TestCorpus",
+        SourceCorpusIds = [SOURCE_CORPUS_ID_1],
+        TargetCorpusIds = [TARGET_CORPUS_ID],
+    };
 
-    private static readonly TranslationParallelCorpusConfig TestMixedParallelCorpusConfig =
-        new()
+    private static readonly TranslationParallelCorpusConfig TestMixedParallelCorpusConfig = new()
+    {
+        Name = "TestCorpus",
+        SourceCorpusIds = [SOURCE_CORPUS_ID_1, SOURCE_CORPUS_ID_2],
+        TargetCorpusIds = [TARGET_CORPUS_ID],
+    };
+    private static readonly TranslationCorpusConfig TestCorpusConfigNonEcho = new()
+    {
+        Name = "TestCorpus",
+        SourceLanguage = "en",
+        TargetLanguage = "es",
+        SourceFiles =
         {
-            Name = "TestCorpus",
-            SourceCorpusIds = [SOURCE_CORPUS_ID_1, SOURCE_CORPUS_ID_2],
-            TargetCorpusIds = [TARGET_CORPUS_ID],
-        };
-    private static readonly TranslationCorpusConfig TestCorpusConfigNonEcho =
-        new()
+            new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" },
+        },
+        TargetFiles =
         {
-            Name = "TestCorpus",
-            SourceLanguage = "en",
-            TargetLanguage = "es",
-            SourceFiles =
-            {
-                new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" }
-            },
-            TargetFiles =
-            {
-                new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" }
-            }
-        };
+            new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" },
+        },
+    };
 
-    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigEmptySource =
-        new()
-        {
-            Name = "TestCorpus",
-            SourceCorpusIds = [EMPTY_CORPUS_ID],
-            TargetCorpusIds = [TARGET_CORPUS_ID],
-        };
+    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigEmptySource = new()
+    {
+        Name = "TestCorpus",
+        SourceCorpusIds = [EMPTY_CORPUS_ID],
+        TargetCorpusIds = [TARGET_CORPUS_ID],
+    };
 
-    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigNoCorpora =
-        new()
-        {
-            Name = "TestCorpus",
-            SourceCorpusIds = [],
-            TargetCorpusIds = [],
-        };
-    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigScripture =
-        new()
-        {
-            Name = "TestCorpus",
-            SourceCorpusIds = [SOURCE_CORPUS_ID_PT],
-            TargetCorpusIds = [TARGET_CORPUS_ID_PT],
-        };
+    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigNoCorpora = new()
+    {
+        Name = "TestCorpus",
+        SourceCorpusIds = [],
+        TargetCorpusIds = [],
+    };
+    private static readonly TranslationParallelCorpusConfig TestParallelCorpusConfigScripture = new()
+    {
+        Name = "TestCorpus",
+        SourceCorpusIds = [SOURCE_CORPUS_ID_PT],
+        TargetCorpusIds = [TARGET_CORPUS_ID_PT],
+    };
 
     private const string ECHO_ENGINE1_ID = "e00000000000000000000001";
     private const string ECHO_ENGINE2_ID = "e00000000000000000000002";
@@ -123,7 +116,7 @@ public class TranslationEngineTests
             Type = "Echo",
             Owner = "client1",
             Corpora = [],
-            ModelRevision = 1
+            ModelRevision = 1,
         };
         var e1 = new Engine
         {
@@ -134,7 +127,7 @@ public class TranslationEngineTests
             Type = "Echo",
             Owner = "client1",
             Corpora = [],
-            ModelRevision = 0
+            ModelRevision = 0,
         };
         var e2 = new Engine
         {
@@ -145,7 +138,7 @@ public class TranslationEngineTests
             Type = "Echo",
             Owner = "client2",
             Corpora = [],
-            ModelRevision = 1
+            ModelRevision = 1,
         };
         var be0 = new Engine
         {
@@ -156,7 +149,7 @@ public class TranslationEngineTests
             Type = "SMTTransfer",
             Owner = "client1",
             Corpora = [],
-            ModelRevision = 1
+            ModelRevision = 1,
         };
         var ce0 = new Engine
         {
@@ -167,7 +160,7 @@ public class TranslationEngineTests
             Type = "Nmt",
             Owner = "client1",
             Corpora = [],
-            ModelRevision = 1
+            ModelRevision = 1,
         };
 
         await _env.Engines.InsertAllAsync([e0, e1, e2, be0, ce0]);
@@ -178,7 +171,7 @@ public class TranslationEngineTests
             Owner = "client1",
             Name = "src.txt",
             Filename = FILE1_FILENAME,
-            Format = Shared.Contracts.FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text,
         };
         var trgFile = new DataFiles.Models.DataFile
         {
@@ -186,7 +179,7 @@ public class TranslationEngineTests
             Owner = "client1",
             Name = "trg.txt",
             Filename = FILE2_FILENAME,
-            Format = Shared.Contracts.FileFormat.Text
+            Format = Shared.Contracts.FileFormat.Text,
         };
         var srcParatextFile = new DataFiles.Models.DataFile
         {
@@ -194,7 +187,7 @@ public class TranslationEngineTests
             Owner = "client1",
             Name = "src.zip",
             Filename = FILE3_FILENAME,
-            Format = Shared.Contracts.FileFormat.Paratext
+            Format = Shared.Contracts.FileFormat.Paratext,
         };
         var trgParatextFile = new DataFiles.Models.DataFile
         {
@@ -202,7 +195,7 @@ public class TranslationEngineTests
             Owner = "client1",
             Name = "trg.zip",
             Filename = FILE4_FILENAME,
-            Format = Shared.Contracts.FileFormat.Paratext
+            Format = Shared.Contracts.FileFormat.Paratext,
         };
         await _env.DataFiles.InsertAllAsync([srcFile, trgFile, srcParatextFile, trgParatextFile]);
 
@@ -211,46 +204,51 @@ public class TranslationEngineTests
             Id = SOURCE_CORPUS_ID_1,
             Language = "en",
             Owner = "client1",
-            Files = [new() { FileRef = srcFile.Id, TextId = "all" }]
+            Files = [new() { FileRef = srcFile.Id, TextId = "all" }],
         };
         var srcCorpus2 = new DataFiles.Models.Corpus
         {
             Id = SOURCE_CORPUS_ID_2,
             Language = "en",
             Owner = "client1",
-            Files = [new() { FileRef = srcFile.Id, TextId = "all" }]
+            Files = [new() { FileRef = srcFile.Id, TextId = "all" }],
         };
         var srcCorpusParatext = new DataFiles.Models.Corpus
         {
             Id = SOURCE_CORPUS_ID_PT,
             Language = "en",
             Owner = "client1",
-            Files = [new() { FileRef = srcParatextFile.Id }]
+            Files = [new() { FileRef = srcParatextFile.Id }],
         };
         var trgCorpus = new DataFiles.Models.Corpus
         {
             Id = TARGET_CORPUS_ID,
             Language = "en",
             Owner = "client1",
-            Files = [new() { FileRef = trgFile.Id, TextId = "all" }]
+            Files = [new() { FileRef = trgFile.Id, TextId = "all" }],
         };
         var trgCorpusParatext = new DataFiles.Models.Corpus
         {
             Id = TARGET_CORPUS_ID_PT,
             Language = "en",
             Owner = "client1",
-            Files = [new() { FileRef = trgParatextFile.Id }]
+            Files = [new() { FileRef = trgParatextFile.Id }],
         };
         var emptyCorpus = new DataFiles.Models.Corpus
         {
             Id = EMPTY_CORPUS_ID,
             Language = "en",
             Owner = "client1",
-            Files = []
+            Files = [],
         };
-        await _env.Corpora.InsertAllAsync(
-            [srcCorpus, srcCorpus2, srcCorpusParatext, trgCorpus, emptyCorpus, trgCorpusParatext]
-        );
+        await _env.Corpora.InsertAllAsync([
+            srcCorpus,
+            srcCorpus2,
+            srcCorpusParatext,
+            trgCorpus,
+            emptyCorpus,
+            trgCorpusParatext,
+        ]);
     }
 
     [Test]
@@ -324,7 +322,7 @@ public class TranslationEngineTests
                         Name = "test",
                         SourceLanguage = "en",
                         TargetLanguage = "en",
-                        Type = engineType
+                        Type = engineType,
                     }
                 );
                 Assert.That(result.Name, Is.EqualTo("test"));
@@ -342,7 +340,7 @@ public class TranslationEngineTests
                             Name = "test",
                             SourceLanguage = "en",
                             TargetLanguage = "es",
-                            Type = engineType
+                            Type = engineType,
                         }
                     );
                 });
@@ -359,7 +357,7 @@ public class TranslationEngineTests
                             Name = "test",
                             SourceLanguage = "en",
                             TargetLanguage = "en",
-                            Type = engineType
+                            Type = engineType,
                         }
                     );
                 });
@@ -421,7 +419,7 @@ public class TranslationEngineTests
                     {
                         EngineRef = engineId,
                         Owner = "client1",
-                        State = Shared.Contracts.JobState.Completed
+                        State = Shared.Contracts.JobState.Completed,
                     }
                 );
                 Client.TranslationResult result = await client.TranslateAsync(engineId, "This is a test .");
@@ -479,7 +477,7 @@ public class TranslationEngineTests
                     {
                         EngineRef = engineId,
                         Owner = "client1",
-                        State = Shared.Contracts.JobState.Completed
+                        State = Shared.Contracts.JobState.Completed,
                     }
                 );
                 ICollection<Client.TranslationResult> results = await client.TranslateNAsync(
@@ -543,7 +541,7 @@ public class TranslationEngineTests
                     {
                         EngineRef = engineId,
                         Owner = "client1",
-                        State = Shared.Contracts.JobState.Completed
+                        State = Shared.Contracts.JobState.Completed,
                     }
                 );
                 Client.WordGraph wg = await client.GetWordGraphAsync(engineId, "This is a test .");
@@ -556,11 +554,11 @@ public class TranslationEngineTests
             case 409:
             {
                 _env.EchoClient.GetWordGraphAsync(
-                    Arg.Any<GetWordGraphRequest>(),
-                    null,
-                    null,
-                    Arg.Any<CancellationToken>()
-                )
+                        Arg.Any<GetWordGraphRequest>(),
+                        null,
+                        null,
+                        Arg.Any<CancellationToken>()
+                    )
                     .Returns(CreateAsyncUnaryCall<GetWordGraphResponse>(StatusCode.FailedPrecondition));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -601,7 +599,7 @@ public class TranslationEngineTests
         {
             SourceSegment = "This is a test .",
             TargetSegment = "This is a test .",
-            SentenceStart = true
+            SentenceStart = true,
         };
         switch (expectedStatusCode)
         {
@@ -612,7 +610,7 @@ public class TranslationEngineTests
                     {
                         EngineRef = engineId,
                         Owner = "client1",
-                        State = Shared.Contracts.JobState.Completed
+                        State = Shared.Contracts.JobState.Completed,
                     }
                 );
                 await client.TrainSegmentAsync(engineId, sp);
@@ -620,11 +618,11 @@ public class TranslationEngineTests
             case 409:
             {
                 _env.EchoClient.TrainSegmentPairAsync(
-                    Arg.Any<TrainSegmentPairRequest>(),
-                    null,
-                    null,
-                    Arg.Any<CancellationToken>()
-                )
+                        Arg.Any<TrainSegmentPairRequest>(),
+                        null,
+                        null,
+                        Arg.Any<CancellationToken>()
+                    )
                     .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.FailedPrecondition));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
@@ -721,11 +719,11 @@ public class TranslationEngineTests
                 TranslationCorpus result = await client.AddCorpusAsync(engineId, TestCorpusConfig);
                 TranslationCorpusFileConfig[] src = new[]
                 {
-                    new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" }
+                    new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" },
                 };
                 TranslationCorpusFileConfig[] trg = new[]
                 {
-                    new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" }
+                    new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" },
                 };
                 var updateConfig = new TranslationCorpusUpdateConfig { SourceFiles = src, TargetFiles = trg };
                 await client.UpdateCorpusAsync(engineId, result.Id, updateConfig);
@@ -745,11 +743,11 @@ public class TranslationEngineTests
                 {
                     TranslationCorpusFileConfig[] src = new[]
                     {
-                        new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" }
+                        new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" },
                     };
                     TranslationCorpusFileConfig[] trg = new[]
                     {
-                        new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" }
+                        new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" },
                     };
                     var updateConfig = new TranslationCorpusUpdateConfig { SourceFiles = src, TargetFiles = trg };
                     await client.UpdateCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
@@ -950,7 +948,7 @@ public class TranslationEngineTests
         var updateConfig = new TranslationParallelCorpusUpdateConfig
         {
             SourceCorpusIds = [SOURCE_CORPUS_ID_1],
-            TargetCorpusIds = [TARGET_CORPUS_ID]
+            TargetCorpusIds = [TARGET_CORPUS_ID],
         };
         await client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, result.Id, updateConfig);
         Engine? engine = await _env.Engines.GetAsync(ECHO_ENGINE1_ID);
@@ -972,7 +970,7 @@ public class TranslationEngineTests
             var updateConfig = new TranslationParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
-                TargetCorpusIds = [TARGET_CORPUS_ID]
+                TargetCorpusIds = [TARGET_CORPUS_ID],
             };
             await client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
         });
@@ -989,7 +987,7 @@ public class TranslationEngineTests
             var updateConfig = new TranslationParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
-                TargetCorpusIds = [TARGET_CORPUS_ID]
+                TargetCorpusIds = [TARGET_CORPUS_ID],
             };
             await client.UpdateParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1, updateConfig);
         });
@@ -1006,7 +1004,7 @@ public class TranslationEngineTests
             var updateConfig = new TranslationParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
-                TargetCorpusIds = [TARGET_CORPUS_ID]
+                TargetCorpusIds = [TARGET_CORPUS_ID],
             };
             await client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
         });
@@ -1231,7 +1229,7 @@ public class TranslationEngineTests
             TargetRefs = ["ref1", "ref2"],
             Refs = ["ref1", "ref2"],
             Translation = "translation",
-            ModelRevision = 1
+            ModelRevision = 1,
         };
         await _env.Pretranslations.InsertAsync(pret);
 
@@ -1247,8 +1245,8 @@ public class TranslationEngineTests
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(
-            () => client.GetAllPretranslationsAsync(DOES_NOT_EXIST_ENGINE_ID, "cccccccccccccccccccccccc")
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllPretranslationsAsync(DOES_NOT_EXIST_ENGINE_ID, "cccccccccccccccccccccccc")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
@@ -1258,8 +1256,8 @@ public class TranslationEngineTests
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(
-            () => client.GetAllPretranslationsAsync(ECHO_ENGINE1_ID, "cccccccccccccccccccccccc")
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllPretranslationsAsync(ECHO_ENGINE1_ID, "cccccccccccccccccccccccc")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
@@ -1273,8 +1271,8 @@ public class TranslationEngineTests
             TestParallelCorpusConfig
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(
-            () => client.GetAllPretranslationsAsync(ECHO_ENGINE2_ID, addedCorpus.Id)
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllPretranslationsAsync(ECHO_ENGINE2_ID, addedCorpus.Id)
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(409));
     }
@@ -1298,7 +1296,7 @@ public class TranslationEngineTests
             TargetRefs = ["ref1", "ref2"],
             Refs = ["ref1", "ref2"],
             Translation = "translation",
-            ModelRevision = 1
+            ModelRevision = 1,
         };
         await _env.Pretranslations.InsertAsync(pret);
 
@@ -1329,7 +1327,7 @@ public class TranslationEngineTests
             TargetRefs = ["ref1", "ref2"],
             Refs = ["ref1", "ref2"],
             Translation = "translation",
-            ModelRevision = 1
+            ModelRevision = 1,
         };
         await _env.Pretranslations.InsertAsync(pret);
 
@@ -1357,7 +1355,7 @@ public class TranslationEngineTests
         {
             EngineRef = createBuildForEngineId,
             Owner = buildOwnedByClient ? "client1" : "client2",
-            DateCreated = DateTime.UtcNow
+            DateCreated = DateTime.UtcNow,
         };
         await _env.Builds.InsertAsync(build);
         switch (expectedStatusCode)
@@ -1536,7 +1534,7 @@ public class TranslationEngineTests
                         "some_double":10.5,
                         "some_nested": {"more_nested": {"other_double":10.5}},
                         "some_string":"string"}
-                        """
+                        """,
                 };
                 TranslationBuild resultAfterStart;
                 Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -1612,7 +1610,7 @@ public class TranslationEngineTests
             TestParallelCorpusConfigNoCorpora
         );
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedCorpus.Id };
-        TranslationBuildConfig tbc = new() { TrainOn = [tcc], };
+        TranslationBuildConfig tbc = new() { TrainOn = [tcc] };
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
@@ -1630,7 +1628,7 @@ public class TranslationEngineTests
             TestParallelCorpusConfig
         );
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedCorpus.Id };
-        TranslationBuildConfig tbc = new() { TrainOn = [tcc], };
+        TranslationBuildConfig tbc = new() { TrainOn = [tcc] };
         string dataFileId = FILE1_SRC_ID;
         //Below code is copy-pasted from EngineService.DeleteAllCorpusFilesAsync
         await _env.Engines.UpdateAllAsync(
@@ -1665,7 +1663,7 @@ public class TranslationEngineTests
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
         TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id };
-        TranslationBuildConfig tbc = new() { TrainOn = [tcc], };
+        TranslationBuildConfig tbc = new() { TrainOn = [tcc] };
         //Below code is copy-pasted from EngineService.DeleteAllCorpusFilesAsync
         async Task DeleteFilesFromCorpora(string dataFileId)
         {
@@ -1791,13 +1789,12 @@ public class TranslationEngineTests
         TranslationCorpus addedCorpus = await client.AddCorpusAsync(ECHO_ENGINE1_ID, TestCorpusConfig);
         PretranslateCorpusConfig ptcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
         TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id, TextIds = ["all"] };
-        TranslationBuildConfig tbc =
-            new()
-            {
-                Pretranslate = [ptcc],
-                TrainOn = [tcc],
-                Options = "unparsable json"
-            };
+        TranslationBuildConfig tbc = new()
+        {
+            Pretranslate = [ptcc],
+            TrainOn = [tcc],
+            Options = "unparsable json",
+        };
         TranslationBuild resultAfterStart;
         Assert.ThrowsAsync<ServalApiException>(async () =>
         {
@@ -1871,9 +1868,9 @@ public class TranslationEngineTests
                     {
                         Stage = BuildPhaseStage.Train,
                         Step = 1,
-                        StepCount = 2
-                    }
-                ]
+                        StepCount = 2,
+                    },
+                ],
             };
             await _env.Builds.InsertAsync(build);
         }
@@ -1888,13 +1885,14 @@ public class TranslationEngineTests
                 Assert.That(
                     result.Phases![0],
                     Is.EqualTo(
-                        new Phase
-                        {
-                            Stage = PhaseStage.Train,
-                            Step = 1,
-                            StepCount = 2
-                        }
-                    )
+                            new Phase
+                            {
+                                Stage = PhaseStage.Train,
+                                Step = 1,
+                                StepCount = 2,
+                            }
+                        )
+                        .UsingPropertiesComparer()
                 );
                 break;
             }
@@ -1942,17 +1940,17 @@ public class TranslationEngineTests
         if (addBuild)
         {
             _env.EchoClient.CancelBuildAsync(
-                Arg.Is(new CancelBuildRequest() { EngineId = engineId, EngineType = "Echo" }),
-                null,
-                null,
-                Arg.Any<CancellationToken>()
-            )
+                    Arg.Is(new CancelBuildRequest() { EngineId = engineId, EngineType = "Echo" }),
+                    null,
+                    null,
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(CreateAsyncUnaryCall(new CancelBuildResponse() { BuildId = buildId }));
             var build = new Build
             {
                 Id = buildId,
                 EngineRef = engineId,
-                Owner = "client1"
+                Owner = "client1",
             };
             await _env.Builds.InsertAsync(build);
         }
@@ -1986,19 +1984,17 @@ public class TranslationEngineTests
             NMT_ENGINE1_ID,
             TestParallelCorpusConfig
         );
-        PretranslateCorpusConfig ptcc =
-            new()
-            {
-                ParallelCorpusId = addedCorpus.Id,
-                SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }]
-            };
-        TrainingCorpusConfig tcc =
-            new()
-            {
-                ParallelCorpusId = addedCorpus.Id,
-                SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
-                TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }]
-            };
+        PretranslateCorpusConfig ptcc = new()
+        {
+            ParallelCorpusId = addedCorpus.Id,
+            SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
+        };
+        TrainingCorpusConfig tcc = new()
+        {
+            ParallelCorpusId = addedCorpus.Id,
+            SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1, TextIds = ["all"] }],
+            TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID, TextIds = ["all"] }],
+        };
         ;
         TranslationBuildConfig tbc = new TranslationBuildConfig
         {
@@ -2010,7 +2006,7 @@ public class TranslationEngineTests
                 "some_double":10.5,
                 "some_nested": {"more_nested": {"other_double":10.5}},
                 "some_string":"string"}
-                """
+                """,
         };
         TranslationBuild resultAfterStart;
         Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -2030,15 +2026,17 @@ public class TranslationEngineTests
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
         TranslationCorpus addedCorpus = await client.AddCorpusAsync(NMT_ENGINE1_ID, TestCorpusConfig);
-        PretranslateCorpusConfig ptcc =
-            new() { CorpusId = addedCorpus.Id, SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1 }] };
-        TrainingCorpusConfig tcc =
-            new()
-            {
-                CorpusId = addedCorpus.Id,
-                SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1 }],
-                TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID }]
-            };
+        PretranslateCorpusConfig ptcc = new()
+        {
+            CorpusId = addedCorpus.Id,
+            SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1 }],
+        };
+        TrainingCorpusConfig tcc = new()
+        {
+            CorpusId = addedCorpus.Id,
+            SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1 }],
+            TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID }],
+        };
         ;
         TranslationBuildConfig tbc = new TranslationBuildConfig
         {
@@ -2050,7 +2048,7 @@ public class TranslationEngineTests
                 "some_double":10.5,
                 "some_nested": {"more_nested": {"other_double":10.5}},
                 "some_string":"string"}
-                """
+                """,
         };
         TranslationBuild resultAfterStart;
         Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -2081,15 +2079,17 @@ public class TranslationEngineTests
             NMT_ENGINE1_ID,
             TestParallelCorpusConfig
         );
-        PretranslateCorpusConfig ptcc =
-            new() { ParallelCorpusId = addedCorpus.Id, SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1 }] };
-        TrainingCorpusConfig tcc =
-            new()
-            {
-                ParallelCorpusId = addedCorpus.Id,
-                SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1 }],
-                TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID }]
-            };
+        PretranslateCorpusConfig ptcc = new()
+        {
+            ParallelCorpusId = addedCorpus.Id,
+            SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1 }],
+        };
+        TrainingCorpusConfig tcc = new()
+        {
+            ParallelCorpusId = addedCorpus.Id,
+            SourceFilters = [new() { CorpusId = SOURCE_CORPUS_ID_1 }],
+            TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID }],
+        };
         ;
         TranslationBuildConfig tbc = new TranslationBuildConfig
         {
@@ -2101,7 +2101,7 @@ public class TranslationEngineTests
                 "some_double":10.5,
                 "some_nested": {"more_nested": {"other_double":10.5}},
                 "some_string":"string"}
-                """
+                """,
         };
         TranslationBuild resultAfterStart;
         Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -2188,16 +2188,15 @@ public class TranslationEngineTests
             NMT_ENGINE1_ID,
             TestParallelCorpusConfig
         );
-        PretranslateCorpusConfig ptcc =
-            new()
-            {
-                ParallelCorpusId = addedParallelCorpus.Id,
-                SourceFilters =
-                [
-                    new ParallelCorpusFilterConfig() { CorpusId = SOURCE_CORPUS_ID_1 },
-                    new ParallelCorpusFilterConfig() { CorpusId = SOURCE_CORPUS_ID_2 }
-                ]
-            };
+        PretranslateCorpusConfig ptcc = new()
+        {
+            ParallelCorpusId = addedParallelCorpus.Id,
+            SourceFilters =
+            [
+                new ParallelCorpusFilterConfig() { CorpusId = SOURCE_CORPUS_ID_1 },
+                new ParallelCorpusFilterConfig() { CorpusId = SOURCE_CORPUS_ID_2 },
+            ],
+        };
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         TranslationBuildConfig tbc = new TranslationBuildConfig { Pretranslate = [ptcc], TrainOn = [tcc] };
         Assert.ThrowsAsync<ServalApiException>(async () =>
@@ -2273,7 +2272,7 @@ public class TranslationEngineTests
             TargetRefs = ["MAT 1:1"],
             Refs = ["MAT 1:1"],
             Translation = "translation",
-            ModelRevision = 1
+            ModelRevision = 1,
         };
         await _env.Pretranslations.InsertAsync(pret);
 
@@ -2313,7 +2312,7 @@ public class TranslationEngineTests
             TargetRefs = ["MAT 1:1"],
             Refs = ["MAT 1:1"],
             Translation = "translation",
-            ModelRevision = 1
+            ModelRevision = 1,
         };
         await _env.Pretranslations.InsertAsync(pret);
 
@@ -2358,8 +2357,8 @@ public class TranslationEngineTests
             }
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(
-            () => client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MRK")
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MRK")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(204));
     }
@@ -2474,14 +2473,14 @@ public class TranslationEngineTests
                     new Shared.Models.ParallelCorpusAnalysis()
                     {
                         ParallelCorpusRef = "111111111111111111111112",
-                        TargetQuoteConvention = ""
+                        TargetQuoteConvention = "",
                     },
                     new Shared.Models.ParallelCorpusAnalysis()
                     {
                         ParallelCorpusRef = "111111111111111111111113",
-                        TargetQuoteConvention = "standard_english"
-                    }
-                ]
+                        TargetQuoteConvention = "standard_english",
+                    },
+                ],
             }
         );
 
@@ -2558,7 +2557,7 @@ public class TranslationEngineTests
                         {
                             Url = "http://example.com",
                             ModelRevision = 1,
-                            ExpiresAt = DateTime.UtcNow.AddHours(1).ToTimestamp()
+                            ExpiresAt = DateTime.UtcNow.AddHours(1).ToTimestamp(),
                         }
                     )
                 );
@@ -2572,27 +2571,27 @@ public class TranslationEngineTests
                     {
                         PrevState = 0,
                         NextState = 1,
-                        Score = 1.0
+                        Score = 1.0,
                     },
                     new Translation.V1.WordGraphArc
                     {
                         PrevState = 1,
                         NextState = 2,
-                        Score = 1.0
+                        Score = 1.0,
                     },
                     new Translation.V1.WordGraphArc
                     {
                         PrevState = 2,
                         NextState = 3,
-                        Score = 1.0
+                        Score = 1.0,
                     },
                     new Translation.V1.WordGraphArc
                     {
                         PrevState = 3,
                         NextState = 4,
-                        Score = 1.0
-                    }
-                }
+                        Score = 1.0,
+                    },
+                },
             };
             var wgr = new GetWordGraphResponse { WordGraph = wg };
             EchoClient
@@ -2615,41 +2614,41 @@ public class TranslationEngineTests
                         Values =
                         {
                             Translation.V1.TranslationSource.Primary,
-                            Translation.V1.TranslationSource.Secondary
-                        }
+                            Translation.V1.TranslationSource.Secondary,
+                        },
                     },
                     new TranslationSources
                     {
                         Values =
                         {
                             Translation.V1.TranslationSource.Primary,
-                            Translation.V1.TranslationSource.Secondary
-                        }
+                            Translation.V1.TranslationSource.Secondary,
+                        },
                     },
                     new TranslationSources
                     {
                         Values =
                         {
                             Translation.V1.TranslationSource.Primary,
-                            Translation.V1.TranslationSource.Secondary
-                        }
+                            Translation.V1.TranslationSource.Secondary,
+                        },
                     },
                     new TranslationSources
                     {
                         Values =
                         {
                             Translation.V1.TranslationSource.Primary,
-                            Translation.V1.TranslationSource.Secondary
-                        }
+                            Translation.V1.TranslationSource.Secondary,
+                        },
                     },
                     new TranslationSources
                     {
                         Values =
                         {
                             Translation.V1.TranslationSource.Primary,
-                            Translation.V1.TranslationSource.Secondary
-                        }
-                    }
+                            Translation.V1.TranslationSource.Secondary,
+                        },
+                    },
                 },
                 Alignment =
                 {
@@ -2657,7 +2656,7 @@ public class TranslationEngineTests
                     new Translation.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
                     new Translation.V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
                     new Translation.V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new Translation.V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 }
+                    new Translation.V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 },
                 },
                 Phrases =
                 {
@@ -2665,9 +2664,9 @@ public class TranslationEngineTests
                     {
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 5,
-                        TargetSegmentCut = 5
-                    }
-                }
+                        TargetSegmentCut = 5,
+                    },
+                },
             };
             var translateResponse = new TranslateResponse { Results = { translationResult } };
             EchoClient
@@ -2712,7 +2711,7 @@ public class TranslationEngineTests
 
         public TranslationBuildsClient CreateTranslationBuildsClient(IEnumerable<string>? scope = null)
         {
-            scope ??= [Scopes.ReadTranslationEngines,];
+            scope ??= [Scopes.ReadTranslationEngines];
             HttpClient httpClient = Factory
                 .WithWebHostBuilder(builder =>
                 {
@@ -2741,7 +2740,7 @@ public class TranslationEngineTests
                 Scopes.CreateTranslationEngines,
                 Scopes.ReadTranslationEngines,
                 Scopes.UpdateTranslationEngines,
-                Scopes.DeleteTranslationEngines
+                Scopes.DeleteTranslationEngines,
             ];
             HttpClient httpClient = Factory
                 .WithWebHostBuilder(builder =>
@@ -2771,7 +2770,7 @@ public class TranslationEngineTests
                 Scopes.CreateTranslationEngines,
                 Scopes.ReadTranslationEngines,
                 Scopes.UpdateTranslationEngines,
-                Scopes.DeleteTranslationEngines
+                Scopes.DeleteTranslationEngines,
             ];
             HttpClient httpClient = Factory
                 .WithWebHostBuilder(builder =>
@@ -2885,21 +2884,20 @@ public class TranslationEngineTests
         {
             IZipContainer container = Substitute.For<IZipContainer>();
             container.EntryExists("Settings.xml").Returns(true);
-            XElement settingsXml =
-                new(
-                    "ScriptureText",
-                    new XElement("StyleSheet", "usfm.sty"),
-                    new XElement("Name", name),
-                    new XElement("FullName", name),
-                    new XElement("Encoding", "65001"),
-                    new XElement(
-                        "Naming",
-                        new XAttribute("PrePart", ""),
-                        new XAttribute("PostPart", $"{name}.SFM"),
-                        new XAttribute("BookNameForm", "MAT")
-                    ),
-                    new XElement("BiblicalTermsListSetting", "Major::BiblicalTerms.xml")
-                );
+            XElement settingsXml = new(
+                "ScriptureText",
+                new XElement("StyleSheet", "usfm.sty"),
+                new XElement("Name", name),
+                new XElement("FullName", name),
+                new XElement("Encoding", "65001"),
+                new XElement(
+                    "Naming",
+                    new XAttribute("PrePart", ""),
+                    new XAttribute("PostPart", $"{name}.SFM"),
+                    new XAttribute("BookNameForm", "MAT")
+                ),
+                new XElement("BiblicalTermsListSetting", "Major::BiblicalTerms.xml")
+            );
             container
                 .OpenEntry("Settings.xml")
                 .Returns(new MemoryStream(Encoding.UTF8.GetBytes(settingsXml.ToString())));

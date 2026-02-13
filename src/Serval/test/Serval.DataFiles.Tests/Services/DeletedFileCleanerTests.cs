@@ -12,7 +12,7 @@ public class DeletedFileCleanerTests
             {
                 Id = "file1",
                 Filename = "file1.txt",
-                DeletedAt = DateTime.UtcNow.AddSeconds(-1)
+                DeletedAt = DateTime.UtcNow.AddSeconds(-1),
             }
         );
         env.DeletedFiles.Add(
@@ -20,7 +20,7 @@ public class DeletedFileCleanerTests
             {
                 Id = "file2",
                 Filename = "file2.txt",
-                DeletedAt = DateTime.UtcNow.AddSeconds(30)
+                DeletedAt = DateTime.UtcNow.AddSeconds(30),
             }
         );
 
@@ -44,7 +44,7 @@ public class DeletedFileCleanerTests
                 new DataFileOptions
                 {
                     DeletedFileTimeout = TimeSpan.FromSeconds(1),
-                    DeletedFileCleanerSchedule = "* * * * * *"
+                    DeletedFileCleanerSchedule = "* * * * * *",
                 }
             );
             DeletedFiles = new MemoryRepository<DeletedFile>();

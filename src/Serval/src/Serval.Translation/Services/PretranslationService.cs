@@ -361,13 +361,12 @@ public class PretranslationService(
         List<(int ChapterNumber, QuotationMarkUpdateStrategy Strategy)> bestChapterStrategies =
             quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
 
-        QuotationMarkDenormalizationUsfmUpdateBlockHandler quotationMarkDenormalizer =
-            new(
-                targetQuoteConvention,
-                new QuotationMarkUpdateSettings(
-                    chapterStrategies: bestChapterStrategies.Select(tuple => tuple.Strategy).ToList()
-                )
-            );
+        QuotationMarkDenormalizationUsfmUpdateBlockHandler quotationMarkDenormalizer = new(
+            targetQuoteConvention,
+            new QuotationMarkUpdateSettings(
+                chapterStrategies: bestChapterStrategies.Select(tuple => tuple.Strategy).ToList()
+            )
+        );
         int denormalizableChapterCount = bestChapterStrategies.Count(tup =>
             tup.Strategy != QuotationMarkUpdateStrategy.Skip
         );
@@ -506,7 +505,7 @@ public class PretranslationService(
             PretranslationUsfmMarkerBehavior.Preserve => UpdateUsfmMarkerBehavior.Preserve,
             PretranslationUsfmMarkerBehavior.PreservePosition => UpdateUsfmMarkerBehavior.Preserve,
             PretranslationUsfmMarkerBehavior.Strip => UpdateUsfmMarkerBehavior.Strip,
-            _ => throw new InvalidEnumArgumentException(nameof(behavior))
+            _ => throw new InvalidEnumArgumentException(nameof(behavior)),
         };
     }
 
@@ -559,7 +558,7 @@ public class PretranslationService(
                             paragraphBehavior: Map(pretranslationRow.ParagraphBehavior),
                             styleBehavior: Map(pretranslationRow.StyleBehavior)
                         )
-                    }
+                    },
                 }
                 : null
         );

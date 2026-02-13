@@ -37,7 +37,7 @@ public class MongoSubscription<T>(
         {
             FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
             MaxAwaitTime = timeout,
-            StartAtOperationTime = _timestamp
+            StartAtOperationTime = _timestamp,
         };
         PipelineDefinition<ChangeStreamDocument<T>, ChangeStreamDocument<T>> pipelineDef = PipelineDefinitionBuilder
             .For<ChangeStreamDocument<T>>()
