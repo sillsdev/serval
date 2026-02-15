@@ -55,8 +55,11 @@ public abstract class HangfireBuildJob<TEngine, TData>(
 
             await DoWorkAsync(engineId, buildId, data, buildOptions, cancellationToken);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException e)
         {
+            // Log the full exception for debugging purposes
+            Logger.LogInformation(e, "Build Hangfire job canceled ({0})", buildId);
+
             // Check if the cancellation was initiated by an API call or a shutdown.
             TEngine? engine = await Engines.GetAsync(
                 e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.BuildId == buildId,
@@ -93,10 +96,12 @@ public abstract class HangfireBuildJob<TEngine, TData>(
                     },
                     cancellationToken: CancellationToken.None
                 );
+                Logger.LogInformation("Build restarting ({0})", buildId);
                 throw;
             }
             else
             {
+                Logger.LogInformation("Build engine not found ({0})", buildId);
                 completionStatus = JobCompletionStatus.Canceled;
             }
         }
