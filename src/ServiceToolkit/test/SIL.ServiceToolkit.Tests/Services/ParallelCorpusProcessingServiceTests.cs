@@ -7,7 +7,7 @@ public class ParallelCorpusPreprocessingServiceTests
     public void TestParallelCorpusAnalysis_FileFormatParatext()
     {
         using var env = new TestEnvironment();
-        ParallelCorpus parallelCorpus = env.GetCorpus(paratextProject: true);
+        ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).First();
         const string ExpectedTargetName = "typewriter_english";
 
         QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetCorpusQuoteConvention(
@@ -25,7 +25,7 @@ public class ParallelCorpusPreprocessingServiceTests
     public void TestParallelCorpusAnalysis_FileFormatText()
     {
         using var env = new TestEnvironment();
-        ParallelCorpus parallelCorpus = env.GetCorpus(paratextProject: false);
+        ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: false).First();
 
         QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetCorpusQuoteConvention(
             parallelCorpus
@@ -42,7 +42,7 @@ public class ParallelCorpusPreprocessingServiceTests
     public async Task TestParallelCorpusPreprocessor_FileFormatText()
     {
         using var env = new TestEnvironment();
-        IReadOnlyList<ParallelCorpus> corpora = [env.GetCorpus(paratextProject: false)];
+        IReadOnlyList<ParallelCorpus> corpora = env.GetCorpora(paratextProject: false);
         int trainCount = 0;
         int inferenceCount = 0;
         await env.Processor.PreprocessAsync(
@@ -76,7 +76,7 @@ public class ParallelCorpusPreprocessingServiceTests
     public async Task TestParallelCorpusPreprocessor_FileFormatParatext()
     {
         using var env = new TestEnvironment();
-        IReadOnlyList<ParallelCorpus> corpora = [env.GetCorpus(paratextProject: true)];
+        IReadOnlyList<ParallelCorpus> corpora = env.GetCorpora(paratextProject: true);
         int trainCount = 0;
         int inferenceCount = 0;
         var trainRefs = new List<string>();
@@ -128,26 +128,126 @@ public class ParallelCorpusPreprocessingServiceTests
         public IParallelCorpusPreprocessingService Processor { get; } =
             new ParallelCorpusPreprocessingService(new TextCorpusService());
 
-        public ParallelCorpus GetCorpus(bool paratextProject)
+        public ParallelCorpus[] GetCorpora(bool paratextProject)
         {
             if (paratextProject)
             {
-                return new ParallelCorpus
+                return
+                [
+                    new ParallelCorpus
+                    {
+                        Id = "corpus1",
+                        SourceCorpora =
+                        [
+                            new MonolingualCorpus
+                            {
+                                Id = "pt-source1",
+                                Language = "en",
+                                Files =
+                                [
+                                    new CorpusFile
+                                    {
+                                        TextId = "textId1",
+                                        Format = FileFormat.Paratext,
+                                        Location = ZipParatextProject("pt-source1"),
+                                    },
+                                ],
+                                InferenceTextIds = [],
+                            },
+                        ],
+                        TargetCorpora =
+                        [
+                            new MonolingualCorpus
+                            {
+                                Id = "pt-target1",
+                                Language = "en",
+                                Files =
+                                [
+                                    new CorpusFile
+                                    {
+                                        TextId = "textId1",
+                                        Format = FileFormat.Paratext,
+                                        Location = ZipParatextProject("pt-target1"),
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    new ParallelCorpus
+                    {
+                        Id = "corpus2",
+                        SourceCorpora =
+                        [
+                            new MonolingualCorpus
+                            {
+                                Id = "pt-source1",
+                                Language = "en",
+                                Files =
+                                [
+                                    new CorpusFile
+                                    {
+                                        TextId = "textId1",
+                                        Format = FileFormat.Paratext,
+                                        Location = ZipParatextProject("pt-source1"),
+                                    },
+                                ],
+                                TrainOnTextIds = [],
+                            },
+                        ],
+                        TargetCorpora =
+                        [
+                            new MonolingualCorpus
+                            {
+                                Id = "pt-target1",
+                                Language = "en",
+                                Files =
+                                [
+                                    new CorpusFile
+                                    {
+                                        TextId = "textId1",
+                                        Format = FileFormat.Paratext,
+                                        Location = ZipParatextProject("pt-target1"),
+                                    },
+                                ],
+                                TrainOnTextIds = [],
+                            },
+                        ],
+                    },
+                ];
+            }
+
+            return
+            [
+                new ParallelCorpus
                 {
                     Id = "corpus1",
                     SourceCorpora =
                     [
                         new MonolingualCorpus
                         {
-                            Id = "pt-source1",
+                            Id = "source-corpus1",
                             Language = "en",
                             Files =
                             [
                                 new CorpusFile
                                 {
                                     TextId = "textId1",
-                                    Format = FileFormat.Paratext,
-                                    Location = ZipParatextProject("pt-source1"),
+                                    Format = FileFormat.Text,
+                                    Location = Path.Combine(TestDataPath, "source1.txt"),
+                                },
+                            ],
+                        },
+                        new MonolingualCorpus
+                        {
+                            Id = "source-corpus2",
+                            Language = "en",
+                            Files =
+                            [
+                                new CorpusFile
+                                {
+                                    TextId = "textId1",
+                                    Format = FileFormat.Text,
+                                    Location = Path.Combine(TestDataPath, "source2.txt"),
                                 },
                             ],
                         },
@@ -156,74 +256,21 @@ public class ParallelCorpusPreprocessingServiceTests
                     [
                         new MonolingualCorpus
                         {
-                            Id = "pt-target1",
+                            Id = "target-corpus1",
                             Language = "en",
                             Files =
                             [
                                 new CorpusFile
                                 {
                                     TextId = "textId1",
-                                    Format = FileFormat.Paratext,
-                                    Location = ZipParatextProject("pt-target1"),
+                                    Format = FileFormat.Text,
+                                    Location = Path.Combine(TestDataPath, "target1.txt"),
                                 },
                             ],
                         },
                     ],
-                };
-            }
-
-            return new ParallelCorpus
-            {
-                Id = "corpus1",
-                SourceCorpora =
-                [
-                    new MonolingualCorpus
-                    {
-                        Id = "source-corpus1",
-                        Language = "en",
-                        Files =
-                        [
-                            new CorpusFile
-                            {
-                                TextId = "textId1",
-                                Format = FileFormat.Text,
-                                Location = Path.Combine(TestDataPath, "source1.txt"),
-                            },
-                        ],
-                    },
-                    new MonolingualCorpus
-                    {
-                        Id = "source-corpus2",
-                        Language = "en",
-                        Files =
-                        [
-                            new CorpusFile
-                            {
-                                TextId = "textId1",
-                                Format = FileFormat.Text,
-                                Location = Path.Combine(TestDataPath, "source2.txt"),
-                            },
-                        ],
-                    },
-                ],
-                TargetCorpora =
-                [
-                    new MonolingualCorpus
-                    {
-                        Id = "target-corpus1",
-                        Language = "en",
-                        Files =
-                        [
-                            new CorpusFile
-                            {
-                                TextId = "textId1",
-                                Format = FileFormat.Text,
-                                Location = Path.Combine(TestDataPath, "target1.txt"),
-                            },
-                        ],
-                    },
-                ],
-            };
+                },
+            ];
         }
 
         protected override void DisposeManagedResources()
@@ -234,7 +281,8 @@ public class ParallelCorpusPreprocessingServiceTests
         private string ZipParatextProject(string name)
         {
             string fileName = Path.Combine(_tempDir.Path, $"{name}.zip");
-            ZipFile.CreateFromDirectory(Path.Combine(TestDataPath, name), fileName);
+            if (!File.Exists(fileName))
+                ZipFile.CreateFromDirectory(Path.Combine(TestDataPath, name), fileName);
             return fileName;
         }
     }

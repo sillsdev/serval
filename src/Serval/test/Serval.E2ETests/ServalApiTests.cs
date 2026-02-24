@@ -225,23 +225,43 @@ public class ServalApiTests
             TargetLanguageCode,
             "NMT4"
         );
-        (string parallelCorpusId, ParallelCorpusConfig parallelCorpusConfig) =
+        (string trainingParallelCorpusId, ParallelCorpusConfig trainingParallelCorpusConfig) =
             await _helperClient.AddParatextCorpusToEngineAsync(engineId, SourceLanguageCode, TargetLanguageCode, false);
 
-        _helperClient.TranslationBuildConfig.Pretranslate!.Add(
-            new PretranslateCorpusConfig
+        (string inferencingParallelCorpusId, ParallelCorpusConfig inferencingParallelCorpusConfig) =
+            await _helperClient.AddParatextCorpusToEngineAsync(engineId, SourceLanguageCode, TargetLanguageCode, false);
+
+        _helperClient.TranslationBuildConfig.TrainOn =
+        [
+            new TrainingCorpusConfig
             {
-                ParallelCorpusId = parallelCorpusId,
+                ParallelCorpusId = trainingParallelCorpusId,
                 SourceFilters =
                 [
                     new ParallelCorpusFilterConfig
                     {
-                        CorpusId = parallelCorpusConfig.SourceCorpusIds.Single(),
-                        ScriptureRange = "1JN",
+                        CorpusId = trainingParallelCorpusConfig.SourceCorpusIds.Single(),
+                        ScriptureRange = "MAT;2JN;3JN",
                     },
                 ],
-            }
-        );
+            },
+        ];
+
+        _helperClient.TranslationBuildConfig.Pretranslate =
+        [
+            new PretranslateCorpusConfig
+            {
+                ParallelCorpusId = inferencingParallelCorpusId,
+                SourceFilters =
+                [
+                    new ParallelCorpusFilterConfig
+                    {
+                        CorpusId = inferencingParallelCorpusConfig.SourceCorpusIds.Single(),
+                        ScriptureRange = "REV;2JN",
+                    },
+                ],
+            },
+        ];
         _helperClient.TranslationBuildConfig.Options =
             "{\"max_steps\":10, \"use_key_terms\":true, \"train_params\": {\"per_device_train_batch_size\":4}}";
 
@@ -250,17 +270,40 @@ public class ServalApiTests
             (await _helperClient.TranslationEnginesClient.GetAllBuildsAsync(engineId)).First().State,
             Is.EqualTo(JobState.Completed)
         );
-        IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
+        IList<Pretranslation> translations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
-            parallelCorpusId
+            inferencingParallelCorpusId
         );
-        Assert.That(lTrans, Is.Not.Empty);
+        Assert.That(translations, Is.Not.Empty);
+        IList<Pretranslation> firstJohnTranslations =
+            await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
+                engineId,
+                inferencingParallelCorpusId,
+                "2JN"
+            );
+        // Only non-scripture was translated
+        Assert.That(firstJohnTranslations.All(t => t.TargetRefs[0].Contains('/')));
         string usfm = await _helperClient.TranslationEnginesClient.GetPretranslatedUsfmAsync(
             engineId,
-            parallelCorpusId,
-            "1JN"
+            inferencingParallelCorpusId,
+            "REV"
         );
         Assert.That(usfm, Does.Contain("\\v 1"));
+        string usfmWithPlacedMarkers = await _helperClient.TranslationEnginesClient.GetPretranslatedUsfmAsync(
+            engineId,
+            inferencingParallelCorpusId,
+            "REV",
+            paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.PreservePosition
+        );
+        Assert.That(usfmWithPlacedMarkers, Is.Not.EqualTo(usfm));
+        string usfmWithDenormalizedQuotes = await _helperClient.TranslationEnginesClient.GetPretranslatedUsfmAsync(
+            engineId,
+            inferencingParallelCorpusId,
+            "REV",
+            quoteNormalizationBehavior: PretranslationNormalizationBehavior.Denormalized
+        );
+        Assert.That(usfmWithDenormalizedQuotes, Is.Not.EqualTo(usfm));
+        Assert.That(usfmWithDenormalizedQuotes, Does.Contain("“"));
     }
 
     [Test]

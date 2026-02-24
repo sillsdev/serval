@@ -113,89 +113,93 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
         bool parallelTrainingDataPresent = false;
         List<Row> keyTermTrainingData = new();
+        (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpora
+            .SelectMany(corpus =>
+                corpus.SourceCorpora.SelectMany(c =>
+                    _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
+                )
+            )
+            .ToArray();
+
+        ITextCorpus[] sourceTrainingCorpora = sourceCorpora
+            .Select(sc => FilterTrainingCorpora(sc.Corpus, sc.TextCorpus))
+            .ToArray();
+
+        (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpora
+            .SelectMany(corpus =>
+                corpus.TargetCorpora.SelectMany(c =>
+                    _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
+                )
+            )
+            .ToArray();
+
+        ITextCorpus[] targetTrainingCorpora = targetCorpora
+            .Select(tc => FilterTrainingCorpora(tc.Corpus, tc.TextCorpus))
+            .ToArray();
+
+        ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
+        if (sourceTrainingCorpus.IsScripture())
+        {
+            sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
+        }
+
+        ITextCorpus targetCorpus = targetTrainingCorpora.ChooseFirst();
+
+        ITextCorpus targetTrainingCorpus = targetTrainingCorpora.ChooseFirst();
+        if (targetTrainingCorpus.IsScripture())
+        {
+            targetTrainingCorpus = targetTrainingCorpus.Where(IsScriptureRow);
+        }
+
+        ParallelTextRow[] trainingRows = sourceTrainingCorpus
+            .AlignRows(targetTrainingCorpus, allSourceRows: true, allTargetRows: true)
+            .ToArray();
+
+        foreach (Row row in CollapseRanges(trainingRows))
+        {
+            await train(row, TrainingDataType.Text);
+            if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+            {
+                parallelTrainingDataPresent = true;
+            }
+        }
+
+        if (useKeyTerms)
+        {
+            ITextCorpus[]? sourceTermCorpora = _textCorpusService
+                .CreateTermCorpora(sourceCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
+                .ToArray();
+            ITextCorpus[]? targetTermCorpora = _textCorpusService
+                .CreateTermCorpora(targetCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
+                .ToArray();
+            if (sourceTermCorpora is not null && targetTermCorpora is not null)
+            {
+                IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora
+                    .ChooseRandom(Seed)
+                    .AlignRows(targetTermCorpora.ChooseFirst());
+                foreach (
+                    ParallelTextRow row in parallelKeyTermsCorpus.DistinctBy(row => (row.SourceText, row.TargetText))
+                )
+                {
+                    keyTermTrainingData.Add(
+                        new Row(row.TextId, row.SourceRefs, row.TargetRefs, row.SourceText, row.TargetText, 1)
+                    );
+                }
+            }
+        }
+
         foreach (ParallelCorpus corpus in corpora)
         {
-            (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpus
+            ITextCorpus sourcePretranslateCorpus = corpus
                 .SourceCorpora.SelectMany(c => _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
-                .ToArray();
+                .Select(sc => FilterPretranslateCorpora(sc.c, sc.tc, ignoreUsfmMarkers))
+                .ChooseFirst();
 
-            if (sourceCorpora.Length == 0)
-                continue;
-
-            ITextCorpus[] sourceTrainingCorpora = sourceCorpora
-                .Select(sc => FilterTrainingCorpora(sc.Corpus, sc.TextCorpus))
-                .ToArray();
-
-            ITextCorpus[] sourcePretranslateCorpora = sourceCorpora
-                .Select(sc => FilterPretranslateCorpora(sc.Corpus, sc.TextCorpus, ignoreUsfmMarkers))
-                .ToArray();
-
-            (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpus
+            ITextCorpus targetPretranslateCorpus = corpus
                 .TargetCorpora.SelectMany(c => _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
-                .ToArray();
-
-            ITextCorpus[] targetTrainingCorpora = targetCorpora
-                .Select(tc => FilterTrainingCorpora(tc.Corpus, tc.TextCorpus))
-                .ToArray();
-
-            ITextCorpus targetPretranslateCorpus = targetCorpora
-                .Select(tc => FilterPretranslateCorpora(tc.Corpus, tc.TextCorpus, ignoreUsfmMarkers))
+                .Select(tc => FilterPretranslateCorpora(tc.c, tc.tc, ignoreUsfmMarkers))
                 .ToArray()
-                .ChooseRandom(Seed);
-
-            ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
-            if (sourceTrainingCorpus.IsScripture())
-            {
-                sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
-            }
-
-            ITextCorpus targetCorpus = targetTrainingCorpora.ChooseFirst();
-
-            ITextCorpus targetTrainingCorpus = targetCorpus;
-            if (targetTrainingCorpus.IsScripture())
-            {
-                targetTrainingCorpus = targetTrainingCorpus.Where(IsScriptureRow);
-            }
-
-            ParallelTextRow[] trainingRows = sourceTrainingCorpus
-                .AlignRows(targetTrainingCorpus, allSourceRows: true, allTargetRows: true)
-                .ToArray();
-
-            foreach (Row row in CollapseRanges(trainingRows))
-            {
-                await train(row, TrainingDataType.Text);
-                if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-                {
-                    parallelTrainingDataPresent = true;
-                }
-            }
-
-            if (useKeyTerms)
-            {
-                ITextCorpus[]? sourceTermCorpora = _textCorpusService
-                    .CreateTermCorpora(sourceCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
-                    .ToArray();
-                ITextCorpus[]? targetTermCorpora = _textCorpusService
-                    .CreateTermCorpora(targetCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
-                    .ToArray();
-                if (sourceTermCorpora is not null && targetTermCorpora is not null)
-                {
-                    IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora
-                        .ChooseRandom(Seed)
-                        .AlignRows(targetTermCorpora.ChooseFirst());
-                    foreach (
-                        ParallelTextRow row in parallelKeyTermsCorpus.DistinctBy(row =>
-                            (row.SourceText, row.TargetText)
-                        )
-                    )
-                    {
-                        keyTermTrainingData.Add(
-                            new Row(row.TextId, row.SourceRefs, row.TargetRefs, row.SourceText, row.TargetText, 1)
-                        );
-                    }
-                }
-            }
-            ITextCorpus sourcePretranslateCorpus = sourcePretranslateCorpora.ChooseFirst();
+                .ChooseFirst();
 
             INParallelTextCorpus pretranslateCorpus = new ITextCorpus[]
             {
