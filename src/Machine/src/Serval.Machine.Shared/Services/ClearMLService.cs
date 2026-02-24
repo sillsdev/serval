@@ -33,7 +33,9 @@ public class ClearMLService(
         JsonObject? result = await CallAsync("projects", "get_all", body, cancellationToken);
         var projects = (JsonArray?)result?["data"]?["projects"];
         if (projects is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
+        {
+            throw new InvalidOperationException($"Malformed response from ClearML server: {result?.ToJsonString()}.");
+        }
         if (projects.Count == 0)
             return null;
         return (string?)projects[0]?["id"];
@@ -54,7 +56,9 @@ public class ClearMLService(
         JsonObject? result = await CallAsync("projects", "create", body, cancellationToken);
         var projectId = (string?)result?["data"]?["id"];
         if (projectId is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
+        {
+            throw new InvalidOperationException($"Malformed response from ClearML server: {result?.ToJsonString()}.");
+        }
         return projectId;
     }
 
@@ -69,7 +73,9 @@ public class ClearMLService(
         JsonObject? result = await CallAsync("projects", "delete", body, cancellationToken);
         var deleted = (int?)result?["data"]?["deleted"];
         if (deleted is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
+        {
+            throw new InvalidOperationException($"Malformed response from ClearML server: {result?.ToJsonString()}.");
+        }
         return deleted == 1;
     }
 
@@ -97,7 +103,9 @@ public class ClearMLService(
         JsonObject? result = await CallAsync("tasks", "create", body, cancellationToken);
         var taskId = (string?)result?["data"]?["id"];
         if (taskId is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
+        {
+            throw new InvalidOperationException($"Malformed response from ClearML server: {result?.ToJsonString()}.");
+        }
         return taskId;
     }
 
@@ -107,7 +115,9 @@ public class ClearMLService(
         JsonObject? result = await CallAsync("tasks", "delete", body, cancellationToken);
         var deleted = (bool?)result?["data"]?["deleted"];
         if (deleted is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
+        {
+            throw new InvalidOperationException($"Malformed response from ClearML server: {result?.ToJsonString()}.");
+        }
         return deleted.Value;
     }
 
@@ -117,7 +127,9 @@ public class ClearMLService(
         JsonObject? result = await CallAsync("tasks", "enqueue", body, cancellationToken);
         var queued = (int?)result?["data"]?["queued"];
         if (queued is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
+        {
+            throw new InvalidOperationException($"Malformed response from ClearML server: {result?.ToJsonString()}.");
+        }
         return queued == 1;
     }
 
@@ -127,7 +139,9 @@ public class ClearMLService(
         JsonObject? result = await CallAsync("tasks", "dequeue", body, cancellationToken);
         var dequeued = (int?)result?["data"]?["dequeued"];
         if (dequeued is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
+        {
+            throw new InvalidOperationException($"Malformed response from ClearML server: {result?.ToJsonString()}.");
+        }
         return dequeued == 1;
     }
 
@@ -137,7 +151,9 @@ public class ClearMLService(
         JsonObject? result = await CallAsync("tasks", "stop", body, cancellationToken);
         var updated = (int?)result?["data"]?["updated"];
         if (updated is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
+        {
+            throw new InvalidOperationException($"Malformed response from ClearML server: {result?.ToJsonString()}.");
+        }
         return updated == 1;
     }
 
@@ -154,7 +170,7 @@ public class ClearMLService(
             queueNamesToIds = await PopulateQueueNamesToIdsAsync(refresh: true, cancellationToken);
             if (!queueNamesToIds.TryGetValue(queue, out queueId))
             {
-                throw new InvalidOperationException($"Queue {queue} does not exist");
+                throw new InvalidOperationException($"Queue {queue} does not exist.");
             }
         }
         var body = new JsonObject { ["queue"] = queueId };
@@ -176,7 +192,11 @@ public class ClearMLService(
             JsonObject? result = await CallAsync("queues", "get_all", new JsonObject(), cancellationToken);
             var queues = (JsonArray?)result?["data"]?["queues"];
             if (queues is null)
-                throw new InvalidOperationException("Malformed response from ClearML server.");
+            {
+                throw new InvalidOperationException(
+                    $"Malformed response from ClearML server: {result?.ToJsonString()}."
+                );
+            }
 
             _queueNamesToIds = queues.ToImmutableDictionary(q => (string)q!["name"]!, q => (string)q!["id"]!);
         }
