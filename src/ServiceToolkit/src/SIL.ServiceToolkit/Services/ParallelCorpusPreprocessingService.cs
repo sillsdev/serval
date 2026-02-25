@@ -251,8 +251,8 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
             }
         }
 
-        // Only train on key terms if there was other parallel scripture data.
-        // This is necessary for inference-only jobs since the terms are not
+        // Only train on key terms if there were other parallel scripture data.
+        // This is necessary to support inference-only jobs since the terms are not
         // filtered by the filters specified in the monolingual corpora.
         if (useKeyTerms && parallelTrainingDataPresent)
         {
