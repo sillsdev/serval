@@ -109,7 +109,7 @@ public class ParallelCorpusPreprocessingServiceTests
         Assert.Multiple(() =>
         {
             Assert.That(trainCount, Is.EqualTo(5));
-            Assert.That(inferenceCount, Is.EqualTo(12));
+            Assert.That(inferenceCount, Is.EqualTo(16));
         });
     }
 

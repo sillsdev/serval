@@ -113,48 +113,71 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
         bool parallelTrainingDataPresent = false;
         List<Row> keyTermTrainingData = new();
-        (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] sourceCorpora = corpora
-            .SelectMany(corpus =>
-                corpus.SourceCorpora.SelectMany(c =>
-                    _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
+
+        // Create dictionaries that map from a parallel corpus id to an array of all of that
+        // parallel corpus' monolingual corpora and associated text corpora
+        Dictionary<string, (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[]> sourceCorpora = corpora
+            .Select(corpus =>
+                (
+                    CorpusId: corpus.Id,
+                    Corpora: corpus
+                        .SourceCorpora.SelectMany(c =>
+                            _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
+                        )
+                        .ToArray()
                 )
             )
-            .ToArray();
+            .ToDictionary(tup => tup.CorpusId, tup => tup.Corpora);
 
+        Dictionary<string, (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[]> targetCorpora = corpora
+            .Select(corpus =>
+                (
+                    CorpusId: corpus.Id,
+                    Corpora: corpus
+                        .TargetCorpora.SelectMany(c =>
+                            _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
+                        )
+                        .ToArray()
+                )
+            )
+            .ToDictionary(tup => tup.CorpusId, tup => tup.Corpora);
+
+        // Filter the text corpora for training based on the filters specified in the monolingual corpora
         ITextCorpus[] sourceTrainingCorpora = sourceCorpora
+            .Values.SelectMany(sc => sc)
             .Select(sc => FilterTrainingCorpora(sc.Corpus, sc.TextCorpus))
             .ToArray();
 
-        (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[] targetCorpora = corpora
-            .SelectMany(corpus =>
-                corpus.TargetCorpora.SelectMany(c =>
-                    _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
-                )
-            )
-            .ToArray();
-
         ITextCorpus[] targetTrainingCorpora = targetCorpora
+            .Values.SelectMany(tc => tc)
             .Select(tc => FilterTrainingCorpora(tc.Corpus, tc.TextCorpus))
             .ToArray();
 
+        // To support mixed source, collapse multiple source text corpora into one text corpus
+        // by randomly interlacing content from each of the source text corpora
         ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
         if (sourceTrainingCorpus.IsScripture())
         {
+            // Filter out all non-scripture; we only train on scripture content
             sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
         }
 
-        ITextCorpus targetCorpus = targetTrainingCorpora.ChooseFirst();
-
+        // Instead of interlacing rows from the target text corpora randomly, just take the
+        // text row from the first target text corpus that has content for that row
         ITextCorpus targetTrainingCorpus = targetTrainingCorpora.ChooseFirst();
         if (targetTrainingCorpus.IsScripture())
         {
+            // Filter out all non-scripture; we only train on scripture content
             targetTrainingCorpus = targetTrainingCorpus.Where(IsScriptureRow);
         }
 
+        // Align source and target training data
         ParallelTextRow[] trainingRows = sourceTrainingCorpus
             .AlignRows(targetTrainingCorpus, allSourceRows: true, allTargetRows: true)
             .ToArray();
 
+        // After merging segments across ranges, run the 'train' preprocessing function
+        // on each training row and record whether any parallel training data was present
         foreach (Row row in CollapseRanges(trainingRows))
         {
             await train(row, TrainingDataType.Text);
@@ -166,17 +189,27 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
         if (useKeyTerms)
         {
+            // Create a terms corpus for each corpus file
             ITextCorpus[]? sourceTermCorpora = _textCorpusService
-                .CreateTermCorpora(sourceCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
+                .CreateTermCorpora(
+                    sourceCorpora.Values.SelectMany(sc => sc).SelectMany(corpus => corpus.Corpus.Files).ToArray()
+                )
                 .ToArray();
             ITextCorpus[]? targetTermCorpora = _textCorpusService
-                .CreateTermCorpora(targetCorpora.SelectMany(corpus => corpus.Corpus.Files).ToArray())
+                .CreateTermCorpora(
+                    targetCorpora.Values.SelectMany(tc => tc).SelectMany(corpus => corpus.Corpus.Files).ToArray()
+                )
                 .ToArray();
+
             if (sourceTermCorpora is not null && targetTermCorpora is not null)
             {
+                // As with scripture data, interlace the source rows randomly
+                // but choose the first non-empty target row, then align
                 IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora
                     .ChooseRandom(Seed)
                     .AlignRows(targetTermCorpora.ChooseFirst());
+
+                // Only train on unique key terms pairs
                 foreach (
                     ParallelTextRow row in parallelKeyTermsCorpus.DistinctBy(row => (row.SourceText, row.TargetText))
                 )
@@ -188,32 +221,39 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
             }
         }
 
+        // Since we ultimately need to provide inferences for a particular parallel corpus,
+        // we need to preprocess the content on which to inference per parallel corpus
         foreach (ParallelCorpus corpus in corpora)
         {
-            ITextCorpus sourcePretranslateCorpus = corpus
-                .SourceCorpora.SelectMany(c => _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
-                .Select(sc => FilterPretranslateCorpora(sc.c, sc.tc, ignoreUsfmMarkers))
+            // Filter the text corpora based on the filters specified in the monolingual corpora
+            ITextCorpus sourceInferencingCorpus = sourceCorpora[corpus.Id]
+                .Select(sc => FilterInferencingCorpora(sc.Corpus, sc.TextCorpus, ignoreUsfmMarkers))
                 .ChooseFirst();
 
-            ITextCorpus targetPretranslateCorpus = corpus
-                .TargetCorpora.SelectMany(c => _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc)))
-                .Select(tc => FilterPretranslateCorpora(tc.c, tc.tc, ignoreUsfmMarkers))
-                .ToArray()
+            ITextCorpus targetInferencingCorpus = targetCorpora[corpus.Id]
+                .Select(tc => FilterInferencingCorpora(tc.Corpus, tc.TextCorpus, ignoreUsfmMarkers))
                 .ChooseFirst();
 
-            INParallelTextCorpus pretranslateCorpus = new ITextCorpus[]
+            // We need to align all three of these corpora because we need both the source and target
+            // content for inferencing (the target is only needed in some contexts like word alignment)
+            // as well as the target training corpus in order to determine whether a row was already
+            // used in training.
+            INParallelTextCorpus inferencingCorpus = new ITextCorpus[]
             {
-                sourcePretranslateCorpus,
-                targetPretranslateCorpus,
-                targetCorpus,
+                sourceInferencingCorpus,
+                targetInferencingCorpus,
+                targetTrainingCorpus,
             }.AlignMany([true, false, false]);
 
-            foreach ((Row row, bool isInTrainingData) in CollapsePretranslateRanges(pretranslateCorpus.ToArray()))
+            foreach ((Row row, bool isInTrainingData) in CollapseInferencingRanges(inferencingCorpus.ToArray()))
             {
                 await inference(row, isInTrainingData, corpus);
             }
         }
 
+        // Only train on key terms if there was other parallel scripture data.
+        // This is necessary for inference-only jobs since the terms are not
+        // filtered by the filters specified in the monolingual corpora.
         if (useKeyTerms && parallelTrainingDataPresent)
         {
             foreach (Row row in keyTermTrainingData)
@@ -223,7 +263,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         }
     }
 
-    private static ITextCorpus FilterPretranslateCorpora(
+    private static ITextCorpus FilterInferencingCorpora(
         MonolingualCorpus corpus,
         ITextCorpus textCorpus,
         HashSet<string> ignoreUsfmMarkers
@@ -327,7 +367,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         }
     }
 
-    private static IEnumerable<(Row, bool)> CollapsePretranslateRanges(NParallelTextRow[] rows)
+    private static IEnumerable<(Row, bool)> CollapseInferencingRanges(NParallelTextRow[] rows)
     {
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
@@ -339,7 +379,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
         foreach (NParallelTextRow row in rows)
         {
-            //row at 0 is source filtered for pretranslation, row at 1 is target filtered for pretranslation, row at 2 is target filtered for training
+            //row at 0 is source filtered for inferencing, row at 1 is target filtered for inferencing, row at 2 is target filtered for training
             if (
                 hasUnfinishedRange
                 && (!row.IsInRange(0) || row.IsRangeStart(0))
