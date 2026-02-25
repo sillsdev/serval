@@ -221,7 +221,7 @@ public class PreprocessBuildJobTests
 
         Assert.That(
             await env.GetPretranslateCountAsync(),
-            Is.EqualTo(14),
+            Is.EqualTo(20),
             JsonSerializer.Serialize(await env.GetPretranslationsAsync())
         );
     }
@@ -264,7 +264,7 @@ public class PreprocessBuildJobTests
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(15));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(21));
     }
 
     [Test]
