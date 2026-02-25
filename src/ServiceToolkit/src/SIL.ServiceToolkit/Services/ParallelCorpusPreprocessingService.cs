@@ -114,8 +114,8 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         bool parallelTrainingDataPresent = false;
         List<Row> keyTermTrainingData = new();
 
-        // Create dictionaries that map from a parallel corpus id to an array of all of that
-        // parallel corpus' monolingual corpora and associated text corpora
+        // Create source and target dictionaries that map from a parallel corpus id
+        // to an array of all of that parallel corpus' monolingual corpora and associated text corpora
         Dictionary<string, (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[]> sourceCorpora = corpora
             .Select(corpus =>
                 (
