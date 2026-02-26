@@ -1,6 +1,6 @@
 ﻿namespace SIL.DataAccess;
 
-public class MemoryDataAccessContext : DisposableBase, IDataAccessContext
+public class MemoryDataAccessContext : ObjectModel.DisposableBase, IDataAccessContext
 {
     public Task<TResult> WithTransactionAsync<TResult>(
         Func<CancellationToken, Task<TResult>> callbackAsync,

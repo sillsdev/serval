@@ -21,6 +21,8 @@ public class ServalWebApplicationFactory : WebApplicationFactory<Program>
                 options.Url = new MongoUrl("mongodb://localhost:27017/serval_test")
             );
 
+            services.Configure<ApiOptions>(options => options.LongPollTimeout = TimeSpan.FromSeconds(1));
+
             services.Configure<TranslationOptions>(options =>
             {
                 options.Engines =

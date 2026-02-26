@@ -6,7 +6,7 @@ public class MongoSubscription<T>(
     Func<T, bool> filter,
     BsonTimestamp timestamp,
     T? initialEntity
-) : DisposableBase, ISubscription<T>
+) : ObjectModel.DisposableBase, ISubscription<T>
     where T : IEntity
 {
     private readonly IMongoDataAccessContext _context = context;
@@ -17,10 +17,34 @@ public class MongoSubscription<T>(
     public EntityChange<T> Change { get; private set; } =
         new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update, initialEntity);
 
-    public async Task WaitForChangeAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
+    public async Task WaitForChangeAsync(
+        TimeSpan? timeout = null,
+        IReadOnlySet<EntityChangeType>? changeTypes = null,
+        CancellationToken cancellationToken = default
+    )
     {
         Expression<Func<ChangeStreamDocument<T>, bool>> changeEventFilter;
-        if (Change.Entity is null)
+        if (changeTypes is not null && changeTypes.Count > 0)
+        {
+            HashSet<ChangeStreamOperationType> ops =
+            [
+                .. changeTypes.SelectMany<EntityChangeType, ChangeStreamOperationType>(ct =>
+                    ct switch
+                    {
+                        EntityChangeType.Insert => [ChangeStreamOperationType.Insert],
+                        EntityChangeType.Update =>
+                        [
+                            ChangeStreamOperationType.Update,
+                            ChangeStreamOperationType.Replace,
+                        ],
+                        EntityChangeType.Delete => [ChangeStreamOperationType.Delete],
+                        _ => throw new ArgumentException("No valid change types specified.", nameof(changeTypes)),
+                    }
+                ),
+            ];
+            changeEventFilter = ce => ops.Contains(ce.OperationType);
+        }
+        else if (Change.Entity is null)
         {
             changeEventFilter = ce => ce.OperationType == ChangeStreamOperationType.Insert;
         }
@@ -63,22 +87,14 @@ public class MongoSubscription<T>(
                 bool changed = false;
                 foreach (ChangeStreamDocument<T> ce in cursor.Current)
                 {
-                    EntityChangeType changeType = EntityChangeType.None;
-                    switch (ce.OperationType)
+                    EntityChangeType changeType = ce.OperationType switch
                     {
-                        case ChangeStreamOperationType.Insert:
-                            changeType = EntityChangeType.Insert;
-                            break;
-
-                        case ChangeStreamOperationType.Replace:
-                        case ChangeStreamOperationType.Update:
-                            changeType = EntityChangeType.Update;
-                            break;
-
-                        case ChangeStreamOperationType.Delete:
-                            changeType = EntityChangeType.Delete;
-                            break;
-                    }
+                        ChangeStreamOperationType.Insert => EntityChangeType.Insert,
+                        ChangeStreamOperationType.Replace or ChangeStreamOperationType.Update =>
+                            EntityChangeType.Update,
+                        ChangeStreamOperationType.Delete => EntityChangeType.Delete,
+                        _ => EntityChangeType.None,
+                    };
 
                     if (entityNotFound)
                     {
