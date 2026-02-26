@@ -2,9 +2,40 @@
 
 public class TextCorpusService : ITextCorpusService
 {
-    public IEnumerable<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files)
+    public IEnumerable<ITextCorpus> CreateTextCorpora(
+        IReadOnlyList<CorpusFile> files,
+        IReadOnlyList<CorpusFile> referenceFiles
+    )
     {
         List<ITextCorpus> corpora = [];
+        List<(string Location, ParatextProjectSettings Settings)> referenceSettings = [];
+        foreach (CorpusFile referenceFile in referenceFiles)
+        {
+            if (referenceFile.Format != FileFormat.Paratext)
+                continue;
+
+            using ZipArchive archive = ZipFile.OpenRead(referenceFile.Location);
+            ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive);
+            referenceSettings.Add((referenceFile.Location, settings));
+        }
+
+        Dictionary<string, string> parentLocations = [];
+        foreach ((string daughterLocation, ParatextProjectSettings daughterSettings) in referenceSettings)
+        {
+            foreach ((string parentLocation, ParatextProjectSettings parentSettings) in referenceSettings)
+            {
+                if (
+                    daughterSettings == parentSettings
+                    || !daughterSettings.HasParent
+                    || !daughterSettings.IsDaughterProjectOf(parentSettings)
+                )
+                {
+                    continue;
+                }
+
+                parentLocations[daughterLocation] = parentLocation;
+            }
+        }
 
         List<Dictionary<string, IText>> textFileCorpora = [];
         foreach (CorpusFile file in files)
@@ -26,7 +57,15 @@ public class TextCorpusService : ITextCorpusService
                     break;
 
                 case FileFormat.Paratext:
-                    corpora.Add(new ParatextBackupTextCorpus(file.Location, includeAllText: true));
+                    if (!parentLocations.TryGetValue(file.Location, out string? parentFileName))
+                        parentFileName = null;
+                    corpora.Add(
+                        new ParatextBackupTextCorpus(
+                            file.Location,
+                            includeAllText: true,
+                            parentFileName: parentFileName
+                        )
+                    );
                     break;
             }
         }
@@ -36,9 +75,9 @@ public class TextCorpusService : ITextCorpusService
         return corpora;
     }
 
-    public IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> corpusFiles)
+    public IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> files)
     {
-        foreach (CorpusFile file in corpusFiles)
+        foreach (CorpusFile file in files)
         {
             switch (file.Format)
             {

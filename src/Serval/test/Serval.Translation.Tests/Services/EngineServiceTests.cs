@@ -2361,6 +2361,7 @@ public class EngineServiceTests
                 .GetParatextProjectSettings(Arg.Any<string>())
                 .Returns(
                     new ParatextProjectSettings(
+                        guid: "Id",
                         name: "Tst",
                         fullName: "Test",
                         encoding: Encoding.UTF8,
@@ -2372,7 +2373,8 @@ public class EngineServiceTests
                         biblicalTermsListType: "BiblicalTerms",
                         biblicalTermsProjectName: "",
                         biblicalTermsFileName: "BiblicalTerms.xml",
-                        languageCode: "en"
+                        languageCode: "en",
+                        translationType: "Standard"
                     )
                 );
 
