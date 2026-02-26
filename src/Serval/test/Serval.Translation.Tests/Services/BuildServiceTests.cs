@@ -75,6 +75,52 @@ public class BuildServiceTests
     }
 
     [Test]
+    public async Task GetNextFinishedBuildAsync_Insert()
+    {
+        var builds = new MemoryRepository<Build>();
+        var service = new BuildService(builds);
+        Task<EntityChange<Build>> task = service.GetNextFinishedBuildAsync("user1", DateTime.UtcNow.AddMinutes(-1));
+        var build = new Build
+        {
+            Id = BUILD1_ID,
+            EngineRef = "engine1",
+            Owner = "user1",
+            State = Shared.Contracts.JobState.Completed,
+            DateFinished = DateTime.UtcNow,
+        };
+        await builds.InsertAsync(build);
+        EntityChange<Build> change = await task;
+        Assert.That(change.Type, Is.EqualTo(EntityChangeType.Insert));
+        Assert.That(change.Entity?.State, Is.EqualTo(Shared.Contracts.JobState.Completed));
+    }
+
+    [Test]
+    public async Task GetNextFinishedBuildAsync_Update()
+    {
+        var builds = new MemoryRepository<Build>();
+        var service = new BuildService(builds);
+        var build = new Build
+        {
+            Id = BUILD1_ID,
+            EngineRef = "engine1",
+            Owner = "user1",
+        };
+        await builds.InsertAsync(build);
+        Task<EntityChange<Build>> task = service.GetNextFinishedBuildAsync("user1", DateTime.UtcNow.AddMinutes(-1));
+        await builds.UpdateAsync(
+            build,
+            u =>
+            {
+                u.Set(b => b.State, Shared.Contracts.JobState.Completed);
+                u.Set(b => b.DateFinished, DateTime.UtcNow);
+            }
+        );
+        EntityChange<Build> change = await task;
+        Assert.That(change.Type, Is.EqualTo(EntityChangeType.Update));
+        Assert.That(change.Entity?.State, Is.EqualTo(Shared.Contracts.JobState.Completed));
+    }
+
+    [Test]
     public async Task GetActiveNewerRevisionAsync_Insert()
     {
         var builds = new MemoryRepository<Build>();
