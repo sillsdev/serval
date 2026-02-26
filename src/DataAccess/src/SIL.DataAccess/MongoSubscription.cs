@@ -17,10 +17,20 @@ public class MongoSubscription<T>(
     public EntityChange<T> Change { get; private set; } =
         new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update, initialEntity);
 
-    public async Task WaitForChangeAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
+    public async Task WaitForChangeAsync(
+        TimeSpan? timeout = default,
+        bool insertsOrUpdatesOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
         Expression<Func<ChangeStreamDocument<T>, bool>> changeEventFilter;
-        if (Change.Entity is null)
+        if (insertsOrUpdatesOnly)
+        {
+            changeEventFilter = ce =>
+                ce.OperationType == ChangeStreamOperationType.Insert
+                || ce.OperationType == ChangeStreamOperationType.Update;
+        }
+        else if (Change.Entity is null)
         {
             changeEventFilter = ce => ce.OperationType == ChangeStreamOperationType.Insert;
         }

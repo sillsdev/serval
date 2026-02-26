@@ -1496,6 +1496,49 @@ public class TranslationEngineTests
     }
 
     [Test]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 408)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403)] // Arbitrary unrelated privilege
+    public async Task GetNextCompletedBuildAsync(IEnumerable<string> scope, int expectedStatusCode)
+    {
+        TranslationBuildsClient client = _env.CreateTranslationBuildsClient(scope);
+        Build? build = new Build
+        {
+            EngineRef = ECHO_ENGINE1_ID,
+            Owner = "client1",
+            DateFinished = DateTime.UtcNow,
+            State = Shared.Contracts.JobState.Completed,
+        };
+        await _env.Builds.InsertAsync(build);
+        switch (expectedStatusCode)
+        {
+            case 200:
+                TranslationBuild result = await client.GetNextCompletedBuildAsync(DateTime.UtcNow.AddDays(-2));
+                Assert.That(result, Is.Not.Null);
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.Revision, Is.EqualTo(1));
+                    Assert.That(result.Id, Is.EqualTo(build?.Id));
+                    Assert.That(result.State, Is.EqualTo(JobState.Completed));
+                });
+                break;
+            case 403:
+            case 408:
+            {
+                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                {
+                    await client.GetNextCompletedBuildAsync(DateTime.UtcNow.AddDays(2));
+                });
+                Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
+                break;
+            }
+            default:
+                Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
+                break;
+        }
+    }
+
+    [Test]
     [TestCase(
         new[] { Scopes.UpdateTranslationEngines, Scopes.CreateTranslationEngines, Scopes.ReadTranslationEngines },
         201,

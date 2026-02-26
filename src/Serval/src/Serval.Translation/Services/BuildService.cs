@@ -50,6 +50,26 @@ public class BuildService(IRepository<Build> builds) : OwnedEntityServiceBase<Bu
         );
     }
 
+    public async Task<EntityChange<Build>> GetNextCompletedBuildAsync(
+        string owner,
+        DateTime finishedAfter,
+        CancellationToken cancellationToken = default
+    )
+    {
+        using ISubscription<Build> subscription = await Entities.SubscribeAsync(
+            b => b.Owner == owner && b.State == JobState.Completed && b.DateFinished > finishedAfter,
+            cancellationToken
+        );
+        EntityChange<Build> curChange = subscription.Change;
+        while (true)
+        {
+            if (curChange.Type is not EntityChangeType.None and not EntityChangeType.Delete)
+                return curChange;
+            await subscription.WaitForChangeAsync(insertsOrUpdatesOnly: true, cancellationToken: cancellationToken);
+            curChange = subscription.Change;
+        }
+    }
+
     private async Task<EntityChange<Build>> GetNewerRevisionAsync(
         Expression<Func<Build, bool>> filter,
         long minRevision,
