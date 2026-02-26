@@ -345,7 +345,10 @@ public class PreprocessBuildJobTests
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MRK"]);
 
         env.TextCorpusService = Substitute.For<ITextCorpusService>();
-        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+        env.TextCorpusService.CreateTextCorpora(
+                Arg.Any<IReadOnlyList<CorpusFile>>(),
+                Arg.Any<IReadOnlyList<CorpusFile>>()
+            )
             .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
         Assert.DoesNotThrowAsync(async () =>
         {
@@ -359,7 +362,10 @@ public class PreprocessBuildJobTests
         using TestEnvironment env = new();
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["MAT"], inferenceTextIds: ["MRK"]);
         env.TextCorpusService = Substitute.For<ITextCorpusService>();
-        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+        env.TextCorpusService.CreateTextCorpora(
+                Arg.Any<IReadOnlyList<CorpusFile>>(),
+                Arg.Any<IReadOnlyList<CorpusFile>>()
+            )
             .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
         Assert.ThrowsAsync<ArgumentException>(async () =>
         {
@@ -373,7 +379,10 @@ public class PreprocessBuildJobTests
         using TestEnvironment env = new();
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MAT"]);
         env.TextCorpusService = Substitute.For<ITextCorpusService>();
-        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
+        env.TextCorpusService.CreateTextCorpora(
+                Arg.Any<IReadOnlyList<CorpusFile>>(),
+                Arg.Any<IReadOnlyList<CorpusFile>>()
+            )
             .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
         Assert.ThrowsAsync<ArgumentException>(async () =>
         {

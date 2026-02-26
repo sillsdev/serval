@@ -114,6 +114,12 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         bool parallelTrainingDataPresent = false;
         List<Row> keyTermTrainingData = new();
 
+        IReadOnlyList<CorpusFile> allCorpusFiles = corpora
+            .SelectMany(corpus =>
+                corpus.SourceCorpora.SelectMany(sc => sc.Files).Concat(corpus.TargetCorpora.SelectMany(tc => tc.Files))
+            )
+            .ToArray();
+
         // Create source and target dictionaries that map from a parallel corpus id
         // to an array of all of that parallel corpus' monolingual corpora and associated text corpora
         Dictionary<string, (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[]> sourceCorpora = corpora
@@ -122,7 +128,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                     CorpusId: corpus.Id,
                     Corpora: corpus
                         .SourceCorpora.SelectMany(c =>
-                            _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
+                            _textCorpusService.CreateTextCorpora(c.Files, allCorpusFiles).Select(tc => (c, tc))
                         )
                         .ToArray()
                 )
@@ -135,7 +141,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                     CorpusId: corpus.Id,
                     Corpora: corpus
                         .TargetCorpora.SelectMany(c =>
-                            _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
+                            _textCorpusService.CreateTextCorpora(c.Files, allCorpusFiles).Select(tc => (c, tc))
                         )
                         .ToArray()
                 )
