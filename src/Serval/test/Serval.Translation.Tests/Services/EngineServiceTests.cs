@@ -2356,27 +2356,6 @@ public class EngineServiceTests
                 .Returns(TranslationServiceClient);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
-            var scriptureDataFileService = Substitute.For<IScriptureDataFileService>();
-            scriptureDataFileService
-                .GetParatextProjectSettings(Arg.Any<string>())
-                .Returns(
-                    new ParatextProjectSettings(
-                        guid: "Id",
-                        name: "Tst",
-                        fullName: "Test",
-                        encoding: Encoding.UTF8,
-                        versification: ScrVers.English,
-                        stylesheet: new UsfmStylesheet("usfm.sty"),
-                        fileNamePrefix: "TST",
-                        fileNameForm: "MAT",
-                        fileNameSuffix: ".USFM",
-                        biblicalTermsListType: "BiblicalTerms",
-                        biblicalTermsProjectName: "",
-                        biblicalTermsFileName: "BiblicalTerms.xml",
-                        languageCode: "en",
-                        translationType: "Standard"
-                    )
-                );
 
             Pretranslations = new MemoryRepository<Pretranslation>();
             OutboxService = Substitute.For<IOutboxService>();
@@ -2387,7 +2366,7 @@ public class EngineServiceTests
                 new TranslationOptions { Engines = [new EngineInfo { Type = "Smt" }] }
             );
 
-            Service = new EngineService(
+            Service = new TestEngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 Pretranslations,
@@ -2396,7 +2375,6 @@ public class EngineServiceTests
                 dataFileOptions,
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
-                scriptureDataFileService,
                 OutboxService,
                 translationOptions
             );
@@ -2868,6 +2846,44 @@ public class EngineServiceTests
                 () => new Metadata(),
                 () => { }
             );
+        }
+    }
+
+    private class TestEngineService(
+        IRepository<Engine> engines,
+        IRepository<Build> builds,
+        IRepository<Pretranslation> pretranslations,
+        IScopedMediator mediator,
+        GrpcClientFactory grpcClientFactory,
+        IOptionsMonitor<DataFileOptions> dataFileOptions,
+        IDataAccessContext dataAccessContext,
+        ILoggerFactory loggerFactory,
+        IOutboxService outboxService,
+        IOptionsMonitor<TranslationOptions> translationOptions
+    )
+        : EngineService(
+            engines,
+            builds,
+            pretranslations,
+            mediator,
+            grpcClientFactory,
+            dataFileOptions,
+            dataAccessContext,
+            loggerFactory,
+            outboxService,
+            translationOptions
+        )
+    {
+        protected override Dictionary<string, List<int>> GetChapters(string fileLocation, string scriptureRange)
+        {
+            try
+            {
+                return ScriptureRangeParser.GetChapters(scriptureRange);
+            }
+            catch (ArgumentException ae)
+            {
+                throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
+            }
         }
     }
 }

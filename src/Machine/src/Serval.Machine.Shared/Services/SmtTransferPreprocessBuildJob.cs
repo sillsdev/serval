@@ -9,7 +9,7 @@ public class SmtTransferPreprocessBuildJob(
     ISharedFileService sharedFileService,
     IDistributedReaderWriterLockFactory lockFactory,
     IRepository<TrainSegmentPair> trainSegmentPairs,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusPreprocessingService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
@@ -29,7 +29,7 @@ public class SmtTransferPreprocessBuildJob(
     protected override async Task InitializeAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> data,
+        IReadOnlyList<ParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
     {

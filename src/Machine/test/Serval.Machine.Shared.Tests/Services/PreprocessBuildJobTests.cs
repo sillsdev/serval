@@ -343,10 +343,34 @@ public class PreprocessBuildJobTests
         using TestEnvironment env = new();
         env.PersistModel(); // MRK does not contain verse data, so there is no inferencing
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MRK"]);
+        var parallelCorpusService = new ParallelCorpusService();
+        env.ParallelCorpusService = Substitute.For<IParallelCorpusService>();
+        env.ParallelCorpusService.When(s =>
+                s.PreprocessAsync(
+                    Arg.Any<CorpusBundle>(),
+                    Arg.Any<Func<Row, TrainingDataType, Task>>(),
+                    Arg.Any<Func<Row, bool, string, Task>>(),
+                    Arg.Any<bool>(),
+                    Arg.Any<HashSet<string>?>()
+                )
+            )
+            .Do(async callInfo =>
+            {
+                CorpusBundle corpusBundle = callInfo.ArgAt<CorpusBundle>(0);
+                DummyCorpusBundle dummyCorpusBundle = new DummyCorpusBundle(
+                    corpusBundle,
+                    ["LEV", "MRK", "MAT"],
+                    ["MAT"]
+                );
 
-        env.TextCorpusService = Substitute.For<ITextCorpusService>();
-        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
-            .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
+                await parallelCorpusService.PreprocessAsync(
+                    dummyCorpusBundle,
+                    callInfo.ArgAt<Func<Row, TrainingDataType, Task>>(1),
+                    callInfo.ArgAt<Func<Row, bool, string, Task>>(2),
+                    callInfo.ArgAt<bool>(3),
+                    callInfo.ArgAt<HashSet<string>?>(4)
+                );
+            });
         Assert.DoesNotThrowAsync(async () =>
         {
             await env.RunBuildJobAsync(corpus);
@@ -354,17 +378,47 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public void RunAsync_OnlyParseSelectedBooks_TrainOnBadBook()
+    public async Task RunAsync_OnlyParseSelectedBooks_TrainOnBadBook()
     {
         using TestEnvironment env = new();
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["MAT"], inferenceTextIds: ["MRK"]);
-        env.TextCorpusService = Substitute.For<ITextCorpusService>();
-        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
-            .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
-        Assert.ThrowsAsync<ArgumentException>(async () =>
+        var parallelCorpusService = new ParallelCorpusService();
+        env.ParallelCorpusService = Substitute.For<IParallelCorpusService>();
+        ArgumentException? ex = null;
+        env.ParallelCorpusService.When(s =>
+                s.PreprocessAsync(
+                    Arg.Any<CorpusBundle>(),
+                    Arg.Any<Func<Row, TrainingDataType, Task>>(),
+                    Arg.Any<Func<Row, bool, string, Task>>(),
+                    Arg.Any<bool>(),
+                    Arg.Any<HashSet<string>?>()
+                )
+            )
+            .Do(async callInfo =>
+            {
+                CorpusBundle corpusBundle = callInfo.ArgAt<CorpusBundle>(0);
+                DummyCorpusBundle dummyCorpusBundle = new DummyCorpusBundle(
+                    corpusBundle,
+                    ["LEV", "MRK", "MAT"],
+                    ["MAT"]
+                );
+                ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+                {
+                    await parallelCorpusService.PreprocessAsync(
+                        dummyCorpusBundle,
+                        callInfo.ArgAt<Func<Row, TrainingDataType, Task>>(1),
+                        callInfo.ArgAt<Func<Row, bool, string, Task>>(2),
+                        callInfo.ArgAt<bool>(3),
+                        callInfo.ArgAt<HashSet<string>?>(4)
+                    );
+                });
+            });
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             await env.RunBuildJobAsync(corpus);
         });
+
+        Assert.That(ex, Is.Not.Null);
     }
 
     [Test]
@@ -372,13 +426,43 @@ public class PreprocessBuildJobTests
     {
         using TestEnvironment env = new();
         ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MAT"]);
-        env.TextCorpusService = Substitute.For<ITextCorpusService>();
-        env.TextCorpusService.CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
-            .Returns([new DummyCorpus(["LEV", "MRK", "MAT"], ["MAT"])]);
-        Assert.ThrowsAsync<ArgumentException>(async () =>
+        var parallelCorpusService = new ParallelCorpusService();
+        env.ParallelCorpusService = Substitute.For<IParallelCorpusService>();
+        ArgumentException? ex = null;
+        env.ParallelCorpusService.When(s =>
+                s.PreprocessAsync(
+                    Arg.Any<CorpusBundle>(),
+                    Arg.Any<Func<Row, TrainingDataType, Task>>(),
+                    Arg.Any<Func<Row, bool, string, Task>>(),
+                    Arg.Any<bool>(),
+                    Arg.Any<HashSet<string>?>()
+                )
+            )
+            .Do(async callInfo =>
+            {
+                CorpusBundle corpusBundle = callInfo.ArgAt<CorpusBundle>(0);
+                DummyCorpusBundle dummyCorpusBundle = new DummyCorpusBundle(
+                    corpusBundle,
+                    ["LEV", "MRK", "MAT"],
+                    ["MAT"]
+                );
+                ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+                {
+                    await parallelCorpusService.PreprocessAsync(
+                        dummyCorpusBundle,
+                        callInfo.ArgAt<Func<Row, TrainingDataType, Task>>(1),
+                        callInfo.ArgAt<Func<Row, bool, string, Task>>(2),
+                        callInfo.ArgAt<bool>(3),
+                        callInfo.ArgAt<HashSet<string>?>(4)
+                    );
+                });
+            });
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             await env.RunBuildJobAsync(corpus);
         });
+
+        Assert.That(ex, Is.Not.Null);
     }
 
     [Test]
@@ -501,12 +585,12 @@ Target one, chapter one, verse nine and ten.
         private readonly TempDirectory _tempDir;
 
         public ISharedFileService SharedFileService { get; }
-        public ITextCorpusService TextCorpusService { get; set; }
         public IPlatformService PlatformService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
         public IDistributedReaderWriterLockFactory LockFactory { get; }
         public IBuildJobService<TranslationEngine> BuildJobService { get; }
+        public IParallelCorpusService ParallelCorpusService { get; set; }
         public IClearMLService ClearMLService { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
@@ -709,7 +793,6 @@ Target one, chapter one, verse nine and ten.
                 }
             );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
-            TextCorpusService = new TextCorpusService();
             PlatformService = Substitute.For<IPlatformService>();
             PlatformService.EngineGroup.Returns(EngineGroup.Translation);
             PlatformService.UpdateBuildExecutionDataAsync(
@@ -788,6 +871,7 @@ Target one, chapter one, verse nine and ten.
                 ],
                 Engines
             );
+            ParallelCorpusService = new ParallelCorpusService();
         }
 
         public PreprocessBuildJob<TranslationEngine> GetBuildJob(EngineType engineType)
@@ -804,7 +888,7 @@ Target one, chapter one, verse nine and ten.
                         BuildJobService,
                         SharedFileService,
                         new LanguageTagService(),
-                        new ParallelCorpusPreprocessingService(TextCorpusService),
+                        ParallelCorpusService,
                         BuildJobOptions
                     );
                 }
@@ -819,7 +903,7 @@ Target one, chapter one, verse nine and ten.
                         SharedFileService,
                         LockFactory,
                         TrainSegmentPairs,
-                        new ParallelCorpusPreprocessingService(TextCorpusService),
+                        ParallelCorpusService,
                         BuildJobOptions
                     );
                 }
@@ -1128,6 +1212,18 @@ Target one, chapter one, verse nine and ten.
         IEnumerator IEnumerable.GetEnumerator()
         {
             return Texts.GetEnumerator();
+        }
+    }
+
+    private class DummyCorpusBundle(CorpusBundle corpusBundle, IEnumerable<string> books, IEnumerable<string> failsOn)
+        : CorpusBundle(corpusBundle.ParallelCorpora)
+    {
+        private IEnumerable<string> FailsOn { get; } = failsOn;
+        private IEnumerable<string> Books { get; } = books;
+
+        protected override IReadOnlyList<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files)
+        {
+            return [new DummyCorpus(Books, FailsOn)];
         }
     }
 }

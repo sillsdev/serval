@@ -1,7 +1,9 @@
+using SIL.ServiceToolkit.Utils;
+
 namespace SIL.ServiceToolkit.Services;
 
 [TestFixture]
-public class ParallelCorpusPreprocessingServiceTests
+public class ParallelCorpusServiceTests
 {
     [Test]
     public void TestParallelCorpusAnalysis_FileFormatParatext()
@@ -10,8 +12,8 @@ public class ParallelCorpusPreprocessingServiceTests
         ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).First();
         const string ExpectedTargetName = "typewriter_english";
 
-        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetCorpusQuoteConvention(
-            parallelCorpus
+        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention(
+            new CorpusBundle([parallelCorpus])
         );
 
         Assert.Multiple(() =>
@@ -27,8 +29,8 @@ public class ParallelCorpusPreprocessingServiceTests
         using var env = new TestEnvironment();
         ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: false).First();
 
-        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetCorpusQuoteConvention(
-            parallelCorpus
+        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention(
+            new CorpusBundle([parallelCorpus])
         );
 
         Assert.Multiple(() =>
@@ -46,7 +48,7 @@ public class ParallelCorpusPreprocessingServiceTests
         int trainCount = 0;
         int inferenceCount = 0;
         await env.Processor.PreprocessAsync(
-            corpora,
+            new CorpusBundle(corpora),
             (row, _) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
@@ -82,7 +84,7 @@ public class ParallelCorpusPreprocessingServiceTests
         var trainRefs = new List<string>();
         var inferenceRefs = new List<string>();
         await env.Processor.PreprocessAsync(
-            corpora,
+            new CorpusBundle(corpora),
             (row, _) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
@@ -123,10 +125,9 @@ public class ParallelCorpusPreprocessingServiceTests
             "Services",
             "data"
         );
-        private readonly TempDirectory _tempDir = new TempDirectory(name: "ParallelCorpusProcessingServiceTests");
+        private readonly TempDirectory _tempDir = new TempDirectory(name: "ParallelCorpusServiceTests");
 
-        public IParallelCorpusPreprocessingService Processor { get; } =
-            new ParallelCorpusPreprocessingService(new TextCorpusService());
+        public IParallelCorpusService Processor { get; } = new ParallelCorpusService();
 
         public ParallelCorpus[] GetCorpora(bool paratextProject)
         {

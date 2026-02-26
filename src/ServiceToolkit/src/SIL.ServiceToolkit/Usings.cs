@@ -26,4 +26,5 @@ global using SIL.ObjectModel;
 global using SIL.ServiceToolkit.Configuration;
 global using SIL.ServiceToolkit.Models;
 global using SIL.ServiceToolkit.Services;
+global using SIL.ServiceToolkit.Utils;
 global using SIL.WritingSystems;

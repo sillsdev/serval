@@ -1,4 +1,3 @@
-global using System.Text;
 global using Grpc.Core;
 global using Grpc.Net.ClientFactory;
 global using MassTransit;
@@ -8,9 +7,6 @@ global using NSubstitute;
 global using NUnit.Framework;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Models;
-global using Serval.Shared.Services;
 global using Serval.Shared.Utils;
 global using Serval.WordAlignment.Models;
 global using SIL.DataAccess;
-global using SIL.Machine.Corpora;
-global using SIL.Scripture;

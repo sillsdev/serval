@@ -1,16 +1,16 @@
 ﻿using Serval.WordAlignment.V1;
+using SIL.ServiceToolkit.Utils;
 
 namespace EchoEngine;
 
 public class WordAlignmentEngineServiceV1(
     BackgroundTaskQueue taskQueue,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
+    IParallelCorpusService parallelCorpusPreprocessingService
 ) : WordAlignmentEngineApi.WordAlignmentEngineApiBase
 {
     private static readonly Empty Empty = new();
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
-    private readonly IParallelCorpusPreprocessingService _parallelCorpusPreprocessingService =
-        parallelCorpusPreprocessingService;
+    private readonly IParallelCorpusService _parallelCorpusPreprocessingService = parallelCorpusPreprocessingService;
 
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
@@ -80,20 +80,20 @@ public class WordAlignmentEngineServiceV1(
                     int wordAlignCount = 0;
                     List<InsertWordAlignmentsRequest> wordAlignmentsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
-                        request.Corpora.Select(Map).ToList(),
+                        new CorpusBundle(request.Corpora.Select(Map)),
                         (row, _) =>
                         {
                             if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                                 trainCount++;
                             return Task.CompletedTask;
                         },
-                        (row, isInTrainingData, corpus) =>
+                        (row, isInTrainingData, corpusId) =>
                         {
                             wordAlignmentsRequests.Add(
                                 new InsertWordAlignmentsRequest
                                 {
                                     EngineId = request.EngineId,
-                                    CorpusId = corpus.Id,
+                                    CorpusId = corpusId,
                                     TextId = row.TextId,
                                     SourceRefs = { row.SourceRefs.Select(r => r.ToString()) },
                                     TargetRefs = { row.TargetRefs.Select(r => r.ToString()) },
