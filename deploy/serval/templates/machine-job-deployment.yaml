@@ -48,10 +48,9 @@ spec:
           resources:
             limits:
               memory: "3500Mi"
-              cpu: "1.9"
             requests:
               memory: "3500Mi"
-              cpu: "1.9"
+              cpu: "0.7"
           volumeMounts:
             - mountPath: /var/lib/machine
               name: machine-mount
