@@ -25,4 +25,9 @@ public interface IBuildService
         long minRevision,
         CancellationToken cancellationToken = default
     );
+    Task<EntityChange<Build>> GetNextFinishedBuildAsync(
+        string owner,
+        DateTime finishedAfter,
+        CancellationToken cancellationToken = default
+    );
 }

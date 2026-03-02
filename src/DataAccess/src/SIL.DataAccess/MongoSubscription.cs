@@ -17,10 +17,18 @@ public class MongoSubscription<T>(
     public EntityChange<T> Change { get; private set; } =
         new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update, initialEntity);
 
-    public async Task WaitForChangeAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
+    public async Task WaitForChangeAsync(
+        TimeSpan? timeout = null,
+        EntityChangeType[]? changeTypes = null,
+        CancellationToken cancellationToken = default
+    )
     {
         Expression<Func<ChangeStreamDocument<T>, bool>> changeEventFilter;
-        if (Change.Entity is null)
+        if (changeTypes is not null && changeTypes.Length > 0)
+        {
+            changeEventFilter = BuildChangeEventFilter(changeTypes);
+        }
+        else if (Change.Entity is null)
         {
             changeEventFilter = ce => ce.OperationType == ChangeStreamOperationType.Insert;
         }
@@ -63,22 +71,14 @@ public class MongoSubscription<T>(
                 bool changed = false;
                 foreach (ChangeStreamDocument<T> ce in cursor.Current)
                 {
-                    EntityChangeType changeType = EntityChangeType.None;
-                    switch (ce.OperationType)
+                    EntityChangeType changeType = ce.OperationType switch
                     {
-                        case ChangeStreamOperationType.Insert:
-                            changeType = EntityChangeType.Insert;
-                            break;
-
-                        case ChangeStreamOperationType.Replace:
-                        case ChangeStreamOperationType.Update:
-                            changeType = EntityChangeType.Update;
-                            break;
-
-                        case ChangeStreamOperationType.Delete:
-                            changeType = EntityChangeType.Delete;
-                            break;
-                    }
+                        ChangeStreamOperationType.Insert => EntityChangeType.Insert,
+                        ChangeStreamOperationType.Replace or ChangeStreamOperationType.Update =>
+                            EntityChangeType.Update,
+                        ChangeStreamOperationType.Delete => EntityChangeType.Delete,
+                        _ => EntityChangeType.None,
+                    };
 
                     if (entityNotFound)
                     {
@@ -108,5 +108,46 @@ public class MongoSubscription<T>(
         {
             cursor.Dispose();
         }
+    }
+
+    private static Expression<Func<ChangeStreamDocument<T>, bool>> BuildChangeEventFilter(
+        EntityChangeType[] changeTypes
+    )
+    {
+        HashSet<ChangeStreamOperationType> changeStreamOperations = [];
+        foreach (EntityChangeType ct in changeTypes)
+        {
+            switch (ct)
+            {
+                case EntityChangeType.Insert:
+                    changeStreamOperations.Add(ChangeStreamOperationType.Insert);
+                    break;
+                case EntityChangeType.Update:
+                    changeStreamOperations.Add(ChangeStreamOperationType.Update);
+                    changeStreamOperations.Add(ChangeStreamOperationType.Replace);
+                    break;
+                case EntityChangeType.Delete:
+                    changeStreamOperations.Add(ChangeStreamOperationType.Delete);
+                    break;
+                case EntityChangeType.None:
+                default:
+                    break;
+            }
+        }
+
+        if (changeStreamOperations.Count == 0)
+            throw new ArgumentException("No valid change types specified.", nameof(changeTypes));
+
+        // Create an expression matching:
+        // ce => ce.OperationType == ChangeStreamOperationType.Insert || ce.OperationType == ChangeStreamOperationType.Update
+        ParameterExpression ce = Expression.Parameter(typeof(ChangeStreamDocument<T>), "ce");
+        MemberExpression opMember = Expression.Property(ce, nameof(ChangeStreamDocument<>.OperationType));
+
+        Expression changeEventFilter = Expression.Constant(false);
+        changeEventFilter = changeStreamOperations.Aggregate(
+            changeEventFilter,
+            (current, op) => Expression.OrElse(current, Expression.Equal(opMember, Expression.Constant(op)))
+        );
+        return Expression.Lambda<Func<ChangeStreamDocument<T>, bool>>(changeEventFilter, ce);
     }
 }
