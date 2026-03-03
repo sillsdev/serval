@@ -7,35 +7,11 @@ public class TextCorpusService : ITextCorpusService
         IReadOnlyList<CorpusFile> referenceFiles
     )
     {
+        IReadOnlyDictionary<string, string> parentLocations = GetParentProjectLocations(
+            referenceFiles.Where(rf => rf.Format == FileFormat.Paratext).Select(rf => rf.Location).ToArray()
+        );
+
         List<ITextCorpus> corpora = [];
-        List<(string Location, ParatextProjectSettings Settings)> referenceSettings = [];
-        foreach (CorpusFile referenceFile in referenceFiles)
-        {
-            if (referenceFile.Format != FileFormat.Paratext)
-                continue;
-
-            using ZipArchive archive = ZipFile.OpenRead(referenceFile.Location);
-            ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive);
-            referenceSettings.Add((referenceFile.Location, settings));
-        }
-
-        Dictionary<string, string> parentLocations = [];
-        foreach ((string daughterLocation, ParatextProjectSettings daughterSettings) in referenceSettings)
-        {
-            foreach ((string parentLocation, ParatextProjectSettings parentSettings) in referenceSettings)
-            {
-                if (
-                    daughterSettings == parentSettings
-                    || !daughterSettings.HasParent
-                    || !daughterSettings.IsDaughterProjectOf(parentSettings)
-                )
-                {
-                    continue;
-                }
-
-                parentLocations[daughterLocation] = parentLocation;
-            }
-        }
 
         List<Dictionary<string, IText>> textFileCorpora = [];
         foreach (CorpusFile file in files)
@@ -73,6 +49,37 @@ public class TextCorpusService : ITextCorpusService
             corpora.Add(new DictionaryTextCorpus(corpus.Values));
 
         return corpora;
+    }
+
+    public IReadOnlyDictionary<string, string> GetParentProjectLocations(IReadOnlyList<string> referenceFiles)
+    {
+        List<(string Location, ParatextProjectSettings Settings)> referenceSettings = [];
+        foreach (string referenceFile in referenceFiles)
+        {
+            using ZipArchive archive = ZipFile.OpenRead(referenceFile);
+            ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive);
+            referenceSettings.Add((referenceFile, settings));
+        }
+
+        Dictionary<string, string> parentLocations = [];
+        foreach ((string daughterLocation, ParatextProjectSettings daughterSettings) in referenceSettings)
+        {
+            foreach ((string parentLocation, ParatextProjectSettings parentSettings) in referenceSettings)
+            {
+                if (
+                    daughterSettings == parentSettings
+                    || !daughterSettings.HasParent
+                    || !daughterSettings.IsDaughterProjectOf(parentSettings)
+                )
+                {
+                    continue;
+                }
+
+                parentLocations[daughterLocation] = parentLocation;
+            }
+        }
+
+        return parentLocations;
     }
 
     public IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> files)

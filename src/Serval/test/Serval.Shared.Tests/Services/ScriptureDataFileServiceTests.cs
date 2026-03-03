@@ -51,7 +51,7 @@ public class ScriptureDataFileServiceTests
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
 
-            Service = new ScriptureDataFileService(fileSystem, dataFileOptions);
+            Service = new ScriptureDataFileService(fileSystem, dataFileOptions, Substitute.For<ITextCorpusService>());
         }
 
         public ScriptureDataFileService Service { get; }
@@ -72,7 +72,8 @@ public class ScriptureDataFileServiceTests
                     new XAttribute("PostPart", "PROJ.SFM"),
                     new XAttribute("BookNameForm", "MAT")
                 ),
-                new XElement("BiblicalTermsListSetting", "Major::BiblicalTerms.xml")
+                new XElement("BiblicalTermsListSetting", "Major::BiblicalTerms.xml"),
+                new XElement("Guid", "ID")
             );
             container
                 .OpenEntry("Settings.xml")

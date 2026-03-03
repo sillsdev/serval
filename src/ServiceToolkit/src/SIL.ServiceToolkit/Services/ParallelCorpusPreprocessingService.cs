@@ -9,9 +9,14 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
     private const int Seed = 1234;
 
     public IReadOnlyList<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> AnalyzeUsfmVersification(
-        ParallelCorpus parallelCorpus
+        ParallelCorpus parallelCorpus,
+        IReadOnlyList<CorpusFile>? referenceFiles = null
     )
     {
+        referenceFiles ??= [];
+        IReadOnlyDictionary<string, string> parentLocations = _textCorpusService.GetParentProjectLocations(
+            referenceFiles.Where(rf => rf.Format == FileFormat.Paratext).Select(rf => rf.Location).ToArray()
+        );
         List<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> errorsPerCorpus = [];
         foreach (
             (CorpusFile file, MonolingualCorpus monolingualCorpus, bool isSource) in parallelCorpus
@@ -26,9 +31,16 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                 .DistinctBy(tuple => tuple.f.Location)
         )
         {
+            ParatextProjectSettings? parentSettings = null;
+            if (parentLocations.TryGetValue(file.Location, out string? parentLocation) && parentLocation != null)
+            {
+                using ZipArchive parentArchive = ZipFile.OpenRead(parentLocation);
+                parentSettings = ZipParatextProjectSettingsParser.Parse(parentArchive);
+            }
             using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
             IReadOnlyList<UsfmVersificationError> errors = new ZipParatextProjectVersificationErrorDetector(
-                zipArchive
+                zipArchive,
+                parentSettings
             ).GetUsfmVersificationErrors(books: GetBooks(monolingualCorpus, isSource));
             if (errors.Count > 0)
             {
@@ -67,15 +79,29 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         return [.. books.Select(bookName => Canon.BookIdToNumber(bookName))];
     }
 
-    public QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus parallelCorpus)
+    public QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(
+        ParallelCorpus parallelCorpus,
+        IReadOnlyList<CorpusFile>? referenceFiles = null
+    )
     {
+        referenceFiles ??= [];
+        IReadOnlyDictionary<string, string> parentLocations = _textCorpusService.GetParentProjectLocations(
+            referenceFiles.Where(rf => rf.Format == FileFormat.Paratext).Select(rf => rf.Location).ToArray()
+        );
         List<QuoteConventionAnalysis> analyses = [];
         foreach (MonolingualCorpus targetMonolingualCorpus in parallelCorpus.TargetCorpora)
         {
             foreach (CorpusFile file in targetMonolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
             {
+                ParatextProjectSettings? parentSettings = null;
+                if (parentLocations.TryGetValue(file.Location, out string? parentLocation) && parentLocation != null)
+                {
+                    using ZipArchive parentArchive = ZipFile.OpenRead(parentLocation);
+                    parentSettings = ZipParatextProjectSettingsParser.Parse(parentArchive);
+                }
+
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
-                var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
+                var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive, parentSettings);
                 Dictionary<int, List<int>>? chapters = null;
                 if (targetMonolingualCorpus.TrainOnTextIds is not null)
                 {
@@ -99,6 +125,54 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         }
 
         return QuoteConventionAnalysis.CombineWithWeightedAverage(analyses);
+    }
+
+    public IReadOnlyList<MissingParentProjectError> FindMissingParentProjects(IReadOnlyList<ParallelCorpus> corpora)
+    {
+        List<MissingParentProjectError> errors = [];
+        IReadOnlyDictionary<string, string> parentLocations = _textCorpusService.GetParentProjectLocations(
+            corpora
+                .SelectMany(corpus =>
+                    corpus
+                        .SourceCorpora.SelectMany(sc =>
+                            sc.Files.Where(cf => cf.Format == FileFormat.Paratext).Select(cf => cf.Location)
+                        )
+                        .Concat(
+                            corpus.TargetCorpora.SelectMany(tc =>
+                                tc.Files.Where(cf => cf.Format == FileFormat.Paratext).Select(cf => cf.Location)
+                            )
+                        )
+                )
+                .ToArray()
+        );
+        foreach (ParallelCorpus parallelCorpus in corpora)
+        {
+            foreach (
+                MonolingualCorpus monolingualCorpus in parallelCorpus.SourceCorpora.Concat(parallelCorpus.TargetCorpora)
+            )
+            {
+                foreach (CorpusFile file in monolingualCorpus.Files)
+                {
+                    if (file.Format != FileFormat.Paratext)
+                        continue;
+                    using ZipArchive archive = ZipFile.OpenRead(file.Location);
+                    ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive);
+                    if (settings.HasParent && !parentLocations.ContainsKey(file.Location))
+                    {
+                        errors.Add(
+                            new()
+                            {
+                                ProjectName = settings.Name,
+                                ParentProjectName = settings.ParentName,
+                                ParallelCorpusId = parallelCorpus.Id,
+                                MonolingualCorpusId = monolingualCorpus.Id,
+                            }
+                        );
+                    }
+                }
+            }
+        }
+        return errors;
     }
 
     public async Task PreprocessAsync(

@@ -58,6 +58,19 @@ public class PretranslationService(
         if (build is null || build.DateFinished is null)
             throw new InvalidOperationException($"Could not find any completed builds for engine '{engineId}'.");
 
+        string[] referenceFiles = engine!
+            .ParallelCorpora.SelectMany(pc =>
+                pc.SourceCorpora.SelectMany(sc =>
+                        sc.Files.Where(f => f.Format == FileFormat.Paratext).Select(f => f.Filename)
+                    )
+                    .Concat(
+                        pc.TargetCorpora.SelectMany(tc =>
+                            tc.Files.Where(f => f.Format == FileFormat.Paratext).Select(f => f.Filename)
+                        )
+                    )
+            )
+            .ToArray();
+
         string disclaimerRemark = string.Format(
             CultureInfo.InvariantCulture,
             AIDisclaimerRemark,
@@ -116,10 +129,12 @@ public class PretranslationService(
             throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
 
         ParatextProjectSettings sourceSettings = _scriptureDataFileService.GetParatextProjectSettings(
-            sourceFile.Filename
+            sourceFile.Filename,
+            referenceFiles
         );
         ParatextProjectSettings targetSettings = _scriptureDataFileService.GetParatextProjectSettings(
-            targetFile.Filename
+            targetFile.Filename,
+            referenceFiles
         );
 
         IEnumerable<Pretranslation> pretranslations = await GetAllAsync(
@@ -167,7 +182,7 @@ public class PretranslationService(
                 )
             );
             using Shared.Services.ZipParatextProjectTextUpdater updater =
-                _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename);
+                _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename, referenceFiles);
             switch (textOrigin)
             {
                 case PretranslationUsfmTextOrigin.PreferExisting:
@@ -243,7 +258,7 @@ public class PretranslationService(
         )
         {
             using Shared.Services.ZipParatextProjectTextUpdater updater =
-                _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename);
+                _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename, referenceFiles);
 
             // Copy and update the source book if it exists
             switch (textOrigin)

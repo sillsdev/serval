@@ -657,11 +657,11 @@ public class PretranslationServiceTests
                 {
                     "SRC" => new Shared.Services.ZipParatextProjectTextUpdater(
                         zipSubstituteSource,
-                        CreateProjectSettings("SRC")
+                        settings: CreateProjectSettings("SRC")
                     ),
                     "TRG" => new Shared.Services.ZipParatextProjectTextUpdater(
                         zipSubstituteTarget,
-                        CreateProjectSettings("TRG")
+                        settings: CreateProjectSettings("TRG")
                     ),
                     _ => throw new ArgumentException(),
                 };
