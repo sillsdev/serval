@@ -142,10 +142,16 @@ public abstract class PreprocessBuildJob<TEngine>(
     {
         List<string> warnings = [];
 
+        IReadOnlyList<CorpusFile> referenceFiles = corpora
+            .SelectMany(c =>
+                c.SourceCorpora.SelectMany(sc => sc.Files).Concat(c.TargetCorpora.SelectMany(tc => tc.Files))
+            )
+            .ToArray();
+
         foreach (ParallelCorpus parallelCorpus in corpora)
         {
             IReadOnlyList<(string MonolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors)> errorsPerCorpus =
-                ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus);
+                ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus, referenceFiles);
 
             foreach ((string monolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors) in errorsPerCorpus)
             {
@@ -165,6 +171,16 @@ public abstract class PreprocessBuildJob<TEngine>(
                 }
             }
         }
+
+        foreach (
+            MissingParentProjectError error in ParallelCorpusPreprocessingService.FindMissingParentProjects(corpora)
+        )
+        {
+            warnings.Add(
+                $"Unable to locate parent project {error.ParentProjectName} of daughter project {error.ProjectName} (parallel corpus {error.ParallelCorpusId}, monolingual corpus {error.MonolingualCorpusId})"
+            );
+        }
+
         return warnings;
     }
 }

@@ -2,6 +2,9 @@
 
 public interface IScriptureDataFileService
 {
-    ParatextProjectSettings GetParatextProjectSettings(string filename);
-    ZipParatextProjectTextUpdater GetZipParatextProjectTextUpdater(string filename);
+    ParatextProjectSettings GetParatextProjectSettings(string filename, string[]? referenceFilenames = null);
+    ZipParatextProjectTextUpdater GetZipParatextProjectTextUpdater(
+        string filename,
+        string[]? referenceFilenames = null
+    );
 }

@@ -38,10 +38,15 @@ public class NmtPreprocessBuildJob(
     )
     {
         List<QuoteConventionAnalysis> quoteConventionAnalyses = [];
+        IReadOnlyList<CorpusFile> referenceFiles = corpora
+            .SelectMany(c =>
+                c.SourceCorpora.SelectMany(sc => sc.Files).Concat(c.TargetCorpora.SelectMany(tc => tc.Files))
+            )
+            .ToArray();
         foreach (ParallelCorpus parallelCorpus in corpora)
         {
             QuoteConventionAnalysis? targetQuotationConventionAnalysis =
-                ParallelCorpusPreprocessingService.AnalyzeTargetCorpusQuoteConvention(parallelCorpus);
+                ParallelCorpusPreprocessingService.AnalyzeTargetCorpusQuoteConvention(parallelCorpus, referenceFiles);
             if (targetQuotationConventionAnalysis != null)
                 quoteConventionAnalyses.Add(targetQuotationConventionAnalysis);
         }

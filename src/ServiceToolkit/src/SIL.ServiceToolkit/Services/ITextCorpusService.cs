@@ -7,4 +7,5 @@ public interface ITextCorpusService
         IReadOnlyList<CorpusFile> referenceFiles
     );
     IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> files);
+    IReadOnlyDictionary<string, string> GetParentProjectLocations(IReadOnlyList<string> referenceFiles);
 }
