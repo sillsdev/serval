@@ -1,7 +1,7 @@
 namespace SIL.DataAccess;
 
 public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T>> remove)
-    : DisposableBase,
+    : ObjectModel.DisposableBase,
         ISubscription<T>
     where T : IEntity
 {
@@ -11,7 +11,11 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
     public EntityChange<T> Change { get; private set; } =
         new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update, initialEntity);
 
-    public async Task WaitForChangeAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
+    public async Task WaitForChangeAsync(
+        TimeSpan? timeout = null,
+        IReadOnlySet<EntityChangeType>? changeTypes = null,
+        CancellationToken cancellationToken = default
+    )
     {
         timeout ??= Timeout.InfiniteTimeSpan;
         await TaskTimeout(_changeEvent.WaitAsync, timeout.Value, cancellationToken).ConfigureAwait(false);
