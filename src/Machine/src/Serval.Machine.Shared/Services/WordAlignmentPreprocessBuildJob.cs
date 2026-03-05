@@ -7,7 +7,7 @@ public class WordAlignmentPreprocessBuildJob(
     ILogger<WordAlignmentPreprocessBuildJob> logger,
     IBuildJobService<WordAlignmentEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusPreprocessingService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : PreprocessBuildJob<WordAlignmentEngine>(
@@ -23,7 +23,7 @@ public class WordAlignmentPreprocessBuildJob(
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -55,13 +55,13 @@ public class WordAlignmentPreprocessBuildJob(
         int trainCount = 0;
         int inferenceCount = 0;
         wordAlignmentWriter.WriteStartArray();
-        await ParallelCorpusPreprocessingService.PreprocessAsync(
-            corpora,
+        await ParallelCorpusService.PreprocessAsync(
+            corpusBundle,
             async (row, trainingDataType) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                 {
-                    if (trainingDataType == TrainingDataType.KeyTerms)
+                    if (trainingDataType == TrainingDataType.KeyTerm)
                     {
                         await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
                         await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
@@ -75,12 +75,12 @@ public class WordAlignmentPreprocessBuildJob(
                     trainCount++;
                 }
             },
-            async (row, isInTrainingData, corpus) =>
+            async (row, isInTrainingData, corpusId) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0 && !isInTrainingData)
                 {
                     wordAlignmentWriter.WriteStartObject();
-                    wordAlignmentWriter.WriteString("corpusId", corpus.Id);
+                    wordAlignmentWriter.WriteString("corpusId", corpusId);
                     wordAlignmentWriter.WriteString("textId", row.TextId);
                     wordAlignmentWriter.WriteStartArray("refs");
                     foreach (object rowRef in row.TargetRefs)
@@ -109,7 +109,7 @@ public class WordAlignmentPreprocessBuildJob(
         int wordAlignCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         CancellationToken cancellationToken
     )
     {
@@ -118,7 +118,7 @@ public class WordAlignmentPreprocessBuildJob(
             wordAlignCount,
             sourceLanguageTag,
             targetLanguageTag,
-            corpora
+            corpusBundle
         );
 
         // Log summary of build data
@@ -148,7 +148,7 @@ public class WordAlignmentPreprocessBuildJob(
     protected override Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         CancellationToken cancellationToken
     )
     {

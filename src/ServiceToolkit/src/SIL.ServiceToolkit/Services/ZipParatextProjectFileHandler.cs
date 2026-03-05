@@ -1,6 +1,6 @@
 using SIL.IO;
 
-namespace Serval.Shared.Services;
+namespace SIL.ServiceToolkit.Services;
 
 public class ZipParatextProjectFileHandler(IZipContainer container) : IParatextProjectFileHandler
 {

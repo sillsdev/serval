@@ -57,7 +57,7 @@ public class TextCorpusService : ITextCorpusService
         foreach (string referenceFile in referenceFiles)
         {
             using ZipArchive archive = ZipFile.OpenRead(referenceFile);
-            ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive);
+            ParatextProjectSettings settings = Machine.Corpora.ZipParatextProjectSettingsParser.Parse(archive);
             referenceSettings.Add((referenceFile, settings));
         }
 

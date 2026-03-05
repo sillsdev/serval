@@ -1,0 +1,219 @@
+using ZipParatextProjectTextUpdater = SIL.ServiceToolkit.Services.ZipParatextProjectTextUpdater;
+
+namespace SIL.ServiceToolkit.Utils;
+
+public class CorpusBundle
+{
+    private readonly Dictionary<
+        string,
+        (ParatextProjectSettings DaughterSettings, string ParentLocation, ParatextProjectSettings ParentSettings)
+    > _settings;
+
+    public IEnumerable<(
+        ParallelCorpus ParallelCorpus,
+        MonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<CorpusFile> CorpusFile,
+        IReadOnlyList<ITextCorpus> TextCorpora
+    )> SourceTextCorpora { get; }
+
+    public IEnumerable<(
+        ParallelCorpus ParallelCorpus,
+        MonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<CorpusFile> CorpusFile,
+        IReadOnlyList<ITextCorpus> TextCorpora
+    )> TargetTextCorpora { get; }
+
+    public IEnumerable<(
+        ParallelCorpus ParallelCorpus,
+        MonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<CorpusFile> CorpusFile,
+        IReadOnlyList<ITextCorpus> TextCorpora
+    )> TextCorpora => SourceTextCorpora.Concat(TargetTextCorpora);
+
+    public IEnumerable<(
+        ParallelCorpus ParallelCorpus,
+        MonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<CorpusFile> CorpusFile,
+        IReadOnlyList<ITextCorpus> TextCorpora
+    )> SourceTermCorpora { get; }
+
+    public IEnumerable<(
+        ParallelCorpus ParallelCorpus,
+        MonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<CorpusFile> CorpusFile,
+        IReadOnlyList<ITextCorpus> TextCorpora
+    )> TargetTermCorpora { get; }
+    public IEnumerable<ParallelCorpus> ParallelCorpora { get; }
+
+    public CorpusBundle(IEnumerable<ParallelCorpus> parallelCorpora)
+    {
+        ParallelCorpora = parallelCorpora.ToArray();
+
+        _settings = [];
+        IEnumerable<CorpusFile> corpusFiles = parallelCorpora.SelectMany(corpus =>
+            corpus.SourceCorpora.Concat(corpus.TargetCorpora).SelectMany(c => c.Files)
+        );
+        List<(string Location, ParatextProjectSettings Settings)> paratextProjects = [];
+        foreach (CorpusFile file in corpusFiles.Where(f => f.Format == FileFormat.Paratext))
+        {
+            using IZipContainer archive = new ZipContainer(file.Location);
+            ParatextProjectSettings settings = new Services.ZipParatextProjectSettingsParser(archive).Parse();
+            paratextProjects.Add((file.Location, settings));
+        }
+
+        foreach ((string daughterLocation, ParatextProjectSettings daughterSettings) in paratextProjects)
+        {
+            foreach ((string parentLocation, ParatextProjectSettings parentSettings) in paratextProjects)
+            {
+                if (
+                    daughterSettings == parentSettings
+                    || !daughterSettings.HasParent
+                    || !daughterSettings.IsDaughterProjectOf(parentSettings)
+                )
+                {
+                    continue;
+                }
+                daughterSettings.Parent = parentSettings;
+                _settings[daughterLocation] = (daughterSettings, parentLocation, parentSettings);
+            }
+        }
+
+        SourceTextCorpora = parallelCorpora.SelectMany(parallelCorpus =>
+            parallelCorpus.SourceCorpora.Select(corpus =>
+                (parallelCorpus, corpus, corpus.Files, CreateTextCorpora(corpus.Files))
+            )
+        );
+
+        TargetTextCorpora = parallelCorpora.SelectMany(parallelCorpus =>
+            parallelCorpus.TargetCorpora.Select(corpus =>
+                (parallelCorpus, corpus, corpus.Files, CreateTextCorpora(corpus.Files))
+            )
+        );
+
+        SourceTermCorpora = parallelCorpora.SelectMany(parallelCorpus =>
+            parallelCorpus.TargetCorpora.Select(corpus =>
+                (parallelCorpus, corpus, corpus.Files, CreateTermCorpora(corpus.Files))
+            )
+        );
+
+        TargetTermCorpora = parallelCorpora.SelectMany(parallelCorpus =>
+            parallelCorpus.TargetCorpora.Select(corpus =>
+                (parallelCorpus, corpus, corpus.Files, CreateTermCorpora(corpus.Files))
+            )
+        );
+    }
+
+    public (string Location, ParatextProjectSettings Settings)? ParentOf(string daughterLocation)
+    {
+        if (
+            !_settings.TryGetValue(
+                daughterLocation,
+                out (ParatextProjectSettings _, string Location, ParatextProjectSettings Settings) parent
+            )
+        )
+        {
+            return null;
+        }
+        return (parent.Location, parent.Settings);
+    }
+
+    public ParatextProjectSettings? GetSettings(string location)
+    {
+        if (
+            !_settings.TryGetValue(
+                location,
+                out (
+                    ParatextProjectSettings DaughterSettings,
+                    string ParentLocation,
+                    ParatextProjectSettings ParentSettings
+                ) parent
+            )
+        )
+        {
+            return null;
+        }
+        return parent.DaughterSettings;
+    }
+
+    public ZipParatextProjectTextUpdater GetTextUpdater(string location)
+    {
+        using IZipContainer container = new ZipContainer(location);
+        ParatextProjectSettings? parentSettings = ParentOf(location)?.Settings;
+        return new ZipParatextProjectTextUpdater(container, parentSettings);
+    }
+
+    protected virtual IReadOnlyList<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files)
+    {
+        List<ITextCorpus> corpora = [];
+
+        List<Dictionary<string, IText>> textFileCorpora = [];
+        foreach (CorpusFile file in files)
+        {
+            switch (file.Format)
+            {
+                case FileFormat.Text:
+                    // if there are multiple texts with the same id, then add it to a new corpus or the first
+                    // corpus that doesn't contain a text with that id
+                    Dictionary<string, IText>? corpus = textFileCorpora.FirstOrDefault(c =>
+                        !c.ContainsKey(file.TextId)
+                    );
+                    if (corpus is null)
+                    {
+                        corpus = [];
+                        textFileCorpora.Add(corpus);
+                    }
+                    corpus[file.TextId] = new TextFileText(file.TextId, file.Location);
+                    break;
+
+                case FileFormat.Paratext:
+                    string? parentLocation = null;
+                    if (
+                        _settings.TryGetValue(
+                            file.Location,
+                            out (ParatextProjectSettings _, string Location, ParatextProjectSettings Settings) parent
+                        )
+                    )
+                    {
+                        parentLocation = parent.Location;
+                    }
+                    corpora.Add(
+                        new ParatextBackupTextCorpus(
+                            file.Location,
+                            includeAllText: true,
+                            parentFileName: parentLocation
+                        )
+                    );
+                    break;
+            }
+        }
+        foreach (Dictionary<string, IText> corpus in textFileCorpora)
+            corpora.Add(new DictionaryTextCorpus(corpus.Values));
+
+        return corpora;
+    }
+
+    private IReadOnlyList<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> files)
+    {
+        List<ITextCorpus> corpora = [];
+        foreach (CorpusFile file in files)
+        {
+            switch (file.Format)
+            {
+                case FileFormat.Paratext:
+                    string? parentLocation = null;
+                    if (
+                        _settings.TryGetValue(
+                            file.Location,
+                            out (ParatextProjectSettings _, string Location, ParatextProjectSettings Settings) parent
+                        )
+                    )
+                    {
+                        parentLocation = parent.Location;
+                    }
+                    corpora.Add(new ParatextBackupTermsCorpus(file.Location, ["PN"], parentFileName: parentLocation));
+                    break;
+            }
+        }
+        return corpora;
+    }
+}
