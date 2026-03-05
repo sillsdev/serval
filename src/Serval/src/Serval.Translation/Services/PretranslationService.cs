@@ -311,17 +311,19 @@ public class PretranslationService(
     {
         IReadOnlyList<ScriptureRef> sourceScriptureRefs,
             targetScriptureRefs;
-        if (pretranslation.TargetRefs.Any())
+        if (pretranslation.TargetRefs?.Any() ?? false)
         {
-            sourceScriptureRefs = pretranslation
-                .SourceRefs.Select(r =>
-                {
-                    bool parsed = ScriptureRef.TryParse(r, sourceSettings.Versification, out ScriptureRef sr);
-                    return new { Parsed = parsed, ScriptureRef = sr };
-                })
-                .Where(r => r.Parsed)
-                .Select(r => r.ScriptureRef)
-                .ToArray();
+            sourceScriptureRefs =
+                pretranslation
+                    .SourceRefs?.Select(r =>
+                    {
+                        bool parsed = ScriptureRef.TryParse(r, sourceSettings.Versification, out ScriptureRef sr);
+                        return new { Parsed = parsed, ScriptureRef = sr };
+                    })
+                    .Where(r => r.Parsed)
+                    .Select(r => r.ScriptureRef)
+                    .ToArray()
+                ?? [];
             targetScriptureRefs = pretranslation
                 .TargetRefs.Select(r =>
                 {
@@ -335,7 +337,7 @@ public class PretranslationService(
         else
         {
             sourceScriptureRefs = [];
-            targetScriptureRefs = targetScriptureRefs = pretranslation
+            targetScriptureRefs = pretranslation
                 .Refs.Select(r =>
                 {
                     bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
