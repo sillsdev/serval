@@ -2000,8 +2000,8 @@ public class TranslationEnginesController(
         return new PretranslationDto
         {
             TextId = source.TextId,
-            SourceRefs = source.SourceRefs,
-            TargetRefs = source.TargetRefs,
+            SourceRefs = source.SourceRefs ?? [],
+            TargetRefs = source.TargetRefs ?? [],
             Refs = source.Refs,
             Translation = source.Translation,
         };
