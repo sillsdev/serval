@@ -7,7 +7,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     ILogger<PreprocessBuildJob<TEngine>> logger,
     IBuildJobService<TEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>(
@@ -31,8 +31,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
     protected readonly BuildJobOptions BuildJobOptions = options.CurrentValue;
     protected readonly ISharedFileService SharedFileService = sharedFileService;
-    protected readonly IParallelCorpusPreprocessingService ParallelCorpusPreprocessingService =
-        parallelCorpusPreprocessingService;
+    protected readonly IParallelCorpusService ParallelCorpusService = parallelCorpusService;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -46,9 +45,11 @@ public abstract class PreprocessBuildJob<TEngine>(
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
+        CorpusBundle corpusBundle = new(data);
+
         (int trainCount, int inferenceCount) = await WriteDataFilesAsync(
             buildId,
-            data,
+            corpusBundle,
             buildOptions,
             cancellationToken
         );
@@ -60,11 +61,11 @@ public abstract class PreprocessBuildJob<TEngine>(
             inferenceCount,
             engine.SourceLanguage,
             engine.TargetLanguage,
-            data,
+            corpusBundle,
             cancellationToken
         );
 
-        await UpdateTargetQuoteConventionAsync(engineId, buildId, data, cancellationToken);
+        await UpdateTargetQuoteConventionAsync(engineId, buildId, corpusBundle, cancellationToken);
 
         if (inferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
         {
@@ -95,20 +96,20 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         CancellationToken cancellationToken
     );
 
     protected virtual Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         CancellationToken cancellationToken
     ) => Task.CompletedTask;
 
     protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         string? buildOptions,
         CancellationToken cancellationToken
     );
@@ -116,7 +117,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     protected override async Task CleanupAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> data,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         JobCompletionStatus completionStatus
     )
     {
@@ -138,47 +139,45 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> corpora
+        CorpusBundle corpusBundle
     )
     {
         List<string> warnings = [];
 
-        IReadOnlyList<CorpusFile> referenceFiles = corpora
-            .SelectMany(c =>
-                c.SourceCorpora.SelectMany(sc => sc.Files).Concat(c.TargetCorpora.SelectMany(tc => tc.Files))
-            )
-            .ToArray();
-
-        foreach (ParallelCorpus parallelCorpus in corpora)
+        foreach (
+            (
+                string parallelCorpusId,
+                string monolingualCorpusId,
+                IReadOnlyList<UsfmVersificationError> errors
+            ) in ParallelCorpusService.AnalyzeUsfmVersification(corpusBundle)
+        )
         {
-            IReadOnlyList<(string MonolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors)> errorsPerCorpus =
-                ParallelCorpusPreprocessingService.AnalyzeUsfmVersification(parallelCorpus, referenceFiles);
-
-            foreach ((string monolingualCorpusId, IReadOnlyList<UsfmVersificationError> errors) in errorsPerCorpus)
+            foreach (UsfmVersificationError error in errors)
             {
-                foreach (UsfmVersificationError error in errors)
-                {
-                    warnings.Add(
-                        error.Type switch
-                        {
-                            UsfmVersificationErrorType.InvalidChapterNumber =>
-                                $"Invalid chapter number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})",
-                            UsfmVersificationErrorType.InvalidVerseNumber =>
-                                $"Invalid verse number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})",
-                            _ =>
-                                $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpus.Id}, monolingual corpus {monolingualCorpusId})",
-                        }
-                    );
-                }
+                warnings.Add(
+                    error.Type switch
+                    {
+                        UsfmVersificationErrorType.InvalidChapterNumber =>
+                            $"Invalid chapter number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
+                        UsfmVersificationErrorType.InvalidVerseNumber =>
+                            $"Invalid verse number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
+                        _ =>
+                            $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
+                    }
+                );
             }
         }
 
         foreach (
-            MissingParentProjectError error in ParallelCorpusPreprocessingService.FindMissingParentProjects(corpora)
+            (
+                string parallelCorpusId,
+                string monolingualCorpusId,
+                MissingParentProjectError error
+            ) in ParallelCorpusService.FindMissingParentProjects(corpusBundle)
         )
         {
             warnings.Add(
-                $"Unable to locate parent project {error.ParentProjectName} of daughter project {error.ProjectName} (parallel corpus {error.ParallelCorpusId}, monolingual corpus {error.MonolingualCorpusId})"
+                $"Unable to locate parent project {error.ParentProjectName} of daughter project {error.ProjectName} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})"
             );
         }
 

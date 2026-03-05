@@ -8,14 +8,14 @@ public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    IScriptureDataFileService scriptureDataFileService
+    IOptionsMonitor<DataFileOptions> dataFileOptions
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Build> _builds = builds;
-    private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
     private const string AIDisclaimerRemark =
         "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
+    private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
 
     public async Task<IEnumerable<Pretranslation>> GetAllAsync(
         string engineId,
@@ -58,18 +58,23 @@ public class PretranslationService(
         if (build is null || build.DateFinished is null)
             throw new InvalidOperationException($"Could not find any completed builds for engine '{engineId}'.");
 
-        string[] referenceFiles = engine!
-            .ParallelCorpora.SelectMany(pc =>
-                pc.SourceCorpora.SelectMany(sc =>
-                        sc.Files.Where(f => f.Format == FileFormat.Paratext).Select(f => f.Filename)
-                    )
-                    .Concat(
-                        pc.TargetCorpora.SelectMany(tc =>
-                            tc.Files.Where(f => f.Format == FileFormat.Paratext).Select(f => f.Filename)
-                        )
-                    )
-            )
-            .ToArray();
+        CorpusBundle corpusBundle;
+        if (build.TrainOn == null || build.Pretranslate == null)
+        {
+            corpusBundle = new CorpusBundle(engine!.ParallelCorpora.Select(Map));
+        }
+        else
+        {
+            HashSet<string> referencedParallelCorpora = build
+                .TrainOn.Select(t => t.ParallelCorpusRef)
+                .Concat(build.Pretranslate.Select(p => p.ParallelCorpusRef))
+                .Where(r => r != null)
+                .Select(r => r!)
+                .ToHashSet();
+            corpusBundle = new CorpusBundle(
+                engine!.ParallelCorpora.Where(pc => referencedParallelCorpora.Contains(pc.Id)).Select(Map)
+            );
+        }
 
         string disclaimerRemark = string.Format(
             CultureInfo.InvariantCulture,
@@ -128,14 +133,8 @@ public class PretranslationService(
         if (sourceFile.Format is not FileFormat.Paratext || targetFile.Format is not FileFormat.Paratext)
             throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
 
-        ParatextProjectSettings sourceSettings = _scriptureDataFileService.GetParatextProjectSettings(
-            sourceFile.Filename,
-            referenceFiles
-        );
-        ParatextProjectSettings targetSettings = _scriptureDataFileService.GetParatextProjectSettings(
-            targetFile.Filename,
-            referenceFiles
-        );
+        ParatextProjectSettings sourceSettings = corpusBundle.GetSettings(sourceFile.Filename)!;
+        ParatextProjectSettings targetSettings = corpusBundle.GetSettings(targetFile.Filename)!;
 
         IEnumerable<Pretranslation> pretranslations = await GetAllAsync(
             engineId,
@@ -181,8 +180,9 @@ public class PretranslationService(
                     p.StyleBehavior
                 )
             );
-            using Shared.Services.ZipParatextProjectTextUpdater updater =
-                _scriptureDataFileService.GetZipParatextProjectTextUpdater(targetFile.Filename, referenceFiles);
+            using SIL.ServiceToolkit.Services.ZipParatextProjectTextUpdater updater = corpusBundle.GetTextUpdater(
+                targetFile.Filename
+            );
             switch (textOrigin)
             {
                 case PretranslationUsfmTextOrigin.PreferExisting:
@@ -257,8 +257,9 @@ public class PretranslationService(
             && (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
         )
         {
-            using Shared.Services.ZipParatextProjectTextUpdater updater =
-                _scriptureDataFileService.GetZipParatextProjectTextUpdater(sourceFile.Filename, referenceFiles);
+            using SIL.ServiceToolkit.Services.ZipParatextProjectTextUpdater updater = corpusBundle.GetTextUpdater(
+                sourceFile.Filename
+            );
 
             // Copy and update the source book if it exists
             switch (textOrigin)
@@ -579,5 +580,40 @@ public class PretranslationService(
                 }
                 : null
         );
+    }
+
+    private SIL.ServiceToolkit.Models.ParallelCorpus Map(ParallelCorpus source)
+    {
+        return new SIL.ServiceToolkit.Models.ParallelCorpus
+        {
+            Id = source.Id,
+            SourceCorpora = source.SourceCorpora.Select(Map).ToArray(),
+            TargetCorpora = source.TargetCorpora.Select(Map).ToArray(),
+        };
+    }
+
+    private SIL.ServiceToolkit.Models.MonolingualCorpus Map(MonolingualCorpus source)
+    {
+        return new SIL.ServiceToolkit.Models.MonolingualCorpus
+        {
+            Id = source.Id,
+            Language = source.Language,
+            Files = source.Files.Select(Map).ToList(),
+        };
+    }
+
+    private SIL.ServiceToolkit.Models.CorpusFile Map(CorpusFile source)
+    {
+        return new SIL.ServiceToolkit.Models.CorpusFile
+        {
+            Location = GetFilePath(source.Filename),
+            Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
+            TextId = source.TextId,
+        };
+    }
+
+    private string GetFilePath(string filename)
+    {
+        return Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, filename);
     }
 }

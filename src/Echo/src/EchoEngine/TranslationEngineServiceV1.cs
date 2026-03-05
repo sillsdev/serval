@@ -4,7 +4,7 @@ namespace EchoEngine;
 
 public class TranslationEngineServiceV1(
     BackgroundTaskQueue taskQueue,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusPreprocessingService,
     TranslationPlatformApi.TranslationPlatformApiClient platformApiClient
 ) : TranslationEngineApi.TranslationEngineApiBase
 {
@@ -12,8 +12,7 @@ public class TranslationEngineServiceV1(
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
     private readonly TranslationPlatformApi.TranslationPlatformApiClient _platformApiClient = platformApiClient;
 
-    private readonly IParallelCorpusPreprocessingService _parallelCorpusPreprocessingService =
-        parallelCorpusPreprocessingService;
+    private readonly IParallelCorpusService _parallelCorpusPreprocessingService = parallelCorpusPreprocessingService;
 
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
@@ -126,21 +125,21 @@ public class TranslationEngineServiceV1(
 
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
-                        request.Corpora.Select(Map).ToList(),
+                        new SIL.ServiceToolkit.Utils.CorpusBundle(request.Corpora.Select(Map)),
                         (row, _) =>
                         {
                             if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                                 trainCount++;
                             return Task.CompletedTask;
                         },
-                        (row, isInTrainingData, corpus) =>
+                        (row, isInTrainingData, corpusId) =>
                         {
                             string[] tokens = row.SourceSegment.Split();
                             pretranslationsRequests.Add(
                                 new InsertPretranslationsRequest
                                 {
                                     EngineId = request.EngineId,
-                                    CorpusId = corpus.Id,
+                                    CorpusId = corpusId,
                                     TextId = row.TextId,
                                     SourceRefs = { row.SourceRefs.Select(r => r.ToString()) },
                                     TargetRefs = { row.TargetRefs.Select(r => r.ToString()) },

@@ -330,7 +330,7 @@ public class NmtEngineServiceTests
                         _env.BuildJobService,
                         _env.SharedFileService,
                         new LanguageTagService(),
-                        new ParallelCorpusPreprocessingService(new TextCorpusService()),
+                        new ParallelCorpusService(),
                         _env.BuildJobOptions
                     );
                 }
