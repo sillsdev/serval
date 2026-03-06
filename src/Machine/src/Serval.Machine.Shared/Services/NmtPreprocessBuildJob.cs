@@ -8,7 +8,7 @@ public class NmtPreprocessBuildJob(
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     ILanguageTagService languageTagService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusPreprocessingService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
@@ -33,22 +33,12 @@ public class NmtPreprocessBuildJob(
     protected override async Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         CancellationToken cancellationToken
     )
     {
-        List<QuoteConventionAnalysis> quoteConventionAnalyses = [];
-        foreach (ParallelCorpus parallelCorpus in corpora)
-        {
-            QuoteConventionAnalysis? targetQuotationConventionAnalysis =
-                ParallelCorpusPreprocessingService.AnalyzeTargetCorpusQuoteConvention(parallelCorpus);
-            if (targetQuotationConventionAnalysis != null)
-                quoteConventionAnalyses.Add(targetQuotationConventionAnalysis);
-        }
-
         string overallTargetQuoteConventionAnalysis =
-            QuoteConventionAnalysis.CombineWithWeightedAverage(quoteConventionAnalyses)?.BestQuoteConvention?.Name
-            ?? string.Empty;
+            ParallelCorpusService.AnalyzeTargetQuoteConvention(corpusBundle)?.BestQuoteConvention?.Name ?? string.Empty;
 
         await PlatformService.UpdateTargetQuoteConventionAsync(
             engineId,
@@ -65,7 +55,7 @@ public class NmtPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         CancellationToken cancellationToken
     )
     {
@@ -84,7 +74,7 @@ public class NmtPreprocessBuildJob(
             pretranslateCount,
             sourceLanguageTag,
             targetLanguageTag,
-            corpora
+            corpusBundle
         );
 
         int maxWarnings = BuildJobOptions.MaxWarnings;
@@ -128,12 +118,12 @@ public class NmtPreprocessBuildJob(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> corpora
+        CorpusBundle corpusBundle
     )
     {
         List<string> warnings =
         [
-            .. base.GetWarnings(trainCount, inferenceCount, sourceLanguageTag, targetLanguageTag, corpora),
+            .. base.GetWarnings(trainCount, inferenceCount, sourceLanguageTag, targetLanguageTag, corpusBundle),
         ];
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere

@@ -7,7 +7,7 @@ public class TranslationPreprocessBuildJob(
     ILogger<PreprocessBuildJob<TranslationEngine>> logger,
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusPreprocessingService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : PreprocessBuildJob<TranslationEngine>(
@@ -23,7 +23,7 @@ public class TranslationPreprocessBuildJob(
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -55,13 +55,13 @@ public class TranslationPreprocessBuildJob(
         int trainCount = 0;
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
-        await ParallelCorpusPreprocessingService.PreprocessAsync(
-            corpora,
+        await ParallelCorpusService.PreprocessAsync(
+            corpusBundle,
             async (row, trainingDataType) =>
             {
                 if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
                 {
-                    if (trainingDataType == TrainingDataType.KeyTerms)
+                    if (trainingDataType == TrainingDataType.KeyTerm)
                     {
                         await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
                         await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
@@ -75,12 +75,12 @@ public class TranslationPreprocessBuildJob(
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                     trainCount++;
             },
-            async (row, isInTrainingData, corpus) =>
+            async (row, isInTrainingData, corpusId) =>
             {
                 if (row.SourceSegment.Length > 0 && !isInTrainingData)
                 {
                     pretranslateWriter.WriteStartObject();
-                    pretranslateWriter.WriteString("corpusId", corpus.Id);
+                    pretranslateWriter.WriteString("corpusId", corpusId);
                     pretranslateWriter.WriteString("textId", row.TextId);
                     pretranslateWriter.WriteStartArray("refs");
                     foreach (object rowRef in row.TargetRefs)
@@ -109,7 +109,7 @@ public class TranslationPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         CancellationToken cancellationToken
     )
     {
@@ -118,7 +118,7 @@ public class TranslationPreprocessBuildJob(
             pretranslateCount,
             sourceLanguageTag,
             targetLanguageTag,
-            corpora
+            corpusBundle
         );
 
         // Log summary of build data

@@ -2,80 +2,65 @@ using SIL.Scripture;
 
 namespace SIL.ServiceToolkit.Services;
 
-public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusService)
-    : IParallelCorpusPreprocessingService
+public class ParallelCorpusService : IParallelCorpusService
 {
-    private readonly ITextCorpusService _textCorpusService = textCorpusService;
     private const int Seed = 1234;
 
-    public IReadOnlyList<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> AnalyzeUsfmVersification(
-        ParallelCorpus parallelCorpus
-    )
+    public IReadOnlyList<(
+        string ParallelCorpusId,
+        string MonolingualCorpusId,
+        IReadOnlyList<UsfmVersificationError> Errors
+    )> AnalyzeUsfmVersification(CorpusBundle corpusBundle)
     {
-        List<(string CorpusId, IReadOnlyList<UsfmVersificationError> Errors)> errorsPerCorpus = [];
+        List<(
+            string ParallelCorpusId,
+            string MonolingualCorpusId,
+            IReadOnlyList<UsfmVersificationError> Errors
+        )> errorsPerCorpus = [];
         foreach (
-            (CorpusFile file, MonolingualCorpus monolingualCorpus, bool isSource) in parallelCorpus
-                .SourceCorpora.SelectMany(c =>
-                    c.Files.Where(f => f.Format == FileFormat.Paratext).Select(f => (f, c, true))
-                )
-                .Concat(
-                    parallelCorpus.TargetCorpora.SelectMany(c =>
-                        c.Files.Where(f => f.Format == FileFormat.Paratext).Select(f => (f, c, false))
-                    )
-                )
-                .DistinctBy(tuple => tuple.f.Location)
+            (
+                ParallelCorpus parallelCorpus,
+                MonolingualCorpus monolingualCorpus,
+                IReadOnlyList<CorpusFile> files,
+                _
+            ) in corpusBundle.TextCorpora
         )
         {
-            using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
-            IReadOnlyList<UsfmVersificationError> errors = new ZipParatextProjectVersificationErrorDetector(
-                zipArchive
-            ).GetUsfmVersificationErrors(books: GetBooks(monolingualCorpus, isSource));
-            if (errors.Count > 0)
+            foreach (CorpusFile file in files.Where(f => f.Format == FileFormat.Paratext))
             {
-                errorsPerCorpus.Add((monolingualCorpus.Id, errors));
+                using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
+                IReadOnlyList<UsfmVersificationError> errors = new ZipParatextProjectVersificationErrorDetector(
+                    zipArchive,
+                    corpusBundle.ParentOf(file.Location)?.Settings
+                ).GetUsfmVersificationErrors(books: GetBooks(monolingualCorpus));
+                if (errors.Count > 0)
+                {
+                    errorsPerCorpus.Add((parallelCorpus.Id, monolingualCorpus.Id, errors));
+                }
             }
         }
         return errorsPerCorpus;
     }
 
-    private static HashSet<int>? GetBooks(MonolingualCorpus corpus, bool isSource)
+    public QuoteConventionAnalysis AnalyzeTargetQuoteConvention(CorpusBundle corpusBundle)
     {
-        if (!corpus.IsFiltered)
-            return null;
-
-        List<string> books = [];
-        if (corpus.TrainOnTextIds != null)
+        Dictionary<string, List<QuoteConventionAnalysis>> analyses = [];
+        foreach (
+            (
+                ParallelCorpus parallelCorpus,
+                MonolingualCorpus targetMonolingualCorpus,
+                IReadOnlyList<CorpusFile> corpusFiles,
+                _
+            ) in corpusBundle.TargetTextCorpora
+        )
         {
-            books.AddRange(corpus.TrainOnTextIds);
-        }
-        else if (corpus.TrainOnChapters != null)
-        {
-            books.AddRange(corpus.TrainOnChapters.Keys);
-        }
-
-        if (isSource)
-        {
-            if (corpus.InferenceTextIds != null)
-            {
-                books.AddRange(corpus.InferenceTextIds);
-            }
-            else if (corpus.InferenceChapters != null)
-            {
-                books.AddRange(corpus.InferenceChapters.Keys);
-            }
-        }
-        return [.. books.Select(bookName => Canon.BookIdToNumber(bookName))];
-    }
-
-    public QuoteConventionAnalysis? AnalyzeTargetCorpusQuoteConvention(ParallelCorpus parallelCorpus)
-    {
-        List<QuoteConventionAnalysis> analyses = [];
-        foreach (MonolingualCorpus targetMonolingualCorpus in parallelCorpus.TargetCorpora)
-        {
-            foreach (CorpusFile file in targetMonolingualCorpus.Files.Where(f => f.Format == FileFormat.Paratext))
+            foreach (CorpusFile file in corpusFiles.Where(f => f.Format == FileFormat.Paratext))
             {
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
-                var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
+                var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(
+                    zipArchive,
+                    corpusBundle.ParentOf(file.Location)?.Settings
+                );
                 Dictionary<int, List<int>>? chapters = null;
                 if (targetMonolingualCorpus.TrainOnTextIds is not null)
                 {
@@ -91,20 +76,60 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
                         kvp => kvp.Value.ToList()
                     );
                 }
+                if (!analyses.ContainsKey(parallelCorpus.Id))
+                    analyses[parallelCorpus.Id] = [];
                 if (chapters != null)
-                    analyses.Add(quoteConventionDetector.GetQuoteConventionAnalysis(chapters));
+                    analyses[parallelCorpus.Id].Add(quoteConventionDetector.GetQuoteConventionAnalysis(chapters));
                 else
-                    analyses.Add(quoteConventionDetector.GetQuoteConventionAnalysis());
+                    analyses[parallelCorpus.Id].Add(quoteConventionDetector.GetQuoteConventionAnalysis());
             }
         }
 
-        return QuoteConventionAnalysis.CombineWithWeightedAverage(analyses);
+        return QuoteConventionAnalysis.CombineWithWeightedAverage(
+            analyses.Select(kvp => QuoteConventionAnalysis.CombineWithWeightedAverage(kvp.Value)).ToList()
+        );
+    }
+
+    public IReadOnlyList<(
+        string ParallelCorpusId,
+        string MonolingualCorpusId,
+        MissingParentProjectError
+    )> FindMissingParentProjects(CorpusBundle corpusBundle)
+    {
+        List<(string, string, MissingParentProjectError)> errors = [];
+        foreach (
+            (
+                ParallelCorpus parallelCorpus,
+                MonolingualCorpus monolingualCorpus,
+                IReadOnlyList<CorpusFile> files,
+                _
+            ) in corpusBundle.TextCorpora
+        )
+        {
+            foreach (CorpusFile file in files.Where(f => f.Format == FileFormat.Paratext))
+            {
+                using ZipArchive archive = ZipFile.OpenRead(file.Location);
+                ParatextProjectSettings settings = Machine.Corpora.ZipParatextProjectSettingsParser.Parse(archive);
+                if (settings.HasParent && corpusBundle.ParentOf(file.Location) == null)
+                {
+                    errors.Add(
+                        (
+                            parallelCorpus.Id,
+                            monolingualCorpus.Id,
+                            new() { ProjectName = settings.Name, ParentProjectName = settings.ParentName }
+                        )
+                    );
+                }
+            }
+        }
+
+        return errors;
     }
 
     public async Task PreprocessAsync(
-        IReadOnlyList<ParallelCorpus> corpora,
+        CorpusBundle corpusBundle,
         Func<Row, TrainingDataType, Task> train,
-        Func<Row, bool, ParallelCorpus, Task> inference,
+        Func<Row, bool, string, Task> inference,
         bool useKeyTerms = false,
         HashSet<string>? ignoreUsfmMarkers = null
     )
@@ -114,43 +139,18 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         bool parallelTrainingDataPresent = false;
         List<Row> keyTermTrainingData = new();
 
-        // Create source and target dictionaries that map from a parallel corpus id
-        // to an array of all of that parallel corpus' monolingual corpora and associated text corpora
-        Dictionary<string, (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[]> sourceCorpora = corpora
-            .Select(corpus =>
-                (
-                    CorpusId: corpus.Id,
-                    Corpora: corpus
-                        .SourceCorpora.SelectMany(c =>
-                            _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
-                        )
-                        .ToArray()
-                )
+        // Create source and target arrays of text corpora filtered for training
+        // based on the filters specified in the associated monolingual corpora
+        ITextCorpus[] sourceTrainingCorpora = corpusBundle
+            .SourceTextCorpora.SelectMany(c =>
+                c.TextCorpora.Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
             )
-            .ToDictionary(tup => tup.CorpusId, tup => tup.Corpora);
-
-        Dictionary<string, (MonolingualCorpus Corpus, ITextCorpus TextCorpus)[]> targetCorpora = corpora
-            .Select(corpus =>
-                (
-                    CorpusId: corpus.Id,
-                    Corpora: corpus
-                        .TargetCorpora.SelectMany(c =>
-                            _textCorpusService.CreateTextCorpora(c.Files).Select(tc => (c, tc))
-                        )
-                        .ToArray()
-                )
-            )
-            .ToDictionary(tup => tup.CorpusId, tup => tup.Corpora);
-
-        // Filter the text corpora for training based on the filters specified in the monolingual corpora
-        ITextCorpus[] sourceTrainingCorpora = sourceCorpora
-            .Values.SelectMany(sc => sc)
-            .Select(sc => FilterTrainingCorpora(sc.Corpus, sc.TextCorpus))
             .ToArray();
 
-        ITextCorpus[] targetTrainingCorpora = targetCorpora
-            .Values.SelectMany(tc => tc)
-            .Select(tc => FilterTrainingCorpora(tc.Corpus, tc.TextCorpus))
+        ITextCorpus[] targetTrainingCorpora = corpusBundle
+            .TargetTextCorpora.SelectMany(c =>
+                c.TextCorpora.Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
+            )
             .ToArray();
 
         // To support mixed source, collapse multiple source text corpora into one text corpus
@@ -190,48 +190,45 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         if (useKeyTerms)
         {
             // Create a terms corpus for each corpus file
-            ITextCorpus[]? sourceTermCorpora = _textCorpusService
-                .CreateTermCorpora(
-                    sourceCorpora.Values.SelectMany(sc => sc).SelectMany(corpus => corpus.Corpus.Files).ToArray()
-                )
-                .ToArray();
-            ITextCorpus[]? targetTermCorpora = _textCorpusService
-                .CreateTermCorpora(
-                    targetCorpora.Values.SelectMany(tc => tc).SelectMany(corpus => corpus.Corpus.Files).ToArray()
-                )
-                .ToArray();
+            ITextCorpus[] sourceTermCorpora = corpusBundle.SourceTermCorpora.SelectMany(c => c.TextCorpora).ToArray();
+            ITextCorpus[] targetTermCorpora = corpusBundle.TargetTermCorpora.SelectMany(c => c.TextCorpora).ToArray();
 
-            if (sourceTermCorpora is not null && targetTermCorpora is not null)
+            // As with scripture data, interlace the source rows randomly
+            // but choose the first non-empty target row, then align
+            IParallelTextCorpus parallelKeyTermCorpus = sourceTermCorpora
+                .ChooseRandom(Seed)
+                .AlignRows(targetTermCorpora.ChooseFirst());
+
+            // Only train on unique key terms pairs
+            foreach (ParallelTextRow row in parallelKeyTermCorpus.DistinctBy(row => (row.SourceText, row.TargetText)))
             {
-                // As with scripture data, interlace the source rows randomly
-                // but choose the first non-empty target row, then align
-                IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpora
-                    .ChooseRandom(Seed)
-                    .AlignRows(targetTermCorpora.ChooseFirst());
-
-                // Only train on unique key terms pairs
-                foreach (
-                    ParallelTextRow row in parallelKeyTermsCorpus.DistinctBy(row => (row.SourceText, row.TargetText))
-                )
-                {
-                    keyTermTrainingData.Add(
-                        new Row(row.TextId, row.SourceRefs, row.TargetRefs, row.SourceText, row.TargetText, 1)
-                    );
-                }
+                keyTermTrainingData.Add(
+                    new Row(row.TextId, row.SourceRefs, row.TargetRefs, row.SourceText, row.TargetText, 1)
+                );
             }
         }
 
         // Since we ultimately need to provide inferences for a particular parallel corpus,
         // we need to preprocess the content on which to inference per parallel corpus
-        foreach (ParallelCorpus corpus in corpora)
+        foreach (ParallelCorpus parallelCorpus in corpusBundle.ParallelCorpora)
         {
             // Filter the text corpora based on the filters specified in the monolingual corpora
-            ITextCorpus sourceInferencingCorpus = sourceCorpora[corpus.Id]
-                .Select(sc => FilterInferencingCorpora(sc.Corpus, sc.TextCorpus, ignoreUsfmMarkers))
+            ITextCorpus sourceInferencingCorpus = corpusBundle
+                .SourceTextCorpora.Where(c => c.ParallelCorpus.Id == parallelCorpus.Id)
+                .SelectMany(sc =>
+                    sc.TextCorpora.Select(textCorpus =>
+                        FilterInferencingCorpora(sc.MonolingualCorpus, textCorpus, ignoreUsfmMarkers)
+                    )
+                )
                 .ChooseFirst();
 
-            ITextCorpus targetInferencingCorpus = targetCorpora[corpus.Id]
-                .Select(tc => FilterInferencingCorpora(tc.Corpus, tc.TextCorpus, ignoreUsfmMarkers))
+            ITextCorpus targetInferencingCorpus = corpusBundle
+                .TargetTextCorpora.Where(c => c.ParallelCorpus.Id == parallelCorpus.Id)
+                .SelectMany(tc =>
+                    tc.TextCorpora.Select(textCorpus =>
+                        FilterInferencingCorpora(tc.MonolingualCorpus, textCorpus, ignoreUsfmMarkers)
+                    )
+                )
                 .ChooseFirst();
 
             // We need to align all three of these corpora because we need both the source and target
@@ -247,7 +244,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
 
             foreach ((Row row, bool isInTrainingData) in CollapseInferencingRanges(inferencingCorpus.ToArray()))
             {
-                await inference(row, isInTrainingData, corpus);
+                await inference(row, isInTrainingData, parallelCorpus.Id);
             }
         }
 
@@ -258,7 +255,7 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         {
             foreach (Row row in keyTermTrainingData)
             {
-                await train(row, TrainingDataType.KeyTerms);
+                await train(row, TrainingDataType.KeyTerm);
             }
         }
     }
@@ -466,5 +463,34 @@ public class ParallelCorpusPreprocessingService(ITextCorpusService textCorpusSer
         if (row.Text == "...")
             row.Segment = [];
         return row;
+    }
+
+    private static HashSet<int>? GetBooks(MonolingualCorpus corpus)
+    {
+        if (!corpus.IsFiltered)
+            return null;
+
+        List<string> books = [];
+        if (corpus.TrainOnTextIds != null)
+        {
+            books.AddRange(corpus.TrainOnTextIds);
+        }
+        else if (corpus.TrainOnChapters != null)
+        {
+            books.AddRange(corpus.TrainOnChapters.Keys);
+        }
+
+        // if (isSource)
+        // {
+        if (corpus.InferenceTextIds != null)
+        {
+            books.AddRange(corpus.InferenceTextIds);
+        }
+        else if (corpus.InferenceChapters != null)
+        {
+            books.AddRange(corpus.InferenceChapters.Keys);
+        }
+        // }
+        return [.. books.Select(bookName => Canon.BookIdToNumber(bookName))];
     }
 }

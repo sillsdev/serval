@@ -711,7 +711,7 @@ public class SmtTransferEngineServiceTests
                         _env.SharedFileService,
                         _env._lockFactory,
                         _env.TrainSegmentPairs,
-                        new ParallelCorpusPreprocessingService(new TextCorpusService()),
+                        new ParallelCorpusService(),
                         _env.BuildJobOptions
                     )
                     {

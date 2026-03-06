@@ -657,11 +657,11 @@ public class PretranslationServiceTests
                 {
                     "SRC" => new Shared.Services.ZipParatextProjectTextUpdater(
                         zipSubstituteSource,
-                        CreateProjectSettings("SRC")
+                        settings: CreateProjectSettings("SRC")
                     ),
                     "TRG" => new Shared.Services.ZipParatextProjectTextUpdater(
                         zipSubstituteTarget,
-                        CreateProjectSettings("TRG")
+                        settings: CreateProjectSettings("TRG")
                     ),
                     _ => throw new ArgumentException(),
                 };
@@ -728,6 +728,7 @@ public class PretranslationServiceTests
         private static ParatextProjectSettings CreateProjectSettings(string name)
         {
             return new ParatextProjectSettings(
+                guid: "Id",
                 name: name,
                 fullName: name,
                 encoding: Encoding.UTF8,
@@ -739,7 +740,8 @@ public class PretranslationServiceTests
                 biblicalTermsListType: "Major",
                 biblicalTermsProjectName: "",
                 biblicalTermsFileName: "BiblicalTerms.xml",
-                languageCode: "en"
+                languageCode: "en",
+                translationType: "Standard"
             );
         }
 
