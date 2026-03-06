@@ -728,5 +728,7 @@ public class PretranslationServiceTests
             Assert.That(parallel_usfm, Is.EqualTo(usfm));
             return usfm;
         }
+                guid: "",
+                translationType: ""
     }
 }

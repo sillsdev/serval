@@ -1,7 +1,8 @@
-﻿using MongoDB.Bson;
+﻿using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Serval.Translation.Configuration;
 
 public static class IMongoDataAccessConfiguratorExtensions
 {

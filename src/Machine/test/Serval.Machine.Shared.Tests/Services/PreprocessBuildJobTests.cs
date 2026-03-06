@@ -1,3 +1,5 @@
+using Serval.Shared.Models;
+
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
@@ -8,7 +10,7 @@ public class PreprocessBuildJobTests
     {
         using TestEnvironment env = new();
         env.PersistModel();
-        ParallelCorpus corpus1 = env.DefaultTextFileCorpus with { };
+        FilteredParallelCorpus corpus1 = env.DefaultTextFileCorpus with { };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -27,7 +29,7 @@ public class PreprocessBuildJobTests
     {
         using TestEnvironment env = new();
         env.PersistModel();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: []);
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: []);
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -46,7 +48,10 @@ public class PreprocessBuildJobTests
     {
         using TestEnvironment env = new();
         env.PersistModel();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: ["textId1"], inferenceTextIds: []);
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(
+            trainOnTextIds: ["textId1"],
+            inferenceTextIds: []
+        );
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -64,7 +69,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_NothingToInference()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: []);
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: []);
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
@@ -76,7 +81,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_TrainAndPretranslateAll()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: null);
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: null);
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -87,7 +92,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_PretranslateAll()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: [], inferenceTextIds: null);
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: [], inferenceTextIds: null);
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -98,7 +103,10 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_InferenceTextIds()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(inferenceTextIds: ["textId1"], trainOnTextIds: null);
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(
+            inferenceTextIds: ["textId1"],
+            trainOnTextIds: null
+        );
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -109,7 +117,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_InferenceTextIdsOverlapWithTrainOnTextIds()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(
             inferenceTextIds: ["textId1"],
             trainOnTextIds: ["textId1"]
         );
@@ -126,7 +134,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_BuildWarnings()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.DefaultParatextCorpus;
+        FilteredParallelCorpus corpus1 = env.DefaultParatextCorpus;
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: true);
         Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(8));
@@ -141,7 +149,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_EnableKeyTerms()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.DefaultParatextCorpus;
+        FilteredParallelCorpus corpus1 = env.DefaultParatextCorpus;
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: true);
 
@@ -159,7 +167,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_EnableKeyTermsNoTrainingData()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.DefaultParatextCorpus;
+        FilteredParallelCorpus corpus1 = env.DefaultParatextCorpus;
         corpus1.SourceCorpora[0].TrainOnTextIds = [];
         corpus1.TargetCorpora[0].TrainOnTextIds = [];
 
@@ -179,7 +187,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_DisableKeyTerms()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.DefaultParatextCorpus;
+        FilteredParallelCorpus corpus1 = env.DefaultParatextCorpus;
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: false);
 
@@ -197,7 +205,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_InferenceChapters()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.ParatextCorpus(
+        FilteredParallelCorpus corpus1 = env.ParatextCorpus(
             trainOnChapters: [],
             inferenceChapters: new Dictionary<string, HashSet<int>> { { "1CH", [12] } }
         );
@@ -215,7 +223,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_DoNotPretranslateRemark()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.DefaultParatextCorpus;
+        FilteredParallelCorpus corpus1 = env.DefaultParatextCorpus;
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -231,7 +239,7 @@ public class PreprocessBuildJobTests
     {
         using TestEnvironment env = new();
         env.PersistModel();
-        ParallelCorpus corpus1 = env.ParatextCorpus(
+        FilteredParallelCorpus corpus1 = env.ParatextCorpus(
             trainOnChapters: new Dictionary<string, HashSet<int>> { { "MAT", [1] } },
             inferenceChapters: []
         );
@@ -252,7 +260,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_MixedSource_Paratext()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.DefaultMixedSourceParatextCorpus;
+        FilteredParallelCorpus corpus1 = env.DefaultMixedSourceParatextCorpus;
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: false);
 
@@ -271,7 +279,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_MixedSource_Text()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.DefaultMixedSourceTextFileCorpus;
+        FilteredParallelCorpus corpus1 = env.DefaultMixedSourceTextFileCorpus;
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -290,7 +298,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_UnknownLanguageTagsNoData()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
@@ -302,7 +310,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_UnknownLanguageTagsNoDataSmtTransfer()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
+        FilteredParallelCorpus corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
 
         await env.RunBuildJobAsync(corpus1, engineId: "engine3", engineType: EngineType.SmtTransfer);
     }
@@ -311,7 +319,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_RemoveFreestandingEllipses()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus1 = env.ParatextCorpus(
+        FilteredParallelCorpus corpus1 = env.ParatextCorpus(
             trainOnChapters: new Dictionary<string, HashSet<int>> { { "MAT", [2] } },
             inferenceChapters: new Dictionary<string, HashSet<int>> { { "MAT", [2] } }
         );
@@ -342,7 +350,7 @@ public class PreprocessBuildJobTests
     {
         using TestEnvironment env = new();
         env.PersistModel(); // MRK does not contain verse data, so there is no inferencing
-        ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MRK"]);
+        FilteredParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MRK"]);
         var parallelCorpusService = new ParallelCorpusService();
         env.ParallelCorpusService = Substitute.For<IParallelCorpusService>();
         env.ParallelCorpusService.When(s =>
@@ -381,7 +389,7 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_OnlyParseSelectedBooks_TrainOnBadBook()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["MAT"], inferenceTextIds: ["MRK"]);
+        FilteredParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["MAT"], inferenceTextIds: ["MRK"]);
         var parallelCorpusService = new ParallelCorpusService();
         env.ParallelCorpusService = Substitute.For<IParallelCorpusService>();
         ArgumentException? ex = null;
@@ -425,7 +433,7 @@ public class PreprocessBuildJobTests
     public void RunAsync_OnlyParseSelectedBooks_PretranslateOnBadBook()
     {
         using TestEnvironment env = new();
-        ParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MAT"]);
+        FilteredParallelCorpus corpus = env.ParatextCorpus(trainOnTextIds: ["LEV"], inferenceTextIds: ["MAT"]);
         var parallelCorpusService = new ParallelCorpusService();
         env.ParallelCorpusService = Substitute.For<IParallelCorpusService>();
         ArgumentException? ex = null;
@@ -469,9 +477,9 @@ public class PreprocessBuildJobTests
     public async Task ParallelCorpusAsync()
     {
         using TestEnvironment env = new();
-        List<ParallelCorpus> corpora =
+        List<FilteredParallelCorpus> corpora =
         [
-            new ParallelCorpus()
+            new FilteredParallelCorpus()
             {
                 Id = "1",
                 SourceCorpora =
@@ -594,10 +602,10 @@ Target one, chapter one, verse nine and ten.
         public IClearMLService ClearMLService { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
-        public ParallelCorpus DefaultTextFileCorpus { get; }
-        public ParallelCorpus DefaultMixedSourceTextFileCorpus { get; }
-        public ParallelCorpus DefaultParatextCorpus { get; }
-        public ParallelCorpus DefaultMixedSourceParatextCorpus { get; }
+        public FilteredParallelCorpus DefaultTextFileCorpus { get; }
+        public FilteredParallelCorpus DefaultMixedSourceTextFileCorpus { get; }
+        public FilteredParallelCorpus DefaultParatextCorpus { get; }
+        public FilteredParallelCorpus DefaultMixedSourceParatextCorpus { get; }
 
         public BuildExecutionData ExecutionData { get; private set; } = new BuildExecutionData();
 
@@ -912,7 +920,10 @@ Target one, chapter one, verse nine and ten.
             }
         }
 
-        public static ParallelCorpus TextFileCorpus(HashSet<string>? trainOnTextIds, HashSet<string>? inferenceTextIds)
+        public static FilteredParallelCorpus TextFileCorpus(
+            HashSet<string>? trainOnTextIds,
+            HashSet<string>? inferenceTextIds
+        )
         {
             return new()
             {
@@ -941,7 +952,7 @@ Target one, chapter one, verse nine and ten.
             };
         }
 
-        public static ParallelCorpus TextFileCorpus(string sourceLanguage, string targetLanguage)
+        public static FilteredParallelCorpus TextFileCorpus(string sourceLanguage, string targetLanguage)
         {
             return new()
             {
@@ -970,7 +981,7 @@ Target one, chapter one, verse nine and ten.
             };
         }
 
-        public ParallelCorpus ParatextCorpus(
+        public FilteredParallelCorpus ParatextCorpus(
             Dictionary<string, HashSet<int>>? trainOnChapters,
             Dictionary<string, HashSet<int>>? inferenceChapters
         )
@@ -1002,7 +1013,7 @@ Target one, chapter one, verse nine and ten.
             };
         }
 
-        public ParallelCorpus ParatextCorpus(HashSet<string>? trainOnTextIds, HashSet<string>? inferenceTextIds)
+        public FilteredParallelCorpus ParatextCorpus(HashSet<string>? trainOnTextIds, HashSet<string>? inferenceTextIds)
         {
             return new()
             {
@@ -1032,7 +1043,7 @@ Target one, chapter one, verse nine and ten.
         }
 
         public Task RunBuildJobAsync(
-            ParallelCorpus corpus,
+            FilteredParallelCorpus corpus,
             bool useKeyTerms = true,
             string engineId = "engine1",
             EngineType engineType = EngineType.Nmt
@@ -1042,7 +1053,7 @@ Target one, chapter one, verse nine and ten.
         }
 
         public Task RunBuildJobAsync(
-            IEnumerable<ParallelCorpus> corpora,
+            IEnumerable<FilteredParallelCorpus> corpora,
             bool useKeyTerms = true,
             string engineId = "engine1",
             EngineType engineType = EngineType.Nmt

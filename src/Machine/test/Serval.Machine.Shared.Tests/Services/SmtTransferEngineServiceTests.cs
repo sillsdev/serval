@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.Shared.Models;
+
+namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
 public class SmtTransferEngineServiceTests
@@ -40,10 +42,10 @@ public class SmtTransferEngineServiceTests
             BuildId1,
             null,
             [
-                new ParallelCorpus()
+                new FilteredParallelCorpus()
                 {
                     Id = CorpusId1,
-                    SourceCorpora = new List<MonolingualCorpus>()
+                    SourceCorpora = new List<FilteredMonolingualCorpus>()
                     {
                         new()
                         {
@@ -54,7 +56,7 @@ public class SmtTransferEngineServiceTests
                             InferenceTextIds = null,
                         },
                     },
-                    TargetCorpora = new List<MonolingualCorpus>()
+                    TargetCorpora = new List<FilteredMonolingualCorpus>()
                     {
                         new()
                         {
@@ -94,7 +96,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -120,7 +122,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(BuildJobRunnerType.Hangfire);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -145,7 +147,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -175,7 +177,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);

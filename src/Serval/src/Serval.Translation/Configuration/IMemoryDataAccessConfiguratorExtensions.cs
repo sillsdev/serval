@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Serval.Translation.Configuration;
 
 public static class IMemoryDataAccessConfiguratorExtensions
 {

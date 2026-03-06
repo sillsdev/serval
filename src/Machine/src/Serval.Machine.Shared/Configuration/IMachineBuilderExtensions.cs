@@ -1,4 +1,4 @@
-using Serval.Translation.V1;
+using Serval.Translation.Services;
 using Serval.WordAlignment.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -289,64 +289,7 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddServalTranslationPlatformService(this IMachineBuilder builder)
     {
-        string? connectionString = builder.Configuration.GetConnectionString("Serval");
-        if (connectionString is null)
-            throw new InvalidOperationException("Serval connection string is required");
-
         builder.Services.AddKeyedScoped<IPlatformService, ServalTranslationPlatformService>(EngineGroup.Translation);
-
-        builder.Services.AddOutbox(x =>
-        {
-            x.AddConsumer<TranslationBuildStartedConsumer>();
-            x.AddConsumer<TranslationBuildCompletedConsumer>();
-            x.AddConsumer<TranslationBuildCanceledConsumer>();
-            x.AddConsumer<TranslationBuildRestartingConsumer>();
-            x.AddConsumer<TranslationBuildFaultedConsumer>();
-            x.AddConsumer<TranslationIncrementEngineCorpusSizeConsumer>();
-            x.AddConsumer<TranslationInsertPretranslationsConsumer>();
-            x.AddConsumer<TranslationUpdateBuildExecutionDataConsumer>();
-            x.AddConsumer<TranslationUpdateTargetQuoteConventionConsumer>();
-        });
-
-        builder
-            .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
-            {
-                o.Address = new Uri(connectionString);
-            })
-            .ConfigureChannel(o =>
-            {
-                o.MaxRetryAttempts = null;
-                o.ServiceConfig = new ServiceConfig
-                {
-                    MethodConfigs =
-                    {
-                        new MethodConfig
-                        {
-                            Names = { MethodName.Default },
-                            RetryPolicy = new Grpc.Net.Client.Configuration.RetryPolicy
-                            {
-                                MaxAttempts = 10,
-                                InitialBackoff = TimeSpan.FromSeconds(1),
-                                MaxBackoff = TimeSpan.FromSeconds(5),
-                                BackoffMultiplier = 1.5,
-                                RetryableStatusCodes = { StatusCode.Unavailable },
-                            },
-                        },
-                        new MethodConfig
-                        {
-                            Names =
-                            {
-                                new MethodName
-                                {
-                                    Service = "serval.translation.v1.TranslationPlatformApi",
-                                    Method = "UpdateTranslationBuildStatus",
-                                },
-                            },
-                        },
-                    },
-                };
-            });
-
         return builder;
     }
 
@@ -416,15 +359,6 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddServalTranslationEngineService(this IMachineBuilder builder)
     {
-        builder.Services.AddGrpc(options =>
-        {
-            options.Interceptors.Add<CancellationInterceptor>();
-            options.Interceptors.Add<UnimplementedInterceptor>();
-            options.Interceptors.Add<TimeoutInterceptor>();
-            options.Interceptors.Add<FailedPreconditionInterceptor>();
-            options.Interceptors.Add<NotFoundInterceptor>();
-        });
-
         IEnumerable<EngineType> engineTypes =
             builder.Configuration.GetSection("TranslationEngines").Get<EngineType[]?>()
             ?? [EngineType.SmtTransfer, EngineType.Nmt];
@@ -436,10 +370,26 @@ public static class IMachineBuilderExtensions
                     builder.Services.AddSingleton<SmtTransferEngineStateService>();
                     builder.Services.AddHostedService<SmtTransferEngineCommitService>();
                     builder.AddThotSmtTransferEngine();
-                    builder.Services.AddScoped<ITranslationEngineService, SmtTransferEngineService>();
+                    builder.Services.AddScoped<
+                        Serval.Machine.Shared.Services.ITranslationEngineService,
+                        SmtTransferEngineService
+                    >();
+                    builder.Services.AddScoped<Serval.Translation.Services.ITranslationEngineService>(
+                        sp => new ServalTranslationEngineService(
+                            sp.GetServices<ITranslationEngineService>().First(e => e.Type == EngineType.SmtTransfer)
+                        )
+                    );
                     break;
                 case EngineType.Nmt:
-                    builder.Services.AddScoped<ITranslationEngineService, NmtEngineService>();
+                    builder.Services.AddScoped<
+                        Serval.Machine.Shared.Services.ITranslationEngineService,
+                        NmtEngineService
+                    >();
+                    builder.Services.AddScoped<Serval.Translation.Services.ITranslationEngineService>(
+                        sp => new ServalTranslationEngineService(
+                            sp.GetServices<ITranslationEngineService>().First(e => e.Type == EngineType.Nmt)
+                        )
+                    );
                     break;
                 default:
                     throw new InvalidEnumArgumentException(nameof(engineType), (int)engineType, typeof(EngineType));

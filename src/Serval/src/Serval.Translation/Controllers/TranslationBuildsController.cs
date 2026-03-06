@@ -1,3 +1,5 @@
+using Serval.Translation.Dtos;
+
 namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]

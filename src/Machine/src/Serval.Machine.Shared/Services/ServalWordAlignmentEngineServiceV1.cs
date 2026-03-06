@@ -51,7 +51,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
         IWordAlignmentEngineService engineService = GetEngineService(request.EngineType);
-        SIL.ServiceToolkit.Models.ParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
+        Serval.Shared.Models.FilteredParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
         await engineService.StartBuildAsync(
             request.EngineId,
             request.BuildId,
@@ -96,9 +96,9 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         );
     }
 
-    private static SIL.ServiceToolkit.Models.ParallelCorpus Map(WordAlignment.V1.ParallelCorpus source)
+    private static Serval.Shared.Models.FilteredParallelCorpus Map(WordAlignment.V1.ParallelCorpus source)
     {
-        return new SIL.ServiceToolkit.Models.ParallelCorpus
+        return new SIL.ServiceToolkit.Models.FilteredParallelCorpus
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
@@ -106,7 +106,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         };
     }
 
-    private static SIL.ServiceToolkit.Models.MonolingualCorpus Map(WordAlignment.V1.MonolingualCorpus source)
+    private static Serval.Shared.Models.FilteredMonolingualCorpus Map(WordAlignment.V1.MonolingualCorpus source)
     {
         var trainOnChapters = source.TrainOnChapters.ToDictionary(
             kvp => kvp.Key,
@@ -126,7 +126,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
             source.WordAlignOnAll
         );
 
-        return new SIL.ServiceToolkit.Models.MonolingualCorpus
+        return new SIL.ServiceToolkit.Models.FilteredMonolingualCorpus
         {
             Id = source.Id,
             Language = source.Language,

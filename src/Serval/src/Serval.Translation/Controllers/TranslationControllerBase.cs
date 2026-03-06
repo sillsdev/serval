@@ -1,3 +1,5 @@
+using Serval.Translation.Dtos;
+
 namespace Serval.Translation.Controllers;
 
 #pragma warning disable CS0612 // Type or member is obsolete
@@ -117,10 +119,10 @@ public abstract class TranslationControllerBase(IAuthorizationService authServic
             ScriptureRange = source.ScriptureRange,
         };
 
-    private static PhaseDto Map(BuildPhase source) =>
-        new PhaseDto
+    private static BuildPhaseDto Map(BuildPhase source) =>
+        new BuildPhaseDto
         {
-            Stage = (PhaseStage)source.Stage,
+            Stage = source.Stage,
             Step = source.Step,
             StepCount = source.StepCount,
             Started = source.Started,

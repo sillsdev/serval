@@ -1,4 +1,6 @@
-﻿namespace Serval.Webhooks.Services;
+﻿using Serval.Webhooks.Models;
+
+namespace Serval.Webhooks.Services;
 
 public class WebhookService(IRepository<Webhook> hooks, IBackgroundJobClient jobClient)
     : OwnedEntityServiceBase<Webhook>(hooks),

@@ -19,6 +19,7 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using MongoDB.Bson.Serialization.Serializers;
 global using Nito.AsyncEx;
+global using Serval.Shared.Models;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
 global using SIL.Machine.PunctuationAnalysis;

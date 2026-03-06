@@ -1,4 +1,5 @@
 using Serval.WordAlignment.V1;
+using SIL.ServiceToolkit.Models;
 using ExecutionData = Serval.WordAlignment.Models.ExecutionData;
 
 namespace Serval.WordAlignment.Services;
@@ -23,18 +24,18 @@ public class PlatformServiceTests
         );
         await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
         await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Active));
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Active));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.True);
 
         await env.PlatformService.BuildCanceled(new BuildCanceledRequest() { BuildId = "b0" }, env.ServerCallContext);
-        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Canceled));
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Canceled));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         await env.PlatformService.BuildRestarting(
             new BuildRestartingRequest() { BuildId = "b0" },
             env.ServerCallContext
         );
-        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Pending));
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Pending));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         Assert.That(env.WordAlignments.Count, Is.EqualTo(0));
@@ -43,7 +44,7 @@ public class PlatformServiceTests
 
         await env.PlatformService.BuildFaulted(new BuildFaultedRequest() { BuildId = "b0" }, env.ServerCallContext);
         Assert.That(env.WordAlignments.Count, Is.EqualTo(0));
-        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(Shared.Contracts.JobState.Faulted));
+        Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Faulted));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         await env.PlatformService.BuildRestarting(

@@ -16,7 +16,6 @@ global using Serval.Shared.Controllers;
 global using Serval.Shared.Models;
 global using Serval.Shared.Services;
 global using Serval.Webhooks.Consumers;
-global using Serval.Webhooks.Contracts;
 global using Serval.Webhooks.Models;
 global using Serval.Webhooks.Services;
 global using SIL.DataAccess;

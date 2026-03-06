@@ -1,3 +1,4 @@
+using Serval.Shared.Models;
 using WordAlignmentResult = Serval.WordAlignment.V1.WordAlignmentResult;
 
 namespace Serval.Machine.Shared.Services;
@@ -40,10 +41,10 @@ public class StatisticalEngineServiceTests
             BuildId1,
             null,
             [
-                new ParallelCorpus()
+                new FilteredParallelCorpus()
                 {
                     Id = CorpusId1,
-                    SourceCorpora = new List<MonolingualCorpus>()
+                    SourceCorpora = new List<FilteredMonolingualCorpus>()
                     {
                         new()
                         {
@@ -54,7 +55,7 @@ public class StatisticalEngineServiceTests
                             InferenceTextIds = null,
                         },
                     },
-                    TargetCorpora = new List<MonolingualCorpus>()
+                    TargetCorpora = new List<FilteredMonolingualCorpus>()
                     {
                         new()
                         {
@@ -88,7 +89,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -115,7 +116,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);

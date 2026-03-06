@@ -1,3 +1,5 @@
+using Serval.Webhooks.Models;
+
 namespace Serval.ApiServer;
 
 [TestFixture]
@@ -13,13 +15,13 @@ public class WebhooksTests
     public async Task Setup()
     {
         _env = new TestEnvironment();
-        var webhook = new Webhooks.Models.Webhook
+        var webhook = new Webhooks.Contracts.Webhook
         {
             Id = ID,
             Owner = "client1",
             Url = "/a/url",
             Secret = "s3CreT#",
-            Events = [Webhooks.Contracts.WebhookEvent.TranslationBuildStarted],
+            Events = [Webhooks.Models.WebhookEvent.TranslationBuildStarted],
         };
         await _env.Webhooks.InsertAsync(webhook);
     }
