@@ -1,4 +1,5 @@
-﻿using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
+﻿using Serval.Shared.Models;
+using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -13,7 +14,7 @@ public class StatisticalHangfireBuildJobFactory : IHangfireBuildJobFactory
             BuildStage.Preprocess => CreateJob<
                 WordAlignmentEngine,
                 WordAlignmentPreprocessBuildJob,
-                IReadOnlyList<ParallelCorpus>
+                IReadOnlyList<FilteredParallelCorpus>
             >(engineId, buildId, "statistical", data, buildOptions),
             BuildStage.Postprocess => CreateJob<WordAlignmentEngine, StatisticalPostprocessBuildJob, (int, double)>(
                 engineId,

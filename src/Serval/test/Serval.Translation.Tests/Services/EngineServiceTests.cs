@@ -1,7 +1,6 @@
-﻿using Google.Protobuf.WellKnownTypes;
 using MassTransit.Mediator;
 using Serval.Translation.Configuration;
-using Serval.Translation.V1;
+using EngineApiTranslation = Serval.EngineApi.Translation;
 
 namespace Serval.Translation.Services;
 
@@ -116,70 +115,16 @@ public class EngineServiceTests
                 Owner = "owner1",
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
                                         Id = "corpus1",
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = true,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus1",
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -197,74 +142,18 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = [] }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
                                         Id = "corpus1",
 
-                                        Language = "es",
-                                        TrainOnTextIds = { },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus1",
 
-                                        Language = "en",
-                                        TrainOnTextIds = { },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -282,74 +171,18 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", TextIds = ["text1"] }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
                                         Id = "corpus1",
 
-                                        Language = "es",
-                                        TrainOnTextIds = { "text1" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus1",
 
-                                        Language = "en",
-                                        TrainOnTextIds = { "text1" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -367,72 +200,18 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1" }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
                                         Id = "corpus1",
 
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = true,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus1",
 
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -451,72 +230,18 @@ public class EngineServiceTests
                 Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus1" }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
                                         Id = "corpus1",
 
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = true,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus1",
 
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -535,122 +260,22 @@ public class EngineServiceTests
                 Pretranslate = [new PretranslateCorpus { CorpusRef = "corpus2" }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
                                         Id = "corpus1",
 
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = false,
-                                        TrainOnAll = true,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus1",
 
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = false,
-                                        TrainOnAll = true,
-                                    },
-                                },
-                            },
-                        },
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus2",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus2",
 
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file3.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus2",
 
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file4.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "text1",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -686,94 +311,18 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "MAT 1;MRK" }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
                                         Id = "corpus1",
 
-                                        Language = "es",
-                                        TrainOnChapters =
-                                        {
-                                            {
-                                                "MAT",
-                                                new ScriptureChapters { Chapters = { 1 } }
-                                            },
-                                            {
-                                                "MRK",
-                                                new ScriptureChapters { Chapters = { } }
-                                            },
-                                        },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file1.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus1",
 
-                                        Language = "en",
-                                        TrainOnChapters =
-                                        {
-                                            {
-                                                "MAT",
-                                                new ScriptureChapters { Chapters = { 1 } }
-                                            },
-                                            {
-                                                "MRK",
-                                                new ScriptureChapters { Chapters = { } }
-                                            },
-                                        },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file2.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -791,72 +340,18 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { CorpusRef = "corpus1", ScriptureRange = "" }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
                                         Id = "corpus1",
 
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file1.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
                                         Id = "corpus1",
 
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file2.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
             );
     }
 
@@ -882,104 +377,14 @@ public class EngineServiceTests
                 ],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-source1",
-                                        Language = "es",
-                                        TrainOnTextIds = { "MAT" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MAT",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-source2",
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file3.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MRK",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-target1",
-                                        Language = "en",
-                                        TrainOnTextIds = { "MAT" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MAT",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-target2",
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file4.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MRK",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -1006,72 +411,14 @@ public class EngineServiceTests
                 Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus1" }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-source1",
-                                        Language = "es",
-                                        TrainOnTextIds = { "MAT" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MAT",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-target1",
-                                        Language = "en",
-                                        TrainOnTextIds = { "MAT" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MAT",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -1098,120 +445,14 @@ public class EngineServiceTests
                 Pretranslate = [new PretranslateCorpus { ParallelCorpusRef = "parallel-corpus2" }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-source1",
-                                        Language = "es",
-                                        TrainOnTextIds = { "MAT" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MAT",
-                                            },
-                                        },
-                                        PretranslateAll = false,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-target1",
-                                        Language = "en",
-                                        TrainOnTextIds = { "MAT" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MAT",
-                                            },
-                                        },
-                                        PretranslateAll = false,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus2",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus2-source1",
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file3.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MRK",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus2-target1",
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file4.txt",
-                                                Format = V1.FileFormat.Text,
-                                                TextId = "MRK",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -1237,104 +478,14 @@ public class EngineServiceTests
                 ],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>()
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-source1",
-                                        Language = "es",
-                                        TrainOnTextIds = { "MAT", "MRK" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file1.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-source2",
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file3.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file3.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>()
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-target1",
-                                        Language = "en",
-                                        TrainOnTextIds = { "MAT", "MRK" },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file2.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-target2",
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file4.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file4.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -1374,131 +525,14 @@ public class EngineServiceTests
                 ],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>()
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-source1",
-                                        Language = "es",
-                                        TrainOnChapters =
-                                        {
-                                            {
-                                                "MAT",
-                                                new ScriptureChapters { Chapters = { 1 } }
-                                            },
-                                            {
-                                                "MRK",
-                                                new ScriptureChapters { Chapters = { } }
-                                            },
-                                        },
-                                        PretranslateChapters =
-                                        {
-                                            {
-                                                "MAT",
-                                                new ScriptureChapters { Chapters = { 2 } }
-                                            },
-                                        },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file1.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file1.zip",
-                                            },
-                                        },
-                                        PretranslateAll = false,
-                                        TrainOnAll = false,
-                                    },
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-source2",
-                                        Language = "es",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file3.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file3.zip",
-                                            },
-                                        },
-                                        PretranslateAll = false,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new List<V1.MonolingualCorpus>()
-                                {
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-target1",
-                                        Language = "en",
-                                        TrainOnChapters =
-                                        {
-                                            {
-                                                "MAT",
-                                                new ScriptureChapters { Chapters = { 1 } }
-                                            },
-                                            {
-                                                "MRK",
-                                                new ScriptureChapters { }
-                                            },
-                                        },
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file2.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file2.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                    new()
-                                    {
-                                        Id = "parallel-corpus1-target2",
-                                        Language = "en",
-                                        Files =
-                                        {
-                                            new V1.CorpusFile
-                                            {
-                                                Location = "file4.zip",
-                                                Format = V1.FileFormat.Paratext,
-                                                TextId = "file4.zip",
-                                            },
-                                        },
-                                        PretranslateAll = true,
-                                        TrainOnAll = false,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -1532,140 +566,14 @@ public class EngineServiceTests
                 ],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-source1",
-                                    Language = "es",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file1.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file1.zip",
-                                        },
-                                    },
-                                    TrainOnChapters =
-                                    {
-                                        {
-                                            "MAT",
-                                            new ScriptureChapters { Chapters = { 1, 2 } }
-                                        },
-                                        {
-                                            "MRK",
-                                            new ScriptureChapters { Chapters = { 1, 2 } }
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = false,
-                                },
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-source2",
-                                    Language = "es",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file3.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file3.zip",
-                                        },
-                                    },
-                                    TrainOnChapters =
-                                    {
-                                        {
-                                            "MAT",
-                                            new ScriptureChapters { Chapters = { 3 } }
-                                        },
-                                        {
-                                            "MRK",
-                                            new ScriptureChapters { Chapters = { 1 } }
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = false,
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-target1",
-                                    Language = "en",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file2.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file2.zip",
-                                        },
-                                    },
-                                    TrainOnChapters =
-                                    {
-                                        {
-                                            "MAT",
-                                            new ScriptureChapters { Chapters = { 2, 3 } }
-                                        },
-                                        {
-                                            "MRK",
-                                            new ScriptureChapters { Chapters = { 2 } }
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = false,
-                                },
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-target2",
-                                    Language = "en",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file4.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file4.zip",
-                                        },
-                                    },
-                                    TrainOnChapters =
-                                    {
-                                        {
-                                            "MAT",
-                                            new ScriptureChapters { Chapters = { 1 } }
-                                        },
-                                        {
-                                            "MRK",
-                                            new ScriptureChapters { Chapters = { 1, 2 } }
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = false,
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -1725,96 +633,14 @@ public class EngineServiceTests
                 TrainOn = [new TrainingCorpus { ParallelCorpusRef = "parallel-corpus1" }],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-source1",
-                                    Language = "es",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file1.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file1.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-source2",
-                                    Language = "es",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file3.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file3.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-target1",
-                                    Language = "en",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file2.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file2.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-target2",
-                                    Language = "en",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file4.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file4.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -1831,96 +657,14 @@ public class EngineServiceTests
                 Owner = "owner1",
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-source1",
-                                    Language = "es",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file1.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file1.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-source2",
-                                    Language = "es",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file3.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file3.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-target1",
-                                    Language = "en",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file2.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file2.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-target2",
-                                    Language = "en",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file4.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file4.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -1948,107 +692,14 @@ public class EngineServiceTests
                 ],
             }
         );
-        _ = env
-            .OutboxService.Received()
-            .EnqueueMessageAsync(
-                EngineOutboxConstants.OutboxId,
-                EngineOutboxConstants.StartBuild,
+        await env
+            .TranslationEngine.Received()
+            .StartBuildAsync(
                 engineId,
-                new StartBuildRequest
-                {
-                    BuildId = BUILD1_ID,
-                    EngineId = engineId,
-                    EngineType = "Smt",
-                    Corpora =
-                    {
-                        new V1.ParallelCorpus
-                        {
-                            Id = "parallel-corpus1",
-                            SourceCorpora =
-                            {
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-source1",
-                                    Language = "es",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file1.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file1.zip",
-                                        },
-                                    },
-                                    TrainOnChapters =
-                                    {
-                                        {
-                                            "MAT",
-                                            new ScriptureChapters { Chapters = { 1 } }
-                                        },
-                                        {
-                                            "MRK",
-                                            new ScriptureChapters { }
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = false,
-                                },
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-source2",
-                                    Language = "es",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file3.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file3.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = false,
-                                },
-                            },
-                            TargetCorpora =
-                            {
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-target1",
-                                    Language = "en",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file2.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file2.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                                new V1.MonolingualCorpus()
-                                {
-                                    Id = "parallel-corpus1-target2",
-                                    Language = "en",
-                                    Files =
-                                    {
-                                        new V1.CorpusFile
-                                        {
-                                            Location = "file4.zip",
-                                            Format = V1.FileFormat.Paratext,
-                                            TextId = "file4.zip",
-                                        },
-                                    },
-                                    PretranslateAll = true,
-                                    TrainOnAll = true,
-                                },
-                            },
-                        },
-                    },
-                },
-                cancellationToken: Arg.Any<CancellationToken>()
+                BUILD1_ID,
+                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -2276,123 +927,184 @@ public class EngineServiceTests
         public TestEnvironment()
         {
             Engines = new MemoryRepository<Engine>();
-            TranslationServiceClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
-            var translationResult = new V1.TranslationResult
+            TranslationEngine = Substitute.For<EngineApiTranslation.ITranslationEngine>();
+            TranslationEngine.EngineType.Returns("Smt");
+
+            var translationResult = new EngineApiTranslation.TranslationResult
             {
                 Translation = "this is a test.",
-                SourceTokens = { "esto es una prueba .".Split() },
-                TargetTokens = { "this is a test .".Split() },
-                Confidences = { 1.0, 1.0, 1.0, 1.0, 1.0 },
+                SourceTokens = ["esto", "es", "una", "prueba", "."],
+                TargetTokens = ["this", "is", "a", "test", "."],
+                Confidences = [1.0, 1.0, 1.0, 1.0, 1.0],
                 Sources =
-                {
-                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
-                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
-                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
-                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
-                    new TranslationSources { Values = { V1.TranslationSource.Primary } },
-                },
+                [
+                    new HashSet<EngineApiTranslation.TranslationSource>
+                    {
+                        EngineApiTranslation.TranslationSource.Primary,
+                    },
+                    new HashSet<EngineApiTranslation.TranslationSource>
+                    {
+                        EngineApiTranslation.TranslationSource.Primary,
+                    },
+                    new HashSet<EngineApiTranslation.TranslationSource>
+                    {
+                        EngineApiTranslation.TranslationSource.Primary,
+                    },
+                    new HashSet<EngineApiTranslation.TranslationSource>
+                    {
+                        EngineApiTranslation.TranslationSource.Primary,
+                    },
+                    new HashSet<EngineApiTranslation.TranslationSource>
+                    {
+                        EngineApiTranslation.TranslationSource.Primary,
+                    },
+                ],
                 Alignment =
-                {
-                    new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                    new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                    new V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
-                    new V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 },
-                },
+                [
+                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
+                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
+                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 },
+                ],
                 Phrases =
-                {
-                    new V1.Phrase
+                [
+                    new EngineApiTranslation.Phrase
                     {
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 5,
                         TargetSegmentCut = 5,
                     },
-                },
+                ],
             };
-            var translateResponse = new TranslateResponse { Results = { translationResult } };
-            TranslationServiceClient
-                .TranslateAsync(Arg.Any<TranslateRequest>())
-                .Returns(CreateAsyncUnaryCall(translateResponse));
-            var wordGraph = new V1.WordGraph
+            TranslationEngine
+                .TranslateAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<IReadOnlyList<EngineApiTranslation.TranslationResult>>([translationResult]));
+
+            var wordGraph = new EngineApiTranslation.WordGraph
             {
-                SourceTokens = { "esto es una prueba .".Split() },
-                FinalStates = { 3 },
+                SourceTokens = ["esto", "es", "una", "prueba", "."],
+                InitialStateScore = 0.0,
+                FinalStates = new HashSet<int> { 3 },
                 Arcs =
-                {
-                    new V1.WordGraphArc
+                [
+                    new EngineApiTranslation.WordGraphArc
                     {
                         PrevState = 0,
                         NextState = 1,
                         Score = 1.0,
-                        TargetTokens = { "this is".Split() },
+                        TargetTokens = ["this", "is"],
                         Alignment =
-                        {
-                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                        },
+                        [
+                            new EngineApiTranslation.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                            new EngineApiTranslation.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                        ],
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 2,
-                        Sources = { GetSources(2, false) },
-                        Confidences = { 1.0, 1.0 },
+                        Sources =
+                        [
+                            new HashSet<EngineApiTranslation.TranslationSource>
+                            {
+                                EngineApiTranslation.TranslationSource.Primary,
+                            },
+                            new HashSet<EngineApiTranslation.TranslationSource>
+                            {
+                                EngineApiTranslation.TranslationSource.Primary,
+                            },
+                        ],
+                        Confidences = [1.0, 1.0],
                     },
-                    new V1.WordGraphArc
+                    new EngineApiTranslation.WordGraphArc
                     {
                         PrevState = 1,
                         NextState = 2,
                         Score = 1.0,
-                        TargetTokens = { "a test".Split() },
+                        TargetTokens = ["a", "test"],
                         Alignment =
-                        {
-                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                            new V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                        },
+                        [
+                            new EngineApiTranslation.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                            new EngineApiTranslation.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
+                        ],
                         SourceSegmentStart = 2,
                         SourceSegmentEnd = 4,
-                        Sources = { GetSources(2, false) },
-                        Confidences = { 1.0, 1.0 },
+                        Sources =
+                        [
+                            new HashSet<EngineApiTranslation.TranslationSource>
+                            {
+                                EngineApiTranslation.TranslationSource.Primary,
+                            },
+                            new HashSet<EngineApiTranslation.TranslationSource>
+                            {
+                                EngineApiTranslation.TranslationSource.Primary,
+                            },
+                        ],
+                        Confidences = [1.0, 1.0],
                     },
-                    new V1.WordGraphArc
+                    new EngineApiTranslation.WordGraphArc
                     {
                         PrevState = 2,
                         NextState = 3,
                         Score = 1.0,
-                        TargetTokens = { ".".Split() },
-                        Alignment =
-                        {
-                            new V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                        },
+                        TargetTokens = ["."],
+                        Alignment = [new EngineApiTranslation.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }],
                         SourceSegmentStart = 4,
                         SourceSegmentEnd = 5,
-                        Sources = { GetSources(1, false) },
-                        Confidences = { 1.0 },
+                        Sources =
+                        [
+                            new HashSet<EngineApiTranslation.TranslationSource>
+                            {
+                                EngineApiTranslation.TranslationSource.Primary,
+                            },
+                        ],
+                        Confidences = [1.0],
                     },
-                },
+                ],
             };
-            var getWordGraphResponse = new GetWordGraphResponse { WordGraph = wordGraph };
-            TranslationServiceClient
-                .GetWordGraphAsync(Arg.Any<GetWordGraphRequest>())
-                .Returns(CreateAsyncUnaryCall(getWordGraphResponse));
-            TranslationServiceClient
-                .CancelBuildAsync(Arg.Any<CancelBuildRequest>())
-                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
-            TranslationServiceClient.CreateAsync(Arg.Any<CreateRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
-            TranslationServiceClient.DeleteAsync(Arg.Any<DeleteRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
-            TranslationServiceClient
-                .StartBuildAsync(Arg.Any<StartBuildRequest>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
-            TranslationServiceClient.UpdateAsync(Arg.Any<UpdateRequest>()).Returns(CreateAsyncUnaryCall(new Empty()));
-            TranslationServiceClient
-                .TrainSegmentPairAsync(Arg.Any<TrainSegmentPairRequest>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
-            GrpcClientFactory grpcClientFactory = Substitute.For<GrpcClientFactory>();
-            grpcClientFactory
-                .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Smt")
-                .Returns(TranslationServiceClient);
+            TranslationEngine
+                .GetWordGraphAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(wordGraph));
+            TranslationEngine
+                .CancelBuildAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<string?>(null));
+            TranslationEngine
+                .CreateAsync(
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<bool>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(Task.CompletedTask);
+            TranslationEngine.DeleteAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            TranslationEngine
+                .StartBuildAsync(
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(Task.CompletedTask);
+            TranslationEngine
+                .UpdateAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                .Returns(Task.CompletedTask);
+            TranslationEngine
+                .TrainSegmentPairAsync(
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<bool>(),
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(Task.CompletedTask);
+
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
+                        guid: "",
+                        translationType: ""
 
             Pretranslations = new MemoryRepository<Pretranslation>();
-            OutboxService = Substitute.For<IOutboxService>();
             IOptionsMonitor<TranslationOptions> translationOptions = Substitute.For<
                 IOptionsMonitor<TranslationOptions>
             >();
@@ -2416,10 +1128,9 @@ public class EngineServiceTests
                 new MemoryRepository<Build>(),
                 Pretranslations,
                 Substitute.For<IScopedMediator>(),
-                grpcClientFactory,
+                [TranslationEngine],
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
-                OutboxService,
                 translationOptions,
                 new CorpusMappingService(dataFileOptions, parallelCorpusService)
             );
@@ -2428,8 +1139,7 @@ public class EngineServiceTests
         public EngineService Service { get; }
         public IRepository<Engine> Engines { get; }
         public IRepository<Pretranslation> Pretranslations { get; }
-        public TranslationEngineApi.TranslationEngineApiClient TranslationServiceClient { get; }
-        public IOutboxService OutboxService { get; }
+        public EngineApiTranslation.ITranslationEngine TranslationEngine { get; }
 
         public async Task<Engine> CreateEngineWithTextFilesAsync()
         {
@@ -2636,7 +1346,7 @@ public class EngineServiceTests
                                 ],
                             },
                         ],
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -2692,7 +1402,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "parallel-corpus1",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -2711,7 +1421,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -2734,7 +1444,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "parallel-corpus2",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -2753,7 +1463,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -2793,7 +1503,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "parallel-corpus1",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -2828,7 +1538,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -2868,29 +1578,6 @@ public class EngineServiceTests
             };
             await Engines.InsertAsync(engine);
             return engine;
-        }
-
-        private static TranslationSources[] GetSources(int count, bool isUnknown)
-        {
-            var sources = new TranslationSources[count];
-            for (int i = 0; i < count; i++)
-            {
-                sources[i] = new TranslationSources();
-                if (!isUnknown)
-                    sources[i].Values.Add(V1.TranslationSource.Primary);
-            }
-            return sources;
-        }
-
-        private static AsyncUnaryCall<TResponse> CreateAsyncUnaryCall<TResponse>(TResponse response)
-        {
-            return new AsyncUnaryCall<TResponse>(
-                Task.FromResult(response),
-                Task.FromResult(new Metadata()),
-                () => Status.DefaultSuccess,
-                () => new Metadata(),
-                () => { }
-            );
         }
     }
 }

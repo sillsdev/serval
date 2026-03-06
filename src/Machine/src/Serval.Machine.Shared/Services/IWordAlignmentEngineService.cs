@@ -26,7 +26,7 @@ public interface IWordAlignmentEngineService
         string engineId,
         string buildId,
         string? buildOptions,
-        IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus> corpora,
+        IReadOnlyList<Serval.Shared.Models.FilteredParallelCorpus> corpora,
         CancellationToken cancellationToken = default
     );
 

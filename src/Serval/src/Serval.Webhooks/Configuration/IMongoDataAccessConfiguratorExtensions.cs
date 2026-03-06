@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using Serval.Webhooks.Models;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

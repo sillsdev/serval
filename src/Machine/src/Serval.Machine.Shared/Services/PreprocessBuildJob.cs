@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.Shared.Models;
+
+namespace Serval.Machine.Shared.Services;
 
 public abstract class PreprocessBuildJob<TEngine>(
     IPlatformService platformService,
@@ -10,7 +12,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
 )
-    : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpus>>(
+    : HangfireBuildJob<TEngine, IReadOnlyList<FilteredParallelCorpus>>(
         platformService,
         engines,
         dataAccessContext,
@@ -36,7 +38,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> data,
+        IReadOnlyList<FilteredParallelCorpus> data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -94,20 +96,20 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         CancellationToken cancellationToken
     );
 
     protected virtual Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         CancellationToken cancellationToken
     ) => Task.CompletedTask;
 
     protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         string? buildOptions,
         CancellationToken cancellationToken
     );
@@ -115,7 +117,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     protected override async Task CleanupAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> data,
         JobCompletionStatus completionStatus
     )
     {
@@ -137,7 +139,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> parallelCorpora
+        IReadOnlyList<FilteredParallelCorpus> corpora
     )
     {
         List<string> warnings = [];

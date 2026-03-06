@@ -84,10 +84,8 @@ public class ClearMLMonitorService(
             {
                 var tasksPerEngineType = tasks
                     .Where(kvp =>
-                        engineToBuildServiceDict
-                            .Where(te => te.Key.CurrentBuild?.JobId == kvp.Key)
-                            .FirstOrDefault()
-                            .Key?.Type == engineType
+                        engineToBuildServiceDict.FirstOrDefault(te => te.Key.CurrentBuild?.JobId == kvp.Key).Key?.Type
+                        == engineType
                     )
                     .Select(kvp => kvp.Value)
                     .UnionBy(await _clearMLService.GetTasksForQueueAsync(queueName, cancellationToken), t => t.Id)

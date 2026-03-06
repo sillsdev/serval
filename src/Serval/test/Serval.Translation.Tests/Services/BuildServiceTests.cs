@@ -85,13 +85,13 @@ public class BuildServiceTests
             Id = BUILD1_ID,
             EngineRef = "engine1",
             Owner = "user1",
-            State = Shared.Contracts.JobState.Completed,
+            State = JobState.Completed,
             DateFinished = DateTime.UtcNow,
         };
         await builds.InsertAsync(build);
         EntityChange<Build> change = await task;
         Assert.That(change.Type, Is.EqualTo(EntityChangeType.Insert));
-        Assert.That(change.Entity?.State, Is.EqualTo(Shared.Contracts.JobState.Completed));
+        Assert.That(change.Entity?.State, Is.EqualTo(JobState.Completed));
     }
 
     [Test]
@@ -111,13 +111,13 @@ public class BuildServiceTests
             build,
             u =>
             {
-                u.Set(b => b.State, Shared.Contracts.JobState.Completed);
+                u.Set(b => b.State, JobState.Completed);
                 u.Set(b => b.DateFinished, DateTime.UtcNow);
             }
         );
         EntityChange<Build> change = await task;
         Assert.That(change.Type, Is.EqualTo(EntityChangeType.Update));
-        Assert.That(change.Entity?.State, Is.EqualTo(Shared.Contracts.JobState.Completed));
+        Assert.That(change.Entity?.State, Is.EqualTo(JobState.Completed));
     }
 
     [Test]

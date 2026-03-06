@@ -1,4 +1,6 @@
-﻿namespace Serval.WordAlignment.Controllers;
+﻿using SIL.ServiceToolkit.Models;
+
+namespace Serval.WordAlignment.Controllers;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
@@ -1096,9 +1098,9 @@ public class WordAlignmentEnginesController(
         };
     }
 
-    private static PhaseDto Map(BuildPhase source)
+    private static BuildPhaseDto Map(BuildPhase source)
     {
-        return new PhaseDto
+        return new BuildPhaseDto
         {
             Stage = (PhaseStage)source.Stage,
             Step = source.Step,

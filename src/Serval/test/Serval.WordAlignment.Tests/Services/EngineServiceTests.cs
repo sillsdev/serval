@@ -1361,6 +1361,8 @@ public class EngineServiceTests
                 .Returns(WordAlignmentServiceClient);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
+                        guid: "",
+                        translationType: ""
 
             WordAlignments = new MemoryRepository<Models.WordAlignment>();
             OutboxService = Substitute.For<IOutboxService>();

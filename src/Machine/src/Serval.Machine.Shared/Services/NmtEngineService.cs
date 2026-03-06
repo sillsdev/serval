@@ -1,7 +1,12 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using CaseExtensions;
+using Serval.Shared.Models;
+using Serval.Translation.Models;
+using Serval.Translation.Services;
+
+namespace Serval.Machine.Shared.Services;
 
 public class NmtEngineService(
-    [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
+    ITranslationPlatformService platformService,
     IDataAccessContext dataAccessContext,
     IRepository<TranslationEngine> engines,
     IBuildJobService<TranslationEngine> buildJobService,
@@ -10,7 +15,7 @@ public class NmtEngineService(
     ISharedFileService sharedFileService
 ) : ITranslationEngineService
 {
-    private readonly IPlatformService _platformService = platformService;
+    private readonly ITranslationPlatformService _platformService = platformService;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IBuildJobService<TranslationEngine> _buildJobService = buildJobService;
@@ -24,15 +29,15 @@ public class NmtEngineService(
         return $"{ModelDirectory}{engineId}_{buildRevision}.tar.gz";
     }
 
-    public EngineType Type => EngineType.Nmt;
+    public string Type => EngineType.Nmt.ToString().ToCamelCase();
 
     private const int MinutesToExpire = 60;
 
     public async Task CreateAsync(
         string engineId,
-        string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        string? engineName = null,
         bool? isModelPersisted = null,
         CancellationToken cancellationToken = default
     )
@@ -88,8 +93,8 @@ public class NmtEngineService(
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
-        string? buildOptions,
-        IReadOnlyList<ParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
+        string? options = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -103,7 +108,7 @@ public class NmtEngineService(
                     buildId,
                     BuildStage.Preprocess,
                     corpora,
-                    buildOptions,
+                    options,
                     ct
                 );
                 // If there is a pending/running build, then no need to start a new one.
@@ -119,7 +124,7 @@ public class NmtEngineService(
         return CancelBuildJobAsync(engineId, cancellationToken);
     }
 
-    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+    public async Task<ModelDownloadUrl?> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
@@ -139,7 +144,7 @@ public class NmtEngineService(
         bool fileExists = await _sharedFileService.ExistsAsync(filepath, cancellationToken);
         if (!fileExists)
             throw new FileNotFoundException($"The model for build revision , {engine.BuildRevision}, does not exist.");
-        var expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
+        DateTime expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
         var modelInfo = new ModelDownloadUrl
         {
             Url = await _sharedFileService.GetDownloadUrlAsync(filepath, expiresAt),
@@ -149,7 +154,7 @@ public class NmtEngineService(
         return modelInfo;
     }
 
-    public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+    public Task<IReadOnlyList<Translation.Models.TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -159,7 +164,7 @@ public class NmtEngineService(
         throw new NotSupportedException();
     }
 
-    public Task<WordGraph> GetWordGraphAsync(
+    public Task<Translation.Models.WordGraph> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -179,12 +184,28 @@ public class NmtEngineService(
         throw new NotSupportedException();
     }
 
-    public int GetQueueSize()
+    public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return _clearMLQueueService.GetQueueSize(Type);
+        return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.Nmt));
     }
 
-    public bool IsLanguageNativeToModel(string language, out string internalCode)
+    public Task<Translation.Models.LanguageInfo> GetLanguageInfoAsync(
+        string language,
+        CancellationToken cancellationToken = default
+    )
+    {
+        bool isNative = IsLanguageNativeToModel(language, out string internalCode);
+        return Task.FromResult(
+            new Translation.Models.LanguageInfo
+            {
+                EngineType = Type,
+                IsNative = isNative,
+                InternalCode = internalCode,
+            }
+        );
+    }
+
+    private bool IsLanguageNativeToModel(string language, out string internalCode)
     {
         return _languageTagService.ConvertToFlores200Code(language, out internalCode)
             == Flores200Support.LanguageAndScript;

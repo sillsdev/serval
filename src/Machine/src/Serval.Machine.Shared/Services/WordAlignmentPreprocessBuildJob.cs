@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.Shared.Models;
+
+namespace Serval.Machine.Shared.Services;
 
 public class WordAlignmentPreprocessBuildJob(
     [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
@@ -23,7 +25,7 @@ public class WordAlignmentPreprocessBuildJob(
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -109,7 +111,7 @@ public class WordAlignmentPreprocessBuildJob(
         int wordAlignCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
     {
@@ -148,7 +150,7 @@ public class WordAlignmentPreprocessBuildJob(
     protected override Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
     {

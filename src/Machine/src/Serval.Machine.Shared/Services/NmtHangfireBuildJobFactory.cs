@@ -1,4 +1,5 @@
-﻿using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
+﻿using Serval.Shared.Models;
+using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -10,13 +11,11 @@ public class NmtHangfireBuildJobFactory : IHangfireBuildJobFactory
     {
         return stage switch
         {
-            BuildStage.Preprocess => CreateJob<TranslationEngine, NmtPreprocessBuildJob, IReadOnlyList<ParallelCorpus>>(
-                engineId,
-                buildId,
-                "nmt",
-                data,
-                buildOptions
-            ),
+            BuildStage.Preprocess => CreateJob<
+                TranslationEngine,
+                NmtPreprocessBuildJob,
+                IReadOnlyList<FilteredParallelCorpus>
+            >(engineId, buildId, "nmt", data, buildOptions),
             BuildStage.Postprocess => CreateJob<TranslationEngine, TranslationPostprocessBuildJob, (int, double)>(
                 engineId,
                 buildId,

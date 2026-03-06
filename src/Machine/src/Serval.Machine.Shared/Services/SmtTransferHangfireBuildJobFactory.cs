@@ -1,4 +1,5 @@
-﻿using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
+﻿using Serval.Shared.Models;
+using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -13,7 +14,7 @@ public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
             BuildStage.Preprocess => CreateJob<
                 TranslationEngine,
                 SmtTransferPreprocessBuildJob,
-                IReadOnlyList<ParallelCorpus>
+                IReadOnlyList<FilteredParallelCorpus>
             >(engineId, buildId, "smt_transfer", data, buildOptions),
             BuildStage.Postprocess => CreateJob<TranslationEngine, SmtTransferPostprocessBuildJob, (int, double)>(
                 engineId,
