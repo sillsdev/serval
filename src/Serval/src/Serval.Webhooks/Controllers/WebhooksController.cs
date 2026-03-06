@@ -1,4 +1,7 @@
-﻿namespace Serval.Webhooks.Controllers;
+﻿using Serval.Webhooks.Dtos;
+using Serval.Webhooks.Models;
+
+namespace Serval.Webhooks.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/hooks")]

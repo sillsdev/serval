@@ -1,4 +1,5 @@
-﻿using Serval.WordAlignment.V1;
+﻿using Serval.Shared.Models;
+using Serval.WordAlignment.V1;
 
 namespace EchoEngine;
 
@@ -169,9 +170,9 @@ public class WordAlignmentEngineServiceV1(BackgroundTaskQueue taskQueue, IParall
         return Empty;
     }
 
-    private static SIL.ServiceToolkit.Models.ParallelCorpus Map(ParallelCorpus source)
+    private static FilteredParallelCorpus Map(ParallelCorpus source)
     {
-        return new SIL.ServiceToolkit.Models.ParallelCorpus
+        return new SIL.ServiceToolkit.Models.FilteredParallelCorpus
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToList(),
@@ -179,7 +180,7 @@ public class WordAlignmentEngineServiceV1(BackgroundTaskQueue taskQueue, IParall
         };
     }
 
-    private static SIL.ServiceToolkit.Models.MonolingualCorpus Map(MonolingualCorpus source)
+    private static FilteredMonolingualCorpus Map(MonolingualCorpus source)
     {
         var trainOnChapters = source.TrainOnChapters.ToDictionary(
             kvp => kvp.Key,
@@ -195,7 +196,7 @@ public class WordAlignmentEngineServiceV1(BackgroundTaskQueue taskQueue, IParall
         var wordAlignTextIds = source.WordAlignOnTextIds.ToHashSet();
         FilterChoice wordAlignFilter = GetFilterChoice(wordAlignChapters, wordAlignTextIds, source.WordAlignOnAll);
 
-        return new SIL.ServiceToolkit.Models.MonolingualCorpus
+        return new SIL.ServiceToolkit.Models.FilteredMonolingualCorpus
         {
             Id = source.Id,
             Language = source.Language,

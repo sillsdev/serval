@@ -1,6 +1,4 @@
 global using System.Text.RegularExpressions;
-global using Grpc.Core;
-global using Grpc.Net.ClientFactory;
 global using MassTransit;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;

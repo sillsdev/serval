@@ -1,3 +1,5 @@
+using Serval.Shared.Models;
+
 namespace SIL.ServiceToolkit.Services;
 
 [TestFixture]
@@ -7,7 +9,7 @@ public class ParallelCorpusServiceTests
     public void AnalyzeTargetQuoteConvention_FileFormatParatext()
     {
         using var env = new TestEnvironment();
-        ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).First();
+        FilteredParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).First();
         const string ExpectedTargetName = "typewriter_english";
 
         QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention([
@@ -25,7 +27,7 @@ public class ParallelCorpusServiceTests
     public void AnalyzeTargetQuoteConvention_FileFormatText()
     {
         using var env = new TestEnvironment();
-        ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: false).First();
+        FilteredParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: false).First();
 
         QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention([
             parallelCorpus,
@@ -42,7 +44,7 @@ public class ParallelCorpusServiceTests
     public async Task Preprocess_FileFormatText()
     {
         using var env = new TestEnvironment();
-        IReadOnlyList<ParallelCorpus> corpora = env.GetCorpora(paratextProject: false);
+        IReadOnlyList<FilteredParallelCorpus> corpora = env.GetCorpora(paratextProject: false);
         int trainCount = 0;
         int inferenceCount = 0;
         await env.Processor.PreprocessAsync(
@@ -76,7 +78,7 @@ public class ParallelCorpusServiceTests
     public async Task TestPreprocess_FileFormatParatext()
     {
         using var env = new TestEnvironment();
-        IReadOnlyList<ParallelCorpus> corpora = env.GetCorpora(paratextProject: true);
+        IReadOnlyList<FilteredParallelCorpus> corpora = env.GetCorpora(paratextProject: true);
         int trainCount = 0;
         int inferenceCount = 0;
         var trainRefs = new List<string>();
@@ -172,18 +174,18 @@ public class ParallelCorpusServiceTests
 
         public IParallelCorpusService Processor { get; } = new ParallelCorpusService();
 
-        public ParallelCorpus[] GetCorpora(bool paratextProject)
+        public FilteredParallelCorpus[] GetCorpora(bool paratextProject)
         {
             if (paratextProject)
             {
                 return
                 [
-                    new ParallelCorpus
+                    new FilteredParallelCorpus
                     {
                         Id = "corpus1",
                         SourceCorpora =
                         [
-                            new MonolingualCorpus
+                            new FilteredMonolingualCorpus
                             {
                                 Id = "pt-source1",
                                 Language = "en",
@@ -201,7 +203,7 @@ public class ParallelCorpusServiceTests
                         ],
                         TargetCorpora =
                         [
-                            new MonolingualCorpus
+                            new FilteredMonolingualCorpus
                             {
                                 Id = "pt-target1",
                                 Language = "en",
@@ -217,12 +219,12 @@ public class ParallelCorpusServiceTests
                             },
                         ],
                     },
-                    new ParallelCorpus
+                    new FilteredParallelCorpus
                     {
                         Id = "corpus2",
                         SourceCorpora =
                         [
-                            new MonolingualCorpus
+                            new FilteredMonolingualCorpus
                             {
                                 Id = "pt-source1",
                                 Language = "en",
@@ -240,7 +242,7 @@ public class ParallelCorpusServiceTests
                         ],
                         TargetCorpora =
                         [
-                            new MonolingualCorpus
+                            new FilteredMonolingualCorpus
                             {
                                 Id = "pt-target1",
                                 Language = "en",
@@ -285,12 +287,12 @@ public class ParallelCorpusServiceTests
 
             return
             [
-                new ParallelCorpus
+                new FilteredParallelCorpus
                 {
                     Id = "corpus1",
                     SourceCorpora =
                     [
-                        new MonolingualCorpus
+                        new FilteredMonolingualCorpus
                         {
                             Id = "source-corpus1",
                             Language = "en",
@@ -304,7 +306,7 @@ public class ParallelCorpusServiceTests
                                 },
                             ],
                         },
-                        new MonolingualCorpus
+                        new FilteredMonolingualCorpus
                         {
                             Id = "source-corpus2",
                             Language = "en",
@@ -321,7 +323,7 @@ public class ParallelCorpusServiceTests
                     ],
                     TargetCorpora =
                     [
-                        new MonolingualCorpus
+                        new FilteredMonolingualCorpus
                         {
                             Id = "target-corpus1",
                             Language = "en",

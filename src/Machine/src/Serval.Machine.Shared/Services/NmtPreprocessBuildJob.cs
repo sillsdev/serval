@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.Shared.Models;
+
+namespace Serval.Machine.Shared.Services;
 
 public class NmtPreprocessBuildJob(
     [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
@@ -33,10 +35,11 @@ public class NmtPreprocessBuildJob(
     protected override async Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
     {
+        foreach (FilteredParallelCorpus parallelCorpus in corpora)
         string overallTargetQuoteConventionAnalysis =
             ParallelCorpusService.AnalyzeTargetQuoteConvention(parallelCorpora)?.BestQuoteConvention?.Name
             ?? string.Empty;
@@ -56,7 +59,7 @@ public class NmtPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         CancellationToken cancellationToken
     )
     {
@@ -119,7 +122,7 @@ public class NmtPreprocessBuildJob(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<ParallelCorpus> parallelCorpora
+        IReadOnlyList<FilteredParallelCorpus> corpora
     )
     {
         List<string> warnings =

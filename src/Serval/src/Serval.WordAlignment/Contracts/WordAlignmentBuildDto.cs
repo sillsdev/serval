@@ -35,5 +35,5 @@ public record WordAlignmentBuildDto
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
     public required WordAlignmentExecutionDataDto ExecutionData { get; init; }
-    public IReadOnlyList<PhaseDto>? Phases { get; init; }
+    public IReadOnlyList<BuildPhaseDto>? Phases { get; init; }
 }

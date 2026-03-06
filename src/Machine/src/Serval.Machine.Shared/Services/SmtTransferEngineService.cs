@@ -1,4 +1,9 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using CaseExtensions;
+using Serval.Shared.Models;
+using Serval.Translation.Models;
+using Serval.Translation.Services;
+
+namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
@@ -20,13 +25,13 @@ public class SmtTransferEngineService(
     private readonly IBuildJobService<TranslationEngine> _buildJobService = buildJobService;
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
 
-    public EngineType Type => EngineType.SmtTransfer;
+    public string Type => EngineType.SmtTransfer.ToString().ToCamelCase();
 
     public async Task CreateAsync(
         string engineId,
-        string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        string? engineName = null,
         bool? isModelPersisted = null,
         CancellationToken cancellationToken = default
     )
@@ -95,7 +100,7 @@ public class SmtTransferEngineService(
         );
     }
 
-    public async Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+    public async Task<IReadOnlyList<Translation.Models.TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -108,7 +113,7 @@ public class SmtTransferEngineService(
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        IReadOnlyList<TranslationResult> results = await @lock.ReaderLockAsync(
+        IReadOnlyList<SIL.Machine.Translation.TranslationResult> results = await @lock.ReaderLockAsync(
             async ct =>
             {
                 HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
@@ -119,10 +124,10 @@ public class SmtTransferEngineService(
         );
 
         state.Touch();
-        return results;
+        return results.Select(Map).ToList();
     }
 
-    public async Task<WordGraph> GetWordGraphAsync(
+    public async Task<Translation.Models.WordGraph> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -134,7 +139,7 @@ public class SmtTransferEngineService(
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        WordGraph result = await @lock.ReaderLockAsync(
+        SIL.Machine.Translation.WordGraph result = await @lock.ReaderLockAsync(
             async ct =>
             {
                 HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
@@ -145,7 +150,7 @@ public class SmtTransferEngineService(
         );
 
         state.Touch();
-        return result;
+        return Map(result);
     }
 
     public async Task TrainSegmentPairAsync(
@@ -196,8 +201,8 @@ public class SmtTransferEngineService(
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
-        string? buildOptions,
-        IReadOnlyList<ParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
+        string? options = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -208,7 +213,7 @@ public class SmtTransferEngineService(
             buildId,
             BuildStage.Preprocess,
             corpora,
-            buildOptions,
+            options,
             cancellationToken
         );
         // If there is a pending/running build, then no need to start a new one.
@@ -230,15 +235,24 @@ public class SmtTransferEngineService(
         return buildId;
     }
 
-    public int GetQueueSize()
+    public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return _clearMLQueueService.GetQueueSize(Type);
+        return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.Nmt));
     }
 
-    public bool IsLanguageNativeToModel(string language, out string internalCode)
+    public Task<Translation.Models.LanguageInfo> GetLanguageInfoAsync(
+        string language,
+        CancellationToken cancellationToken = default
+    )
     {
-        internalCode = language;
-        return true;
+        return Task.FromResult(
+            new Translation.Models.LanguageInfo
+            {
+                EngineType = Type,
+                IsNative = true,
+                InternalCode = language,
+            }
+        );
     }
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
@@ -256,7 +270,7 @@ public class SmtTransferEngineService(
         return buildId;
     }
 
-    public Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+    public Task<ModelDownloadUrl?> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
@@ -278,5 +292,85 @@ public class SmtTransferEngineService(
         if (engine.BuildRevision == 0)
             throw new EngineNotBuiltException($"The engine {engineId} must be built first.");
         return engine;
+    }
+
+    private static Translation.Models.TranslationResult Map(SIL.Machine.Translation.TranslationResult source)
+    {
+        return new Translation.Models.TranslationResult
+        {
+            Translation = source.Translation,
+            SourceTokens = source.SourceTokens.ToArray(),
+            TargetTokens = source.TargetTokens.ToArray(),
+            Confidences = source.Confidences.ToArray(),
+            Sources = source.Sources.Select(Map).ToList(),
+            Alignment = MapAlignment(source.Alignment).ToList(),
+            Phrases = source.Phrases.Select(Map).ToList(),
+        };
+    }
+
+    private static Translation.Models.WordGraph Map(SIL.Machine.Translation.WordGraph source)
+    {
+        return new Translation.Models.WordGraph
+        {
+            SourceTokens = source.SourceTokens.ToArray(),
+            InitialStateScore = source.InitialStateScore,
+            FinalStates = source.FinalStates.ToHashSet(),
+            Arcs = source.Arcs.Select(Map).ToList(),
+        };
+    }
+
+    private static Translation.Models.WordGraphArc Map(SIL.Machine.Translation.WordGraphArc source)
+    {
+        return new Translation.Models.WordGraphArc
+        {
+            PrevState = source.PrevState,
+            NextState = source.NextState,
+            Score = source.Score,
+            TargetTokens = source.TargetTokens.ToArray(),
+            Confidences = source.Confidences.ToArray(),
+            SourceSegmentStart = source.SourceSegmentRange.Start,
+            SourceSegmentEnd = source.SourceSegmentRange.End,
+            Sources = source.Sources.Select(Map).ToList(),
+            Alignment = MapAlignment(source.Alignment).ToList(),
+        };
+    }
+
+    private static IReadOnlySet<TranslationSource> Map(TranslationSources source)
+    {
+        return Enum.GetValues<TranslationSources>()
+            .Where(s => s != TranslationSources.None && source.HasFlag(s))
+            .Select(s =>
+                s switch
+                {
+                    TranslationSources.Smt => TranslationSource.Primary,
+                    TranslationSources.Nmt => TranslationSource.Primary,
+                    TranslationSources.Transfer => TranslationSource.Secondary,
+                    TranslationSources.Prefix => TranslationSource.Human,
+                    _ => TranslationSource.Primary,
+                }
+            )
+            .ToHashSet();
+    }
+
+    private static IEnumerable<Translation.Models.AlignedWordPair> MapAlignment(WordAlignmentMatrix source)
+    {
+        for (int i = 0; i < source.RowCount; i++)
+        {
+            for (int j = 0; j < source.ColumnCount; j++)
+            {
+                if (source[i, j])
+                    yield return new Translation.Models.AlignedWordPair { SourceIndex = i, TargetIndex = j };
+            }
+        }
+    }
+
+    private static Translation.Models.Phrase Map(SIL.Machine.Translation.Phrase source)
+    {
+        return new Translation.Models.Phrase
+        {
+            SourceSegmentStart = source.SourceSegmentRange.Start,
+            SourceSegmentEnd = source.SourceSegmentRange.End,
+            TargetSegmentCut = source.TargetSegmentCut,
+        };
     }
 }

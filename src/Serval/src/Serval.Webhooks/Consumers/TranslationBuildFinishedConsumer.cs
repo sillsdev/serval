@@ -1,4 +1,6 @@
-﻿namespace Serval.Webhooks.Consumers;
+﻿using Serval.Webhooks.Models;
+
+namespace Serval.Webhooks.Consumers;
 
 public class TranslationBuildFinishedConsumer(IWebhookService webhookService, IUrlService urlService)
     : IConsumer<TranslationBuildFinished>

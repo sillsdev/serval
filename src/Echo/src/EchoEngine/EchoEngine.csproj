@@ -21,6 +21,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.EngineApi\Serval.Translation.EngineApi.csproj" />
 		<ProjectReference Include="..\..\..\Serval\src\Serval.Grpc\Serval.Grpc.csproj" />
 	</ItemGroup>
 

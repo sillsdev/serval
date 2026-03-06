@@ -18,6 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Serval.DataFiles.Contracts\Serval.DataFiles.Contracts.csproj" />
 		<ProjectReference Include="..\Serval.Shared\Serval.Shared.csproj" />
 	</ItemGroup>
 

@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.Shared.Models;
+
+namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferPreprocessBuildJob(
     [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
@@ -29,7 +31,7 @@ public class SmtTransferPreprocessBuildJob(
     protected override async Task InitializeAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> data,
         CancellationToken cancellationToken
     )
     {

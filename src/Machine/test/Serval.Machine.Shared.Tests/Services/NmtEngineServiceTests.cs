@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using Serval.Shared.Models;
+
+namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
 public class NmtEngineServiceTests
@@ -10,7 +12,7 @@ public class NmtEngineServiceTests
         env.PersistModel();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForBuildToFinishAsync();
         engine = env.Engines.Get("engine1");
         Assert.Multiple(() =>
@@ -30,7 +32,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -58,7 +60,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<ParallelCorpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<FilteredParallelCorpus>());
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);

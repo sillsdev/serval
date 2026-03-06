@@ -1,4 +1,6 @@
-﻿namespace Serval.Webhooks.Services;
+﻿using Serval.Webhooks.Models;
+
+namespace Serval.Webhooks.Services;
 
 [TestFixture]
 public class WebhookJobTests

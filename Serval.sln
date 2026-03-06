@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32126.317
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11520.95
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C2CEC737-240C-4FE7-9BD4-B7548E8F5829}"
 	ProjectSection(SolutionItems) = preProject
@@ -94,7 +94,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.ServiceToolkit.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.IntegrationTests", "src\Serval\test\Serval.IntegrationTests\Serval.IntegrationTests.csproj", "{5FC2A081-9C4A-4761-BCE1-9753C942D597}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.Translation.Contracts", "src\Serval\src\Serval.Translation.Contracts\Serval.Translation.Contracts.csproj", "{F788A056-30F1-E0D4-81AE-B74270DF47A1}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.Machine.IntegrationTests", "src\Machine\test\Serval.Machine.IntegrationTests\Serval.Machine.IntegrationTests.csproj", "{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.Shared.Contracts", "src\Serval\src\Serval.Shared.Contracts\Serval.Shared.Contracts.csproj", "{ABFE5135-66C9-9F29-AAAB-50CEA2AB5BDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.DataFiles.Contracts", "src\Serval\src\Serval.DataFiles.Contracts\Serval.DataFiles.Contracts.csproj", "{991D4DEF-5AE8-4061-82F8-2BCB27D7A14B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -206,6 +212,18 @@ Global
 		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F788A056-30F1-E0D4-81AE-B74270DF47A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F788A056-30F1-E0D4-81AE-B74270DF47A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F788A056-30F1-E0D4-81AE-B74270DF47A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F788A056-30F1-E0D4-81AE-B74270DF47A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABFE5135-66C9-9F29-AAAB-50CEA2AB5BDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABFE5135-66C9-9F29-AAAB-50CEA2AB5BDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABFE5135-66C9-9F29-AAAB-50CEA2AB5BDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABFE5135-66C9-9F29-AAAB-50CEA2AB5BDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{991D4DEF-5AE8-4061-82F8-2BCB27D7A14B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{991D4DEF-5AE8-4061-82F8-2BCB27D7A14B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{991D4DEF-5AE8-4061-82F8-2BCB27D7A14B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{991D4DEF-5AE8-4061-82F8-2BCB27D7A14B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -246,6 +264,9 @@ Global
 		{C50ED15A-876D-42BF-980A-388E8C49C78D} = {1DB5E6D1-17A8-4FF2-B90A-C5DFBEF63126}
 		{5FC2A081-9C4A-4761-BCE1-9753C942D597} = {3E753B99-7C31-42AC-B02E-012B802F58DB}
 		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0} = {40C225C2-1EEF-4D1D-9D14-1CBB86C8A1CB}
+		{F788A056-30F1-E0D4-81AE-B74270DF47A1} = {25CDB05B-4E24-4A6E-933E-1E0BEC97D74D}
+		{ABFE5135-66C9-9F29-AAAB-50CEA2AB5BDF} = {25CDB05B-4E24-4A6E-933E-1E0BEC97D74D}
+		{991D4DEF-5AE8-4061-82F8-2BCB27D7A14B} = {25CDB05B-4E24-4A6E-933E-1E0BEC97D74D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}

@@ -1,84 +1,40 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Serval.Translation.V1;
-using Phase = Serval.Translation.V1.Phase;
+using Serval.Translation.Models;
+using Serval.Translation.Services;
 
 namespace Serval.Machine.Shared.Services;
 
-public class ServalTranslationPlatformService(
-    TranslationPlatformApi.TranslationPlatformApiClient client,
-    IOutboxService outboxService
-) : IPlatformService
+public class ServalTranslationPlatformService(ITranslationPlatformService platformService) : IPlatformService
 {
-    EngineGroup IPlatformService.EngineGroup => EngineGroup.Translation;
-    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
-    private readonly IOutboxService _outboxService = outboxService;
+    public EngineGroup EngineGroup => EngineGroup.Translation;
 
-    public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.BuildStarted,
-            groupId: buildId,
-            content: new BuildStartedRequest { BuildId = buildId },
-            cancellationToken: cancellationToken
-        );
-    }
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new PretranslationConverter() },
+    };
 
-    public async Task BuildCompletedAsync(
+    private readonly ITranslationPlatformService _platformService = platformService;
+
+    public Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default) =>
+        _platformService.BuildStartedAsync(buildId, cancellationToken);
+
+    public Task BuildCompletedAsync(
         string buildId,
         int trainSize,
         double confidence,
         CancellationToken cancellationToken = default
-    )
-    {
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.BuildCompleted,
-            groupId: buildId,
-            content: new BuildCompletedRequest
-            {
-                BuildId = buildId,
-                CorpusSize = trainSize,
-                Confidence = confidence,
-            },
-            cancellationToken: cancellationToken
-        );
-    }
+    ) => _platformService.BuildCompletedAsync(buildId, trainSize, confidence, cancellationToken);
 
-    public async Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default)
-    {
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.BuildCanceled,
-            groupId: buildId,
-            content: new BuildCanceledRequest { BuildId = buildId },
-            cancellationToken: cancellationToken
-        );
-    }
+    public Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default) =>
+        _platformService.BuildCanceledAsync(buildId, cancellationToken);
 
-    public async Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default)
-    {
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.BuildFaulted,
-            groupId: buildId,
-            content: new BuildFaultedRequest { BuildId = buildId, Message = message },
-            cancellationToken: cancellationToken
-        );
-    }
+    public Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default) =>
+        _platformService.BuildFaultedAsync(buildId, message, cancellationToken);
 
-    public async Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default)
-    {
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.BuildRestarting,
-            groupId: buildId,
-            content: new BuildRestartingRequest { BuildId = buildId },
-            cancellationToken: cancellationToken
-        );
-    }
+    public Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default) =>
+        _platformService.BuildRestartingAsync(buildId, cancellationToken);
 
-    public async Task UpdateBuildStatusAsync(
+    public Task UpdateBuildStatusAsync(
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
@@ -86,44 +42,32 @@ public class ServalTranslationPlatformService(
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default
-    )
-    {
-        var request = new UpdateBuildStatusRequest { BuildId = buildId, Step = progressStatus.Step };
-        if (progressStatus.PercentCompleted.HasValue)
-            request.Progress = progressStatus.PercentCompleted.Value;
-        if (progressStatus.Message is not null)
-            request.Message = progressStatus.Message;
-        if (queueDepth is not null)
-            request.QueueDepth = queueDepth.Value;
-        foreach (BuildPhase buildPhase in phases ?? [])
-        {
-            var phase = new Phase { Stage = (PhaseStage)buildPhase.Stage };
-            if (buildPhase.Step is not null)
-                phase.Step = buildPhase.Step.Value;
-            if (buildPhase.StepCount is not null)
-                phase.StepCount = buildPhase.StepCount.Value;
-            if (buildPhase.Started is not null)
-                phase.Started = buildPhase.Started.Value.ToTimestamp();
-            request.Phases.Add(phase);
-        }
-
-        if (started is not null)
-            request.Started = started.Value.ToTimestamp();
-        if (completed is not null)
-            request.Completed = completed.Value.ToTimestamp();
-
-        // just try to send it - if it fails, it fails.
-        await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);
-    }
-
-    public async Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default)
-    {
-        // just try to send it - if it fails, it fails.
-        await _client.UpdateBuildStatusAsync(
-            new UpdateBuildStatusRequest { BuildId = buildId, Step = step },
-            cancellationToken: cancellationToken
+    ) =>
+        _platformService.UpdateBuildStatusAsync(
+            buildId,
+            new Serval.Shared.Models.BuildProgressStatus
+            {
+                Step = progressStatus.Step,
+                PercentCompleted = progressStatus.PercentCompleted,
+                Message = progressStatus.Message,
+            },
+            queueDepth,
+            phases
+                ?.Select(p => new Serval.Shared.Models.BuildPhase
+                {
+                    Stage = (Serval.Shared.Models.BuildPhaseStage)p.Stage,
+                    Step = p.Step,
+                    StepCount = p.StepCount,
+                    Started = p.Started,
+                })
+                .ToList(),
+            started,
+            completed,
+            cancellationToken
         );
-    }
+
+    public Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default) =>
+        _platformService.UpdateBuildStatusAsync(buildId, step, cancellationToken);
 
     public async Task InsertInferenceResultsAsync(
         string engineId,
@@ -131,83 +75,170 @@ public class ServalTranslationPlatformService(
         CancellationToken cancellationToken = default
     )
     {
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.InsertPretranslations,
-            groupId: engineId,
-            content: engineId,
-            stream: pretranslationsStream,
-            cancellationToken: cancellationToken
+        await _platformService.InsertPretranslationsAsync(
+            engineId,
+            ReadPretranslationsAsync(pretranslationsStream, cancellationToken),
+            cancellationToken
         );
     }
 
-    public async Task IncrementTrainSizeAsync(
+    public Task IncrementTrainSizeAsync(
         string engineId,
         int count = 1,
         CancellationToken cancellationToken = default
-    )
-    {
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.IncrementEngineCorpusSize,
-            groupId: engineId,
-            content: new IncrementEngineCorpusSizeRequest { EngineId = engineId, Count = count },
-            cancellationToken: cancellationToken
-        );
-    }
+    ) => _platformService.IncrementEngineCorpusSizeAsync(engineId, count, cancellationToken);
 
-    public async Task UpdateBuildExecutionDataAsync(
+    public Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
         BuildExecutionData executionData,
         CancellationToken cancellationToken = default
-    )
-    {
-        var request = new UpdateBuildExecutionDataRequest
-        {
-            EngineId = engineId,
-            BuildId = buildId,
-            ExecutionData = new ExecutionData
+    ) =>
+        _platformService.UpdateBuildExecutionDataAsync(
+            engineId,
+            buildId,
+            new ExecutionData
             {
-                TrainCount = executionData.TrainCount ?? 0,
-                PretranslateCount = executionData.PretranslateCount ?? 0,
+                TrainCount = executionData.TrainCount,
+                PretranslateCount = executionData.PretranslateCount,
+                Warnings = executionData.Warnings,
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
-                ResolvedSourceLanguage = executionData.ResolvedSourceLanguage ?? string.Empty,
-                ResolvedTargetLanguage = executionData.ResolvedTargetLanguage ?? string.Empty,
+                ResolvedSourceLanguage = executionData.ResolvedSourceLanguage,
+                ResolvedTargetLanguage = executionData.ResolvedTargetLanguage,
             },
-        };
-        foreach (string warning in executionData.Warnings ?? [])
-            request.ExecutionData.Warnings.Add(warning);
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.UpdateBuildExecutionData,
-            groupId: engineId,
-            content: request,
-            cancellationToken: cancellationToken
+            cancellationToken
         );
-    }
 
-    public async Task UpdateTargetQuoteConventionAsync(
+    public Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
         string quoteConvention,
         CancellationToken cancellationToken = default
+    ) => _platformService.UpdateTargetQuoteConventionAsync(engineId, buildId, quoteConvention, cancellationToken);
+
+    private static async IAsyncEnumerable<PretranslationData> ReadPretranslationsAsync(
+        Stream stream,
+        [EnumeratorCancellation] CancellationToken cancellationToken
     )
     {
-        var content = new UpdateTargetQuoteConventionRequest
+        await foreach (
+            Pretranslation? pretranslation in JsonSerializer
+                .DeserializeAsyncEnumerable<Pretranslation>(stream, JsonSerializerOptions, cancellationToken)
+                .WithCancellation(cancellationToken)
+        )
         {
-            EngineId = engineId,
-            BuildId = buildId,
-            TargetQuoteConvention = quoteConvention,
-        };
+            if (pretranslation is null)
+                continue;
 
-        await _outboxService.EnqueueMessageAsync(
-            outboxId: ServalTranslationPlatformOutboxConstants.OutboxId,
-            method: ServalTranslationPlatformOutboxConstants.UpdateTargetQuoteConvention,
-            groupId: engineId,
-            content,
-            cancellationToken: cancellationToken
-        );
+            yield return new PretranslationData
+            {
+                CorpusId = pretranslation.CorpusId,
+                TextId = pretranslation.TextId,
+                SourceRefs = pretranslation.SourceRefs,
+                TargetRefs = pretranslation.TargetRefs,
+                Translation = pretranslation.Translation,
+                SourceTokens = pretranslation.SourceTokens?.ToList(),
+                TranslationTokens = pretranslation.TranslationTokens?.ToList(),
+                Alignment = pretranslation
+                    .Alignment?.Select(a => new Translation.Models.AlignedWordPair
+                    {
+                        SourceIndex = a.SourceIndex,
+                        TargetIndex = a.TargetIndex,
+                    })
+                    .ToList(),
+            };
+        }
+    }
+
+    private sealed class PretranslationConverter : JsonConverter<Pretranslation>
+    {
+        public override Pretranslation Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options
+        )
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException(
+                    $"Expected StartObject token at the beginning of Pretranslation object but instead encountered {reader.TokenType}"
+                );
+            }
+            string corpusId = "",
+                textId = "",
+                translation = "";
+            IReadOnlyList<string> sourceRefs = [],
+                targetRefs = [],
+                sourceTokens = [],
+                translationTokens = [];
+            IReadOnlyList<SIL.Machine.Corpora.AlignedWordPair> alignedWordPairs = [];
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    string s = reader.GetString()!;
+                    switch (s)
+                    {
+                        case "corpusId":
+                            reader.Read();
+                            corpusId = reader.GetString()!;
+                            break;
+                        case "textId":
+                            reader.Read();
+                            textId = reader.GetString()!;
+                            break;
+                        case "refs":
+                            reader.Read();
+                            targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "sourceRefs":
+                            reader.Read();
+                            sourceRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "targetRefs":
+                            reader.Read();
+                            targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "translation":
+                            reader.Read();
+                            translation = reader.GetString()!;
+                            break;
+                        case "sourceTokens":
+                            reader.Read();
+                            sourceTokens = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
+                            break;
+                        case "translationTokens":
+                            reader.Read();
+                            translationTokens = JsonSerializer
+                                .Deserialize<IList<string>>(ref reader, options)!
+                                .ToArray();
+                            break;
+                        case "alignment":
+                            reader.Read();
+                            alignedWordPairs = SIL.Machine.Corpora.AlignedWordPair.Parse(reader.GetString()).ToArray();
+                            break;
+                        default:
+                            throw new JsonException(
+                                $"Unexpected property name {s} when deserializing Pretranslation object"
+                            );
+                    }
+                }
+            }
+            return new Pretranslation
+            {
+                CorpusId = corpusId,
+                TextId = textId,
+                SourceRefs = sourceRefs,
+                TargetRefs = targetRefs,
+                Translation = translation,
+                Alignment = alignedWordPairs,
+                SourceTokens = sourceTokens,
+                TranslationTokens = translationTokens,
+            };
+        }
+
+        public override void Write(Utf8JsonWriter writer, Pretranslation value, JsonSerializerOptions options) =>
+            throw new NotSupportedException();
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Serval.Translation.Controllers;
+﻿using Serval.Translation.Dtos;
+
+namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/translation/engine-types")]

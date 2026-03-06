@@ -1,4 +1,6 @@
-﻿namespace Serval.ApiServer;
+﻿using Serval.Translation.Configuration;
+
+namespace Serval.ApiServer;
 
 public class Startup(IConfiguration configuration, IWebHostEnvironment environment)
 {
@@ -228,7 +230,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         app.UseEndpoints(x =>
         {
             x.MapControllers();
-            x.MapServalTranslationServices();
             x.MapServalWordAlignmentServices();
             x.MapHangfireDashboard();
         });

@@ -1,7 +1,6 @@
-﻿using Serval.Health.V1;
-using Serval.Translation.V1;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Serval.Translation.Configuration;
 
 public static class IServalBuilderExtensions
 {
@@ -18,30 +17,6 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IEngineService, EngineService>();
 
         builder.Services.Configure<TranslationOptions>(builder.Configuration.GetSection(TranslationOptions.Key));
-        var translationOptions = new TranslationOptions();
-        builder.Configuration.GetSection(TranslationOptions.Key).Bind(translationOptions);
-
-        foreach (EngineInfo engine in translationOptions.Engines)
-        {
-            builder.Services.AddGrpcClient<TranslationEngineApi.TranslationEngineApiClient>(
-                engine.Type,
-                o => o.Address = new Uri(engine.Address)
-            );
-            builder.Services.AddGrpcClient<HealthApi.HealthApiClient>(
-                $"{engine.Type}-Health",
-                o => o.Address = new Uri(engine.Address)
-            );
-            builder.Services.AddHealthChecks().AddCheck<GrpcServiceHealthCheck>(engine.Type);
-        }
-
-        builder.Services.AddOutbox(x =>
-        {
-            x.AddConsumer<EngineCreateConsumer>();
-            x.AddConsumer<EngineUpdateConsumer>();
-            x.AddConsumer<EngineDeleteConsumer>();
-            x.AddConsumer<EngineStartBuildConsumer>();
-            x.AddConsumer<EngineCancelBuildConsumer>();
-        });
 
         return builder;
     }

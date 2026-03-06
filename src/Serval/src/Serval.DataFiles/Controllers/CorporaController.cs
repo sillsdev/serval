@@ -1,3 +1,5 @@
+using Serval.DataFiles.Dtos;
+
 namespace Serval.DataFiles.Controllers;
 
 [ApiVersion("1.0")]

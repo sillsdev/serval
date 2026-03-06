@@ -15,7 +15,7 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using NSwag.Annotations;
 global using Serval.DataFiles.Consumers;
-global using Serval.DataFiles.Contracts;
+global using Serval.DataFiles.Messages;
 global using Serval.DataFiles.Models;
 global using Serval.DataFiles.Services;
 global using Serval.Shared.Configuration;
