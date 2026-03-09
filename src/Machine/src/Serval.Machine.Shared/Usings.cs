@@ -18,6 +18,7 @@ global using System.Text.Encodings.Web;
 global using System.Text.Json;
 global using System.Text.Json.Nodes;
 global using System.Text.Json.Serialization;
+global using System.Text.Unicode;
 global using Amazon;
 global using Amazon.Runtime;
 global using Amazon.S3;
