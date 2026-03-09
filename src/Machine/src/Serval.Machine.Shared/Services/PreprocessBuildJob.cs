@@ -19,12 +19,13 @@ public abstract class PreprocessBuildJob<TEngine>(
     )
     where TEngine : ITrainingEngine
 {
-    // Using UnsafeRelaxedJsonEscaping to avoid escaping surrogate pairs which can result in invalid UTF-8.
+    // Using JavaScriptEncoder.Create(UnicodeRanges.All) to avoid escaping surrogate pairs
+    // (including those outside of the BMP) which can result in invalid UTF-8.
     // This is safe since the data written by this writer is only read internally and only as UTF-8 encoded JSON.
     protected static readonly JsonWriterOptions InferenceWriterOptions = new()
     {
         Indented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
     };
 
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
