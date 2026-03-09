@@ -6,7 +6,7 @@ public class CorpusBundle
 {
     private readonly Dictionary<
         string,
-        (ParatextProjectSettings DaughterSettings, string ParentLocation, ParatextProjectSettings ParentSettings)
+        (ParatextProjectSettings DaughterSettings, string? ParentLocation, ParatextProjectSettings? ParentSettings)
     > _settings;
 
     public IEnumerable<(
@@ -66,15 +66,18 @@ public class CorpusBundle
             foreach ((string parentLocation, ParatextProjectSettings parentSettings) in paratextProjects)
             {
                 if (
-                    daughterSettings == parentSettings
-                    || !daughterSettings.HasParent
-                    || !daughterSettings.IsDaughterProjectOf(parentSettings)
+                    daughterSettings != parentSettings
+                    && daughterSettings.HasParent
+                    && daughterSettings.IsDaughterProjectOf(parentSettings)
                 )
                 {
-                    continue;
+                    daughterSettings.Parent = parentSettings;
+                    _settings[daughterLocation] = (daughterSettings, parentLocation, parentSettings);
                 }
-                daughterSettings.Parent = parentSettings;
-                _settings[daughterLocation] = (daughterSettings, parentLocation, parentSettings);
+                else
+                {
+                    _settings[daughterLocation] = (daughterSettings, null, null);
+                }
             }
         }
 
@@ -91,7 +94,7 @@ public class CorpusBundle
         );
 
         SourceTermCorpora = parallelCorpora.SelectMany(parallelCorpus =>
-            parallelCorpus.TargetCorpora.Select(corpus =>
+            parallelCorpus.SourceCorpora.Select(corpus =>
                 (parallelCorpus, corpus, corpus.Files, CreateTermCorpora(corpus.Files))
             )
         );
@@ -108,9 +111,13 @@ public class CorpusBundle
         if (
             !_settings.TryGetValue(
                 daughterLocation,
-                out (ParatextProjectSettings _, string Location, ParatextProjectSettings Settings) parent
+                out (ParatextProjectSettings _, string? Location, ParatextProjectSettings? Settings) parent
             )
         )
+        {
+            return null;
+        }
+        if (parent.Location == null || parent.Settings == null)
         {
             return null;
         }
@@ -123,21 +130,21 @@ public class CorpusBundle
             !_settings.TryGetValue(
                 location,
                 out (
-                    ParatextProjectSettings DaughterSettings,
-                    string ParentLocation,
-                    ParatextProjectSettings ParentSettings
-                ) parent
+                    ParatextProjectSettings ParatextProjectSettings,
+                    string? ParentLocation,
+                    ParatextProjectSettings? ParentSettings
+                ) settings
             )
         )
         {
             return null;
         }
-        return parent.DaughterSettings;
+        return settings.ParatextProjectSettings;
     }
 
     public ZipParatextProjectTextUpdater GetTextUpdater(string location)
     {
-        using IZipContainer container = new ZipContainer(location);
+        IZipContainer container = new ZipContainer(location);
         ParatextProjectSettings? parentSettings = ParentOf(location)?.Settings;
         return new ZipParatextProjectTextUpdater(container, parentSettings);
     }
@@ -170,11 +177,11 @@ public class CorpusBundle
                     if (
                         _settings.TryGetValue(
                             file.Location,
-                            out (ParatextProjectSettings _, string Location, ParatextProjectSettings Settings) parent
+                            out (ParatextProjectSettings, string? ParentLocation, ParatextProjectSettings?) settings
                         )
                     )
                     {
-                        parentLocation = parent.Location;
+                        parentLocation = settings.ParentLocation;
                     }
                     corpora.Add(
                         new ParatextBackupTextCorpus(
@@ -204,11 +211,11 @@ public class CorpusBundle
                     if (
                         _settings.TryGetValue(
                             file.Location,
-                            out (ParatextProjectSettings _, string Location, ParatextProjectSettings Settings) parent
+                            out (ParatextProjectSettings, string? ParentLocation, ParatextProjectSettings?) settings
                         )
                     )
                     {
-                        parentLocation = parent.Location;
+                        parentLocation = settings.ParentLocation;
                     }
                     corpora.Add(new ParatextBackupTermsCorpus(file.Location, ["PN"], parentFileName: parentLocation));
                     break;

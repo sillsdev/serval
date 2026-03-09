@@ -10,7 +10,6 @@ public class EngineService(
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
     ILoggerFactory loggerFactory,
-    IScriptureDataFileService scriptureDataFileService,
     IOutboxService outboxService,
     IOptionsMonitor<WordAlignmentOptions> wordAlignmentOptions
 ) : OwnedEntityServiceBase<Engine>(engines), IEngineService
@@ -21,7 +20,6 @@ public class EngineService(
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
-    private readonly IScriptureDataFileService _scriptureDataFileService = scriptureDataFileService;
     private readonly IOutboxService _outboxService = outboxService;
     private readonly IOptionsMonitor<WordAlignmentOptions> _wordAlignmentOptions = wordAlignmentOptions;
 
@@ -130,9 +128,12 @@ public class EngineService(
     {
         try
         {
+            using var archive = new ZipContainer(
+                Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, fileLocation)
+            );
             return ScriptureRangeParser.GetChapters(
                 scriptureRange,
-                _scriptureDataFileService.GetParatextProjectSettings(fileLocation).Versification
+                new ZipParatextProjectSettingsParser(archive).Parse().Versification
             );
         }
         catch (ArgumentException ae)

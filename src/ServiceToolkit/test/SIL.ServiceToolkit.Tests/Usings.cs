@@ -6,6 +6,7 @@ global using Microsoft.Extensions.Options;
 global using NSubstitute;
 global using NSubstitute.ExceptionExtensions;
 global using NUnit.Framework;
+global using NUnit.Framework.Constraints;
 global using SIL.DataAccess;
 global using SIL.Machine.Corpora;
 global using SIL.Machine.PunctuationAnalysis;

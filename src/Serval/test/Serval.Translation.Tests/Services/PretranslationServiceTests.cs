@@ -1,25 +1,10 @@
-﻿namespace Serval.Translation.Services;
+﻿using System.IO.Compression;
+
+namespace Serval.Translation.Services;
 
 [TestFixture]
 public class PretranslationServiceTests
 {
-    private const string SourceUsfm =
-        $@"\id MAT - SRC
-\c 1
-\v 1 SRC - Chapter one, verse one.
-\p new paragraph
-\v 2
-\v 3 SRC - Chapter one, verse three.
-";
-
-    private const string TargetUsfm =
-        @"\id MAT - TRG
-\c 1
-\v 1 TRG - Chapter one, verse one.
-\v 2
-\v 3 TRG - Chapter one, verse three.
-";
-
     [Test]
     public async Task GetUsfmAsync_Source_PreferExisting()
     {
@@ -159,8 +144,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_PreferExisting()
     {
-        using TestEnvironment env = new();
-        env.AddMatthewToTarget();
+        using TestEnvironment env = new(addMatthew: true);
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferExisting,
@@ -186,8 +170,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_PreferPretranslated()
     {
-        using TestEnvironment env = new();
-        env.AddMatthewToTarget();
+        using TestEnvironment env = new(addMatthew: true);
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferPretranslated,
@@ -253,8 +236,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Auto_TargetBookExists()
     {
-        using TestEnvironment env = new();
-        env.AddMatthewToTarget();
+        using TestEnvironment env = new(addMatthew: true);
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferPretranslated,
@@ -280,15 +262,22 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_OnlyExisting()
     {
-        using TestEnvironment env = new();
-        env.AddMatthewToTarget();
+        using TestEnvironment env = new(addMatthew: true);
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.OnlyExisting,
             PretranslationUsfmTemplate.Target
         );
 
-        List<string> lines = TargetUsfm.Split('\n').ToList();
+        string targetUsfm =
+            @"""\id MAT - TRG
+\c 1
+\v 1 TRG - Chapter one, verse one.
+\v 2
+\v 3 TRG - Chapter one, verse three.
+""";
+
+        List<string> lines = targetUsfm.Split('\n').ToList();
 
         lines.Insert(
             1,
@@ -304,8 +293,7 @@ public class PretranslationServiceTests
     [Test]
     public async Task GetUsfmAsync_Target_OnlyPretranslated()
     {
-        using TestEnvironment env = new();
-        env.AddMatthewToTarget();
+        using TestEnvironment env = new(addMatthew: true);
 
         string usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.OnlyPretranslated,
@@ -441,8 +429,27 @@ public class PretranslationServiceTests
 
     private class TestEnvironment : IDisposable
     {
-        public TestEnvironment()
+        private static readonly string TestDataPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "data");
+
+        public TestEnvironment(bool addMatthew = false)
         {
+            _tmpDir = Path.GetTempPath();
+            ZipFile.CreateFromDirectory(Path.Combine(TestDataPath, "pt-project1"), Path.Combine(_tmpDir, "file1.zip"));
+            if (addMatthew)
+            {
+                ZipFile.CreateFromDirectory(
+                    Path.Combine(TestDataPath, "pt-project3"),
+                    Path.Combine(_tmpDir, "file2.zip")
+                );
+            }
+            else
+            {
+                ZipFile.CreateFromDirectory(
+                    Path.Combine(TestDataPath, "pt-project2"),
+                    Path.Combine(_tmpDir, "file2.zip")
+                );
+            }
+
             CorpusFile file1 = new()
             {
                 Id = "file1",
@@ -636,50 +643,22 @@ public class PretranslationServiceTests
                     Translation = "Chapter 1, verse 2.",
                 },
             ]);
-            ScriptureDataFileService = Substitute.For<IScriptureDataFileService>();
-            ScriptureDataFileService.GetParatextProjectSettings("file1.zip").Returns(CreateProjectSettings("SRC"));
-            ScriptureDataFileService.GetParatextProjectSettings("file2.zip").Returns(CreateProjectSettings("TRG"));
-            var zipSubstituteSource = Substitute.For<IZipContainer>();
-            var zipSubstituteTarget = Substitute.For<IZipContainer>();
-            zipSubstituteSource
-                .OpenEntry("MATSRC.SFM")
-                .Returns(x => new MemoryStream(Encoding.UTF8.GetBytes(SourceUsfm)));
-            zipSubstituteTarget.OpenEntry("MATTRG.SFM").Returns(x => new MemoryStream(Encoding.UTF8.GetBytes("")));
-            zipSubstituteSource.EntryExists(Arg.Any<string>()).Returns(false);
-            zipSubstituteTarget.EntryExists(Arg.Any<string>()).Returns(false);
-            zipSubstituteSource.EntryExists("MATSRC.SFM").Returns(true);
-            zipSubstituteTarget.EntryExists("MATTRG.SFM").Returns(true);
-            TargetZipContainer = zipSubstituteTarget;
-            TextUpdaters = new List<Shared.Services.ZipParatextProjectTextUpdater>();
-            Shared.Services.ZipParatextProjectTextUpdater GetTextUpdater(string type)
-            {
-                var updater = type switch
-                {
-                    "SRC" => new Shared.Services.ZipParatextProjectTextUpdater(
-                        zipSubstituteSource,
-                        settings: CreateProjectSettings("SRC")
-                    ),
-                    "TRG" => new Shared.Services.ZipParatextProjectTextUpdater(
-                        zipSubstituteTarget,
-                        settings: CreateProjectSettings("TRG")
-                    ),
-                    _ => throw new ArgumentException(),
-                };
-                TextUpdaters.Add(updater);
-                return updater;
-            }
-            ScriptureDataFileService.GetZipParatextProjectTextUpdater("file1.zip").Returns(x => GetTextUpdater("SRC"));
-            ScriptureDataFileService.GetZipParatextProjectTextUpdater("file2.zip").Returns(x => GetTextUpdater("TRG"));
-            Service = new PretranslationService(Pretranslations, Engines, Builds, ScriptureDataFileService);
+            IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
+            dataFileOptions.CurrentValue.Returns(new DataFileOptions() { FilesDirectory = _tmpDir });
+            Service = new PretranslationService(Pretranslations, Engines, Builds, dataFileOptions);
         }
 
         public PretranslationService Service { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
         public MemoryRepository<Engine> Engines { get; }
         public MemoryRepository<Build> Builds { get; }
-        public IScriptureDataFileService ScriptureDataFileService { get; }
-        public IZipContainer TargetZipContainer { get; }
-        public IList<Shared.Services.ZipParatextProjectTextUpdater> TextUpdaters { get; }
+
+        private readonly string _tmpDir;
+
+        public void Dispose()
+        {
+            Directory.Delete(_tmpDir, true);
+        }
 
         public async Task<string> GetUsfmAsync(
             PretranslationUsfmTextOrigin textOrigin,
@@ -716,41 +695,6 @@ public class PretranslationServiceTests
             parallel_usfm = parallel_usfm.Replace("\r\n", "\n");
             Assert.That(parallel_usfm, Is.EqualTo(usfm));
             return usfm;
-        }
-
-        public void AddMatthewToTarget()
-        {
-            TargetZipContainer
-                .OpenEntry("MATTRG.SFM")
-                .Returns(x => new MemoryStream(Encoding.UTF8.GetBytes(TargetUsfm)));
-        }
-
-        private static ParatextProjectSettings CreateProjectSettings(string name)
-        {
-            return new ParatextProjectSettings(
-                guid: "Id",
-                name: name,
-                fullName: name,
-                encoding: Encoding.UTF8,
-                versification: ScrVers.English,
-                stylesheet: new UsfmStylesheet("usfm.sty"),
-                fileNamePrefix: "",
-                fileNameForm: "MAT",
-                fileNameSuffix: $"{name}.SFM",
-                biblicalTermsListType: "Major",
-                biblicalTermsProjectName: "",
-                biblicalTermsFileName: "BiblicalTerms.xml",
-                languageCode: "en",
-                translationType: "Standard"
-            );
-        }
-
-        public void Dispose()
-        {
-            foreach (var updater in TextUpdaters)
-            {
-                updater.Dispose();
-            }
         }
     }
 }

@@ -1361,27 +1361,6 @@ public class EngineServiceTests
                 .Returns(WordAlignmentServiceClient);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
-            var scriptureDataFileService = Substitute.For<IScriptureDataFileService>();
-            scriptureDataFileService
-                .GetParatextProjectSettings(Arg.Any<string>())
-                .Returns(
-                    new ParatextProjectSettings(
-                        guid: "Id",
-                        name: "Tst",
-                        fullName: "Test",
-                        encoding: Encoding.UTF8,
-                        versification: ScrVers.English,
-                        stylesheet: new UsfmStylesheet("usfm.sty"),
-                        fileNamePrefix: "TST",
-                        fileNameForm: "MAT",
-                        fileNameSuffix: ".USFM",
-                        biblicalTermsListType: "BiblicalTerms",
-                        biblicalTermsProjectName: "",
-                        biblicalTermsFileName: "BiblicalTerms.xml",
-                        languageCode: "en",
-                        translationType: "Standard"
-                    )
-                );
 
             WordAlignments = new MemoryRepository<Models.WordAlignment>();
             OutboxService = Substitute.For<IOutboxService>();
@@ -1400,7 +1379,6 @@ public class EngineServiceTests
                 dataFileOptions,
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
-                scriptureDataFileService,
                 OutboxService,
                 wordAlignmentOptions
             );

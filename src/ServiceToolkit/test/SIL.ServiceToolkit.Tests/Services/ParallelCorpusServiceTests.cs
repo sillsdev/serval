@@ -125,7 +125,7 @@ public class ParallelCorpusServiceTests
             "Services",
             "data"
         );
-        private readonly TempDirectory _tempDir = new TempDirectory(name: "ParallelCorpusProcessingServiceTests");
+        private readonly TempDirectory _tempDir = new TempDirectory(name: "ParallelCorpusServiceTests");
 
         public IParallelCorpusService Processor { get; } = new ParallelCorpusService();
 
