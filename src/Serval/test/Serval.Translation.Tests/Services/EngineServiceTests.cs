@@ -2366,7 +2366,7 @@ public class EngineServiceTests
                 new TranslationOptions { Engines = [new EngineInfo { Type = "Smt" }] }
             );
 
-            Service = new EngineService(
+            Service = new TestEngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 Pretranslations,
@@ -2846,6 +2846,44 @@ public class EngineServiceTests
                 () => new Metadata(),
                 () => { }
             );
+        }
+    }
+
+    private class TestEngineService(
+        IRepository<Engine> engines,
+        IRepository<Build> builds,
+        IRepository<Pretranslation> pretranslations,
+        IScopedMediator mediator,
+        GrpcClientFactory grpcClientFactory,
+        IOptionsMonitor<DataFileOptions> dataFileOptions,
+        IDataAccessContext dataAccessContext,
+        ILoggerFactory loggerFactory,
+        IOutboxService outboxService,
+        IOptionsMonitor<TranslationOptions> translationOptions
+    )
+        : EngineService(
+            engines,
+            builds,
+            pretranslations,
+            mediator,
+            grpcClientFactory,
+            dataFileOptions,
+            dataAccessContext,
+            loggerFactory,
+            outboxService,
+            translationOptions
+        )
+    {
+        protected override Dictionary<string, List<int>> GetChapters(string fileLocation, string scriptureRange)
+        {
+            try
+            {
+                return ScriptureRangeParser.GetChapters(scriptureRange);
+            }
+            catch (ArgumentException ae)
+            {
+                throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
+            }
         }
     }
 }

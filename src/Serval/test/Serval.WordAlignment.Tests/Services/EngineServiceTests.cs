@@ -1371,7 +1371,7 @@ public class EngineServiceTests
                 new WordAlignmentOptions { Engines = [new EngineInfo { Type = "Statistical" }] }
             );
 
-            Service = new EngineService(
+            Service = new TestEngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 WordAlignments,
@@ -1812,5 +1812,41 @@ public class EngineServiceTests
             alignedWordPairs.Add(new Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
         }
         return alignedWordPairs;
+    }
+
+    private class TestEngineService(
+        IRepository<Engine> engines,
+        IRepository<Build> builds,
+        IRepository<Models.WordAlignment> wordAlignments,
+        GrpcClientFactory grpcClientFactory,
+        IOptionsMonitor<DataFileOptions> dataFileOptions,
+        IDataAccessContext dataAccessContext,
+        ILoggerFactory loggerFactory,
+        IOutboxService outboxService,
+        IOptionsMonitor<WordAlignmentOptions> wordAlignmentOptions
+    )
+        : EngineService(
+            engines,
+            builds,
+            wordAlignments,
+            grpcClientFactory,
+            dataFileOptions,
+            dataAccessContext,
+            loggerFactory,
+            outboxService,
+            wordAlignmentOptions
+        )
+    {
+        protected override Dictionary<string, List<int>> GetChapters(string fileLocation, string scriptureRange)
+        {
+            try
+            {
+                return ScriptureRangeParser.GetChapters(scriptureRange);
+            }
+            catch (ArgumentException ae)
+            {
+                throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
+            }
+        }
     }
 }

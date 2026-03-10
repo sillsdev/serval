@@ -124,7 +124,7 @@ public class EngineService(
         );
     }
 
-    private Dictionary<string, List<int>> GetChapters(string fileLocation, string scriptureRange)
+    protected virtual Dictionary<string, List<int>> GetChapters(string fileLocation, string scriptureRange)
     {
         try
         {

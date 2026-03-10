@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using SIL.Machine.Utils;
 
 namespace Serval.Translation.Services;
 
@@ -18,7 +19,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test2
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -45,7 +46,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test2
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -72,7 +73,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test2
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -99,7 +100,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test2
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -127,7 +128,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test2
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Embed markers were moved to the end of the verse. Paragraph breaks have positions preserved. Style markers were removed.
 \c 1
@@ -180,7 +181,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test3
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -219,7 +220,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test2
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -246,7 +247,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test3
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -270,12 +271,12 @@ public class PretranslationServiceTests
         );
 
         string targetUsfm =
-            @"""\id MAT - TRG
+            @"\id MAT - Test3
 \c 1
 \v 1 TRG - Chapter one, verse one.
 \v 2
 \v 3 TRG - Chapter one, verse three.
-""";
+";
 
         List<string> lines = targetUsfm.Split('\n').ToList();
 
@@ -303,7 +304,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - TRG
+                    @"\id MAT - Test3
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -429,25 +430,29 @@ public class PretranslationServiceTests
 
     private class TestEnvironment : IDisposable
     {
-        private static readonly string TestDataPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "data");
+        private static readonly string TestDataPath = Path.Combine("..", "..", "..", "data");
 
         public TestEnvironment(bool addMatthew = false)
         {
-            _tmpDir = Path.GetTempPath();
-            ZipFile.CreateFromDirectory(Path.Combine(TestDataPath, "pt-project1"), Path.Combine(_tmpDir, "file1.zip"));
-            if (addMatthew)
+            _tempDir = new TempDirectory("PretranslationServiceTests");
+            string file1Path = Path.Combine(_tempDir.Path, "file1.zip");
+            if (!File.Exists(file1Path))
             {
                 ZipFile.CreateFromDirectory(
-                    Path.Combine(TestDataPath, "pt-project3"),
-                    Path.Combine(_tmpDir, "file2.zip")
+                    Path.Combine(TestDataPath, "pt-project1"),
+                    Path.Combine(_tempDir.Path, "file1.zip")
                 );
+            }
+            string file2Path = Path.Combine(_tempDir.Path, "file2.zip");
+            if (File.Exists(file2Path))
+                File.Delete(file2Path);
+            if (addMatthew)
+            {
+                ZipFile.CreateFromDirectory(Path.Combine(TestDataPath, "pt-project3"), file2Path);
             }
             else
             {
-                ZipFile.CreateFromDirectory(
-                    Path.Combine(TestDataPath, "pt-project2"),
-                    Path.Combine(_tmpDir, "file2.zip")
-                );
+                ZipFile.CreateFromDirectory(Path.Combine(TestDataPath, "pt-project2"), file2Path);
             }
 
             CorpusFile file1 = new()
@@ -644,7 +649,7 @@ public class PretranslationServiceTests
                 },
             ]);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
-            dataFileOptions.CurrentValue.Returns(new DataFileOptions() { FilesDirectory = _tmpDir });
+            dataFileOptions.CurrentValue.Returns(new DataFileOptions() { FilesDirectory = _tempDir.Path });
             Service = new PretranslationService(Pretranslations, Engines, Builds, dataFileOptions);
         }
 
@@ -653,11 +658,11 @@ public class PretranslationServiceTests
         public MemoryRepository<Engine> Engines { get; }
         public MemoryRepository<Build> Builds { get; }
 
-        private readonly string _tmpDir;
+        private readonly TempDirectory _tempDir;
 
         public void Dispose()
         {
-            Directory.Delete(_tmpDir, true);
+            _tempDir.Dispose();
         }
 
         public async Task<string> GetUsfmAsync(
