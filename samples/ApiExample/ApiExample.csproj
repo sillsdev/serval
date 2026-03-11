@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Duende.AccessTokenManagement" Version="4.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.3" />
-    <PackageReference Include="Serval.Client" Version="1.13.0" />
+    <PackageReference Include="Serval.Client" Version="1.15.0" />
   </ItemGroup>
 
 </Project>
