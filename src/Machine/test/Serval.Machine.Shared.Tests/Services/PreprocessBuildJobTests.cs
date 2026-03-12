@@ -347,7 +347,7 @@ public class PreprocessBuildJobTests
         env.ParallelCorpusService = Substitute.For<IParallelCorpusService>();
         env.ParallelCorpusService.When(s =>
                 s.PreprocessAsync(
-                    Arg.Any<CorpusBundle>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpus>>(),
                     Arg.Any<Func<Row, TrainingDataType, Task>>(),
                     Arg.Any<Func<Row, bool, string, Task>>(),
                     Arg.Any<bool>(),

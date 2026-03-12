@@ -125,7 +125,7 @@ public class TranslationEngineServiceV1(
 
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
-                        new SIL.ServiceToolkit.Utils.CorpusBundle(request.Corpora.Select(Map)),
+                        request.Corpora.Select(Map),
                         (row, _) =>
                         {
                             if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)

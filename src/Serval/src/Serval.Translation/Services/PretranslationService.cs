@@ -1,6 +1,4 @@
 ﻿using SIL.Machine.Corpora;
-using SIL.Machine.PunctuationAnalysis;
-using SIL.Machine.Translation;
 
 namespace Serval.Translation.Services;
 
@@ -8,11 +6,13 @@ public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    IOptionsMonitor<DataFileOptions> dataFileOptions
+    IOptionsMonitor<DataFileOptions> dataFileOptions,
+    IParallelCorpusService parallelCorpusService
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Build> _builds = builds;
+    private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
     private const string AIDisclaimerRemark =
         "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
@@ -52,52 +52,46 @@ public class PretranslationService(
         Engine? engine = await _engines.GetAsync(engineId, cancellationToken);
         Corpus? corpus = engine?.Corpora.SingleOrDefault(c => c.Id == corpusId);
         ParallelCorpus? parallelCorpus = engine?.ParallelCorpora.SingleOrDefault(c => c.Id == corpusId);
+        if (corpus is not null)
+        {
+            if (corpus.SourceFiles.Count == 0)
+                throw new InvalidOperationException($"The corpus {corpus.Id} has no source files.");
+            if (corpus.TargetFiles.Count == 0)
+                throw new InvalidOperationException($"The corpus {corpus.Id} has no target files.");
+        }
+        else if (parallelCorpus is not null)
+        {
+            if (parallelCorpus.SourceCorpora.Count == 0)
+            {
+                throw new InvalidOperationException($"The parallel corpus {parallelCorpus.Id} has no source corpora.");
+            }
+            if (parallelCorpus.SourceCorpora[0].Files.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {parallelCorpus.SourceCorpora[0].Id} referenced in parallel corpus {parallelCorpus.Id} has no files associated with it."
+                );
+            }
+            if (parallelCorpus.TargetCorpora.Count == 0)
+            {
+                throw new InvalidOperationException($"The parallel corpus {parallelCorpus.Id} has no target corpora.");
+            }
+            if (parallelCorpus.TargetCorpora[0].Files.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"The corpus {parallelCorpus.TargetCorpora[0].Id} referenced in parallel corpus {parallelCorpus.Id} has no files associated with it."
+                );
+            }
+        }
+        else
+        {
+            throw new EntityNotFoundException($"Could not find the corpus '{corpusId}' in engine '{engineId}'.");
+        }
+
         Build? build = (await _builds.GetAllAsync(b => b.EngineRef == engineId, cancellationToken))
             .OrderByDescending(b => b.DateFinished)
             .FirstOrDefault();
         if (build is null || build.DateFinished is null)
             throw new InvalidOperationException($"Could not find any completed builds for engine '{engineId}'.");
-
-        CorpusBundle corpusBundle;
-        if (build.TrainOn == null || build.Pretranslate == null)
-        {
-            if (parallelCorpus != null)
-            {
-                corpusBundle = new CorpusBundle(engine!.ParallelCorpora.Select(Map));
-            }
-            else
-            {
-                corpusBundle = new CorpusBundle(engine!.Corpora.Select(c => Map(c, engine)));
-            }
-        }
-        else
-        {
-            HashSet<string> referencedCorpora;
-            if (parallelCorpus != null)
-            {
-                referencedCorpora = build
-                    .TrainOn.Select(t => t.ParallelCorpusRef)
-                    .Concat(build.Pretranslate.Select(p => p.ParallelCorpusRef))
-                    .Where(r => r != null)
-                    .Select(r => r!)
-                    .ToHashSet();
-                corpusBundle = new CorpusBundle(
-                    engine!.ParallelCorpora.Where(pc => referencedCorpora.Contains(pc.Id)).Select(Map)
-                );
-            }
-            else
-            {
-                referencedCorpora = build
-                    .TrainOn.Select(t => t.CorpusRef)
-                    .Concat(build.Pretranslate.Select(p => p.CorpusRef))
-                    .Where(r => r != null)
-                    .Select(r => r!)
-                    .ToHashSet();
-                corpusBundle = new CorpusBundle(
-                    engine!.Corpora.Where(c => referencedCorpora.Contains(c.Id)).Select(c => Map(c, engine))
-                );
-            }
-        }
 
         string disclaimerRemark = string.Format(
             CultureInfo.InvariantCulture,
@@ -113,166 +107,92 @@ public class PretranslationService(
 
         List<string> remarks = [disclaimerRemark, markerPlacementRemark];
 
-        CorpusFile sourceFile;
-        CorpusFile targetFile;
-        if (corpus is not null)
+        SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora;
+        if (build.TrainOn == null || build.Pretranslate == null)
         {
-            if (corpus.SourceFiles.Count == 0)
-                throw new InvalidOperationException($"The corpus {corpus.Id} has no source files.");
-            sourceFile = corpus.SourceFiles[0];
-            if (corpus.TargetFiles.Count == 0)
-                throw new InvalidOperationException($"The corpus {corpus.Id} has no target files.");
-            targetFile = corpus.TargetFiles[0];
-        }
-        else if (parallelCorpus is not null)
-        {
-            if (parallelCorpus.SourceCorpora.Count == 0)
+            if (parallelCorpus != null)
             {
-                throw new InvalidOperationException($"The parallel corpus {parallelCorpus.Id} has no source corpora.");
+                parallelCorpora = engine!.ParallelCorpora.Select(Map).ToArray();
             }
-            if (parallelCorpus.SourceCorpora[0].Files.Count == 0)
+            else
             {
-                throw new InvalidOperationException(
-                    $"The corpus {parallelCorpus.SourceCorpora[0].Id} referenced in parallel corpus {parallelCorpus.Id} has no files associated with it."
-                );
+                parallelCorpora = engine!.Corpora.Select(c => Map(c, engine)).ToArray();
             }
-            sourceFile = parallelCorpus.SourceCorpora[0].Files[0];
-            if (parallelCorpus.TargetCorpora.Count == 0)
-            {
-                throw new InvalidOperationException($"The parallel corpus {parallelCorpus.Id} has no target corpora.");
-            }
-            if (parallelCorpus.TargetCorpora[0].Files.Count == 0)
-            {
-                throw new InvalidOperationException(
-                    $"The corpus {parallelCorpus.TargetCorpora[0].Id} referenced in parallel corpus {parallelCorpus.Id} has no files associated with it."
-                );
-            }
-            targetFile = parallelCorpus.TargetCorpora[0].Files[0];
         }
         else
         {
-            throw new EntityNotFoundException($"Could not find the corpus '{corpusId}' in engine '{engineId}'.");
+            HashSet<string> referencedCorpora;
+            if (parallelCorpus != null)
+            {
+                referencedCorpora = build
+                    .TrainOn.Select(t => t.ParallelCorpusRef)
+                    .Concat(build.Pretranslate.Select(p => p.ParallelCorpusRef))
+                    .Where(r => r != null)
+                    .Select(r => r!)
+                    .ToHashSet();
+                parallelCorpora = engine!
+                    .ParallelCorpora.Where(pc => referencedCorpora.Contains(pc.Id))
+                    .Select(Map)
+                    .ToArray();
+            }
+            else
+            {
+                referencedCorpora = build
+                    .TrainOn.Select(t => t.CorpusRef)
+                    .Concat(build.Pretranslate.Select(p => p.CorpusRef))
+                    .Where(r => r != null)
+                    .Select(r => r!)
+                    .ToHashSet();
+                parallelCorpora = engine!
+                    .Corpora.Where(c => referencedCorpora.Contains(c.Id))
+                    .Select(c => Map(c, engine))
+                    .ToArray();
+            }
         }
-        if (sourceFile.Format is not FileFormat.Paratext || targetFile.Format is not FileFormat.Paratext)
-            throw new InvalidOperationException("USFM format is not valid for non-Scripture corpora.");
 
-        ParatextProjectSettings sourceSettings = corpusBundle.GetSettings(GetFilePath(sourceFile.Filename))!;
-        ParatextProjectSettings targetSettings = corpusBundle.GetSettings(GetFilePath(targetFile.Filename))!;
-
-        IEnumerable<Pretranslation> pretranslations = await GetAllAsync(
-            engineId,
-            modelRevision,
-            corpusId,
-            textId,
-            cancellationToken
-        );
-
-        IEnumerable<(
-            IReadOnlyList<ScriptureRef> SourceScriptureRefs,
-            IReadOnlyList<ScriptureRef> TargetScriptureRefs,
-            Pretranslation Pretranslation,
-            PretranslationUsfmMarkerBehavior ParagraphBehavior,
-            PretranslationUsfmMarkerBehavior StyleBehavior
-        )> pretranslationRows = pretranslations
-            .Select(p => Map(p, sourceSettings, targetSettings, paragraphMarkerBehavior, styleMarkerBehavior))
-            .Where(p => p.TargetScriptureRefs.Any())
-            .OrderBy(p => p.TargetScriptureRefs[0]);
-
-        List<IUsfmUpdateBlockHandler> updateBlockHandlers = [];
-        if (
-            paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition
-            && template == PretranslationUsfmTemplate.Source
-        )
+        IEnumerable<SIL.ServiceToolkit.Models.ParallelRow> pretranslations = (
+            await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
+        ).Select(p => new SIL.ServiceToolkit.Models.ParallelRow
         {
-            updateBlockHandlers.Add(new PlaceMarkersUsfmUpdateBlockHandler());
-        }
+            SourceRefs = p.SourceRefs ?? [],
+            TargetRefs = p.TargetRefs ?? [],
+            TargetText = p.Translation,
+            Alignment = p
+                .Alignment?.Select(wp => new SIL.Machine.Corpora.AlignedWordPair(wp.SourceIndex, wp.TargetIndex))
+                .ToArray(),
+            SourceTokens = p.SourceTokens,
+            TargetTokens = p.TranslationTokens,
+        });
+
+        string? targetQuoteConvention = null;
+        if (quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized)
+            targetQuoteConvention = build.TargetQuoteConvention;
 
         string usfm = "";
         // Update the target book if it exists
         if (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Target)
         {
-            // the pretranslations are generated from the source book and inserted into the target book
-            // use relaxed references since the USFM structure may not be the same
-            pretranslationRows = pretranslationRows.Select(p =>
-                (
-                    // we won't use the source refs
-                    (IReadOnlyList<ScriptureRef>)[],
-                    (IReadOnlyList<ScriptureRef>)p.TargetScriptureRefs.Select(r => r.ToRelaxed()).ToArray(),
-                    p.Pretranslation,
-                    p.ParagraphBehavior,
-                    p.StyleBehavior
-                )
-            );
-            using SIL.ServiceToolkit.Services.ZipParatextProjectTextUpdater updater = corpusBundle.GetTextUpdater(
-                GetFilePath(targetFile.Filename)
-            );
-            switch (textOrigin)
+            UpdateUsfmTextBehavior textBehavior = textOrigin switch
             {
-                case PretranslationUsfmTextOrigin.PreferExisting:
-                    usfm =
-                        updater.UpdateUsfm(
-                            textId,
-                            pretranslationRows.Select(pr => Map(pr, isSource: false)).ToList(),
-                            fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-                            paragraphBehavior: Map(paragraphMarkerBehavior),
-                            embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks,
-                            errorHandler: (_) => true,
-                            compareSegments: false
-                        ) ?? "";
-                    break;
-                case PretranslationUsfmTextOrigin.PreferPretranslated:
-                    usfm =
-                        updater.UpdateUsfm(
-                            textId,
-                            pretranslationRows.Select(pr => Map(pr, isSource: false)).ToList(),
-                            fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferNew,
-                            paragraphBehavior: Map(paragraphMarkerBehavior),
-                            embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks,
-                            errorHandler: (_) => true,
-                            compareSegments: false
-                        ) ?? "";
-                    break;
-                case PretranslationUsfmTextOrigin.OnlyExisting:
-                    usfm =
-                        updater.UpdateUsfm(
-                            textId,
-                            [], // don't put any pretranslations, we only want the existing text.
-                            fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.PreferNew,
-                            paragraphBehavior: Map(paragraphMarkerBehavior),
-                            embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks,
-                            errorHandler: (_) => true,
-                            compareSegments: false
-                        ) ?? "";
-                    break;
-                case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                    usfm =
-                        updater.UpdateUsfm(
-                            textId,
-                            pretranslationRows.Select(pr => Map(pr, isSource: false)).ToList(),
-                            fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
-                            paragraphBehavior: Map(paragraphMarkerBehavior),
-                            embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks,
-                            errorHandler: (_) => true,
-                            compareSegments: false
-                        ) ?? "";
-                    break;
-            }
+                PretranslationUsfmTextOrigin.PreferExisting => UpdateUsfmTextBehavior.PreferExisting,
+                PretranslationUsfmTextOrigin.PreferPretranslated => UpdateUsfmTextBehavior.PreferNew,
+                PretranslationUsfmTextOrigin.OnlyExisting => UpdateUsfmTextBehavior.PreferNew,
+                PretranslationUsfmTextOrigin.OnlyPretranslated => UpdateUsfmTextBehavior.StripExisting,
+                _ => throw new InvalidEnumArgumentException(nameof(textOrigin)),
+            };
+
+            usfm = _parallelCorpusService.UpdateTargetUsfm(
+                parallelCorpora,
+                corpusId,
+                textId,
+                pretranslations.ToArray(),
+                textBehavior,
+                Map(paragraphMarkerBehavior),
+                Map(embedBehavior),
+                Map(styleMarkerBehavior),
+                remarks,
+                targetQuoteConvention
+            );
         }
 
         if (
@@ -280,205 +200,22 @@ public class PretranslationService(
             && (template is PretranslationUsfmTemplate.Auto or PretranslationUsfmTemplate.Source)
         )
         {
-            using SIL.ServiceToolkit.Services.ZipParatextProjectTextUpdater updater = corpusBundle.GetTextUpdater(
-                GetFilePath(sourceFile.Filename)
-            );
-
             // Copy and update the source book if it exists
-            switch (textOrigin)
-            {
-                case PretranslationUsfmTextOrigin.PreferExisting:
-                case PretranslationUsfmTextOrigin.PreferPretranslated:
-                case PretranslationUsfmTextOrigin.OnlyPretranslated:
-                    usfm =
-                        updater.UpdateUsfm(
-                            textId,
-                            pretranslationRows.Select(pr => Map(pr, isSource: true)).ToList(),
-                            fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
-                            paragraphBehavior: Map(paragraphMarkerBehavior),
-                            embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks,
-                            errorHandler: (_) => true,
-                            compareSegments: true
-                        ) ?? "";
-                    break;
-                case PretranslationUsfmTextOrigin.OnlyExisting:
-                    usfm =
-                        updater.UpdateUsfm(
-                            textId,
-                            [], // don't pass the pretranslations, we only want the existing text.
-                            fullName: targetSettings.FullName,
-                            textBehavior: UpdateUsfmTextBehavior.StripExisting,
-                            paragraphBehavior: Map(paragraphMarkerBehavior),
-                            embedBehavior: Map(embedBehavior),
-                            styleBehavior: Map(styleMarkerBehavior),
-                            updateBlockHandlers: updateBlockHandlers,
-                            remarks: remarks,
-                            errorHandler: (_) => true,
-                            compareSegments: true
-                        ) ?? "";
-                    break;
-            }
-        }
-        if (
-            quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized
-            && !string.IsNullOrEmpty(build.TargetQuoteConvention)
-        )
-        {
-            usfm = DenormalizeQuotationMarks(usfm, build.TargetQuoteConvention);
+            usfm = _parallelCorpusService.UpdateSourceUsfm(
+                parallelCorpora,
+                corpusId,
+                textId,
+                textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations.ToArray(),
+                Map(paragraphMarkerBehavior),
+                Map(embedBehavior),
+                Map(styleMarkerBehavior),
+                placeParagraphMarkers: paragraphMarkerBehavior == PretranslationUsfmMarkerBehavior.PreservePosition,
+                remarks,
+                targetQuoteConvention
+            );
         }
 
         return usfm;
-    }
-
-    private static (
-        IReadOnlyList<ScriptureRef> SourceScriptureRefs,
-        IReadOnlyList<ScriptureRef> TargetScriptureRefs,
-        Pretranslation Pretranslation,
-        PretranslationUsfmMarkerBehavior ParagraphMarkerBehavior,
-        PretranslationUsfmMarkerBehavior StyleMarkerBehavior
-    ) Map(
-        Pretranslation pretranslation,
-        ParatextProjectSettings sourceSettings,
-        ParatextProjectSettings targetSettings,
-        PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
-        PretranslationUsfmMarkerBehavior styleMarkerBehavior
-    )
-    {
-        IReadOnlyList<ScriptureRef> sourceScriptureRefs,
-            targetScriptureRefs;
-        if (pretranslation.TargetRefs?.Any() ?? false)
-        {
-            sourceScriptureRefs =
-                pretranslation
-                    .SourceRefs?.Select(r =>
-                    {
-                        bool parsed = ScriptureRef.TryParse(r, sourceSettings.Versification, out ScriptureRef sr);
-                        return new { Parsed = parsed, ScriptureRef = sr };
-                    })
-                    .Where(r => r.Parsed)
-                    .Select(r => r.ScriptureRef)
-                    .ToArray()
-                ?? [];
-            targetScriptureRefs = pretranslation
-                .TargetRefs.Select(r =>
-                {
-                    bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
-                    return new { Parsed = parsed, ScriptureRef = sr };
-                })
-                .Where(r => r.Parsed)
-                .Select(r => r.ScriptureRef)
-                .ToArray();
-        }
-        else
-        {
-            sourceScriptureRefs = [];
-            targetScriptureRefs = pretranslation
-                .Refs.Select(r =>
-                {
-                    bool parsed = ScriptureRef.TryParse(r, targetSettings.Versification, out ScriptureRef sr);
-                    return new { Parsed = parsed, ScriptureRef = sr };
-                })
-                .Where(r => r.Parsed)
-                .Select(r => r.ScriptureRef)
-                .ToArray();
-        }
-
-        return (sourceScriptureRefs, targetScriptureRefs, pretranslation, paragraphMarkerBehavior, styleMarkerBehavior);
-    }
-
-    private static string DenormalizeQuotationMarks(string usfm, string quoteConvention)
-    {
-        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(quoteConvention);
-        if (targetQuoteConvention is null)
-            return usfm;
-
-        QuotationMarkDenormalizationFirstPass quotationMarkDenormalizationFirstPass = new(targetQuoteConvention);
-
-        UsfmParser.Parse(usfm, quotationMarkDenormalizationFirstPass);
-        List<(int ChapterNumber, QuotationMarkUpdateStrategy Strategy)> bestChapterStrategies =
-            quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
-
-        QuotationMarkDenormalizationUsfmUpdateBlockHandler quotationMarkDenormalizer = new(
-            targetQuoteConvention,
-            new QuotationMarkUpdateSettings(
-                chapterStrategies: bestChapterStrategies.Select(tuple => tuple.Strategy).ToList()
-            )
-        );
-        int denormalizableChapterCount = bestChapterStrategies.Count(tup =>
-            tup.Strategy != QuotationMarkUpdateStrategy.Skip
-        );
-        List<string> remarks = [];
-        string quotationDenormalizationRemark;
-        if (denormalizableChapterCount == bestChapterStrategies.Count)
-        {
-            quotationDenormalizationRemark =
-                "The quote style in all chapters has been automatically adjusted to match the rest of the project.";
-        }
-        else if (denormalizableChapterCount > 0)
-        {
-            quotationDenormalizationRemark =
-                "The quote style in the following chapters has been automatically adjusted to match the rest of the project: "
-                + GetChapterRangesString(
-                    bestChapterStrategies
-                        .Where(tuple => tuple.Strategy != QuotationMarkUpdateStrategy.Skip)
-                        .Select(tuple => tuple.ChapterNumber)
-                        .ToList()
-                )
-                + ".";
-        }
-        else
-        {
-            quotationDenormalizationRemark =
-                "The quote style was not automatically adjusted to match the rest of your project in any chapters.";
-        }
-        remarks.Add(quotationDenormalizationRemark);
-
-        var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer], remarks: remarks);
-        UsfmParser.Parse(usfm, updater);
-
-        usfm = updater.GetUsfm();
-        return usfm;
-    }
-
-    public static string GetChapterRangesString(List<int> chapterNumbers)
-    {
-        chapterNumbers = chapterNumbers.Order().ToList();
-        int start = chapterNumbers[0];
-        int end = chapterNumbers[0];
-        List<string> chapterRangeStrings = [];
-        foreach (int chapterNumber in chapterNumbers[1..])
-        {
-            if (chapterNumber == end + 1)
-            {
-                end = chapterNumber;
-            }
-            else
-            {
-                if (start == end)
-                {
-                    chapterRangeStrings.Add(start.ToString(CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    chapterRangeStrings.Add($"{start}-{end}");
-                }
-                start = chapterNumber;
-                end = chapterNumber;
-            }
-        }
-        if (start == end)
-        {
-            chapterRangeStrings.Add(start.ToString(CultureInfo.InvariantCulture));
-        }
-        else
-        {
-            chapterRangeStrings.Add($"{start}-{end}");
-        }
-        return string.Join(", ", chapterRangeStrings);
     }
 
     /// <summary>
@@ -548,61 +285,6 @@ public class PretranslationService(
             PretranslationUsfmMarkerBehavior.Strip => UpdateUsfmMarkerBehavior.Strip,
             _ => throw new InvalidEnumArgumentException(nameof(behavior)),
         };
-    }
-
-    private static WordAlignmentMatrix Map(IEnumerable<Models.AlignedWordPair>? alignedWordPairs)
-    {
-        int rowCount = 0;
-        int columnCount = 0;
-        if (alignedWordPairs is not null)
-        {
-            foreach (Models.AlignedWordPair pair in alignedWordPairs)
-            {
-                if (pair.SourceIndex + 1 > rowCount)
-                    rowCount = pair.SourceIndex + 1;
-                if (pair.TargetIndex + 1 > columnCount)
-                    columnCount = pair.TargetIndex + 1;
-            }
-        }
-        return new WordAlignmentMatrix(
-            rowCount,
-            columnCount,
-            alignedWordPairs?.Select(wp => (wp.SourceIndex, wp.TargetIndex))
-        );
-    }
-
-    private static UpdateUsfmRow Map(
-        (
-            IReadOnlyList<ScriptureRef> SourceScriptureRefs,
-            IReadOnlyList<ScriptureRef> TargetScriptureRefs,
-            Pretranslation Pretranslation,
-            PretranslationUsfmMarkerBehavior ParagraphBehavior,
-            PretranslationUsfmMarkerBehavior StyleBehavior
-        ) pretranslationRow,
-        bool isSource
-    )
-    {
-        return new UpdateUsfmRow(
-            isSource && pretranslationRow.SourceScriptureRefs.Any()
-                ? pretranslationRow.SourceScriptureRefs
-                : pretranslationRow.TargetScriptureRefs,
-            pretranslationRow.Pretranslation.Translation,
-            pretranslationRow.Pretranslation.Alignment is not null
-                ? new Dictionary<string, object>
-                {
-                    {
-                        PlaceMarkersAlignmentInfo.MetadataKey,
-                        new PlaceMarkersAlignmentInfo(
-                            pretranslationRow.Pretranslation.SourceTokens?.ToList() ?? [],
-                            pretranslationRow.Pretranslation.TranslationTokens?.ToList() ?? [],
-                            Map(pretranslationRow.Pretranslation.Alignment),
-                            paragraphBehavior: Map(pretranslationRow.ParagraphBehavior),
-                            styleBehavior: Map(pretranslationRow.StyleBehavior)
-                        )
-                    },
-                }
-                : null
-        );
     }
 
     private SIL.ServiceToolkit.Models.ParallelCorpus Map(ParallelCorpus source)

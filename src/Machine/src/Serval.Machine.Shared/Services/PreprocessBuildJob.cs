@@ -45,11 +45,9 @@ public abstract class PreprocessBuildJob<TEngine>(
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
-        CorpusBundle corpusBundle = new(data);
-
         (int trainCount, int inferenceCount) = await WriteDataFilesAsync(
             buildId,
-            corpusBundle,
+            data,
             buildOptions,
             cancellationToken
         );
@@ -61,11 +59,11 @@ public abstract class PreprocessBuildJob<TEngine>(
             inferenceCount,
             engine.SourceLanguage,
             engine.TargetLanguage,
-            corpusBundle,
+            data,
             cancellationToken
         );
 
-        await UpdateTargetQuoteConventionAsync(engineId, buildId, corpusBundle, cancellationToken);
+        await UpdateTargetQuoteConventionAsync(engineId, buildId, data, cancellationToken);
 
         if (inferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
         {
@@ -96,20 +94,20 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     );
 
     protected virtual Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     ) => Task.CompletedTask;
 
     protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         string? buildOptions,
         CancellationToken cancellationToken
     );
@@ -139,7 +137,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        CorpusBundle corpusBundle
+        IReadOnlyList<ParallelCorpus> parallelCorpora
     )
     {
         List<string> warnings = [];
@@ -149,7 +147,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                 string parallelCorpusId,
                 string monolingualCorpusId,
                 IReadOnlyList<UsfmVersificationError> errors
-            ) in ParallelCorpusService.AnalyzeUsfmVersification(corpusBundle)
+            ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
         )
         {
             foreach (UsfmVersificationError error in errors)
@@ -173,7 +171,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                 string parallelCorpusId,
                 string monolingualCorpusId,
                 MissingParentProjectError error
-            ) in ParallelCorpusService.FindMissingParentProjects(corpusBundle)
+            ) in ParallelCorpusService.FindMissingParentProjects(parallelCorpora)
         )
         {
             warnings.Add(

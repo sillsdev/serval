@@ -1,5 +1,3 @@
-using SIL.ServiceToolkit.Utils;
-
 namespace SIL.ServiceToolkit.Services;
 
 [TestFixture]
@@ -12,9 +10,9 @@ public class ParallelCorpusServiceTests
         ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).First();
         const string ExpectedTargetName = "typewriter_english";
 
-        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention(
-            new CorpusBundle([parallelCorpus])
-        );
+        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention([
+            parallelCorpus,
+        ]);
 
         Assert.Multiple(() =>
         {
@@ -29,9 +27,9 @@ public class ParallelCorpusServiceTests
         using var env = new TestEnvironment();
         ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: false).First();
 
-        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention(
-            new CorpusBundle([parallelCorpus])
-        );
+        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention([
+            parallelCorpus,
+        ]);
 
         Assert.Multiple(() =>
         {
@@ -48,7 +46,7 @@ public class ParallelCorpusServiceTests
         int trainCount = 0;
         int inferenceCount = 0;
         await env.Processor.PreprocessAsync(
-            new CorpusBundle(corpora),
+            corpora,
             (row, _) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
@@ -84,7 +82,7 @@ public class ParallelCorpusServiceTests
         var trainRefs = new List<string>();
         var inferenceRefs = new List<string>();
         await env.Processor.PreprocessAsync(
-            new CorpusBundle(corpora),
+            corpora,
             (row, _) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)

@@ -43,7 +43,7 @@ public class CorpusBundle
         IReadOnlyList<CorpusFile> CorpusFile,
         IReadOnlyList<ITextCorpus> TextCorpora
     )> TargetTermCorpora { get; }
-    public IEnumerable<ParallelCorpus> ParallelCorpora { get; }
+    public IReadOnlyList<ParallelCorpus> ParallelCorpora { get; }
 
     public CorpusBundle(IEnumerable<ParallelCorpus> parallelCorpora)
     {
