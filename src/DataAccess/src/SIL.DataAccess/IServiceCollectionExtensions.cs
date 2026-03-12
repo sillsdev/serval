@@ -30,6 +30,17 @@ public static class IServiceCollectionExtensions
             new ObjectRefConvention()
         );
 
+        // Configure conventions for schema_versions
+        DataAccessClassMap.RegisterConventions(
+            "SIL.DataAccess.Models",
+            new StringIdStoredAsObjectIdConvention(),
+            new CamelCaseElementNameConvention(),
+            new EnumRepresentationConvention(BsonType.String),
+            new IgnoreExtraElementsConvention(true),
+            new IgnoreIfNullConvention(true),
+            new ObjectRefConvention()
+        );
+
         services.Configure<MongoDataAccessOptions>(options => options.Url = new MongoUrl(connectionString));
         services.TryAddTransient<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
         services.TryAddSingleton<IMongoClient>(sp =>
@@ -45,7 +56,23 @@ public static class IServiceCollectionExtensions
         services.TryAddScoped<IMongoDataAccessContext, MongoDataAccessContext>();
         services.TryAddScoped<IDataAccessContext>(sp => sp.GetRequiredService<IMongoDataAccessContext>());
         services.AddHostedService<MongoDataAccessInitializeService>();
-        configure(new MongoDataAccessConfigurator(services));
+        var configurator = new MongoDataAccessConfigurator(services);
+
+        // Configure the schema_versions repository
+        configurator.AddRepository<SchemaVersion>(
+            "schema_versions",
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<SchemaVersion>(
+                            Builders<SchemaVersion>.IndexKeys.Ascending(p => p.Collection)
+                        )
+                    ),
+            ]
+        );
+
+        configure(configurator);
         return services;
     }
 }
