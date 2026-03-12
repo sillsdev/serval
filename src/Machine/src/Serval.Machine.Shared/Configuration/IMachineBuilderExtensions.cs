@@ -215,45 +215,54 @@ public static class IMachineBuilderExtensions
             {
                 o.AddRepository<TranslationEngine>(
                     "translation_engines",
-                    init: async c =>
-                    {
-                        await c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<TranslationEngine>(
-                                Builders<TranslationEngine>.IndexKeys.Ascending(e => e.EngineId)
-                            )
-                        );
-                        await c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<TranslationEngine>(
-                                Builders<TranslationEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
-                            )
-                        );
-                    }
+                    init:
+                    [
+                        c =>
+                            c.Indexes.CreateOrUpdateAsync(
+                                new CreateIndexModel<TranslationEngine>(
+                                    Builders<TranslationEngine>.IndexKeys.Ascending(e => e.EngineId)
+                                )
+                            ),
+                        c =>
+                            c.Indexes.CreateOrUpdateAsync(
+                                new CreateIndexModel<TranslationEngine>(
+                                    Builders<TranslationEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
+                                )
+                            ),
+                    ]
                 );
                 o.AddRepository<WordAlignmentEngine>(
                     "word_alignment_engines",
-                    init: async c =>
-                    {
-                        await c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<WordAlignmentEngine>(
-                                Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.EngineId)
-                            )
-                        );
-                        await c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<WordAlignmentEngine>(
-                                Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
-                            )
-                        );
-                    }
+                    init:
+                    [
+                        c =>
+                            c.Indexes.CreateOrUpdateAsync(
+                                new CreateIndexModel<WordAlignmentEngine>(
+                                    Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.EngineId)
+                                )
+                            ),
+                        c =>
+                            c.Indexes.CreateOrUpdateAsync(
+                                new CreateIndexModel<WordAlignmentEngine>(
+                                    Builders<WordAlignmentEngine>.IndexKeys.Ascending(e =>
+                                        e.CurrentBuild!.BuildJobRunner
+                                    )
+                                )
+                            ),
+                    ]
                 );
                 o.AddRepository<RWLock>("locks");
                 o.AddRepository<TrainSegmentPair>(
                     "train_segment_pairs",
-                    init: c =>
-                        c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<TrainSegmentPair>(
-                                Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.TranslationEngineRef)
-                            )
-                        )
+                    init:
+                    [
+                        c =>
+                            c.Indexes.CreateOrUpdateAsync(
+                                new CreateIndexModel<TrainSegmentPair>(
+                                    Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.TranslationEngineRef)
+                                )
+                            ),
+                    ]
                 );
             }
         );

@@ -17,3 +17,4 @@ global using Newtonsoft.Json;
 global using Newtonsoft.Json.Serialization;
 global using Nito.AsyncEx;
 global using SIL.DataAccess;
+global using SIL.DataAccess.Models;
