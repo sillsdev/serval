@@ -23,7 +23,7 @@ public class TranslationPreprocessBuildJob(
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -56,7 +56,7 @@ public class TranslationPreprocessBuildJob(
         int pretranslateCount = 0;
         pretranslateWriter.WriteStartArray();
         await ParallelCorpusService.PreprocessAsync(
-            corpusBundle,
+            parallelCorpora,
             async (row, trainingDataType) =>
             {
                 if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
@@ -109,7 +109,7 @@ public class TranslationPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
@@ -118,7 +118,7 @@ public class TranslationPreprocessBuildJob(
             pretranslateCount,
             sourceLanguageTag,
             targetLanguageTag,
-            corpusBundle
+            parallelCorpora
         );
 
         // Log summary of build data

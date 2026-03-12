@@ -33,12 +33,13 @@ public class NmtPreprocessBuildJob(
     protected override async Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
         string overallTargetQuoteConventionAnalysis =
-            ParallelCorpusService.AnalyzeTargetQuoteConvention(corpusBundle)?.BestQuoteConvention?.Name ?? string.Empty;
+            ParallelCorpusService.AnalyzeTargetQuoteConvention(parallelCorpora)?.BestQuoteConvention?.Name
+            ?? string.Empty;
 
         await PlatformService.UpdateTargetQuoteConventionAsync(
             engineId,
@@ -55,7 +56,7 @@ public class NmtPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
@@ -74,7 +75,7 @@ public class NmtPreprocessBuildJob(
             pretranslateCount,
             sourceLanguageTag,
             targetLanguageTag,
-            corpusBundle
+            parallelCorpora
         );
 
         int maxWarnings = BuildJobOptions.MaxWarnings;
@@ -118,12 +119,12 @@ public class NmtPreprocessBuildJob(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        CorpusBundle corpusBundle
+        IReadOnlyList<ParallelCorpus> parallelCorpora
     )
     {
         List<string> warnings =
         [
-            .. base.GetWarnings(trainCount, inferenceCount, sourceLanguageTag, targetLanguageTag, corpusBundle),
+            .. base.GetWarnings(trainCount, inferenceCount, sourceLanguageTag, targetLanguageTag, parallelCorpora),
         ];
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere

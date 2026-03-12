@@ -1,5 +1,4 @@
 ﻿using Serval.WordAlignment.V1;
-using SIL.ServiceToolkit.Utils;
 
 namespace EchoEngine;
 
@@ -80,7 +79,7 @@ public class WordAlignmentEngineServiceV1(
                     int wordAlignCount = 0;
                     List<InsertWordAlignmentsRequest> wordAlignmentsRequests = [];
                     await _parallelCorpusPreprocessingService.PreprocessAsync(
-                        new CorpusBundle(request.Corpora.Select(Map)),
+                        request.Corpora.Select(Map),
                         (row, _) =>
                         {
                             if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)

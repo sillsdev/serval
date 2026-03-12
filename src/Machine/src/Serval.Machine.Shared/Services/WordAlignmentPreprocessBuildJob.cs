@@ -23,7 +23,7 @@ public class WordAlignmentPreprocessBuildJob(
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -56,7 +56,7 @@ public class WordAlignmentPreprocessBuildJob(
         int inferenceCount = 0;
         wordAlignmentWriter.WriteStartArray();
         await ParallelCorpusService.PreprocessAsync(
-            corpusBundle,
+            parallelCorpora,
             async (row, trainingDataType) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
@@ -109,7 +109,7 @@ public class WordAlignmentPreprocessBuildJob(
         int wordAlignCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
@@ -118,7 +118,7 @@ public class WordAlignmentPreprocessBuildJob(
             wordAlignCount,
             sourceLanguageTag,
             targetLanguageTag,
-            corpusBundle
+            parallelCorpora
         );
 
         // Log summary of build data
@@ -148,7 +148,7 @@ public class WordAlignmentPreprocessBuildJob(
     protected override Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        CorpusBundle corpusBundle,
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
