@@ -1,4 +1,6 @@
-﻿namespace Serval.WordAlignment.Controllers;
+﻿using Serval.Shared.Dtos;
+
+namespace Serval.WordAlignment.Controllers;
 
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/word-alignment/engine-types")]

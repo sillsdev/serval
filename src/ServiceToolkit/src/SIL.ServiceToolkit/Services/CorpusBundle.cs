@@ -1,3 +1,4 @@
+using Serval.Shared.Contracts;
 using ZipParatextProjectTextUpdater = SIL.ServiceToolkit.Services.ZipParatextProjectTextUpdater;
 
 namespace SIL.ServiceToolkit.Utils;
@@ -10,51 +11,51 @@ public class CorpusBundle
     > _settings;
 
     public IEnumerable<(
-        ParallelCorpus ParallelCorpus,
-        MonolingualCorpus MonolingualCorpus,
-        IReadOnlyList<CorpusFile> CorpusFile,
+        FilteredParallelCorpus ParallelCorpus,
+        FilteredMonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<ResolvedCorpusFile> CorpusFile,
         IReadOnlyList<ITextCorpus> TextCorpora
     )> SourceTextCorpora { get; }
 
     public IEnumerable<(
-        ParallelCorpus ParallelCorpus,
-        MonolingualCorpus MonolingualCorpus,
-        IReadOnlyList<CorpusFile> CorpusFile,
+        FilteredParallelCorpus ParallelCorpus,
+        FilteredMonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<ResolvedCorpusFile> CorpusFile,
         IReadOnlyList<ITextCorpus> TextCorpora
     )> TargetTextCorpora { get; }
 
     public IEnumerable<(
-        ParallelCorpus ParallelCorpus,
-        MonolingualCorpus MonolingualCorpus,
-        IReadOnlyList<CorpusFile> CorpusFile,
+        FilteredParallelCorpus ParallelCorpus,
+        FilteredMonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<ResolvedCorpusFile> CorpusFile,
         IReadOnlyList<ITextCorpus> TextCorpora
     )> TextCorpora => SourceTextCorpora.Concat(TargetTextCorpora);
 
     public IEnumerable<(
-        ParallelCorpus ParallelCorpus,
-        MonolingualCorpus MonolingualCorpus,
-        IReadOnlyList<CorpusFile> CorpusFile,
+        FilteredParallelCorpus ParallelCorpus,
+        FilteredMonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<ResolvedCorpusFile> CorpusFile,
         IReadOnlyList<ITextCorpus> TextCorpora
     )> SourceTermCorpora { get; }
 
     public IEnumerable<(
-        ParallelCorpus ParallelCorpus,
-        MonolingualCorpus MonolingualCorpus,
-        IReadOnlyList<CorpusFile> CorpusFile,
+        FilteredParallelCorpus ParallelCorpus,
+        FilteredMonolingualCorpus MonolingualCorpus,
+        IReadOnlyList<ResolvedCorpusFile> CorpusFile,
         IReadOnlyList<ITextCorpus> TextCorpora
     )> TargetTermCorpora { get; }
-    public IReadOnlyList<ParallelCorpus> ParallelCorpora { get; }
+    public IReadOnlyList<FilteredParallelCorpus> ParallelCorpora { get; }
 
-    public CorpusBundle(IEnumerable<ParallelCorpus> parallelCorpora)
+    public CorpusBundle(IEnumerable<FilteredParallelCorpus> parallelCorpora)
     {
         ParallelCorpora = parallelCorpora.ToArray();
 
         _settings = [];
-        IEnumerable<CorpusFile> corpusFiles = parallelCorpora.SelectMany(corpus =>
+        IEnumerable<ResolvedCorpusFile> corpusFiles = parallelCorpora.SelectMany(corpus =>
             corpus.SourceCorpora.Concat(corpus.TargetCorpora).SelectMany(c => c.Files)
         );
         List<(string Location, ParatextProjectSettings Settings)> paratextProjects = [];
-        foreach (CorpusFile file in corpusFiles.Where(f => f.Format == FileFormat.Paratext))
+        foreach (ResolvedCorpusFile file in corpusFiles.Where(f => f.Format == FileFormat.Paratext))
         {
             using IZipContainer archive = new ZipContainer(file.Location);
             ParatextProjectSettings settings = new Services.ZipParatextProjectSettingsParser(archive).Parse();
@@ -147,12 +148,12 @@ public class CorpusBundle
         return new ZipParatextProjectTextUpdater(container, parentSettings);
     }
 
-    protected virtual IReadOnlyList<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files)
+    protected virtual IReadOnlyList<ITextCorpus> CreateTextCorpora(IReadOnlyList<ResolvedCorpusFile> files)
     {
         List<ITextCorpus> corpora = [];
 
         List<Dictionary<string, IText>> textFileCorpora = [];
-        foreach (CorpusFile file in files)
+        foreach (ResolvedCorpusFile file in files)
         {
             switch (file.Format)
             {
@@ -197,10 +198,10 @@ public class CorpusBundle
         return corpora;
     }
 
-    private IReadOnlyList<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> files)
+    private IReadOnlyList<ITextCorpus> CreateTermCorpora(IReadOnlyList<ResolvedCorpusFile> files)
     {
         List<ITextCorpus> corpora = [];
-        foreach (CorpusFile file in files)
+        foreach (ResolvedCorpusFile file in files)
         {
             switch (file.Format)
             {

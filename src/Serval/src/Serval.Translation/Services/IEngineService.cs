@@ -2,48 +2,7 @@
 
 public interface IEngineService
 {
-    Task<IEnumerable<Engine>> GetAllAsync(string owner, CancellationToken cancellationToken = default);
     Task<Engine> GetAsync(string engineId, CancellationToken cancellationToken = default);
-
-    Task<Engine> CreateAsync(Engine engine, CancellationToken cancellationToken = default);
-
-    Task UpdateAsync(
-        string engineId,
-        string? sourceLanguage,
-        string? targetLanguage,
-        CancellationToken cancellationToken = default
-    );
-
-    Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
-
-    Task<TranslationResult?> TranslateAsync(
-        string engineId,
-        string segment,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<IEnumerable<TranslationResult>?> TranslateAsync(
-        string engineId,
-        int n,
-        string segment,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<WordGraph?> GetWordGraphAsync(string engineId, string segment, CancellationToken cancellationToken = default);
-
-    Task<bool> TrainSegmentPairAsync(
-        string engineId,
-        string sourceSegment,
-        string targetSegment,
-        bool sentenceStart,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<bool> StartBuildAsync(Build build, CancellationToken cancellationToken = default);
-
-    Task<Build?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
-
-    Task<ModelDownloadUrl?> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default);
     Task<Corpus> UpdateCorpusAsync(
@@ -85,14 +44,6 @@ public interface IEngineService
     Task UpdateCorpusFilesAsync(
         string corpusId,
         IReadOnlyList<CorpusFile> files,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default);
-
-    Task<LanguageInfo> GetLanguageInfoAsync(
-        string engineType,
-        string language,
         CancellationToken cancellationToken = default
     );
 }

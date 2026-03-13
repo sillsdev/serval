@@ -1,4 +1,4 @@
-using Serval.Shared.Models;
+using Serval.Shared.Contracts;
 using WordAlignmentResult = Serval.WordAlignment.V1.WordAlignmentResult;
 
 namespace Serval.Machine.Shared.Services;

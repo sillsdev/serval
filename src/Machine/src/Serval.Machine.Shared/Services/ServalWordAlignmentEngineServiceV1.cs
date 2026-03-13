@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Serval.Shared.Contracts;
 using Serval.WordAlignment.V1;
 
 namespace Serval.Machine.Shared.Services;
@@ -51,7 +52,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
         IWordAlignmentEngineService engineService = GetEngineService(request.EngineType);
-        Serval.Shared.Models.FilteredParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
+        FilteredParallelCorpus[] corpora = request.Corpora.Select(Map).ToArray();
         await engineService.StartBuildAsync(
             request.EngineId,
             request.BuildId,
@@ -96,7 +97,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         );
     }
 
-    private static Serval.Shared.Models.FilteredParallelCorpus Map(WordAlignment.V1.ParallelCorpus source)
+    private static FilteredParallelCorpus Map(WordAlignment.V1.ParallelCorpus source)
     {
         return new SIL.ServiceToolkit.Models.FilteredParallelCorpus
         {
@@ -106,7 +107,7 @@ public class ServalWordAlignmentEngineServiceV1(IEnumerable<IWordAlignmentEngine
         };
     }
 
-    private static Serval.Shared.Models.FilteredMonolingualCorpus Map(WordAlignment.V1.MonolingualCorpus source)
+    private static FilteredMonolingualCorpus Map(WordAlignment.V1.MonolingualCorpus source)
     {
         var trainOnChapters = source.TrainOnChapters.ToDictionary(
             kvp => kvp.Key,

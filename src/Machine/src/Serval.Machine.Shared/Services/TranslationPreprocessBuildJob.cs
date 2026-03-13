@@ -1,4 +1,4 @@
-using Serval.Shared.Models;
+using Serval.Shared.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -25,7 +25,7 @@ public class TranslationPreprocessBuildJob(
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -111,7 +111,7 @@ public class TranslationPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     )
     {

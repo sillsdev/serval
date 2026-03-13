@@ -1,4 +1,4 @@
-﻿using Serval.Shared.Models;
+﻿using Serval.Shared.Contracts;
 using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
 
 namespace Serval.Machine.Shared.Services;

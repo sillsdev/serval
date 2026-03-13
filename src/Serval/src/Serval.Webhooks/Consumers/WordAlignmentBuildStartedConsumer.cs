@@ -1,6 +1,4 @@
-﻿using Serval.Webhooks.Models;
-
-namespace Serval.Webhooks.Consumers;
+﻿namespace Serval.Webhooks.Consumers;
 
 public class WordAlignmentBuildStartedConsumer(IWebhookService webhookService, IUrlService urlService)
     : IConsumer<WordAlignmentBuildStarted>

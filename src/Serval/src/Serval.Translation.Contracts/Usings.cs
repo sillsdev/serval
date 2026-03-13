@@ -1,2 +1,1 @@
-﻿global using Serval.Shared.Models;
-global using Serval.Translation.Models;
+﻿global using Serval.Shared.Contracts;

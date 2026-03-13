@@ -1,4 +1,6 @@
-﻿namespace Serval.Shared.Contracts;
+﻿using Serval.Shared.Contracts;
+
+namespace Serval.Shared.Dtos;
 
 public record BuildPhaseDto
 {

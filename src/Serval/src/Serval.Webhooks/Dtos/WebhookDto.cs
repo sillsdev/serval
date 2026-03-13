@@ -1,6 +1,4 @@
-﻿using Serval.Webhooks.Models;
-
-namespace Serval.Webhooks.Dtos;
+﻿namespace Serval.Webhooks.Dtos;
 
 public record WebhookDto
 {

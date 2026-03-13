@@ -1,5 +1,3 @@
-using Serval.Translation.Dtos;
-
 namespace Serval.Translation.Controllers;
 
 [ApiVersion(1.0)]
@@ -8,9 +6,8 @@ namespace Serval.Translation.Controllers;
 public class TranslationBuildsController(
     IOptionsMonitor<ApiOptions> apiOptions,
     IAuthorizationService authService,
-    IBuildService buildService,
-    IUrlService urlService
-) : TranslationControllerBase(authService, urlService)
+    IBuildService buildService
+) : ServalControllerBase(authService)
 {
     /// <summary>
     /// Get all builds for your translation engines that are created after the specified date.
@@ -29,6 +26,7 @@ public class TranslationBuildsController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<IEnumerable<TranslationBuildDto>> GetAllBuildsCreatedAfterAsync(
         [FromQuery(Name = "created-after")] DateTime? createdAfter,
+        [FromServices] IDtoMappingService mapper,
         CancellationToken cancellationToken
     )
     {
@@ -41,7 +39,7 @@ public class TranslationBuildsController(
         {
             builds = await buildService.GetAllCreatedAfterAsync(Owner, createdAfter, cancellationToken);
         }
-        return builds.Select(Map);
+        return builds.Select(mapper.Map);
     }
 
     /// <summary>
@@ -68,6 +66,7 @@ public class TranslationBuildsController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationBuildDto>> GetNextFinishedBuildAsync(
         [FromQuery(Name = "finished-after")] DateTime finishedAfter,
+        [FromServices] IDtoMappingService mapper,
         CancellationToken cancellationToken
     )
     {
@@ -79,7 +78,7 @@ public class TranslationBuildsController(
         return change.Type switch
         {
             EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
-            _ => change.Entity is null ? StatusCode(StatusCodes.Status408RequestTimeout) : Map(change.Entity),
+            _ => change.Entity is null ? StatusCode(StatusCodes.Status408RequestTimeout) : mapper.Map(change.Entity),
         };
     }
 }

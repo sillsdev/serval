@@ -1,4 +1,5 @@
-﻿using SIL.ServiceToolkit.Models;
+﻿using Serval.Shared.Dtos;
+using SIL.ServiceToolkit.Models;
 
 namespace Serval.WordAlignment.Controllers;
 

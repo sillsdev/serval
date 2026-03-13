@@ -1,4 +1,5 @@
 using Serval.EngineApi.Translation;
+using Serval.Shared.Contracts;
 using SIL.Machine.Utils;
 using SIL.ServiceToolkit.Models;
 using ExecutionData = Serval.EngineApi.Translation.ExecutionData;

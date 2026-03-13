@@ -1,4 +1,6 @@
-﻿namespace Serval.WordAlignment.Contracts;
+﻿using Serval.Shared.Dtos;
+
+namespace Serval.WordAlignment.Contracts;
 
 public record WordAlignmentBuildConfigDto
 {
