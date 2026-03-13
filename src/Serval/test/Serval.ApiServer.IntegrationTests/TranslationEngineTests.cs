@@ -2930,6 +2930,7 @@ public class TranslationEngineTests
             XElement settingsXml = new(
                 "ScriptureText",
                 new XElement("StyleSheet", "usfm.sty"),
+                new XElement("Guid", "Id"),
                 new XElement("Name", name),
                 new XElement("FullName", name),
                 new XElement("Encoding", "65001"),

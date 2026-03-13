@@ -728,6 +728,7 @@ public class PretranslationServiceTests
         private static ParatextProjectSettings CreateProjectSettings(string name)
         {
             return new ParatextProjectSettings(
+                guid: "Id",
                 name: name,
                 fullName: name,
                 encoding: Encoding.UTF8,
@@ -739,7 +740,8 @@ public class PretranslationServiceTests
                 biblicalTermsListType: "Major",
                 biblicalTermsProjectName: "",
                 biblicalTermsFileName: "BiblicalTerms.xml",
-                languageCode: "en"
+                languageCode: "en",
+                translationType: "Standard"
             );
         }
 
