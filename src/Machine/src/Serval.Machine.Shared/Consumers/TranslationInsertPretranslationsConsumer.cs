@@ -72,7 +72,7 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
             if (reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new JsonException(
-                    $"Expected StartObject token at the beginning of WordAlignment object but instead encountered {reader.TokenType}"
+                    $"Expected StartObject token at the beginning of Pretranslation object but instead encountered {reader.TokenType}"
                 );
             }
             string corpusId = "",
@@ -130,7 +130,7 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
                             break;
                         default:
                             throw new JsonException(
-                                $"Unexpected property name {s} when deserializing WordAlignment object"
+                                $"Unexpected property name {s} when deserializing Pretranslation object"
                             );
                     }
                 }
