@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using Serval.Shared.Configuration;
+
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
 {

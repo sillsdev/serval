@@ -1,4 +1,4 @@
-﻿using Serval.Shared.Models;
+﻿using Serval.Shared.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 

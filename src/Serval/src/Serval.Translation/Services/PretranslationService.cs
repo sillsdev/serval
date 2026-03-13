@@ -109,20 +109,26 @@ public class PretranslationService(
 
         List<string> remarks = [disclaimerRemark, markerPlacementRemark];
 
-        SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora = _corpusMappingService.Map(build, engine).ToArray();
+        FilteredParallelCorpus[] parallelCorpora = _corpusMappingService.Map(build, engine).ToArray();
 
-        IEnumerable<SIL.ServiceToolkit.Models.ParallelRow> pretranslations = (
+        IEnumerable<PretranslationData> pretranslations = (
             await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
-        ).Select(p => new SIL.ServiceToolkit.Models.ParallelRow
+        ).Select(p => new PretranslationData
         {
+            CorpusId = corpusId,
+            TextId = textId,
             SourceRefs = p.SourceRefs ?? [],
             TargetRefs = p.TargetRefs ?? [],
-            TargetText = p.Translation,
+            Translation = p.Translation,
             Alignment = p
-                .Alignment?.Select(wp => new SIL.Machine.Corpora.AlignedWordPair(wp.SourceIndex, wp.TargetIndex))
+                .Alignment?.Select(wp => new Shared.Contracts.AlignedWordPair
+                {
+                    SourceIndex = wp.SourceIndex,
+                    TargetIndex = wp.TargetIndex,
+                })
                 .ToArray(),
             SourceTokens = p.SourceTokens,
-            TargetTokens = p.TranslationTokens,
+            TranslationTokens = p.TranslationTokens,
         });
 
         string? targetQuoteConvention = null;

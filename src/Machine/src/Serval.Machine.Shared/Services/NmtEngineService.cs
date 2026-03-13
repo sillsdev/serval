@@ -1,7 +1,6 @@
 ﻿using CaseExtensions;
-using Serval.Shared.Models;
-using Serval.Translation.Models;
-using Serval.Translation.Services;
+using Serval.Shared.Contracts;
+using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -124,7 +123,7 @@ public class NmtEngineService(
         return CancelBuildJobAsync(engineId, cancellationToken);
     }
 
-    public async Task<ModelDownloadUrl?> GetModelDownloadUrlAsync(
+    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
@@ -154,7 +153,7 @@ public class NmtEngineService(
         return modelInfo;
     }
 
-    public Task<IReadOnlyList<Translation.Models.TranslationResult>> TranslateAsync(
+    public Task<IReadOnlyList<Translation.Contracts.TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -164,7 +163,7 @@ public class NmtEngineService(
         throw new NotSupportedException();
     }
 
-    public Task<Translation.Models.WordGraph> GetWordGraphAsync(
+    public Task<Translation.Contracts.WordGraph> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -189,14 +188,14 @@ public class NmtEngineService(
         return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.Nmt));
     }
 
-    public Task<Translation.Models.LanguageInfo> GetLanguageInfoAsync(
+    public Task<Translation.Contracts.LanguageInfo> GetLanguageInfoAsync(
         string language,
         CancellationToken cancellationToken = default
     )
     {
         bool isNative = IsLanguageNativeToModel(language, out string internalCode);
         return Task.FromResult(
-            new Translation.Models.LanguageInfo
+            new Translation.Contracts.LanguageInfo
             {
                 EngineType = Type,
                 IsNative = isNative,

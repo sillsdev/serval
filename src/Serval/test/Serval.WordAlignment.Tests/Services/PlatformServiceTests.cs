@@ -1,3 +1,4 @@
+using Serval.Shared.Contracts;
 using Serval.WordAlignment.V1;
 using SIL.ServiceToolkit.Models;
 using ExecutionData = Serval.WordAlignment.Models.ExecutionData;

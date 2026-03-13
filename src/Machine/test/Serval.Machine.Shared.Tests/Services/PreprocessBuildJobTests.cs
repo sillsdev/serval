@@ -1,4 +1,4 @@
-using Serval.Shared.Models;
+using Serval.Shared.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -356,8 +356,8 @@ public class PreprocessBuildJobTests
         env.ParallelCorpusService.When(s =>
                 s.PreprocessAsync(
                     Arg.Any<IReadOnlyList<ParallelCorpus>>(),
-                    Arg.Any<Func<Row, TrainingDataType, Task>>(),
-                    Arg.Any<Func<Row, bool, string, Task>>(),
+                    Arg.Any<Func<ParallelRow, TrainingDataType, Task>>(),
+                    Arg.Any<Func<ParallelRow, bool, string, Task>>(),
                     Arg.Any<bool>(),
                     Arg.Any<HashSet<string>?>()
                 )
@@ -373,8 +373,8 @@ public class PreprocessBuildJobTests
 
                 await parallelCorpusService.PreprocessAsync(
                     dummyCorpusBundle,
-                    callInfo.ArgAt<Func<Row, TrainingDataType, Task>>(1),
-                    callInfo.ArgAt<Func<Row, bool, string, Task>>(2),
+                    callInfo.ArgAt<Func<ParallelRow, TrainingDataType, Task>>(1),
+                    callInfo.ArgAt<Func<ParallelRow, bool, string, Task>>(2),
                     callInfo.ArgAt<bool>(3),
                     callInfo.ArgAt<HashSet<string>?>(4)
                 );
@@ -396,8 +396,8 @@ public class PreprocessBuildJobTests
         env.ParallelCorpusService.When(s =>
                 s.PreprocessAsync(
                     Arg.Any<IReadOnlyList<ParallelCorpus>>(),
-                    Arg.Any<Func<Row, TrainingDataType, Task>>(),
-                    Arg.Any<Func<Row, bool, string, Task>>(),
+                    Arg.Any<Func<ParallelRow, TrainingDataType, Task>>(),
+                    Arg.Any<Func<ParallelRow, bool, string, Task>>(),
                     Arg.Any<bool>(),
                     Arg.Any<HashSet<string>?>()
                 )
@@ -414,8 +414,8 @@ public class PreprocessBuildJobTests
                 {
                     await parallelCorpusService.PreprocessAsync(
                         dummyCorpusBundle,
-                        callInfo.ArgAt<Func<Row, TrainingDataType, Task>>(1),
-                        callInfo.ArgAt<Func<Row, bool, string, Task>>(2),
+                        callInfo.ArgAt<Func<ParallelRow, TrainingDataType, Task>>(1),
+                        callInfo.ArgAt<Func<ParallelRow, bool, string, Task>>(2),
                         callInfo.ArgAt<bool>(3),
                         callInfo.ArgAt<HashSet<string>?>(4)
                     );
@@ -440,8 +440,8 @@ public class PreprocessBuildJobTests
         env.ParallelCorpusService.When(s =>
                 s.PreprocessAsync(
                     Arg.Any<IReadOnlyList<ParallelCorpus>>(),
-                    Arg.Any<Func<Row, TrainingDataType, Task>>(),
-                    Arg.Any<Func<Row, bool, string, Task>>(),
+                    Arg.Any<Func<ParallelRow, TrainingDataType, Task>>(),
+                    Arg.Any<Func<ParallelRow, bool, string, Task>>(),
                     Arg.Any<bool>(),
                     Arg.Any<HashSet<string>?>()
                 )
@@ -458,8 +458,8 @@ public class PreprocessBuildJobTests
                 {
                     await parallelCorpusService.PreprocessAsync(
                         dummyCorpusBundle,
-                        callInfo.ArgAt<Func<Row, TrainingDataType, Task>>(1),
-                        callInfo.ArgAt<Func<Row, bool, string, Task>>(2),
+                        callInfo.ArgAt<Func<ParallelRow, TrainingDataType, Task>>(1),
+                        callInfo.ArgAt<Func<ParallelRow, bool, string, Task>>(2),
                         callInfo.ArgAt<bool>(3),
                         callInfo.ArgAt<HashSet<string>?>(4)
                     );

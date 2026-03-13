@@ -1,4 +1,5 @@
 using MassTransit.Mediator;
+using Serval.Shared.Contracts;
 using Serval.Translation.Configuration;
 using EngineApiTranslation = Serval.EngineApi.Translation;
 
@@ -21,7 +22,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        Models.TranslationResult? result = await env.Service.TranslateAsync(engineId, "esto es una prueba.");
+        TranslationResult? result = await env.Service.TranslateAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Translation, Is.EqualTo("this is a test."));
     }
@@ -40,7 +41,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        Models.WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
+        WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Arcs.SelectMany(a => a.TargetTokens), Is.EqualTo("this is a test .".Split()));
     }

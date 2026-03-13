@@ -8,7 +8,7 @@ public class CorpusMappingService(
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
-    public IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus> Map(Build build, Engine engine)
+    public IReadOnlyList<FilteredParallelCorpus> Map(Build build, Engine engine)
     {
         if (engine.ParallelCorpora.Any())
         {
@@ -20,13 +20,9 @@ public class CorpusMappingService(
         }
     }
 
-    public IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus> Map(
-        Build build,
-        Engine engine,
-        IReadOnlyList<Corpus> corpora
-    )
+    private List<FilteredParallelCorpus> Map(Build build, Engine engine, IReadOnlyList<Corpus> corpora)
     {
-        List<SIL.ServiceToolkit.Models.ParallelCorpus> mappedParallelCorpora = [];
+        List<FilteredParallelCorpus> mappedParallelCorpora = [];
 
         Dictionary<string, TrainingCorpus>? trainingCorpora = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
         Dictionary<string, PretranslateCorpus>? pretranslateCorpora = build.Pretranslate?.ToDictionary(c =>
@@ -47,9 +43,9 @@ public class CorpusMappingService(
             TrainingCorpus? trainingCorpus = trainingCorpora?.GetValueOrDefault(source.Id);
             PretranslateCorpus? pretranslateCorpus = pretranslateCorpora?.GetValueOrDefault(source.Id);
 
-            IEnumerable<SIL.ServiceToolkit.Models.CorpusFile> sourceFiles = source.SourceFiles.Select(Map);
-            IEnumerable<SIL.ServiceToolkit.Models.CorpusFile> targetFiles = source.TargetFiles.Select(Map);
-            SIL.ServiceToolkit.Models.MonolingualCorpus sourceCorpus = new()
+            IEnumerable<ResolvedCorpusFile> sourceFiles = source.SourceFiles.Select(Map);
+            IEnumerable<ResolvedCorpusFile> targetFiles = source.TargetFiles.Select(Map);
+            FilteredMonolingualCorpus sourceCorpus = new()
             {
                 Id = source.Id,
                 Language = source.SourceLanguage,
@@ -57,7 +53,7 @@ public class CorpusMappingService(
                 TrainOnAll = trainOnAllCorpora,
                 PretranslateAll = pretranslateAllCorpora,
             };
-            SIL.ServiceToolkit.Models.MonolingualCorpus targetCorpus = new()
+            FilteredMonolingualCorpus targetCorpus = new()
             {
                 Id = source.Id,
                 Language = source.TargetLanguage,
@@ -79,10 +75,7 @@ public class CorpusMappingService(
 
                 if (trainingCorpus.ScriptureRange is not null)
                 {
-                    if (
-                        targetCorpus.Files.Count > 1
-                        || targetCorpus.Files[0].Format != SIL.ServiceToolkit.Models.FileFormat.Paratext
-                    )
+                    if (targetCorpus.Files.Count > 1 || targetCorpus.Files[0].Format != FileFormat.Paratext)
                     {
                         throw new InvalidOperationException(
                             $"The corpus {source.Id} is not compatible with using a scripture range"
@@ -113,10 +106,7 @@ public class CorpusMappingService(
                 sourceCorpus.InferenceTextIds = pretranslateCorpus.TextIds?.ToHashSet();
                 if (pretranslateCorpus.ScriptureRange is not null)
                 {
-                    if (
-                        targetCorpus.Files.Count > 1
-                        || targetCorpus.Files[0].Format != SIL.ServiceToolkit.Models.FileFormat.Paratext
-                    )
+                    if (targetCorpus.Files.Count > 1 || targetCorpus.Files[0].Format != FileFormat.Paratext)
                     {
                         throw new InvalidOperationException(
                             $"The corpus {source.Id} is not compatible with using a scripture range"
@@ -135,7 +125,7 @@ public class CorpusMappingService(
                 targetCorpus.PretranslateAll =
                     targetCorpus.InferenceChapters is null && targetCorpus.InferenceTextIds is null;
             }
-            SIL.ServiceToolkit.Models.ParallelCorpus corpus = new()
+            FilteredParallelCorpus corpus = new()
             {
                 Id = source.Id,
                 SourceCorpora = [sourceCorpus],
@@ -146,12 +136,9 @@ public class CorpusMappingService(
         return mappedParallelCorpora;
     }
 
-    private IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus> Map(
-        Build build,
-        IReadOnlyList<ParallelCorpus> parallelCorpora
-    )
+    private IReadOnlyList<FilteredParallelCorpus> Map(Build build, IReadOnlyList<ParallelCorpus> parallelCorpora)
     {
-        List<SIL.ServiceToolkit.Models.ParallelCorpus> mappedParallelCorpora = [];
+        List<FilteredParallelCorpus> mappedParallelCorpora = [];
         Dictionary<string, TrainingCorpus>? trainingCorpora = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
         Dictionary<string, PretranslateCorpus>? pretranslateCorpora = build.Pretranslate?.ToDictionary(c =>
             c.ParallelCorpusRef!
@@ -179,7 +166,7 @@ public class CorpusMappingService(
                     : null;
 
             mappedParallelCorpora.Add(
-                new SIL.ServiceToolkit.Models.ParallelCorpus
+                new FilteredParallelCorpus
                 {
                     Id = source.Id,
                     SourceCorpora = source
@@ -217,7 +204,7 @@ public class CorpusMappingService(
         return mappedParallelCorpora;
     }
 
-    private SIL.ServiceToolkit.Models.MonolingualCorpus Map(
+    private FilteredMonolingualCorpus Map(
         IReadOnlyList<ParallelCorpus> parallelCorpora,
         MonolingualCorpus inputCorpus,
         ParallelCorpusFilter? trainingFilter,
@@ -259,7 +246,7 @@ public class CorpusMappingService(
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
         }
 
-        var returnCorpus = new SIL.ServiceToolkit.Models.MonolingualCorpus
+        var returnCorpus = new FilteredMonolingualCorpus
         {
             Id = inputCorpus.Id,
             Language = inputCorpus.Language,
@@ -299,9 +286,9 @@ public class CorpusMappingService(
         return returnCorpus;
     }
 
-    public SIL.ServiceToolkit.Models.ParallelCorpus Map(Corpus source, Engine engine)
+    public FilteredParallelCorpus Map(Corpus source, Engine engine)
     {
-        return new SIL.ServiceToolkit.Models.ParallelCorpus
+        return new FilteredParallelCorpus
         {
             Id = source.Id,
             SourceCorpora = source.SourceFiles.Select(f => Map(f, engine.SourceLanguage)).ToArray(),
@@ -309,9 +296,9 @@ public class CorpusMappingService(
         };
     }
 
-    private SIL.ServiceToolkit.Models.MonolingualCorpus Map(CorpusFile source, string language)
+    private FilteredMonolingualCorpus Map(CorpusFile source, string language)
     {
-        return new SIL.ServiceToolkit.Models.MonolingualCorpus
+        return new FilteredMonolingualCorpus
         {
             Id = source.Id,
             Language = language,
@@ -319,19 +306,19 @@ public class CorpusMappingService(
         };
     }
 
-    private SIL.ServiceToolkit.Models.CorpusFile Map(CorpusFile source)
+    private ResolvedCorpusFile Map(CorpusFile source)
     {
-        return new SIL.ServiceToolkit.Models.CorpusFile
+        return new ResolvedCorpusFile
         {
             Location = GetFilePath(source.Filename),
-            Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
+            Format = source.Format,
             TextId = source.TextId,
         };
     }
 
-    private SIL.ServiceToolkit.Models.ParallelCorpus Map(ParallelCorpus source)
+    private FilteredParallelCorpus Map(ParallelCorpus source)
     {
-        return new SIL.ServiceToolkit.Models.ParallelCorpus
+        return new FilteredParallelCorpus
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToArray(),
@@ -339,9 +326,9 @@ public class CorpusMappingService(
         };
     }
 
-    private SIL.ServiceToolkit.Models.MonolingualCorpus Map(MonolingualCorpus source)
+    private FilteredMonolingualCorpus Map(MonolingualCorpus source)
     {
-        return new SIL.ServiceToolkit.Models.MonolingualCorpus
+        return new FilteredMonolingualCorpus
         {
             Id = source.Id,
             Language = source.Language,

@@ -1,5 +1,5 @@
 using Serval.EngineApi.Translation;
-using Serval.Shared.Models;
+using Serval.Shared.Contracts;
 using SIL.ServiceToolkit.Models;
 
 namespace EchoEngine;

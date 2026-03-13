@@ -1,5 +1,4 @@
 ﻿using Serval.Webhooks.Dtos;
-using Serval.Webhooks.Models;
 
 namespace Serval.Webhooks.Controllers;
 

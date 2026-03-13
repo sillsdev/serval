@@ -1,7 +1,6 @@
 ﻿using CaseExtensions;
-using Serval.Shared.Models;
-using Serval.Translation.Models;
-using Serval.Translation.Services;
+using Serval.Shared.Contracts;
+using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -14,7 +13,7 @@ public class SmtTransferEngineService(
     SmtTransferEngineStateService stateService,
     IBuildJobService<TranslationEngine> buildJobService,
     IClearMLQueueService clearMLQueueService
-) : ITranslationEngineService
+) : Translation.Contracts.ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
@@ -100,7 +99,7 @@ public class SmtTransferEngineService(
         );
     }
 
-    public async Task<IReadOnlyList<Translation.Models.TranslationResult>> TranslateAsync(
+    public async Task<IReadOnlyList<Translation.Contracts.TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -127,7 +126,7 @@ public class SmtTransferEngineService(
         return results.Select(Map).ToList();
     }
 
-    public async Task<Translation.Models.WordGraph> GetWordGraphAsync(
+    public async Task<Translation.Contracts.WordGraph> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -240,7 +239,7 @@ public class SmtTransferEngineService(
         return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.Nmt));
     }
 
-    public Task<Translation.Models.LanguageInfo> GetLanguageInfoAsync(
+    public Task<Translation.Contracts.LanguageInfo> GetLanguageInfoAsync(
         string language,
         CancellationToken cancellationToken = default
     )
@@ -294,7 +293,7 @@ public class SmtTransferEngineService(
         return engine;
     }
 
-    private static Translation.Models.TranslationResult Map(SIL.Machine.Translation.TranslationResult source)
+    private static Translation.Contracts.TranslationResult Map(SIL.Machine.Translation.TranslationResult source)
     {
         return new Translation.Models.TranslationResult
         {
@@ -308,7 +307,7 @@ public class SmtTransferEngineService(
         };
     }
 
-    private static Translation.Models.WordGraph Map(SIL.Machine.Translation.WordGraph source)
+    private static Translation.Contracts.WordGraph Map(SIL.Machine.Translation.WordGraph source)
     {
         return new Translation.Models.WordGraph
         {
@@ -319,7 +318,7 @@ public class SmtTransferEngineService(
         };
     }
 
-    private static Translation.Models.WordGraphArc Map(SIL.Machine.Translation.WordGraphArc source)
+    private static Translation.Contracts.WordGraphArc Map(SIL.Machine.Translation.WordGraphArc source)
     {
         return new Translation.Models.WordGraphArc
         {
@@ -352,7 +351,7 @@ public class SmtTransferEngineService(
             .ToHashSet();
     }
 
-    private static IEnumerable<Translation.Models.AlignedWordPair> MapAlignment(WordAlignmentMatrix source)
+    private static IEnumerable<Serval.Shared.Contracts.AlignedWordPair> MapAlignment(WordAlignmentMatrix source)
     {
         for (int i = 0; i < source.RowCount; i++)
         {
@@ -364,7 +363,7 @@ public class SmtTransferEngineService(
         }
     }
 
-    private static Translation.Models.Phrase Map(SIL.Machine.Translation.Phrase source)
+    private static Translation.Contracts.Phrase Map(SIL.Machine.Translation.Phrase source)
     {
         return new Translation.Models.Phrase
         {

@@ -1,6 +1,4 @@
-﻿using Serval.Webhooks.Models;
-
-namespace Microsoft.Extensions.DependencyInjection;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IMemoryDataAccessConfiguratorExtensions
 {

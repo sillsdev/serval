@@ -1,4 +1,4 @@
-﻿using Serval.Shared.Models;
+﻿using Serval.Shared.Contracts;
 using Serval.WordAlignment.V1;
 
 namespace EchoEngine;
