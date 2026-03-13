@@ -63,6 +63,7 @@ public class ScriptureDataFileServiceTests
             XElement settingsXml = new(
                 "ScriptureText",
                 new XElement("StyleSheet", "usfm.sty"),
+                new XElement("Guid", "ID"),
                 new XElement("Name", "PROJ"),
                 new XElement("FullName", "PROJ"),
                 new XElement("Encoding", "65001"),
