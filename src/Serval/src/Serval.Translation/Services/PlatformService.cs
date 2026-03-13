@@ -379,7 +379,7 @@ public class PlatformService(
                             TargetIndex = a.TargetIndex,
                         })
                         .ToList(),
-                    Confidence = request.Confidence,
+                    Confidence = item.Confidence,
                 }
             );
             if (batch.Count == PretranslationInsertBatchSize)

@@ -1,4 +1,4 @@
-﻿using Serval.Shared.Models;
+﻿using Serval.Shared.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -96,20 +96,20 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     );
 
     protected virtual Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
         CancellationToken cancellationToken
     ) => Task.CompletedTask;
 
     protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
         string? buildOptions,
         CancellationToken cancellationToken
     );
@@ -139,7 +139,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> corpora
+        IReadOnlyList<FilteredParallelCorpus> parallelCorpora
     )
     {
         List<string> warnings = [];

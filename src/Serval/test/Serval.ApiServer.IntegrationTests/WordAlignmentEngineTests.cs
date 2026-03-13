@@ -1,4 +1,5 @@
 using Google.Protobuf.WellKnownTypes;
+using Serval.Shared.Contracts;
 using Serval.WordAlignment.Models;
 using Serval.WordAlignment.V1;
 using SIL.ServiceToolkit.Models;
@@ -377,7 +378,7 @@ public class WordAlignmentEngineTests
         {
             case 200:
                 await _env.Builds.InsertAsync(
-                    new Build { EngineRef = engineId, State = Shared.Models.JobState.Completed }
+                    new Build { EngineRef = engineId, State = Shared.Contracts.JobState.Completed }
                 );
                 Client.WordAlignmentResult result = await client.AlignAsync(
                     engineId,

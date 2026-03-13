@@ -1,4 +1,6 @@
-﻿namespace Serval.DataFiles.Messages;
+﻿using Serval.Shared.Contracts;
+
+namespace Serval.DataFiles.Messages;
 
 public record DataFileResult
 {

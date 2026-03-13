@@ -1,4 +1,5 @@
-﻿using Serval.WordAlignment.V1;
+﻿using Serval.Shared.Contracts;
+using Serval.WordAlignment.V1;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -26,7 +27,7 @@ public interface IWordAlignmentEngineService
         string engineId,
         string buildId,
         string? buildOptions,
-        IReadOnlyList<Serval.Shared.Models.FilteredParallelCorpus> corpora,
+        IReadOnlyList<FilteredParallelCorpus> corpora,
         CancellationToken cancellationToken = default
     );
 

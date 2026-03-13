@@ -1,3 +1,5 @@
+using Serval.Shared.Contracts;
+
 namespace Serval.ApiServer;
 
 [TestFixture]

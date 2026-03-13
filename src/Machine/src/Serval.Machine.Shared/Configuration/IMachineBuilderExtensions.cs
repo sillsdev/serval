@@ -1,4 +1,4 @@
-using Serval.Translation.Services;
+using Serval.Translation.Contracts;
 using Serval.WordAlignment.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -374,9 +374,10 @@ public static class IMachineBuilderExtensions
                         Serval.Machine.Shared.Services.ITranslationEngineService,
                         SmtTransferEngineService
                     >();
-                    builder.Services.AddScoped<Serval.Translation.Services.ITranslationEngineService>(
+                    builder.Services.AddScoped<Serval.Translation.Contracts.ITranslationEngineService>(
                         sp => new ServalTranslationEngineService(
-                            sp.GetServices<ITranslationEngineService>().First(e => e.Type == EngineType.SmtTransfer)
+                            sp.GetServices<Serval.Translation.Contracts.ITranslationEngineService>()
+                                .First(e => e.Type == EngineType.SmtTransfer)
                         )
                     );
                     break;
@@ -385,9 +386,10 @@ public static class IMachineBuilderExtensions
                         Serval.Machine.Shared.Services.ITranslationEngineService,
                         NmtEngineService
                     >();
-                    builder.Services.AddScoped<Serval.Translation.Services.ITranslationEngineService>(
+                    builder.Services.AddScoped<Serval.Translation.Contracts.ITranslationEngineService>(
                         sp => new ServalTranslationEngineService(
-                            sp.GetServices<ITranslationEngineService>().First(e => e.Type == EngineType.Nmt)
+                            sp.GetServices<Serval.Translation.Contracts.ITranslationEngineService>()
+                                .First(e => e.Type == EngineType.Nmt)
                         )
                     );
                     break;

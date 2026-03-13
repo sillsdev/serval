@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using Serval.Shared.Contracts;
 using Serval.Translation.Configuration;
 using Serval.Translation.Models;
 using EngineApiTranslation = Serval.EngineApi.Translation;
@@ -418,7 +419,7 @@ public class TranslationEngineTests
                     {
                         EngineRef = engineId,
                         Owner = "client1",
-                        State = Shared.Models.JobState.Completed,
+                        State = Shared.Contracts.JobState.Completed,
                     }
                 );
                 Client.TranslationResult result = await client.TranslateAsync(engineId, "This is a test .");
@@ -475,7 +476,7 @@ public class TranslationEngineTests
                     {
                         EngineRef = engineId,
                         Owner = "client1",
-                        State = Shared.Models.JobState.Completed,
+                        State = Shared.Contracts.JobState.Completed,
                     }
                 );
                 ICollection<Client.TranslationResult> results = await client.TranslateNAsync(
@@ -538,7 +539,7 @@ public class TranslationEngineTests
                     {
                         EngineRef = engineId,
                         Owner = "client1",
-                        State = Shared.Models.JobState.Completed,
+                        State = Shared.Contracts.JobState.Completed,
                     }
                 );
                 Client.WordGraph wg = await client.GetWordGraphAsync(engineId, "This is a test .");
@@ -601,7 +602,7 @@ public class TranslationEngineTests
                     {
                         EngineRef = engineId,
                         Owner = "client1",
-                        State = Shared.Models.JobState.Completed,
+                        State = Shared.Contracts.JobState.Completed,
                     }
                 );
                 await client.TrainSegmentAsync(engineId, sp);
@@ -1492,7 +1493,7 @@ public class TranslationEngineTests
             EngineRef = ECHO_ENGINE1_ID,
             Owner = "client1",
             DateFinished = DateTime.UtcNow,
-            State = Shared.Models.JobState.Completed,
+            State = Shared.Contracts.JobState.Completed,
         };
         await _env.Builds.InsertAsync(build);
         switch (expectedStatusCode)

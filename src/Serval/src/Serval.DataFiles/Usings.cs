@@ -21,6 +21,7 @@ global using Serval.DataFiles.Services;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Contracts;
 global using Serval.Shared.Controllers;
+global using Serval.Shared.Dtos;
 global using Serval.Shared.Models;
 global using Serval.Shared.Services;
 global using Serval.Shared.Utils;
