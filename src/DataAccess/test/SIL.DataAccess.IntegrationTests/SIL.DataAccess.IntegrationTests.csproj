@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+		<RootNamespace>SIL.DataAccess</RootNamespace>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="6.0.4">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+		<PackageReference Include="NSubstitute" Version="5.3.0" />
+		<PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="NUnit" Version="4.4.0" />
+		<PackageReference Include="NUnit3TestAdapter" Version="6.1.0" />
+		<PackageReference Include="NUnit.Analyzers" Version="4.11.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\SIL.DataAccess\SIL.DataAccess.csproj" />
+		<ProjectReference Include="..\..\..\Machine\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.DataFiles\Serval.DataFiles.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.Shared\Serval.Shared.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.Translation\Serval.Translation.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.Webhooks\Serval.Webhooks.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.WordAlignment\Serval.WordAlignment.csproj" />
+	</ItemGroup>
+
+</Project>
