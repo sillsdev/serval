@@ -185,7 +185,7 @@ public class PretranslationService(
                 parallelCorpora,
                 corpusId,
                 textId,
-                pretranslations.ToArray(),
+                textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations.ToArray(),
                 textBehavior,
                 Map(paragraphMarkerBehavior),
                 Map(embedBehavior),
