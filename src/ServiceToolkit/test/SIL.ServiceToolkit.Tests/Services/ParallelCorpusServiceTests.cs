@@ -39,7 +39,7 @@ public class ParallelCorpusServiceTests
     }
 
     [Test]
-    public async Task TestParallelCorpusPreprocessor_FileFormatText()
+    public async Task TestPreprocess_FileFormatText()
     {
         using var env = new TestEnvironment();
         IReadOnlyList<ParallelCorpus> corpora = env.GetCorpora(paratextProject: false);
@@ -73,7 +73,7 @@ public class ParallelCorpusServiceTests
     }
 
     [Test]
-    public async Task TestParallelCorpusPreprocessor_FileFormatParatext()
+    public async Task TestPreprocess_FileFormatParatext()
     {
         using var env = new TestEnvironment();
         IReadOnlyList<ParallelCorpus> corpora = env.GetCorpora(paratextProject: true);

@@ -8,7 +8,7 @@ public class NmtPreprocessBuildJob(
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     ILanguageTagService languageTagService,
-    IParallelCorpusService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
@@ -18,7 +18,7 @@ public class NmtPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        parallelCorpusPreprocessingService,
+        parallelCorpusService,
         options
     )
 {

@@ -4,7 +4,7 @@ namespace EchoEngine;
 
 public class TranslationEngineServiceV1(
     BackgroundTaskQueue taskQueue,
-    IParallelCorpusService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusService,
     TranslationPlatformApi.TranslationPlatformApiClient platformApiClient
 ) : TranslationEngineApi.TranslationEngineApiBase
 {
@@ -12,7 +12,7 @@ public class TranslationEngineServiceV1(
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
     private readonly TranslationPlatformApi.TranslationPlatformApiClient _platformApiClient = platformApiClient;
 
-    private readonly IParallelCorpusService _parallelCorpusPreprocessingService = parallelCorpusPreprocessingService;
+    private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
@@ -124,7 +124,7 @@ public class TranslationEngineServiceV1(
                     int pretranslateCount = 0;
 
                     List<InsertPretranslationsRequest> pretranslationsRequests = [];
-                    await _parallelCorpusPreprocessingService.PreprocessAsync(
+                    await _parallelCorpusService.PreprocessAsync(
                         request.Corpora.Select(Map),
                         (row, _) =>
                         {

@@ -6,16 +6,16 @@ public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    IOptionsMonitor<DataFileOptions> dataFileOptions,
+    ICorpusMappingService corpusMappingService,
     IParallelCorpusService parallelCorpusService
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Build> _builds = builds;
     private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
+    private readonly ICorpusMappingService _corpusMappingService = corpusMappingService;
     private const string AIDisclaimerRemark =
         "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
-    private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
 
     public async Task<IEnumerable<Pretranslation>> GetAllAsync(
         string engineId,
@@ -107,48 +107,9 @@ public class PretranslationService(
 
         List<string> remarks = [disclaimerRemark, markerPlacementRemark];
 
-        SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora;
-        if (build.TrainOn == null || build.Pretranslate == null)
-        {
-            if (parallelCorpus != null)
-            {
-                parallelCorpora = engine!.ParallelCorpora.Select(Map).ToArray();
-            }
-            else
-            {
-                parallelCorpora = engine!.Corpora.Select(c => Map(c, engine)).ToArray();
-            }
-        }
-        else
-        {
-            HashSet<string> referencedCorpora;
-            if (parallelCorpus != null)
-            {
-                referencedCorpora = build
-                    .TrainOn.Select(t => t.ParallelCorpusRef)
-                    .Concat(build.Pretranslate.Select(p => p.ParallelCorpusRef))
-                    .Where(r => r != null)
-                    .Select(r => r!)
-                    .ToHashSet();
-                parallelCorpora = engine!
-                    .ParallelCorpora.Where(pc => referencedCorpora.Contains(pc.Id))
-                    .Select(Map)
-                    .ToArray();
-            }
-            else
-            {
-                referencedCorpora = build
-                    .TrainOn.Select(t => t.CorpusRef)
-                    .Concat(build.Pretranslate.Select(p => p.CorpusRef))
-                    .Where(r => r != null)
-                    .Select(r => r!)
-                    .ToHashSet();
-                parallelCorpora = engine!
-                    .Corpora.Where(c => referencedCorpora.Contains(c.Id))
-                    .Select(c => Map(c, engine))
-                    .ToArray();
-            }
-        }
+        SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora = _corpusMappingService
+            .Map(build, engine!)
+            .ToArray();
 
         IEnumerable<SIL.ServiceToolkit.Models.ParallelRow> pretranslations = (
             await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
@@ -185,7 +146,7 @@ public class PretranslationService(
                 parallelCorpora,
                 corpusId,
                 textId,
-                pretranslations.ToArray(),
+                textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations.ToArray(),
                 textBehavior,
                 Map(paragraphMarkerBehavior),
                 Map(embedBehavior),
@@ -285,60 +246,5 @@ public class PretranslationService(
             PretranslationUsfmMarkerBehavior.Strip => UpdateUsfmMarkerBehavior.Strip,
             _ => throw new InvalidEnumArgumentException(nameof(behavior)),
         };
-    }
-
-    private SIL.ServiceToolkit.Models.ParallelCorpus Map(ParallelCorpus source)
-    {
-        return new SIL.ServiceToolkit.Models.ParallelCorpus
-        {
-            Id = source.Id,
-            SourceCorpora = source.SourceCorpora.Select(Map).ToArray(),
-            TargetCorpora = source.TargetCorpora.Select(Map).ToArray(),
-        };
-    }
-
-    private SIL.ServiceToolkit.Models.MonolingualCorpus Map(MonolingualCorpus source)
-    {
-        return new SIL.ServiceToolkit.Models.MonolingualCorpus
-        {
-            Id = source.Id,
-            Language = source.Language,
-            Files = source.Files.Select(Map).ToList(),
-        };
-    }
-
-    private SIL.ServiceToolkit.Models.ParallelCorpus Map(Corpus source, Engine engine)
-    {
-        return new SIL.ServiceToolkit.Models.ParallelCorpus
-        {
-            Id = source.Id,
-            SourceCorpora = source.SourceFiles.Select(f => Map(f, engine.SourceLanguage)).ToArray(),
-            TargetCorpora = source.TargetFiles.Select(f => Map(f, engine.TargetLanguage)).ToArray(),
-        };
-    }
-
-    private SIL.ServiceToolkit.Models.MonolingualCorpus Map(CorpusFile source, string language)
-    {
-        return new SIL.ServiceToolkit.Models.MonolingualCorpus
-        {
-            Id = source.Id,
-            Language = language,
-            Files = [Map(source)],
-        };
-    }
-
-    private SIL.ServiceToolkit.Models.CorpusFile Map(CorpusFile source)
-    {
-        return new SIL.ServiceToolkit.Models.CorpusFile
-        {
-            Location = GetFilePath(source.Filename),
-            Format = (SIL.ServiceToolkit.Models.FileFormat)source.Format,
-            TextId = source.TextId,
-        };
-    }
-
-    private string GetFilePath(string filename)
-    {
-        return Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, filename);
     }
 }

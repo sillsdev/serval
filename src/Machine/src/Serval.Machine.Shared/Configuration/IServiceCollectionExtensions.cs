@@ -19,7 +19,7 @@ public static class IServiceCollectionExtensions
             (sp, cancellationToken) =>
                 sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
         );
-        services.AddParallelCorpusPreprocessor();
+        services.AddParallelCorpusService();
         services.Configure<Bugsnag.Configuration>(configuration.GetSection("Bugsnag"));
         services.AddBugsnag();
         services.AddDiagnostics();

@@ -2,14 +2,12 @@
 
 namespace EchoEngine;
 
-public class WordAlignmentEngineServiceV1(
-    BackgroundTaskQueue taskQueue,
-    IParallelCorpusService parallelCorpusPreprocessingService
-) : WordAlignmentEngineApi.WordAlignmentEngineApiBase
+public class WordAlignmentEngineServiceV1(BackgroundTaskQueue taskQueue, IParallelCorpusService parallelCorpusService)
+    : WordAlignmentEngineApi.WordAlignmentEngineApiBase
 {
     private static readonly Empty Empty = new();
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
-    private readonly IParallelCorpusService _parallelCorpusPreprocessingService = parallelCorpusPreprocessingService;
+    private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
     public override Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
@@ -78,7 +76,7 @@ public class WordAlignmentEngineServiceV1(
                     int trainCount = 0;
                     int wordAlignCount = 0;
                     List<InsertWordAlignmentsRequest> wordAlignmentsRequests = [];
-                    await _parallelCorpusPreprocessingService.PreprocessAsync(
+                    await _parallelCorpusService.PreprocessAsync(
                         request.Corpora.Select(Map),
                         (row, _) =>
                         {

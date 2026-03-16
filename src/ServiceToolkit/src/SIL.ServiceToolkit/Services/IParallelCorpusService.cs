@@ -24,7 +24,7 @@ public interface IParallelCorpusService
         HashSet<string>? ignoreUsfmMarkers = null
     );
 
-    public string UpdateSourceUsfm(
+    string UpdateSourceUsfm(
         IReadOnlyList<ParallelCorpus> parallelCorpora,
         string corpusId,
         string bookId,
@@ -37,7 +37,7 @@ public interface IParallelCorpusService
         string? targetQuoteConvention
     );
 
-    public string UpdateTargetUsfm(
+    string UpdateTargetUsfm(
         IReadOnlyList<ParallelCorpus> parallelCorpora,
         string corpusId,
         string bookId,
@@ -48,5 +48,11 @@ public interface IParallelCorpusService
         UpdateUsfmMarkerBehavior styleBehavior,
         IEnumerable<string>? remarks,
         string? targetQuoteConvention
+    );
+
+    Dictionary<string, List<int>> GetChapters(
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        string fileLocation,
+        string scriptureRange
     );
 }
