@@ -1,8 +1,8 @@
+using System.IO.Compression;
 using Google.Protobuf.WellKnownTypes;
 using Serval.Translation.Configuration;
 using Serval.Translation.Models;
 using Serval.Translation.V1;
-using SIL.ServiceToolkit.Services;
 using static Serval.ApiServer.Utils;
 using Phase = Serval.Client.Phase;
 using PhaseStage = Serval.Client.PhaseStage;
@@ -2323,7 +2323,7 @@ public class TranslationEngineTests
         Assert.That(
             usfm.Replace("\r\n", "\n"),
             Is.EqualTo(
-                @"\id MAT - TRG
+                @"\id MAT - Test1
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \h
@@ -2557,6 +2557,8 @@ public class TranslationEngineTests
     private class TestEnvironment : DisposableBase
     {
         private readonly IServiceScope _scope;
+        private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions;
+        private static readonly string TestDataPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "data");
         public readonly MongoClient MongoClient;
 
         public TestEnvironment()
@@ -2740,6 +2742,9 @@ public class TranslationEngineTests
                 .Returns(CreateAsyncUnaryCall<TranslateResponse>(StatusCode.Unimplemented));
 
             SmtClient = Substitute.For<TranslationEngineApi.TranslationEngineApiClient>();
+            _dataFileOptions = _scope.ServiceProvider.GetRequiredService<IOptionsMonitor<DataFileOptions>>();
+            ZipParatextProject(FILE3_FILENAME);
+            ZipParatextProject(FILE4_FILENAME);
         }
 
         public ServalWebApplicationFactory Factory { get; }
@@ -2768,7 +2773,6 @@ public class TranslationEngineTests
                             .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
                             .Returns(NmtClient);
                         services.AddSingleton(grpcClientFactory);
-                        services.AddTransient(CreateFileSystem);
                     });
                 })
                 .CreateClient();
@@ -2798,7 +2802,6 @@ public class TranslationEngineTests
                             .CreateClient<TranslationEngineApi.TranslationEngineApiClient>("Nmt")
                             .Returns(NmtClient);
                         services.AddSingleton(grpcClientFactory);
-                        services.AddTransient(CreateFileSystem);
                     });
                 })
                 .CreateClient();
@@ -2859,15 +2862,7 @@ public class TranslationEngineTests
         public DataFilesClient CreateDataFilesClient()
         {
             IEnumerable<string> scope = [Scopes.DeleteFiles, Scopes.ReadFiles, Scopes.UpdateFiles, Scopes.CreateFiles];
-            HttpClient httpClient = Factory
-                .WithWebHostBuilder(builder =>
-                {
-                    builder.ConfigureTestServices(services =>
-                    {
-                        services.AddTransient(CreateFileSystem);
-                    });
-                })
-                .CreateClient();
+            HttpClient httpClient = Factory.CreateClient();
             if (scope is not null)
                 httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new DataFilesClient(httpClient);
@@ -2888,78 +2883,20 @@ public class TranslationEngineTests
             MongoClient.DropDatabase("serval_test_jobs");
         }
 
-        private static IFileSystem CreateFileSystem(IServiceProvider sp)
-        {
-            IFileSystem fileSystem = Substitute.For<IFileSystem>();
-            IOptionsMonitor<DataFileOptions> dataFileOptions = sp.GetRequiredService<
-                IOptionsMonitor<DataFileOptions>
-            >();
-            fileSystem
-                .OpenZipFile(GetFilePath(dataFileOptions, FILE3_FILENAME))
-                .Returns(ci =>
-                {
-                    IZipContainer source = CreateZipContainer("SRC");
-                    source.EntryExists("MATSRC.SFM").Returns(true);
-                    string usfm =
-                        $@"\id MAT - SRC
-\h Matthew
-\c 1
-\p
-\v 1 Chapter one, verse one.
-\v 2 Chapter one, verse two.
-";
-                    source.OpenEntry("MATSRC.SFM").Returns(ci => new MemoryStream(Encoding.UTF8.GetBytes(usfm)));
-                    return source;
-                });
-            fileSystem
-                .OpenZipFile(GetFilePath(dataFileOptions, FILE4_FILENAME))
-                .Returns(ci =>
-                {
-                    IZipContainer target = CreateZipContainer("TRG");
-                    target.EntryExists("MATTRG.SFM").Returns(false);
-                    return target;
-                });
-            fileSystem.OpenWrite(Arg.Any<string>()).Returns(ci => new MemoryStream());
-            return fileSystem;
-        }
-
-        private static IZipContainer CreateZipContainer(string name)
-        {
-            IZipContainer container = Substitute.For<IZipContainer>();
-            container.EntryExists("Settings.xml").Returns(true);
-            XElement settingsXml = new(
-                "ScriptureText",
-                new XElement("StyleSheet", "usfm.sty"),
-                new XElement("Name", name),
-                new XElement("FullName", name),
-                new XElement("Encoding", "65001"),
-                new XElement(
-                    "Naming",
-                    new XAttribute("PrePart", ""),
-                    new XAttribute("PostPart", $"{name}.SFM"),
-                    new XAttribute("BookNameForm", "MAT")
-                ),
-                new XElement("BiblicalTermsListSetting", "Major::BiblicalTerms.xml")
-            );
-            container
-                .OpenEntry("Settings.xml")
-                .Returns(new MemoryStream(Encoding.UTF8.GetBytes(settingsXml.ToString())));
-            container.EntryExists("custom.vrs").Returns(false);
-            container.EntryExists("usfm.sty").Returns(false);
-            container.EntryExists("custom.sty").Returns(false);
-            return container;
-        }
-
-        private static string GetFilePath(IOptionsMonitor<DataFileOptions> dataFileOptions, string fileName)
-        {
-            return Path.Combine(dataFileOptions.CurrentValue.FilesDirectory, fileName);
-        }
-
         protected override void DisposeManagedResources()
         {
             _scope.Dispose();
             Factory.Dispose();
             ResetDatabases();
+        }
+
+        private string ZipParatextProject(string name)
+        {
+            string fileName = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, name);
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            ZipFile.CreateFromDirectory(Path.Combine(TestDataPath, name), fileName);
+            return fileName;
         }
     }
 }
