@@ -9,7 +9,7 @@ public class SmtTransferPreprocessBuildJob(
     ISharedFileService sharedFileService,
     IDistributedReaderWriterLockFactory lockFactory,
     IRepository<TrainSegmentPair> trainSegmentPairs,
-    IParallelCorpusService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
@@ -19,7 +19,7 @@ public class SmtTransferPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        parallelCorpusPreprocessingService,
+        parallelCorpusService,
         options
     )
 {

@@ -8,7 +8,7 @@ public class CorpusBundleTests
     public void GetSettings()
     {
         using TestEnvironment env = new(addParatext: true, addText: false);
-        string fileLocation = env.CorpusBundle.ParallelCorpora.First().SourceCorpora[0].Files[0].Location;
+        string fileLocation = env.CorpusBundle.ParallelCorpora[0].SourceCorpora[0].Files[0].Location;
         ParatextProjectSettings? settings = env.CorpusBundle.GetSettings(fileLocation);
         Assert.That(settings, Is.Not.Null);
         Assert.That(settings.Name, Is.EqualTo("Te1"));
@@ -19,7 +19,7 @@ public class CorpusBundleTests
     public void GetSettings_TextFile()
     {
         using TestEnvironment env = new(addParatext: false, addText: true);
-        string fileLocation = env.CorpusBundle.ParallelCorpora.First().SourceCorpora[0].Files[0].Location;
+        string fileLocation = env.CorpusBundle.ParallelCorpora[0].SourceCorpora[0].Files[0].Location;
         ParatextProjectSettings? settings = env.CorpusBundle.GetSettings(fileLocation);
         Assert.That(settings, Is.Null);
         Assert.That(env.CorpusBundle.ParentOf(fileLocation), Is.Null);
@@ -29,7 +29,7 @@ public class CorpusBundleTests
     public void GetTextUpdater()
     {
         using TestEnvironment env = new(addParatext: true, addText: false);
-        string fileLocation = env.CorpusBundle.ParallelCorpora.First().SourceCorpora[0].Files[0].Location;
+        string fileLocation = env.CorpusBundle.ParallelCorpora[0].SourceCorpora[0].Files[0].Location;
         using ZipParatextProjectTextUpdater updater = env.CorpusBundle.GetTextUpdater(fileLocation);
         Assert.That(
             updater.UpdateUsfm("MAT", [], textBehavior: UpdateUsfmTextBehavior.PreferExisting).ReplaceLineEndings("\n"),
@@ -63,7 +63,7 @@ public class CorpusBundleTests
     public void GetTextUpdater_TextFile()
     {
         using TestEnvironment env = new(addParatext: false, addText: true);
-        string fileLocation = env.CorpusBundle.ParallelCorpora.First().SourceCorpora[0].Files[0].Location;
+        string fileLocation = env.CorpusBundle.ParallelCorpora[0].SourceCorpora[0].Files[0].Location;
         Assert.Throws<InvalidDataException>(() => env.CorpusBundle.GetTextUpdater(fileLocation));
     }
 
@@ -72,7 +72,7 @@ public class CorpusBundleTests
     {
         using TestEnvironment env = new(addParatext: true, addText: true);
 
-        Assert.That(env.CorpusBundle.ParallelCorpora.Count(), Is.EqualTo(3));
+        Assert.That(env.CorpusBundle.ParallelCorpora, Has.Count.EqualTo(3));
 
         Assert.That(env.CorpusBundle.SourceTermCorpora.Count(c => c.TextCorpora.Any()), Is.EqualTo(2));
         Assert.That(

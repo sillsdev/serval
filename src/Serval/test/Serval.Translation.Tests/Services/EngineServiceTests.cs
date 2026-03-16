@@ -2365,8 +2365,19 @@ public class EngineServiceTests
             translationOptions.CurrentValue.Returns(
                 new TranslationOptions { Engines = [new EngineInfo { Type = "Smt" }] }
             );
+            var parallelCorpusService = Substitute.For<IParallelCorpusService>();
+            parallelCorpusService
+                .GetChapters(
+                    Arg.Any<IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus>>(),
+                    Arg.Any<string>(),
+                    Arg.Any<string>()
+                )
+                .Returns(callInfo =>
+                {
+                    return ScriptureRangeParser.GetChapters(callInfo.ArgAt<string>(2));
+                });
 
-            Service = new TestEngineService(
+            Service = new EngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 Pretranslations,
@@ -2376,7 +2387,9 @@ public class EngineServiceTests
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
                 OutboxService,
-                translationOptions
+                translationOptions,
+                new CorpusMappingService(dataFileOptions),
+                parallelCorpusService
             );
         }
 
@@ -2846,44 +2859,6 @@ public class EngineServiceTests
                 () => new Metadata(),
                 () => { }
             );
-        }
-    }
-
-    private class TestEngineService(
-        IRepository<Engine> engines,
-        IRepository<Build> builds,
-        IRepository<Pretranslation> pretranslations,
-        IScopedMediator mediator,
-        GrpcClientFactory grpcClientFactory,
-        IOptionsMonitor<DataFileOptions> dataFileOptions,
-        IDataAccessContext dataAccessContext,
-        ILoggerFactory loggerFactory,
-        IOutboxService outboxService,
-        IOptionsMonitor<TranslationOptions> translationOptions
-    )
-        : EngineService(
-            engines,
-            builds,
-            pretranslations,
-            mediator,
-            grpcClientFactory,
-            dataFileOptions,
-            dataAccessContext,
-            loggerFactory,
-            outboxService,
-            translationOptions
-        )
-    {
-        protected override Dictionary<string, List<int>> GetChapters(string fileLocation, string scriptureRange)
-        {
-            try
-            {
-                return ScriptureRangeParser.GetChapters(scriptureRange);
-            }
-            catch (ArgumentException ae)
-            {
-                throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
-            }
         }
     }
 }

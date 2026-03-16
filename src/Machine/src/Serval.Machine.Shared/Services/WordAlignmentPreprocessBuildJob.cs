@@ -7,7 +7,7 @@ public class WordAlignmentPreprocessBuildJob(
     ILogger<WordAlignmentPreprocessBuildJob> logger,
     IBuildJobService<WordAlignmentEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IParallelCorpusService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : PreprocessBuildJob<WordAlignmentEngine>(
@@ -17,7 +17,7 @@ public class WordAlignmentPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        parallelCorpusPreprocessingService,
+        parallelCorpusService,
         options
     )
 {

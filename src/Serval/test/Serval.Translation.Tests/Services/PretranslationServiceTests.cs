@@ -19,7 +19,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - Test2
+                    @"\id MAT - Test1
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -46,7 +46,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - Test2
+                    @"\id MAT - Test1
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -73,7 +73,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - Test2
+                    @"\id MAT - Test1
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -100,7 +100,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - Test2
+                    @"\id MAT - Test1
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -128,7 +128,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - Test2
+                    @"\id MAT - Test1
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Embed markers were moved to the end of the verse. Paragraph breaks have positions preserved. Style markers were removed.
 \c 1
@@ -220,7 +220,7 @@ public class PretranslationServiceTests
         Assert.That(
             usfm,
             Is.EqualTo(
-                    @"\id MAT - Test2
+                    @"\id MAT - Test1
 \rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
 \rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
@@ -424,7 +424,7 @@ public class PretranslationServiceTests
     [TestCase(new int[] { 1 }, "1")]
     public void GetChapterRanges(int[] chapterNumbers, string expectedRangeString)
     {
-        string actualRangeString = PretranslationService.GetChapterRangesString(chapterNumbers.ToList());
+        string actualRangeString = ParallelCorpusService.GetChapterRangesString(chapterNumbers.ToList());
         Assert.That(actualRangeString, Is.EqualTo(expectedRangeString));
     }
 
@@ -650,7 +650,13 @@ public class PretranslationServiceTests
             ]);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions() { FilesDirectory = _tempDir.Path });
-            Service = new PretranslationService(Pretranslations, Engines, Builds, dataFileOptions);
+            Service = new PretranslationService(
+                Pretranslations,
+                Engines,
+                Builds,
+                new CorpusMappingService(dataFileOptions),
+                new ParallelCorpusService()
+            );
         }
 
         public PretranslationService Service { get; }

@@ -356,7 +356,7 @@ public class PreprocessBuildJobTests
             )
             .Do(async callInfo =>
             {
-                CorpusBundle corpusBundle = callInfo.ArgAt<CorpusBundle>(0);
+                CorpusBundle corpusBundle = new(callInfo.ArgAt<IReadOnlyList<ParallelCorpus>>(0));
                 DummyCorpusBundle dummyCorpusBundle = new DummyCorpusBundle(
                     corpusBundle,
                     ["LEV", "MRK", "MAT"],
@@ -387,7 +387,7 @@ public class PreprocessBuildJobTests
         ArgumentException? ex = null;
         env.ParallelCorpusService.When(s =>
                 s.PreprocessAsync(
-                    Arg.Any<CorpusBundle>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpus>>(),
                     Arg.Any<Func<Row, TrainingDataType, Task>>(),
                     Arg.Any<Func<Row, bool, string, Task>>(),
                     Arg.Any<bool>(),
@@ -396,7 +396,7 @@ public class PreprocessBuildJobTests
             )
             .Do(async callInfo =>
             {
-                CorpusBundle corpusBundle = callInfo.ArgAt<CorpusBundle>(0);
+                CorpusBundle corpusBundle = new(callInfo.ArgAt<IReadOnlyList<ParallelCorpus>>(0));
                 DummyCorpusBundle dummyCorpusBundle = new DummyCorpusBundle(
                     corpusBundle,
                     ["LEV", "MRK", "MAT"],
@@ -431,7 +431,7 @@ public class PreprocessBuildJobTests
         ArgumentException? ex = null;
         env.ParallelCorpusService.When(s =>
                 s.PreprocessAsync(
-                    Arg.Any<CorpusBundle>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpus>>(),
                     Arg.Any<Func<Row, TrainingDataType, Task>>(),
                     Arg.Any<Func<Row, bool, string, Task>>(),
                     Arg.Any<bool>(),
@@ -440,7 +440,7 @@ public class PreprocessBuildJobTests
             )
             .Do(async callInfo =>
             {
-                CorpusBundle corpusBundle = callInfo.ArgAt<CorpusBundle>(0);
+                CorpusBundle corpusBundle = new(callInfo.ArgAt<IReadOnlyList<ParallelCorpus>>(0));
                 DummyCorpusBundle dummyCorpusBundle = new DummyCorpusBundle(
                     corpusBundle,
                     ["LEV", "MRK", "MAT"],

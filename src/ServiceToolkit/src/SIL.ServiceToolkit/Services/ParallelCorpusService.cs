@@ -139,7 +139,17 @@ public class ParallelCorpusService : IParallelCorpusService
         HashSet<string>? ignoreUsfmMarkers = null
     )
     {
-        CorpusBundle corpusBundle = new(parallelCorpora);
+        await PreprocessAsync(new CorpusBundle(parallelCorpora), train, inference, useKeyTerms, ignoreUsfmMarkers);
+    }
+
+    public async Task PreprocessAsync(
+        CorpusBundle corpusBundle,
+        Func<Row, TrainingDataType, Task> train,
+        Func<Row, bool, string, Task> inference,
+        bool useKeyTerms = false,
+        HashSet<string>? ignoreUsfmMarkers = null
+    )
+    {
         ignoreUsfmMarkers ??= [];
 
         bool parallelTrainingDataPresent = false;
@@ -504,7 +514,7 @@ public class ParallelCorpusService : IParallelCorpusService
         IReadOnlyList<ParallelCorpus> parallelCorpora,
         string corpusId,
         string bookId,
-        IReadOnlyList<Models.ParallelRow> rows,
+        IReadOnlyList<ParallelRow> rows,
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
@@ -599,7 +609,7 @@ public class ParallelCorpusService : IParallelCorpusService
                     .Where(row => row.Refs.Any())
                     .OrderBy(row => row.Refs[0])
                     .ToArray(),
-                sourceSettings?.FullName,
+                isSource ? sourceSettings?.FullName : targetSettings?.FullName,
                 textBehavior,
                 paragraphBehavior,
                 embedBehavior,
@@ -774,5 +784,25 @@ public class ParallelCorpusService : IParallelCorpusService
             chapterRangeStrings.Add($"{start}-{end}");
         }
         return string.Join(", ", chapterRangeStrings);
+    }
+
+    public Dictionary<string, List<int>> GetChapters(
+        IReadOnlyList<ParallelCorpus> parallelCorpora,
+        string fileLocation,
+        string scriptureRange
+    )
+    {
+        CorpusBundle corpusBundle = new(parallelCorpora);
+        try
+        {
+            return ScriptureRangeParser.GetChapters(
+                scriptureRange,
+                corpusBundle.GetSettings(fileLocation)?.Versification
+            );
+        }
+        catch (ArgumentException ae)
+        {
+            throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
+        }
     }
 }

@@ -10,7 +10,10 @@ public static class IServalBuilderExtensions
         builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
         builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
 
+        builder.Services.AddSingleton<IParallelCorpusService, ParallelCorpusService>();
+
         builder.Services.AddScoped<IBuildService, BuildService>();
+        builder.Services.AddScoped<ICorpusMappingService, CorpusMappingService>();
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
 

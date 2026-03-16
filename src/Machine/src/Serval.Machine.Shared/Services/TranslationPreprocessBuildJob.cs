@@ -7,7 +7,7 @@ public class TranslationPreprocessBuildJob(
     ILogger<PreprocessBuildJob<TranslationEngine>> logger,
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IParallelCorpusService parallelCorpusPreprocessingService,
+    IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : PreprocessBuildJob<TranslationEngine>(
@@ -17,7 +17,7 @@ public class TranslationPreprocessBuildJob(
         logger,
         buildJobService,
         sharedFileService,
-        parallelCorpusPreprocessingService,
+        parallelCorpusService,
         options
     )
 {
