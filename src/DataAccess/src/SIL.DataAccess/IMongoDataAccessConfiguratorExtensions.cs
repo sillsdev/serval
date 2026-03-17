@@ -6,7 +6,7 @@ public static class IMongoDataAccessConfiguratorExtensions
         this IMongoDataAccessConfigurator configurator,
         string collectionName,
         Action<BsonClassMap<T>>? mapSetup = null,
-        Func<IMongoCollection<T>, Task>[]? init = null
+        IReadOnlyList<Func<IMongoCollection<T>, Task>>? init = null
     )
         where T : IEntity
     {
@@ -26,7 +26,7 @@ public static class IMongoDataAccessConfiguratorExtensions
                         );
                         int currentVersion = schemaVersion?.Version ?? 0;
                         IMongoCollection<T> collection = database.GetCollection<T>(collectionName);
-                        for (int i = currentVersion + 1; i <= init.Length; i++)
+                        for (int i = currentVersion + 1; i <= init.Count; i++)
                         {
                             await init[i - 1](collection);
                             await schemaVersions.UpdateAsync(
