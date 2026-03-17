@@ -1,4 +1,4 @@
-namespace SIL.DataAccess;
+namespace Serval.IntegrationTests;
 
 [TestFixture]
 [Category("Integration")]
