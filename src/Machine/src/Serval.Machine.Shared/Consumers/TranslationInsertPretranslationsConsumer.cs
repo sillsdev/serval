@@ -41,6 +41,7 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
                 Translation = pretranslation.Translation,
                 SourceTokens = { pretranslation.SourceTokens },
                 TranslationTokens = { pretranslation.TranslationTokens },
+                Confidence = pretranslation.Confidence,
             };
             if (pretranslation.Alignment is not null)
                 request.Alignment.Add(pretranslation.Alignment.Select(Map));
@@ -83,6 +84,7 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
                 sourceTokens = [],
                 translationTokens = [];
             IReadOnlyList<SIL.Machine.Corpora.AlignedWordPair> alignedWordPairs = [];
+            double confidence = 0.0;
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
@@ -128,6 +130,10 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
                             reader.Read();
                             alignedWordPairs = SIL.Machine.Corpora.AlignedWordPair.Parse(reader.GetString()).ToArray();
                             break;
+                        case "sequenceConfidence":
+                            reader.Read();
+                            confidence = reader.GetDouble();
+                            break;
                         default:
                             throw new JsonException(
                                 $"Unexpected property name {s} when deserializing Pretranslation object"
@@ -145,6 +151,7 @@ public class TranslationInsertPretranslationsConsumer(TranslationPlatformApi.Tra
                 Alignment = alignedWordPairs,
                 SourceTokens = sourceTokens,
                 TranslationTokens = translationTokens,
+                Confidence = confidence,
             };
         }
 

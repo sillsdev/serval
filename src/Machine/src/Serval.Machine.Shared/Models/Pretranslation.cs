@@ -10,4 +10,5 @@ public record Pretranslation
     public IEnumerable<string>? SourceTokens { get; init; }
     public IEnumerable<string>? TranslationTokens { get; init; }
     public IReadOnlyList<AlignedWordPair>? Alignment { get; init; }
+    public double Confidence { get; init; }
 }

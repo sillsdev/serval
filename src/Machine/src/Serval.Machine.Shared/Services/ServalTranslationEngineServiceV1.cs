@@ -238,14 +238,13 @@ public class ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineServ
 
     private static IEnumerable<Translation.V1.AlignedWordPair> Map(WordAlignmentMatrix source)
     {
-        for (int i = 0; i < source.RowCount; i++)
-        {
-            for (int j = 0; j < source.ColumnCount; j++)
+        return source
+            .ToAlignedWordPairs()
+            .Select(wp => new Translation.V1.AlignedWordPair
             {
-                if (source[i, j])
-                    yield return new Translation.V1.AlignedWordPair { SourceIndex = i, TargetIndex = j };
-            }
-        }
+                SourceIndex = wp.SourceIndex,
+                TargetIndex = wp.TargetIndex,
+            });
     }
 
     private static Translation.V1.Phrase Map(SIL.Machine.Translation.Phrase source)
