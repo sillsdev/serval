@@ -5,7 +5,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
-		<RootNamespace>SIL.DataAccess</RootNamespace>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -13,7 +12,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="8.0.0">
+		<PackageReference Include="coverlet.collector" Version="8.0.1">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
@@ -32,13 +31,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\SIL.DataAccess\SIL.DataAccess.csproj" />
-		<ProjectReference Include="..\..\..\Machine\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
-		<ProjectReference Include="..\..\..\Serval\src\Serval.DataFiles\Serval.DataFiles.csproj" />
-		<ProjectReference Include="..\..\..\Serval\src\Serval.Shared\Serval.Shared.csproj" />
-		<ProjectReference Include="..\..\..\Serval\src\Serval.Translation\Serval.Translation.csproj" />
-		<ProjectReference Include="..\..\..\Serval\src\Serval.Webhooks\Serval.Webhooks.csproj" />
-		<ProjectReference Include="..\..\..\Serval\src\Serval.WordAlignment\Serval.WordAlignment.csproj" />
+		<ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess\SIL.DataAccess.csproj" />
+		<ProjectReference Include="..\..\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
 	</ItemGroup>
 
 </Project>
