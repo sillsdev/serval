@@ -381,6 +381,7 @@ public class TranslationPlatformServiceV1(
                     SourceTokens = request.SourceTokens,
                     TranslationTokens = request.TranslationTokens,
                     Alignment = request.Alignment.Select(Map).ToList(),
+                    Confidence = request.Confidence,
                 }
             );
             if (batch.Count == PretranslationInsertBatchSize)

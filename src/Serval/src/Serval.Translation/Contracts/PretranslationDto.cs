@@ -9,4 +9,5 @@ public record PretranslationDto
     [Obsolete]
     public IReadOnlyList<string>? Refs { get; init; }
     public required string Translation { get; init; }
+    public double Confidence { get; init; }
 }

@@ -1242,7 +1242,7 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task DeletePretranslationsWhenParallelCorpusIsUpdatedAsync()
+    public async Task DeleteWordAlignmentsWhenParallelCorpusIsUpdatedAsync()
     {
         var env = new TestEnvironment();
         Models.WordAlignment wordAlignment = new()
@@ -1266,7 +1266,7 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task DeletePretranslationsWhenCorpusFilesAreDeletedAsync()
+    public async Task DeleteWordAlignmentsWhenCorpusFilesAreDeletedAsync()
     {
         var env = new TestEnvironment();
         Models.WordAlignment wordAlignment = new()
@@ -1290,7 +1290,7 @@ public class EngineServiceTests
     }
 
     [Test]
-    public async Task DeletePretranslationsWhenCorpusFilesAreUpdatedAsync()
+    public async Task DeleteWordAlignmentsWhenCorpusFilesAreUpdatedAsync()
     {
         var env = new TestEnvironment();
         Models.WordAlignment wordAlignment = new()
