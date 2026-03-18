@@ -138,6 +138,7 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
                                         Language = "es",
                                         Files =
                                         {
@@ -159,6 +160,7 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
                                         Language = "en",
                                         Files =
                                         {
@@ -217,6 +219,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         TrainOnTextIds = { },
                                         Files =
@@ -239,6 +243,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         TrainOnTextIds = { },
                                         Files =
@@ -298,6 +304,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         TrainOnTextIds = { "text1" },
                                         Files =
@@ -320,6 +328,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         TrainOnTextIds = { "text1" },
                                         Files =
@@ -379,6 +389,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -400,6 +412,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -459,6 +473,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -480,6 +496,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -539,6 +557,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -560,6 +580,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -585,6 +607,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus2",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -606,6 +630,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus2",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -682,6 +708,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         TrainOnChapters =
                                         {
@@ -714,6 +742,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         TrainOnChapters =
                                         {
@@ -783,6 +813,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -804,6 +836,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         Files =
                                         {
