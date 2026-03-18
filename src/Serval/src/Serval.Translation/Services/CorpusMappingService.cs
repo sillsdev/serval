@@ -1,5 +1,3 @@
-using SIL.Extensions;
-
 namespace Serval.Translation.Services;
 
 public class CorpusMappingService(
@@ -56,12 +54,16 @@ public class CorpusMappingService(
                 Id = source.Id,
                 Language = source.SourceLanguage,
                 Files = source.SourceFiles.Select(Map).ToArray(),
+                TrainOnAll = trainOnAllCorpora,
+                PretranslateAll = pretranslateAllCorpora,
             };
             SIL.ServiceToolkit.Models.MonolingualCorpus targetCorpus = new()
             {
                 Id = source.Id,
                 Language = source.TargetLanguage,
                 Files = source.TargetFiles.Select(Map).ToArray(),
+                TrainOnAll = trainOnAllCorpora,
+                PretranslateAll = pretranslateAllCorpora,
             };
 
             if (trainingCorpus is not null)
@@ -72,12 +74,10 @@ public class CorpusMappingService(
                         $"The corpus {source.Id} cannot specify both 'textIds' and 'scriptureRange' for trainOn"
                     );
                 }
-                if (trainingCorpus.TextIds is not null)
-                {
-                    sourceCorpus.TrainOnTextIds.AddRange(trainingCorpus.TextIds);
-                    targetCorpus.TrainOnTextIds.AddRange(trainingCorpus.TextIds);
-                }
-                if (!string.IsNullOrEmpty(trainingCorpus.ScriptureRange))
+                sourceCorpus.TrainOnTextIds = trainingCorpus.TextIds?.ToHashSet();
+                targetCorpus.TrainOnTextIds = trainingCorpus.TextIds?.ToHashSet();
+
+                if (trainingCorpus.ScriptureRange is not null)
                 {
                     if (
                         targetCorpus.Files.Count > 1
@@ -98,6 +98,8 @@ public class CorpusMappingService(
                     sourceCorpus.TrainOnChapters = chapters;
                     targetCorpus.TrainOnChapters = chapters;
                 }
+                sourceCorpus.TrainOnAll = sourceCorpus.TrainOnChapters is null && sourceCorpus.TrainOnTextIds is null;
+                targetCorpus.TrainOnAll = targetCorpus.TrainOnChapters is null && targetCorpus.TrainOnTextIds is null;
             }
 
             if (pretranslateCorpus is not null)
@@ -108,9 +110,8 @@ public class CorpusMappingService(
                         $"The corpus {source.Id} cannot specify both 'textIds' and 'scriptureRange' for 'pretranslate'."
                     );
                 }
-                if (pretranslateCorpus.TextIds is not null)
-                    sourceCorpus.InferenceTextIds.AddRange(pretranslateCorpus.TextIds);
-                if (!string.IsNullOrEmpty(pretranslateCorpus.ScriptureRange))
+                sourceCorpus.InferenceTextIds = pretranslateCorpus.TextIds?.ToHashSet();
+                if (pretranslateCorpus.ScriptureRange is not null)
                 {
                     if (
                         targetCorpus.Files.Count > 1
@@ -129,14 +130,16 @@ public class CorpusMappingService(
                         )
                         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
                 }
+                sourceCorpus.PretranslateAll =
+                    sourceCorpus.InferenceChapters is null && sourceCorpus.InferenceTextIds is null;
+                targetCorpus.PretranslateAll =
+                    targetCorpus.InferenceChapters is null && targetCorpus.InferenceTextIds is null;
             }
             SIL.ServiceToolkit.Models.ParallelCorpus corpus = new()
             {
                 Id = source.Id,
                 SourceCorpora = [sourceCorpus],
                 TargetCorpora = [targetCorpus],
-                TrainOnAllCorpora = trainOnAllCorpora,
-                PretranslateAllCorpora = pretranslateAllCorpora,
             };
             mappedParallelCorpora.Add(corpus);
         }
@@ -186,7 +189,11 @@ public class CorpusMappingService(
                                 sc,
                                 trainingCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
                                 pretranslateCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
-                                referenceFileLocation
+                                referenceFileLocation,
+                                trainOnAllCorpora
+                                    || (trainingCorpus is not null && trainingCorpus.SourceFilters is null),
+                                pretranslateAllCorpora
+                                    || (pretranslateCorpus is not null && pretranslateCorpus.SourceFilters is null)
                             )
                         )
                         .ToArray(),
@@ -197,12 +204,13 @@ public class CorpusMappingService(
                                 tc,
                                 trainingCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
                                 null,
-                                referenceFileLocation
+                                referenceFileLocation,
+                                trainOnAllCorpora
+                                    || (trainingCorpus is not null && trainingCorpus.TargetFilters is null),
+                                pretranslateAllCorpora || pretranslateCorpus is not null
                             )
                         )
                         .ToArray(),
-                    TrainOnAllCorpora = trainOnAllCorpora,
-                    PretranslateAllCorpora = pretranslateAllCorpora,
                 }
             );
         }
@@ -214,7 +222,9 @@ public class CorpusMappingService(
         MonolingualCorpus inputCorpus,
         ParallelCorpusFilter? trainingFilter,
         ParallelCorpusFilter? pretranslateFilter,
-        string? referenceFileLocation
+        string? referenceFileLocation,
+        bool trainOnAll,
+        bool pretranslateAll
     )
     {
         Dictionary<string, HashSet<int>>? trainOnChapters = null;
@@ -254,6 +264,8 @@ public class CorpusMappingService(
             Id = inputCorpus.Id,
             Language = inputCorpus.Language,
             Files = inputCorpus.Files.Select(Map).ToArray(),
+            TrainOnAll = trainOnAll,
+            PretranslateAll = pretranslateAll,
         };
 
         if (

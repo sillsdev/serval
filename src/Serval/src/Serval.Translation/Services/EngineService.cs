@@ -843,22 +843,12 @@ public class EngineService(
         return new V1.ParallelCorpus
         {
             Id = source.Id,
-            SourceCorpora =
-            {
-                source.SourceCorpora.Select(c => Map(c, source.TrainOnAllCorpora, source.PretranslateAllCorpora)),
-            },
-            TargetCorpora =
-            {
-                source.TargetCorpora.Select(c => Map(c, source.TrainOnAllCorpora, source.PretranslateAllCorpora)),
-            },
+            SourceCorpora = { source.SourceCorpora.Select(Map) },
+            TargetCorpora = { source.TargetCorpora.Select(Map) },
         };
     }
 
-    private static V1.MonolingualCorpus Map(
-        SIL.ServiceToolkit.Models.MonolingualCorpus source,
-        bool trainOnAll,
-        bool pretranslateAll
-    )
+    private static V1.MonolingualCorpus Map(SIL.ServiceToolkit.Models.MonolingualCorpus source)
     {
         var corpus = new V1.MonolingualCorpus
         {
@@ -867,15 +857,15 @@ public class EngineService(
             Files = { source.Files.Select(Map) },
         };
 
-        if (trainOnAll || (source.TrainOnTextIds is null && source.TrainOnChapters is null))
+        if (source.TrainOnAll)
         {
             corpus.TrainOnAll = true;
         }
-        if (source.TrainOnTextIds is not null)
+        else if (source.TrainOnTextIds is not null)
         {
             corpus.TrainOnTextIds.Add(source.TrainOnTextIds);
         }
-        if (source.TrainOnChapters is not null)
+        else if (source.TrainOnChapters is not null)
         {
             corpus.TrainOnChapters.Add(
                 source
@@ -889,7 +879,7 @@ public class EngineService(
             );
         }
 
-        if (pretranslateAll || (source.InferenceTextIds is null && source.InferenceChapters is null))
+        if (source.PretranslateAll)
         {
             corpus.PretranslateAll = true;
         }
