@@ -107,48 +107,9 @@ public class PretranslationService(
 
         List<string> remarks = [disclaimerRemark, markerPlacementRemark];
 
-        SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora;
-        if (build.TrainOn == null || build.Pretranslate == null)
-        {
-            if (parallelCorpus != null)
-            {
-                parallelCorpora = engine!.ParallelCorpora.Select(_corpusMappingService.Map).ToArray();
-            }
-            else
-            {
-                parallelCorpora = engine!.Corpora.Select(c => _corpusMappingService.Map(c, engine)).ToArray();
-            }
-        }
-        else
-        {
-            HashSet<string> referencedCorpora;
-            if (parallelCorpus != null)
-            {
-                referencedCorpora = build
-                    .TrainOn.Select(t => t.ParallelCorpusRef)
-                    .Concat(build.Pretranslate.Select(p => p.ParallelCorpusRef))
-                    .Where(r => r != null)
-                    .Select(r => r!)
-                    .ToHashSet();
-                parallelCorpora = engine!
-                    .ParallelCorpora.Where(pc => referencedCorpora.Contains(pc.Id))
-                    .Select(_corpusMappingService.Map)
-                    .ToArray();
-            }
-            else
-            {
-                referencedCorpora = build
-                    .TrainOn.Select(t => t.CorpusRef)
-                    .Concat(build.Pretranslate.Select(p => p.CorpusRef))
-                    .Where(r => r != null)
-                    .Select(r => r!)
-                    .ToHashSet();
-                parallelCorpora = engine!
-                    .Corpora.Where(c => referencedCorpora.Contains(c.Id))
-                    .Select(c => _corpusMappingService.Map(c, engine))
-                    .ToArray();
-            }
-        }
+        SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora = _corpusMappingService
+            .Map(build, engine!)
+            .ToArray();
 
         IEnumerable<SIL.ServiceToolkit.Models.ParallelRow> pretranslations = (
             await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)

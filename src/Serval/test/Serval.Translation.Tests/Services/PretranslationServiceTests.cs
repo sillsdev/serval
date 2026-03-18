@@ -650,12 +650,13 @@ public class PretranslationServiceTests
             ]);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions() { FilesDirectory = _tempDir.Path });
+            var parallelCorpusService = new ParallelCorpusService();
             Service = new PretranslationService(
                 Pretranslations,
                 Engines,
                 Builds,
-                new CorpusMappingService(dataFileOptions),
-                new ParallelCorpusService()
+                new CorpusMappingService(dataFileOptions, parallelCorpusService),
+                parallelCorpusService
             );
         }
 

@@ -2383,13 +2383,11 @@ public class EngineServiceTests
                 Pretranslations,
                 Substitute.For<IScopedMediator>(),
                 grpcClientFactory,
-                dataFileOptions,
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
                 OutboxService,
                 translationOptions,
-                new CorpusMappingService(dataFileOptions),
-                parallelCorpusService
+                new CorpusMappingService(dataFileOptions, parallelCorpusService)
             );
         }
 
