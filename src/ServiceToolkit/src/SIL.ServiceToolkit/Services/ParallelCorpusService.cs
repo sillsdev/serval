@@ -496,8 +496,6 @@ public class ParallelCorpusService : IParallelCorpusService
             books.AddRange(corpus.TrainOnChapters.Keys);
         }
 
-        // if (isSource)
-        // {
         if (corpus.InferenceTextIds != null)
         {
             books.AddRange(corpus.InferenceTextIds);
@@ -506,7 +504,7 @@ public class ParallelCorpusService : IParallelCorpusService
         {
             books.AddRange(corpus.InferenceChapters.Keys);
         }
-        // }
+
         return [.. books.Select(bookName => Canon.BookIdToNumber(bookName))];
     }
 
