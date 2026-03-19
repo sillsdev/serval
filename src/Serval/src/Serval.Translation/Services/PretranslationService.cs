@@ -50,8 +50,10 @@ public class PretranslationService(
     )
     {
         Engine? engine = await _engines.GetAsync(engineId, cancellationToken);
-        Corpus? corpus = engine?.Corpora.SingleOrDefault(c => c.Id == corpusId);
-        ParallelCorpus? parallelCorpus = engine?.ParallelCorpora.SingleOrDefault(c => c.Id == corpusId);
+        if (engine is null)
+            throw new EntityNotFoundException($"Could not find the Engine '{engineId}'.");
+        Corpus? corpus = engine.Corpora.SingleOrDefault(c => c.Id == corpusId);
+        ParallelCorpus? parallelCorpus = engine.ParallelCorpora.SingleOrDefault(c => c.Id == corpusId);
         if (corpus is not null)
         {
             if (corpus.SourceFiles.Count == 0)
@@ -107,9 +109,7 @@ public class PretranslationService(
 
         List<string> remarks = [disclaimerRemark, markerPlacementRemark];
 
-        SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora = _corpusMappingService
-            .Map(build, engine!)
-            .ToArray();
+        SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora = _corpusMappingService.Map(build, engine).ToArray();
 
         IEnumerable<SIL.ServiceToolkit.Models.ParallelRow> pretranslations = (
             await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
