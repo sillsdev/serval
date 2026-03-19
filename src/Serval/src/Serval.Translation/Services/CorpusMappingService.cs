@@ -349,7 +349,7 @@ public class CorpusMappingService(
         };
     }
 
-    public string GetFilePath(string filename)
+    private string GetFilePath(string filename)
     {
         return Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, filename);
     }

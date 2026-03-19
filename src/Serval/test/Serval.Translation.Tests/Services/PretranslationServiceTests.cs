@@ -417,6 +417,26 @@ public class PretranslationServiceTests
     }
 
     [Test]
+    public void GetUsfmAsync_EngineDoesNotExist()
+    {
+        using TestEnvironment env = new();
+        Assert.ThrowsAsync<EntityNotFoundException>(async () =>
+            await env.Service.GetUsfmAsync(
+                engineId: "engine2",
+                modelRevision: 1,
+                corpusId: "corpus1",
+                textId: "MAT",
+                textOrigin: PretranslationUsfmTextOrigin.PreferPretranslated,
+                template: PretranslationUsfmTemplate.Auto,
+                paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.PreservePosition,
+                embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
+                styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
+                quoteNormalizationBehavior: PretranslationNormalizationBehavior.Denormalized
+            )
+        );
+    }
+
+    [Test]
     [TestCase(new int[] { 1, 2, 3 }, "1-3")]
     [TestCase(new int[] { 1, 3, 4 }, "1, 3-4")]
     [TestCase(new int[] { 2, 3, 4, 6, 8, 9 }, "2-4, 6, 8-9")]
