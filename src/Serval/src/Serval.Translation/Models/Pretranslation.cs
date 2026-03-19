@@ -12,7 +12,7 @@ public class Pretranslation : IEntity
     public required IReadOnlyList<string>? TargetRefs { get; init; } = [];
     public required IReadOnlyList<string> Refs { get; init; }
     public required string Translation { get; init; }
-    public IEnumerable<string>? SourceTokens { get; init; }
-    public IEnumerable<string>? TranslationTokens { get; init; }
+    public IReadOnlyList<string>? SourceTokens { get; init; }
+    public IReadOnlyList<string>? TranslationTokens { get; init; }
     public IReadOnlyList<AlignedWordPair>? Alignment { get; init; }
 }

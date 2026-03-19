@@ -1,7 +1,7 @@
 namespace SIL.ServiceToolkit.Services;
 
 [TestFixture]
-public class ParallelCorpusPreprocessingServiceTests
+public class ParallelCorpusServiceTests
 {
     [Test]
     public void TestParallelCorpusAnalysis_FileFormatParatext()
@@ -10,9 +10,9 @@ public class ParallelCorpusPreprocessingServiceTests
         ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).First();
         const string ExpectedTargetName = "typewriter_english";
 
-        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetCorpusQuoteConvention(
-            parallelCorpus
-        );
+        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention([
+            parallelCorpus,
+        ]);
 
         Assert.Multiple(() =>
         {
@@ -27,9 +27,9 @@ public class ParallelCorpusPreprocessingServiceTests
         using var env = new TestEnvironment();
         ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: false).First();
 
-        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetCorpusQuoteConvention(
-            parallelCorpus
-        );
+        QuoteConventionAnalysis? targetQuotationConvention = env.Processor.AnalyzeTargetQuoteConvention([
+            parallelCorpus,
+        ]);
 
         Assert.Multiple(() =>
         {
@@ -39,7 +39,7 @@ public class ParallelCorpusPreprocessingServiceTests
     }
 
     [Test]
-    public async Task TestParallelCorpusPreprocessor_FileFormatText()
+    public async Task TestPreprocess_FileFormatText()
     {
         using var env = new TestEnvironment();
         IReadOnlyList<ParallelCorpus> corpora = env.GetCorpora(paratextProject: false);
@@ -73,7 +73,7 @@ public class ParallelCorpusPreprocessingServiceTests
     }
 
     [Test]
-    public async Task TestParallelCorpusPreprocessor_FileFormatParatext()
+    public async Task TestPreprocess_FileFormatParatext()
     {
         using var env = new TestEnvironment();
         IReadOnlyList<ParallelCorpus> corpora = env.GetCorpora(paratextProject: true);
@@ -123,10 +123,9 @@ public class ParallelCorpusPreprocessingServiceTests
             "Services",
             "data"
         );
-        private readonly TempDirectory _tempDir = new TempDirectory(name: "ParallelCorpusProcessingServiceTests");
+        private readonly TempDirectory _tempDir = new TempDirectory(name: "ParallelCorpusServiceTests");
 
-        public IParallelCorpusPreprocessingService Processor { get; } =
-            new ParallelCorpusPreprocessingService(new TextCorpusService());
+        public IParallelCorpusService Processor { get; } = new ParallelCorpusService();
 
         public ParallelCorpus[] GetCorpora(bool paratextProject)
         {

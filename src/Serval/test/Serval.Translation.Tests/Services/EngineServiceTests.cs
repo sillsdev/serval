@@ -138,6 +138,7 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
                                         Language = "es",
                                         Files =
                                         {
@@ -159,6 +160,7 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
                                         Language = "en",
                                         Files =
                                         {
@@ -217,6 +219,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         TrainOnTextIds = { },
                                         Files =
@@ -239,6 +243,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         TrainOnTextIds = { },
                                         Files =
@@ -298,6 +304,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         TrainOnTextIds = { "text1" },
                                         Files =
@@ -320,6 +328,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         TrainOnTextIds = { "text1" },
                                         Files =
@@ -379,6 +389,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -400,6 +412,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -459,6 +473,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -480,6 +496,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -539,6 +557,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -560,6 +580,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -585,6 +607,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus2",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -606,6 +630,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus2",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -682,6 +708,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         TrainOnChapters =
                                         {
@@ -714,6 +742,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         TrainOnChapters =
                                         {
@@ -783,6 +813,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "es",
                                         Files =
                                         {
@@ -804,6 +836,8 @@ public class EngineServiceTests
                                 {
                                     new()
                                     {
+                                        Id = "corpus1",
+
                                         Language = "en",
                                         Files =
                                         {
@@ -2356,27 +2390,6 @@ public class EngineServiceTests
                 .Returns(TranslationServiceClient);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
-            var scriptureDataFileService = Substitute.For<IScriptureDataFileService>();
-            scriptureDataFileService
-                .GetParatextProjectSettings(Arg.Any<string>())
-                .Returns(
-                    new ParatextProjectSettings(
-                        guid: "Id",
-                        name: "Tst",
-                        fullName: "Test",
-                        encoding: Encoding.UTF8,
-                        versification: ScrVers.English,
-                        stylesheet: new UsfmStylesheet("usfm.sty"),
-                        fileNamePrefix: "TST",
-                        fileNameForm: "MAT",
-                        fileNameSuffix: ".USFM",
-                        biblicalTermsListType: "BiblicalTerms",
-                        biblicalTermsProjectName: "",
-                        biblicalTermsFileName: "BiblicalTerms.xml",
-                        languageCode: "en",
-                        translationType: "Standard"
-                    )
-                );
 
             Pretranslations = new MemoryRepository<Pretranslation>();
             OutboxService = Substitute.For<IOutboxService>();
@@ -2386,6 +2399,17 @@ public class EngineServiceTests
             translationOptions.CurrentValue.Returns(
                 new TranslationOptions { Engines = [new EngineInfo { Type = "Smt" }] }
             );
+            var parallelCorpusService = Substitute.For<IParallelCorpusService>();
+            parallelCorpusService
+                .GetChapters(
+                    Arg.Any<IReadOnlyList<SIL.ServiceToolkit.Models.ParallelCorpus>>(),
+                    Arg.Any<string>(),
+                    Arg.Any<string>()
+                )
+                .Returns(callInfo =>
+                {
+                    return ScriptureRangeParser.GetChapters(callInfo.ArgAt<string>(2));
+                });
 
             Service = new EngineService(
                 Engines,
@@ -2393,12 +2417,11 @@ public class EngineServiceTests
                 Pretranslations,
                 Substitute.For<IScopedMediator>(),
                 grpcClientFactory,
-                dataFileOptions,
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
-                scriptureDataFileService,
                 OutboxService,
-                translationOptions
+                translationOptions,
+                new CorpusMappingService(dataFileOptions, parallelCorpusService)
             );
         }
 

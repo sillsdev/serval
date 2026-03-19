@@ -1,9 +1,9 @@
-namespace Serval.Shared.Services;
+namespace SIL.ServiceToolkit.Services;
 
 public class ZipParatextProjectTextUpdater(IZipContainer projectContainer, ParatextProjectSettings? settings = null)
     : ParatextProjectTextUpdaterBase(
         new ZipParatextProjectFileHandler(projectContainer),
-        settings ?? new ZipParatextProjectSettingsParser(projectContainer).Parse()
+        settings ?? new ZipParatextProjectSettingsParser(projectContainer, settings).Parse()
     ),
         IDisposable
 {

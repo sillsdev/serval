@@ -1361,27 +1361,6 @@ public class EngineServiceTests
                 .Returns(WordAlignmentServiceClient);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions());
-            var scriptureDataFileService = Substitute.For<IScriptureDataFileService>();
-            scriptureDataFileService
-                .GetParatextProjectSettings(Arg.Any<string>())
-                .Returns(
-                    new ParatextProjectSettings(
-                        guid: "Id",
-                        name: "Tst",
-                        fullName: "Test",
-                        encoding: Encoding.UTF8,
-                        versification: ScrVers.English,
-                        stylesheet: new UsfmStylesheet("usfm.sty"),
-                        fileNamePrefix: "TST",
-                        fileNameForm: "MAT",
-                        fileNameSuffix: ".USFM",
-                        biblicalTermsListType: "BiblicalTerms",
-                        biblicalTermsProjectName: "",
-                        biblicalTermsFileName: "BiblicalTerms.xml",
-                        languageCode: "en",
-                        translationType: "Standard"
-                    )
-                );
 
             WordAlignments = new MemoryRepository<Models.WordAlignment>();
             OutboxService = Substitute.For<IOutboxService>();
@@ -1392,7 +1371,7 @@ public class EngineServiceTests
                 new WordAlignmentOptions { Engines = [new EngineInfo { Type = "Statistical" }] }
             );
 
-            Service = new EngineService(
+            Service = new TestEngineService(
                 Engines,
                 new MemoryRepository<Build>(),
                 WordAlignments,
@@ -1400,7 +1379,6 @@ public class EngineServiceTests
                 dataFileOptions,
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
-                scriptureDataFileService,
                 OutboxService,
                 wordAlignmentOptions
             );
@@ -1834,5 +1812,41 @@ public class EngineServiceTests
             alignedWordPairs.Add(new Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
         }
         return alignedWordPairs;
+    }
+
+    private class TestEngineService(
+        IRepository<Engine> engines,
+        IRepository<Build> builds,
+        IRepository<Models.WordAlignment> wordAlignments,
+        GrpcClientFactory grpcClientFactory,
+        IOptionsMonitor<DataFileOptions> dataFileOptions,
+        IDataAccessContext dataAccessContext,
+        ILoggerFactory loggerFactory,
+        IOutboxService outboxService,
+        IOptionsMonitor<WordAlignmentOptions> wordAlignmentOptions
+    )
+        : EngineService(
+            engines,
+            builds,
+            wordAlignments,
+            grpcClientFactory,
+            dataFileOptions,
+            dataAccessContext,
+            loggerFactory,
+            outboxService,
+            wordAlignmentOptions
+        )
+    {
+        protected override Dictionary<string, List<int>> GetChapters(string fileLocation, string scriptureRange)
+        {
+            try
+            {
+                return ScriptureRangeParser.GetChapters(scriptureRange);
+            }
+            catch (ArgumentException ae)
+            {
+                throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
+            }
+        }
     }
 }
