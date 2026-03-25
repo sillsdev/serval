@@ -24,6 +24,7 @@ public class TranslationInsertPretranslationsConsumerTests
                         ["textId"] = "MAT",
                         ["refs"] = new JsonArray { "MAT 1:1" },
                         ["translation"] = "translation",
+                        ["sequenceConfidence"] = 0.5,
                     },
                 }
             );
@@ -44,6 +45,7 @@ public class TranslationInsertPretranslationsConsumerTests
                     SourceRefs = { },
                     TargetRefs = { "MAT 1:1" },
                     Translation = "translation",
+                    Confidence = 0.5,
                 },
                 Arg.Any<CancellationToken>()
             );
@@ -67,7 +69,10 @@ public class TranslationInsertPretranslationsConsumerTests
                         ["textId"] = "MAT",
                         ["sourceRefs"] = new JsonArray { "MAT 1:1" },
                         ["targetRefs"] = new JsonArray { "MAT 1:1" },
+                        ["sourceTokens"] = new JsonArray { "translation" },
+                        ["translationTokens"] = new JsonArray { "translation" },
                         ["translation"] = "translation",
+                        ["alignment"] = "0-0",
                     },
                 }
             );
@@ -88,6 +93,13 @@ public class TranslationInsertPretranslationsConsumerTests
                     SourceRefs = { "MAT 1:1" },
                     TargetRefs = { "MAT 1:1" },
                     Translation = "translation",
+                    SourceTokens = { "translation" },
+                    TranslationTokens = { "translation" },
+                    Alignment =
+                    {
+                        new Translation.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
+                    },
+                    Confidence = 0.0,
                 },
                 Arg.Any<CancellationToken>()
             );

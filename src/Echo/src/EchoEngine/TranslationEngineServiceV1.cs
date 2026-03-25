@@ -152,6 +152,7 @@ public class TranslationEngineServiceV1(
                                             (_, i) => new AlignedWordPair() { SourceIndex = i, TargetIndex = i }
                                         ),
                                     },
+                                    Confidence = 1.0,
                                 }
                             );
                             if (row.SourceSegment.Length > 0 && !isInTrainingData)

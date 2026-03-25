@@ -2004,6 +2004,7 @@ public class TranslationEnginesController(
             TargetRefs = source.TargetRefs ?? [],
             Refs = source.Refs,
             Translation = source.Translation,
+            Confidence = source.Confidence ?? -1.0,
         };
     }
 

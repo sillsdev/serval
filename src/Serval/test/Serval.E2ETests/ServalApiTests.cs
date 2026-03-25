@@ -263,18 +263,21 @@ public class ServalApiTests
             },
         ];
         _helperClient.TranslationBuildConfig.Options =
-            "{\"max_steps\":10, \"use_key_terms\":true, \"train_params\": {\"per_device_train_batch_size\":4}}";
+            "{\"max_steps\":50, \"use_key_terms\":true, \"parent_model_name\": \"facebook/nllb-200-distilled-600M\", \"train_params\": {\"per_device_train_batch_size\":4}, \"generate_params\":{\"num_beams\": 2}}";
 
         await _helperClient.BuildEngineAsync(engineId);
         Assert.That(
             (await _helperClient.TranslationEnginesClient.GetAllBuildsAsync(engineId)).First().State,
             Is.EqualTo(JobState.Completed)
         );
+
         IList<Pretranslation> translations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
             inferencingParallelCorpusId
         );
         Assert.That(translations, Is.Not.Empty);
+        Assert.That(translations[0].Confidence, Is.GreaterThan(0.0));
+
         IList<Pretranslation> firstJohnTranslations =
             await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
                 engineId,
@@ -283,12 +286,14 @@ public class ServalApiTests
             );
         // Only non-scripture was translated
         Assert.That(firstJohnTranslations.All(t => t.TargetRefs[0].Contains('/')));
+
         string usfm = await _helperClient.TranslationEnginesClient.GetPretranslatedUsfmAsync(
             engineId,
             inferencingParallelCorpusId,
             "REV"
         );
         Assert.That(usfm, Does.Contain("\\v 1"));
+
         string usfmWithPlacedMarkers = await _helperClient.TranslationEnginesClient.GetPretranslatedUsfmAsync(
             engineId,
             inferencingParallelCorpusId,
@@ -296,6 +301,7 @@ public class ServalApiTests
             paragraphMarkerBehavior: PretranslationUsfmMarkerBehavior.PreservePosition
         );
         Assert.That(usfmWithPlacedMarkers, Is.Not.EqualTo(usfm));
+
         string usfmWithDenormalizedQuotes = await _helperClient.TranslationEnginesClient.GetPretranslatedUsfmAsync(
             engineId,
             inferencingParallelCorpusId,

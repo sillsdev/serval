@@ -15,4 +15,5 @@ public class Pretranslation : IEntity
     public IReadOnlyList<string>? SourceTokens { get; init; }
     public IReadOnlyList<string>? TranslationTokens { get; init; }
     public IReadOnlyList<AlignedWordPair>? Alignment { get; init; }
+    public double? Confidence { get; init; }
 }
