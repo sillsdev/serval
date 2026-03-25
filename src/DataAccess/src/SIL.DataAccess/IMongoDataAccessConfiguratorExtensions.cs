@@ -6,7 +6,7 @@ public static class IMongoDataAccessConfiguratorExtensions
         this IMongoDataAccessConfigurator configurator,
         string collectionName,
         Action<BsonClassMap<T>>? mapSetup = null,
-        Func<IMongoCollection<T>, Task>? init = null
+        IReadOnlyList<Func<IMongoCollection<T>, Task>>? init = null
     )
         where T : IEntity
     {
@@ -16,7 +16,27 @@ public static class IMongoDataAccessConfiguratorExtensions
         {
             configurator.Services.Configure<MongoDataAccessOptions>(options =>
             {
-                options.Initializers.Add(database => init(database.GetCollection<T>(collectionName)));
+                options.Initializers.Add(
+                    async (serviceProvider, database) =>
+                    {
+                        using IServiceScope scope = serviceProvider.CreateScope();
+                        var schemaVersions = scope.ServiceProvider.GetRequiredService<IRepository<SchemaVersion>>();
+                        SchemaVersion? schemaVersion = await schemaVersions.GetAsync(s =>
+                            s.Collection == collectionName
+                        );
+                        int currentVersion = schemaVersion?.Version ?? 0;
+                        IMongoCollection<T> collection = database.GetCollection<T>(collectionName);
+                        for (int i = currentVersion + 1; i <= init.Count; i++)
+                        {
+                            await init[i - 1](collection);
+                            await schemaVersions.UpdateAsync(
+                                s => s.Collection == collectionName,
+                                u => u.Set(s => s.Version, i),
+                                upsert: true
+                            );
+                        }
+                    }
+                );
             });
         }
 

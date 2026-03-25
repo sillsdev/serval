@@ -8,15 +8,17 @@ public static class IMongoDataAccessConfiguratorExtensions
     {
         configurator.AddRepository<Webhook>(
             "webhooks.hooks",
-            init: async c =>
-            {
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Owner))
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Events))
-                );
-            }
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Owner))
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Events))
+                    ),
+            ]
         );
         return configurator;
     }

@@ -92,6 +92,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{1DB5E6D1-1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.ServiceToolkit.Tests", "src\ServiceToolkit\test\SIL.ServiceToolkit.Tests\SIL.ServiceToolkit.Tests.csproj", "{C50ED15A-876D-42BF-980A-388E8C49C78D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.IntegrationTests", "src\Serval\test\Serval.IntegrationTests\Serval.IntegrationTests.csproj", "{5FC2A081-9C4A-4761-BCE1-9753C942D597}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serval.Machine.IntegrationTests", "src\Machine\test\Serval.Machine.IntegrationTests\Serval.Machine.IntegrationTests.csproj", "{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -194,6 +198,14 @@ Global
 		{C50ED15A-876D-42BF-980A-388E8C49C78D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C50ED15A-876D-42BF-980A-388E8C49C78D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C50ED15A-876D-42BF-980A-388E8C49C78D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FC2A081-9C4A-4761-BCE1-9753C942D597}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FC2A081-9C4A-4761-BCE1-9753C942D597}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FC2A081-9C4A-4761-BCE1-9753C942D597}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FC2A081-9C4A-4761-BCE1-9753C942D597}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -232,6 +244,8 @@ Global
 		{5E3D2BC3-9A98-4106-A2BF-B1F3641DC6F5} = {3E753B99-7C31-42AC-B02E-012B802F58DB}
 		{1DB5E6D1-17A8-4FF2-B90A-C5DFBEF63126} = {EA69B41C-49EF-4017-A687-44B9DF37FF98}
 		{C50ED15A-876D-42BF-980A-388E8C49C78D} = {1DB5E6D1-17A8-4FF2-B90A-C5DFBEF63126}
+		{5FC2A081-9C4A-4761-BCE1-9753C942D597} = {3E753B99-7C31-42AC-B02E-012B802F58DB}
+		{D6C99413-E63C-40EE-8A25-1D3EE78EE5B0} = {40C225C2-1EEF-4D1D-9D14-1CBB86C8A1CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}
