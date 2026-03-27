@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Configuration;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IMediatorRegistrationConfiguratorExtensions
 {

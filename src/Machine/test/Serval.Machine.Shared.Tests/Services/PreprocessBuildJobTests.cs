@@ -1149,7 +1149,7 @@ Target one, chapter one, verse nine and ten.
             ZipFile.CreateFromDirectory(Path.Combine(TestDataPath, name), Path.Combine(_tempDir.Path, $"{name}.zip"));
         }
 
-        public CorpusFile ParatextFile(string name)
+        public ResolvedCorpusFile ParatextFile(string name)
         {
             return new()
             {
@@ -1159,7 +1159,7 @@ Target one, chapter one, verse nine and ten.
             };
         }
 
-        private static CorpusFile TextFile(string name)
+        private static ResolvedCorpusFile TextFile(string name)
         {
             return new()
             {
@@ -1232,7 +1232,7 @@ Target one, chapter one, verse nine and ten.
         private IEnumerable<string> FailsOn { get; } = failsOn;
         private IEnumerable<string> Books { get; } = books;
 
-        protected override IReadOnlyList<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files)
+        protected override IReadOnlyList<ITextCorpus> CreateTextCorpora(IReadOnlyList<ResolvedCorpusFile> files)
         {
             return [new DummyCorpus(Books, FailsOn)];
         }

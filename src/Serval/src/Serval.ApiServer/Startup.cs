@@ -1,4 +1,4 @@
-﻿using Serval.Translation.Configuration;
+﻿using Serval.DataFiles.Messages;
 
 namespace Serval.ApiServer;
 
@@ -74,8 +74,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         });
         services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
         services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
-
-        services.AddGrpc();
 
         services
             .AddServal(Configuration)
@@ -230,7 +228,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         app.UseEndpoints(x =>
         {
             x.MapControllers();
-            x.MapServalWordAlignmentServices();
             x.MapHangfireDashboard();
         });
 

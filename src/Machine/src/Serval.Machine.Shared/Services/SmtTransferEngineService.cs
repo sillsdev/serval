@@ -13,7 +13,7 @@ public class SmtTransferEngineService(
     SmtTransferEngineStateService stateService,
     IBuildJobService<TranslationEngine> buildJobService,
     IClearMLQueueService clearMLQueueService
-) : Translation.Contracts.ITranslationEngineService
+) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
@@ -236,7 +236,7 @@ public class SmtTransferEngineService(
 
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.Nmt));
+        return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.SmtTransfer));
     }
 
     public Task<Translation.Contracts.LanguageInfo> GetLanguageInfoAsync(
@@ -245,7 +245,7 @@ public class SmtTransferEngineService(
     )
     {
         return Task.FromResult(
-            new Translation.Models.LanguageInfo
+            new Translation.Contracts.LanguageInfo
             {
                 EngineType = Type,
                 IsNative = true,
@@ -269,7 +269,7 @@ public class SmtTransferEngineService(
         return buildId;
     }
 
-    public Task<ModelDownloadUrl?> GetModelDownloadUrlAsync(
+    public Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
@@ -295,7 +295,7 @@ public class SmtTransferEngineService(
 
     private static Translation.Contracts.TranslationResult Map(SIL.Machine.Translation.TranslationResult source)
     {
-        return new Translation.Models.TranslationResult
+        return new Translation.Contracts.TranslationResult
         {
             Translation = source.Translation,
             SourceTokens = source.SourceTokens.ToArray(),
@@ -309,7 +309,7 @@ public class SmtTransferEngineService(
 
     private static Translation.Contracts.WordGraph Map(SIL.Machine.Translation.WordGraph source)
     {
-        return new Translation.Models.WordGraph
+        return new Translation.Contracts.WordGraph
         {
             SourceTokens = source.SourceTokens.ToArray(),
             InitialStateScore = source.InitialStateScore,
@@ -320,7 +320,7 @@ public class SmtTransferEngineService(
 
     private static Translation.Contracts.WordGraphArc Map(SIL.Machine.Translation.WordGraphArc source)
     {
-        return new Translation.Models.WordGraphArc
+        return new Translation.Contracts.WordGraphArc
         {
             PrevState = source.PrevState,
             NextState = source.NextState,
@@ -358,14 +358,14 @@ public class SmtTransferEngineService(
             for (int j = 0; j < source.ColumnCount; j++)
             {
                 if (source[i, j])
-                    yield return new Translation.Models.AlignedWordPair { SourceIndex = i, TargetIndex = j };
+                    yield return new Serval.Shared.Contracts.AlignedWordPair { SourceIndex = i, TargetIndex = j };
             }
         }
     }
 
     private static Translation.Contracts.Phrase Map(SIL.Machine.Translation.Phrase source)
     {
-        return new Translation.Models.Phrase
+        return new Translation.Contracts.Phrase
         {
             SourceSegmentStart = source.SourceSegmentRange.Start,
             SourceSegmentEnd = source.SourceSegmentRange.End,

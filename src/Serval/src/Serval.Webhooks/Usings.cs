@@ -20,4 +20,5 @@ global using Serval.Translation.Contracts;
 global using Serval.Webhooks.Consumers;
 global using Serval.Webhooks.Models;
 global using Serval.Webhooks.Services;
+global using Serval.WordAlignment.Contracts;
 global using SIL.DataAccess;

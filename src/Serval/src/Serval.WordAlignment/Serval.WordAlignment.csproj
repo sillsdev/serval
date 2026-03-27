@@ -13,15 +13,15 @@
 	<ItemGroup>
 		<PackageReference Include="Asp.Versioning.Abstractions" Version="8.1.0" />
 		<PackageReference Include="CaseExtensions" Version="1.1.0" />
-		<PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />
 		<PackageReference Include="MassTransit" Version="9.1.0" />
 		<PackageReference Include="NSwag.Annotations" Version="14.6.3" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
-		<ProjectReference Include="..\Serval.Grpc\Serval.Grpc.csproj" />
+		<ProjectReference Include="..\Serval.DataFiles.Contracts\Serval.DataFiles.Contracts.csproj" />
 		<ProjectReference Include="..\Serval.Shared\Serval.Shared.csproj" />
+		<ProjectReference Include="..\Serval.WordAlignment.Contracts\Serval.WordAlignment.Contracts.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,7 +1,4 @@
-﻿using Serval.Shared.Dtos;
-using SIL.ServiceToolkit.Models;
-
-namespace Serval.WordAlignment.Controllers;
+﻿namespace Serval.WordAlignment.Controllers;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
@@ -1103,7 +1100,7 @@ public class WordAlignmentEnginesController(
     {
         return new BuildPhaseDto
         {
-            Stage = (PhaseStage)source.Stage,
+            Stage = source.Stage,
             Step = source.Step,
             StepCount = source.StepCount,
             Started = source.Started,
