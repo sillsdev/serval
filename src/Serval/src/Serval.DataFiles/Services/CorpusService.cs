@@ -4,12 +4,12 @@ public class CorpusService(
     IRepository<Corpus> corpora,
     IRepository<DataFile> dataFiles,
     IDataAccessContext dataAccessContext,
-    IScopedMediator mediator
+    IEventRouter eventRouter
 ) : OwnedEntityServiceBase<Corpus>(corpora), ICorpusService
 {
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<DataFile> _dataFiles = dataFiles;
-    private readonly IScopedMediator _mediator = mediator;
+    private readonly IEventRouter _eventRouter = eventRouter;
 
     public async Task<Corpus> GetAsync(string id, string owner, CancellationToken cancellationToken = default)
     {
@@ -21,7 +21,7 @@ public class CorpusService(
 
     public async Task<Corpus> UpdateAsync(
         string id,
-        IReadOnlyList<Models.CorpusFile> files,
+        IReadOnlyList<CorpusFile> files,
         CancellationToken cancellationToken = default
     )
     {
@@ -39,18 +39,16 @@ public class CorpusService(
                 IDictionary<string, DataFile> corpusDataFilesDict = (
                     await _dataFiles.GetAllAsync(f => corpusFileIds.Contains(f.Id), ct)
                 ).ToDictionary(f => f.Id);
-                await _mediator.Publish(
-                    new CorpusUpdated
-                    {
-                        CorpusId = corpus.Id,
-                        Files = corpus
-                            .Files.Select(f => new CorpusFileResult
-                            {
-                                TextId = f.TextId ?? corpusDataFilesDict[f.FileRef].Name,
-                                File = Map(corpusDataFilesDict[f.FileRef]),
-                            })
-                            .ToList(),
-                    },
+                await _eventRouter.PublishAsync(
+                    new CorpusUpdated(
+                        corpus.Id,
+                        [
+                            .. corpus.Files.Select(f => new CorpusFileView(
+                                File: Map(corpusDataFilesDict[f.FileRef]),
+                                f.TextId ?? corpusDataFilesDict[f.FileRef].Name
+                            )),
+                        ]
+                    ),
                     ct
                 );
                 return corpus;
@@ -71,14 +69,8 @@ public class CorpusService(
         );
     }
 
-    private static DataFileResult Map(DataFile dataFile)
+    private static DataFileView Map(DataFile dataFile)
     {
-        return new DataFileResult
-        {
-            DataFileId = dataFile.Id,
-            Name = dataFile.Name,
-            Filename = dataFile.Filename,
-            Format = dataFile.Format,
-        };
+        return new DataFileView(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format);
     }
 }

@@ -4,7 +4,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
 {
     private readonly IOptionsMonitor<DataFileOptions> _options;
     private readonly IDataAccessContext _dataAccessContext;
-    private readonly IScopedMediator _mediator;
+    private readonly IEventRouter _eventRouter;
     private readonly IRepository<DeletedFile> _deletedFiles;
     private readonly IFileSystem _fileSystem;
 
@@ -12,7 +12,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
         IRepository<DataFile> dataFiles,
         IDataAccessContext dataAccessContext,
         IOptionsMonitor<DataFileOptions> options,
-        IScopedMediator mediator,
+        IEventRouter eventRouter,
         IRepository<DeletedFile> deletedFiles,
         IFileSystem fileSystem
     )
@@ -20,7 +20,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
     {
         _dataAccessContext = dataAccessContext;
         _options = options;
-        _mediator = mediator;
+        _eventRouter = eventRouter;
         _deletedFiles = deletedFiles;
         _fileSystem = fileSystem;
         _fileSystem.CreateDirectory(_options.CurrentValue.FilesDirectory);
@@ -85,7 +85,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
                         new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
                         cancellationToken: ct
                     );
-                    await _mediator.Publish(new DataFileUpdated { DataFileId = id, Filename = filename }, ct);
+                    await _eventRouter.PublishAsync(new DataFileUpdated(id, filename), ct);
                 },
                 cancellationToken: cancellationToken
             );
@@ -116,7 +116,8 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
                     new DeletedFile { Filename = dataFile.Filename, DeletedAt = DateTime.UtcNow },
                     ct
                 );
-                await _mediator.Publish(new DataFileDeleted { DataFileId = id }, ct);
+
+                await _eventRouter.PublishAsync(new DataFileDeleted(id), ct);
             },
             cancellationToken: cancellationToken
         );

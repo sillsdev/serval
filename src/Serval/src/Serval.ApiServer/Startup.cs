@@ -1,6 +1,4 @@
-﻿using Serval.DataFiles.Messages;
-
-namespace Serval.ApiServer;
+﻿namespace Serval.ApiServer;
 
 public class Startup(IConfiguration configuration, IWebHostEnvironment environment)
 {
@@ -111,16 +109,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 )
         );
         services.AddHangfireServer();
-
-        services.AddMediator(cfg =>
-        {
-            cfg.AddTranslationConsumers();
-            cfg.AddWordAlignmentConsumers();
-            cfg.AddDataFilesConsumers();
-            cfg.AddWebhooksConsumers();
-        });
-        services.AddScoped<IPublishEndpoint>(sp => sp.GetRequiredService<IScopedMediator>());
-        services.AddScoped(sp => sp.GetRequiredService<IScopedMediator>().CreateRequestClient<GetDataFile>());
 
         services
             .AddApiVersioning(o =>

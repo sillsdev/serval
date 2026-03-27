@@ -26,12 +26,12 @@ public class GetModelDownloadUrlHandler(IRepository<Engine> engines, IEngineServ
             throw new ForbiddenException();
 
         if (engine.ModelRevision == 0)
-            return new GetModelDownloadUrlResponse(IsModelAvailable: false);
+            return new(IsModelAvailable: false);
 
         ModelDownloadUrl url = await engineServiceFactory
             .GetEngineService(engine.Type)
             .GetModelDownloadUrlAsync(engine.Id, cancellationToken);
-        return new GetModelDownloadUrlResponse(
+        return new(
             IsModelAvailable: true,
             new ModelDownloadUrlDto
             {
@@ -81,10 +81,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        GetModelDownloadUrlResponse response = await handler.HandleAsync(
-            new GetModelDownloadUrl(Owner, id),
-            cancellationToken
-        );
+        GetModelDownloadUrlResponse response = await handler.HandleAsync(new(Owner, id), cancellationToken);
         if (response.IsModelAvailable)
             return Ok(response.ModelDownloadUrl);
         return NotFound();

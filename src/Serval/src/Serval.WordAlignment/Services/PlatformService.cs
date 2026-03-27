@@ -5,7 +5,7 @@ public class PlatformService(
     IRepository<Engine> engines,
     IRepository<Models.WordAlignment> wordAlignments,
     IDataAccessContext dataAccessContext,
-    IPublishEndpoint publishEndpoint
+    IEventRouter eventRouter
 ) : IWordAlignmentPlatformService
 {
     private const int WordAlignmentInsertBatchSize = 128;
@@ -14,7 +14,7 @@ public class PlatformService(
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Models.WordAlignment> _wordAlignments = wordAlignments;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
-    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+    private readonly IEventRouter _eventRouter = eventRouter;
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
@@ -37,13 +37,8 @@ public class PlatformService(
                 if (engine is null)
                     throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
 
-                await _publishEndpoint.Publish(
-                    new WordAlignmentBuildStarted
-                    {
-                        BuildId = build.Id,
-                        EngineId = engine.Id,
-                        Owner = engine.Owner,
-                    },
+                await _eventRouter.PublishAsync(
+                    new WordAlignmentBuildStarted(BuildId: build.Id, EngineId: engine.Id, Owner: engine.Owner),
                     ct
                 );
             },
@@ -90,16 +85,15 @@ public class PlatformService(
                     ct
                 );
 
-                await _publishEndpoint.Publish(
-                    new WordAlignmentBuildFinished
-                    {
-                        BuildId = build.Id,
-                        EngineId = engine.Id,
-                        Owner = engine.Owner,
-                        BuildState = build.State,
-                        Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value,
-                    },
+                await _eventRouter.PublishAsync(
+                    new WordAlignmentBuildFinished(
+                        BuildId: build.Id,
+                        EngineId: engine.Id,
+                        Owner: engine.Owner,
+                        BuildState: build.State,
+                        build.Message!,
+                        build.DateFinished!.Value
+                    ),
                     ct
                 );
             },
@@ -137,16 +131,15 @@ public class PlatformService(
                     ct
                 );
 
-                await _publishEndpoint.Publish(
-                    new WordAlignmentBuildFinished
-                    {
-                        BuildId = build.Id,
-                        EngineId = engine.Id,
-                        Owner = engine.Owner,
-                        BuildState = build.State,
-                        Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value,
-                    },
+                await _eventRouter.PublishAsync(
+                    new WordAlignmentBuildFinished(
+                        BuildId: build.Id,
+                        EngineId: engine.Id,
+                        Owner: engine.Owner,
+                        BuildState: build.State,
+                        build.Message!,
+                        build.DateFinished!.Value
+                    ),
                     ct
                 );
             },
@@ -184,16 +177,15 @@ public class PlatformService(
                     ct
                 );
 
-                await _publishEndpoint.Publish(
-                    new WordAlignmentBuildFinished
-                    {
-                        BuildId = build.Id,
-                        EngineId = engine.Id,
-                        Owner = engine.Owner,
-                        BuildState = build.State,
-                        Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value,
-                    },
+                await _eventRouter.PublishAsync(
+                    new WordAlignmentBuildFinished(
+                        BuildId: build.Id,
+                        EngineId: engine.Id,
+                        Owner: engine.Owner,
+                        BuildState: build.State,
+                        build.Message!,
+                        build.DateFinished!.Value
+                    ),
                     ct
                 );
             },

@@ -12,7 +12,7 @@ public class GetAllEnginesHandler(IRepository<Engine> engines, IDtoMappingServic
         IEnumerable<TranslationEngineDto> dtos = (
             await engines.GetAllAsync(e => e.Owner == request.Owner, cancellationToken)
         ).Select(mapper.Map);
-        return new GetAllEnginesResponse(dtos);
+        return new(dtos);
     }
 }
 
@@ -37,7 +37,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        GetAllEnginesResponse response = await handler.HandleAsync(new GetAllEngines(Owner), cancellationToken);
+        GetAllEnginesResponse response = await handler.HandleAsync(new(Owner), cancellationToken);
         return response.Engines;
     }
 }
