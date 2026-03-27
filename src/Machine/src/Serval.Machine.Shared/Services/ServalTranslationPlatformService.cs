@@ -1,6 +1,5 @@
 using Serval.Shared.Contracts;
 using Serval.Translation.Contracts;
-using Serval.Translation.Models;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -46,7 +45,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
     ) =>
         _platformService.UpdateBuildStatusAsync(
             buildId,
-            new Serval.Shared.Models.BuildProgressStatus
+            new BuildProgressStatus
             {
                 Step = progressStatus.Step,
                 PercentCompleted = progressStatus.PercentCompleted,
@@ -54,7 +53,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
             },
             queueDepth,
             phases
-                ?.Select(p => new Serval.Shared.Models.BuildPhase
+                ?.Select(p => new Serval.Shared.Contracts.BuildPhase
                 {
                     Stage = (Serval.Shared.Contracts.BuildPhaseStage)p.Stage,
                     Step = p.Step,
@@ -142,7 +141,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 SourceTokens = pretranslation.SourceTokens?.ToList(),
                 TranslationTokens = pretranslation.TranslationTokens?.ToList(),
                 Alignment = pretranslation
-                    .Alignment?.Select(a => new Serval.Shared.Models.AlignedWordPair
+                    .Alignment?.Select(a => new Serval.Shared.Contracts.AlignedWordPair
                     {
                         SourceIndex = a.SourceIndex,
                         TargetIndex = a.TargetIndex,

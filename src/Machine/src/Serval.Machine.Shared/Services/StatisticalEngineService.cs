@@ -1,5 +1,6 @@
-﻿using Serval.Shared.Contracts;
-using Serval.WordAlignment.V1;
+using CaseExtensions;
+using Serval.Shared.Contracts;
+using Serval.WordAlignment.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -21,13 +22,13 @@ public class StatisticalEngineService(
     private readonly IBuildJobService<WordAlignmentEngine> _buildJobService = buildJobService;
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
 
-    public EngineType Type => EngineType.Statistical;
+    public string Type => EngineType.Statistical.ToString().ToCamelCase();
 
     public async Task CreateAsync(
         string engineId,
-        string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        string? engineName = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -75,11 +76,18 @@ public class StatisticalEngineService(
                 IReadOnlyList<string> targetTokens = tokenizer.Tokenize(targetSegment).ToList();
                 IReadOnlyCollection<SIL.Machine.Corpora.AlignedWordPair> wordPairs =
                     wordAlignmentModel.GetBestAlignedWordPairs(sourceTokens, targetTokens);
-                return new WordAlignmentResult()
+                return new WordAlignmentResult
                 {
-                    SourceTokens = { sourceTokens },
-                    TargetTokens = { targetTokens },
-                    Alignment = { wordPairs.Select(Map) },
+                    SourceTokens = sourceTokens,
+                    TargetTokens = targetTokens,
+                    Alignment = wordPairs
+                        .Select(wp => new Serval.Shared.Contracts.AlignedWordPair
+                        {
+                            SourceIndex = wp.SourceIndex,
+                            TargetIndex = wp.TargetIndex,
+                            Score = wp.TranslationScore,
+                        })
+                        .ToList(),
                 };
             },
             cancellationToken: cancellationToken
@@ -115,8 +123,8 @@ public class StatisticalEngineService(
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
-        string? buildOptions,
         IReadOnlyList<FilteredParallelCorpus> corpora,
+        string? options = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -130,7 +138,7 @@ public class StatisticalEngineService(
                     buildId,
                     BuildStage.Preprocess,
                     corpora,
-                    buildOptions,
+                    options,
                     ct
                 );
                 // If there is a pending/running build, then no need to start a new one.
@@ -155,9 +163,9 @@ public class StatisticalEngineService(
         return buildId;
     }
 
-    public int GetQueueSize()
+    public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return _clearMLQueueService.GetQueueSize(Type);
+        return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.Statistical));
     }
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
@@ -189,15 +197,5 @@ public class StatisticalEngineService(
         if (engine.BuildRevision == 0)
             throw new EngineNotBuiltException("The engine must be built first.");
         return engine;
-    }
-
-    private static WordAlignment.V1.AlignedWordPair Map(SIL.Machine.Corpora.AlignedWordPair alignedWordPair)
-    {
-        return new WordAlignment.V1.AlignedWordPair
-        {
-            SourceIndex = alignedWordPair.SourceIndex,
-            TargetIndex = alignedWordPair.TargetIndex,
-            Score = alignedWordPair.TranslationScore,
-        };
     }
 }

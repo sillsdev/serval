@@ -1,6 +1,3 @@
-using Serval.Translation.Contracts;
-using Serval.WordAlignment.V1;
-
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IMachineBuilderExtensions
@@ -295,64 +292,9 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddServalWordAlignmentPlatformService(this IMachineBuilder builder)
     {
-        string? connectionString = builder.Configuration.GetConnectionString("Serval");
-        if (connectionString is null)
-            throw new InvalidOperationException("Serval connection string is required");
-
         builder.Services.AddKeyedScoped<IPlatformService, ServalWordAlignmentPlatformService>(
             EngineGroup.WordAlignment
         );
-
-        builder.Services.AddOutbox(x =>
-        {
-            x.AddConsumer<WordAlignmentBuildStartedConsumer>();
-            x.AddConsumer<WordAlignmentBuildCompletedConsumer>();
-            x.AddConsumer<WordAlignmentBuildCanceledConsumer>();
-            x.AddConsumer<WordAlignmentBuildRestartingConsumer>();
-            x.AddConsumer<WordAlignmentBuildFaultedConsumer>();
-            x.AddConsumer<WordAlignmentIncrementEngineCorpusSizeConsumer>();
-            x.AddConsumer<WordAlignmentInsertWordAlignmentsConsumer>();
-            x.AddConsumer<WordAlignmentUpdateBuildExecutionDataConsumer>();
-        });
-
-        builder
-            .Services.AddGrpcClient<WordAlignmentPlatformApi.WordAlignmentPlatformApiClient>(o =>
-            {
-                o.Address = new Uri(connectionString);
-            })
-            .ConfigureChannel(o =>
-            {
-                o.MaxRetryAttempts = null;
-                o.ServiceConfig = new ServiceConfig
-                {
-                    MethodConfigs =
-                    {
-                        new MethodConfig
-                        {
-                            Names = { MethodName.Default },
-                            RetryPolicy = new Grpc.Net.Client.Configuration.RetryPolicy
-                            {
-                                MaxAttempts = 10,
-                                InitialBackoff = TimeSpan.FromSeconds(1),
-                                MaxBackoff = TimeSpan.FromSeconds(5),
-                                BackoffMultiplier = 1.5,
-                                RetryableStatusCodes = { StatusCode.Unavailable },
-                            },
-                        },
-                        new MethodConfig
-                        {
-                            Names =
-                            {
-                                new MethodName
-                                {
-                                    Service = "serval.word_alignment.v1.WordAlignmentPlatformApi",
-                                    Method = "UpdateWordAlignmentBuildStatus",
-                                },
-                            },
-                        },
-                    },
-                };
-            });
 
         return builder;
     }
@@ -370,28 +312,16 @@ public static class IMachineBuilderExtensions
                     builder.Services.AddSingleton<SmtTransferEngineStateService>();
                     builder.Services.AddHostedService<SmtTransferEngineCommitService>();
                     builder.AddThotSmtTransferEngine();
-                    builder.Services.AddScoped<
-                        Serval.Machine.Shared.Services.ITranslationEngineService,
+                    builder.Services.AddKeyedScoped<
+                        Serval.Translation.Contracts.ITranslationEngineService,
                         SmtTransferEngineService
-                    >();
-                    builder.Services.AddScoped<Serval.Translation.Contracts.ITranslationEngineService>(
-                        sp => new ServalTranslationEngineService(
-                            sp.GetServices<Serval.Translation.Contracts.ITranslationEngineService>()
-                                .First(e => e.Type == EngineType.SmtTransfer)
-                        )
-                    );
+                    >(EngineType.SmtTransfer.ToString());
                     break;
                 case EngineType.Nmt:
-                    builder.Services.AddScoped<
-                        Serval.Machine.Shared.Services.ITranslationEngineService,
+                    builder.Services.AddKeyedScoped<
+                        Serval.Translation.Contracts.ITranslationEngineService,
                         NmtEngineService
-                    >();
-                    builder.Services.AddScoped<Serval.Translation.Contracts.ITranslationEngineService>(
-                        sp => new ServalTranslationEngineService(
-                            sp.GetServices<Serval.Translation.Contracts.ITranslationEngineService>()
-                                .First(e => e.Type == EngineType.Nmt)
-                        )
-                    );
+                    >(EngineType.Nmt.ToString());
                     break;
                 default:
                     throw new InvalidEnumArgumentException(nameof(engineType), (int)engineType, typeof(EngineType));
@@ -403,15 +333,6 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddServalWordAlignmentEngineService(this IMachineBuilder builder)
     {
-        builder.Services.AddGrpc(options =>
-        {
-            options.Interceptors.Add<CancellationInterceptor>();
-            options.Interceptors.Add<UnimplementedInterceptor>();
-            options.Interceptors.Add<TimeoutInterceptor>();
-            options.Interceptors.Add<FailedPreconditionInterceptor>();
-            options.Interceptors.Add<NotFoundInterceptor>();
-        });
-
         IEnumerable<EngineType> engineTypes =
             builder.Configuration.GetSection("WordAlignmentEngines").Get<EngineType[]?>() ?? [EngineType.Statistical];
 
@@ -422,7 +343,10 @@ public static class IMachineBuilderExtensions
                 case EngineType.Statistical:
                     builder.Services.AddSingleton<StatisticalEngineStateService>();
                     builder.AddThotStatisticalWordAlignment();
-                    builder.Services.AddScoped<IWordAlignmentEngineService, StatisticalEngineService>();
+                    builder.Services.AddKeyedScoped<
+                        Serval.WordAlignment.Contracts.IWordAlignmentEngineService,
+                        StatisticalEngineService
+                    >(EngineType.Statistical.ToString());
                     builder.Services.AddHostedService<StatisticalEngineCommitService>();
                     break;
                 default:
