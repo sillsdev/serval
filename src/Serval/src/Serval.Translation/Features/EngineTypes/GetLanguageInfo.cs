@@ -19,7 +19,7 @@ public class GetLanguageInfoHandler(IEngineServiceFactory engineServiceFactory)
         if (engineServiceFactory.TryGetEngineService(request.EngineType, out ITranslationEngineService? engineService))
         {
             LanguageInfo languageInfo = await engineService.GetLanguageInfoAsync(request.Language, cancellationToken);
-            return new GetLanguageInfoResponse(
+            return new(
                 new LanguageInfoDto
                 {
                     EngineType = engineService.Type.ToKebabCase(),
@@ -28,7 +28,7 @@ public class GetLanguageInfoHandler(IEngineServiceFactory engineServiceFactory)
                 }
             );
         }
-        return new GetLanguageInfoResponse();
+        return new();
     }
 }
 
@@ -68,10 +68,7 @@ public partial class TranslationEngineTypesController
         CancellationToken cancellationToken
     )
     {
-        GetLanguageInfoResponse response = await handler.HandleAsync(
-            new GetLanguageInfo(engineType, language),
-            cancellationToken
-        );
+        GetLanguageInfoResponse response = await handler.HandleAsync(new(engineType, language), cancellationToken);
         if (response.LanguageInfo is not null)
             return Ok(response.LanguageInfo);
         return NotFound();

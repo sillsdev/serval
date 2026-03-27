@@ -1,16 +1,14 @@
-using MassTransit.Mediator;
-
 namespace Serval.Translation.Services;
 
 public class EngineService(
     IRepository<Engine> engines,
     IRepository<Pretranslation> pretranslations,
-    IScopedMediator mediator,
+    IRequestHandler<DeleteDataFile> deleteDataFileHandler,
     IDataAccessContext dataAccessContext
 ) : OwnedEntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
-    private readonly IScopedMediator _mediator = mediator;
+    private readonly IRequestHandler<DeleteDataFile> _deleteDataFileHandler = deleteDataFileHandler;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
 
     public Task AddCorpusAsync(string engineId, Corpus corpus, CancellationToken cancellationToken = default)
@@ -90,7 +88,7 @@ public class EngineService(
                         )
                     )
                     {
-                        await _mediator.Send<DeleteDataFile>(new { DataFileId = id }, ct);
+                        await _deleteDataFileHandler.HandleAsync(new DeleteDataFile(id), ct);
                     }
                 }
             },

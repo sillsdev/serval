@@ -1,4 +1,6 @@
-﻿namespace Serval.DataFiles.Services;
+﻿using Serval.DataFiles.Contracts;
+
+namespace Serval.DataFiles.Services;
 
 [TestFixture]
 public class DataFileServiceTests

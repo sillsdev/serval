@@ -1,6 +1,4 @@
-﻿using Serval.DataFiles.Dtos;
-
-namespace Serval.DataFiles.Controllers;
+﻿namespace Serval.DataFiles.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/files")]

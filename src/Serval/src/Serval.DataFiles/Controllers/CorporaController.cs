@@ -1,5 +1,3 @@
-using Serval.DataFiles.Dtos;
-
 namespace Serval.DataFiles.Controllers;
 
 [ApiVersion("1.0")]
@@ -78,7 +76,6 @@ public class CorporaController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<CorpusDto>> CreateAsync(
         [FromBody] CorpusConfigDto corpusConfig,
-        [FromServices] IRequestClient<GetDataFile> getDataFileClient,
         [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
@@ -171,18 +168,18 @@ public class CorporaController(
         };
     }
 
-    private async Task<IReadOnlyList<Models.CorpusFile>> MapAsync(
+    private async Task<IReadOnlyList<CorpusFile>> MapAsync(
         IReadOnlyList<CorpusFileConfigDto> files,
         CancellationToken cancellationToken
     )
     {
-        var dataFiles = new List<Models.CorpusFile>();
+        var dataFiles = new List<CorpusFile>();
         foreach (CorpusFileConfigDto file in files)
         {
             DataFile? dataFile = await _dataFileService.GetAsync(file.FileId, cancellationToken);
             if (dataFile == null)
                 throw new InvalidOperationException($"DataFile with id {file.FileId} does not exist.");
-            dataFiles.Add(new Models.CorpusFile { FileRef = file.FileId, TextId = file.TextId });
+            dataFiles.Add(new CorpusFile { FileRef = file.FileId, TextId = file.TextId });
         }
         return dataFiles;
     }
@@ -200,7 +197,7 @@ public class CorporaController(
         };
     }
 
-    private CorpusFileDto Map(Models.CorpusFile source)
+    private CorpusFileDto Map(CorpusFile source)
     {
         return new CorpusFileDto
         {

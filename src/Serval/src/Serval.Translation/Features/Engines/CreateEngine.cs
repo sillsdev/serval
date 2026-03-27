@@ -136,10 +136,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        CreateEngineResponse response = await handler.HandleAsync(
-            new CreateEngine(Owner, engineConfig),
-            cancellationToken
-        );
+        CreateEngineResponse response = await handler.HandleAsync(new(Owner, engineConfig), cancellationToken);
 
         return Created(response.Engine.Url, response.Engine);
     }

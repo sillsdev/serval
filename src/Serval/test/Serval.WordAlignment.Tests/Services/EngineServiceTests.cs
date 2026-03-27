@@ -1193,10 +1193,10 @@ public class EngineServiceTests
         Engine engine = await env.CreateEngineWithTextFilesAsync();
         string corpusId = engine.ParallelCorpora[0].Id;
 
-        Shared.Models.ParallelCorpus? corpus = await env.Service.UpdateParallelCorpusAsync(
+        Models.ParallelCorpus? corpus = await env.Service.UpdateParallelCorpusAsync(
             engine.Id,
             corpusId,
-            sourceCorpora: new List<Shared.Models.MonolingualCorpus>
+            sourceCorpora: new List<Models.MonolingualCorpus>
             {
                 new()
                 {
@@ -1406,7 +1406,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "corpus1",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1425,7 +1425,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1466,7 +1466,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "corpus1",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1501,7 +1501,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1557,7 +1557,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "corpus1",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1576,7 +1576,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1599,7 +1599,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "corpus2",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1618,7 +1618,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1658,7 +1658,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "corpus1",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1677,7 +1677,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1717,7 +1717,7 @@ public class EngineServiceTests
                     new()
                     {
                         Id = "corpus1",
-                        SourceCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        SourceCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {
@@ -1752,7 +1752,7 @@ public class EngineServiceTests
                                 ],
                             },
                         },
-                        TargetCorpora = new List<Shared.Models.MonolingualCorpus>()
+                        TargetCorpora = new List<Models.MonolingualCorpus>()
                         {
                             new()
                             {

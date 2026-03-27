@@ -36,13 +36,13 @@ public class TranslateHandler(IRepository<Engine> engines, IEngineServiceFactory
         if (engine.Owner != request.Owner)
             throw new ForbiddenException();
         if (engine.ModelRevision == 0)
-            return new TranslateResponse(IsAvailable: false);
+            return new(IsAvailable: false);
 
         IReadOnlyList<TranslationResult> results = await engineServiceFactory
             .GetEngineService(engine.Type)
             .TranslateAsync(request.EngineId, request.N, request.Segment, cancellationToken);
 
-        return new TranslateResponse(
+        return new(
             IsAvailable: true,
             results.Select(r => new TranslationResultDto
             {
@@ -144,7 +144,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        TranslateResponse response = await handler.HandleAsync(new Translate(Owner, id, segment, n), cancellationToken);
+        TranslateResponse response = await handler.HandleAsync(new(Owner, id, segment, n), cancellationToken);
         if (!response.IsAvailable)
             return Conflict();
         _logger.LogInformation("Translated {n} segments for engine {EngineId}", n, id);
