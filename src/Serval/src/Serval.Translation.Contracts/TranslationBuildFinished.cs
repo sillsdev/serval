@@ -1,11 +1,10 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public record TranslationBuildFinished : IEvent
-{
-    public required string BuildId { get; init; }
-    public required string EngineId { get; init; }
-    public required string Owner { get; init; }
-    public required JobState BuildState { get; init; }
-    public required string Message { get; init; }
-    public required DateTime DateFinished { get; init; }
-}
+public record TranslationBuildFinished(
+    string BuildId,
+    string EngineId,
+    string Owner,
+    JobState BuildState,
+    string Message,
+    DateTime DateFinished
+) : IEvent;

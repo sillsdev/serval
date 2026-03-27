@@ -60,7 +60,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        await handler.HandleAsync(new DeleteEngine(Owner, id), cancellationToken);
+        await handler.HandleAsync(new(Owner, id), cancellationToken);
         return Ok();
     }
 }

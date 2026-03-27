@@ -422,10 +422,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        StartBuildResponse response = await handler.HandleAsync(
-            new StartBuild(Owner, id, buildConfig),
-            cancellationToken
-        );
+        StartBuildResponse response = await handler.HandleAsync(new(Owner, id, buildConfig), cancellationToken);
 
         if (response.IsBuildRunning)
             return Conflict();

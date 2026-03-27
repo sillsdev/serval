@@ -99,7 +99,7 @@ public partial class TranslationEnginesController
             return BadRequest("sourceLanguage or targetLanguage is required.");
         }
 
-        await handler.HandleAsync(new UpdateEngine(Owner, id, request), cancellationToken);
+        await handler.HandleAsync(new(Owner, id, request), cancellationToken);
 
         return Ok();
     }

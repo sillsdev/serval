@@ -26,13 +26,13 @@ public class CancelBuildHandler(
             .GetEngineService(engine.Type)
             .CancelBuildAsync(request.EngineId, cancellationToken);
         if (buildId is null)
-            return new CancelBuildResponse(IsBuildRunning: false);
+            return new(IsBuildRunning: false);
 
         Build? currentBuild = await builds.GetAsync(buildId, cancellationToken);
         if (currentBuild is null)
-            return new CancelBuildResponse(IsBuildRunning: false);
+            return new(IsBuildRunning: false);
 
-        return new CancelBuildResponse(IsBuildRunning: true, mapper.Map(currentBuild));
+        return new(IsBuildRunning: true, mapper.Map(currentBuild));
     }
 }
 
@@ -67,7 +67,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        CancelBuildResponse response = await handler.HandleAsync(new CancelBuild(Owner, id), cancellationToken);
+        CancelBuildResponse response = await handler.HandleAsync(new(Owner, id), cancellationToken);
         if (response.IsBuildRunning)
             return Ok(response.Build);
         return NoContent();

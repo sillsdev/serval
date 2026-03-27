@@ -5,7 +5,7 @@ public class PlatformService(
     IRepository<Engine> engines,
     IRepository<Pretranslation> pretranslations,
     IDataAccessContext dataAccessContext,
-    IPublishEndpoint publishEndpoint
+    IEventRouter eventRouter
 ) : ITranslationPlatformService
 {
     private const int PretranslationInsertBatchSize = 128;
@@ -14,7 +14,7 @@ public class PlatformService(
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
-    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+    private readonly IEventRouter _eventRouter = eventRouter;
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
@@ -39,15 +39,7 @@ public class PlatformService(
                     throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
                 }
 
-                await _publishEndpoint.Publish(
-                    new TranslationBuildStarted
-                    {
-                        BuildId = build.Id,
-                        EngineId = engine.Id,
-                        Owner = engine.Owner,
-                    },
-                    ct
-                );
+                await _eventRouter.PublishAsync(new TranslationBuildStarted(build.Id, engine.Id, engine.Owner), ct);
             },
             cancellationToken: cancellationToken
         );
@@ -94,16 +86,15 @@ public class PlatformService(
                     ct
                 );
 
-                await _publishEndpoint.Publish(
-                    new TranslationBuildFinished
-                    {
-                        BuildId = build.Id,
-                        EngineId = engine.Id,
-                        Owner = engine.Owner,
-                        BuildState = build.State,
-                        Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value,
-                    },
+                await _eventRouter.PublishAsync(
+                    new TranslationBuildFinished(
+                        build.Id,
+                        engine.Id,
+                        engine.Owner,
+                        build.State,
+                        build.Message!,
+                        build.DateFinished!.Value
+                    ),
                     ct
                 );
             },
@@ -143,16 +134,15 @@ public class PlatformService(
                     ct
                 );
 
-                await _publishEndpoint.Publish(
-                    new TranslationBuildFinished
-                    {
-                        BuildId = build.Id,
-                        EngineId = engine.Id,
-                        Owner = engine.Owner,
-                        BuildState = build.State,
-                        Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value,
-                    },
+                await _eventRouter.PublishAsync(
+                    new TranslationBuildFinished(
+                        build.Id,
+                        engine.Id,
+                        engine.Owner,
+                        build.State,
+                        build.Message!,
+                        build.DateFinished!.Value
+                    ),
                     ct
                 );
             },
@@ -192,16 +182,15 @@ public class PlatformService(
                     ct
                 );
 
-                await _publishEndpoint.Publish(
-                    new TranslationBuildFinished
-                    {
-                        BuildId = build.Id,
-                        EngineId = engine.Id,
-                        Owner = engine.Owner,
-                        BuildState = build.State,
-                        Message = build.Message!,
-                        DateFinished = build.DateFinished!.Value,
-                    },
+                await _eventRouter.PublishAsync(
+                    new TranslationBuildFinished(
+                        build.Id,
+                        engine.Id,
+                        engine.Owner,
+                        build.State,
+                        build.Message!,
+                        build.DateFinished!.Value
+                    ),
                     ct
                 );
             },

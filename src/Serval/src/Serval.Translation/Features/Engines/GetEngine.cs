@@ -14,7 +14,7 @@ public class GetEngineHandler(IRepository<Engine> engines, IDtoMappingService ma
             throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
         if (engine.Owner != request.Owner)
             throw new ForbiddenException();
-        return new GetEngineResponse(mapper.Map(engine));
+        return new(mapper.Map(engine));
     }
 }
 
@@ -43,7 +43,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        GetEngineResponse response = await handler.HandleAsync(new GetEngine(Owner, id), cancellationToken);
+        GetEngineResponse response = await handler.HandleAsync(new(Owner, id), cancellationToken);
         return Ok(response.Engine);
     }
 }

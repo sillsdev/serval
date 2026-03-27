@@ -204,7 +204,7 @@ public class WordAlignmentEnginesController(
     /// </remarks>
     /// <param name="id">The engine id</param>
     /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
-    /// <param name="getCorpusClient"></param>
+    /// <param name="getCorpusHandler"></param>
     /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The added corpus</response>
@@ -224,7 +224,7 @@ public class WordAlignmentEnginesController(
     public async Task<ActionResult<WordAlignmentParallelCorpusDto>> AddParallelCorpusAsync(
         [NotNull] string id,
         [FromBody] WordAlignmentParallelCorpusConfigDto corpusConfig,
-        [FromServices] IRequestClient<GetCorpus> getCorpusClient,
+        [FromServices] IRequestHandler<GetCorpus, GetCorpusResponse> getCorpusHandler,
         [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
@@ -232,7 +232,7 @@ public class WordAlignmentEnginesController(
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         ParallelCorpus corpus = await MapAsync(
-            getCorpusClient,
+            getCorpusHandler,
             idGenerator.GenerateId(),
             corpusConfig,
             cancellationToken
@@ -251,7 +251,7 @@ public class WordAlignmentEnginesController(
     /// <param name="id">The engine id</param>
     /// <param name="parallelCorpusId">The parallel corpus id</param>
     /// <param name="corpusConfig">The corpus configuration</param>
-    /// <param name="getCorpusClient">The data file client</param>
+    /// <param name="getCorpusHandler">The get corpus handler</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus was updated successfully</response>
     /// <response code="400">Bad request</response>
@@ -271,7 +271,7 @@ public class WordAlignmentEnginesController(
         [NotNull] string id,
         [NotNull] string parallelCorpusId,
         [FromBody] WordAlignmentParallelCorpusUpdateConfigDto corpusConfig,
-        [FromServices] IRequestClient<GetCorpus> getCorpusClient,
+        [FromServices] IRequestHandler<GetCorpus, GetCorpusResponse> getCorpusHandler,
         CancellationToken cancellationToken
     )
     {
@@ -281,10 +281,10 @@ public class WordAlignmentEnginesController(
             parallelCorpusId,
             corpusConfig.SourceCorpusIds is null
                 ? null
-                : await MapAsync(getCorpusClient, corpusConfig.SourceCorpusIds, cancellationToken),
+                : await MapAsync(getCorpusHandler, corpusConfig.SourceCorpusIds, cancellationToken),
             corpusConfig.TargetCorpusIds is null
                 ? null
-                : await MapAsync(getCorpusClient, corpusConfig.TargetCorpusIds, cancellationToken),
+                : await MapAsync(getCorpusHandler, corpusConfig.TargetCorpusIds, cancellationToken),
             cancellationToken
         );
         return Ok(Map(id, parallelCorpus));
@@ -690,7 +690,7 @@ public class WordAlignmentEnginesController(
     }
 
     private async Task<ParallelCorpus> MapAsync(
-        IRequestClient<GetCorpus> getDataFileClient,
+        IRequestHandler<GetCorpus, GetCorpusResponse> getCorpusHandler,
         string corpusId,
         WordAlignmentParallelCorpusConfigDto source,
         CancellationToken cancellationToken
@@ -699,13 +699,13 @@ public class WordAlignmentEnginesController(
         return new ParallelCorpus
         {
             Id = corpusId,
-            SourceCorpora = await MapAsync(getDataFileClient, source.SourceCorpusIds, cancellationToken),
-            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken),
+            SourceCorpora = await MapAsync(getCorpusHandler, source.SourceCorpusIds, cancellationToken),
+            TargetCorpora = await MapAsync(getCorpusHandler, source.TargetCorpusIds, cancellationToken),
         };
     }
 
     private async Task<List<MonolingualCorpus>> MapAsync(
-        IRequestClient<GetCorpus> getCorpusClient,
+        IRequestHandler<GetCorpus, GetCorpusResponse> getCorpusHandler,
         IEnumerable<string> corpusIds,
         CancellationToken cancellationToken
     )
@@ -713,13 +713,10 @@ public class WordAlignmentEnginesController(
         var corpora = new List<MonolingualCorpus>();
         foreach (string corpusId in corpusIds)
         {
-            Response<CorpusResult, CorpusNotFound> response = await getCorpusClient.GetResponse<
-                CorpusResult,
-                CorpusNotFound
-            >(new GetCorpus { CorpusId = corpusId, Owner = Owner }, cancellationToken);
-            if (response.Is(out Response<CorpusResult>? result))
+            GetCorpusResponse response = await getCorpusHandler.HandleAsync(new(corpusId, Owner), cancellationToken);
+            if (response.IsFound)
             {
-                if (!result.Message.Files.Any())
+                if (!response.Corpus.Files.Any())
                 {
                     throw new InvalidOperationException(
                         $"The corpus {corpusId} does not have any files associated with it."
@@ -729,21 +726,22 @@ public class WordAlignmentEnginesController(
                     new MonolingualCorpus
                     {
                         Id = corpusId,
-                        Name = result.Message.Name ?? "",
-                        Language = result.Message.Language,
-                        Files = result
-                            .Message.Files.Select(f => new CorpusFile
+                        Name = response.Corpus.Name ?? "",
+                        Language = response.Corpus.Language,
+                        Files =
+                        [
+                            .. response.Corpus.Files.Select(f => new CorpusFile
                             {
                                 Id = f.File.DataFileId,
                                 Filename = f.File.Filename,
                                 Format = f.File.Format,
                                 TextId = f.TextId,
-                            })
-                            .ToList(),
+                            }),
+                        ],
                     }
                 );
             }
-            else if (response.Is(out Response<CorpusNotFound>? _))
+            else
             {
                 throw new InvalidOperationException($"The corpus {corpusId} cannot be found.");
             }

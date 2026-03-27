@@ -22,7 +22,7 @@ public class TrainSegmentHandler(IRepository<Engine> engines, IEngineServiceFact
         if (engine.Owner != request.Owner)
             throw new ForbiddenException();
         if (engine.ModelRevision == 0)
-            return new TrainSegmentResponse(false);
+            return new(IsAvailable: false);
 
         await engineServiceFactory
             .GetEngineService(engine.Type)
@@ -33,7 +33,7 @@ public class TrainSegmentHandler(IRepository<Engine> engines, IEngineServiceFact
                 request.SegmentPair.SentenceStart,
                 cancellationToken
             );
-        return new TrainSegmentResponse(true);
+        return new(IsAvailable: true);
     }
 }
 
@@ -75,10 +75,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        TrainSegmentResponse response = await handler.HandleAsync(
-            new TrainSegment(Owner, id, segmentPair),
-            cancellationToken
-        );
+        TrainSegmentResponse response = await handler.HandleAsync(new(Owner, id, segmentPair), cancellationToken);
         if (!response.IsAvailable)
             return Conflict();
         _logger.LogInformation("Trained segment pair for engine {EngineId}", id);

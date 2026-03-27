@@ -39,13 +39,13 @@ public class GetWordGraphHandler(IRepository<Engine> engines, IEngineServiceFact
         if (engine.Owner != request.Owner)
             throw new ForbiddenException();
         if (engine.ModelRevision == 0)
-            return new GetWordGraphResponse(IsAvailable: false);
+            return new(IsAvailable: false);
 
         WordGraph wordGraph = await engineServiceFactory
             .GetEngineService(engine.Type)
             .GetWordGraphAsync(request.EngineId, request.Segment, cancellationToken);
 
-        return new GetWordGraphResponse(
+        return new(
             IsAvailable: true,
             new WordGraphDto
             {
@@ -110,10 +110,7 @@ public partial class TranslationEnginesController
         CancellationToken cancellationToken
     )
     {
-        GetWordGraphResponse response = await handler.HandleAsync(
-            new GetWordGraph(Owner, id, segment),
-            cancellationToken
-        );
+        GetWordGraphResponse response = await handler.HandleAsync(new(Owner, id, segment), cancellationToken);
         if (!response.IsAvailable)
             return Conflict();
         _logger.LogInformation("Got word graph for engine {EngineId}", id);

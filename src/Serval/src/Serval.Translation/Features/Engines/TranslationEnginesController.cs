@@ -45,7 +45,7 @@ public partial class TranslationEnginesController(
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
-    /// <param name="getDataFileClient"></param>
+    /// <param name="getDataFileHandler"></param>
     /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The added corpus</response>
@@ -66,14 +66,14 @@ public partial class TranslationEnginesController(
     public async Task<ActionResult<TranslationCorpusDto>> AddCorpusAsync(
         [NotNull] string id,
         [FromBody] TranslationCorpusConfigDto corpusConfig,
-        [FromServices] IRequestClient<GetDataFile> getDataFileClient,
+        [FromServices] IRequestHandler<GetDataFile, GetDataFileResponse> getDataFileHandler,
         [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
     {
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
-        Corpus corpus = await MapAsync(getDataFileClient, idGenerator.GenerateId(), corpusConfig, cancellationToken);
+        Corpus corpus = await MapAsync(getDataFileHandler, idGenerator.GenerateId(), corpusConfig, cancellationToken);
         await _engineService.AddCorpusAsync(id, corpus, cancellationToken);
         TranslationCorpusDto dto = Map(id, corpus);
         return Created(dto.Url, dto);
@@ -89,7 +89,7 @@ public partial class TranslationEnginesController(
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusId">The corpus id</param>
     /// <param name="corpusConfig">The corpus configuration</param>
-    /// <param name="getDataFileClient">The data file client</param>
+    /// <param name="getDataFileHandler">The data file handler</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus was updated successfully</response>
     /// <response code="400">Bad request</response>
@@ -110,7 +110,7 @@ public partial class TranslationEnginesController(
         [NotNull] string id,
         [NotNull] string corpusId,
         [FromBody] TranslationCorpusUpdateConfigDto corpusConfig,
-        [FromServices] IRequestClient<GetDataFile> getDataFileClient,
+        [FromServices] IRequestHandler<GetDataFile, GetDataFileResponse> getDataFileHandler,
         CancellationToken cancellationToken
     )
     {
@@ -120,10 +120,10 @@ public partial class TranslationEnginesController(
             corpusId,
             corpusConfig.SourceFiles is null
                 ? null
-                : await MapAsync(getDataFileClient, corpusConfig.SourceFiles, cancellationToken),
+                : await MapAsync(getDataFileHandler, corpusConfig.SourceFiles, cancellationToken),
             corpusConfig.TargetFiles is null
                 ? null
-                : await MapAsync(getDataFileClient, corpusConfig.TargetFiles, cancellationToken),
+                : await MapAsync(getDataFileHandler, corpusConfig.TargetFiles, cancellationToken),
             cancellationToken
         );
         return Ok(Map(id, corpus));
@@ -469,7 +469,7 @@ public partial class TranslationEnginesController(
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
-    /// <param name="getCorpusClient"></param>
+    /// <param name="getCorpusHandler"></param>
     /// <param name="idGenerator"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="201">The added corpus</response>
@@ -489,7 +489,7 @@ public partial class TranslationEnginesController(
     public async Task<ActionResult<TranslationParallelCorpusDto>> AddParallelCorpusAsync(
         [NotNull] string id,
         [FromBody] TranslationParallelCorpusConfigDto corpusConfig,
-        [FromServices] IRequestClient<GetCorpus> getCorpusClient,
+        [FromServices] IRequestHandler<GetCorpus, GetCorpusResponse> getCorpusHandler,
         [FromServices] IIdGenerator idGenerator,
         CancellationToken cancellationToken
     )
@@ -497,7 +497,7 @@ public partial class TranslationEnginesController(
         Engine engine = await _engineService.GetAsync(id, cancellationToken);
         await AuthorizeAsync(engine);
         ParallelCorpus corpus = await MapAsync(
-            getCorpusClient,
+            getCorpusHandler,
             idGenerator.GenerateId(),
             corpusConfig,
             cancellationToken
@@ -516,7 +516,7 @@ public partial class TranslationEnginesController(
     /// <param name="id">The translation engine id</param>
     /// <param name="parallelCorpusId">The parallel corpus id</param>
     /// <param name="corpusConfig">The corpus configuration</param>
-    /// <param name="getCorpusClient">The data file client</param>
+    /// <param name="getCorpusHandler">The data file client</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The corpus was updated successfully</response>
     /// <response code="400">Bad request</response>
@@ -536,7 +536,7 @@ public partial class TranslationEnginesController(
         [NotNull] string id,
         [NotNull] string parallelCorpusId,
         [FromBody] TranslationParallelCorpusUpdateConfigDto corpusConfig,
-        [FromServices] IRequestClient<GetCorpus> getCorpusClient,
+        [FromServices] IRequestHandler<GetCorpus, GetCorpusResponse> getCorpusHandler,
         CancellationToken cancellationToken
     )
     {
@@ -546,10 +546,10 @@ public partial class TranslationEnginesController(
             parallelCorpusId,
             corpusConfig.SourceCorpusIds is null
                 ? null
-                : await MapAsync(getCorpusClient, corpusConfig.SourceCorpusIds, cancellationToken),
+                : await MapAsync(getCorpusHandler, corpusConfig.SourceCorpusIds, cancellationToken),
             corpusConfig.TargetCorpusIds is null
                 ? null
-                : await MapAsync(getCorpusClient, corpusConfig.TargetCorpusIds, cancellationToken),
+                : await MapAsync(getCorpusHandler, corpusConfig.TargetCorpusIds, cancellationToken),
             cancellationToken
         );
         return Ok(Map(id, parallelCorpus));
@@ -1033,7 +1033,7 @@ public partial class TranslationEnginesController(
     }
 
     private async Task<Corpus> MapAsync(
-        IRequestClient<GetDataFile> getDataFileClient,
+        IRequestHandler<GetDataFile, GetDataFileResponse> getDataFileHandler,
         string corpusId,
         TranslationCorpusConfigDto source,
         CancellationToken cancellationToken
@@ -1045,13 +1045,13 @@ public partial class TranslationEnginesController(
             Name = source.Name,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
-            SourceFiles = await MapAsync(getDataFileClient, source.SourceFiles, cancellationToken),
-            TargetFiles = await MapAsync(getDataFileClient, source.TargetFiles, cancellationToken),
+            SourceFiles = await MapAsync(getDataFileHandler, source.SourceFiles, cancellationToken),
+            TargetFiles = await MapAsync(getDataFileHandler, source.TargetFiles, cancellationToken),
         };
     }
 
     private async Task<ParallelCorpus> MapAsync(
-        IRequestClient<GetCorpus> getDataFileClient,
+        IRequestHandler<GetCorpus, GetCorpusResponse> getCorpusHandler,
         string corpusId,
         TranslationParallelCorpusConfigDto source,
         CancellationToken cancellationToken
@@ -1060,13 +1060,13 @@ public partial class TranslationEnginesController(
         return new ParallelCorpus
         {
             Id = corpusId,
-            SourceCorpora = await MapAsync(getDataFileClient, source.SourceCorpusIds, cancellationToken),
-            TargetCorpora = await MapAsync(getDataFileClient, source.TargetCorpusIds, cancellationToken),
+            SourceCorpora = await MapAsync(getCorpusHandler, source.SourceCorpusIds, cancellationToken),
+            TargetCorpora = await MapAsync(getCorpusHandler, source.TargetCorpusIds, cancellationToken),
         };
     }
 
     private async Task<List<CorpusFile>> MapAsync(
-        IRequestClient<GetDataFile> getDataFileClient,
+        IRequestHandler<GetDataFile, GetDataFileResponse> getDataFileHandler,
         IEnumerable<TranslationCorpusFileConfigDto> fileConfigs,
         CancellationToken cancellationToken
     )
@@ -1074,23 +1074,23 @@ public partial class TranslationEnginesController(
         var files = new List<CorpusFile>();
         foreach (TranslationCorpusFileConfigDto fileConfig in fileConfigs)
         {
-            Response<DataFileResult, DataFileNotFound> response = await getDataFileClient.GetResponse<
-                DataFileResult,
-                DataFileNotFound
-            >(new GetDataFile { DataFileId = fileConfig.FileId, Owner = Owner }, cancellationToken);
-            if (response.Is(out Response<DataFileResult>? result))
+            GetDataFileResponse response = await getDataFileHandler.HandleAsync(
+                new(fileConfig.FileId, Owner),
+                cancellationToken
+            );
+            if (response.IsFound)
             {
                 files.Add(
                     new CorpusFile
                     {
                         Id = fileConfig.FileId,
-                        Filename = result.Message.Filename,
-                        TextId = fileConfig.TextId ?? result.Message.Name,
-                        Format = result.Message.Format,
+                        Filename = response.File.Filename,
+                        TextId = fileConfig.TextId ?? response.File.Name,
+                        Format = response.File.Format,
                     }
                 );
             }
-            else if (response.Is(out Response<DataFileNotFound>? _))
+            else
             {
                 throw new InvalidOperationException($"The data file {fileConfig.FileId} cannot be found.");
             }
@@ -1099,7 +1099,7 @@ public partial class TranslationEnginesController(
     }
 
     private async Task<List<MonolingualCorpus>> MapAsync(
-        IRequestClient<GetCorpus> getCorpusClient,
+        IRequestHandler<GetCorpus, GetCorpusResponse> getCorpusHandler,
         IEnumerable<string> corpusIds,
         CancellationToken cancellationToken
     )
@@ -1107,13 +1107,10 @@ public partial class TranslationEnginesController(
         var corpora = new List<MonolingualCorpus>();
         foreach (string corpusId in corpusIds)
         {
-            Response<CorpusResult, CorpusNotFound> response = await getCorpusClient.GetResponse<
-                CorpusResult,
-                CorpusNotFound
-            >(new GetCorpus { CorpusId = corpusId, Owner = Owner }, cancellationToken);
-            if (response.Is(out Response<CorpusResult>? result))
+            GetCorpusResponse response = await getCorpusHandler.HandleAsync(new(corpusId, Owner), cancellationToken);
+            if (response.IsFound)
             {
-                if (!result.Message.Files.Any())
+                if (!response.Corpus.Files.Any())
                 {
                     throw new InvalidOperationException(
                         $"The corpus {corpusId} does not have any files associated with it."
@@ -1123,21 +1120,22 @@ public partial class TranslationEnginesController(
                     new MonolingualCorpus
                     {
                         Id = corpusId,
-                        Name = result.Message.Name ?? "",
-                        Language = result.Message.Language,
-                        Files = result
-                            .Message.Files.Select(f => new CorpusFile
+                        Name = response.Corpus.Name ?? "",
+                        Language = response.Corpus.Language,
+                        Files =
+                        [
+                            .. response.Corpus.Files.Select(f => new CorpusFile
                             {
                                 Id = f.File.DataFileId,
                                 Filename = f.File.Filename,
                                 Format = f.File.Format,
                                 TextId = f.TextId ?? f.File.Name,
-                            })
-                            .ToList(),
+                            }),
+                        ],
                     }
                 );
             }
-            else if (response.Is(out Response<CorpusNotFound>? _))
+            else
             {
                 throw new InvalidOperationException($"The corpus {corpusId} cannot be found.");
             }
