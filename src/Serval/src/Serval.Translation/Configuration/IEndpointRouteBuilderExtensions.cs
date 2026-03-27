@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Configuration;
+﻿namespace Microsoft.AspNetCore.Builder;
 
 public static class IEndpointRouteBuilderExtensions
 {

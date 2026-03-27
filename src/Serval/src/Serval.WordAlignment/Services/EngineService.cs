@@ -1,26 +1,22 @@
-﻿using Serval.WordAlignment.V1;
-
 namespace Serval.WordAlignment.Services;
 
 public class EngineService(
     IRepository<Engine> engines,
     IRepository<Build> builds,
     IRepository<Models.WordAlignment> wordAlignments,
-    GrpcClientFactory grpcClientFactory,
+    IEngineServiceFactory engineServiceFactory,
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IDataAccessContext dataAccessContext,
     ILoggerFactory loggerFactory,
-    IOutboxService outboxService,
     IOptionsMonitor<WordAlignmentOptions> wordAlignmentOptions
 ) : OwnedEntityServiceBase<Engine>(engines), IEngineService
 {
     private readonly IRepository<Build> _builds = builds;
     private readonly IRepository<Models.WordAlignment> _wordAlignments = wordAlignments;
-    private readonly GrpcClientFactory _grpcClientFactory = grpcClientFactory;
+    private readonly IEngineServiceFactory _engineServiceFactory = engineServiceFactory;
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<EngineService> _logger = loggerFactory.CreateLogger<EngineService>();
-    private readonly IOutboxService _outboxService = outboxService;
     private readonly IOptionsMonitor<WordAlignmentOptions> _wordAlignmentOptions = wordAlignmentOptions;
 
     public override async Task<IEnumerable<Engine>> GetAllAsync(
@@ -31,7 +27,7 @@ public class EngineService(
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public async Task<Models.WordAlignmentResult?> GetWordAlignmentAsync(
+    public async Task<WordAlignmentResult?> GetWordAlignmentAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -42,23 +38,13 @@ public class EngineService(
         if (engine.ModelRevision == 0)
             return null;
 
-        WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
-            _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engine.Type);
         try
         {
-            GetWordAlignmentResponse response = await client.GetWordAlignmentAsync(
-                new GetWordAlignmentRequest
-                {
-                    EngineType = engine.Type,
-                    EngineId = engine.Id,
-                    SourceSegment = sourceSegment,
-                    TargetSegment = targetSegment,
-                },
-                cancellationToken: cancellationToken
-            );
-            return Map(response.Result);
+            return await _engineServiceFactory
+                .GetEngineService(engine.Type)
+                .AlignAsync(engine.Id, sourceSegment, targetSegment, cancellationToken);
         }
-        catch (RpcException re) when (re.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
+        catch (InvalidOperationException)
         {
             return null;
         }
@@ -75,23 +61,9 @@ public class EngineService(
                 engine.DateCreated = DateTime.UtcNow;
                 await Entities.InsertAsync(engine, cancellationToken);
 
-                CreateRequest request = new()
-                {
-                    EngineType = engine.Type,
-                    EngineId = engine.Id,
-                    SourceLanguage = engine.SourceLanguage,
-                    TargetLanguage = engine.TargetLanguage,
-                };
-                if (engine.Name is not null)
-                    request.EngineName = engine.Name;
-
-                await _outboxService.EnqueueMessageAsync(
-                    EngineOutboxConstants.OutboxId,
-                    EngineOutboxConstants.Create,
-                    engine.Id,
-                    request,
-                    cancellationToken: ct
-                );
+                await _engineServiceFactory
+                    .GetEngineService(engine.Type)
+                    .CreateAsync(engine.Id, engine.SourceLanguage, engine.TargetLanguage, engine.Name, ct);
             },
             cancellationToken
         );
@@ -110,15 +82,7 @@ public class EngineService(
                 await _builds.DeleteAllAsync(b => b.EngineRef == engineId, ct);
                 await _wordAlignments.DeleteAllAsync(wa => wa.EngineRef == engineId, ct);
 
-                DeleteRequest request = new() { EngineType = engine.Type, EngineId = engine.Id };
-
-                await _outboxService.EnqueueMessageAsync(
-                    EngineOutboxConstants.OutboxId,
-                    EngineOutboxConstants.Delete,
-                    engine.Id,
-                    request,
-                    cancellationToken: ct
-                );
+                await _engineServiceFactory.GetEngineService(engine.Type).DeleteAsync(engine.Id, ct);
             },
             cancellationToken
         );
@@ -167,7 +131,7 @@ public class EngineService(
                 Dictionary<string, WordAlignmentCorpus>? wordAlignOn = build.WordAlignOn?.ToDictionary(c =>
                     c.ParallelCorpusRef
                 );
-                IReadOnlyList<Shared.Models.ParallelCorpus> parallelCorpora = engine
+                IReadOnlyList<ParallelCorpus> parallelCorpora = engine
                     .ParallelCorpora.Where(pc =>
                         trainOn == null
                         || trainOn.ContainsKey(pc.Id)
@@ -176,63 +140,55 @@ public class EngineService(
                     )
                     .ToList();
 
-                StartBuildRequest request = new()
-                {
-                    EngineType = engine.Type,
-                    EngineId = engine.Id,
-                    BuildId = build.Id,
-                    Corpora =
-                    {
-                        parallelCorpora.Select(c =>
-                            Map(
-                                c,
-                                trainOn?.GetValueOrDefault(c.Id),
-                                wordAlignOn?.GetValueOrDefault(c.Id),
-                                trainOn is null,
-                                wordAlignOn is null
-                            )
-                        ),
-                    },
-                };
+                IReadOnlyList<FilteredParallelCorpus> corpora = parallelCorpora
+                    .Select(c =>
+                        MapToFilteredCorpus(
+                            c,
+                            trainOn?.GetValueOrDefault(c.Id),
+                            wordAlignOn?.GetValueOrDefault(c.Id),
+                            trainOn is null,
+                            wordAlignOn is null
+                        )
+                    )
+                    .ToList();
 
+                string? buildOptions = null;
                 if (build.Options is not null)
-                    request.Options = JsonSerializer.Serialize(build.Options);
+                    buildOptions = JsonSerializer.Serialize(build.Options);
 
                 // Log the build request summary
                 try
                 {
-                    var buildRequestSummary = (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(request))!;
-                    // correct build options parsing
-                    buildRequestSummary.Remove("Options");
+                    var buildRequestSummary = new JsonObject
+                    {
+                        ["Event"] = "BuildRequest",
+                        ["EngineId"] = engine.Id,
+                        ["BuildId"] = build.Id,
+                        ["CorpusCount"] = corpora.Count,
+                        ["ModelRevision"] = engine.ModelRevision,
+                        ["ClientId"] = engine.Owner,
+                    };
                     try
                     {
-                        buildRequestSummary.Add("Options", JsonNode.Parse(request.Options));
+                        buildRequestSummary.Add("Options", JsonNode.Parse(buildOptions ?? "null"));
                     }
                     catch (JsonException)
                     {
                         buildRequestSummary.Add(
                             "Options",
-                            "Build \"Options\" failed parsing: " + (request.Options ?? "null")
+                            "Build \"Options\" failed parsing: " + (buildOptions ?? "null")
                         );
                     }
-                    buildRequestSummary.Add("Event", "BuildRequest");
-                    buildRequestSummary.Add("ModelRevision", engine.ModelRevision);
-                    buildRequestSummary.Add("ClientId", engine.Owner);
                     _logger.LogInformation("{request}", buildRequestSummary.ToJsonString());
                 }
                 catch (JsonException)
                 {
                     _logger.LogInformation("Error parsing build request summary.");
-                    _logger.LogInformation("{request}", JsonSerializer.Serialize(request));
                 }
 
-                await _outboxService.EnqueueMessageAsync(
-                    EngineOutboxConstants.OutboxId,
-                    EngineOutboxConstants.StartBuild,
-                    engine.Id,
-                    request,
-                    cancellationToken: ct
-                );
+                await _engineServiceFactory
+                    .GetEngineService(engine.Type)
+                    .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, ct);
                 return true;
             },
             cancellationToken
@@ -247,21 +203,14 @@ public class EngineService(
             cancellationToken
         );
 
-        CancelBuildRequest request = new CancelBuildRequest { EngineType = engine.Type, EngineId = engine.Id };
-        await _outboxService.EnqueueMessageAsync(
-            EngineOutboxConstants.OutboxId,
-            EngineOutboxConstants.CancelBuild,
-            engine.Id,
-            request,
-            cancellationToken: cancellationToken
-        );
+        await _engineServiceFactory.GetEngineService(engine.Type).CancelBuildAsync(engine.Id, cancellationToken);
 
         return currentBuild;
     }
 
     public Task AddParallelCorpusAsync(
         string engineId,
-        Shared.Models.ParallelCorpus corpus,
+        ParallelCorpus corpus,
         CancellationToken cancellationToken = default
     )
     {
@@ -272,15 +221,15 @@ public class EngineService(
         );
     }
 
-    public async Task<Shared.Models.ParallelCorpus> UpdateParallelCorpusAsync(
+    public async Task<ParallelCorpus> UpdateParallelCorpusAsync(
         string engineId,
         string parallelCorpusId,
-        IReadOnlyList<Shared.Models.MonolingualCorpus>? sourceCorpora,
-        IReadOnlyList<Shared.Models.MonolingualCorpus>? targetCorpora,
+        IReadOnlyList<MonolingualCorpus>? sourceCorpora,
+        IReadOnlyList<MonolingualCorpus>? targetCorpora,
         CancellationToken cancellationToken = default
     )
     {
-        Shared.Models.ParallelCorpus? parallelCorpus = null;
+        ParallelCorpus? parallelCorpus = null;
         await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
@@ -450,7 +399,7 @@ public class EngineService(
 
     public async Task UpdateCorpusFilesAsync(
         string corpusId,
-        IReadOnlyList<Shared.Models.CorpusFile> files,
+        IReadOnlyList<CorpusFile> files,
         CancellationToken cancellationToken = default
     )
     {
@@ -482,37 +431,12 @@ public class EngineService(
 
     public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
     {
-        WordAlignmentEngineApi.WordAlignmentEngineApiClient client =
-            _grpcClientFactory.CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>(engineType);
-        GetQueueSizeResponse response = await client.GetQueueSizeAsync(
-            new GetQueueSizeRequest { EngineType = engineType },
-            cancellationToken: cancellationToken
-        );
-        return new Queue { Size = response.Size, EngineType = engineType };
+        int size = await _engineServiceFactory.GetEngineService(engineType).GetQueueSizeAsync(cancellationToken);
+        return new Queue { Size = size, EngineType = engineType };
     }
 
-    private Models.WordAlignmentResult Map(V1.WordAlignmentResult source)
-    {
-        return new Models.WordAlignmentResult
-        {
-            SourceTokens = source.SourceTokens.ToList(),
-            TargetTokens = source.TargetTokens.ToList(),
-            Alignment = source.Alignment.Select(Map).ToList(),
-        };
-    }
-
-    private Models.AlignedWordPair Map(V1.AlignedWordPair source)
-    {
-        return new Models.AlignedWordPair
-        {
-            SourceIndex = source.SourceIndex,
-            TargetIndex = source.TargetIndex,
-            Score = source.Score,
-        };
-    }
-
-    private V1.ParallelCorpus Map(
-        Shared.Models.ParallelCorpus source,
+    private FilteredParallelCorpus MapToFilteredCorpus(
+        ParallelCorpus source,
         TrainingCorpus? trainingCorpus,
         WordAlignmentCorpus? wordAlignmentCorpus,
         bool trainOnAllCorpora,
@@ -521,7 +445,7 @@ public class EngineService(
     {
         string? referenceFileLocation =
             source.TargetCorpora.Count > 0 && source.TargetCorpora[0].Files.Count > 0
-                ? Map(source.TargetCorpora[0].Files[0]).Location
+                ? Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.TargetCorpora[0].Files[0].Filename)
                 : null;
 
         bool trainOnAllSources =
@@ -534,13 +458,12 @@ public class EngineService(
         bool wordAlignAllTargets =
             wordAlignOnAllCorpora || (wordAlignmentCorpus is not null && wordAlignmentCorpus.TargetFilters is null);
 
-        return new V1.ParallelCorpus
+        return new FilteredParallelCorpus
         {
             Id = source.Id,
-            SourceCorpora =
-            {
-                source.SourceCorpora.Select(sc =>
-                    Map(
+            SourceCorpora = source
+                .SourceCorpora.Select(sc =>
+                    MapToFilteredMonolingualCorpus(
                         sc,
                         trainingCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
                         wordAlignmentCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
@@ -548,12 +471,11 @@ public class EngineService(
                         trainOnAllSources,
                         wordAlignAllSources
                     )
-                ),
-            },
-            TargetCorpora =
-            {
-                source.TargetCorpora.Select(tc =>
-                    Map(
+                )
+                .ToList(),
+            TargetCorpora = source
+                .TargetCorpora.Select(tc =>
+                    MapToFilteredMonolingualCorpus(
                         tc,
                         trainingCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
                         null,
@@ -561,13 +483,13 @@ public class EngineService(
                         trainOnAllTargets,
                         wordAlignAllTargets
                     )
-                ),
-            },
+                )
+                .ToList(),
         };
     }
 
-    private V1.MonolingualCorpus Map(
-        Shared.Models.MonolingualCorpus inputCorpus,
+    private FilteredMonolingualCorpus MapToFilteredMonolingualCorpus(
+        MonolingualCorpus inputCorpus,
         ParallelCorpusFilter? trainingFilter,
         ParallelCorpusFilter? wordAlignmentFilter,
         string? referenceFileLocation,
@@ -575,7 +497,7 @@ public class EngineService(
         bool wordAlignOnAll
     )
     {
-        Dictionary<string, ScriptureChapters>? trainOnChapters = null;
+        Dictionary<string, HashSet<int>>? trainOnChapters = null;
         if (
             trainingFilter is not null
             && trainingFilter.ScriptureRange is not null
@@ -583,18 +505,10 @@ public class EngineService(
         )
         {
             trainOnChapters = GetChapters(referenceFileLocation, trainingFilter.ScriptureRange)
-                .Select(
-                    (kvp) =>
-                    {
-                        var scriptureChapters = new ScriptureChapters();
-                        scriptureChapters.Chapters.Add(kvp.Value);
-                        return (kvp.Key, scriptureChapters);
-                    }
-                )
-                .ToDictionary();
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
         }
 
-        Dictionary<string, ScriptureChapters>? wordAlignmentChapters = null;
+        Dictionary<string, HashSet<int>>? wordAlignmentChapters = null;
         if (
             wordAlignmentFilter is not null
             && wordAlignmentFilter.ScriptureRange is not null
@@ -602,23 +516,8 @@ public class EngineService(
         )
         {
             wordAlignmentChapters = GetChapters(referenceFileLocation, wordAlignmentFilter.ScriptureRange)
-                .Select(
-                    (kvp) =>
-                    {
-                        var scriptureChapters = new ScriptureChapters();
-                        scriptureChapters.Chapters.Add(kvp.Value);
-                        return (kvp.Key, scriptureChapters);
-                    }
-                )
-                .ToDictionary();
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
         }
-
-        var returnCorpus = new V1.MonolingualCorpus
-        {
-            Id = inputCorpus.Id,
-            Language = inputCorpus.Language,
-            Files = { inputCorpus.Files.Select(Map) },
-        };
 
         if (
             trainingFilter is not null
@@ -632,21 +531,6 @@ public class EngineService(
         }
 
         if (
-            trainOnAll
-            || (trainingFilter is not null && trainingFilter.TextIds is null && trainingFilter.ScriptureRange is null)
-        )
-        {
-            returnCorpus.TrainOnAll = true;
-        }
-        else
-        {
-            if (trainOnChapters is not null)
-                returnCorpus.TrainOnChapters.Add(trainOnChapters);
-            if (trainingFilter?.TextIds is not null)
-                returnCorpus.TrainOnTextIds.Add(trainingFilter.TextIds);
-        }
-
-        if (
             wordAlignmentFilter is not null
             && wordAlignmentFilter.TextIds is not null
             && wordAlignmentFilter.ScriptureRange is not null
@@ -655,6 +539,35 @@ public class EngineService(
             throw new InvalidOperationException(
                 "Cannot specify both TextIds and ScriptureRange in the word alignment filter."
             );
+        }
+
+        var result = new FilteredMonolingualCorpus
+        {
+            Id = inputCorpus.Id,
+            Language = inputCorpus.Language,
+            Files = inputCorpus
+                .Files.Select(f => new ResolvedCorpusFile
+                {
+                    TextId = f.TextId,
+                    Format = f.Format,
+                    Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, f.Filename),
+                })
+                .ToList(),
+        };
+
+        if (
+            trainOnAll
+            || (trainingFilter is not null && trainingFilter.TextIds is null && trainingFilter.ScriptureRange is null)
+        )
+        {
+            result.TrainOnAll = true;
+        }
+        else
+        {
+            if (trainOnChapters is not null)
+                result.TrainOnChapters = trainOnChapters;
+            if (trainingFilter?.TextIds is not null)
+                result.TrainOnTextIds = trainingFilter.TextIds.ToHashSet();
         }
 
         if (
@@ -666,26 +579,16 @@ public class EngineService(
             )
         )
         {
-            returnCorpus.WordAlignOnAll = true;
+            result.PretranslateAll = true;
         }
         else
         {
             if (wordAlignmentChapters is not null)
-                returnCorpus.WordAlignOnChapters.Add(wordAlignmentChapters);
+                result.InferenceChapters = wordAlignmentChapters;
             if (wordAlignmentFilter?.TextIds is not null)
-                returnCorpus.WordAlignOnTextIds.Add(wordAlignmentFilter.TextIds);
+                result.InferenceTextIds = wordAlignmentFilter.TextIds.ToHashSet();
         }
 
-        return returnCorpus;
-    }
-
-    private V1.CorpusFile Map(Shared.Models.CorpusFile source)
-    {
-        return new V1.CorpusFile
-        {
-            TextId = source.TextId,
-            Format = (V1.FileFormat)source.Format,
-            Location = Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, source.Filename),
-        };
+        return result;
     }
 }

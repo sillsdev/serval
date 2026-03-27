@@ -10,5 +10,4 @@ public class WordAlignmentOptions
 public class EngineInfo
 {
     public string Type { get; set; } = "";
-    public string Address { get; set; } = "";
 }

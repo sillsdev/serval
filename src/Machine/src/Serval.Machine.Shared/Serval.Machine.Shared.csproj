@@ -53,6 +53,7 @@
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj')" />
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
 		<ProjectReference Include="..\..\..\Serval\src\Serval.Translation.Contracts\Serval.Translation.Contracts.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.WordAlignment.Contracts\Serval.WordAlignment.Contracts.csproj" />
 		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
 		<EmbeddedResource Include="data\flores200languages.csv" />
 	</ItemGroup>
