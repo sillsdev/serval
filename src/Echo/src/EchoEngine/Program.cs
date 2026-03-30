@@ -1,22 +1,14 @@
-using Serval.EngineApi.Translation;
-using Serval.WordAlignment.V1;
+using Serval.Translation.Contracts;
+using Serval.WordAlignment.Contracts;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddGrpcClient<WordAlignmentPlatformApi.WordAlignmentPlatformApiClient>(
-    "WordAlignment",
-    o =>
-    {
-        o.Address = new Uri(builder.Configuration.GetConnectionString("WordAlignmentPlatformApi")!);
-    }
-);
-
-builder.Services.AddGrpc();
 
 builder.Services.AddHostedService<BackgroundTaskService>();
 builder.Services.AddSingleton<BackgroundTaskQueue>();
-builder.Services.AddSingleton<ITranslationEngine, TranslationEngineService>();
+builder.Services.AddSingleton<ITranslationEngineService, TranslationEngineService>();
+builder.Services.AddSingleton<IWordAlignmentEngineService, WordAlignmentEngineService>();
 
 builder.Services.AddParallelCorpusService();
 
@@ -27,9 +19,5 @@ builder.Services.AddBugsnag();
 builder.Services.AddDiagnostics();
 
 WebApplication app = builder.Build();
-
-app.MapGrpcService<WordAlignmentEngineServiceV1>();
-
-app.MapGrpcService<HealthServiceV1>();
 
 app.Run();

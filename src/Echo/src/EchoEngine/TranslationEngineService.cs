@@ -1,26 +1,22 @@
-using Serval.EngineApi.Translation;
 using Serval.Shared.Contracts;
-using SIL.ServiceToolkit.Models;
+using Serval.Translation.Contracts;
 
 namespace EchoEngine;
 
-public class TranslationEngineService(
-    BackgroundTaskQueue taskQueue,
-    IParallelCorpusPreprocessingService parallelCorpusPreprocessingService
-) : ITranslationEngine
+public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCorpusService parallelCorpusService)
+    : ITranslationEngineService
 {
-    public string EngineType => "Echo";
+    public string Type => "echo";
 
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
-    private readonly IParallelCorpusPreprocessingService _parallelCorpusPreprocessingService =
-        parallelCorpusPreprocessingService;
+    private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
     public Task CreateAsync(
         string engineId,
         string sourceLanguage,
         string targetLanguage,
-        bool isModelPersisted,
         string? engineName = null,
+        bool? isModelPersisted = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -133,12 +129,12 @@ public class TranslationEngineService(
         CancellationToken cancellationToken = default
     ) => Task.CompletedTask;
 
-    public Task<ModelDownloadUrl?> GetModelDownloadUrlAsync(
+    public Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
     {
-        return Task.FromResult<ModelDownloadUrl?>(
+        return Task.FromResult(
             new ModelDownloadUrl
             {
                 Url = "https://example.com/model",
@@ -152,7 +148,14 @@ public class TranslationEngineService(
 
     public Task<LanguageInfo> GetLanguageInfoAsync(string language, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new LanguageInfo { InternalCode = language + "_echo", IsNative = true });
+        return Task.FromResult(
+            new LanguageInfo
+            {
+                EngineType = Type,
+                InternalCode = language + "_echo",
+                IsNative = true,
+            }
+        );
     }
 
     public async Task StartBuildAsync(
@@ -169,7 +172,7 @@ public class TranslationEngineService(
             await _taskQueue.QueueBackgroundWorkItemAsync(
                 async (services, token) =>
                 {
-                    ITranslationPlatform platform = services.GetRequiredService<ITranslationPlatform>();
+                    ITranslationPlatformService platform = services.GetRequiredService<ITranslationPlatformService>();
                     await platform.BuildCanceledAsync(buildId, CancellationToken.None);
                 }
             );
@@ -180,7 +183,7 @@ public class TranslationEngineService(
             async (services, backgroundCt) =>
             {
                 using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(backgroundCt, cts.Token);
-                ITranslationPlatform platform = services.GetRequiredService<ITranslationPlatform>();
+                ITranslationPlatformService platform = services.GetRequiredService<ITranslationPlatformService>();
 
                 try
                 {
@@ -190,7 +193,7 @@ public class TranslationEngineService(
                     int pretranslateCount = 0;
 
                     List<PretranslationData> pretranslations = [];
-                    await _parallelCorpusPreprocessingService.PreprocessAsync(
+                    await _parallelCorpusService.PreprocessAsync(
                         corpora,
                         (row, _) =>
                         {
@@ -198,13 +201,13 @@ public class TranslationEngineService(
                                 trainCount++;
                             return Task.CompletedTask;
                         },
-                        (row, isInTrainingData, corpus) =>
+                        (row, isInTrainingData, corpusId) =>
                         {
                             string[] tokens = row.SourceSegment.Split();
                             pretranslations.Add(
                                 new PretranslationData
                                 {
-                                    CorpusId = corpus.Id,
+                                    CorpusId = corpusId,
                                     TextId = row.TextId,
                                     SourceRefs = row.SourceRefs.Select(r => r.ToString()!).ToArray(),
                                     TargetRefs = row.TargetRefs.Select(r => r.ToString()!).ToArray(),
