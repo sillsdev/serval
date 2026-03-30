@@ -37,20 +37,4 @@ public static class IServalBuilderExtensions
         builder.Services.AddHealthChecks().AddMongoDb(name: "Mongo");
         return builder;
     }
-
-    public static IServalBuilder AddMongoOutbox(this IServalBuilder builder)
-    {
-        string? mongoConnectionString = builder.Configuration.GetConnectionString("Mongo");
-        if (mongoConnectionString is null)
-            throw new InvalidOperationException("Mongo connection string not configured");
-        builder.Services.AddOutbox(builder.Configuration, x => x.UseMongo(mongoConnectionString));
-        builder.Services.AddHealthChecks().AddOutbox();
-        return builder;
-    }
-
-    public static IServalBuilder AddOutboxDeliveryService(this IServalBuilder builder)
-    {
-        builder.Services.AddOutbox(x => x.UseDeliveryService());
-        return builder;
-    }
 }

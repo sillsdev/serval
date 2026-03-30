@@ -7,10 +7,7 @@ public class ServiceUnavailableExceptionFilter(ILoggerFactory loggerFactory) : E
 
     public override void OnException(ExceptionContext context)
     {
-        if (
-            (context.Exception is TimeoutException)
-            || (context.Exception is RpcException rpcEx && rpcEx.StatusCode == StatusCode.Unavailable)
-        )
+        if (context.Exception is TimeoutException)
         {
             _logger.Log(LogLevel.Error, context.Exception, "A user tried to access an unavailable service.");
             context.Result = new StatusCodeResult(StatusCodes.Status503ServiceUnavailable);

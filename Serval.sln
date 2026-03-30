@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Grpc", "src\Serval\src\Serval.Grpc\Serval.Grpc.csproj", "{443D8A33-62F5-4FE0-A972-E32E280E15C8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.ApiServer", "src\Serval\src\Serval.ApiServer\Serval.ApiServer.csproj", "{7FAE5F93-C1BA-4280-8086-7E6207FE335E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serval.Client", "src\Serval\src\Serval.Client\Serval.Client.csproj", "{EF43AA91-4FA2-4F96-8EEB-C1D03943FD2B}"
@@ -114,18 +112,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Debug|x64.Build.0 = Debug|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Debug|x86.Build.0 = Debug|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Release|x64.ActiveCfg = Release|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Release|x64.Build.0 = Release|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Release|x86.ActiveCfg = Release|Any CPU
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8}.Release|x86.Build.0 = Release|Any CPU
 		{7FAE5F93-C1BA-4280-8086-7E6207FE335E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7FAE5F93-C1BA-4280-8086-7E6207FE335E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FAE5F93-C1BA-4280-8086-7E6207FE335E}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -463,7 +449,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{443D8A33-62F5-4FE0-A972-E32E280E15C8} = {25CDB05B-4E24-4A6E-933E-1E0BEC97D74D}
 		{7FAE5F93-C1BA-4280-8086-7E6207FE335E} = {25CDB05B-4E24-4A6E-933E-1E0BEC97D74D}
 		{EF43AA91-4FA2-4F96-8EEB-C1D03943FD2B} = {25CDB05B-4E24-4A6E-933E-1E0BEC97D74D}
 		{C5F942A3-8534-43FD-A75C-0160624FD456} = {92805246-5285-4F0A-9BF8-6EE4A027A41B}

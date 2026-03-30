@@ -6,10 +6,7 @@ public class OperationCancelledExceptionFilter(ILoggerFactory loggerFactory) : E
 
     public override void OnException(ExceptionContext context)
     {
-        if (
-            context.Exception is OperationCanceledException
-            || context.Exception is RpcException rpcEx && rpcEx.StatusCode == StatusCode.Cancelled
-        )
+        if (context.Exception is OperationCanceledException)
         {
             _logger.LogInformation(
                 "Request {RequestMethod}:{RequestPath} was cancelled",
