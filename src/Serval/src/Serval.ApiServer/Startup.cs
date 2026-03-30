@@ -82,8 +82,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 cfg.AddDataFilesRepositories();
                 cfg.AddWebhooksRepositories();
             })
-            .AddMongoOutbox()
-            .AddOutboxDeliveryService()
             .AddTranslation()
             .AddWordAlignment()
             .AddDataFiles()
@@ -187,7 +185,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                     builder
                         .AddAspNetCoreInstrumentation()
                         .AddHttpClientInstrumentation()
-                        .AddGrpcClientInstrumentation()
                         .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
                         .AddConsoleExporter();
                 });
