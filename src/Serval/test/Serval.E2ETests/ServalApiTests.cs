@@ -214,8 +214,9 @@ public class ServalApiTests
         Assert.That(ms.Length, Is.GreaterThan(1_000_000));
     }
 
-    [Test]
-    public async Task Nmt_Paratext()
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task Nmt_Paratext(bool withAdditionalFiles)
     {
         const string SourceLanguageCode = "en";
         const string TargetLanguageCode = "sbp";
@@ -246,6 +247,20 @@ public class ServalApiTests
                 ],
             },
         ];
+
+        if (withAdditionalFiles)
+        {
+            ParallelCorpusConfig textCorpus = await _helperClient.MakeParallelTextCorpus(
+                ["1JN.txt"],
+                "es",
+                "en",
+                false
+            );
+            string textCorpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, textCorpus, false);
+            _helperClient.TranslationBuildConfig.TrainOn.Add(
+                new TrainingCorpusConfig() { ParallelCorpusId = textCorpusId }
+            );
+        }
 
         _helperClient.TranslationBuildConfig.Pretranslate =
         [
