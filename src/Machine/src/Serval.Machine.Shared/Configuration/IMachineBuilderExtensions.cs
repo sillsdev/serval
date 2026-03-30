@@ -268,22 +268,6 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddMongoOutbox(this IMachineBuilder builder)
-    {
-        string? connectionString = builder.Configuration.GetConnectionString("Mongo");
-        if (connectionString is null)
-            throw new InvalidOperationException("Mongo connection string is required");
-        builder.Services.AddOutbox(builder.Configuration, x => x.UseMongo(connectionString));
-        builder.Services.AddHealthChecks().AddOutbox();
-        return builder;
-    }
-
-    public static IMachineBuilder AddMessageOutboxDeliveryService(this IMachineBuilder builder)
-    {
-        builder.Services.AddOutbox(x => x.UseDeliveryService());
-        return builder;
-    }
-
     public static IMachineBuilder AddServalTranslationPlatformService(this IMachineBuilder builder)
     {
         builder.Services.AddKeyedScoped<IPlatformService, ServalTranslationPlatformService>(EngineGroup.Translation);

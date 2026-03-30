@@ -14,25 +14,6 @@ public static class IServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddOutbox(this IServiceCollection services, Action<IOutboxConfigurator> configure)
-    {
-        services.TryAddScoped<IOutboxService, OutboxService>();
-        configure(new OutboxConfigurator(services));
-        return services;
-    }
-
-    public static IServiceCollection AddOutbox(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        Action<IOutboxConfigurator> configure
-    )
-    {
-        services.Configure<OutboxOptions>(configuration.GetSection(OutboxOptions.Key));
-        services.TryAddScoped<IOutboxService, OutboxService>();
-        configure(new OutboxConfigurator(services));
-        return services;
-    }
-
     public static IServiceCollection AddDiagnostics(this IServiceCollection services) =>
         services.AddHostedService<DiagnosticService>();
 }

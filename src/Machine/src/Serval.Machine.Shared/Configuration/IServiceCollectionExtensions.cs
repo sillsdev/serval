@@ -38,7 +38,6 @@ public static class IServiceCollectionExtensions
         builder.AddMongoDataAccess();
         builder.AddMongoHangfireJobClient();
         builder.AddClearMLService();
-        builder.AddMongoOutbox();
 
         return builder;
     }
