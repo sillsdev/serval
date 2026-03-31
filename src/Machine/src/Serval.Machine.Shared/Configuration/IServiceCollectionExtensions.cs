@@ -12,17 +12,12 @@ public static class IServiceCollectionExtensions
         services.AddHealthChecks().AddCheck<S3HealthCheck>("S3 Bucket");
 
         services.AddSingleton<ILanguageTagService, LanguageTagService>();
-        services.AddFileSystem();
 
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
         services.AddStartupTask(
             (sp, cancellationToken) =>
                 sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
         );
-        services.AddParallelCorpusService();
-        services.Configure<Bugsnag.Configuration>(configuration.GetSection("Bugsnag"));
-        services.AddBugsnag();
-        services.AddDiagnostics();
 
         var builder = new MachineBuilder(services, configuration);
 

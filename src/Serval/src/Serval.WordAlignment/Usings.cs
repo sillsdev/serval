@@ -26,5 +26,3 @@ global using Serval.WordAlignment.Dtos;
 global using Serval.WordAlignment.Models;
 global using Serval.WordAlignment.Services;
 global using SIL.DataAccess;
-global using SIL.ServiceToolkit.Services;
-global using SIL.ServiceToolkit.Utils;

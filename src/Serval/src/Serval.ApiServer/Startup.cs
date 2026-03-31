@@ -73,19 +73,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
         services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
 
-        services
-            .AddServal(Configuration)
-            .AddMongoDataAccess(cfg =>
-            {
-                cfg.AddTranslationRepositories();
-                cfg.AddWordAlignmentRepositories();
-                cfg.AddDataFilesRepositories();
-                cfg.AddWebhooksRepositories();
-            })
-            .AddTranslation()
-            .AddWordAlignment()
-            .AddDataFiles()
-            .AddWebhooks();
+        services.AddServal(Configuration).AddTranslation().AddWordAlignment().AddDataFiles().AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
 
         services.AddHangfire(c =>
@@ -107,6 +95,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 )
         );
         services.AddHangfireServer();
+        services.AddHealthChecks().AddCheck<HangfireHealthCheck>("Hangfire");
 
         services
             .AddApiVersioning(o =>
@@ -197,7 +186,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         }
         services.Configure<Bugsnag.Configuration>(Configuration.GetSection("Bugsnag"));
         services.AddBugsnag();
-        services.AddDiagnostics();
+        services.AddHostedService<DiagnosticService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

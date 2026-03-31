@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
@@ -51,7 +51,6 @@
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
 		<ProjectReference Include="..\..\..\Serval\src\Serval.Translation.Contracts\Serval.Translation.Contracts.csproj" />
 		<ProjectReference Include="..\..\..\Serval\src\Serval.WordAlignment.Contracts\Serval.WordAlignment.Contracts.csproj" />
-		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
 		<EmbeddedResource Include="data\flores200languages.csv" />
 	</ItemGroup>
 

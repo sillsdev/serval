@@ -2,22 +2,17 @@
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddMemoryDataAccess(
-        this IServiceCollection services,
-        Action<IMemoryDataAccessConfigurator> configure
-    )
+    public static IMemoryDataAccessBuilder AddMemoryDataAccess(this IServiceCollection services)
     {
         services.TryAddTransient<SIL.DataAccess.IIdGenerator, ObjectIdGenerator>();
         services.TryAddScoped<IDataAccessContext, MemoryDataAccessContext>();
-        configure(new MemoryDataAccessConfigurator(services));
-        return services;
+        return new MemoryDataAccessBuilder(services);
     }
 
-    public static IServiceCollection AddMongoDataAccess(
+    public static IMongoDataAccessBuilder AddMongoDataAccess(
         this IServiceCollection services,
         string connectionString,
-        string entityNamespace,
-        Action<IMongoDataAccessConfigurator> configure
+        string entityNamespace
     )
     {
         DataAccessClassMap.RegisterConventions(
@@ -56,7 +51,7 @@ public static class IServiceCollectionExtensions
         services.TryAddScoped<IMongoDataAccessContext, MongoDataAccessContext>();
         services.TryAddScoped<IDataAccessContext>(sp => sp.GetRequiredService<IMongoDataAccessContext>());
         services.AddHostedService<MongoDataAccessInitializeService>();
-        var configurator = new MongoDataAccessConfigurator(services);
+        return new MongoDataAccessBuilder(services);
 
         // Configure the schema_versions repository
         configurator.AddRepository<SchemaVersion>(
@@ -73,6 +68,5 @@ public static class IServiceCollectionExtensions
         );
 
         configure(configurator);
-        return services;
     }
 }

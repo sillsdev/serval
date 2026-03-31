@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
-namespace Serval.Shared.Configuration;
-
-public class ServalBuilder(IServiceCollection services, IConfiguration configuration) : IServalBuilder
+internal class ServalBuilder(
+    IServiceCollection services,
+    IConfiguration configuration,
+    IMongoDataAccessBuilder dataAccess
+) : IServalBuilder
 {
     public IServiceCollection Services { get; } = services;
     public IConfiguration Configuration { get; } = configuration;
+    public IMongoDataAccessBuilder DataAccess { get; } = dataAccess;
 }

@@ -17,7 +17,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
 		<ProjectReference Include="..\Serval.DataFiles.Contracts\Serval.DataFiles.Contracts.csproj" />
 		<ProjectReference Include="..\Serval.Shared\Serval.Shared.csproj" />
 		<ProjectReference Include="..\Serval.Translation.Contracts\Serval.Translation.Contracts.csproj" />

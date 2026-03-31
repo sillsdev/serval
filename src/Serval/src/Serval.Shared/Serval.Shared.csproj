@@ -16,14 +16,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
-		<PackageReference Include="SIL.Machine" Version="3.8.1" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 		<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="4.4.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess\SIL.DataAccess.csproj" />
-		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
-		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+		<ProjectReference Include="..\Serval.Shared.Contracts\Serval.Shared.Contracts.csproj" />
 	</ItemGroup>
 
 </Project>
