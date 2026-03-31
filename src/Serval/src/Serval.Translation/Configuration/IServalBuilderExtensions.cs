@@ -1,20 +1,109 @@
+using MongoDB.Bson;
+using MongoDB.Driver;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
 {
     public static IServalBuilder AddTranslation(this IServalBuilder builder)
     {
-        builder.AddApiOptions(builder.Configuration.GetSection(ApiOptions.Key));
-        builder.AddDataFileOptions(builder.Configuration.GetSection(DataFileOptions.Key));
-
-        builder.Services.AddParallelCorpusService();
-
         builder.Services.AddScoped<IBuildService, BuildService>();
         builder.Services.AddScoped<ICorpusMappingService, CorpusMappingService>();
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
 
         builder.Services.Configure<TranslationOptions>(builder.Configuration.GetSection(TranslationOptions.Key));
+
+        builder.DataAccess.AddRepository<Engine>(
+            "translation.engines",
+            init: async c =>
+            {
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.DateCreated))
+                );
+                // migrate to new ParallelCorpora scheme by adding ParallelCorpora to existing engines
+                await c.UpdateManyAsync(
+                    Builders<Engine>.Filter.Exists(e => e.ParallelCorpora, false),
+                    Builders<Engine>.Update.Set(e => e.ParallelCorpora, new List<ParallelCorpus>())
+                );
+            }
+        );
+        builder.DataAccess.AddRepository<Build>(
+            "translation.builds",
+            init: static async c =>
+            {
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.Owner))
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.DateCreated))
+                );
+                // migrate by adding ExecutionData field
+                await c.UpdateManyAsync(
+                    Builders<Build>.Filter.Exists(b => b.ExecutionData, false),
+                    Builders<Build>.Update.Set(b => b.ExecutionData, new ExecutionData())
+                );
+                // migrate the percentCompleted field to the progress field
+                await c.UpdateManyAsync(
+                    Builders<Build>.Filter.And(
+                        Builders<Build>.Filter.Exists("percentCompleted"),
+                        Builders<Build>.Filter.Exists(b => b.Progress, false)
+                    ),
+                    new BsonDocument("$rename", new BsonDocument("percentCompleted", "progress"))
+                );
+                // migrate by duplicating the owner field from build
+                await c.Aggregate()
+                    .Match(Builders<Build>.Filter.Exists(b => b.Owner, false))
+                    .Lookup("translation.engines", "engineRef", "_id", "engine")
+                    .Unwind("engine", new AggregateUnwindOptions<BsonDocument> { PreserveNullAndEmptyArrays = true })
+                    .AppendStage<BsonDocument>(new BsonDocument("$set", new BsonDocument("owner", "$engine.owner")))
+                    .AppendStage<BsonDocument>(new BsonDocument("$unset", "engine"))
+                    .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
+                    .ToListAsync();
+                await MongoMigrations.MigrateTargetQuoteConvention(c);
+            }
+        );
+        builder.DataAccess.AddRepository<Pretranslation>(
+            "translation.pretranslations",
+            init: async c =>
+            {
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.ModelRevision)
+                    )
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.CorpusRef)
+                    )
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId))
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>
+                            .IndexKeys.Ascending(pt => pt.EngineRef)
+                            .Ascending(pt => pt.ModelRevision)
+                    )
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>
+                            .IndexKeys.Ascending(pt => pt.EngineRef)
+                            .Ascending(pt => pt.CorpusRef)
+                            .Ascending(pt => pt.ModelRevision)
+                            .Ascending(pt => pt.TextId)
+                    )
+                );
+            }
+        );
 
         return builder;
     }

@@ -28,5 +28,3 @@ global using Serval.Translation.Dtos;
 global using Serval.Translation.Models;
 global using Serval.Translation.Services;
 global using SIL.DataAccess;
-global using SIL.ServiceToolkit.Services;
-global using SIL.ServiceToolkit.Utils;

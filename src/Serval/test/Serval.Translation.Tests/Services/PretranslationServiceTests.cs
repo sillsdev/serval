@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using Serval.Shared.Services;
 using SIL.Machine.Utils;
 
 namespace Serval.Translation.Services;
