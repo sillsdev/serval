@@ -6,10 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Messages\**" />
-    <EmbeddedResource Remove="Messages\**" />
-    <None Remove="Messages\**" />
-  </ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="SIL.Machine" Version="3.8.1" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+	</ItemGroup>
 </Project>

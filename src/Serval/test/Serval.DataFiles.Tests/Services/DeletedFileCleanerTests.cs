@@ -1,4 +1,6 @@
-﻿namespace Serval.DataFiles.Services;
+﻿using Serval.Shared.Services;
+
+namespace Serval.DataFiles.Services;
 
 [TestFixture]
 public class DeletedFileCleanerTests

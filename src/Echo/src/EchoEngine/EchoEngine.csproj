@@ -20,7 +20,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Serval\src\Serval.Translation.Contracts\Serval.Translation.Contracts.csproj" />
 		<ProjectReference Include="..\..\..\Serval\src\Serval.WordAlignment.Contracts\Serval.WordAlignment.Contracts.csproj" />
-		<ProjectReference Include="..\..\..\ServiceToolkit\src\SIL.ServiceToolkit\SIL.ServiceToolkit.csproj" />
 	</ItemGroup>
 
 </Project>

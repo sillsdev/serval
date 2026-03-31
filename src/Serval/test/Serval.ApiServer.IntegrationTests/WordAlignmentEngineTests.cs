@@ -1,9 +1,9 @@
 using Google.Protobuf.WellKnownTypes;
 using Serval.Shared.Contracts;
+using Serval.Shared.Services;
 using Serval.WordAlignment.Models;
 using Serval.WordAlignment.V1;
 using SIL.ServiceToolkit.Models;
-using SIL.ServiceToolkit.Services;
 using static Serval.ApiServer.Utils;
 using Phase = Serval.Client.Phase;
 using PhaseStage = Serval.Client.PhaseStage;
