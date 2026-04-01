@@ -1,5 +1,3 @@
-using Serval.Webhooks.Models;
-
 namespace Serval.ApiServer;
 
 [TestFixture]
@@ -15,7 +13,7 @@ public class WebhooksTests
     public async Task Setup()
     {
         _env = new TestEnvironment();
-        var webhook = new Webhooks.Contracts.Webhook
+        var webhook = new Webhooks.Models.Webhook
         {
             Id = ID,
             Owner = "client1",

@@ -2,7 +2,7 @@
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
-public class DtoMapper(IUrlService urlService) : IDtoMapper
+public class DtoMapper(IUrlService urlService)
 {
     private readonly IUrlService _urlService = urlService;
 
@@ -135,7 +135,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
             ScriptureRange = source.ScriptureRange,
         };
 
-    private static BuildPhaseDto Map(BuildPhase source) =>
+    private static PhaseDto Map(Phase source) =>
         new()
         {
             Stage = source.Stage,

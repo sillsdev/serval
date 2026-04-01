@@ -9,6 +9,7 @@
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+		<RootNamespace>Serval.Webhooks</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

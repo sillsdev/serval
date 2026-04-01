@@ -26,10 +26,12 @@ public class TranslationBuildsController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<IEnumerable<TranslationBuildDto>> GetAllBuildsCreatedAfterAsync(
         [FromQuery(Name = "created-after")] DateTime? createdAfter,
-        [FromServices] IDtoMapper mapper,
+        [FromServices] DtoMapper mapper,
         CancellationToken cancellationToken
     )
     {
+        if (createdAfter is not null)
+            createdAfter = DateTime.SpecifyKind(createdAfter.Value, DateTimeKind.Utc);
         IEnumerable<Build> builds;
         if (createdAfter is null)
         {
@@ -66,7 +68,7 @@ public class TranslationBuildsController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationBuildDto>> GetNextFinishedBuildAsync(
         [FromQuery(Name = "finished-after")] DateTime finishedAfter,
-        [FromServices] IDtoMapper mapper,
+        [FromServices] DtoMapper mapper,
         CancellationToken cancellationToken
     )
     {

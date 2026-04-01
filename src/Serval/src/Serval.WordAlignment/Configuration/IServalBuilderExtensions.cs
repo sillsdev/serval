@@ -10,8 +10,6 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
         builder.Services.AddScoped<IWordAlignmentPlatformService, PlatformService>();
 
-        builder.Services.Configure<WordAlignmentOptions>(builder.Configuration.GetSection(WordAlignmentOptions.Key));
-
         builder.AddMongoDataAccess();
 
         builder.AddHandlers(Assembly.GetExecutingAssembly());

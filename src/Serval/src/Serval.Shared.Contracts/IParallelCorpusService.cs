@@ -23,4 +23,10 @@ public interface IParallelCorpusService
         bool useKeyTerms = false,
         HashSet<string>? ignoreUsfmMarkers = null
     );
+
+    Dictionary<string, List<int>> GetChapters(
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
+        string fileLocation,
+        string scriptureRange
+    );
 }

@@ -228,7 +228,7 @@ public class PlatformService(
         string buildId,
         BuildProgressStatusContract progressStatus,
         int? queueDepth = null,
-        IReadOnlyCollection<BuildPhaseContract>? phases = null,
+        IReadOnlyCollection<PhaseContract>? phases = null,
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default
@@ -255,7 +255,7 @@ public class PlatformService(
                     u.Set(
                         b => b.Phases,
                         [
-                            .. phases.Select(p => new BuildPhase
+                            .. phases.Select(p => new Phase
                             {
                                 Stage = p.Stage,
                                 Step = p.Step,

@@ -16,7 +16,7 @@ public interface ITranslationPlatformService
         string buildId,
         BuildProgressStatusContract progressStatus,
         int? queueDepth = null,
-        IReadOnlyCollection<BuildPhaseContract>? phases = null,
+        IReadOnlyCollection<PhaseContract>? phases = null,
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default

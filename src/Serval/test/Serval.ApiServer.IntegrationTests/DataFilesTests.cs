@@ -1,5 +1,3 @@
-using Serval.Shared.Contracts;
-
 namespace Serval.ApiServer;
 
 [TestFixture]
@@ -142,7 +140,7 @@ public class DataFilesTests
                     fp = new FileParameter(fs);
                     ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                     {
-                        await client.CreateAsync(fp, FileFormat.Text);
+                        await client.CreateAsync(fp, Client.FileFormat.Text);
                     });
                     Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 }

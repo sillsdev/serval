@@ -35,7 +35,7 @@ public record TranslationBuildDto
     public object? Options { get; init; }
     public string? DeploymentVersion { get; init; }
     public required ExecutionDataDto ExecutionData { get; init; }
-    public IReadOnlyList<BuildPhaseDto>? Phases { get; init; }
+    public IReadOnlyList<PhaseDto>? Phases { get; init; }
 
     [Obsolete]
     public IReadOnlyList<ParallelCorpusAnalysisDto>? Analysis { get; init; }

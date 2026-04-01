@@ -28,7 +28,7 @@ public record TranslateResponse(
 public class TranslateHandler(IRepository<Engine> engines, IEngineServiceFactory engineServiceFactory)
     : IRequestHandler<Translate, TranslateResponse>
 {
-    public async Task<TranslateResponse> HandleAsync(Translate request, CancellationToken cancellationToken)
+    public async Task<TranslateResponse> HandleAsync(Translate request, CancellationToken cancellationToken = default)
     {
         Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
         if (engine is null)

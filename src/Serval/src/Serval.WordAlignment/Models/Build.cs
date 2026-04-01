@@ -20,5 +20,5 @@ public record Build : IEntity
     public DateTime? DateCreated { get; set; }
     public DateTime? DateStarted { get; set; }
     public DateTime? DateCompleted { get; set; }
-    public IReadOnlyList<BuildPhase>? Phases { get; init; }
+    public IReadOnlyList<Phase>? Phases { get; init; }
 }

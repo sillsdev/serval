@@ -1,5 +1,5 @@
 using Serval.Shared.Contracts;
-using WordAlignmentResult = Serval.WordAlignment.V1.WordAlignmentResult;
+using Serval.WordAlignment.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -15,7 +15,7 @@ public class StatisticalEngineServiceTests
     public async Task CreateAsync()
     {
         using var env = new TestEnvironment();
-        await env.Service.CreateAsync(EngineId2, "Engine 2", "es", "en");
+        await env.Service.CreateAsync(EngineId2, "es", "en", "Engine 2");
         WordAlignmentEngine? engine = await env.Engines.GetAsync(e => e.EngineId == EngineId2);
         Assert.Multiple(() =>
         {
@@ -39,7 +39,6 @@ public class StatisticalEngineServiceTests
         await env.Service.StartBuildAsync(
             EngineId1,
             BuildId1,
-            null,
             [
                 new ParallelCorpusContract()
                 {
@@ -89,7 +88,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -116,7 +115,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -132,10 +131,14 @@ public class StatisticalEngineServiceTests
     public async Task AlignAsync()
     {
         using var env = new TestEnvironment();
-        WordAlignmentResult result = await env.Service.AlignAsync(EngineId1, "esto es una prueba.", "this is a test.");
+        WordAlignmentResultContract result = await env.Service.AlignAsync(
+            EngineId1,
+            "esto es una prueba.",
+            "this is a test."
+        );
         Assert.That(string.Join(' ', result.TargetTokens), Is.EqualTo("this is a test ."));
-        Assert.That(result.Alignment.First().SourceIndex, Is.EqualTo(0));
-        Assert.That(result.Alignment.First().TargetIndex, Is.EqualTo(0));
+        Assert.That(result.Alignment[0].SourceIndex, Is.EqualTo(0));
+        Assert.That(result.Alignment[0].TargetIndex, Is.EqualTo(0));
     }
 
     private class TestEnvironment : DisposableBase
@@ -458,7 +461,7 @@ public class StatisticalEngineServiceTests
                         Substitute.For<ILogger<WordAlignmentPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
-                        new ParallelCorpusService(),
+                        Substitute.For<IParallelCorpusService>(),
                         _env.BuildJobOptions
                     )
                     {
