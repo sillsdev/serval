@@ -1,5 +1,4 @@
-﻿using CaseExtensions;
-using Serval.Shared.Contracts;
+﻿using Serval.Shared.Contracts;
 using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
@@ -27,8 +26,6 @@ public class NmtEngineService(
     {
         return $"{ModelDirectory}{engineId}_{buildRevision}.tar.gz";
     }
-
-    public string Type => EngineType.Nmt.ToString().ToCamelCase();
 
     private const int MinutesToExpire = 60;
 
@@ -195,12 +192,7 @@ public class NmtEngineService(
     {
         bool isNative = IsLanguageNativeToModel(language, out string internalCode);
         return Task.FromResult(
-            new Translation.Contracts.LanguageInfo
-            {
-                EngineType = Type,
-                IsNative = isNative,
-                InternalCode = internalCode,
-            }
+            new Translation.Contracts.LanguageInfo { IsNative = isNative, InternalCode = internalCode }
         );
     }
 

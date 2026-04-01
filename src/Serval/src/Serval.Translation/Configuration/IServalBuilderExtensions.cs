@@ -1,6 +1,3 @@
-using MongoDB.Bson;
-using MongoDB.Driver;
-
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
@@ -11,10 +8,24 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<ICorpusMappingService, CorpusMappingService>();
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
+        builder.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
+        builder.Services.AddScoped<IDtoMapper, DtoMapper>();
+        builder.Services.AddScoped<ITranslationPlatformService, PlatformService>();
 
         builder.Services.Configure<TranslationOptions>(builder.Configuration.GetSection(TranslationOptions.Key));
 
+        builder.AddMongoDataAccess();
+
+        builder.AddHandlers(Assembly.GetExecutingAssembly());
+
+        return builder;
+    }
+
+    private static IServalBuilder AddMongoDataAccess(this IServalBuilder builder)
+    {
+        string databaseName = builder.GetDatabaseName();
         builder.DataAccess.AddRepository<Engine>(
+            databaseName,
             "translation.engines",
             init: async c =>
             {
@@ -32,6 +43,7 @@ public static class IServalBuilderExtensions
             }
         );
         builder.DataAccess.AddRepository<Build>(
+            databaseName,
             "translation.builds",
             init: static async c =>
             {
@@ -70,6 +82,7 @@ public static class IServalBuilderExtensions
             }
         );
         builder.DataAccess.AddRepository<Pretranslation>(
+            databaseName,
             "translation.pretranslations",
             init: async c =>
             {

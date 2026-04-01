@@ -8,10 +8,12 @@
 
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
 		<PackageReference Include="SIL.Machine" Version="3.8.1" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine\SIL.Machine.csproj')" />
+		<ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess\SIL.DataAccess.csproj" />
 	</ItemGroup>
 </Project>

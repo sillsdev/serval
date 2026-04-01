@@ -22,7 +22,7 @@ public class GetLanguageInfoHandler(IEngineServiceFactory engineServiceFactory)
             return new(
                 new LanguageInfoDto
                 {
-                    EngineType = engineService.Type.ToKebabCase(),
+                    EngineType = request.EngineType.ToKebabCase(),
                     InternalCode = languageInfo.InternalCode,
                     IsNative = languageInfo.IsNative,
                 }
