@@ -24,4 +24,8 @@
 		<PackageReference Include="SIL.Core" Version="17.0.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\SIL.DataAccess.Abstractions\SIL.DataAccess.Abstractions.csproj" />
+	</ItemGroup>
+
 </Project>
