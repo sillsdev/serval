@@ -1,6 +1,4 @@
-﻿using MongoDB.Driver;
-
-namespace Microsoft.Extensions.DependencyInjection;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
 {
@@ -9,7 +7,18 @@ public static class IServalBuilderExtensions
         builder.Services.AddHttpClient<WebhookJob>();
         builder.Services.AddScoped<IWebhookService, WebhookService>();
 
+        builder.AddMongoDataAccess();
+
+        builder.AddHandlers(Assembly.GetExecutingAssembly());
+
+        return builder;
+    }
+
+    private static IServalBuilder AddMongoDataAccess(this IServalBuilder builder)
+    {
+        string databaseName = builder.GetDatabaseName();
         builder.DataAccess.AddRepository<Webhook>(
+            databaseName,
             "webhooks.hooks",
             init: async c =>
             {

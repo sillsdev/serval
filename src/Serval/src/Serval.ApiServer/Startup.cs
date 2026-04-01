@@ -72,9 +72,16 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         });
         services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
         services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
-
-        services.AddServal(Configuration).AddTranslation().AddWordAlignment().AddDataFiles().AddWebhooks();
         services.AddTransient<IUrlService, UrlService>();
+
+        IServalBuilder servalBuilder = services
+            .AddServal(Configuration)
+            .AddTranslation()
+            .AddWordAlignment()
+            .AddDataFiles()
+            .AddWebhooks()
+            .AddMachineEngines()
+            .AddEchoEngines();
 
         services.AddHangfire(c =>
             c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
@@ -94,7 +101,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                     }
                 )
         );
-        services.AddHangfireServer();
+        services.AddHangfireServer(o => o.Queues = [.. servalBuilder.JobQueues]);
         services.AddHealthChecks().AddCheck<HangfireHealthCheck>("Hangfire");
 
         services

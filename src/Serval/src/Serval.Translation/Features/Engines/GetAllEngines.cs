@@ -4,7 +4,7 @@ public record GetAllEngines(string Owner) : IRequest<GetAllEnginesResponse>;
 
 public record GetAllEnginesResponse(IEnumerable<TranslationEngineDto> Engines);
 
-public class GetAllEnginesHandler(IRepository<Engine> engines, IDtoMappingService mapper)
+public class GetAllEnginesHandler(IRepository<Engine> engines, IDtoMapper mapper)
     : IRequestHandler<GetAllEngines, GetAllEnginesResponse>
 {
     public async Task<GetAllEnginesResponse> HandleAsync(GetAllEngines request, CancellationToken cancellationToken)

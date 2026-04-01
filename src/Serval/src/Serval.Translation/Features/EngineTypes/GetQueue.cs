@@ -11,7 +11,7 @@ public class GetQueueHandler(IEngineServiceFactory engineServiceFactory) : IRequ
         if (engineServiceFactory.TryGetEngineService(request.EngineType, out ITranslationEngineService? engineService))
         {
             int size = await engineService.GetQueueSizeAsync(cancellationToken);
-            return new(new QueueDto { EngineType = engineService.Type.ToKebabCase(), Size = size });
+            return new(new QueueDto { EngineType = request.EngineType.ToKebabCase(), Size = size });
         }
         return new();
     }

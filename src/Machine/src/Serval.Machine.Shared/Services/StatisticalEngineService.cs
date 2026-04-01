@@ -1,4 +1,3 @@
-using CaseExtensions;
 using Serval.Shared.Contracts;
 using Serval.WordAlignment.Contracts;
 

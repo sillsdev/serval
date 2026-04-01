@@ -9,6 +9,7 @@ public abstract class HangfireBuildJob<TEngine>(
 ) : HangfireBuildJob<TEngine, object?>(platformService, engines, dataAccessContext, buildJobService, logger)
     where TEngine : ITrainingEngine
 {
+    [AutomaticRetry(Attempts = 0)]
     public virtual Task RunAsync(
         string engineId,
         string buildId,
@@ -35,6 +36,7 @@ public abstract class HangfireBuildJob<TEngine, TData>(
     protected IBuildJobService<TEngine> BuildJobService { get; } = buildJobService;
     protected ILogger<HangfireBuildJob<TEngine, TData>> Logger { get; } = logger;
 
+    [AutomaticRetry(Attempts = 0)]
     public virtual async Task RunAsync(
         string engineId,
         string buildId,

@@ -894,7 +894,7 @@ public partial class TranslationEnginesController(
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<IEnumerable<TranslationBuildDto>>> GetAllBuildsAsync(
         [NotNull] string id,
-        [FromServices] IDtoMappingService mapper,
+        [FromServices] IDtoMapper mapper,
         CancellationToken cancellationToken
     )
     {
@@ -938,7 +938,7 @@ public partial class TranslationEnginesController(
         [NotNull] string buildId,
         [FromQuery(Name = "min-revision")] long? minRevision,
         [OpenApiIgnore] [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
-        [FromServices] IDtoMappingService mapper,
+        [FromServices] IDtoMapper mapper,
         CancellationToken cancellationToken
     )
     {
@@ -996,7 +996,7 @@ public partial class TranslationEnginesController(
         [NotNull] string id,
         [FromQuery(Name = "min-revision")] long? minRevision,
         [OpenApiIgnore] [FromQuery(Name = "minRevision")] long? minRevisionCamelCase,
-        [FromServices] IDtoMappingService mapper,
+        [FromServices] IDtoMapper mapper,
         CancellationToken cancellationToken
     )
     {

@@ -2,7 +2,7 @@
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
-public class DtoMappingService(IUrlService urlService) : IDtoMappingService
+public class DtoMapper(IUrlService urlService) : IDtoMapper
 {
     private readonly IUrlService _urlService = urlService;
 

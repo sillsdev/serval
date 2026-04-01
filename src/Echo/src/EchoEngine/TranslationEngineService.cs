@@ -6,8 +6,6 @@ namespace EchoEngine;
 public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCorpusService parallelCorpusService)
     : ITranslationEngineService
 {
-    public string Type => "echo";
-
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
     private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
@@ -148,14 +146,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
 
     public Task<LanguageInfo> GetLanguageInfoAsync(string language, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(
-            new LanguageInfo
-            {
-                EngineType = Type,
-                InternalCode = language + "_echo",
-                IsNative = true,
-            }
-        );
+        return Task.FromResult(new LanguageInfo { InternalCode = language + "_echo", IsNative = true });
     }
 
     public async Task StartBuildAsync(

@@ -2,8 +2,6 @@ namespace Serval.WordAlignment.Contracts;
 
 public interface IWordAlignmentEngineService
 {
-    string Type { get; }
-
     Task CreateAsync(
         string engineId,
         string sourceLanguage,

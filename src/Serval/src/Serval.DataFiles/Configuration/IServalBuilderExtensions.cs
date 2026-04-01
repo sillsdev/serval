@@ -1,6 +1,4 @@
-﻿using MongoDB.Driver;
-
-namespace Microsoft.Extensions.DependencyInjection;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
 {
@@ -11,7 +9,18 @@ public static class IServalBuilderExtensions
 
         builder.Services.AddScoped<ICorpusService, CorpusService>();
 
+        builder.AddMongoDataAccess();
+
+        builder.AddHandlers(Assembly.GetExecutingAssembly());
+
+        return builder;
+    }
+
+    private static IServalBuilder AddMongoDataAccess(this IServalBuilder builder)
+    {
+        string databaseName = builder.GetDatabaseName();
         builder.DataAccess.AddRepository<DataFile>(
+            databaseName,
             "data_files.files",
             init: c =>
                 c.Indexes.CreateOrUpdateAsync(
@@ -20,6 +29,7 @@ public static class IServalBuilderExtensions
         );
 
         builder.DataAccess.AddRepository<DeletedFile>(
+            databaseName,
             "data_files.deleted_files",
             init: c =>
                 c.Indexes.CreateOrUpdateAsync(
@@ -27,6 +37,7 @@ public static class IServalBuilderExtensions
                 )
         );
         builder.DataAccess.AddRepository<Corpus>(
+            databaseName,
             "corpora.corpus",
             init: async c =>
             {
@@ -40,7 +51,6 @@ public static class IServalBuilderExtensions
                 );
             }
         );
-
         return builder;
     }
 }

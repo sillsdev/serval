@@ -29,7 +29,7 @@ public class StartBuildHandler(
     ICorpusMappingService corpusMappingService,
     IEngineServiceFactory engineFactory,
     ILogger<StartBuildHandler> logger,
-    IDtoMappingService mapper,
+    IDtoMapper mapper,
     IConfiguration configuration
 ) : IRequestHandler<StartBuild, StartBuildResponse>
 {
