@@ -13,6 +13,11 @@
 	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
+	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\..\Serval\src\Serval.Translation.Contracts\Serval.Translation.Contracts.csproj" />
 		<ProjectReference Include="..\..\..\Serval\src\Serval.WordAlignment.Contracts\Serval.WordAlignment.Contracts.csproj" />
 	</ItemGroup>
