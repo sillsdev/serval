@@ -1,4 +1,5 @@
 ﻿using Serval.Shared.Contracts;
+using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -12,7 +13,7 @@ public class NmtEngineServiceTests
         env.PersistModel();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForBuildToFinishAsync();
         engine = env.Engines.Get("engine1");
         Assert.Multiple(() =>
@@ -32,7 +33,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -60,7 +61,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -82,11 +83,11 @@ public class NmtEngineServiceTests
     }
 
     [Test]
-    public void GetLanguageInfo()
+    public async Task GetLanguageInfoAsync()
     {
         using var env = new TestEnvironment();
-        env.Service.IsLanguageNativeToModel("en", out string internalCode);
-        Assert.That(internalCode, Is.EqualTo("eng_Latn"));
+        LanguageInfoContract info = await env.Service.GetLanguageInfoAsync("en");
+        Assert.That(info.InternalCode, Is.EqualTo("eng_Latn"));
     }
 
     private class TestEnvironment : DisposableBase
@@ -122,6 +123,7 @@ public class NmtEngineServiceTests
             _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
             PlatformService.EngineGroup.Returns(EngineGroup.Translation);
+            TranslationPlatformService = Substitute.For<ITranslationPlatformService>();
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
                 new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
@@ -206,6 +208,7 @@ public class NmtEngineServiceTests
         public IClearMLQueueService ClearMLQueueService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public IPlatformService PlatformService { get; }
+        public ITranslationPlatformService TranslationPlatformService { get; }
         public IClearMLService ClearMLService { get; }
         public ISharedFileService SharedFileService { get; }
         public IBuildJobService<TranslationEngine> BuildJobService { get; }
@@ -241,7 +244,7 @@ public class NmtEngineServiceTests
         private NmtEngineService CreateService()
         {
             return new NmtEngineService(
-                PlatformService,
+                TranslationPlatformService,
                 new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
@@ -332,7 +335,7 @@ public class NmtEngineServiceTests
                         _env.BuildJobService,
                         _env.SharedFileService,
                         new LanguageTagService(),
-                        new ParallelCorpusService(),
+                        Substitute.For<IParallelCorpusService>(),
                         _env.BuildJobOptions
                     );
                 }

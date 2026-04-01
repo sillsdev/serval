@@ -1,8 +1,3 @@
-using Serval.Shared.Contracts;
-using Serval.WordAlignment.V1;
-using SIL.ServiceToolkit.Models;
-using ExecutionData = Serval.WordAlignment.Models.ExecutionData;
-
 namespace Serval.WordAlignment.Services;
 
 [TestFixture]
@@ -24,41 +19,35 @@ public class PlatformServiceTests
             }
         );
         await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
-        await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildStartedAsync("b0");
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Active));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.True);
 
-        await env.PlatformService.BuildCanceled(new BuildCanceledRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildCanceledAsync("b0");
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Canceled));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        await env.PlatformService.BuildRestarting(
-            new BuildRestartingRequest() { BuildId = "b0" },
-            env.ServerCallContext
-        );
+        await env.PlatformService.BuildRestartingAsync("b0");
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Pending));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         Assert.That(env.WordAlignments.Count, Is.EqualTo(0));
-        await env.PlatformService.InsertWordAlignments(new MockAsyncStreamReader("e0"), env.ServerCallContext);
+        await env.PlatformService.InsertWordAlignmentsAsync("e0", GetTestWordAlignments());
         Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
 
-        await env.PlatformService.BuildFaulted(new BuildFaultedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildFaultedAsync("b0", "Faulted");
         Assert.That(env.WordAlignments.Count, Is.EqualTo(0));
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Faulted));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        await env.PlatformService.BuildRestarting(
-            new BuildRestartingRequest() { BuildId = "b0" },
-            env.ServerCallContext
-        );
-        await env.PlatformService.InsertWordAlignments(new MockAsyncStreamReader("e0"), env.ServerCallContext);
+        await env.PlatformService.BuildRestartingAsync("b0");
+        await env.PlatformService.InsertWordAlignmentsAsync("e0", GetTestWordAlignments());
         Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
-        await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
-        await env.PlatformService.BuildStarted(new BuildStartedRequest() { BuildId = "b0" }, env.ServerCallContext);
-        await env.PlatformService.InsertWordAlignments(new MockAsyncStreamReader("e0"), env.ServerCallContext);
-        await env.PlatformService.BuildCompleted(new BuildCompletedRequest() { BuildId = "b0" }, env.ServerCallContext);
+        await env.PlatformService.BuildStartedAsync("b0");
+        await env.PlatformService.InsertWordAlignmentsAsync("e0", GetTestWordAlignments());
+        await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
     }
 
@@ -80,24 +69,25 @@ public class PlatformServiceTests
         await env.Builds.InsertAsync(new Build() { Id = "b0", EngineRef = "e0" });
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.Null);
         Assert.That(env.Builds.Get("b0").Progress, Is.Null);
-        var request = new UpdateBuildStatusRequest
-        {
-            BuildId = "b0",
-            QueueDepth = 1,
-            Progress = 0.5,
-        };
-        request.Phases.Add(
-            new Phase
-            {
-                Stage = PhaseStage.Train,
-                Step = 2,
-                StepCount = 3,
-            }
+
+        await env.PlatformService.BuildStartedAsync("b0");
+        await env.PlatformService.UpdateBuildStatusAsync(
+            "b0",
+            new() { PercentCompleted = 0.5 },
+            queueDepth: 1,
+            phases:
+            [
+                new()
+                {
+                    Stage = PhaseStage.Train,
+                    Step = 2,
+                    StepCount = 3,
+                },
+            ]
         );
-        await env.PlatformService.UpdateBuildStatus(request, env.ServerCallContext);
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.EqualTo(1));
         Assert.That(env.Builds.Get("b0").Progress, Is.EqualTo(0.5));
-        Assert.That(env.Builds.Get("b0").Phases![0].Stage, Is.EqualTo(BuildPhaseStage.Train));
+        Assert.That(env.Builds.Get("b0").Phases![0].Stage, Is.EqualTo(PhaseStage.Train));
         Assert.That(env.Builds.Get("b0").Phases![0].Step, Is.EqualTo(2));
         Assert.That(env.Builds.Get("b0").Phases![0].StepCount, Is.EqualTo(3));
     }
@@ -122,25 +112,22 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            ExecutionData = new ExecutionData { TrainCount = 0, WordAlignCount = 0 },
+            ExecutionData = new() { TrainCount = 0, WordAlignCount = 0 },
         };
         await env.Builds.InsertAsync(build);
 
         Assert.That(build.ExecutionData, Is.Not.Null);
 
-        var executionData = build.ExecutionData;
+        ExecutionData? executionData = build.ExecutionData;
 
         Assert.That(executionData.TrainCount, Is.EqualTo(0));
         Assert.That(executionData.WordAlignCount, Is.EqualTo(0));
 
-        var updateRequest = new UpdateBuildExecutionDataRequest()
-        {
-            BuildId = "123",
-            EngineId = engine.Id,
-            ExecutionData = new V1.ExecutionData { TrainCount = 4, WordAlignCount = 5 },
-        };
-
-        await env.PlatformService.UpdateBuildExecutionData(updateRequest, env.ServerCallContext);
+        await env.PlatformService.UpdateBuildExecutionDataAsync(
+            engine.Id,
+            build.Id,
+            new() { TrainCount = 4, WordAlignCount = 5 }
+        );
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
@@ -167,11 +154,23 @@ public class PlatformServiceTests
             }
         );
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(0));
-        await env.PlatformService.IncrementEngineCorpusSize(
-            new IncrementEngineCorpusSizeRequest() { EngineId = "e0", Count = 1 },
-            env.ServerCallContext
-        );
+        await env.PlatformService.IncrementEngineCorpusSizeAsync("e0", 1);
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(1));
+    }
+
+    private static async IAsyncEnumerable<WordAlignmentContract> GetTestWordAlignments()
+    {
+        yield return new()
+        {
+            CorpusId = "corpus1",
+            TextId = "text1",
+            SourceRefs = ["ref1"],
+            TargetRefs = ["ref1"],
+            SourceTokens = ["esto"],
+            TargetTokens = ["this"],
+            Alignment = [new() { SourceIndex = 0, TargetIndex = 0 }],
+        };
+        await Task.CompletedTask;
     }
 
     private class TestEnvironment
@@ -182,8 +181,7 @@ public class PlatformServiceTests
             Engines = new MemoryRepository<Engine>();
             WordAlignments = new MemoryRepository<Models.WordAlignment>();
             DataAccessContext = Substitute.For<IDataAccessContext>();
-            PublishEndpoint = Substitute.For<IPublishEndpoint>();
-            ServerCallContext = Substitute.For<ServerCallContext>();
+            EventRouter = Substitute.For<IEventRouter>();
 
             DataAccessContext
                 .WithTransactionAsync(Arg.Any<Func<CancellationToken, Task>>(), Arg.Any<CancellationToken>())
@@ -198,36 +196,14 @@ public class PlatformServiceTests
                     return ((Func<CancellationToken, Task>)x[0])((CancellationToken)x[1]);
                 });
 
-            PlatformService = new WordAlignmentPlatformServiceV1(
-                Builds,
-                Engines,
-                WordAlignments,
-                DataAccessContext,
-                PublishEndpoint
-            );
+            PlatformService = new PlatformService(Builds, Engines, WordAlignments, DataAccessContext, EventRouter);
         }
 
         public MemoryRepository<Build> Builds { get; }
         public MemoryRepository<Engine> Engines { get; }
         public MemoryRepository<Models.WordAlignment> WordAlignments { get; }
         public IDataAccessContext DataAccessContext { get; }
-        public IPublishEndpoint PublishEndpoint { get; }
-        public ServerCallContext ServerCallContext { get; }
-        public WordAlignmentPlatformServiceV1 PlatformService { get; }
-    }
-
-    private class MockAsyncStreamReader(string engineId) : IAsyncStreamReader<InsertWordAlignmentsRequest>
-    {
-        private bool _endOfStream = false;
-
-        public string EngineId { get; } = engineId;
-        public InsertWordAlignmentsRequest Current => new() { EngineId = EngineId };
-
-        public Task<bool> MoveNext(CancellationToken cancellationToken)
-        {
-            var ret = Task.FromResult(!_endOfStream);
-            _endOfStream = true;
-            return ret;
-        }
+        public IEventRouter EventRouter { get; }
+        public PlatformService PlatformService { get; }
     }
 }

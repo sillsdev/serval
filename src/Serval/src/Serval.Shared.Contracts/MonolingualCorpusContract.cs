@@ -9,8 +9,6 @@ public record MonolingualCorpusContract
     public Dictionary<string, HashSet<int>>? TrainOnChapters { get; set; }
     public HashSet<string>? InferenceTextIds { get; set; }
     public Dictionary<string, HashSet<int>>? InferenceChapters { get; set; }
-    public bool TrainOnAll { get; set; }
-    public bool PretranslateAll { get; set; }
 
     public bool IsFiltered =>
         TrainOnTextIds != null || TrainOnChapters != null || InferenceTextIds != null || InferenceChapters != null;

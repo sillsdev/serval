@@ -14,7 +14,10 @@ public record TrainSegmentResponse(bool IsAvailable);
 public class TrainSegmentHandler(IRepository<Engine> engines, IEngineServiceFactory engineServiceFactory)
     : IRequestHandler<TrainSegment, TrainSegmentResponse>
 {
-    public async Task<TrainSegmentResponse> HandleAsync(TrainSegment request, CancellationToken cancellationToken)
+    public async Task<TrainSegmentResponse> HandleAsync(
+        TrainSegment request,
+        CancellationToken cancellationToken = default
+    )
     {
         Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
         if (engine is null)

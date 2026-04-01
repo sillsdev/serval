@@ -30,9 +30,7 @@ public class WordAlignmentEngineTypesController(IAuthorizationService authServic
     {
         try
         {
-            return Map(
-                await _engineService.GetQueueAsync(engineType.ToPascalCase(), cancellationToken: cancellationToken)
-            );
+            return Map(await _engineService.GetQueueAsync(engineType, cancellationToken: cancellationToken));
         }
         catch (InvalidOperationException ioe)
         {
@@ -40,6 +38,6 @@ public class WordAlignmentEngineTypesController(IAuthorizationService authServic
         }
     }
 
-    private static QueueDto Map(QueueContract source) =>
+    private static QueueDto Map(Queue source) =>
         new() { Size = source.Size, EngineType = source.EngineType.ToKebabCase() };
 }

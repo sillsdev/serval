@@ -1,12 +1,5 @@
-using Google.Protobuf.WellKnownTypes;
-using Serval.Shared.Contracts;
-using Serval.Shared.Services;
+using Serval.WordAlignment.Contracts;
 using Serval.WordAlignment.Models;
-using Serval.WordAlignment.V1;
-using SIL.ServiceToolkit.Models;
-using static Serval.ApiServer.Utils;
-using Phase = Serval.Client.Phase;
-using PhaseStage = Serval.Client.PhaseStage;
 
 namespace Serval.ApiServer;
 
@@ -365,7 +358,7 @@ public class WordAlignmentEngineTests
         404,
         DOES_NOT_EXIST_ENGINE_ID
     )]
-    [TestCase(new[] { Scopes.ReadWordAlignmentEngines, Scopes.UpdateWordAlignmentEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadWordAlignmentEngines, Scopes.UpdateWordAlignmentEngines }, 409, ECHO_ENGINE2_ID)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task GetWordAlignmentForSegmentPairWithEngineByIdAsync(
         IEnumerable<string> scope,
@@ -389,13 +382,6 @@ public class WordAlignmentEngineTests
                 break;
             case 409:
             {
-                _env.EchoClient.GetWordAlignmentAsync(
-                        Arg.Any<GetWordAlignmentRequest>(),
-                        null,
-                        null,
-                        Arg.Any<CancellationToken>()
-                    )
-                    .Returns(CreateAsyncUnaryCall<GetWordAlignmentResponse>(StatusCode.FailedPrecondition));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.AlignAsync(
@@ -903,7 +889,7 @@ public class WordAlignmentEngineTests
                 {
                     Assert.That(results.First().Revision, Is.EqualTo(1));
                     Assert.That(results.First().Id, Is.EqualTo(build?.Id));
-                    Assert.That(results.First().State, Is.EqualTo(JobState.Pending));
+                    Assert.That(results.First().State, Is.EqualTo(Client.JobState.Pending));
                 });
                 break;
             case 403:
@@ -950,7 +936,7 @@ public class WordAlignmentEngineTests
                 {
                     Assert.That(result.Revision, Is.EqualTo(1));
                     Assert.That(result.Id, Is.EqualTo(build.Id));
-                    Assert.That(result.State, Is.EqualTo(JobState.Pending));
+                    Assert.That(result.State, Is.EqualTo(Client.JobState.Pending));
                 });
                 break;
             }
@@ -1245,9 +1231,9 @@ public class WordAlignmentEngineTests
                 EngineRef = engineId,
                 Phases =
                 [
-                    new BuildPhase
+                    new Shared.Models.Phase
                     {
-                        Stage = BuildPhaseStage.Train,
+                        Stage = Shared.Contracts.PhaseStage.Train,
                         Step = 1,
                         StepCount = 2,
                     },
@@ -1266,9 +1252,9 @@ public class WordAlignmentEngineTests
                 Assert.That(
                     result.Phases![0],
                     Is.EqualTo(
-                            new Phase
+                            new Client.Phase
                             {
-                                Stage = PhaseStage.Train,
+                                Stage = Client.PhaseStage.Train,
                                 Step = 1,
                                 StepCount = 2,
                             }
@@ -1320,13 +1306,6 @@ public class WordAlignmentEngineTests
         string buildId = "b00000000000000000000000";
         if (addBuild)
         {
-            _env.EchoClient.CancelBuildAsync(
-                    Arg.Is(new CancelBuildRequest() { EngineId = engineId, EngineType = "EchoWordAlignment" }),
-                    null,
-                    null,
-                    Arg.Any<CancellationToken>()
-                )
-                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse() { BuildId = buildId }));
             var build = new Build { Id = buildId, EngineRef = engineId };
             await _env.Builds.InsertAsync(build);
         }
@@ -1528,8 +1507,6 @@ public class WordAlignmentEngineTests
         WordAlignmentCorpusConfig wacc = new() { ParallelCorpusId = addedCorpus.Id };
         var tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc] };
         WordAlignmentBuild build = await client.StartBuildAsync(engineId, tbc);
-        _env.StatisticalClient.StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-            .Returns(CreateAsyncUnaryCall<Empty>(StatusCode.FailedPrecondition));
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             build = await client.StartBuildAsync(engineId, tbc);
@@ -1630,12 +1607,12 @@ public class WordAlignmentEngineTests
         _env.Dispose();
     }
 
-    private static IReadOnlyList<WordAlignment.Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
+    private static IReadOnlyList<Serval.Shared.Models.AlignedWordPair> CreateNAlignedWordPair(int numberOfAlignedWords)
     {
-        var alignedWordPairs = new List<WordAlignment.Models.AlignedWordPair>();
+        var alignedWordPairs = new List<Serval.Shared.Models.AlignedWordPair>();
         for (int i = 0; i < numberOfAlignedWords; i++)
         {
-            alignedWordPairs.Add(new WordAlignment.Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
+            alignedWordPairs.Add(new Serval.Shared.Models.AlignedWordPair { SourceIndex = i, TargetIndex = i });
         }
         return alignedWordPairs;
     }
@@ -1660,56 +1637,31 @@ public class WordAlignmentEngineTests
             >();
             Builds = _scope.ServiceProvider.GetRequiredService<IRepository<Build>>();
 
-            EchoClient = Substitute.For<WordAlignmentEngineApi.WordAlignmentEngineApiClient>();
-            EchoClient
-                .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
-            EchoClient
-                .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
-            EchoClient
-                .StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
-            EchoClient
-                .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
-            var wordAlignmentResult = new WordAlignment.V1.WordAlignmentResult
+            var wordAlignmentResult = new WordAlignmentResultContract
             {
-                SourceTokens = { "This is a test .".Split() },
-                TargetTokens = { "This is a test .".Split() },
+                SourceTokens = "This is a test .".Split(),
+                TargetTokens = "This is a test .".Split(),
                 Alignment =
-                {
-                    new WordAlignment.V1.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                    new WordAlignment.V1.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                    new WordAlignment.V1.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
-                    new WordAlignment.V1.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new WordAlignment.V1.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 },
-                },
+                [
+                    new AlignedWordPairContract { SourceIndex = 0, TargetIndex = 0 },
+                    new AlignedWordPairContract { SourceIndex = 1, TargetIndex = 1 },
+                    new AlignedWordPairContract { SourceIndex = 2, TargetIndex = 2 },
+                    new AlignedWordPairContract { SourceIndex = 3, TargetIndex = 3 },
+                    new AlignedWordPairContract { SourceIndex = 4, TargetIndex = 4 },
+                ],
             };
-            var wordAlignmentResponse = new GetWordAlignmentResponse { Result = wordAlignmentResult };
-            EchoClient
-                .GetWordAlignmentAsync(Arg.Any<GetWordAlignmentRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(wordAlignmentResponse));
-            EchoClient
-                .GetQueueSizeAsync(Arg.Any<GetQueueSizeRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new GetQueueSizeResponse() { Size = 0 }));
 
-            StatisticalClient = Substitute.For<WordAlignmentEngineApi.WordAlignmentEngineApiClient>();
-            StatisticalClient
-                .CreateAsync(Arg.Any<CreateRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
-            StatisticalClient
-                .DeleteAsync(Arg.Any<DeleteRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
-            StatisticalClient
-                .StartBuildAsync(Arg.Any<StartBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new Empty()));
-            StatisticalClient
-                .CancelBuildAsync(Arg.Any<CancelBuildRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall(new CancelBuildResponse()));
-            StatisticalClient
-                .GetWordAlignmentAsync(Arg.Any<GetWordAlignmentRequest>(), null, null, Arg.Any<CancellationToken>())
-                .Returns(CreateAsyncUnaryCall<GetWordAlignmentResponse>(StatusCode.Unimplemented));
+            EchoService = Substitute.For<IWordAlignmentEngineService>();
+            EchoService
+                .AlignAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(wordAlignmentResult));
+            EchoService.GetQueueSizeAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+
+            StatisticalService = Substitute.For<IWordAlignmentEngineService>();
+            StatisticalService
+                .AlignAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromException<WordAlignmentResultContract>(new NotSupportedException()));
+            StatisticalService.GetQueueSizeAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
         }
 
         public ServalWebApplicationFactory Factory { get; }
@@ -1718,8 +1670,8 @@ public class WordAlignmentEngineTests
         public IRepository<DataFiles.Models.Corpus> Corpora { get; }
         public IRepository<WordAlignment.Models.WordAlignment> WordAlignments { get; }
         public IRepository<Build> Builds { get; }
-        public WordAlignmentEngineApi.WordAlignmentEngineApiClient EchoClient { get; }
-        public WordAlignmentEngineApi.WordAlignmentEngineApiClient StatisticalClient { get; }
+        public IWordAlignmentEngineService EchoService { get; }
+        public IWordAlignmentEngineService StatisticalService { get; }
 
         public WordAlignmentEnginesClient CreateWordAlignmentEnginesClient(IEnumerable<string>? scope = null)
         {
@@ -1729,20 +1681,19 @@ public class WordAlignmentEngineTests
                 {
                     builder.ConfigureTestServices(services =>
                     {
-                        GrpcClientFactory grpcClientFactory = Substitute.For<GrpcClientFactory>();
-                        grpcClientFactory
-                            .CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>("EchoWordAlignment")
-                            .Returns(EchoClient);
-                        grpcClientFactory
-                            .CreateClient<WordAlignmentEngineApi.WordAlignmentEngineApiClient>("Statistical")
-                            .Returns(StatisticalClient);
-                        services.AddSingleton(grpcClientFactory);
+                        ConfigureEngineServices(services);
                         services.AddTransient(CreateFileSystem);
                     });
                 })
                 .CreateClient();
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new WordAlignmentEnginesClient(httpClient);
+        }
+
+        private void ConfigureEngineServices(IServiceCollection services)
+        {
+            services.AddKeyedScoped("echowordalignment", (_, _) => EchoService);
+            services.AddKeyedScoped("statistical", (_, _) => StatisticalService);
         }
 
         public DataFilesClient CreateDataFilesClient()

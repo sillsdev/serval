@@ -1,8 +1,4 @@
-﻿using System.IO.Compression;
-using Serval.Shared.Services;
-using SIL.Machine.Utils;
-
-namespace Serval.Translation.Services;
+﻿namespace Serval.Translation.Services;
 
 [TestFixture]
 public class PretranslationServiceTests
@@ -279,7 +275,7 @@ public class PretranslationServiceTests
 \v 3 TRG - Chapter one, verse three.
 ";
 
-        List<string> lines = targetUsfm.Split('\n').ToList();
+        List<string> lines = [.. targetUsfm.Split('\n')];
 
         lines.Insert(
             1,
@@ -445,7 +441,7 @@ public class PretranslationServiceTests
     [TestCase(new int[] { 1 }, "1")]
     public void GetChapterRanges(int[] chapterNumbers, string expectedRangeString)
     {
-        string actualRangeString = ParallelCorpusService.GetChapterRangesString(chapterNumbers.ToList());
+        string actualRangeString = PretranslationService.GetChapterRangesString([.. chapterNumbers]);
         Assert.That(actualRangeString, Is.EqualTo(expectedRangeString));
     }
 
@@ -480,14 +476,14 @@ public class PretranslationServiceTests
             {
                 Id = "file1",
                 Filename = "file1.zip",
-                Format = Shared.Contracts.FileFormat.Paratext,
+                Format = FileFormat.Paratext,
                 TextId = "project1",
             };
             CorpusFile file2 = new()
             {
                 Id = "file2",
                 Filename = "file2.zip",
-                Format = Shared.Contracts.FileFormat.Paratext,
+                Format = FileFormat.Paratext,
                 TextId = "project1",
             };
             Engines = new MemoryRepository<Engine>([
@@ -524,24 +520,24 @@ public class PretranslationServiceTests
                         new()
                         {
                             Id = "parallel_corpus1",
-                            SourceCorpora = new List<MonolingualCorpus>()
-                            {
+                            SourceCorpora =
+                            [
                                 new()
                                 {
                                     Id = "src_1",
                                     Language = "en",
                                     Files = [file1],
                                 },
-                            },
-                            TargetCorpora = new List<MonolingualCorpus>()
-                            {
+                            ],
+                            TargetCorpora =
+                            [
                                 new()
                                 {
                                     Id = "trg_1",
                                     Language = "es",
                                     Files = [file2],
                                 },
-                            },
+                            ],
                         },
                     ],
                 },
@@ -671,13 +667,11 @@ public class PretranslationServiceTests
             ]);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions() { FilesDirectory = _tempDir.Path });
-            var parallelCorpusService = new ParallelCorpusService();
             Service = new PretranslationService(
                 Pretranslations,
                 Engines,
                 Builds,
-                new ContractMapper(dataFileOptions, parallelCorpusService),
-                parallelCorpusService
+                new ContractMapper(dataFileOptions, new ParallelCorpusService())
             );
         }
 
@@ -729,7 +723,5 @@ public class PretranslationServiceTests
             Assert.That(parallel_usfm, Is.EqualTo(usfm));
             return usfm;
         }
-                guid: "",
-                translationType: ""
     }
 }

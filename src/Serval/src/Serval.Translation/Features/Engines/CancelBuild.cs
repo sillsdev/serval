@@ -11,7 +11,7 @@ public class CancelBuildHandler(
     IRepository<Engine> engines,
     IRepository<Build> builds,
     IEngineServiceFactory engineServiceFactory,
-    IDtoMapper mapper
+    DtoMapper mapper
 ) : IRequestHandler<CancelBuild, CancelBuildResponse>
 {
     public async Task<CancelBuildResponse> HandleAsync(CancelBuild request, CancellationToken cancellationToken)

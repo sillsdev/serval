@@ -1,8 +1,12 @@
 namespace Serval.Translation.Services;
 
-public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : IContractMapper
+public class ContractMapper(
+    IOptionsMonitor<DataFileOptions> dataFileOptions,
+    IParallelCorpusService parallelCorpusService
+)
 {
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
+    private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
     public IReadOnlyList<ParallelCorpusContract> Map(Build build, Engine engine)
     {
@@ -46,16 +50,16 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
                 Id = source.Id,
                 Language = source.SourceLanguage,
                 Files = source.SourceFiles.Select(Map).ToArray(),
-                TrainOnAll = trainOnAllCorpora,
-                PretranslateAll = pretranslateAllCorpora,
+                TrainOnTextIds = trainOnAllCorpora || trainingCorpus is not null ? null : [],
+                InferenceTextIds = pretranslateAllCorpora || pretranslateCorpus is not null ? null : [],
             };
             MonolingualCorpusContract targetCorpus = new()
             {
                 Id = source.Id,
                 Language = source.TargetLanguage,
                 Files = source.TargetFiles.Select(Map).ToArray(),
-                TrainOnAll = trainOnAllCorpora,
-                PretranslateAll = pretranslateAllCorpora,
+                TrainOnTextIds = trainOnAllCorpora || trainingCorpus is not null ? null : [],
+                InferenceTextIds = pretranslateAllCorpora || pretranslateCorpus is not null ? null : [],
             };
 
             if (trainingCorpus is not null)
@@ -77,8 +81,9 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
                             $"The corpus {source.Id} is not compatible with using a scripture range"
                         );
                     }
-                    var chapters = GetChapters(
-                            corpora.Select(c => Map(c, engine)).ToArray(),
+                    var chapters = _parallelCorpusService
+                        .GetChapters(
+                            [.. corpora.Select(c => Map(c, engine))],
                             GetFilePath(targetCorpus.Files[0].Location),
                             trainingCorpus.ScriptureRange
                         )
@@ -86,8 +91,6 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
                     sourceCorpus.TrainOnChapters = chapters;
                     targetCorpus.TrainOnChapters = chapters;
                 }
-                sourceCorpus.TrainOnAll = sourceCorpus.TrainOnChapters is null && sourceCorpus.TrainOnTextIds is null;
-                targetCorpus.TrainOnAll = targetCorpus.TrainOnChapters is null && targetCorpus.TrainOnTextIds is null;
             }
 
             if (pretranslateCorpus is not null)
@@ -107,17 +110,14 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
                             $"The corpus {source.Id} is not compatible with using a scripture range"
                         );
                     }
-                    sourceCorpus.InferenceChapters = GetChapters(
-                            corpora.Select(c => Map(c, engine)).ToArray(),
+                    sourceCorpus.InferenceChapters = _parallelCorpusService
+                        .GetChapters(
+                            [.. corpora.Select(c => Map(c, engine))],
                             GetFilePath(targetCorpus.Files[0].Location),
                             pretranslateCorpus.ScriptureRange
                         )
                         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
                 }
-                sourceCorpus.PretranslateAll =
-                    sourceCorpus.InferenceChapters is null && sourceCorpus.InferenceTextIds is null;
-                targetCorpus.PretranslateAll =
-                    targetCorpus.InferenceChapters is null && targetCorpus.InferenceTextIds is null;
             }
             ParallelCorpusContract corpus = new()
             {
@@ -215,8 +215,9 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
             && referenceFileLocation is not null
         )
         {
-            trainOnChapters = GetChapters(
-                    parallelCorpora.Select(Map).ToArray(),
+            trainOnChapters = _parallelCorpusService
+                .GetChapters(
+                    [.. parallelCorpora.Select(Map)],
                     GetFilePath(referenceFileLocation),
                     trainingFilter.ScriptureRange
                 )
@@ -230,8 +231,9 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
             && referenceFileLocation is not null
         )
         {
-            pretranslateChapters = GetChapters(
-                    parallelCorpora.Select(Map).ToArray(),
+            pretranslateChapters = _parallelCorpusService
+                .GetChapters(
+                    [.. parallelCorpora.Select(Map)],
                     GetFilePath(referenceFileLocation),
                     pretranslateFilter.ScriptureRange
                 )
@@ -243,8 +245,8 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
             Id = inputCorpus.Id,
             Language = inputCorpus.Language,
             Files = inputCorpus.Files.Select(Map).ToArray(),
-            TrainOnAll = trainOnAll,
-            PretranslateAll = pretranslateAll,
+            TrainOnTextIds = trainOnAll ? null : [],
+            InferenceTextIds = pretranslateAll ? null : [],
         };
 
         if (
@@ -259,7 +261,8 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
         }
 
         returnCorpus.TrainOnChapters = trainOnChapters;
-        returnCorpus.TrainOnTextIds = trainingFilter?.TextIds?.ToHashSet();
+        if (trainingFilter is not null)
+            returnCorpus.TrainOnTextIds = trainingFilter.TextIds?.ToHashSet();
 
         if (
             pretranslateFilter is not null
@@ -273,7 +276,8 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
         }
 
         returnCorpus.InferenceChapters = pretranslateChapters;
-        returnCorpus.InferenceTextIds = pretranslateFilter?.TextIds?.ToHashSet();
+        if (pretranslateFilter is not null)
+            returnCorpus.InferenceTextIds = pretranslateFilter.TextIds?.ToHashSet();
 
         return returnCorpus;
     }
@@ -331,25 +335,5 @@ public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : 
     private string GetFilePath(string filename)
     {
         return Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, filename);
-    }
-
-    private static Dictionary<string, List<int>> GetChapters(
-        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
-        string fileLocation,
-        string scriptureRange
-    )
-    {
-        CorpusBundle corpusBundle = new(parallelCorpora);
-        try
-        {
-            return ScriptureRangeParser.GetChapters(
-                scriptureRange,
-                corpusBundle.GetSettings(fileLocation)?.Versification
-            );
-        }
-        catch (ArgumentException ae)
-        {
-            throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
-        }
     }
 }

@@ -1,9 +1,3 @@
-using Serval.EngineApi.Translation;
-using Serval.Shared.Contracts;
-using SIL.Machine.Utils;
-using SIL.ServiceToolkit.Models;
-using ExecutionData = Serval.EngineApi.Translation.ExecutionData;
-
 namespace Serval.Translation.Services;
 
 [TestFixture]
@@ -91,13 +85,13 @@ public class PlatformServiceTests
         Assert.That(env.Builds.Get("b0").Progress, Is.Null);
         await env.PlatformService.UpdateBuildStatusAsync(
             "b0",
-            new ProgressStatus(0, percentCompleted: 0.5),
+            new() { Step = 0, PercentCompleted = 0.5 },
             queueDepth: 1,
             phases:
             [
-                new BuildPhaseContract
+                new()
                 {
-                    Stage = BuildPhaseStage.Train,
+                    Stage = PhaseStage.Train,
                     Step = 2,
                     StepCount = 3,
                 },
@@ -105,7 +99,7 @@ public class PlatformServiceTests
         );
         Assert.That(env.Builds.Get("b0").QueueDepth, Is.EqualTo(1));
         Assert.That(env.Builds.Get("b0").Progress, Is.EqualTo(0.5));
-        Assert.That(env.Builds.Get("b0").Phases![0].Stage, Is.EqualTo(BuildPhaseStage.Train));
+        Assert.That(env.Builds.Get("b0").Phases![0].Stage, Is.EqualTo(PhaseStage.Train));
         Assert.That(env.Builds.Get("b0").Phases![0].Step, Is.EqualTo(2));
         Assert.That(env.Builds.Get("b0").Phases![0].StepCount, Is.EqualTo(3));
     }
@@ -131,7 +125,7 @@ public class PlatformServiceTests
             Id = "123",
             EngineRef = "e0",
             Owner = "owner1",
-            ExecutionData = new Serval.Translation.Models.ExecutionData { TrainCount = 0, PretranslateCount = 0 },
+            ExecutionData = new() { TrainCount = 0, PretranslateCount = 0 },
         };
         await env.Builds.InsertAsync(build);
 
@@ -145,7 +139,7 @@ public class PlatformServiceTests
         await env.PlatformService.UpdateBuildExecutionDataAsync(
             engine.Id,
             "123",
-            new ExecutionData { TrainCount = 4, PretranslateCount = 5 }
+            new() { TrainCount = 4, PretranslateCount = 5 }
         );
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
@@ -171,7 +165,7 @@ public class PlatformServiceTests
             TargetLanguage = "es",
             ParallelCorpora =
             [
-                new ParallelCorpus
+                new()
                 {
                     Id = "parallelCorpus01",
                     SourceCorpora = [],
@@ -303,7 +297,6 @@ public class PlatformServiceTests
             Engines = new MemoryRepository<Engine>();
             Pretranslations = new MemoryRepository<Pretranslation>();
             DataAccessContext = Substitute.For<IDataAccessContext>();
-            PublishEndpoint = Substitute.For<IPublishEndpoint>();
 
             DataAccessContext
                 .WithTransactionAsync(Arg.Any<Func<CancellationToken, Task>>(), Arg.Any<CancellationToken>())
@@ -318,14 +311,19 @@ public class PlatformServiceTests
                     return ((Func<CancellationToken, Task>)x[0])((CancellationToken)x[1]);
                 });
 
-            PlatformService = new PlatformService(Builds, Engines, Pretranslations, DataAccessContext, PublishEndpoint);
+            PlatformService = new PlatformService(
+                Builds,
+                Engines,
+                Pretranslations,
+                DataAccessContext,
+                Substitute.For<IEventRouter>()
+            );
         }
 
         public MemoryRepository<Build> Builds { get; }
         public MemoryRepository<Engine> Engines { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
         public IDataAccessContext DataAccessContext { get; }
-        public IPublishEndpoint PublishEndpoint { get; }
         public PlatformService PlatformService { get; }
     }
 }

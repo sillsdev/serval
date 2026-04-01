@@ -1,6 +1,4 @@
-﻿using Serval.Shared.Contracts;
-
-namespace Serval.Translation.Services;
+﻿namespace Serval.Translation.Services;
 
 [TestFixture]
 public class BuildServiceTests

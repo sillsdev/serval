@@ -122,24 +122,24 @@ public class CorpusBundleTests
         );
         private readonly TempDirectory _tempDir = new(name: "CorpusBundleTests");
 
-        public ParallelCorpus[] GetCorpora(bool addParatext, bool addText)
+        public ParallelCorpusContract[] GetCorpora(bool addParatext, bool addText)
         {
-            List<ParallelCorpus> parallelCorpora = [];
+            List<ParallelCorpusContract> parallelCorpora = [];
             if (addParatext)
             {
                 parallelCorpora.AddRange(
-                    new ParallelCorpus
+                    new ParallelCorpusContract
                     {
                         Id = "corpus1",
                         SourceCorpora =
                         [
-                            new MonolingualCorpus
+                            new MonolingualCorpusContract
                             {
                                 Id = "pt-source1",
                                 Language = "en",
                                 Files =
                                 [
-                                    new CorpusFile
+                                    new CorpusFileContract
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Paratext,
@@ -151,13 +151,13 @@ public class CorpusBundleTests
                         ],
                         TargetCorpora =
                         [
-                            new MonolingualCorpus
+                            new MonolingualCorpusContract
                             {
                                 Id = "pt-target1",
                                 Language = "en",
                                 Files =
                                 [
-                                    new CorpusFile
+                                    new CorpusFileContract
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Paratext,
@@ -167,18 +167,18 @@ public class CorpusBundleTests
                             },
                         ],
                     },
-                    new ParallelCorpus
+                    new ParallelCorpusContract
                     {
                         Id = "corpus2",
                         SourceCorpora =
                         [
-                            new MonolingualCorpus
+                            new MonolingualCorpusContract
                             {
                                 Id = "pt-source1",
                                 Language = "en",
                                 Files =
                                 [
-                                    new CorpusFile
+                                    new CorpusFileContract
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Paratext,
@@ -190,13 +190,13 @@ public class CorpusBundleTests
                         ],
                         TargetCorpora =
                         [
-                            new MonolingualCorpus
+                            new MonolingualCorpusContract
                             {
                                 Id = "pt-target1",
                                 Language = "en",
                                 Files =
                                 [
-                                    new CorpusFile
+                                    new CorpusFileContract
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Paratext,
@@ -212,18 +212,18 @@ public class CorpusBundleTests
             if (addText)
             {
                 parallelCorpora.AddRange(
-                    new ParallelCorpus
+                    new ParallelCorpusContract
                     {
                         Id = "corpus1",
                         SourceCorpora =
                         [
-                            new MonolingualCorpus
+                            new MonolingualCorpusContract
                             {
                                 Id = "source-corpus1",
                                 Language = "en",
                                 Files =
                                 [
-                                    new CorpusFile
+                                    new CorpusFileContract
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Text,
@@ -231,13 +231,13 @@ public class CorpusBundleTests
                                     },
                                 ],
                             },
-                            new MonolingualCorpus
+                            new MonolingualCorpusContract
                             {
                                 Id = "source-corpus2",
                                 Language = "en",
                                 Files =
                                 [
-                                    new CorpusFile
+                                    new CorpusFileContract
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Text,
@@ -248,13 +248,13 @@ public class CorpusBundleTests
                         ],
                         TargetCorpora =
                         [
-                            new MonolingualCorpus
+                            new MonolingualCorpusContract
                             {
                                 Id = "target-corpus1",
                                 Language = "en",
                                 Files =
                                 [
-                                    new CorpusFile
+                                    new CorpusFileContract
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Text,

@@ -1,7 +1,4 @@
-﻿using Serval.DataFiles.Contracts;
-using Serval.Shared.Services;
-
-namespace Serval.DataFiles.Services;
+﻿namespace Serval.DataFiles.Services;
 
 [TestFixture]
 public class DataFileServiceTests
@@ -92,7 +89,7 @@ public class DataFileServiceTests
         // We will use the mediator to cancel the token, which will cause GetAsync() to fail
         // What we are testing for is GetAsync() failing due to network or other connectivity issues, token cancellation being one source
         var cts = new CancellationTokenSource();
-        env.Mediator.When(x => x.Publish(Arg.Any<DataFileUpdated>(), Arg.Any<CancellationToken>()))
+        env.EventRouter.When(x => x.PublishAsync(Arg.Any<DataFileUpdated>(), Arg.Any<CancellationToken>()))
             .Do(_ => cts.Cancel());
 
         // Set up a valid existing file
@@ -140,7 +137,7 @@ public class DataFileServiceTests
         Assert.That(env.DataFiles.Contains(DataFileId), Is.False);
         DeletedFile deletedFile = env.DeletedFiles.Entities.Single();
         Assert.That(deletedFile.Filename, Is.EqualTo("file1.txt"));
-        await env.Mediator.Received().Publish(Arg.Any<DataFileDeleted>(), Arg.Any<CancellationToken>());
+        await env.EventRouter.Received().PublishAsync(Arg.Any<DataFileDeleted>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -157,14 +154,14 @@ public class DataFileServiceTests
             DataFiles = new MemoryRepository<DataFile>();
             IOptionsMonitor<DataFileOptions> options = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             options.CurrentValue.Returns(new DataFileOptions());
-            Mediator = Substitute.For<IScopedMediator>();
+            EventRouter = Substitute.For<IEventRouter>();
             DeletedFiles = new MemoryRepository<DeletedFile>();
             FileSystem = Substitute.For<IFileSystem>();
             Service = new DataFileService(
                 DataFiles,
                 new MemoryDataAccessContext(),
                 options,
-                Mediator,
+                EventRouter,
                 DeletedFiles,
                 FileSystem
             );
@@ -172,7 +169,7 @@ public class DataFileServiceTests
 
         public IFileSystem FileSystem { get; }
         public MemoryRepository<DeletedFile> DeletedFiles { get; }
-        public IScopedMediator Mediator { get; }
+        public IEventRouter EventRouter { get; }
         public MemoryRepository<DataFile> DataFiles { get; }
         public DataFileService Service { get; }
     }

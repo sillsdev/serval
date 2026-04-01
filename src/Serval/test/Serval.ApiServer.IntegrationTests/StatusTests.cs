@@ -4,7 +4,7 @@ namespace Serval.ApiServer;
 [Category("Integration")]
 public class StatusTests
 {
-    TestEnvironment? _env;
+    TestEnvironment _env;
 
     [SetUp]
     public void SetUp()
@@ -18,7 +18,7 @@ public class StatusTests
     [TestCase(new[] { Scopes.CreateTranslationEngines }, 403)]
     public async Task GetHealthAsync(IEnumerable<string>? scope, int expectedStatusCode)
     {
-        StatusClient client = _env!.CreateClient(scope);
+        StatusClient client = _env.CreateClient(scope);
         ServalApiException ex;
         switch (expectedStatusCode)
         {
@@ -27,7 +27,7 @@ public class StatusTests
                 HealthReport healthReport = await client.GetHealthAsync();
                 Assert.That(healthReport, Is.Not.Null);
                 Assert.That(healthReport.Status.ToString(), Is.Not.EqualTo("Healthy"));
-                Assert.That(healthReport.Results, Has.Count.EqualTo(9));
+                Assert.That(healthReport.Results, Has.Count.EqualTo(7));
                 break;
 
             case 401:
@@ -49,7 +49,7 @@ public class StatusTests
     [Test]
     public async Task GetDeploymentAsync()
     {
-        StatusClient client = _env!.CreateClient();
+        StatusClient client = _env.CreateClient();
         DeploymentInfo deploymentInfo = await client.GetDeploymentInfoAsync();
         Assert.That(deploymentInfo, Is.Not.Null);
         Assert.That(deploymentInfo.DeploymentVersion, Is.EqualTo("Unknown"));
@@ -59,7 +59,7 @@ public class StatusTests
     [Test]
     public async Task GetPingAsync()
     {
-        StatusClient client = _env!.CreateClient();
+        StatusClient client = _env.CreateClient();
         HealthReport healthReport = await client.GetPingAsync();
         Assert.That(healthReport, Is.Not.Null);
         Assert.That(healthReport.Status.ToString(), Is.Not.EqualTo("Healthy"));
@@ -69,7 +69,7 @@ public class StatusTests
     [TearDown]
     public void TearDown()
     {
-        _env!.Dispose();
+        _env.Dispose();
     }
 
     private class TestEnvironment : DisposableBase

@@ -11126,7 +11126,7 @@ namespace Serval.Client
         public ExecutionData ExecutionData { get; set; } = new ExecutionData();
 
         [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<BuildPhase>? Phases { get; set; } = default!;
+        public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("analysis", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         [System.Obsolete]
@@ -11257,13 +11257,13 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class BuildPhase
+    public partial class Phase
     {
 
         [Newtonsoft.Json.JsonProperty("stage", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public BuildPhaseStage Stage { get; set; } = default!;
+        public PhaseStage Stage { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public int? Step { get; set; } = default!;
@@ -11277,7 +11277,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum BuildPhaseStage
+    public enum PhaseStage
     {
 
         [System.Runtime.Serialization.EnumMember(Value = @"Train")]
@@ -12256,7 +12256,7 @@ namespace Serval.Client
         public WordAlignmentExecutionData ExecutionData { get; set; } = new WordAlignmentExecutionData();
 
         [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<BuildPhase>? Phases { get; set; } = default!;
+        public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
 
     }
 

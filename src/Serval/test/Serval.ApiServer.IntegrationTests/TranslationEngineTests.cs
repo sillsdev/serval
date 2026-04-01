@@ -1,12 +1,5 @@
-using System.IO.Compression;
-using Serval.Shared.Contracts;
-using Serval.Translation.Configuration;
+using Serval.Translation.Contracts;
 using Serval.Translation.Models;
-using EngineApiTranslation = Serval.EngineApi.Translation;
-using ITranslationEngine = Serval.EngineApi.Translation.ITranslationEngine;
-using Phase = Serval.Client.Phase;
-using PhaseStage = Serval.Client.PhaseStage;
-using Queue = Serval.Client.Queue;
 
 namespace Serval.ApiServer;
 
@@ -402,7 +395,7 @@ public class TranslationEngineTests
     [Test]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
-    [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE2_ID)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task TranslateSegmentWithEngineByIdAsync(
         IEnumerable<string> scope,
@@ -432,7 +425,6 @@ public class TranslationEngineTests
                 break;
             case 409:
             {
-                await _env.Engines.UpdateAsync(engineId, u => u.Set(e => e.ModelRevision, 0));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.TranslateAsync(engineId, "This is a test .");
@@ -459,7 +451,7 @@ public class TranslationEngineTests
     [Test]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
-    [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE2_ID)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task TranslateNSegmentWithEngineByIdAsync(
         IEnumerable<string> scope,
@@ -494,7 +486,6 @@ public class TranslationEngineTests
                 break;
             case 409:
             {
-                await _env.Engines.UpdateAsync(engineId, u => u.Set(e => e.ModelRevision, 0));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.TranslateNAsync(engineId, 1, "This is a test .");
@@ -521,7 +512,7 @@ public class TranslationEngineTests
     [Test]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
-    [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines, Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE2_ID)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task GetWordGraphForSegmentByIdAsync(
         IEnumerable<string> scope,
@@ -551,7 +542,6 @@ public class TranslationEngineTests
                 break;
             case 409:
             {
-                await _env.Engines.UpdateAsync(engineId, u => u.Set(e => e.ModelRevision, 0));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.GetWordGraphAsync(engineId, "This is a test .");
@@ -578,7 +568,7 @@ public class TranslationEngineTests
     [Test]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 200, ECHO_ENGINE1_ID)]
     [TestCase(new[] { Scopes.UpdateTranslationEngines }, 404, DOES_NOT_EXIST_ENGINE_ID)]
-    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE1_ID)]
+    [TestCase(new[] { Scopes.UpdateTranslationEngines }, 409, ECHO_ENGINE2_ID)]
     [TestCase(new[] { Scopes.ReadFiles }, 403, ECHO_ENGINE1_ID)] //Arbitrary unrelated privilege
     public async Task TrainEngineByIdOnSegmentPairAsync(
         IEnumerable<string> scope,
@@ -609,7 +599,6 @@ public class TranslationEngineTests
                 break;
             case 409:
             {
-                await _env.Engines.UpdateAsync(engineId, u => u.Set(e => e.ModelRevision, 0));
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
                     await client.TrainSegmentAsync(engineId, sp);
@@ -1347,9 +1336,8 @@ public class TranslationEngineTests
         switch (expectedStatusCode)
         {
             case 200:
-                ICollection<TranslationBuild> results = await client.GetAllBuildsCreatedAfterAsync(
-                    DateTime.UtcNow.AddHours(-1)
-                );
+                var createdAfter = DateTime.UtcNow.AddHours(-1);
+                ICollection<TranslationBuild> results = await client.GetAllBuildsCreatedAfterAsync(createdAfter);
                 if (buildOwnedByClient)
                 {
                     Assert.That(results, Is.Not.Empty);
@@ -1357,7 +1345,7 @@ public class TranslationEngineTests
                     {
                         Assert.That(results.First().Revision, Is.EqualTo(1));
                         Assert.That(results.First().Id, Is.EqualTo(build?.Id));
-                        Assert.That(results.First().State, Is.EqualTo(JobState.Pending));
+                        Assert.That(results.First().State, Is.EqualTo(Client.JobState.Pending));
                     });
                 }
                 else
@@ -1404,7 +1392,7 @@ public class TranslationEngineTests
                 {
                     Assert.That(results.First().Revision, Is.EqualTo(1));
                     Assert.That(results.First().Id, Is.EqualTo(build?.Id));
-                    Assert.That(results.First().State, Is.EqualTo(JobState.Pending));
+                    Assert.That(results.First().State, Is.EqualTo(Client.JobState.Pending));
                 });
                 break;
             case 403:
@@ -1451,7 +1439,7 @@ public class TranslationEngineTests
                 {
                     Assert.That(result.Revision, Is.EqualTo(1));
                     Assert.That(result.Id, Is.EqualTo(build.Id));
-                    Assert.That(result.State, Is.EqualTo(JobState.Pending));
+                    Assert.That(result.State, Is.EqualTo(Client.JobState.Pending));
                 });
                 break;
             }
@@ -1505,7 +1493,7 @@ public class TranslationEngineTests
                 {
                     Assert.That(result.Revision, Is.EqualTo(1));
                     Assert.That(result.Id, Is.EqualTo(build?.Id));
-                    Assert.That(result.State, Is.EqualTo(JobState.Completed));
+                    Assert.That(result.State, Is.EqualTo(Client.JobState.Completed));
                 });
                 break;
             case 403:
@@ -1893,9 +1881,9 @@ public class TranslationEngineTests
                 Owner = "client1",
                 Phases =
                 [
-                    new BuildPhase
+                    new Shared.Models.Phase
                     {
-                        Stage = BuildPhaseStage.Train,
+                        Stage = Shared.Contracts.PhaseStage.Train,
                         Step = 1,
                         StepCount = 2,
                     },
@@ -1914,9 +1902,9 @@ public class TranslationEngineTests
                 Assert.That(
                     result.Phases![0],
                     Is.EqualTo(
-                            new Phase
+                            new Client.Phase
                             {
-                                Stage = PhaseStage.Train,
+                                Stage = Client.PhaseStage.Train,
                                 Step = 1,
                                 StepCount = 2,
                             }
@@ -1968,6 +1956,8 @@ public class TranslationEngineTests
         string buildId = "b00000000000000000000000";
         if (addBuild)
         {
+            _env.EchoService.CancelBuildAsync(engineId, Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<string?>(buildId));
             var build = new Build
             {
                 Id = buildId,
@@ -2490,12 +2480,12 @@ public class TranslationEngineTests
                 Owner = "client1",
                 Analysis =
                 [
-                    new Shared.Models.ParallelCorpusAnalysis()
+                    new Translation.Models.ParallelCorpusAnalysis()
                     {
                         ParallelCorpusRef = "111111111111111111111112",
                         TargetQuoteConvention = "",
                     },
-                    new Shared.Models.ParallelCorpusAnalysis()
+                    new Translation.Models.ParallelCorpusAnalysis()
                     {
                         ParallelCorpusRef = "111111111111111111111113",
                         TargetQuoteConvention = "standard_english",
@@ -2553,197 +2543,29 @@ public class TranslationEngineTests
             >();
             Builds = _scope.ServiceProvider.GetRequiredService<IRepository<Build>>();
 
-            EchoEngine = Substitute.For<ITranslationEngine>();
-            EchoEngine.EngineType.Returns("Echo");
-            EchoEngine
-                .CreateAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<bool>(),
-                    Arg.Any<string?>(),
-                    Arg.Any<CancellationToken>()
-                )
-                .Returns(Task.CompletedTask);
-            EchoEngine.DeleteAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            EchoEngine
-                .StartBuildAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
-                    Arg.Any<string?>(),
-                    Arg.Any<CancellationToken>()
-                )
-                .Returns(Task.CompletedTask);
-            EchoEngine
-                .CancelBuildAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult<string?>(null));
-            EchoEngine
-                .GetModelDownloadUrlAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns(
-                    Task.FromResult<EngineApiTranslation.ModelDownloadUrl?>(
-                        new EngineApiTranslation.ModelDownloadUrl
-                        {
-                            Url = "http://example.com",
-                            ModelRevision = 1,
-                            ExpiresAt = DateTime.UtcNow.AddHours(1),
-                        }
-                    )
-                );
-            EchoEngine
-                .TrainSegmentPairAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<bool>(),
-                    Arg.Any<CancellationToken>()
-                )
-                .Returns(Task.CompletedTask);
-            EchoEngine
-                .UpdateAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-                .Returns(Task.CompletedTask);
-            var wg = new EngineApiTranslation.WordGraph
+            var sources = new HashSet<Translation.Contracts.TranslationSource>
             {
-                SourceTokens = ["This", "is", "a", "test", "."],
-                InitialStateScore = 0.0,
-                FinalStates = new HashSet<int> { 4 },
-                Arcs =
-                [
-                    new EngineApiTranslation.WordGraphArc
-                    {
-                        PrevState = 0,
-                        NextState = 1,
-                        Score = 1.0,
-                        TargetTokens = ["This"],
-                        Confidences = [1.0],
-                        SourceSegmentStart = 0,
-                        SourceSegmentEnd = 1,
-                        Alignment = [new EngineApiTranslation.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }],
-                        Sources =
-                        [
-                            new HashSet<EngineApiTranslation.TranslationSource>
-                            {
-                                EngineApiTranslation.TranslationSource.Primary,
-                                EngineApiTranslation.TranslationSource.Secondary,
-                            },
-                        ],
-                    },
-                    new EngineApiTranslation.WordGraphArc
-                    {
-                        PrevState = 1,
-                        NextState = 2,
-                        Score = 1.0,
-                        TargetTokens = ["is"],
-                        Confidences = [1.0],
-                        SourceSegmentStart = 1,
-                        SourceSegmentEnd = 2,
-                        Alignment = [new EngineApiTranslation.AlignedWordPair { SourceIndex = 1, TargetIndex = 0 }],
-                        Sources =
-                        [
-                            new HashSet<EngineApiTranslation.TranslationSource>
-                            {
-                                EngineApiTranslation.TranslationSource.Primary,
-                                EngineApiTranslation.TranslationSource.Secondary,
-                            },
-                        ],
-                    },
-                    new EngineApiTranslation.WordGraphArc
-                    {
-                        PrevState = 2,
-                        NextState = 3,
-                        Score = 1.0,
-                        TargetTokens = ["a"],
-                        Confidences = [1.0],
-                        SourceSegmentStart = 2,
-                        SourceSegmentEnd = 3,
-                        Alignment = [new EngineApiTranslation.AlignedWordPair { SourceIndex = 2, TargetIndex = 0 }],
-                        Sources =
-                        [
-                            new HashSet<EngineApiTranslation.TranslationSource>
-                            {
-                                EngineApiTranslation.TranslationSource.Primary,
-                                EngineApiTranslation.TranslationSource.Secondary,
-                            },
-                        ],
-                    },
-                    new EngineApiTranslation.WordGraphArc
-                    {
-                        PrevState = 3,
-                        NextState = 4,
-                        Score = 1.0,
-                        TargetTokens = ["test", "."],
-                        Confidences = [1.0, 1.0],
-                        SourceSegmentStart = 3,
-                        SourceSegmentEnd = 5,
-                        Alignment =
-                        [
-                            new EngineApiTranslation.AlignedWordPair { SourceIndex = 3, TargetIndex = 0 },
-                            new EngineApiTranslation.AlignedWordPair { SourceIndex = 4, TargetIndex = 1 },
-                        ],
-                        Sources =
-                        [
-                            new HashSet<EngineApiTranslation.TranslationSource>
-                            {
-                                EngineApiTranslation.TranslationSource.Primary,
-                                EngineApiTranslation.TranslationSource.Secondary,
-                            },
-                            new HashSet<EngineApiTranslation.TranslationSource>
-                            {
-                                EngineApiTranslation.TranslationSource.Primary,
-                                EngineApiTranslation.TranslationSource.Secondary,
-                            },
-                        ],
-                    },
-                ],
+                Translation.Contracts.TranslationSource.Primary,
+                Translation.Contracts.TranslationSource.Secondary,
             };
-            EchoEngine
-                .GetWordGraphAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult(wg));
-            var translationResult = new EngineApiTranslation.TranslationResult
+            var translationResult = new TranslationResultContract
             {
                 Translation = "This is a test .",
-                SourceTokens = ["This", "is", "a", "test", "."],
-                TargetTokens = ["This", "is", "a", "test", "."],
+                SourceTokens = "This is a test .".Split(),
+                TargetTokens = "This is a test .".Split(),
                 Confidences = [1.0, 1.0, 1.0, 1.0, 1.0],
-                Sources =
-                [
-                    new HashSet<EngineApiTranslation.TranslationSource>
-                    {
-                        EngineApiTranslation.TranslationSource.Primary,
-                        EngineApiTranslation.TranslationSource.Secondary,
-                    },
-                    new HashSet<EngineApiTranslation.TranslationSource>
-                    {
-                        EngineApiTranslation.TranslationSource.Primary,
-                        EngineApiTranslation.TranslationSource.Secondary,
-                    },
-                    new HashSet<EngineApiTranslation.TranslationSource>
-                    {
-                        EngineApiTranslation.TranslationSource.Primary,
-                        EngineApiTranslation.TranslationSource.Secondary,
-                    },
-                    new HashSet<EngineApiTranslation.TranslationSource>
-                    {
-                        EngineApiTranslation.TranslationSource.Primary,
-                        EngineApiTranslation.TranslationSource.Secondary,
-                    },
-                    new HashSet<EngineApiTranslation.TranslationSource>
-                    {
-                        EngineApiTranslation.TranslationSource.Primary,
-                        EngineApiTranslation.TranslationSource.Secondary,
-                    },
-                ],
+                Sources = [sources, sources, sources, sources, sources],
                 Alignment =
                 [
-                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 0, TargetIndex = 0 },
-                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 1, TargetIndex = 1 },
-                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 2, TargetIndex = 2 },
-                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 3, TargetIndex = 3 },
-                    new EngineApiTranslation.AlignedWordPair { SourceIndex = 4, TargetIndex = 4 },
+                    new AlignedWordPairContract { SourceIndex = 0, TargetIndex = 0 },
+                    new AlignedWordPairContract { SourceIndex = 1, TargetIndex = 1 },
+                    new AlignedWordPairContract { SourceIndex = 2, TargetIndex = 2 },
+                    new AlignedWordPairContract { SourceIndex = 3, TargetIndex = 3 },
+                    new AlignedWordPairContract { SourceIndex = 4, TargetIndex = 4 },
                 ],
                 Phrases =
                 [
-                    new EngineApiTranslation.Phrase
+                    new PhraseContract
                     {
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = 5,
@@ -2751,63 +2573,108 @@ public class TranslationEngineTests
                     },
                 ],
             };
-            EchoEngine
-                .TranslateAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult<IReadOnlyList<EngineApiTranslation.TranslationResult>>([translationResult]));
-            EchoEngine.GetQueueSizeAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
-            EchoEngine
-                .GetLanguageInfoAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns(
-                    Task.FromResult(new EngineApiTranslation.LanguageInfo { InternalCode = "abc_123", IsNative = true })
-                );
+            var wordGraph = new WordGraphContract
+            {
+                SourceTokens = "This is a test .".Split(),
+                InitialStateScore = 0.0,
+                FinalStates = new HashSet<int> { 4 },
+                Arcs =
+                [
+                    new WordGraphArcContract
+                    {
+                        PrevState = 0,
+                        NextState = 1,
+                        Score = 1.0,
+                        TargetTokens = [],
+                        Confidences = [],
+                        SourceSegmentStart = 0,
+                        SourceSegmentEnd = 1,
+                        Alignment = [],
+                        Sources = [],
+                    },
+                    new WordGraphArcContract
+                    {
+                        PrevState = 1,
+                        NextState = 2,
+                        Score = 1.0,
+                        TargetTokens = [],
+                        Confidences = [],
+                        SourceSegmentStart = 1,
+                        SourceSegmentEnd = 2,
+                        Alignment = [],
+                        Sources = [],
+                    },
+                    new WordGraphArcContract
+                    {
+                        PrevState = 2,
+                        NextState = 3,
+                        Score = 1.0,
+                        TargetTokens = [],
+                        Confidences = [],
+                        SourceSegmentStart = 2,
+                        SourceSegmentEnd = 3,
+                        Alignment = [],
+                        Sources = [],
+                    },
+                    new WordGraphArcContract
+                    {
+                        PrevState = 3,
+                        NextState = 4,
+                        Score = 1.0,
+                        TargetTokens = [],
+                        Confidences = [],
+                        SourceSegmentStart = 3,
+                        SourceSegmentEnd = 5,
+                        Alignment = [],
+                        Sources = [],
+                    },
+                ],
+            };
+            var languageInfo = new LanguageInfoContract { IsNative = true, InternalCode = "abc_123" };
 
-            NmtEngine = Substitute.For<ITranslationEngine>();
-            NmtEngine.EngineType.Returns("Nmt");
-            NmtEngine
-                .CreateAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<bool>(),
-                    Arg.Any<string?>(),
-                    Arg.Any<CancellationToken>()
-                )
-                .Returns(Task.CompletedTask);
-            NmtEngine.DeleteAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            NmtEngine
-                .StartBuildAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
-                    Arg.Any<string?>(),
-                    Arg.Any<CancellationToken>()
-                )
-                .Returns(Task.CompletedTask);
-            NmtEngine
-                .CancelBuildAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult<string?>(null));
-            NmtEngine
+            EchoService = Substitute.For<ITranslationEngineService>();
+            EchoService
+                .TranslateAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<IReadOnlyList<TranslationResultContract>>([translationResult]));
+            EchoService
                 .GetWordGraphAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns<Task<EngineApiTranslation.WordGraph>>(_ => throw new NotImplementedException());
-            NmtEngine
-                .TranslateAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns<Task<IReadOnlyList<EngineApiTranslation.TranslationResult>>>(_ =>
-                    throw new NotImplementedException()
-                );
-            NmtEngine.GetQueueSizeAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
-            NmtEngine
-                .GetLanguageInfoAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(wordGraph));
+            EchoService
+                .GetModelDownloadUrlAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(
-                    Task.FromResult(new EngineApiTranslation.LanguageInfo { InternalCode = "abc_123", IsNative = true })
+                    Task.FromResult(
+                        new ModelDownloadUrlContract
+                        {
+                            Url = "http://example.com",
+                            ModelRevision = 1,
+                            ExpiresAt = DateTime.UtcNow.AddHours(1),
+                        }
+                    )
                 );
+            EchoService.GetQueueSizeAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            EchoService
+                .GetLanguageInfoAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(languageInfo));
 
-            SmtEngine = Substitute.For<ITranslationEngine>();
+            NmtService = Substitute.For<ITranslationEngineService>();
+            NmtService
+                .GetWordGraphAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromException<WordGraphContract>(new NotSupportedException()));
+            NmtService
+                .TranslateAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromException<IReadOnlyList<TranslationResultContract>>(new NotSupportedException()));
+            NmtService.GetQueueSizeAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            NmtService
+                .GetLanguageInfoAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(languageInfo));
+
+            SmtService = Substitute.For<ITranslationEngineService>();
+            SmtService
+                .GetLanguageInfoAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(languageInfo));
             _dataFileOptions = _scope.ServiceProvider.GetRequiredService<IOptionsMonitor<DataFileOptions>>();
             ZipParatextProject(FILE3_FILENAME);
             ZipParatextProject(FILE4_FILENAME);
-                .Returns(
-                    Task.FromResult(new EngineApiTranslation.LanguageInfo { InternalCode = "abc_123", IsNative = true })
-                );
         }
 
         public ServalWebApplicationFactory Factory { get; }
@@ -2816,9 +2683,9 @@ public class TranslationEngineTests
         public IRepository<DataFiles.Models.Corpus> Corpora { get; }
         public IRepository<Translation.Models.Pretranslation> Pretranslations { get; }
         public IRepository<Build> Builds { get; }
-        public ITranslationEngine EchoEngine { get; }
-        public ITranslationEngine NmtEngine { get; }
-        public ITranslationEngine SmtEngine { get; }
+        public ITranslationEngineService EchoService { get; }
+        public ITranslationEngineService NmtService { get; }
+        public ITranslationEngineService SmtService { get; }
 
         public TranslationBuildsClient CreateTranslationBuildsClient(IEnumerable<string>? scope = null)
         {
@@ -2826,11 +2693,7 @@ public class TranslationEngineTests
             HttpClient httpClient = Factory
                 .WithWebHostBuilder(builder =>
                 {
-                    builder.ConfigureTestServices(services =>
-                    {
-                        services.AddSingleton<ITranslationEngine>(EchoEngine);
-                        services.AddSingleton<ITranslationEngine>(NmtEngine);
-                    });
+                    builder.ConfigureTestServices(ConfigureEngineServices);
                 })
                 .CreateClient();
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
@@ -2849,11 +2712,7 @@ public class TranslationEngineTests
             HttpClient httpClient = Factory
                 .WithWebHostBuilder(builder =>
                 {
-                    builder.ConfigureTestServices(services =>
-                    {
-                        services.AddSingleton<ITranslationEngine>(EchoEngine);
-                        services.AddSingleton<ITranslationEngine>(NmtEngine);
-                    });
+                    builder.ConfigureTestServices(ConfigureEngineServices);
                 })
                 .CreateClient();
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
@@ -2872,16 +2731,18 @@ public class TranslationEngineTests
             HttpClient httpClient = Factory
                 .WithWebHostBuilder(builder =>
                 {
-                    builder.ConfigureTestServices(services =>
-                    {
-                        services.AddSingleton<ITranslationEngine>(EchoEngine);
-                        services.AddSingleton<ITranslationEngine>(NmtEngine);
-                        services.AddSingleton<ITranslationEngine>(SmtEngine);
-                    });
+                    builder.ConfigureTestServices(ConfigureEngineServices);
                 })
                 .CreateClient();
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new TranslationEngineTypesClient(httpClient);
+        }
+
+        private void ConfigureEngineServices(IServiceCollection services)
+        {
+            services.AddKeyedScoped("echo", (_, _) => EchoService);
+            services.AddKeyedScoped("nmt", (_, _) => NmtService);
+            services.AddKeyedScoped("smttransfer", (_, _) => SmtService);
         }
 
         public DataFilesClient CreateDataFilesClient()
