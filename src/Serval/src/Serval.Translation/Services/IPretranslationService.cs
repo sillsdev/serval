@@ -2,7 +2,7 @@
 
 public interface IPretranslationService
 {
-    Task<IEnumerable<Pretranslation>> GetAllAsync(
+    Task<IReadOnlyList<Pretranslation>> GetAllAsync(
         string engineId,
         int modelRevision,
         string corpusId,

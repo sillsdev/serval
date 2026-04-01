@@ -9,7 +9,7 @@ public class EngineServiceFactory(IServiceProvider serviceProvider) : IEngineSer
     public ITranslationEngineService GetEngineService(string engineType)
     {
         ITranslationEngineService? engine = _serviceProvider.GetKeyedService<ITranslationEngineService>(
-            engineType.ToPascalCase()
+            engineType.ToLowerInvariant()
         );
         if (engine is null)
         {
@@ -21,7 +21,7 @@ public class EngineServiceFactory(IServiceProvider serviceProvider) : IEngineSer
     public bool TryGetEngineService(string engineType, [NotNullWhen(true)] out ITranslationEngineService? service)
     {
         ITranslationEngineService? engine = _serviceProvider.GetKeyedService<ITranslationEngineService>(
-            engineType.ToPascalCase()
+            engineType.ToLowerInvariant()
         );
         if (engine is null)
         {

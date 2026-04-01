@@ -1,12 +1,8 @@
 namespace Serval.Translation.Services;
 
-public class ContractMapper(
-    IOptionsMonitor<DataFileOptions> dataFileOptions,
-    IParallelCorpusService parallelCorpusService
-) : IContractMapper
+public class ContractMapper(IOptionsMonitor<DataFileOptions> dataFileOptions) : IContractMapper
 {
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
-    private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
     public IReadOnlyList<ParallelCorpusContract> Map(Build build, Engine engine)
     {
@@ -81,8 +77,7 @@ public class ContractMapper(
                             $"The corpus {source.Id} is not compatible with using a scripture range"
                         );
                     }
-                    var chapters = _parallelCorpusService
-                        .GetChapters(
+                    var chapters = GetChapters(
                             corpora.Select(c => Map(c, engine)).ToArray(),
                             GetFilePath(targetCorpus.Files[0].Location),
                             trainingCorpus.ScriptureRange
@@ -112,8 +107,7 @@ public class ContractMapper(
                             $"The corpus {source.Id} is not compatible with using a scripture range"
                         );
                     }
-                    sourceCorpus.InferenceChapters = _parallelCorpusService
-                        .GetChapters(
+                    sourceCorpus.InferenceChapters = GetChapters(
                             corpora.Select(c => Map(c, engine)).ToArray(),
                             GetFilePath(targetCorpus.Files[0].Location),
                             pretranslateCorpus.ScriptureRange
@@ -221,8 +215,7 @@ public class ContractMapper(
             && referenceFileLocation is not null
         )
         {
-            trainOnChapters = _parallelCorpusService
-                .GetChapters(
+            trainOnChapters = GetChapters(
                     parallelCorpora.Select(Map).ToArray(),
                     GetFilePath(referenceFileLocation),
                     trainingFilter.ScriptureRange
@@ -237,8 +230,7 @@ public class ContractMapper(
             && referenceFileLocation is not null
         )
         {
-            pretranslateChapters = _parallelCorpusService
-                .GetChapters(
+            pretranslateChapters = GetChapters(
                     parallelCorpora.Select(Map).ToArray(),
                     GetFilePath(referenceFileLocation),
                     pretranslateFilter.ScriptureRange
@@ -339,5 +331,25 @@ public class ContractMapper(
     private string GetFilePath(string filename)
     {
         return Path.Combine(_dataFileOptions.CurrentValue.FilesDirectory, filename);
+    }
+
+    private static Dictionary<string, List<int>> GetChapters(
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
+        string fileLocation,
+        string scriptureRange
+    )
+    {
+        CorpusBundle corpusBundle = new(parallelCorpora);
+        try
+        {
+            return ScriptureRangeParser.GetChapters(
+                scriptureRange,
+                corpusBundle.GetSettings(fileLocation)?.Versification
+            );
+        }
+        catch (ArgumentException ae)
+        {
+            throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
+        }
     }
 }

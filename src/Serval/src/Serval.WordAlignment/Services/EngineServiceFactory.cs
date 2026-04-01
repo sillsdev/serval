@@ -9,7 +9,7 @@ public class EngineServiceFactory(IServiceProvider serviceProvider) : IEngineSer
     public IWordAlignmentEngineService GetEngineService(string engineType)
     {
         IWordAlignmentEngineService? engine = _serviceProvider.GetKeyedService<IWordAlignmentEngineService>(
-            engineType.ToPascalCase()
+            engineType.ToLowerInvariant()
         );
         if (engine is null)
         {
@@ -21,7 +21,7 @@ public class EngineServiceFactory(IServiceProvider serviceProvider) : IEngineSer
     public bool TryGetEngineService(string engineType, [NotNullWhen(true)] out IWordAlignmentEngineService? service)
     {
         IWordAlignmentEngineService? engine = _serviceProvider.GetKeyedService<IWordAlignmentEngineService>(
-            engineType.ToPascalCase()
+            engineType.ToLowerInvariant()
         );
         if (engine is null)
         {
