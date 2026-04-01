@@ -4,8 +4,9 @@ public static class IServiceCollectionExtensions
 {
     public static IServalBuilder AddServal(this IServiceCollection services, IConfiguration configuration)
     {
-        services.TryAddTransient<IFileSystem, FileSystem>();
-        services.TryAddSingleton<IParallelCorpusService, ParallelCorpusService>();
+        services.AddTransient<IFileSystem, FileSystem>();
+        services.AddSingleton<IParallelCorpusService, ParallelCorpusService>();
+        services.AddScoped<IEventRouter, EventRouter>();
 
         services.Configure<DataFileOptions>(configuration.GetSection(DataFileOptions.Key));
         services.Configure<ApiOptions>(configuration.GetSection(ApiOptions.Key));

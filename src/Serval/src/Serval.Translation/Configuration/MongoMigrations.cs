@@ -1,6 +1,3 @@
-using MongoDB.Bson;
-using MongoDB.Driver;
-
 namespace Serval.Translation.Configuration;
 
 public class MongoMigrations

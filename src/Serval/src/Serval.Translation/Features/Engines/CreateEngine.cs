@@ -36,7 +36,7 @@ public class CreateEngineHandler(
     IDataAccessContext dataAccessContext,
     IRepository<Engine> engines,
     IEngineServiceFactory engineServiceFactory,
-    IDtoMappingService mapper,
+    IDtoMapper mapper,
     IOptionsMonitor<TranslationOptions> translationOptions
 ) : IRequestHandler<CreateEngine, CreateEngineResponse>
 {

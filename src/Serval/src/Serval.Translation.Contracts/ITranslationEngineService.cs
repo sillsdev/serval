@@ -2,9 +2,6 @@
 
 public interface ITranslationEngineService
 {
-    string Type { get; }
-
-    // Lifecycle
     Task CreateAsync(
         string engineId,
         string sourceLanguage,
@@ -21,7 +18,6 @@ public interface ITranslationEngineService
         CancellationToken cancellationToken = default
     );
 
-    // Inference
     Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,
@@ -38,7 +34,6 @@ public interface ITranslationEngineService
     );
     Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
-    // Build lifecycle
     Task StartBuildAsync(
         string engineId,
         string buildId,
@@ -47,10 +42,8 @@ public interface ITranslationEngineService
         CancellationToken cancellationToken = default
     );
 
-    /// <returns>The cancelled build ID, or <c>null</c> if no build was active.</returns>
     Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
-    // Per-engine-type queries
     Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
     Task<LanguageInfo> GetLanguageInfoAsync(string language, CancellationToken cancellationToken = default);
 }

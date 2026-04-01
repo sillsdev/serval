@@ -1,6 +1,3 @@
-using MongoDB.Bson;
-using MongoDB.Driver;
-
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServalBuilderExtensions
@@ -11,10 +8,22 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<IWordAlignmentService, WordAlignmentService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
         builder.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
+        builder.Services.AddScoped<IWordAlignmentPlatformService, PlatformService>();
 
         builder.Services.Configure<WordAlignmentOptions>(builder.Configuration.GetSection(WordAlignmentOptions.Key));
 
+        builder.AddMongoDataAccess();
+
+        builder.AddHandlers(Assembly.GetExecutingAssembly());
+
+        return builder;
+    }
+
+    private static IServalBuilder AddMongoDataAccess(this IServalBuilder builder)
+    {
+        string databaseName = builder.GetDatabaseName();
         builder.DataAccess.AddRepository<Engine>(
+            databaseName,
             "word_alignment.engines",
             init: async c =>
             {
@@ -27,6 +36,7 @@ public static class IServalBuilderExtensions
             }
         );
         builder.DataAccess.AddRepository<Build>(
+            databaseName,
             "word_alignment.builds",
             init: async c =>
             {
@@ -47,6 +57,7 @@ public static class IServalBuilderExtensions
             }
         );
         builder.DataAccess.AddRepository<WordAlignment>(
+            databaseName,
             "word_alignment.word_alignments",
             init: async c =>
             {

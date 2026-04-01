@@ -1,5 +1,4 @@
-﻿using CaseExtensions;
-using Serval.Shared.Contracts;
+﻿using Serval.Shared.Contracts;
 using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
@@ -23,8 +22,6 @@ public class SmtTransferEngineService(
     private readonly SmtTransferEngineStateService _stateService = stateService;
     private readonly IBuildJobService<TranslationEngine> _buildJobService = buildJobService;
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
-
-    public string Type => EngineType.SmtTransfer.ToString().ToCamelCase();
 
     public async Task CreateAsync(
         string engineId,
@@ -244,14 +241,7 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        return Task.FromResult(
-            new Translation.Contracts.LanguageInfo
-            {
-                EngineType = Type,
-                IsNative = true,
-                InternalCode = language,
-            }
-        );
+        return Task.FromResult(new Translation.Contracts.LanguageInfo { IsNative = true, InternalCode = language });
     }
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

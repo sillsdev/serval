@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
@@ -11,11 +11,6 @@
 	</PropertyGroup>
 
 	<Import Project="../../../AssemblyInfo.props" />
-
-	<ItemGroup>
-		<PackageReference Include="Bugsnag" Version="4.1.0" />
-		<PackageReference Include="Bugsnag.AspNet.Core" Version="4.1.0" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Serval\src\Serval.Translation.Contracts\Serval.Translation.Contracts.csproj" />

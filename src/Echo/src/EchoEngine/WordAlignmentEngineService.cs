@@ -6,8 +6,6 @@ namespace EchoEngine;
 public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallelCorpusService parallelCorpusService)
     : IWordAlignmentEngineService
 {
-    public string Type => "echo";
-
     private readonly BackgroundTaskQueue _taskQueue = taskQueue;
     private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
