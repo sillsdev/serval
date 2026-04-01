@@ -148,18 +148,18 @@ public abstract class PreprocessBuildJob<TEngine>(
             (
                 string parallelCorpusId,
                 string monolingualCorpusId,
-                IReadOnlyList<UsfmVersificationError> errors
+                IReadOnlyList<UsfmVersificationErrorContract> errors
             ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
         )
         {
-            foreach (UsfmVersificationError error in errors)
+            foreach (UsfmVersificationErrorContract error in errors)
             {
                 warnings.Add(
                     error.Type switch
                     {
-                        UsfmVersificationErrorType.InvalidChapterNumber =>
+                        Serval.Shared.Contracts.UsfmVersificationErrorType.InvalidChapterNumber =>
                             $"Invalid chapter number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
-                        UsfmVersificationErrorType.InvalidVerseNumber =>
+                        Serval.Shared.Contracts.UsfmVersificationErrorType.InvalidVerseNumber =>
                             $"Invalid verse number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
                         _ =>
                             $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
@@ -172,7 +172,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             (
                 string parallelCorpusId,
                 string monolingualCorpusId,
-                MissingParentProjectError error
+                MissingParentProjectErrorContract error
             ) in ParallelCorpusService.FindMissingParentProjects(parallelCorpora)
         )
         {

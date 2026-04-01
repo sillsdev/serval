@@ -1,4 +1,7 @@
 ﻿using SIL.Machine.Corpora;
+using SIL.Machine.PunctuationAnalysis;
+using SIL.Machine.Translation;
+using SIL.Scripture;
 
 namespace Serval.Translation.Services;
 
@@ -6,18 +9,16 @@ public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    IContractMapper contractMapper,
-    IParallelCorpusService parallelCorpusService
+    IContractMapper contractMapper
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Build> _builds = builds;
-    private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
     private readonly IContractMapper _contractMapper = contractMapper;
     private const string AIDisclaimerRemark =
         "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
 
-    public async Task<IEnumerable<Pretranslation>> GetAllAsync(
+    public async Task<IReadOnlyList<Pretranslation>> GetAllAsync(
         string engineId,
         int modelRevision,
         string corpusId,
@@ -111,25 +112,13 @@ public class PretranslationService(
 
         ParallelCorpusContract[] parallelCorpora = _contractMapper.Map(build, engine).ToArray();
 
-        IEnumerable<PretranslationContract> pretranslations = (
-            await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
-        ).Select(p => new PretranslationContract
-        {
-            CorpusId = corpusId,
-            TextId = textId,
-            SourceRefs = p.SourceRefs ?? [],
-            TargetRefs = p.TargetRefs ?? [],
-            Translation = p.Translation,
-            Alignment = p
-                .Alignment?.Select(wp => new Shared.Contracts.AlignedWordPairContract
-                {
-                    SourceIndex = wp.SourceIndex,
-                    TargetIndex = wp.TargetIndex,
-                })
-                .ToArray(),
-            SourceTokens = p.SourceTokens,
-            TranslationTokens = p.TranslationTokens,
-        });
+        IReadOnlyList<Pretranslation> pretranslations = await GetAllAsync(
+            engineId,
+            modelRevision,
+            corpusId,
+            textId,
+            cancellationToken
+        );
 
         string? targetQuoteConvention = null;
         if (quoteNormalizationBehavior == PretranslationNormalizationBehavior.Denormalized)
@@ -148,11 +137,11 @@ public class PretranslationService(
                 _ => throw new InvalidEnumArgumentException(nameof(textOrigin)),
             };
 
-            usfm = _parallelCorpusService.UpdateTargetUsfm(
+            usfm = UpdateTargetUsfm(
                 parallelCorpora,
                 corpusId,
                 textId,
-                textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations.ToArray(),
+                textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations,
                 textBehavior,
                 Map(paragraphMarkerBehavior),
                 Map(embedBehavior),
@@ -168,11 +157,11 @@ public class PretranslationService(
         )
         {
             // Copy and update the source book if it exists
-            usfm = _parallelCorpusService.UpdateSourceUsfm(
+            usfm = UpdateSourceUsfm(
                 parallelCorpora,
                 corpusId,
                 textId,
-                textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations.ToArray(),
+                textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations,
                 Map(paragraphMarkerBehavior),
                 Map(embedBehavior),
                 Map(styleMarkerBehavior),
@@ -183,6 +172,290 @@ public class PretranslationService(
         }
 
         return usfm;
+    }
+
+    private static string UpdateSourceUsfm(
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
+        string corpusId,
+        string bookId,
+        IReadOnlyList<Pretranslation> pretranslations,
+        UpdateUsfmMarkerBehavior paragraphBehavior,
+        UpdateUsfmMarkerBehavior embedBehavior,
+        UpdateUsfmMarkerBehavior styleBehavior,
+        bool placeParagraphMarkers,
+        IEnumerable<string>? remarks,
+        string? targetQuoteConvention
+    )
+    {
+        return UpdateUsfm(
+            parallelCorpora,
+            corpusId,
+            bookId,
+            pretranslations,
+            UpdateUsfmTextBehavior.StripExisting,
+            paragraphBehavior,
+            embedBehavior,
+            styleBehavior,
+            placeParagraphMarkers ? [new PlaceMarkersUsfmUpdateBlockHandler()] : null,
+            remarks,
+            targetQuoteConvention,
+            isSource: true
+        );
+    }
+
+    private static string UpdateTargetUsfm(
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
+        string corpusId,
+        string bookId,
+        IReadOnlyList<Pretranslation> pretranslations,
+        UpdateUsfmTextBehavior textBehavior,
+        UpdateUsfmMarkerBehavior paragraphBehavior,
+        UpdateUsfmMarkerBehavior embedBehavior,
+        UpdateUsfmMarkerBehavior styleBehavior,
+        IEnumerable<string>? remarks,
+        string? targetQuoteConvention
+    )
+    {
+        return UpdateUsfm(
+            parallelCorpora,
+            corpusId,
+            bookId,
+            pretranslations,
+            textBehavior,
+            paragraphBehavior,
+            embedBehavior,
+            styleBehavior,
+            updateBlockHandlers: null,
+            remarks,
+            targetQuoteConvention,
+            isSource: false
+        );
+    }
+
+    private static string UpdateUsfm(
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
+        string corpusId,
+        string bookId,
+        IEnumerable<Pretranslation> pretranslations,
+        UpdateUsfmTextBehavior textBehavior,
+        UpdateUsfmMarkerBehavior paragraphBehavior,
+        UpdateUsfmMarkerBehavior embedBehavior,
+        UpdateUsfmMarkerBehavior styleBehavior,
+        IEnumerable<IUsfmUpdateBlockHandler>? updateBlockHandlers,
+        IEnumerable<string>? remarks,
+        string? targetQuoteConvention,
+        bool isSource
+    )
+    {
+        CorpusBundle corpusBundle = new(parallelCorpora);
+        ParallelCorpusContract corpus = corpusBundle.ParallelCorpora.Single(c => c.Id == corpusId);
+        CorpusFileContract sourceFile = corpus.SourceCorpora[0].Files[0];
+        CorpusFileContract targetFile = corpus.TargetCorpora[0].Files[0];
+        ParatextProjectSettings? sourceSettings = corpusBundle.GetSettings(sourceFile.Location);
+        ParatextProjectSettings? targetSettings = corpusBundle.GetSettings(targetFile.Location);
+
+        using Shared.Services.ZipParatextProjectTextUpdater updater = corpusBundle.GetTextUpdater(
+            isSource ? sourceFile.Location : targetFile.Location
+        );
+        string usfm =
+            updater.UpdateUsfm(
+                bookId,
+                pretranslations
+                    .Select(p =>
+                        Map(
+                            p,
+                            isSource,
+                            sourceSettings?.Versification,
+                            targetSettings?.Versification,
+                            paragraphBehavior,
+                            styleBehavior
+                        )
+                    )
+                    .Where(row => row.Refs.Any())
+                    .OrderBy(row => row.Refs[0])
+                    .ToArray(),
+                isSource ? sourceSettings?.FullName : targetSettings?.FullName,
+                textBehavior,
+                paragraphBehavior,
+                embedBehavior,
+                styleBehavior,
+                updateBlockHandlers: updateBlockHandlers,
+                remarks: remarks,
+                errorHandler: (_) => true,
+                compareSegments: isSource
+            ) ?? "";
+
+        if (!string.IsNullOrEmpty(targetQuoteConvention))
+            usfm = DenormalizeQuotationMarks(usfm, targetQuoteConvention);
+        return usfm;
+    }
+
+    private static UpdateUsfmRow Map(
+        Pretranslation pretranslation,
+        bool isSource,
+        ScrVers? sourceVersification,
+        ScrVers? targetVersification,
+        UpdateUsfmMarkerBehavior paragraphBehavior,
+        UpdateUsfmMarkerBehavior styleBehavior
+    )
+    {
+        Dictionary<string, object>? metadata = null;
+        if (pretranslation.Alignment is not null)
+        {
+            metadata = new Dictionary<string, object>
+            {
+                {
+                    PlaceMarkersAlignmentInfo.MetadataKey,
+                    new PlaceMarkersAlignmentInfo(
+                        pretranslation.SourceTokens,
+                        pretranslation.TranslationTokens,
+                        CreateWordAlignmentMatrix(pretranslation),
+                        paragraphBehavior,
+                        styleBehavior
+                    )
+                },
+            };
+        }
+
+        ScriptureRef[] refs;
+        if (isSource)
+        {
+            refs =
+            [
+                .. (
+                    pretranslation.SourceRefs?.Any() ?? false
+                        ? Map(pretranslation.SourceRefs, sourceVersification)
+                        : Map(pretranslation.TargetRefs ?? [], targetVersification)
+                ),
+            ];
+        }
+        else
+        {
+            // the pretranslations are generated from the source book and inserted into the target book
+            // use relaxed references since the USFM structure may not be the same
+            refs = [.. Map(pretranslation.TargetRefs ?? [], targetVersification).Select(r => r.ToRelaxed())];
+        }
+
+        return new UpdateUsfmRow(refs, pretranslation.Translation, metadata);
+    }
+
+    private static IEnumerable<ScriptureRef> Map(IEnumerable<string> refs, ScrVers? versification)
+    {
+        return refs.Select(r =>
+            {
+                ScriptureRef.TryParse(r, versification, out ScriptureRef sr);
+                return sr;
+            })
+            .Where(r => !r.IsEmpty);
+    }
+
+    private static WordAlignmentMatrix? CreateWordAlignmentMatrix(Pretranslation pretranslation)
+    {
+        if (
+            pretranslation.Alignment is null
+            || pretranslation.SourceTokens is null
+            || pretranslation.TranslationTokens is null
+        )
+        {
+            return null;
+        }
+
+        var matrix = new WordAlignmentMatrix(pretranslation.SourceTokens.Count, pretranslation.TranslationTokens.Count);
+        foreach (Shared.Models.AlignedWordPair wordPair in pretranslation.Alignment)
+            matrix[wordPair.SourceIndex, wordPair.TargetIndex] = true;
+
+        return matrix;
+    }
+
+    private static string DenormalizeQuotationMarks(string usfm, string quoteConvention)
+    {
+        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(quoteConvention);
+        if (targetQuoteConvention is null)
+            return usfm;
+
+        QuotationMarkDenormalizationFirstPass quotationMarkDenormalizationFirstPass = new(targetQuoteConvention);
+
+        UsfmParser.Parse(usfm, quotationMarkDenormalizationFirstPass);
+        List<(int ChapterNumber, QuotationMarkUpdateStrategy Strategy)> bestChapterStrategies =
+            quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
+
+        QuotationMarkDenormalizationUsfmUpdateBlockHandler quotationMarkDenormalizer = new(
+            targetQuoteConvention,
+            new QuotationMarkUpdateSettings(
+                chapterStrategies: bestChapterStrategies.Select(tuple => tuple.Strategy).ToList()
+            )
+        );
+        int denormalizableChapterCount = bestChapterStrategies.Count(tup =>
+            tup.Strategy != QuotationMarkUpdateStrategy.Skip
+        );
+        List<string> remarks = [];
+        string quotationDenormalizationRemark;
+        if (denormalizableChapterCount == bestChapterStrategies.Count)
+        {
+            quotationDenormalizationRemark =
+                "The quote style in all chapters has been automatically adjusted to match the rest of the project.";
+        }
+        else if (denormalizableChapterCount > 0)
+        {
+            quotationDenormalizationRemark =
+                "The quote style in the following chapters has been automatically adjusted to match the rest of the project: "
+                + GetChapterRangesString(
+                    bestChapterStrategies
+                        .Where(tuple => tuple.Strategy != QuotationMarkUpdateStrategy.Skip)
+                        .Select(tuple => tuple.ChapterNumber)
+                        .ToList()
+                )
+                + ".";
+        }
+        else
+        {
+            quotationDenormalizationRemark =
+                "The quote style was not automatically adjusted to match the rest of your project in any chapters.";
+        }
+        remarks.Add(quotationDenormalizationRemark);
+
+        var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer], remarks: remarks);
+        UsfmParser.Parse(usfm, updater);
+
+        usfm = updater.GetUsfm();
+        return usfm;
+    }
+
+    private static string GetChapterRangesString(List<int> chapterNumbers)
+    {
+        chapterNumbers = chapterNumbers.Order().ToList();
+        int start = chapterNumbers[0];
+        int end = chapterNumbers[0];
+        List<string> chapterRangeStrings = [];
+        foreach (int chapterNumber in chapterNumbers[1..])
+        {
+            if (chapterNumber == end + 1)
+            {
+                end = chapterNumber;
+            }
+            else
+            {
+                if (start == end)
+                {
+                    chapterRangeStrings.Add(start.ToString(CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    chapterRangeStrings.Add($"{start}-{end}");
+                }
+                start = chapterNumber;
+                end = chapterNumber;
+            }
+        }
+        if (start == end)
+        {
+            chapterRangeStrings.Add(start.ToString(CultureInfo.InvariantCulture));
+        }
+        else
+        {
+            chapterRangeStrings.Add($"{start}-{end}");
+        }
+        return string.Join(", ", chapterRangeStrings);
     }
 
     /// <summary>

@@ -39,9 +39,9 @@ public class NmtPreprocessBuildJob(
         CancellationToken cancellationToken
     )
     {
-        string overallTargetQuoteConventionAnalysis =
-            ParallelCorpusService.AnalyzeTargetQuoteConvention(parallelCorpora)?.BestQuoteConvention?.Name
-            ?? string.Empty;
+        string overallTargetQuoteConventionAnalysis = ParallelCorpusService.AnalyzeTargetQuoteConvention(
+            parallelCorpora
+        );
 
         await PlatformService.UpdateTargetQuoteConventionAsync(
             engineId,
