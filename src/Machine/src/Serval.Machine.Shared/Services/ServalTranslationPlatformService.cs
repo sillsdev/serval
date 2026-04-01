@@ -53,9 +53,9 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
             },
             queueDepth,
             phases
-                ?.Select(p => new BuildPhaseContract
+                ?.Select(p => new PhaseContract
                 {
-                    Stage = (Serval.Shared.Contracts.BuildPhaseStage)p.Stage,
+                    Stage = (PhaseStage)p.Stage,
                     Step = p.Step,
                     StepCount = p.StepCount,
                     Started = p.Started,
@@ -216,7 +216,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                             break;
                         case "alignment":
                             reader.Read();
-                            alignedWordPairs = SIL.Machine.Corpora.AlignedWordPair.Parse(reader.GetString()).ToArray();
+                            alignedWordPairs = AlignedWordPair.Parse(reader.GetString()).ToArray();
                             break;
                         default:
                             throw new JsonException(

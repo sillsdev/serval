@@ -182,7 +182,7 @@ public class WordAlignmentEnginesController(
     )
     {
         await AuthorizeAsync(id, cancellationToken);
-        WordAlignmentResultContract? result = await _engineService.GetWordAlignmentAsync(
+        WordAlignmentResult? result = await _engineService.GetWordAlignmentAsync(
             id,
             wordAlignmentRequest.SourceSegment,
             wordAlignmentRequest.TargetSegment,
@@ -1040,7 +1040,7 @@ public class WordAlignmentEnginesController(
         };
     }
 
-    private WordAlignmentResultDto Map(WordAlignmentResultContract source)
+    private WordAlignmentResultDto Map(WordAlignmentResult source)
     {
         return new WordAlignmentResultDto
         {
@@ -1050,7 +1050,7 @@ public class WordAlignmentEnginesController(
         };
     }
 
-    private AlignedWordPairDto Map(AlignedWordPairContract source)
+    private AlignedWordPairDto Map(AlignedWordPair source)
     {
         return new AlignedWordPairDto()
         {
@@ -1094,9 +1094,9 @@ public class WordAlignmentEnginesController(
         };
     }
 
-    private static BuildPhaseDto Map(BuildPhase source)
+    private static PhaseDto Map(Phase source)
     {
-        return new BuildPhaseDto
+        return new PhaseDto
         {
             Stage = source.Stage,
             Step = source.Step,

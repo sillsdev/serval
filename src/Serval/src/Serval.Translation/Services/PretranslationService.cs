@@ -9,12 +9,12 @@ public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    IContractMapper contractMapper
+    ContractMapper contractMapper
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Build> _builds = builds;
-    private readonly IContractMapper _contractMapper = contractMapper;
+    private readonly ContractMapper _contractMapper = contractMapper;
     private const string AIDisclaimerRemark =
         "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
 
@@ -421,7 +421,7 @@ public class PretranslationService(
         return usfm;
     }
 
-    private static string GetChapterRangesString(List<int> chapterNumbers)
+    internal static string GetChapterRangesString(List<int> chapterNumbers)
     {
         chapterNumbers = chapterNumbers.Order().ToList();
         int start = chapterNumbers[0];

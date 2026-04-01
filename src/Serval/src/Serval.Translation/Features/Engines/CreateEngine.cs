@@ -36,13 +36,15 @@ public class CreateEngineHandler(
     IDataAccessContext dataAccessContext,
     IRepository<Engine> engines,
     IEngineServiceFactory engineServiceFactory,
-    IDtoMapper mapper,
-    IOptionsMonitor<TranslationOptions> translationOptions
+    DtoMapper mapper
 ) : IRequestHandler<CreateEngine, CreateEngineResponse>
 {
-    public async Task<CreateEngineResponse> HandleAsync(CreateEngine request, CancellationToken cancellationToken)
+    public async Task<CreateEngineResponse> HandleAsync(
+        CreateEngine request,
+        CancellationToken cancellationToken = default
+    )
     {
-        if (!translationOptions.CurrentValue.Engines.Any(e => e.Type == request.EngineConfig.Type))
+        if (!engineServiceFactory.EngineTypeExists(request.EngineConfig.Type))
             throw new InvalidOperationException($"'{request.EngineConfig.Type}' is an invalid engine type.");
 
         return await dataAccessContext.WithTransactionAsync(

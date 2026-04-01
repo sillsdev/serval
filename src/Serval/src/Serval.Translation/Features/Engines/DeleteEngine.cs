@@ -10,7 +10,7 @@ public class DeleteEngineHandler(
     IEngineServiceFactory engineServiceFactory
 ) : IRequestHandler<DeleteEngine>
 {
-    public async Task HandleAsync(DeleteEngine request, CancellationToken cancellationToken)
+    public async Task HandleAsync(DeleteEngine request, CancellationToken cancellationToken = default)
     {
         await dataAccessContext.WithTransactionAsync(
             async (ct) =>

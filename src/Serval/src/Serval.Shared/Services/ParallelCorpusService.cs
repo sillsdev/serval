@@ -199,7 +199,6 @@ public class ParallelCorpusService : IParallelCorpusService
         ignoreUsfmMarkers ??= [];
 
         bool parallelTrainingDataPresent = false;
-        List<ParallelRowContract> keyTermTrainingData = new();
 
         // Iterate over USFM and Text training corpora separately.
         // This is not only because they use different keys, but if we have text corpora
@@ -243,10 +242,11 @@ public class ParallelCorpusService : IParallelCorpusService
             }
 
             // Align source and target training data
-            ParallelTextRow[] trainingRows =
-            [
-                .. sourceTrainingCorpus.AlignRows(targetTrainingCorpus, allSourceRows: true, allTargetRows: true),
-            ];
+        IEnumerable<ParallelTextRow> trainingRows = sourceTrainingCorpus.AlignRows(
+            targetTrainingCorpus,
+            allSourceRows: true,
+            allTargetRows: true
+        );
 
             // After merging segments across ranges, run the 'train' preprocessing function
             // on each training row and record whether any parallel training data was present
@@ -273,34 +273,6 @@ public class ParallelCorpusService : IParallelCorpusService
         {
             // Filter out all non-scripture; we only train on scripture content
             targetCorpus = targetCorpus.Where(IsScriptureRow);
-        }
-
-        if (useKeyTerms)
-        {
-            // Create a terms corpus for each corpus file
-            ITextCorpus[] sourceTermCorpora = corpusBundle.SourceTermCorpora.SelectMany(c => c.TextCorpora).ToArray();
-            ITextCorpus[] targetTermCorpora = corpusBundle.TargetTermCorpora.SelectMany(c => c.TextCorpora).ToArray();
-
-            // As with scripture data, interlace the source rows randomly
-            // but choose the first non-empty target row, then align
-            IParallelTextCorpus parallelKeyTermCorpus = sourceTermCorpora
-                .ChooseRandom(Seed)
-                .AlignRows(targetTermCorpora.ChooseFirst());
-
-            // Only train on unique key terms pairs
-            foreach (ParallelTextRow row in parallelKeyTermCorpus.DistinctBy(row => (row.SourceText, row.TargetText)))
-            {
-                keyTermTrainingData.Add(
-                    new ParallelRowContract(
-                        row.TextId,
-                        row.SourceRefs,
-                        row.TargetRefs,
-                        row.SourceText,
-                        row.TargetText,
-                        1
-                    )
-                );
-            }
         }
 
         // Since we ultimately need to provide inferences for a particular parallel corpus,
@@ -330,18 +302,14 @@ public class ParallelCorpusService : IParallelCorpusService
             // content for inferencing (the target is only needed in some contexts like word alignment)
             // as well as the target training corpus in order to determine whether a row was already
             // used in training.
-            INParallelTextCorpus inferencingCorpus = new ITextCorpus[]
+            IEnumerable<NParallelTextRow> inferencingCorpus = new ITextCorpus[]
             {
                 sourceInferencingCorpus,
                 targetInferencingCorpus,
                 targetCorpus,
             }.AlignMany([true, false, false]);
 
-            foreach (
-                (ParallelRowContract row, bool isInTrainingData) in CollapseInferencingRanges(
-                    inferencingCorpus.ToArray()
-                )
-            )
+            foreach ((ParallelRowContract row, bool isInTrainingData) in CollapseInferencingRanges(inferencingCorpus))
             {
                 await inference(row, isInTrainingData, parallelCorpus.Id);
             }
@@ -352,9 +320,30 @@ public class ParallelCorpusService : IParallelCorpusService
         // filtered by the filters specified in the monolingual corpora.
         if (useKeyTerms && parallelTrainingDataPresent)
         {
-            foreach (ParallelRowContract row in keyTermTrainingData)
+            // Create a terms corpus for each corpus file
+            ITextCorpus[] sourceTermCorpora = corpusBundle.SourceTermCorpora.SelectMany(c => c.TextCorpora).ToArray();
+            ITextCorpus[] targetTermCorpora = corpusBundle.TargetTermCorpora.SelectMany(c => c.TextCorpora).ToArray();
+
+            // As with scripture data, interlace the source rows randomly
+            // but choose the first non-empty target row, then align
+            IParallelTextCorpus parallelKeyTermCorpus = sourceTermCorpora
+                .ChooseRandom(Seed)
+                .AlignRows(targetTermCorpora.ChooseFirst());
+
+            // Only train on unique key terms pairs
+            foreach (ParallelTextRow row in parallelKeyTermCorpus.DistinctBy(row => (row.SourceText, row.TargetText)))
             {
-                await train(row, TrainingDataType.KeyTerm);
+                await train(
+                    new ParallelRowContract(
+                        row.TextId,
+                        row.SourceRefs,
+                        row.TargetRefs,
+                        row.SourceText,
+                        row.TargetText,
+                        1
+                    ),
+                    TrainingDataType.KeyTerm
+                );
             }
         }
     }
@@ -395,7 +384,7 @@ public class ParallelCorpusService : IParallelCorpusService
         return textCorpus;
     }
 
-    private static IEnumerable<ParallelRowContract> CollapseRanges(ParallelTextRow[] rows)
+    private static IEnumerable<ParallelRowContract> CollapseRanges(IEnumerable<ParallelTextRow> rows)
     {
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
@@ -477,7 +466,9 @@ public class ParallelCorpusService : IParallelCorpusService
         }
     }
 
-    private static IEnumerable<(ParallelRowContract, bool)> CollapseInferencingRanges(NParallelTextRow[] rows)
+    private static IEnumerable<(ParallelRowContract, bool)> CollapseInferencingRanges(
+        IEnumerable<NParallelTextRow> rows
+    )
     {
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
@@ -624,5 +615,25 @@ public class ParallelCorpusService : IParallelCorpusService
         }
 
         return [.. books.Select(bookName => Canon.BookIdToNumber(bookName))];
+    }
+
+    public Dictionary<string, List<int>> GetChapters(
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
+        string fileLocation,
+        string scriptureRange
+    )
+    {
+        CorpusBundle corpusBundle = new(parallelCorpora);
+        try
+        {
+            return ScriptureRangeParser.GetChapters(
+                scriptureRange,
+                corpusBundle.GetSettings(fileLocation)?.Versification
+            );
+        }
+        catch (ArgumentException ae)
+        {
+            throw new InvalidOperationException($"The scripture range {scriptureRange} is not valid: {ae.Message}");
+        }
     }
 }

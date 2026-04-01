@@ -56,7 +56,7 @@ public class CorpusServiceTests
                 Corpora,
                 Substitute.For<IRepository<DataFile>>(),
                 DataAccessContext,
-                Substitute.For<IScopedMediator>()
+                Substitute.For<IEventRouter>()
             );
         }
 

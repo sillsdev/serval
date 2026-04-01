@@ -26,10 +26,10 @@ public class StartBuildHandler(
     IDataAccessContext dataAccessContext,
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    IContractMapper contractMapper,
+    ContractMapper contractMapper,
     IEngineServiceFactory engineFactory,
     ILogger<StartBuildHandler> logger,
-    IDtoMapper dtoMapper,
+    DtoMapper dtoMapper,
     IConfiguration configuration
 ) : IRequestHandler<StartBuild, StartBuildResponse>
 {
@@ -38,7 +38,7 @@ public class StartBuildHandler(
         Converters = { new ObjectToInferredTypesConverter() },
     };
 
-    public Task<StartBuildResponse> HandleAsync(StartBuild request, CancellationToken cancellationToken)
+    public Task<StartBuildResponse> HandleAsync(StartBuild request, CancellationToken cancellationToken = default)
     {
         return dataAccessContext.WithTransactionAsync(
             async (ct) =>

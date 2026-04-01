@@ -1,4 +1,5 @@
 ﻿using Serval.Shared.Contracts;
+using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -14,7 +15,7 @@ public class SmtTransferEngineServiceTests
     public async Task CreateAsync()
     {
         using var env = new TestEnvironment();
-        await env.Service.CreateAsync(EngineId2, "Engine 2", "es", "en");
+        await env.Service.CreateAsync(EngineId2, "es", "en", "Engine 2");
         TranslationEngine? engine = await env.Engines.GetAsync(e => e.EngineId == EngineId2);
         Assert.Multiple(() =>
         {
@@ -40,7 +41,6 @@ public class SmtTransferEngineServiceTests
         await env.Service.StartBuildAsync(
             EngineId1,
             BuildId1,
-            null,
             [
                 new ParallelCorpusContract()
                 {
@@ -96,7 +96,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -122,7 +122,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(BuildJobRunnerType.Hangfire);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -147,7 +147,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -177,7 +177,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpusContract>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -216,7 +216,9 @@ public class SmtTransferEngineServiceTests
     public async Task TranslateAsync()
     {
         using var env = new TestEnvironment();
-        TranslationResult result = (await env.Service.TranslateAsync(EngineId1, n: 1, "esto es una prueba."))[0];
+        TranslationResultContract result = (await env.Service.TranslateAsync(EngineId1, n: 1, "esto es una prueba."))[
+            0
+        ];
         Assert.That(result.Translation, Is.EqualTo("this is a TEST."));
     }
 
@@ -224,7 +226,7 @@ public class SmtTransferEngineServiceTests
     public async Task GetWordGraphAsync()
     {
         using var env = new TestEnvironment();
-        WordGraph result = await env.Service.GetWordGraphAsync(EngineId1, "esto es una prueba.");
+        WordGraphContract result = await env.Service.GetWordGraphAsync(EngineId1, "esto es una prueba.");
         Assert.That(
             result.Arcs.Select(a => string.Join(' ', a.TargetTokens)),
             Is.EqualTo(new[] { "this is", "a test", "." })
@@ -232,11 +234,11 @@ public class SmtTransferEngineServiceTests
     }
 
     [Test]
-    public void GetLanguageInfo()
+    public async Task GetLanguageInfoAsync()
     {
         using var env = new TestEnvironment();
-        env.Service.IsLanguageNativeToModel("en", out string internalCode);
-        Assert.That(internalCode, Is.EqualTo("en"));
+        LanguageInfoContract info = await env.Service.GetLanguageInfoAsync("en");
+        Assert.That(info.InternalCode, Is.EqualTo("en"));
     }
 
     private class TestEnvironment : DisposableBase
@@ -713,7 +715,7 @@ public class SmtTransferEngineServiceTests
                         _env.SharedFileService,
                         _env._lockFactory,
                         _env.TrainSegmentPairs,
-                        new ParallelCorpusService(),
+                        Substitute.For<IParallelCorpusService>(),
                         _env.BuildJobOptions
                     )
                     {

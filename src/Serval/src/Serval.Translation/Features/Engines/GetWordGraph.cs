@@ -31,7 +31,10 @@ public record GetWordGraphResponse(
 public class GetWordGraphHandler(IRepository<Engine> engines, IEngineServiceFactory engineServiceFactory)
     : IRequestHandler<GetWordGraph, GetWordGraphResponse>
 {
-    public async Task<GetWordGraphResponse> HandleAsync(GetWordGraph request, CancellationToken cancellationToken)
+    public async Task<GetWordGraphResponse> HandleAsync(
+        GetWordGraph request,
+        CancellationToken cancellationToken = default
+    )
     {
         Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
         if (engine is null)
