@@ -1,6 +1,6 @@
 namespace Serval.Shared.Contracts;
 
-public record AlignedWordPair
+public record AlignedWordPairContract
 {
     public required int SourceIndex { get; set; }
     public required int TargetIndex { get; set; }

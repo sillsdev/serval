@@ -25,7 +25,7 @@ public class WordAlignmentPreprocessBuildJob(
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -111,7 +111,7 @@ public class WordAlignmentPreprocessBuildJob(
         int wordAlignCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
@@ -150,7 +150,7 @@ public class WordAlignmentPreprocessBuildJob(
     protected override Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {

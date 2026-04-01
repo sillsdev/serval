@@ -2570,7 +2570,7 @@ public class TranslationEngineTests
                 .StartBuildAsync(
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                     Arg.Any<string?>(),
                     Arg.Any<CancellationToken>()
                 )
@@ -2778,7 +2778,7 @@ public class TranslationEngineTests
                 .StartBuildAsync(
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                     Arg.Any<string?>(),
                     Arg.Any<CancellationToken>()
                 )

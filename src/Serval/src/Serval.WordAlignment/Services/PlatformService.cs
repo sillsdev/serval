@@ -226,9 +226,9 @@ public class PlatformService(
 
     public async Task UpdateBuildStatusAsync(
         string buildId,
-        BuildProgressStatus progressStatus,
+        BuildProgressStatusContract progressStatus,
         int? queueDepth = null,
-        IReadOnlyCollection<BuildPhase>? phases = null,
+        IReadOnlyCollection<BuildPhaseContract>? phases = null,
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default
@@ -252,7 +252,18 @@ public class PlatformService(
                     u.Set(b => b.QueueDepth, queueDepth.Value);
                 if (phases is not null && phases.Count > 0)
                 {
-                    u.Set(b => b.Phases, phases);
+                    u.Set(
+                        b => b.Phases,
+                        [
+                            .. phases.Select(p => new BuildPhase
+                            {
+                                Stage = p.Stage,
+                                Step = p.Step,
+                                Started = p.Started,
+                                StepCount = p.StepCount,
+                            }),
+                        ]
+                    );
                 }
                 if (started.HasValue)
                     u.Set(b => b.DateStarted, started.Value);
@@ -287,7 +298,7 @@ public class PlatformService(
 
     public async Task InsertWordAlignmentsAsync(
         string engineId,
-        IAsyncEnumerable<Contracts.WordAlignmentData> wordAlignments,
+        IAsyncEnumerable<WordAlignmentContract> wordAlignments,
         CancellationToken cancellationToken = default
     )
     {
@@ -297,7 +308,7 @@ public class PlatformService(
         int nextModelRevision = engine.ModelRevision + 1;
 
         var batch = new List<Models.WordAlignment>();
-        await foreach (WordAlignmentData item in wordAlignments.WithCancellation(cancellationToken))
+        await foreach (WordAlignmentContract item in wordAlignments.WithCancellation(cancellationToken))
         {
             batch.Add(
                 new Models.WordAlignment
@@ -334,7 +345,7 @@ public class PlatformService(
     public async Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        ExecutionData executionData,
+        ExecutionDataContract executionData,
         CancellationToken cancellationToken = default
     )
     {

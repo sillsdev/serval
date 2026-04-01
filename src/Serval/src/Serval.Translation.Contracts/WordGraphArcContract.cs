@@ -1,6 +1,6 @@
 namespace Serval.Translation.Contracts;
 
-public record WordGraphArc
+public record WordGraphArcContract
 {
     public required int PrevState { get; set; }
     public required int NextState { get; set; }
@@ -9,6 +9,6 @@ public record WordGraphArc
     public required IReadOnlyList<double> Confidences { get; set; }
     public required int SourceSegmentStart { get; set; }
     public required int SourceSegmentEnd { get; set; }
-    public required IReadOnlyList<AlignedWordPair> Alignment { get; set; }
+    public required IReadOnlyList<AlignedWordPairContract> Alignment { get; set; }
     public required IReadOnlyList<IReadOnlySet<TranslationSource>> Sources { get; set; }
 }

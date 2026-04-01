@@ -43,7 +43,7 @@ public class CorpusService(
                     new CorpusUpdated(
                         corpus.Id,
                         [
-                            .. corpus.Files.Select(f => new CorpusFileView(
+                            .. corpus.Files.Select(f => new CorpusDataFileContract(
                                 File: Map(corpusDataFilesDict[f.FileRef]),
                                 f.TextId ?? corpusDataFilesDict[f.FileRef].Name
                             )),
@@ -69,8 +69,8 @@ public class CorpusService(
         );
     }
 
-    private static DataFileView Map(DataFile dataFile)
+    private static DataFileContract Map(DataFile dataFile)
     {
-        return new DataFileView(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format);
+        return new DataFileContract(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format);
     }
 }

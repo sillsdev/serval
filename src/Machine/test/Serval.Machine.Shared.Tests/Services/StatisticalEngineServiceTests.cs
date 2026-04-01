@@ -41,10 +41,10 @@ public class StatisticalEngineServiceTests
             BuildId1,
             null,
             [
-                new FilteredParallelCorpus()
+                new ParallelCorpusContract()
                 {
                     Id = CorpusId1,
-                    SourceCorpora = new List<FilteredMonolingualCorpus>()
+                    SourceCorpora = new List<MonolingualCorpusContract>()
                     {
                         new()
                         {
@@ -55,7 +55,7 @@ public class StatisticalEngineServiceTests
                             InferenceTextIds = null,
                         },
                     },
-                    TargetCorpora = new List<FilteredMonolingualCorpus>()
+                    TargetCorpora = new List<MonolingualCorpusContract>()
                     {
                         new()
                         {
@@ -89,7 +89,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<FilteredParallelCorpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpusContract>());
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -116,7 +116,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment(trainJobRunnerType);
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<FilteredParallelCorpus>());
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<ParallelCorpusContract>());
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);

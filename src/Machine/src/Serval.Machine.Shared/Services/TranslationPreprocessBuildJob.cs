@@ -25,7 +25,7 @@ public class TranslationPreprocessBuildJob(
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -111,7 +111,7 @@ public class TranslationPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {

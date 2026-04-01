@@ -6,14 +6,14 @@ public class PretranslationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    ICorpusMappingService corpusMappingService,
+    IContractMapper contractMapper,
     IParallelCorpusService parallelCorpusService
 ) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
 {
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Build> _builds = builds;
     private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
-    private readonly ICorpusMappingService _corpusMappingService = corpusMappingService;
+    private readonly IContractMapper _contractMapper = contractMapper;
     private const string AIDisclaimerRemark =
         "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
 
@@ -109,11 +109,11 @@ public class PretranslationService(
 
         List<string> remarks = [disclaimerRemark, markerPlacementRemark];
 
-        FilteredParallelCorpus[] parallelCorpora = _corpusMappingService.Map(build, engine).ToArray();
+        ParallelCorpusContract[] parallelCorpora = _contractMapper.Map(build, engine).ToArray();
 
-        IEnumerable<PretranslationData> pretranslations = (
+        IEnumerable<PretranslationContract> pretranslations = (
             await GetAllAsync(engineId, modelRevision, corpusId, textId, cancellationToken)
-        ).Select(p => new PretranslationData
+        ).Select(p => new PretranslationContract
         {
             CorpusId = corpusId,
             TextId = textId,
@@ -121,7 +121,7 @@ public class PretranslationService(
             TargetRefs = p.TargetRefs ?? [],
             Translation = p.Translation,
             Alignment = p
-                .Alignment?.Select(wp => new Shared.Contracts.AlignedWordPair
+                .Alignment?.Select(wp => new Shared.Contracts.AlignedWordPairContract
                 {
                     SourceIndex = wp.SourceIndex,
                     TargetIndex = wp.TargetIndex,

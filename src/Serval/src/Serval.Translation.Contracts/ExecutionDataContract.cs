@@ -1,6 +1,6 @@
 namespace Serval.Translation.Contracts;
 
-public record ExecutionData
+public record ExecutionDataContract
 {
     public int? TrainCount { get; init; }
     public int? PretranslateCount { get; init; }

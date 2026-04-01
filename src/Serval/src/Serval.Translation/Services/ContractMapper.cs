@@ -1,14 +1,14 @@
 namespace Serval.Translation.Services;
 
-public class CorpusMappingService(
+public class ContractMapper(
     IOptionsMonitor<DataFileOptions> dataFileOptions,
     IParallelCorpusService parallelCorpusService
-) : ICorpusMappingService
+) : IContractMapper
 {
     private readonly IOptionsMonitor<DataFileOptions> _dataFileOptions = dataFileOptions;
     private readonly IParallelCorpusService _parallelCorpusService = parallelCorpusService;
 
-    public IReadOnlyList<FilteredParallelCorpus> Map(Build build, Engine engine)
+    public IReadOnlyList<ParallelCorpusContract> Map(Build build, Engine engine)
     {
         if (engine.ParallelCorpora.Any())
         {
@@ -20,9 +20,9 @@ public class CorpusMappingService(
         }
     }
 
-    private List<FilteredParallelCorpus> Map(Build build, Engine engine, IReadOnlyList<Corpus> corpora)
+    private List<ParallelCorpusContract> Map(Build build, Engine engine, IReadOnlyList<Corpus> corpora)
     {
-        List<FilteredParallelCorpus> mappedParallelCorpora = [];
+        List<ParallelCorpusContract> mappedParallelCorpora = [];
 
         Dictionary<string, TrainingCorpus>? trainingCorpora = build.TrainOn?.ToDictionary(c => c.CorpusRef!);
         Dictionary<string, PretranslateCorpus>? pretranslateCorpora = build.Pretranslate?.ToDictionary(c =>
@@ -43,9 +43,9 @@ public class CorpusMappingService(
             TrainingCorpus? trainingCorpus = trainingCorpora?.GetValueOrDefault(source.Id);
             PretranslateCorpus? pretranslateCorpus = pretranslateCorpora?.GetValueOrDefault(source.Id);
 
-            IEnumerable<ResolvedCorpusFile> sourceFiles = source.SourceFiles.Select(Map);
-            IEnumerable<ResolvedCorpusFile> targetFiles = source.TargetFiles.Select(Map);
-            FilteredMonolingualCorpus sourceCorpus = new()
+            IEnumerable<CorpusFileContract> sourceFiles = source.SourceFiles.Select(Map);
+            IEnumerable<CorpusFileContract> targetFiles = source.TargetFiles.Select(Map);
+            MonolingualCorpusContract sourceCorpus = new()
             {
                 Id = source.Id,
                 Language = source.SourceLanguage,
@@ -53,7 +53,7 @@ public class CorpusMappingService(
                 TrainOnAll = trainOnAllCorpora,
                 PretranslateAll = pretranslateAllCorpora,
             };
-            FilteredMonolingualCorpus targetCorpus = new()
+            MonolingualCorpusContract targetCorpus = new()
             {
                 Id = source.Id,
                 Language = source.TargetLanguage,
@@ -125,7 +125,7 @@ public class CorpusMappingService(
                 targetCorpus.PretranslateAll =
                     targetCorpus.InferenceChapters is null && targetCorpus.InferenceTextIds is null;
             }
-            FilteredParallelCorpus corpus = new()
+            ParallelCorpusContract corpus = new()
             {
                 Id = source.Id,
                 SourceCorpora = [sourceCorpus],
@@ -136,9 +136,9 @@ public class CorpusMappingService(
         return mappedParallelCorpora;
     }
 
-    private IReadOnlyList<FilteredParallelCorpus> Map(Build build, IReadOnlyList<ParallelCorpus> parallelCorpora)
+    private IReadOnlyList<ParallelCorpusContract> Map(Build build, IReadOnlyList<ParallelCorpus> parallelCorpora)
     {
-        List<FilteredParallelCorpus> mappedParallelCorpora = [];
+        List<ParallelCorpusContract> mappedParallelCorpora = [];
         Dictionary<string, TrainingCorpus>? trainingCorpora = build.TrainOn?.ToDictionary(c => c.ParallelCorpusRef!);
         Dictionary<string, PretranslateCorpus>? pretranslateCorpora = build.Pretranslate?.ToDictionary(c =>
             c.ParallelCorpusRef!
@@ -166,7 +166,7 @@ public class CorpusMappingService(
                     : null;
 
             mappedParallelCorpora.Add(
-                new FilteredParallelCorpus
+                new ParallelCorpusContract
                 {
                     Id = source.Id,
                     SourceCorpora = source
@@ -204,7 +204,7 @@ public class CorpusMappingService(
         return mappedParallelCorpora;
     }
 
-    private FilteredMonolingualCorpus Map(
+    private MonolingualCorpusContract Map(
         IReadOnlyList<ParallelCorpus> parallelCorpora,
         MonolingualCorpus inputCorpus,
         ParallelCorpusFilter? trainingFilter,
@@ -246,7 +246,7 @@ public class CorpusMappingService(
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
         }
 
-        var returnCorpus = new FilteredMonolingualCorpus
+        var returnCorpus = new MonolingualCorpusContract
         {
             Id = inputCorpus.Id,
             Language = inputCorpus.Language,
@@ -286,9 +286,9 @@ public class CorpusMappingService(
         return returnCorpus;
     }
 
-    public FilteredParallelCorpus Map(Corpus source, Engine engine)
+    public ParallelCorpusContract Map(Corpus source, Engine engine)
     {
-        return new FilteredParallelCorpus
+        return new ParallelCorpusContract
         {
             Id = source.Id,
             SourceCorpora = source.SourceFiles.Select(f => Map(f, engine.SourceLanguage)).ToArray(),
@@ -296,9 +296,9 @@ public class CorpusMappingService(
         };
     }
 
-    private FilteredMonolingualCorpus Map(CorpusFile source, string language)
+    private MonolingualCorpusContract Map(CorpusFile source, string language)
     {
-        return new FilteredMonolingualCorpus
+        return new MonolingualCorpusContract
         {
             Id = source.Id,
             Language = language,
@@ -306,9 +306,9 @@ public class CorpusMappingService(
         };
     }
 
-    private ResolvedCorpusFile Map(CorpusFile source)
+    private CorpusFileContract Map(CorpusFile source)
     {
-        return new ResolvedCorpusFile
+        return new CorpusFileContract
         {
             Location = GetFilePath(source.Filename),
             Format = source.Format,
@@ -316,9 +316,9 @@ public class CorpusMappingService(
         };
     }
 
-    private FilteredParallelCorpus Map(ParallelCorpus source)
+    private ParallelCorpusContract Map(ParallelCorpus source)
     {
-        return new FilteredParallelCorpus
+        return new ParallelCorpusContract
         {
             Id = source.Id,
             SourceCorpora = source.SourceCorpora.Select(Map).ToArray(),
@@ -326,9 +326,9 @@ public class CorpusMappingService(
         };
     }
 
-    private FilteredMonolingualCorpus Map(MonolingualCorpus source)
+    private MonolingualCorpusContract Map(MonolingualCorpus source)
     {
-        return new FilteredMonolingualCorpus
+        return new MonolingualCorpusContract
         {
             Id = source.Id,
             Language = source.Language,

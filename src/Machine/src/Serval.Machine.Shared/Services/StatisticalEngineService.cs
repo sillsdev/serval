@@ -51,7 +51,7 @@ public class StatisticalEngineService(
         state.InitNew();
     }
 
-    public async Task<WordAlignmentResult> AlignAsync(
+    public async Task<WordAlignmentResultContract> AlignAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -64,7 +64,7 @@ public class StatisticalEngineService(
             throw new InvalidOperationException("Engine is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        WordAlignmentResult result = await @lock.ReaderLockAsync(
+        WordAlignmentResultContract result = await @lock.ReaderLockAsync(
             async ct =>
             {
                 IWordAlignmentModel wordAlignmentModel = await state.GetEngineAsync(engine.BuildRevision, ct);
@@ -73,14 +73,16 @@ public class StatisticalEngineService(
                 // there is no way to cancel this call
                 IReadOnlyList<string> sourceTokens = tokenizer.Tokenize(sourceSegment).ToList();
                 IReadOnlyList<string> targetTokens = tokenizer.Tokenize(targetSegment).ToList();
-                IReadOnlyCollection<SIL.Machine.Corpora.AlignedWordPair> wordPairs =
-                    wordAlignmentModel.GetBestAlignedWordPairs(sourceTokens, targetTokens);
-                return new WordAlignmentResult
+                IReadOnlyCollection<AlignedWordPair> wordPairs = wordAlignmentModel.GetBestAlignedWordPairs(
+                    sourceTokens,
+                    targetTokens
+                );
+                return new WordAlignmentResultContract
                 {
                     SourceTokens = sourceTokens,
                     TargetTokens = targetTokens,
                     Alignment = wordPairs
-                        .Select(wp => new Serval.Shared.Contracts.AlignedWordPair
+                        .Select(wp => new AlignedWordPairContract
                         {
                             SourceIndex = wp.SourceIndex,
                             TargetIndex = wp.TargetIndex,
@@ -122,7 +124,7 @@ public class StatisticalEngineService(
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
         CancellationToken cancellationToken = default
     )

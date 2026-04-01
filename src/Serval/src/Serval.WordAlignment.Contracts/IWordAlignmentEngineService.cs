@@ -11,7 +11,7 @@ public interface IWordAlignmentEngineService
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<WordAlignmentResult> AlignAsync(
+    Task<WordAlignmentResultContract> AlignAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -21,7 +21,7 @@ public interface IWordAlignmentEngineService
     Task StartBuildAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
         CancellationToken cancellationToken = default
     );

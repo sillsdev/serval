@@ -5,7 +5,7 @@ public static class IServalBuilderExtensions
     public static IServalBuilder AddTranslation(this IServalBuilder builder)
     {
         builder.Services.AddScoped<IBuildService, BuildService>();
-        builder.Services.AddScoped<ICorpusMappingService, CorpusMappingService>();
+        builder.Services.AddScoped<IContractMapper, ContractMapper>();
         builder.Services.AddScoped<IPretranslationService, PretranslationService>();
         builder.Services.AddScoped<IEngineService, EngineService>();
         builder.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();

@@ -38,7 +38,7 @@ public class TranslateHandler(IRepository<Engine> engines, IEngineServiceFactory
         if (engine.ModelRevision == 0)
             return new(IsAvailable: false);
 
-        IReadOnlyList<TranslationResult> results = await engineServiceFactory
+        IReadOnlyList<TranslationResultContract> results = await engineServiceFactory
             .GetEngineService(engine.Type)
             .TranslateAsync(request.EngineId, request.N, request.Segment, cancellationToken);
 

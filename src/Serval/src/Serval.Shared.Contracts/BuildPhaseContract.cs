@@ -6,7 +6,7 @@ public enum BuildPhaseStage
     Inference,
 }
 
-public record BuildPhase
+public record BuildPhaseContract
 {
     public required BuildPhaseStage Stage { get; init; }
     public int? Step { get; init; }

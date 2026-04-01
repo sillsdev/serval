@@ -7,7 +7,7 @@ public class CorpusUpdatedHandler(IEngineService engineService) : IEventHandler<
         return engineService.UpdateCorpusFilesAsync(evt.CorpusId, [.. evt.Files.Select(Map)], cancellationToken);
     }
 
-    private static CorpusFile Map(CorpusFileView corpusFile)
+    private static CorpusFile Map(CorpusDataFileContract corpusFile)
     {
         return new CorpusFile
         {

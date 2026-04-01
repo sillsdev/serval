@@ -676,7 +676,7 @@ public class PretranslationServiceTests
                 Pretranslations,
                 Engines,
                 Builds,
-                new CorpusMappingService(dataFileOptions, parallelCorpusService),
+                new ContractMapper(dataFileOptions, parallelCorpusService),
                 parallelCorpusService
             );
         }
