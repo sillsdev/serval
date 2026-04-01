@@ -1,6 +1,6 @@
 namespace Serval.Translation.Contracts;
 
-public record Phrase
+public record PhraseContract
 {
     public required int SourceSegmentStart { get; set; }
     public required int SourceSegmentEnd { get; set; }

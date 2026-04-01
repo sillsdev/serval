@@ -1,6 +1,6 @@
 namespace Serval.Shared.Contracts;
 
-public record PretranslationData
+public record PretranslationContract
 {
     public required string CorpusId { get; init; }
     public required string TextId { get; init; }
@@ -9,6 +9,6 @@ public record PretranslationData
     public required string Translation { get; init; }
     public IReadOnlyList<string>? SourceTokens { get; init; }
     public IReadOnlyList<string>? TranslationTokens { get; init; }
-    public IReadOnlyList<AlignedWordPair>? Alignment { get; init; }
+    public IReadOnlyList<AlignedWordPairContract>? Alignment { get; init; }
     public double? Confidence { get; init; }
 }

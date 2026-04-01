@@ -14,7 +14,7 @@ public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
             BuildStage.Preprocess => CreateJob<
                 TranslationEngine,
                 SmtTransferPreprocessBuildJob,
-                IReadOnlyList<FilteredParallelCorpus>
+                IReadOnlyList<ParallelCorpusContract>
             >(engineId, buildId, "smt_transfer", data, buildOptions),
             BuildStage.Postprocess => CreateJob<TranslationEngine, SmtTransferPostprocessBuildJob, (int, double)>(
                 engineId,

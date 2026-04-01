@@ -14,7 +14,7 @@ public class StatisticalHangfireBuildJobFactory : IHangfireBuildJobFactory
             BuildStage.Preprocess => CreateJob<
                 WordAlignmentEngine,
                 WordAlignmentPreprocessBuildJob,
-                IReadOnlyList<FilteredParallelCorpus>
+                IReadOnlyList<ParallelCorpusContract>
             >(engineId, buildId, "statistical", data, buildOptions),
             BuildStage.Postprocess => CreateJob<WordAlignmentEngine, StatisticalPostprocessBuildJob, (int, double)>(
                 engineId,

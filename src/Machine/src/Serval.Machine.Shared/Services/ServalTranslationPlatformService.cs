@@ -38,14 +38,14 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
-        IReadOnlyCollection<Models.BuildPhase>? phases = null,
+        IReadOnlyCollection<BuildPhase>? phases = null,
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default
     ) =>
         _platformService.UpdateBuildStatusAsync(
             buildId,
-            new BuildProgressStatus
+            new BuildProgressStatusContract
             {
                 Step = progressStatus.Step,
                 PercentCompleted = progressStatus.PercentCompleted,
@@ -53,7 +53,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
             },
             queueDepth,
             phases
-                ?.Select(p => new Serval.Shared.Contracts.BuildPhase
+                ?.Select(p => new BuildPhaseContract
                 {
                     Stage = (Serval.Shared.Contracts.BuildPhaseStage)p.Stage,
                     Step = p.Step,
@@ -97,7 +97,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
         _platformService.UpdateBuildExecutionDataAsync(
             engineId,
             buildId,
-            new ExecutionData
+            new ExecutionDataContract
             {
                 TrainCount = executionData.TrainCount,
                 PretranslateCount = executionData.PretranslateCount,
@@ -117,7 +117,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
         CancellationToken cancellationToken = default
     ) => _platformService.UpdateTargetQuoteConventionAsync(engineId, buildId, quoteConvention, cancellationToken);
 
-    private static async IAsyncEnumerable<PretranslationData> ReadPretranslationsAsync(
+    private static async IAsyncEnumerable<PretranslationContract> ReadPretranslationsAsync(
         Stream stream,
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
@@ -131,7 +131,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
             if (pretranslation is null)
                 continue;
 
-            yield return new PretranslationData
+            yield return new PretranslationContract
             {
                 CorpusId = pretranslation.CorpusId,
                 TextId = pretranslation.TextId,
@@ -141,7 +141,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 SourceTokens = pretranslation.SourceTokens?.ToList(),
                 TranslationTokens = pretranslation.TranslationTokens?.ToList(),
                 Alignment = pretranslation
-                    .Alignment?.Select(a => new Serval.Shared.Contracts.AlignedWordPair
+                    .Alignment?.Select(a => new AlignedWordPairContract
                     {
                         SourceIndex = a.SourceIndex,
                         TargetIndex = a.TargetIndex,
@@ -172,7 +172,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 targetRefs = [],
                 sourceTokens = [],
                 translationTokens = [];
-            IReadOnlyList<SIL.Machine.Corpora.AlignedWordPair> alignedWordPairs = [];
+            IReadOnlyList<AlignedWordPair> alignedWordPairs = [];
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)

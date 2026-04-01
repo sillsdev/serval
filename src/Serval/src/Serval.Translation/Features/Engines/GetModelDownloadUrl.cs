@@ -28,7 +28,7 @@ public class GetModelDownloadUrlHandler(IRepository<Engine> engines, IEngineServ
         if (engine.ModelRevision == 0)
             return new(IsModelAvailable: false);
 
-        ModelDownloadUrl url = await engineServiceFactory
+        ModelDownloadUrlContract url = await engineServiceFactory
             .GetEngineService(engine.Type)
             .GetModelDownloadUrlAsync(engine.Id, cancellationToken);
         return new(

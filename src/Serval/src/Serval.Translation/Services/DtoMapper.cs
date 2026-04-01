@@ -8,7 +8,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
 
     public TranslationEngineDto Map(Engine source)
     {
-        return new TranslationEngineDto
+        return new()
         {
             Id = source.Id,
             Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = source.Id }),
@@ -29,7 +29,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
     {
         string targetQuoteConvention = source.TargetQuoteConvention ?? "";
 
-        return new TranslationBuildDto
+        return new()
         {
             Id = source.Id,
             Url = _urlService.GetUrl(Endpoints.GetTranslationBuild, new { id = source.EngineRef, buildId = source.Id }),
@@ -63,7 +63,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
     }
 
     private PretranslateCorpusDto Map(string engineId, PretranslateCorpus source) =>
-        new PretranslateCorpusDto
+        new()
         {
             Corpus =
                 source.CorpusRef != null
@@ -93,7 +93,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
         };
 
     private TrainingCorpusDto Map(string engineId, TrainingCorpus source) =>
-        new TrainingCorpusDto
+        new()
         {
             Corpus =
                 source.CorpusRef != null
@@ -124,7 +124,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
         };
 
     private ParallelCorpusFilterDto Map(ParallelCorpusFilter source) =>
-        new ParallelCorpusFilterDto
+        new()
         {
             Corpus = new ResourceLinkDto
             {
@@ -136,7 +136,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
         };
 
     private static BuildPhaseDto Map(BuildPhase source) =>
-        new BuildPhaseDto
+        new()
         {
             Stage = source.Stage,
             Step = source.Step,
@@ -145,7 +145,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
         };
 
     private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source, string targetQuoteConvention) =>
-        new ParallelCorpusAnalysisDto
+        new()
         {
             ParallelCorpusRef = source.ParallelCorpusRef,
             TargetQuoteConvention = targetQuoteConvention,
@@ -154,7 +154,7 @@ public class DtoMapper(IUrlService urlService) : IDtoMapper
         };
 
     private static ExecutionDataDto Map(ExecutionData source) =>
-        new ExecutionDataDto
+        new()
         {
             TrainCount = source.TrainCount ?? 0,
             PretranslateCount = source.PretranslateCount ?? 0,

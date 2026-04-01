@@ -35,7 +35,7 @@ public class NmtPreprocessBuildJob(
     protected override async Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
@@ -58,7 +58,7 @@ public class NmtPreprocessBuildJob(
         int pretranslateCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
@@ -121,7 +121,7 @@ public class NmtPreprocessBuildJob(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora
     )
     {
         List<string> warnings =

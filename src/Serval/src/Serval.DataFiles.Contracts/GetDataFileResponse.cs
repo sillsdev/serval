@@ -4,5 +4,5 @@ namespace Serval.DataFiles.Contracts;
 
 public record GetDataFileResponse(
     [property: MemberNotNullWhen(true, nameof(File))] bool IsFound,
-    DataFileView? File = null
+    DataFileContract? File = null
 );

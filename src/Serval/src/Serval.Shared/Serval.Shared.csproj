@@ -15,6 +15,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Include="Models\AlignedWordPair.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
 		<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="4.4.0" />
 	</ItemGroup>

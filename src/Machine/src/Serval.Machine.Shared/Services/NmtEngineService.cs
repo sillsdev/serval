@@ -89,7 +89,7 @@ public class NmtEngineService(
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
         CancellationToken cancellationToken = default
     )
@@ -120,7 +120,7 @@ public class NmtEngineService(
         return CancelBuildJobAsync(engineId, cancellationToken);
     }
 
-    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+    public async Task<ModelDownloadUrlContract> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
@@ -141,7 +141,7 @@ public class NmtEngineService(
         if (!fileExists)
             throw new FileNotFoundException($"The model for build revision , {engine.BuildRevision}, does not exist.");
         DateTime expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
-        var modelInfo = new ModelDownloadUrl
+        var modelInfo = new ModelDownloadUrlContract
         {
             Url = await _sharedFileService.GetDownloadUrlAsync(filepath, expiresAt),
             ModelRevision = engine.BuildRevision,
@@ -150,7 +150,7 @@ public class NmtEngineService(
         return modelInfo;
     }
 
-    public Task<IReadOnlyList<Translation.Contracts.TranslationResult>> TranslateAsync(
+    public Task<IReadOnlyList<TranslationResultContract>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -160,7 +160,7 @@ public class NmtEngineService(
         throw new NotSupportedException();
     }
 
-    public Task<Translation.Contracts.WordGraph> GetWordGraphAsync(
+    public Task<WordGraphContract> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -185,15 +185,13 @@ public class NmtEngineService(
         return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.Nmt));
     }
 
-    public Task<Translation.Contracts.LanguageInfo> GetLanguageInfoAsync(
+    public Task<LanguageInfoContract> GetLanguageInfoAsync(
         string language,
         CancellationToken cancellationToken = default
     )
     {
         bool isNative = IsLanguageNativeToModel(language, out string internalCode);
-        return Task.FromResult(
-            new Translation.Contracts.LanguageInfo { IsNative = isNative, InternalCode = internalCode }
-        );
+        return Task.FromResult(new LanguageInfoContract { IsNative = isNative, InternalCode = internalCode });
     }
 
     private bool IsLanguageNativeToModel(string language, out string internalCode)

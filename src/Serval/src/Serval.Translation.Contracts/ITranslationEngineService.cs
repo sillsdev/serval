@@ -18,13 +18,17 @@ public interface ITranslationEngineService
         CancellationToken cancellationToken = default
     );
 
-    Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+    Task<IReadOnlyList<TranslationResultContract>> TranslateAsync(
         string engineId,
         int n,
         string segment,
         CancellationToken cancellationToken = default
     );
-    Task<WordGraph> GetWordGraphAsync(string engineId, string segment, CancellationToken cancellationToken = default);
+    Task<WordGraphContract> GetWordGraphAsync(
+        string engineId,
+        string segment,
+        CancellationToken cancellationToken = default
+    );
     Task TrainSegmentPairAsync(
         string engineId,
         string sourceSegment,
@@ -32,12 +36,15 @@ public interface ITranslationEngineService
         bool sentenceStart,
         CancellationToken cancellationToken = default
     );
-    Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<ModelDownloadUrlContract> GetModelDownloadUrlAsync(
+        string engineId,
+        CancellationToken cancellationToken = default
+    );
 
     Task StartBuildAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
         CancellationToken cancellationToken = default
     );
@@ -45,5 +52,5 @@ public interface ITranslationEngineService
     Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
-    Task<LanguageInfo> GetLanguageInfoAsync(string language, CancellationToken cancellationToken = default);
+    Task<LanguageInfoContract> GetLanguageInfoAsync(string language, CancellationToken cancellationToken = default);
 }

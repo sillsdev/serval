@@ -24,7 +24,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
 
     public Task DeleteAsync(string engineId, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-    public Task<WordAlignmentResult> AlignAsync(
+    public Task<WordAlignmentResultContract> AlignAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -35,13 +35,13 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
         string[] targetTokens = targetSegment.Split();
         int minLength = Math.Min(sourceTokens.Length, targetTokens.Length);
 
-        var result = new WordAlignmentResult
+        var result = new WordAlignmentResultContract
         {
             SourceTokens = sourceTokens,
             TargetTokens = targetTokens,
             Alignment = Enumerable
                 .Range(0, minLength)
-                .Select(i => new AlignedWordPair
+                .Select(i => new AlignedWordPairContract
                 {
                     SourceIndex = i,
                     TargetIndex = i,
@@ -68,7 +68,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
         CancellationToken cancellationToken = default
     )
@@ -100,7 +100,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
                     int trainCount = 0;
                     int wordAlignCount = 0;
 
-                    List<WordAlignmentData> wordAlignments = [];
+                    List<WordAlignmentContract> wordAlignments = [];
                     await _parallelCorpusService.PreprocessAsync(
                         corpora,
                         (row, _) =>
@@ -116,7 +116,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
                             int minLength = Math.Min(sourceTokens.Length, targetTokens.Length);
 
                             wordAlignments.Add(
-                                new WordAlignmentData
+                                new WordAlignmentContract
                                 {
                                     CorpusId = corpusId,
                                     TextId = row.TextId,
@@ -126,7 +126,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
                                     TargetTokens = targetTokens,
                                     Alignment = Enumerable
                                         .Range(0, minLength)
-                                        .Select(i => new AlignedWordPair { SourceIndex = i, TargetIndex = i })
+                                        .Select(i => new AlignedWordPairContract { SourceIndex = i, TargetIndex = i })
                                         .ToList(),
                                 }
                             );
@@ -157,7 +157,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
                     await platform.UpdateBuildExecutionDataAsync(
                         engineId,
                         buildId,
-                        new Serval.WordAlignment.Contracts.ExecutionData
+                        new Serval.WordAlignment.Contracts.ExecutionDataContract
                         {
                             TrainCount = trainCount,
                             WordAlignCount = wordAlignCount,

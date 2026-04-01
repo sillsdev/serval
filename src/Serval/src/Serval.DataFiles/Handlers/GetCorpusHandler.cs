@@ -14,12 +14,12 @@ public class GetCorpusHandler(ICorpusService corpusService, IDataFileService dat
             ).ToDictionary(f => f.Id);
             return new GetCorpusResponse(
                 IsFound: true,
-                new CorpusView(
+                new CorpusContract(
                     corpus.Id,
                     corpus.Language,
                     corpus.Name,
                     [
-                        .. corpus.Files.Select(f => new CorpusFileView(
+                        .. corpus.Files.Select(f => new CorpusDataFileContract(
                             File: Map(corpusDataFilesDict[f.FileRef]),
                             f.TextId ?? corpusDataFilesDict[f.FileRef].Name
                         )),
@@ -33,8 +33,8 @@ public class GetCorpusHandler(ICorpusService corpusService, IDataFileService dat
         }
     }
 
-    private static DataFileView Map(DataFile dataFile)
+    private static DataFileContract Map(DataFile dataFile)
     {
-        return new DataFileView(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format);
+        return new DataFileContract(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format);
     }
 }

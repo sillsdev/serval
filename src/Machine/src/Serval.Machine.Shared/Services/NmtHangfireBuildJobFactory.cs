@@ -14,7 +14,7 @@ public class NmtHangfireBuildJobFactory : IHangfireBuildJobFactory
             BuildStage.Preprocess => CreateJob<
                 TranslationEngine,
                 NmtPreprocessBuildJob,
-                IReadOnlyList<FilteredParallelCorpus>
+                IReadOnlyList<ParallelCorpusContract>
             >(engineId, buildId, "nmt", data, buildOptions),
             BuildStage.Postprocess => CreateJob<TranslationEngine, TranslationPostprocessBuildJob, (int, double)>(
                 engineId,

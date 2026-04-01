@@ -38,14 +38,14 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
         string buildId,
         ProgressStatus progressStatus,
         int? queueDepth = null,
-        IReadOnlyCollection<Models.BuildPhase>? phases = null,
+        IReadOnlyCollection<BuildPhase>? phases = null,
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default
     ) =>
         _platformService.UpdateBuildStatusAsync(
             buildId,
-            new BuildProgressStatus
+            new BuildProgressStatusContract
             {
                 Step = progressStatus.Step,
                 PercentCompleted = progressStatus.PercentCompleted,
@@ -53,7 +53,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
             },
             queueDepth,
             phases
-                ?.Select(p => new Serval.Shared.Contracts.BuildPhase
+                ?.Select(p => new BuildPhaseContract
                 {
                     Stage = (Serval.Shared.Contracts.BuildPhaseStage)p.Stage,
                     Step = p.Step,
@@ -97,7 +97,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
         _platformService.UpdateBuildExecutionDataAsync(
             engineId,
             buildId,
-            new ExecutionData
+            new ExecutionDataContract
             {
                 TrainCount = executionData.TrainCount,
                 WordAlignCount = executionData.WordAlignCount,
@@ -119,7 +119,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
         return Task.CompletedTask;
     }
 
-    private static async IAsyncEnumerable<WordAlignmentData> ReadWordAlignmentsAsync(
+    private static async IAsyncEnumerable<WordAlignmentContract> ReadWordAlignmentsAsync(
         Stream stream,
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
@@ -133,7 +133,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
             if (record is null)
                 continue;
 
-            yield return new WordAlignmentData
+            yield return new WordAlignmentContract
             {
                 CorpusId = record.CorpusId,
                 TextId = record.TextId,
@@ -142,7 +142,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                 SourceTokens = record.SourceTokens,
                 TargetTokens = record.TargetTokens,
                 Alignment = record
-                    .Alignment.Select(a => new Serval.Shared.Contracts.AlignedWordPair
+                    .Alignment.Select(a => new AlignedWordPairContract
                     {
                         SourceIndex = a.SourceIndex,
                         TargetIndex = a.TargetIndex,
@@ -171,7 +171,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                 targetRefs = [],
                 sourceTokens = [],
                 targetTokens = [];
-            IReadOnlyList<SIL.Machine.Corpora.AlignedWordPair> alignedWordPairs = [];
+            IReadOnlyList<AlignedWordPair> alignedWordPairs = [];
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)

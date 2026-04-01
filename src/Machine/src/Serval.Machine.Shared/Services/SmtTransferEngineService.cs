@@ -96,7 +96,7 @@ public class SmtTransferEngineService(
         );
     }
 
-    public async Task<IReadOnlyList<Translation.Contracts.TranslationResult>> TranslateAsync(
+    public async Task<IReadOnlyList<TranslationResultContract>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -109,7 +109,7 @@ public class SmtTransferEngineService(
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        IReadOnlyList<SIL.Machine.Translation.TranslationResult> results = await @lock.ReaderLockAsync(
+        IReadOnlyList<TranslationResult> results = await @lock.ReaderLockAsync(
             async ct =>
             {
                 HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
@@ -123,7 +123,7 @@ public class SmtTransferEngineService(
         return results.Select(Map).ToList();
     }
 
-    public async Task<Translation.Contracts.WordGraph> GetWordGraphAsync(
+    public async Task<WordGraphContract> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -135,7 +135,7 @@ public class SmtTransferEngineService(
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        SIL.Machine.Translation.WordGraph result = await @lock.ReaderLockAsync(
+        WordGraph result = await @lock.ReaderLockAsync(
             async ct =>
             {
                 HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
@@ -197,7 +197,7 @@ public class SmtTransferEngineService(
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
         CancellationToken cancellationToken = default
     )
@@ -236,12 +236,12 @@ public class SmtTransferEngineService(
         return Task.FromResult(_clearMLQueueService.GetQueueSize(EngineType.SmtTransfer));
     }
 
-    public Task<Translation.Contracts.LanguageInfo> GetLanguageInfoAsync(
+    public Task<LanguageInfoContract> GetLanguageInfoAsync(
         string language,
         CancellationToken cancellationToken = default
     )
     {
-        return Task.FromResult(new Translation.Contracts.LanguageInfo { IsNative = true, InternalCode = language });
+        return Task.FromResult(new LanguageInfoContract { IsNative = true, InternalCode = language });
     }
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
@@ -259,7 +259,7 @@ public class SmtTransferEngineService(
         return buildId;
     }
 
-    public Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+    public Task<ModelDownloadUrlContract> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
@@ -283,9 +283,9 @@ public class SmtTransferEngineService(
         return engine;
     }
 
-    private static Translation.Contracts.TranslationResult Map(SIL.Machine.Translation.TranslationResult source)
+    private static TranslationResultContract Map(TranslationResult source)
     {
-        return new Translation.Contracts.TranslationResult
+        return new TranslationResultContract
         {
             Translation = source.Translation,
             SourceTokens = source.SourceTokens.ToArray(),
@@ -297,9 +297,9 @@ public class SmtTransferEngineService(
         };
     }
 
-    private static Translation.Contracts.WordGraph Map(SIL.Machine.Translation.WordGraph source)
+    private static WordGraphContract Map(WordGraph source)
     {
-        return new Translation.Contracts.WordGraph
+        return new WordGraphContract
         {
             SourceTokens = source.SourceTokens.ToArray(),
             InitialStateScore = source.InitialStateScore,
@@ -308,9 +308,9 @@ public class SmtTransferEngineService(
         };
     }
 
-    private static Translation.Contracts.WordGraphArc Map(SIL.Machine.Translation.WordGraphArc source)
+    private static WordGraphArcContract Map(WordGraphArc source)
     {
-        return new Translation.Contracts.WordGraphArc
+        return new WordGraphArcContract
         {
             PrevState = source.PrevState,
             NextState = source.NextState,
@@ -341,21 +341,23 @@ public class SmtTransferEngineService(
             .ToHashSet();
     }
 
-    private static IEnumerable<Serval.Shared.Contracts.AlignedWordPair> MapAlignment(WordAlignmentMatrix source)
+    private static IEnumerable<AlignedWordPairContract> MapAlignment(WordAlignmentMatrix source)
     {
         for (int i = 0; i < source.RowCount; i++)
         {
             for (int j = 0; j < source.ColumnCount; j++)
             {
                 if (source[i, j])
-                    yield return new Serval.Shared.Contracts.AlignedWordPair { SourceIndex = i, TargetIndex = j };
+                {
+                    yield return new AlignedWordPairContract { SourceIndex = i, TargetIndex = j };
+                }
             }
         }
     }
 
-    private static Translation.Contracts.Phrase Map(SIL.Machine.Translation.Phrase source)
+    private static PhraseContract Map(Phrase source)
     {
-        return new Translation.Contracts.Phrase
+        return new PhraseContract
         {
             SourceSegmentStart = source.SourceSegmentRange.Start,
             SourceSegmentEnd = source.SourceSegmentRange.End,

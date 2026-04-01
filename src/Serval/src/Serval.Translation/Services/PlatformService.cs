@@ -233,9 +233,9 @@ public class PlatformService(
 
     public async Task UpdateBuildStatusAsync(
         string buildId,
-        BuildProgressStatus progressStatus,
+        BuildProgressStatusContract progressStatus,
         int? queueDepth = null,
-        IReadOnlyCollection<BuildPhase>? phases = null,
+        IReadOnlyCollection<BuildPhaseContract>? phases = null,
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default
@@ -259,7 +259,18 @@ public class PlatformService(
                     u.Set(b => b.QueueDepth, queueDepth.Value);
                 if (phases is not null && phases.Count > 0)
                 {
-                    u.Set(b => b.Phases, phases);
+                    u.Set(
+                        b => b.Phases,
+                        [
+                            .. phases.Select(p => new BuildPhase
+                            {
+                                Stage = p.Stage,
+                                Started = p.Started,
+                                Step = p.Step,
+                                StepCount = p.StepCount,
+                            }),
+                        ]
+                    );
                 }
                 if (started.HasValue)
                     u.Set(b => b.DateStarted, started.Value);
@@ -282,13 +293,26 @@ public class PlatformService(
     public async Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        ExecutionData executionData,
+        ExecutionDataContract executionData,
         CancellationToken cancellationToken = default
     )
     {
         await _builds.UpdateAsync(
             b => b.Id == buildId,
-            u => u.Set(b => b.ExecutionData, executionData),
+            u =>
+                u.Set(
+                    b => b.ExecutionData,
+                    new ExecutionData
+                    {
+                        TrainCount = executionData.TrainCount,
+                        PretranslateCount = executionData.PretranslateCount,
+                        Warnings = executionData.Warnings?.ToList() ?? [],
+                        EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
+                        EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
+                        ResolvedSourceLanguage = executionData.ResolvedSourceLanguage,
+                        ResolvedTargetLanguage = executionData.ResolvedTargetLanguage,
+                    }
+                ),
             cancellationToken: cancellationToken
         );
     }
@@ -336,7 +360,7 @@ public class PlatformService(
 
     public async Task InsertPretranslationsAsync(
         string engineId,
-        IAsyncEnumerable<PretranslationData> pretranslations,
+        IAsyncEnumerable<PretranslationContract> pretranslations,
         CancellationToken cancellationToken = default
     )
     {
@@ -346,7 +370,7 @@ public class PlatformService(
         int nextModelRevision = engine.ModelRevision + 1;
 
         var batch = new List<Pretranslation>();
-        await foreach (PretranslationData item in pretranslations.WithCancellation(cancellationToken))
+        await foreach (PretranslationContract item in pretranslations.WithCancellation(cancellationToken))
         {
             batch.Add(
                 new Pretranslation

@@ -14,9 +14,9 @@ public interface IWordAlignmentPlatformService
     Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default);
     Task UpdateBuildStatusAsync(
         string buildId,
-        BuildProgressStatus progressStatus,
+        BuildProgressStatusContract progressStatus,
         int? queueDepth = null,
-        IReadOnlyCollection<BuildPhase>? phases = null,
+        IReadOnlyCollection<BuildPhaseContract>? phases = null,
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default
@@ -25,13 +25,13 @@ public interface IWordAlignmentPlatformService
     Task IncrementEngineCorpusSizeAsync(string engineId, int count = 1, CancellationToken cancellationToken = default);
     Task InsertWordAlignmentsAsync(
         string engineId,
-        IAsyncEnumerable<WordAlignmentData> wordAlignments,
+        IAsyncEnumerable<WordAlignmentContract> wordAlignments,
         CancellationToken cancellationToken = default
     );
     Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        ExecutionData executionData,
+        ExecutionDataContract executionData,
         CancellationToken cancellationToken = default
     );
 }

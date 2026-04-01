@@ -48,7 +48,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+    public Task<IReadOnlyList<TranslationResultContract>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -56,9 +56,9 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
     )
     {
         string[] tokens = segment.Split();
-        IReadOnlyList<TranslationResult> results =
+        IReadOnlyList<TranslationResultContract> results =
         [
-            new TranslationResult
+            new TranslationResultContract
             {
                 Translation = segment,
                 SourceTokens = tokens,
@@ -72,11 +72,11 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                     .ToList(),
                 Alignment = Enumerable
                     .Range(0, tokens.Length)
-                    .Select(i => new AlignedWordPair { SourceIndex = i, TargetIndex = i })
+                    .Select(i => new AlignedWordPairContract { SourceIndex = i, TargetIndex = i })
                     .ToList(),
                 Phrases =
                 [
-                    new Phrase
+                    new PhraseContract
                     {
                         SourceSegmentStart = 0,
                         SourceSegmentEnd = tokens.Length,
@@ -88,21 +88,21 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
         return Task.FromResult(results);
     }
 
-    public Task<WordGraph> GetWordGraphAsync(
+    public Task<WordGraphContract> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
     )
     {
         string[] tokens = segment.Split();
-        var wordGraph = new WordGraph
+        var wordGraph = new WordGraphContract
         {
             InitialStateScore = 0.0,
             SourceTokens = tokens,
             FinalStates = new HashSet<int> { tokens.Length },
             Arcs = Enumerable
                 .Range(0, tokens.Length - 1)
-                .Select(index => new WordGraphArc
+                .Select(index => new WordGraphArcContract
                 {
                     PrevState = index,
                     NextState = index + 1,
@@ -111,7 +111,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                     Confidences = [1.0],
                     SourceSegmentStart = index,
                     SourceSegmentEnd = index + 1,
-                    Alignment = [new AlignedWordPair { SourceIndex = 0, TargetIndex = 0 }],
+                    Alignment = [new AlignedWordPairContract { SourceIndex = 0, TargetIndex = 0 }],
                     Sources = [new HashSet<TranslationSource> { TranslationSource.Primary }],
                 })
                 .ToList(),
@@ -127,13 +127,13 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
         CancellationToken cancellationToken = default
     ) => Task.CompletedTask;
 
-    public Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+    public Task<ModelDownloadUrlContract> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
     {
         return Task.FromResult(
-            new ModelDownloadUrl
+            new ModelDownloadUrlContract
             {
                 Url = "https://example.com/model",
                 ModelRevision = 1,
@@ -144,15 +144,18 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
 
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default) => Task.FromResult(0);
 
-    public Task<LanguageInfo> GetLanguageInfoAsync(string language, CancellationToken cancellationToken = default)
+    public Task<LanguageInfoContract> GetLanguageInfoAsync(
+        string language,
+        CancellationToken cancellationToken = default
+    )
     {
-        return Task.FromResult(new LanguageInfo { InternalCode = language + "_echo", IsNative = true });
+        return Task.FromResult(new LanguageInfoContract { InternalCode = language + "_echo", IsNative = true });
     }
 
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> corpora,
+        IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
         CancellationToken cancellationToken = default
     )
@@ -183,7 +186,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                     int trainCount = 0;
                     int pretranslateCount = 0;
 
-                    List<PretranslationData> pretranslations = [];
+                    List<PretranslationContract> pretranslations = [];
                     await _parallelCorpusService.PreprocessAsync(
                         corpora,
                         (row, _) =>
@@ -196,7 +199,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                         {
                             string[] tokens = row.SourceSegment.Split();
                             pretranslations.Add(
-                                new PretranslationData
+                                new PretranslationContract
                                 {
                                     CorpusId = corpusId,
                                     TextId = row.TextId,
@@ -206,7 +209,9 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                                     SourceTokens = tokens,
                                     TranslationTokens = tokens,
                                     Alignment = tokens
-                                        .Select((_, i) => new AlignedWordPair { SourceIndex = i, TargetIndex = i })
+                                        .Select(
+                                            (_, i) => new AlignedWordPairContract { SourceIndex = i, TargetIndex = i }
+                                        )
                                         .ToList(),
                                 }
                             );
@@ -237,7 +242,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                     await platform.UpdateBuildExecutionDataAsync(
                         engineId,
                         buildId,
-                        new ExecutionData
+                        new ExecutionDataContract
                         {
                             TrainCount = trainCount,
                             PretranslateCount = pretranslateCount,

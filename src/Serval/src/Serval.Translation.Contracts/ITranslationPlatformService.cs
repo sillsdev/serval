@@ -14,9 +14,9 @@ public interface ITranslationPlatformService
     Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default);
     Task UpdateBuildStatusAsync(
         string buildId,
-        BuildProgressStatus progressStatus,
+        BuildProgressStatusContract progressStatus,
         int? queueDepth = null,
-        IReadOnlyCollection<BuildPhase>? phases = null,
+        IReadOnlyCollection<BuildPhaseContract>? phases = null,
         DateTime? started = null,
         DateTime? completed = null,
         CancellationToken cancellationToken = default
@@ -25,13 +25,13 @@ public interface ITranslationPlatformService
     Task IncrementEngineCorpusSizeAsync(string engineId, int count = 1, CancellationToken cancellationToken = default);
     Task InsertPretranslationsAsync(
         string engineId,
-        IAsyncEnumerable<PretranslationData> pretranslations,
+        IAsyncEnumerable<PretranslationContract> pretranslations,
         CancellationToken cancellationToken = default
     );
     Task UpdateBuildExecutionDataAsync(
         string engineId,
         string buildId,
-        ExecutionData executionData,
+        ExecutionDataContract executionData,
         CancellationToken cancellationToken = default
     );
     Task UpdateTargetQuoteConventionAsync(
