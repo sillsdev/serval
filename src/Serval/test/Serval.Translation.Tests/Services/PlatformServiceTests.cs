@@ -95,7 +95,7 @@ public class PlatformServiceTests
             queueDepth: 1,
             phases:
             [
-                new BuildPhase
+                new BuildPhaseContract
                 {
                     Stage = BuildPhaseStage.Train,
                     Step = 2,
@@ -282,9 +282,9 @@ public class PlatformServiceTests
         Assert.That(env.Engines.Get("e0").CorpusSize, Is.EqualTo(1));
     }
 
-    private static async IAsyncEnumerable<PretranslationData> GetTestPretranslations()
+    private static async IAsyncEnumerable<PretranslationContract> GetTestPretranslations()
     {
-        yield return new PretranslationData
+        yield return new PretranslationContract
         {
             CorpusId = "e0",
             TextId = "text1",

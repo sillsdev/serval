@@ -31,7 +31,7 @@ public class SmtTransferPreprocessBuildJob(
     protected override async Task InitializeAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> data,
+        IReadOnlyList<ParallelCorpusContract> data,
         CancellationToken cancellationToken
     )
     {

@@ -22,7 +22,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        TranslationResult? result = await env.Service.TranslateAsync(engineId, "esto es una prueba.");
+        TranslationResultContract? result = await env.Service.TranslateAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Translation, Is.EqualTo("this is a test."));
     }
@@ -41,7 +41,7 @@ public class EngineServiceTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        WordGraph? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
+        WordGraphContract? result = await env.Service.GetWordGraphAsync(engineId, "esto es una prueba.");
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Arcs.SelectMany(a => a.TargetTokens), Is.EqualTo("this is a test .".Split()));
     }
@@ -121,7 +121,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
                                         Id = "corpus1",
@@ -148,7 +148,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
                                         Id = "corpus1",
@@ -177,7 +177,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
                                         Id = "corpus1",
@@ -206,7 +206,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
                                         Id = "corpus1",
@@ -236,7 +236,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
                                         Id = "corpus1",
@@ -266,7 +266,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
                                         Id = "corpus1",
@@ -317,7 +317,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
                                         Id = "corpus1",
@@ -346,7 +346,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
                                         Id = "corpus1",
@@ -383,7 +383,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -417,7 +417,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -451,7 +451,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -484,7 +484,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -531,7 +531,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -572,7 +572,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -639,7 +639,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -663,7 +663,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -698,7 +698,7 @@ public class EngineServiceTests
             .StartBuildAsync(
                 engineId,
                 BUILD1_ID,
-                Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
@@ -1082,7 +1082,7 @@ public class EngineServiceTests
                 .StartBuildAsync(
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<IReadOnlyList<FilteredParallelCorpus>>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                     Arg.Any<string?>(),
                     Arg.Any<CancellationToken>()
                 )
@@ -1133,7 +1133,7 @@ public class EngineServiceTests
                 new MemoryDataAccessContext(),
                 new LoggerFactory(),
                 translationOptions,
-                new CorpusMappingService(dataFileOptions, parallelCorpusService)
+                new ContractMapper(dataFileOptions, parallelCorpusService)
             );
         }
 

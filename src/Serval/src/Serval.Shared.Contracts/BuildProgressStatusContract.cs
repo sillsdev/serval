@@ -1,6 +1,6 @@
 ﻿namespace Serval.Shared.Contracts;
 
-public record BuildProgressStatus
+public record BuildProgressStatusContract
 {
     public int Step { get; set; }
     public double? PercentCompleted { get; set; }

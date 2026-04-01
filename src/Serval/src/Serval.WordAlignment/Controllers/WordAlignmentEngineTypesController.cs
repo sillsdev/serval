@@ -40,6 +40,6 @@ public class WordAlignmentEngineTypesController(IAuthorizationService authServic
         }
     }
 
-    private static QueueDto Map(Queue source) =>
+    private static QueueDto Map(QueueContract source) =>
         new() { Size = source.Size, EngineType = source.EngineType.ToKebabCase() };
 }

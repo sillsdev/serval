@@ -1,6 +1,6 @@
 namespace Serval.Shared.Contracts;
 
-public record ParallelRow(
+public record ParallelRowContract(
     string TextId,
     IReadOnlyList<object> SourceRefs,
     IReadOnlyList<object> TargetRefs,

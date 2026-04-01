@@ -27,7 +27,7 @@ public class EngineService(
         return await Entities.GetAllAsync(e => e.Owner == owner, cancellationToken);
     }
 
-    public async Task<WordAlignmentResult?> GetWordAlignmentAsync(
+    public async Task<WordAlignmentResultContract?> GetWordAlignmentAsync(
         string engineId,
         string sourceSegment,
         string targetSegment,
@@ -140,7 +140,7 @@ public class EngineService(
                     )
                     .ToList();
 
-                IReadOnlyList<FilteredParallelCorpus> corpora = parallelCorpora
+                IReadOnlyList<ParallelCorpusContract> corpora = parallelCorpora
                     .Select(c =>
                         MapToFilteredCorpus(
                             c,
@@ -429,13 +429,13 @@ public class EngineService(
         await _wordAlignments.DeleteAllAsync(wa => wa.CorpusRef == corpusId, cancellationToken: cancellationToken);
     }
 
-    public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
+    public async Task<QueueContract> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
     {
         int size = await _engineServiceFactory.GetEngineService(engineType).GetQueueSizeAsync(cancellationToken);
-        return new Queue { Size = size, EngineType = engineType };
+        return new QueueContract { Size = size, EngineType = engineType };
     }
 
-    private FilteredParallelCorpus MapToFilteredCorpus(
+    private ParallelCorpusContract MapToFilteredCorpus(
         ParallelCorpus source,
         TrainingCorpus? trainingCorpus,
         WordAlignmentCorpus? wordAlignmentCorpus,
@@ -458,7 +458,7 @@ public class EngineService(
         bool wordAlignAllTargets =
             wordAlignOnAllCorpora || (wordAlignmentCorpus is not null && wordAlignmentCorpus.TargetFilters is null);
 
-        return new FilteredParallelCorpus
+        return new ParallelCorpusContract
         {
             Id = source.Id,
             SourceCorpora = source
@@ -488,7 +488,7 @@ public class EngineService(
         };
     }
 
-    private FilteredMonolingualCorpus MapToFilteredMonolingualCorpus(
+    private MonolingualCorpusContract MapToFilteredMonolingualCorpus(
         MonolingualCorpus inputCorpus,
         ParallelCorpusFilter? trainingFilter,
         ParallelCorpusFilter? wordAlignmentFilter,
@@ -541,12 +541,12 @@ public class EngineService(
             );
         }
 
-        var result = new FilteredMonolingualCorpus
+        var result = new MonolingualCorpusContract
         {
             Id = inputCorpus.Id,
             Language = inputCorpus.Language,
             Files = inputCorpus
-                .Files.Select(f => new ResolvedCorpusFile
+                .Files.Select(f => new CorpusFileContract
                 {
                     TextId = f.TextId,
                     Format = f.Format,

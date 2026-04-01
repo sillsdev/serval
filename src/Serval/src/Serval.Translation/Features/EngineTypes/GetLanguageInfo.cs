@@ -18,7 +18,10 @@ public class GetLanguageInfoHandler(IEngineServiceFactory engineServiceFactory)
     {
         if (engineServiceFactory.TryGetEngineService(request.EngineType, out ITranslationEngineService? engineService))
         {
-            LanguageInfo languageInfo = await engineService.GetLanguageInfoAsync(request.Language, cancellationToken);
+            LanguageInfoContract languageInfo = await engineService.GetLanguageInfoAsync(
+                request.Language,
+                cancellationToken
+            );
             return new(
                 new LanguageInfoDto
                 {

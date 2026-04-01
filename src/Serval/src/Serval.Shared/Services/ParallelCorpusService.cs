@@ -12,7 +12,7 @@ public class ParallelCorpusService : IParallelCorpusService
         string ParallelCorpusId,
         string MonolingualCorpusId,
         IReadOnlyList<UsfmVersificationError> Errors
-    )> AnalyzeUsfmVersification(IEnumerable<FilteredParallelCorpus> parallelCorpora)
+    )> AnalyzeUsfmVersification(IEnumerable<ParallelCorpusContract> parallelCorpora)
     {
         CorpusBundle corpusBundle = new(parallelCorpora);
         List<(
@@ -22,14 +22,14 @@ public class ParallelCorpusService : IParallelCorpusService
         )> errorsPerCorpus = [];
         foreach (
             (
-                FilteredParallelCorpus parallelCorpus,
-                FilteredMonolingualCorpus monolingualCorpus,
-                IReadOnlyList<ResolvedCorpusFile> files,
+                ParallelCorpusContract parallelCorpus,
+                MonolingualCorpusContract monolingualCorpus,
+                IReadOnlyList<CorpusFileContract> files,
                 _
             ) in corpusBundle.TextCorpora
         )
         {
-            foreach (ResolvedCorpusFile file in files.Where(f => f.Format == FileFormat.Paratext))
+            foreach (CorpusFileContract file in files.Where(f => f.Format == FileFormat.Paratext))
             {
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
                 IReadOnlyList<UsfmVersificationError> errors = new ZipParatextProjectVersificationErrorDetector(
@@ -45,20 +45,20 @@ public class ParallelCorpusService : IParallelCorpusService
         return errorsPerCorpus;
     }
 
-    public QuoteConventionAnalysis AnalyzeTargetQuoteConvention(IEnumerable<FilteredParallelCorpus> parallelCorpora)
+    public QuoteConventionAnalysis AnalyzeTargetQuoteConvention(IEnumerable<ParallelCorpusContract> parallelCorpora)
     {
         CorpusBundle corpusBundle = new(parallelCorpora);
         Dictionary<string, List<QuoteConventionAnalysis>> analyses = [];
         foreach (
             (
-                FilteredParallelCorpus parallelCorpus,
-                FilteredMonolingualCorpus targetMonolingualCorpus,
-                IReadOnlyList<ResolvedCorpusFile> corpusFiles,
+                ParallelCorpusContract parallelCorpus,
+                MonolingualCorpusContract targetMonolingualCorpus,
+                IReadOnlyList<CorpusFileContract> corpusFiles,
                 _
             ) in corpusBundle.TargetTextCorpora
         )
         {
-            foreach (ResolvedCorpusFile file in corpusFiles.Where(f => f.Format == FileFormat.Paratext))
+            foreach (CorpusFileContract file in corpusFiles.Where(f => f.Format == FileFormat.Paratext))
             {
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
                 var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(
@@ -98,15 +98,15 @@ public class ParallelCorpusService : IParallelCorpusService
         string ParallelCorpusId,
         string MonolingualCorpusId,
         MissingParentProjectError
-    )> FindMissingParentProjects(IEnumerable<FilteredParallelCorpus> parallelCorpora)
+    )> FindMissingParentProjects(IEnumerable<ParallelCorpusContract> parallelCorpora)
     {
         CorpusBundle corpusBundle = new(parallelCorpora);
         List<(string, string, MissingParentProjectError)> errors = [];
         foreach (
             (
-                FilteredParallelCorpus parallelCorpus,
-                FilteredMonolingualCorpus monolingualCorpus,
-                IReadOnlyList<ResolvedCorpusFile> files,
+                ParallelCorpusContract parallelCorpus,
+                MonolingualCorpusContract monolingualCorpus,
+                IReadOnlyList<CorpusFileContract> files,
                 _
             ) in corpusBundle.TextCorpora
         )
@@ -131,9 +131,9 @@ public class ParallelCorpusService : IParallelCorpusService
     }
 
     public async Task PreprocessAsync(
-        IEnumerable<FilteredParallelCorpus> parallelCorpora,
-        Func<ParallelRow, TrainingDataType, Task> train,
-        Func<ParallelRow, bool, string, Task> inference,
+        IEnumerable<ParallelCorpusContract> parallelCorpora,
+        Func<ParallelRowContract, TrainingDataType, Task> train,
+        Func<ParallelRowContract, bool, string, Task> inference,
         bool useKeyTerms = false,
         HashSet<string>? ignoreUsfmMarkers = null
     )
@@ -143,8 +143,8 @@ public class ParallelCorpusService : IParallelCorpusService
 
     private static async Task PreprocessAsync(
         CorpusBundle corpusBundle,
-        Func<ParallelRow, TrainingDataType, Task> train,
-        Func<ParallelRow, bool, string, Task> inference,
+        Func<ParallelRowContract, TrainingDataType, Task> train,
+        Func<ParallelRowContract, bool, string, Task> inference,
         bool useKeyTerms = false,
         HashSet<string>? ignoreUsfmMarkers = null
     )
@@ -152,7 +152,7 @@ public class ParallelCorpusService : IParallelCorpusService
         ignoreUsfmMarkers ??= [];
 
         bool parallelTrainingDataPresent = false;
-        List<ParallelRow> keyTermTrainingData = new();
+        List<ParallelRowContract> keyTermTrainingData = new();
 
         // Iterate over USFM and Text training corpora separately.
         // This is not only because they use different keys, but if we have text corpora
@@ -203,7 +203,7 @@ public class ParallelCorpusService : IParallelCorpusService
 
             // After merging segments across ranges, run the 'train' preprocessing function
             // on each training row and record whether any parallel training data was present
-        foreach (ParallelRow row in CollapseRanges(trainingRows))
+        foreach (ParallelRowContract row in CollapseRanges(trainingRows))
             {
                 await train(row, TrainingDataType.Text);
                 if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
@@ -244,14 +244,21 @@ public class ParallelCorpusService : IParallelCorpusService
             foreach (ParallelTextRow row in parallelKeyTermCorpus.DistinctBy(row => (row.SourceText, row.TargetText)))
             {
                 keyTermTrainingData.Add(
-                    new ParallelRow(row.TextId, row.SourceRefs, row.TargetRefs, row.SourceText, row.TargetText, 1)
+                    new ParallelRowContract(
+                        row.TextId,
+                        row.SourceRefs,
+                        row.TargetRefs,
+                        row.SourceText,
+                        row.TargetText,
+                        1
+                    )
                 );
             }
         }
 
         // Since we ultimately need to provide inferences for a particular parallel corpus,
         // we need to preprocess the content on which to inference per parallel corpus
-        foreach (FilteredParallelCorpus parallelCorpus in corpusBundle.ParallelCorpora)
+        foreach (ParallelCorpusContract parallelCorpus in corpusBundle.ParallelCorpora)
         {
             // Filter the text corpora based on the filters specified in the monolingual corpora
             ITextCorpus sourceInferencingCorpus = corpusBundle
@@ -283,7 +290,11 @@ public class ParallelCorpusService : IParallelCorpusService
                 targetCorpus,
             }.AlignMany([true, false, false]);
 
-            foreach ((ParallelRow row, bool isInTrainingData) in CollapseInferencingRanges(inferencingCorpus.ToArray()))
+            foreach (
+                (ParallelRowContract row, bool isInTrainingData) in CollapseInferencingRanges(
+                    inferencingCorpus.ToArray()
+                )
+            )
             {
                 await inference(row, isInTrainingData, parallelCorpus.Id);
             }
@@ -294,7 +305,7 @@ public class ParallelCorpusService : IParallelCorpusService
         // filtered by the filters specified in the monolingual corpora.
         if (useKeyTerms && parallelTrainingDataPresent)
         {
-            foreach (ParallelRow row in keyTermTrainingData)
+            foreach (ParallelRowContract row in keyTermTrainingData)
             {
                 await train(row, TrainingDataType.KeyTerm);
             }
@@ -302,7 +313,7 @@ public class ParallelCorpusService : IParallelCorpusService
     }
 
     private static ITextCorpus FilterInferencingCorpora(
-        FilteredMonolingualCorpus corpus,
+        MonolingualCorpusContract corpus,
         ITextCorpus textCorpus,
         HashSet<string> ignoreUsfmMarkers
     )
@@ -321,7 +332,7 @@ public class ParallelCorpusService : IParallelCorpusService
         return textCorpus.Where(row => row.Ref is not ScriptureRef sr || !HasIgnorableMarker(sr, ignoreUsfmMarkers));
     }
 
-    private static ITextCorpus FilterTrainingCorpora(FilteredMonolingualCorpus corpus, ITextCorpus textCorpus)
+    private static ITextCorpus FilterTrainingCorpora(MonolingualCorpusContract corpus, ITextCorpus textCorpus)
     {
         textCorpus = textCorpus.Transform(CleanSegment);
         if (corpus.TrainOnTextIds is not null)
@@ -337,7 +348,7 @@ public class ParallelCorpusService : IParallelCorpusService
         return textCorpus;
     }
 
-    private static IEnumerable<ParallelRow> CollapseRanges(ParallelTextRow[] rows)
+    private static IEnumerable<ParallelRowContract> CollapseRanges(ParallelTextRow[] rows)
     {
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
@@ -354,7 +365,7 @@ public class ParallelCorpusService : IParallelCorpusService
                 && (!row.IsSourceInRange || row.IsSourceRangeStart)
             )
             {
-                yield return new ParallelRow(
+                yield return new ParallelRowContract(
                     textId,
                     sourceRefs,
                     targetRefs,
@@ -392,7 +403,7 @@ public class ParallelCorpusService : IParallelCorpusService
                 continue;
             }
 
-            yield return new ParallelRow(
+            yield return new ParallelRowContract(
                 textId,
                 sourceRefs,
                 targetRefs,
@@ -408,7 +419,7 @@ public class ParallelCorpusService : IParallelCorpusService
         }
         if (hasUnfinishedRange)
         {
-            yield return new ParallelRow(
+            yield return new ParallelRowContract(
                 textId,
                 sourceRefs,
                 targetRefs,
@@ -419,7 +430,7 @@ public class ParallelCorpusService : IParallelCorpusService
         }
     }
 
-    private static IEnumerable<(ParallelRow, bool)> CollapseInferencingRanges(NParallelTextRow[] rows)
+    private static IEnumerable<(ParallelRowContract, bool)> CollapseInferencingRanges(NParallelTextRow[] rows)
     {
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
@@ -440,7 +451,7 @@ public class ParallelCorpusService : IParallelCorpusService
             )
             {
                 yield return (
-                    new ParallelRow(
+                    new ParallelRowContract(
                         textId,
                         sourceRefs,
                         targetRefs,
@@ -484,7 +495,14 @@ public class ParallelCorpusService : IParallelCorpusService
             }
 
             yield return (
-                new ParallelRow(textId, sourceRefs, targetRefs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1),
+                new ParallelRowContract(
+                    textId,
+                    sourceRefs,
+                    targetRefs,
+                    srcSegBuffer.ToString(),
+                    trgSegBuffer.ToString(),
+                    1
+                ),
                 isInTrainingData
             );
 
@@ -497,7 +515,14 @@ public class ParallelCorpusService : IParallelCorpusService
         if (hasUnfinishedRange)
         {
             yield return (
-                new ParallelRow(textId, sourceRefs, targetRefs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1),
+                new ParallelRowContract(
+                    textId,
+                    sourceRefs,
+                    targetRefs,
+                    srcSegBuffer.ToString(),
+                    trgSegBuffer.ToString(),
+                    1
+                ),
                 isInTrainingData
             );
         }
@@ -527,7 +552,7 @@ public class ParallelCorpusService : IParallelCorpusService
         return row;
     }
 
-    private static HashSet<int>? GetBooks(FilteredMonolingualCorpus corpus)
+    private static HashSet<int>? GetBooks(MonolingualCorpusContract corpus)
     {
         if (!corpus.IsFiltered)
             return null;
@@ -555,10 +580,10 @@ public class ParallelCorpusService : IParallelCorpusService
     }
 
     public string UpdateSourceUsfm(
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string corpusId,
         string bookId,
-        IReadOnlyList<PretranslationData> pretranslations,
+        IReadOnlyList<PretranslationContract> pretranslations,
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
@@ -584,10 +609,10 @@ public class ParallelCorpusService : IParallelCorpusService
     }
 
     public string UpdateTargetUsfm(
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string corpusId,
         string bookId,
-        IReadOnlyList<PretranslationData> pretranslations,
+        IReadOnlyList<PretranslationContract> pretranslations,
         UpdateUsfmTextBehavior textBehavior,
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
@@ -613,10 +638,10 @@ public class ParallelCorpusService : IParallelCorpusService
     }
 
     private static string UpdateUsfm(
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string corpusId,
         string bookId,
-        IEnumerable<PretranslationData> pretranslations,
+        IEnumerable<PretranslationContract> pretranslations,
         UpdateUsfmTextBehavior textBehavior,
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
@@ -628,9 +653,9 @@ public class ParallelCorpusService : IParallelCorpusService
     )
     {
         CorpusBundle corpusBundle = new(parallelCorpora);
-        FilteredParallelCorpus corpus = corpusBundle.ParallelCorpora.Single(c => c.Id == corpusId);
-        ResolvedCorpusFile sourceFile = corpus.SourceCorpora[0].Files[0];
-        ResolvedCorpusFile targetFile = corpus.TargetCorpora[0].Files[0];
+        ParallelCorpusContract corpus = corpusBundle.ParallelCorpora.Single(c => c.Id == corpusId);
+        CorpusFileContract sourceFile = corpus.SourceCorpora[0].Files[0];
+        CorpusFileContract targetFile = corpus.TargetCorpora[0].Files[0];
         ParatextProjectSettings? sourceSettings = corpusBundle.GetSettings(sourceFile.Location);
         ParatextProjectSettings? targetSettings = corpusBundle.GetSettings(targetFile.Location);
 
@@ -671,7 +696,7 @@ public class ParallelCorpusService : IParallelCorpusService
     }
 
     private static UpdateUsfmRow Map(
-        PretranslationData pretranslation,
+        PretranslationContract pretranslation,
         bool isSource,
         ScrVers? sourceVersification,
         ScrVers? targetVersification,
@@ -726,7 +751,7 @@ public class ParallelCorpusService : IParallelCorpusService
             .Where(r => !r.IsEmpty);
     }
 
-    private static WordAlignmentMatrix? CreateWordAlignmentMatrix(PretranslationData pretranslation)
+    private static WordAlignmentMatrix? CreateWordAlignmentMatrix(PretranslationContract pretranslation)
     {
         if (
             pretranslation.Alignment is null
@@ -738,7 +763,7 @@ public class ParallelCorpusService : IParallelCorpusService
         }
 
         var matrix = new WordAlignmentMatrix(pretranslation.SourceTokens.Count, pretranslation.TranslationTokens.Count);
-        foreach (Contracts.AlignedWordPair wordPair in pretranslation.Alignment)
+        foreach (Contracts.AlignedWordPairContract wordPair in pretranslation.Alignment)
             matrix[wordPair.SourceIndex, wordPair.TargetIndex] = true;
 
         return matrix;
@@ -836,7 +861,7 @@ public class ParallelCorpusService : IParallelCorpusService
     }
 
     public Dictionary<string, List<int>> GetChapters(
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string fileLocation,
         string scriptureRange
     )

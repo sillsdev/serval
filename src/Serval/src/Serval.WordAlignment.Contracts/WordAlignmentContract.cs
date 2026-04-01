@@ -1,6 +1,6 @@
 namespace Serval.WordAlignment.Contracts;
 
-public record WordAlignmentData
+public record WordAlignmentContract
 {
     public required string CorpusId { get; init; }
     public required string TextId { get; init; }
@@ -8,5 +8,5 @@ public record WordAlignmentData
     public required IReadOnlyList<string> TargetRefs { get; init; }
     public required IReadOnlyList<string> SourceTokens { get; init; }
     public required IReadOnlyList<string> TargetTokens { get; init; }
-    public required IReadOnlyList<AlignedWordPair> Alignment { get; init; }
+    public required IReadOnlyList<AlignedWordPairContract> Alignment { get; init; }
 }

@@ -1,6 +1,6 @@
 namespace Serval.WordAlignment.Contracts;
 
-public record ExecutionData
+public record ExecutionDataContract
 {
     public int? TrainCount { get; init; }
     public int? WordAlignCount { get; init; }

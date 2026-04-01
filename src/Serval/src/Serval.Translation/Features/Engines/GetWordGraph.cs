@@ -24,7 +24,7 @@ public record WordGraphArcDto
 public record GetWordGraph(string Owner, string EngineId, string Segment) : IRequest<GetWordGraphResponse>;
 
 public record GetWordGraphResponse(
-    [property: MemberNotNullWhen(true, nameof(WordGraph))] bool IsAvailable,
+    [property: MemberNotNullWhen(true, nameof(GetWordGraphResponse.WordGraph))] bool IsAvailable,
     WordGraphDto? WordGraph = null
 );
 
@@ -41,7 +41,7 @@ public class GetWordGraphHandler(IRepository<Engine> engines, IEngineServiceFact
         if (engine.ModelRevision == 0)
             return new(IsAvailable: false);
 
-        WordGraph wordGraph = await engineServiceFactory
+        WordGraphContract wordGraph = await engineServiceFactory
             .GetEngineService(engine.Type)
             .GetWordGraphAsync(request.EngineId, request.Segment, cancellationToken);
 

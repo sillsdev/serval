@@ -12,7 +12,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
 )
-    : HangfireBuildJob<TEngine, IReadOnlyList<FilteredParallelCorpus>>(
+    : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpusContract>>(
         platformService,
         engines,
         dataAccessContext,
@@ -38,7 +38,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> data,
+        IReadOnlyList<ParallelCorpusContract> data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -96,20 +96,20 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     );
 
     protected virtual Task UpdateTargetQuoteConventionAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     ) => Task.CompletedTask;
 
     protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
         CancellationToken cancellationToken
     );
@@ -117,7 +117,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     protected override async Task CleanupAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<FilteredParallelCorpus> data,
+        IReadOnlyList<ParallelCorpusContract> data,
         JobCompletionStatus completionStatus
     )
     {
@@ -139,7 +139,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
-        IReadOnlyList<FilteredParallelCorpus> parallelCorpora
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora
     )
     {
         List<string> warnings = [];

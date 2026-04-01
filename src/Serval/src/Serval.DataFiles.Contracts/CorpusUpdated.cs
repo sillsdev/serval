@@ -1,3 +1,3 @@
 ﻿namespace Serval.DataFiles.Contracts;
 
-public record CorpusUpdated(string CorpusId, IReadOnlyList<CorpusFileView> Files) : IEvent;
+public record CorpusUpdated(string CorpusId, IReadOnlyList<CorpusDataFileContract> Files) : IEvent;

@@ -26,10 +26,10 @@ public class StartBuildHandler(
     IDataAccessContext dataAccessContext,
     IRepository<Engine> engines,
     IRepository<Build> builds,
-    ICorpusMappingService corpusMappingService,
+    IContractMapper contractMapper,
     IEngineServiceFactory engineFactory,
     ILogger<StartBuildHandler> logger,
-    IDtoMapper mapper,
+    IDtoMapper dtoMapper,
     IConfiguration configuration
 ) : IRequestHandler<StartBuild, StartBuildResponse>
 {
@@ -74,7 +74,7 @@ public class StartBuildHandler(
                 };
                 await builds.InsertAsync(build, ct);
 
-                IReadOnlyList<FilteredParallelCorpus> corpora = corpusMappingService.Map(build, engine);
+                IReadOnlyList<ParallelCorpusContract> corpora = contractMapper.Map(build, engine);
 
                 string? buildOptions = null;
                 if (build.Options is not null)
@@ -112,7 +112,7 @@ public class StartBuildHandler(
                 await engineFactory
                     .GetEngineService(engine.Type)
                     .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, ct);
-                return new StartBuildResponse(IsBuildRunning: false, Build: mapper.Map(build));
+                return new StartBuildResponse(IsBuildRunning: false, Build: dtoMapper.Map(build));
             },
             cancellationToken
         );
