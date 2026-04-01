@@ -14,7 +14,7 @@
 		<PackageReference Include="Asp.Versioning.Abstractions" Version="8.1.0" />
 		<PackageReference Include="CaseExtensions" Version="1.1.0" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />
-		<PackageReference Include="MassTransit" Version="9.0.1" />
+		<PackageReference Include="MassTransit" Version="9.1.0" />
 		<PackageReference Include="NSwag.Annotations" Version="14.6.3" />
 	</ItemGroup>
 

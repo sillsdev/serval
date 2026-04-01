@@ -15,8 +15,8 @@
 	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
 		<PackageReference Include="MongoDB.Driver" Version="3.7.1" />
 		<PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" Version="3.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
