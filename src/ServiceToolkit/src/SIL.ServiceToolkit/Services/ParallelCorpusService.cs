@@ -153,54 +153,80 @@ public class ParallelCorpusService : IParallelCorpusService
         ignoreUsfmMarkers ??= [];
 
         bool parallelTrainingDataPresent = false;
-        List<Row> keyTermTrainingData = new();
+        List<Row> keyTermTrainingData = [];
 
-        // Create source and target arrays of text corpora filtered for training
-        // based on the filters specified in the associated monolingual corpora
-        ITextCorpus[] sourceTrainingCorpora = corpusBundle
-            .SourceTextCorpora.SelectMany(c =>
-                c.TextCorpora.Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
-            )
-            .ToArray();
-
-        ITextCorpus[] targetTrainingCorpora = corpusBundle
-            .TargetTextCorpora.SelectMany(c =>
-                c.TextCorpora.Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
-            )
-            .ToArray();
-
-        // To support mixed source, collapse multiple source text corpora into one text corpus
-        // by randomly interlacing content from each of the source text corpora
-        ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
-        if (sourceTrainingCorpus.IsScripture())
+        // Iterate over USFM and Text training corpora separately.
+        // This is not only because they use different keys, but if we have text corpora
+        // with scripture corpora, we don't want to exclude the text corpora from training.
+        foreach (bool isScripture in new bool[] { true, false })
         {
-            // Filter out all non-scripture; we only train on scripture content
-            sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
-        }
+            // Create source and target arrays of text corpora filtered for training
+            // based on the filters specified in the associated monolingual corpora
+            ITextCorpus[] sourceTrainingCorpora =
+            [
+                .. corpusBundle.SourceTextCorpora.SelectMany(c =>
+                    c.TextCorpora.Where(tc => isScripture ? tc.IsScripture() : !tc.IsScripture())
+                        .Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
+                ),
+            ];
 
-        // Instead of interlacing rows from the target text corpora randomly, just take the
-        // text row from the first target text corpus that has content for that row
-        ITextCorpus targetTrainingCorpus = targetTrainingCorpora.ChooseFirst();
-        if (targetTrainingCorpus.IsScripture())
-        {
-            // Filter out all non-scripture; we only train on scripture content
-            targetTrainingCorpus = targetTrainingCorpus.Where(IsScriptureRow);
-        }
+            ITextCorpus[] targetTrainingCorpora =
+            [
+                .. corpusBundle.TargetTextCorpora.SelectMany(c =>
+                    c.TextCorpora.Where(tc => isScripture ? tc.IsScripture() : !tc.IsScripture())
+                        .Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
+                ),
+            ];
 
-        // Align source and target training data
-        ParallelTextRow[] trainingRows = sourceTrainingCorpus
-            .AlignRows(targetTrainingCorpus, allSourceRows: true, allTargetRows: true)
-            .ToArray();
-
-        // After merging segments across ranges, run the 'train' preprocessing function
-        // on each training row and record whether any parallel training data was present
-        foreach (Row row in CollapseRanges(trainingRows))
-        {
-            await train(row, TrainingDataType.Text);
-            if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+            // To support mixed source, collapse multiple source text corpora into one text corpus
+            // by randomly interlacing content from each of the source text corpora
+            ITextCorpus sourceTrainingCorpus = sourceTrainingCorpora.ChooseRandom(Seed);
+            if (sourceTrainingCorpus.IsScripture())
             {
-                parallelTrainingDataPresent = true;
+                // Filter out all non-scripture; we only train on scripture content
+                sourceTrainingCorpus = sourceTrainingCorpus.Where(IsScriptureRow);
             }
+
+            // Instead of interlacing rows from the target text corpora randomly, just take the
+            // text row from the first target text corpus that has content for that row
+            ITextCorpus targetTrainingCorpus = targetTrainingCorpora.ChooseFirst();
+            if (targetTrainingCorpus.IsScripture())
+            {
+                // Filter out all non-scripture; we only train on scripture content
+                targetTrainingCorpus = targetTrainingCorpus.Where(IsScriptureRow);
+            }
+
+            // Align source and target training data
+            ParallelTextRow[] trainingRows =
+            [
+                .. sourceTrainingCorpus.AlignRows(targetTrainingCorpus, allSourceRows: true, allTargetRows: true),
+            ];
+
+            // After merging segments across ranges, run the 'train' preprocessing function
+            // on each training row and record whether any parallel training data was present
+            foreach (Row row in CollapseRanges(trainingRows))
+            {
+                await train(row, TrainingDataType.Text);
+                if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                {
+                    parallelTrainingDataPresent = true;
+                }
+            }
+        }
+
+        // Get the target corpus from the training corpora.
+        // This is across Scripture and non-Scripture corpora
+        ITextCorpus[] targetCorpora =
+        [
+            .. corpusBundle.TargetTextCorpora.SelectMany(c =>
+                c.TextCorpora.Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
+            ),
+        ];
+        ITextCorpus targetCorpus = targetCorpora.ChooseFirst();
+        if (targetCorpus.IsScripture())
+        {
+            // Filter out all non-scripture; we only train on scripture content
+            targetCorpus = targetCorpus.Where(IsScriptureRow);
         }
 
         if (useKeyTerms)
@@ -255,7 +281,7 @@ public class ParallelCorpusService : IParallelCorpusService
             {
                 sourceInferencingCorpus,
                 targetInferencingCorpus,
-                targetTrainingCorpus,
+                targetCorpus,
             }.AlignMany([true, false, false]);
 
             foreach ((Row row, bool isInTrainingData) in CollapseInferencingRanges(inferencingCorpus.ToArray()))
