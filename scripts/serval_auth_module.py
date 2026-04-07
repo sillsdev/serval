@@ -6,7 +6,7 @@ import requests
 
 
 class ServalBearerAuth(requests.auth.AuthBase):
-    def __init__(self, client_id="", client_secret=""):
+    def __init__(self, client_id="", client_secret="", auth_url=""):
         self.__client_id = (
             client_id if client_id != "" else os.environ.get("SERVAL_CLIENT_ID")
         )
@@ -17,7 +17,9 @@ class ServalBearerAuth(requests.auth.AuthBase):
             else os.environ.get("SERVAL_CLIENT_SECRET")
         )
         assert self.__client_secret is not None
-        self.__auth_url = os.environ.get("SERVAL_AUTH_URL")
+        self.__auth_url = (
+            auth_url if auth_url != "" else os.environ.get("SERVAL_AUTH_URL")
+        )
         assert self.__auth_url is not None
         self.update_token()
         self.__last_time_fetched = time.time()
