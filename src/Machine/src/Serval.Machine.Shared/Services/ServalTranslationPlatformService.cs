@@ -147,6 +147,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                         TargetIndex = a.TargetIndex,
                     })
                     .ToList(),
+                Confidence = pretranslation.Confidence,
             };
         }
     }
@@ -168,6 +169,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
             string corpusId = "",
                 textId = "",
                 translation = "";
+            double confidence = 0.0;
             IReadOnlyList<string> sourceRefs = [],
                 targetRefs = [],
                 sourceTokens = [],
@@ -218,6 +220,10 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                             reader.Read();
                             alignedWordPairs = AlignedWordPair.Parse(reader.GetString()).ToArray();
                             break;
+                        case "sequenceConfidence":
+                            reader.Read();
+                            confidence = reader.GetDouble();
+                            break;
                         default:
                             throw new JsonException(
                                 $"Unexpected property name {s} when deserializing Pretranslation object"
@@ -235,6 +241,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 Alignment = alignedWordPairs,
                 SourceTokens = sourceTokens,
                 TranslationTokens = translationTokens,
+                Confidence = confidence,
             };
         }
 
