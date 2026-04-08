@@ -1,24 +1,24 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IServalBuilderExtensions
+public static class IServalConfiguratorExtensions
 {
-    public static IServalBuilder AddDataFiles(this IServalBuilder builder)
+    public static IServalConfigurator AddDataFiles(this IServalConfigurator configurator)
     {
-        builder.Services.AddScoped<IDataFileService, DataFileService>();
-        builder.Services.AddHostedService<DeletedFileCleaner>();
+        configurator.Services.AddScoped<IDataFileService, DataFileService>();
+        configurator.Services.AddHostedService<DeletedFileCleaner>();
 
-        builder.Services.AddScoped<ICorpusService, CorpusService>();
+        configurator.Services.AddScoped<ICorpusService, CorpusService>();
 
-        builder.AddDataFilesDataAccess();
+        configurator.AddDataFilesDataAccess();
 
-        builder.AddHandlers(Assembly.GetExecutingAssembly());
+        configurator.AddHandlers(Assembly.GetExecutingAssembly());
 
-        return builder;
+        return configurator;
     }
 
-    public static IServalBuilder AddDataFilesDataAccess(this IServalBuilder builder)
+    public static IServalConfigurator AddDataFilesDataAccess(this IServalConfigurator configurator)
     {
-        builder.DataAccess.AddRepository<DataFile>(
+        configurator.DataAccess.AddRepository<DataFile>(
             "data_files.files",
             init:
             [
@@ -29,7 +29,7 @@ public static class IServalBuilderExtensions
             ]
         );
 
-        builder.DataAccess.AddRepository<DeletedFile>(
+        configurator.DataAccess.AddRepository<DeletedFile>(
             "data_files.deleted_files",
             init:
             [
@@ -39,7 +39,7 @@ public static class IServalBuilderExtensions
                     ),
             ]
         );
-        builder.DataAccess.AddRepository<Corpus>(
+        configurator.DataAccess.AddRepository<Corpus>(
             "corpora.corpus",
             init:
             [
@@ -55,6 +55,6 @@ public static class IServalBuilderExtensions
                     ),
             ]
         );
-        return builder;
+        return configurator;
     }
 }

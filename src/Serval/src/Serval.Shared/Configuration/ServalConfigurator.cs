@@ -1,10 +1,10 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-internal class ServalBuilder(
+internal class ServalConfigurator(
     IServiceCollection services,
     IConfiguration configuration,
     IMongoDataAccessBuilder dataAccess
-) : IServalBuilder
+) : IServalConfigurator
 {
     public IServiceCollection Services { get; } = services;
     public IConfiguration Configuration { get; } = configuration;

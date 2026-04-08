@@ -8,7 +8,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddFeatureManagement();
         services.AddMemoryCache();
         services.AddRouting(o => o.LowercaseUrls = true);
 
@@ -74,35 +73,18 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
         services.AddTransient<IUrlService, UrlService>();
 
-        IServalBuilder servalBuilder = services
-            .AddServal(Configuration)
-            .AddTranslation()
-            .AddWordAlignment()
-            .AddDataFiles()
-            .AddWebhooks()
-            .AddMachineEngines()
-            .AddEchoEngines();
-
-        services.AddHangfire(c =>
-            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseMongoStorage(
-                    Configuration.GetConnectionString("Hangfire"),
-                    new MongoStorageOptions
-                    {
-                        MigrationOptions = new MongoMigrationOptions
-                        {
-                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                            BackupStrategy = new CollectionMongoBackupStrategy(),
-                        },
-                        CheckConnection = true,
-                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
-                    }
-                )
+        services.AddServal(
+            Configuration,
+            c =>
+            {
+                c.AddTranslation();
+                c.AddWordAlignment();
+                c.AddDataFiles();
+                c.AddWebhooks();
+                c.AddMachineEngines();
+                c.AddEchoEngines();
+            }
         );
-        services.AddHangfireServer(o => o.Queues = [.. servalBuilder.JobQueues]);
-        services.AddHealthChecks().AddCheck<HangfireHealthCheck>("Hangfire");
 
         services
             .AddApiVersioning(o =>
@@ -133,8 +115,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                     o.DocumentName = "v" + version.Major;
                     o.ApiGroupNames = ["v" + version.Major];
                     o.Version = version.Major + "." + version.Minor;
-
-                    var featureManager = sp.GetRequiredService<IFeatureManager>();
 
                     o.SchemaSettings.SchemaNameGenerator = new ServalSchemaNameGenerator();
                     o.UseControllerSummaryAsTagDescription = true;
