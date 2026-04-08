@@ -2,14 +2,6 @@
 
 public static class IServalBuilderExtensions
 {
-    public static string GetDatabaseName(this IServalBuilder builder)
-    {
-        string? databaseName = builder.Configuration.GetConnectionString("ServalDatabase");
-        if (databaseName is null)
-            throw new InvalidOperationException("Serval database not configured.");
-        return databaseName;
-    }
-
     public static IServalBuilder AddHandlers(this IServalBuilder builder, Assembly assembly)
     {
         foreach (Type type in assembly.GetTypes())

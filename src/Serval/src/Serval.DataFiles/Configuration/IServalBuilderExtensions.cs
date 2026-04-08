@@ -9,47 +9,51 @@ public static class IServalBuilderExtensions
 
         builder.Services.AddScoped<ICorpusService, CorpusService>();
 
-        builder.AddMongoDataAccess();
+        builder.AddDataFilesDataAccess();
 
         builder.AddHandlers(Assembly.GetExecutingAssembly());
 
         return builder;
     }
 
-    private static IServalBuilder AddMongoDataAccess(this IServalBuilder builder)
+    public static IServalBuilder AddDataFilesDataAccess(this IServalBuilder builder)
     {
-        string databaseName = builder.GetDatabaseName();
         builder.DataAccess.AddRepository<DataFile>(
-            databaseName,
             "data_files.files",
-            init: c =>
-                c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<DataFile>(Builders<DataFile>.IndexKeys.Ascending(p => p.Owner))
-                )
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<DataFile>(Builders<DataFile>.IndexKeys.Ascending(p => p.Owner))
+                    ),
+            ]
         );
 
         builder.DataAccess.AddRepository<DeletedFile>(
-            databaseName,
             "data_files.deleted_files",
-            init: c =>
-                c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<DeletedFile>(Builders<DeletedFile>.IndexKeys.Ascending(p => p.DeletedAt))
-                )
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<DeletedFile>(Builders<DeletedFile>.IndexKeys.Ascending(p => p.DeletedAt))
+                    ),
+            ]
         );
         builder.DataAccess.AddRepository<Corpus>(
-            databaseName,
             "corpora.corpus",
-            init: async c =>
-            {
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
-                );
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
+                    ),
                 // migrate by adding Name field
-                await c.UpdateManyAsync(
-                    Builders<Corpus>.Filter.Exists(b => b.Name, false),
-                    Builders<Corpus>.Update.Set(b => b.Name, null)
-                );
-            }
+                c =>
+                    c.UpdateManyAsync(
+                        Builders<Corpus>.Filter.Exists(b => b.Name, false),
+                        Builders<Corpus>.Update.Set(b => b.Name, null)
+                    ),
+            ]
         );
         return builder;
     }

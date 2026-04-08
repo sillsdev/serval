@@ -35,7 +35,7 @@ public static class IServalBuilderExtensions
         services.AddHostedService<ModelCleanupService>();
 
         builder.AddBuildJobService();
-        builder.AddMongoDataAccess();
+        builder.AddMachineDataAccess();
         builder.AddClearMLService();
 
         builder.AddTranslationEngines();
@@ -142,55 +142,56 @@ public static class IServalBuilderExtensions
         return builder;
     }
 
-    private static IServalBuilder AddMongoDataAccess(this IServalBuilder builder)
+    public static IServalBuilder AddMachineDataAccess(this IServalBuilder builder)
     {
-        string? databaseName = builder.Configuration.GetConnectionString("MachineDatabase");
-        if (databaseName is null)
-            throw new InvalidOperationException("Machine database not configured.");
         builder.DataAccess.AddRepository<TranslationEngine>(
-            databaseName,
-            "translation_engines",
-            init: async c =>
-            {
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<TranslationEngine>(
-                        Builders<TranslationEngine>.IndexKeys.Ascending(e => e.EngineId)
-                    )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<TranslationEngine>(
-                        Builders<TranslationEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
-                    )
-                );
-            }
+            "machine.translation_engines",
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<TranslationEngine>(
+                            Builders<TranslationEngine>.IndexKeys.Ascending(e => e.EngineId)
+                        )
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<TranslationEngine>(
+                            Builders<TranslationEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
+                        )
+                    ),
+            ]
         );
         builder.DataAccess.AddRepository<WordAlignmentEngine>(
-            databaseName,
-            "word_alignment_engines",
-            init: async c =>
-            {
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<WordAlignmentEngine>(
-                        Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.EngineId)
-                    )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<WordAlignmentEngine>(
-                        Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
-                    )
-                );
-            }
+            "machine.word_alignment_engines",
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<WordAlignmentEngine>(
+                            Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.EngineId)
+                        )
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<WordAlignmentEngine>(
+                            Builders<WordAlignmentEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
+                        )
+                    ),
+            ]
         );
-        builder.DataAccess.AddRepository<RWLock>(databaseName, "locks");
+        builder.DataAccess.AddRepository<RWLock>("machine.locks");
         builder.DataAccess.AddRepository<TrainSegmentPair>(
-            databaseName,
-            "train_segment_pairs",
-            init: c =>
-                c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<TrainSegmentPair>(
-                        Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.TranslationEngineRef)
-                    )
-                )
+            "machine.train_segment_pairs",
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<TrainSegmentPair>(
+                            Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.TranslationEngineRef)
+                        )
+                    ),
+            ]
         );
         return builder;
     }
