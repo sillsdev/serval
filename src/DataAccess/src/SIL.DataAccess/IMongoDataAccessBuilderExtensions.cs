@@ -4,7 +4,6 @@ public static class IMongoDataAccessBuilderExtensions
 {
     public static IMongoDataAccessBuilder AddRepository<T>(
         this IMongoDataAccessBuilder configurator,
-        string databaseName,
         string collectionName,
         Action<BsonClassMap<T>>? mapSetup = null,
         IReadOnlyList<Func<IMongoCollection<T>, Task>>? init = null
@@ -17,9 +16,6 @@ public static class IMongoDataAccessBuilderExtensions
         {
             configurator.Services.Configure<MongoDataAccessOptions>(options =>
             {
-                options.Initializers.Add(client =>
-                    init(client.GetDatabase(databaseName).GetCollection<T>(collectionName))
-                );
                 options.Initializers.Add(
                     async (serviceProvider, database) =>
                     {
@@ -47,7 +43,7 @@ public static class IMongoDataAccessBuilderExtensions
         configurator.Services.TryAddScoped<IRepository<T>>(sp =>
             CreateRepository(
                 sp.GetRequiredService<IMongoDataAccessContext>(),
-                sp.GetRequiredService<IMongoClient>().GetDatabase(databaseName).GetCollection<T>(collectionName)
+                sp.GetRequiredService<IMongoDatabase>().GetCollection<T>(collectionName)
             )
         );
         return configurator;

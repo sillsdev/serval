@@ -16,14 +16,11 @@ public class ServalSharedTests
     public async Task InitializesRepositories()
     {
         // Setup
-        IServalBuilder servalBuilder = new ServalBuilder(_env.Services, _env.Configuration);
-        servalBuilder.AddMongoDataAccess(cfg =>
-        {
-            cfg.AddTranslationRepositories();
-            cfg.AddWordAlignmentRepositories();
-            cfg.AddDataFilesRepositories();
-            cfg.AddWebhooksRepositories();
-        });
+        IServalBuilder builder = _env.Services.AddServal(_env.Configuration);
+        builder.AddTranslationDataAccess();
+        builder.AddWordAlignmentDataAccess();
+        builder.AddDataFilesDataAccess();
+        builder.AddWebhooksDataAccess();
 
         // SUT
         await _env.InitializeDatabaseAsync();
@@ -37,11 +34,8 @@ public class ServalSharedTests
     public async Task Migrates_TranslationEngines_ParallelCorpora()
     {
         // Setup
-        IServalBuilder servalBuilder = new ServalBuilder(_env.Services, _env.Configuration);
-        servalBuilder.AddMongoDataAccess(cfg =>
-        {
-            cfg.AddTranslationRepositories();
-        });
+        IServalBuilder builder = _env.Services.AddServal(_env.Configuration);
+        builder.AddTranslation();
 
         // Populate pre-migration-data
         await _env.SetupSchemaAsync("translation.engines", 2);

@@ -242,15 +242,15 @@ public class ParallelCorpusService : IParallelCorpusService
             }
 
             // Align source and target training data
-        IEnumerable<ParallelTextRow> trainingRows = sourceTrainingCorpus.AlignRows(
-            targetTrainingCorpus,
-            allSourceRows: true,
-            allTargetRows: true
-        );
+            IEnumerable<ParallelTextRow> trainingRows = sourceTrainingCorpus.AlignRows(
+                targetTrainingCorpus,
+                allSourceRows: true,
+                allTargetRows: true
+            );
 
             // After merging segments across ranges, run the 'train' preprocessing function
             // on each training row and record whether any parallel training data was present
-        foreach (ParallelRowContract row in CollapseRanges(trainingRows))
+            foreach (ParallelRowContract row in CollapseRanges(trainingRows))
             {
                 await train(row, TrainingDataType.Text);
                 if (!parallelTrainingDataPresent && row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)

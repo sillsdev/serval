@@ -12,108 +12,123 @@ public static class IServalBuilderExtensions
         builder.Services.AddScoped<DtoMapper>();
         builder.Services.AddScoped<ITranslationPlatformService, PlatformService>();
 
-        builder.AddMongoDataAccess();
+        builder.AddTranslationDataAccess();
 
         builder.AddHandlers(Assembly.GetExecutingAssembly());
 
         return builder;
     }
 
-    private static IServalBuilder AddMongoDataAccess(this IServalBuilder builder)
+    public static IServalBuilder AddTranslationDataAccess(this IServalBuilder builder)
     {
-        string databaseName = builder.GetDatabaseName();
         builder.DataAccess.AddRepository<Engine>(
-            databaseName,
             "translation.engines",
-            init: async c =>
-            {
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.DateCreated))
-                );
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.Owner))
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys.Ascending(e => e.DateCreated))
+                    ),
                 // migrate to new ParallelCorpora scheme by adding ParallelCorpora to existing engines
-                await c.UpdateManyAsync(
-                    Builders<Engine>.Filter.Exists(e => e.ParallelCorpora, false),
-                    Builders<Engine>.Update.Set(e => e.ParallelCorpora, new List<ParallelCorpus>())
-                );
-            }
+                c =>
+                    c.UpdateManyAsync(
+                        Builders<Engine>.Filter.Exists(e => e.ParallelCorpora, false),
+                        Builders<Engine>.Update.Set(e => e.ParallelCorpora, new List<ParallelCorpus>())
+                    ),
+            ]
         );
         builder.DataAccess.AddRepository<Build>(
-            databaseName,
             "translation.builds",
-            init: static async c =>
-            {
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.Owner))
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.DateCreated))
-                );
-                // migrate by adding ExecutionData field
-                await c.UpdateManyAsync(
-                    Builders<Build>.Filter.Exists(b => b.ExecutionData, false),
-                    Builders<Build>.Update.Set(b => b.ExecutionData, new ExecutionData())
-                );
-                // migrate the percentCompleted field to the progress field
-                await c.UpdateManyAsync(
-                    Builders<Build>.Filter.And(
-                        Builders<Build>.Filter.Exists("percentCompleted"),
-                        Builders<Build>.Filter.Exists(b => b.Progress, false)
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.Owner))
                     ),
-                    new BsonDocument("$rename", new BsonDocument("percentCompleted", "progress"))
-                );
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.DateCreated))
+                    ),
+                // migrate by adding ExecutionData field
+                c =>
+                    c.UpdateManyAsync(
+                        Builders<Build>.Filter.Exists(b => b.ExecutionData, false),
+                        Builders<Build>.Update.Set(b => b.ExecutionData, new ExecutionData())
+                    ),
+                // migrate the percentCompleted field to the progress field
+                c =>
+                    c.UpdateManyAsync(
+                        Builders<Build>.Filter.And(
+                            Builders<Build>.Filter.Exists("percentCompleted"),
+                            Builders<Build>.Filter.Exists(b => b.Progress, false)
+                        ),
+                        new BsonDocument("$rename", new BsonDocument("percentCompleted", "progress"))
+                    ),
                 // migrate by duplicating the owner field from build
-                await c.Aggregate()
-                    .Match(Builders<Build>.Filter.Exists(b => b.Owner, false))
-                    .Lookup("translation.engines", "engineRef", "_id", "engine")
-                    .Unwind("engine", new AggregateUnwindOptions<BsonDocument> { PreserveNullAndEmptyArrays = true })
-                    .AppendStage<BsonDocument>(new BsonDocument("$set", new BsonDocument("owner", "$engine.owner")))
-                    .AppendStage<BsonDocument>(new BsonDocument("$unset", "engine"))
-                    .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
-                    .ToListAsync();
-                await MongoMigrations.MigrateTargetQuoteConvention(c);
-            }
+                c =>
+                    c.Aggregate()
+                        .Match(Builders<Build>.Filter.Exists(b => b.Owner, false))
+                        .Lookup("translation.engines", "engineRef", "_id", "engine")
+                        .Unwind(
+                            "engine",
+                            new AggregateUnwindOptions<BsonDocument> { PreserveNullAndEmptyArrays = true }
+                        )
+                        .AppendStage<BsonDocument>(new BsonDocument("$set", new BsonDocument("owner", "$engine.owner")))
+                        .AppendStage<BsonDocument>(new BsonDocument("$unset", "engine"))
+                        .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
+                        .ToListAsync(),
+                MongoMigrations.MigrateTargetQuoteConvention,
+            ]
         );
         builder.DataAccess.AddRepository<Pretranslation>(
-            databaseName,
             "translation.pretranslations",
-            init: async c =>
-            {
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.ModelRevision)
-                    )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.CorpusRef)
-                    )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId))
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>
-                            .IndexKeys.Ascending(pt => pt.EngineRef)
-                            .Ascending(pt => pt.ModelRevision)
-                    )
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Pretranslation>(
-                        Builders<Pretranslation>
-                            .IndexKeys.Ascending(pt => pt.EngineRef)
-                            .Ascending(pt => pt.CorpusRef)
-                            .Ascending(pt => pt.ModelRevision)
-                            .Ascending(pt => pt.TextId)
-                    )
-                );
-            }
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Pretranslation>(
+                            Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.ModelRevision)
+                        )
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Pretranslation>(
+                            Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.CorpusRef)
+                        )
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Pretranslation>(
+                            Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId)
+                        )
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Pretranslation>(
+                            Builders<Pretranslation>
+                                .IndexKeys.Ascending(pt => pt.EngineRef)
+                                .Ascending(pt => pt.ModelRevision)
+                        )
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Pretranslation>(
+                            Builders<Pretranslation>
+                                .IndexKeys.Ascending(pt => pt.EngineRef)
+                                .Ascending(pt => pt.CorpusRef)
+                                .Ascending(pt => pt.ModelRevision)
+                                .Ascending(pt => pt.TextId)
+                        )
+                    ),
+            ]
         );
 
         return builder;

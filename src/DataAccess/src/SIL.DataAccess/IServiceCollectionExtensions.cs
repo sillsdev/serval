@@ -44,13 +44,17 @@ public static class IServiceCollectionExtensions
             clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
             return new MongoClient(clientSettings);
         });
+        services.TryAddSingleton(sp =>
+            sp.GetRequiredService<IMongoClient>()
+                .GetDatabase(sp.GetRequiredService<IOptions<MongoDataAccessOptions>>().Value.Url.DatabaseName)
+        );
         services.TryAddScoped<IMongoDataAccessContext, MongoDataAccessContext>();
         services.TryAddScoped<IDataAccessContext>(sp => sp.GetRequiredService<IMongoDataAccessContext>());
         services.AddHostedService<MongoDataAccessInitializeService>();
-        return new MongoDataAccessBuilder(services);
+        MongoDataAccessBuilder builder = new(services);
 
         // Configure the schema_versions repository
-        configurator.AddRepository<SchemaVersion>(
+        builder.AddRepository<SchemaVersion>(
             "schema_versions",
             init:
             [
@@ -63,6 +67,6 @@ public static class IServiceCollectionExtensions
             ]
         );
 
-        configure(configurator);
+        return builder;
     }
 }
