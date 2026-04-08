@@ -213,6 +213,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                                             (_, i) => new AlignedWordPairContract { SourceIndex = i, TargetIndex = i }
                                         )
                                         .ToList(),
+                                    Confidence = 1.0,
                                 }
                             );
                             if (row.SourceSegment.Length > 0 && !isInTrainingData)
