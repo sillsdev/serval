@@ -10,7 +10,7 @@ public class ServalWebApplicationFactory : WebApplicationFactory<Program>
                 config.AddInMemoryCollection(
                     new Dictionary<string, string?>
                     {
-                        ["ConnectionStrings:ServalDatabase"] = "serval_test",
+                        ["ConnectionStrings:Mongo"] = "mongodb://localhost:27017/serval_test",
                         ["ConnectionStrings:Hangfire"] = "mongodb://localhost:27017/serval_test_jobs",
                     }
                 );

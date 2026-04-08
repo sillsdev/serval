@@ -32,6 +32,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess\SIL.DataAccess.csproj" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.Shared\Serval.Shared.csproj" />
 		<ProjectReference Include="..\..\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
 	</ItemGroup>
 

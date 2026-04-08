@@ -16,8 +16,8 @@ public class ServalMachineSharedTests
     public async Task InitializesRepositories()
     {
         // Setup
-        IMachineBuilder machineBuilder = new MachineBuilder(_env.Services, _env.Configuration);
-        machineBuilder.AddMongoDataAccess();
+        IServalBuilder builder = _env.Services.AddServal(_env.Configuration);
+        builder.AddMachineDataAccess();
 
         // SUT
         await _env.InitializeDatabaseAsync();

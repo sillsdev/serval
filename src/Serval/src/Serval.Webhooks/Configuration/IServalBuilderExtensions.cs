@@ -7,28 +7,28 @@ public static class IServalBuilderExtensions
         builder.Services.AddHttpClient<WebhookJob>();
         builder.Services.AddScoped<IWebhookService, WebhookService>();
 
-        builder.AddMongoDataAccess();
+        builder.AddWebhooksDataAccess();
 
         builder.AddHandlers(Assembly.GetExecutingAssembly());
 
         return builder;
     }
 
-    private static IServalBuilder AddMongoDataAccess(this IServalBuilder builder)
+    public static IServalBuilder AddWebhooksDataAccess(this IServalBuilder builder)
     {
-        string databaseName = builder.GetDatabaseName();
         builder.DataAccess.AddRepository<Webhook>(
-            databaseName,
             "webhooks.hooks",
-            init: async c =>
-            {
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Owner))
-                );
-                await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Events))
-                );
-            }
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Owner))
+                    ),
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Events))
+                    ),
+            ]
         );
 
         return builder;
