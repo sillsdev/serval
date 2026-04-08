@@ -1,25 +1,25 @@
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IServalBuilderExtensions
+public static class IServalConfiguratorExtensions
 {
-    public static IServalBuilder AddWordAlignment(this IServalBuilder builder)
+    public static IServalConfigurator AddWordAlignment(this IServalConfigurator configurator)
     {
-        builder.Services.AddScoped<IBuildService, BuildService>();
-        builder.Services.AddScoped<IWordAlignmentService, WordAlignmentService>();
-        builder.Services.AddScoped<IEngineService, EngineService>();
-        builder.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
-        builder.Services.AddScoped<IWordAlignmentPlatformService, PlatformService>();
+        configurator.Services.AddScoped<IBuildService, BuildService>();
+        configurator.Services.AddScoped<IWordAlignmentService, WordAlignmentService>();
+        configurator.Services.AddScoped<IEngineService, EngineService>();
+        configurator.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
+        configurator.Services.AddScoped<IWordAlignmentPlatformService, PlatformService>();
 
-        builder.AddWordAlignmentDataAccess();
+        configurator.AddWordAlignmentDataAccess();
 
-        builder.AddHandlers(Assembly.GetExecutingAssembly());
+        configurator.AddHandlers(Assembly.GetExecutingAssembly());
 
-        return builder;
+        return configurator;
     }
 
-    public static IServalBuilder AddWordAlignmentDataAccess(this IServalBuilder builder)
+    public static IServalConfigurator AddWordAlignmentDataAccess(this IServalConfigurator configurator)
     {
-        builder.DataAccess.AddRepository<Engine>(
+        configurator.DataAccess.AddRepository<Engine>(
             "word_alignment.engines",
             init:
             [
@@ -33,7 +33,7 @@ public static class IServalBuilderExtensions
                     ),
             ]
         );
-        builder.DataAccess.AddRepository<Build>(
+        configurator.DataAccess.AddRepository<Build>(
             "word_alignment.builds",
             init:
             [
@@ -56,7 +56,7 @@ public static class IServalBuilderExtensions
                     ),
             ]
         );
-        builder.DataAccess.AddRepository<WordAlignment>(
+        configurator.DataAccess.AddRepository<WordAlignment>(
             "word_alignment.word_alignments",
             init:
             [
@@ -99,6 +99,6 @@ public static class IServalBuilderExtensions
             ]
         );
 
-        return builder;
+        return configurator;
     }
 }

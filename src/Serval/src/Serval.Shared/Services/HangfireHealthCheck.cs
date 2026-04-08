@@ -1,4 +1,4 @@
-﻿namespace Serval.ApiServer.Services;
+﻿namespace Serval.Shared.Services;
 
 public class HangfireHealthCheck(JobStorage jobStorage, IOptions<BackgroundJobServerOptions> options) : IHealthCheck
 {

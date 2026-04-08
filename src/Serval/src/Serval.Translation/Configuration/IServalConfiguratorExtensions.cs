@@ -1,27 +1,27 @@
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IServalBuilderExtensions
+public static class IServalConfiguratorExtensions
 {
-    public static IServalBuilder AddTranslation(this IServalBuilder builder)
+    public static IServalConfigurator AddTranslation(this IServalConfigurator configurator)
     {
-        builder.Services.AddScoped<IBuildService, BuildService>();
-        builder.Services.AddScoped<ContractMapper>();
-        builder.Services.AddScoped<IPretranslationService, PretranslationService>();
-        builder.Services.AddScoped<IEngineService, EngineService>();
-        builder.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
-        builder.Services.AddScoped<DtoMapper>();
-        builder.Services.AddScoped<ITranslationPlatformService, PlatformService>();
+        configurator.Services.AddScoped<IBuildService, BuildService>();
+        configurator.Services.AddScoped<ContractMapper>();
+        configurator.Services.AddScoped<IPretranslationService, PretranslationService>();
+        configurator.Services.AddScoped<IEngineService, EngineService>();
+        configurator.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
+        configurator.Services.AddScoped<DtoMapper>();
+        configurator.Services.AddScoped<ITranslationPlatformService, PlatformService>();
 
-        builder.AddTranslationDataAccess();
+        configurator.AddTranslationDataAccess();
 
-        builder.AddHandlers(Assembly.GetExecutingAssembly());
+        configurator.AddHandlers(Assembly.GetExecutingAssembly());
 
-        return builder;
+        return configurator;
     }
 
-    public static IServalBuilder AddTranslationDataAccess(this IServalBuilder builder)
+    public static IServalConfigurator AddTranslationDataAccess(this IServalConfigurator configurator)
     {
-        builder.DataAccess.AddRepository<Engine>(
+        configurator.DataAccess.AddRepository<Engine>(
             "translation.engines",
             init:
             [
@@ -41,7 +41,7 @@ public static class IServalBuilderExtensions
                     ),
             ]
         );
-        builder.DataAccess.AddRepository<Build>(
+        configurator.DataAccess.AddRepository<Build>(
             "translation.builds",
             init:
             [
@@ -88,7 +88,7 @@ public static class IServalBuilderExtensions
                 MongoMigrations.MigrateTargetQuoteConvention,
             ]
         );
-        builder.DataAccess.AddRepository<Pretranslation>(
+        configurator.DataAccess.AddRepository<Pretranslation>(
             "translation.pretranslations",
             init:
             [
@@ -131,6 +131,6 @@ public static class IServalBuilderExtensions
             ]
         );
 
-        return builder;
+        return configurator;
     }
 }
