@@ -2,7 +2,11 @@
 
 public static class IServiceCollectionExtensions
 {
-    public static IServalBuilder AddServal(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddServal(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<IServalConfigurator> configure
+    )
     {
         services.AddTransient<IFileSystem, FileSystem>();
         services.AddSingleton<IParallelCorpusService, ParallelCorpusService>();
@@ -17,6 +21,31 @@ public static class IServiceCollectionExtensions
         IMongoDataAccessBuilder dataAccess = services.AddMongoDataAccess(mongoConnectionString, "Serval");
         services.AddHealthChecks().AddMongoDb(name: "Mongo");
 
-        return new ServalBuilder(services, configuration, dataAccess);
+        services.AddHangfire(c =>
+            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseMongoStorage(
+                    configuration.GetConnectionString("Hangfire"),
+                    new MongoStorageOptions
+                    {
+                        MigrationOptions = new MongoMigrationOptions
+                        {
+                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                            BackupStrategy = new CollectionMongoBackupStrategy(),
+                        },
+                        CheckConnection = true,
+                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
+                    }
+                )
+        );
+
+        ServalConfigurator configurator = new(services, configuration, dataAccess);
+        configure(configurator);
+
+        services.AddHangfireServer(o => o.Queues = [.. configurator.JobQueues]);
+        services.AddHealthChecks().AddCheck<HangfireHealthCheck>("Hangfire");
+
+        return services;
     }
 }

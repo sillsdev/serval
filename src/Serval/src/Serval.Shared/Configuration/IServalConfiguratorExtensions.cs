@@ -1,8 +1,8 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IServalBuilderExtensions
+public static class IServalConfiguratorExtensions
 {
-    public static IServalBuilder AddHandlers(this IServalBuilder builder, Assembly assembly)
+    public static IServalConfigurator AddHandlers(this IServalConfigurator builder, Assembly assembly)
     {
         foreach (Type type in assembly.GetTypes())
         {

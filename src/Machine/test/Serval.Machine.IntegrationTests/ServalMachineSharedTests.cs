@@ -16,8 +16,7 @@ public class ServalMachineSharedTests
     public async Task InitializesRepositories()
     {
         // Setup
-        IServalBuilder builder = _env.Services.AddServal(_env.Configuration);
-        builder.AddMachineDataAccess();
+        _env.Services.AddServal(_env.Configuration, c => c.AddMachineDataAccess());
 
         // SUT
         await _env.InitializeDatabaseAsync();

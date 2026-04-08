@@ -1,11 +1,11 @@
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IServalBuilderExtensions
+public static class IServalConfiguratorExtensions
 {
-    public static IServalBuilder AddMachineEngines(this IServalBuilder builder)
+    public static IServalConfigurator AddMachineEngines(this IServalConfigurator configurator)
     {
-        IConfiguration configuration = builder.Configuration;
-        IServiceCollection services = builder.Services;
+        IConfiguration configuration = configurator.Configuration;
+        IServiceCollection services = configurator.Services;
 
         if (!Sldr.IsInitialized)
             Sldr.Initialize();
@@ -34,54 +34,58 @@ public static class IServalBuilderExtensions
 
         services.AddHostedService<ModelCleanupService>();
 
-        builder.AddBuildJobService();
-        builder.AddMachineDataAccess();
-        builder.AddClearMLService();
+        configurator.AddBuildJobService();
+        configurator.AddMachineDataAccess();
+        configurator.AddClearMLService();
 
-        builder.AddTranslationEngines();
-        builder.AddWordAlignmentEngines();
+        configurator.AddTranslationEngines();
+        configurator.AddWordAlignmentEngines();
 
-        return builder;
+        return configurator;
     }
 
-    private static IServalBuilder AddTranslationEngines(this IServalBuilder builder)
+    private static IServalConfigurator AddTranslationEngines(this IServalConfigurator configurator)
     {
-        builder.Services.AddKeyedScoped<IPlatformService, ServalTranslationPlatformService>(EngineGroup.Translation);
+        configurator.Services.AddKeyedScoped<IPlatformService, ServalTranslationPlatformService>(
+            EngineGroup.Translation
+        );
 
         // SMT Transfer Engine
-        builder.Services.AddSingleton<SmtTransferEngineStateService>();
-        builder.Services.AddHostedService<SmtTransferEngineCommitService>();
-        builder.Services.Configure<ThotSmtModelOptions>(builder.Configuration.GetSection(ThotSmtModelOptions.Key));
-        builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
-        builder.Services.AddSingleton<ITransferEngineFactory, TransferEngineFactory>();
-        builder.Services.AddSingleton<ITruecaserFactory, UnigramTruecaserFactory>();
-        builder.AddTranslationEngine<SmtTransferEngineService>(EngineType.SmtTransfer.ToString());
-        builder.JobQueues.Add(EngineType.SmtTransfer.ToString());
+        configurator.Services.AddSingleton<SmtTransferEngineStateService>();
+        configurator.Services.AddHostedService<SmtTransferEngineCommitService>();
+        configurator.Services.Configure<ThotSmtModelOptions>(
+            configurator.Configuration.GetSection(ThotSmtModelOptions.Key)
+        );
+        configurator.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
+        configurator.Services.AddSingleton<ITransferEngineFactory, TransferEngineFactory>();
+        configurator.Services.AddSingleton<ITruecaserFactory, UnigramTruecaserFactory>();
+        configurator.AddTranslationEngine<SmtTransferEngineService>(EngineType.SmtTransfer.ToString());
+        configurator.JobQueues.Add(EngineType.SmtTransfer.ToString());
 
         // NMT Engine
-        builder.AddTranslationEngine<NmtEngineService>(EngineType.Nmt.ToString());
-        builder.JobQueues.Add(EngineType.Nmt.ToString());
+        configurator.AddTranslationEngine<NmtEngineService>(EngineType.Nmt.ToString());
+        configurator.JobQueues.Add(EngineType.Nmt.ToString());
 
-        return builder;
+        return configurator;
     }
 
-    private static IServalBuilder AddWordAlignmentEngines(this IServalBuilder builder)
+    private static IServalConfigurator AddWordAlignmentEngines(this IServalConfigurator configurator)
     {
-        builder.Services.AddKeyedScoped<IPlatformService, ServalWordAlignmentPlatformService>(
+        configurator.Services.AddKeyedScoped<IPlatformService, ServalWordAlignmentPlatformService>(
             EngineGroup.WordAlignment
         );
 
         // Statistical Engine
-        builder.Services.AddSingleton<StatisticalEngineStateService>();
-        builder.Services.Configure<ThotWordAlignmentModelOptions>(
-            builder.Configuration.GetSection(ThotWordAlignmentModelOptions.Key)
+        configurator.Services.AddSingleton<StatisticalEngineStateService>();
+        configurator.Services.Configure<ThotWordAlignmentModelOptions>(
+            configurator.Configuration.GetSection(ThotWordAlignmentModelOptions.Key)
         );
-        builder.Services.AddSingleton<IWordAlignmentModelFactory, ThotWordAlignmentModelFactory>();
-        builder.AddWordAlignmentEngine<StatisticalEngineService>(EngineType.Statistical.ToString());
-        builder.Services.AddHostedService<StatisticalEngineCommitService>();
-        builder.JobQueues.Add(EngineType.Statistical.ToString());
+        configurator.Services.AddSingleton<IWordAlignmentModelFactory, ThotWordAlignmentModelFactory>();
+        configurator.AddWordAlignmentEngine<StatisticalEngineService>(EngineType.Statistical.ToString());
+        configurator.Services.AddHostedService<StatisticalEngineCommitService>();
+        configurator.JobQueues.Add(EngineType.Statistical.ToString());
 
-        return builder;
+        return configurator;
     }
 
     private static IServiceCollection AddStartupTask(
@@ -93,7 +97,7 @@ public static class IServalBuilderExtensions
         return services;
     }
 
-    private static IServalBuilder AddClearMLService(this IServalBuilder builder)
+    private static IServalConfigurator AddClearMLService(this IServalConfigurator builder)
     {
         string? connectionString = builder.Configuration.GetConnectionString("ClearML");
         if (connectionString is null)
@@ -142,9 +146,9 @@ public static class IServalBuilderExtensions
         return builder;
     }
 
-    public static IServalBuilder AddMachineDataAccess(this IServalBuilder builder)
+    public static IServalConfigurator AddMachineDataAccess(this IServalConfigurator configurator)
     {
-        builder.DataAccess.AddRepository<TranslationEngine>(
+        configurator.DataAccess.AddRepository<TranslationEngine>(
             "machine.translation_engines",
             init:
             [
@@ -162,7 +166,7 @@ public static class IServalBuilderExtensions
                     ),
             ]
         );
-        builder.DataAccess.AddRepository<WordAlignmentEngine>(
+        configurator.DataAccess.AddRepository<WordAlignmentEngine>(
             "machine.word_alignment_engines",
             init:
             [
@@ -180,8 +184,8 @@ public static class IServalBuilderExtensions
                     ),
             ]
         );
-        builder.DataAccess.AddRepository<RWLock>("machine.locks");
-        builder.DataAccess.AddRepository<TrainSegmentPair>(
+        configurator.DataAccess.AddRepository<RWLock>("machine.locks");
+        configurator.DataAccess.AddRepository<TrainSegmentPair>(
             "machine.train_segment_pairs",
             init:
             [
@@ -193,46 +197,46 @@ public static class IServalBuilderExtensions
                     ),
             ]
         );
-        return builder;
+        return configurator;
     }
 
-    private static IServalBuilder AddBuildJobService(this IServalBuilder builder)
+    private static IServalConfigurator AddBuildJobService(this IServalConfigurator configurator)
     {
-        builder.Services.AddScoped<IBuildJobService<TranslationEngine>, TranslationBuildJobService>();
-        builder.Services.AddScoped<IBuildJobService<WordAlignmentEngine>, BuildJobService<WordAlignmentEngine>>();
+        configurator.Services.AddScoped<IBuildJobService<TranslationEngine>, TranslationBuildJobService>();
+        configurator.Services.AddScoped<IBuildJobService<WordAlignmentEngine>, BuildJobService<WordAlignmentEngine>>();
 
-        builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
-        builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
-        builder.Services.AddScoped<IClearMLBuildJobFactory, SmtTransferClearMLBuildJobFactory>();
-        builder.Services.AddScoped<IClearMLBuildJobFactory, StatisticalClearMLBuildJobFactory>();
+        configurator.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
+        configurator.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
+        configurator.Services.AddScoped<IClearMLBuildJobFactory, SmtTransferClearMLBuildJobFactory>();
+        configurator.Services.AddScoped<IClearMLBuildJobFactory, StatisticalClearMLBuildJobFactory>();
 
-        builder.Services.AddSingleton<ClearMLMonitorService>();
-        builder.Services.AddSingleton<IClearMLQueueService>(x => x.GetRequiredService<ClearMLMonitorService>());
-        builder.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
+        configurator.Services.AddSingleton<ClearMLMonitorService>();
+        configurator.Services.AddSingleton<IClearMLQueueService>(x => x.GetRequiredService<ClearMLMonitorService>());
+        configurator.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
 
-        builder.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();
-        builder.Services.AddScoped<IHangfireBuildJobFactory, NmtHangfireBuildJobFactory>();
-        builder.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
-        builder.Services.AddScoped<IHangfireBuildJobFactory, StatisticalHangfireBuildJobFactory>();
+        configurator.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();
+        configurator.Services.AddScoped<IHangfireBuildJobFactory, NmtHangfireBuildJobFactory>();
+        configurator.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
+        configurator.Services.AddScoped<IHangfireBuildJobFactory, StatisticalHangfireBuildJobFactory>();
 
         var smtTransferEngineOptions = new SmtTransferEngineOptions();
-        builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
+        configurator.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
         string? smtDriveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
         var statisticalEngineOptions = new StatisticalEngineOptions();
-        builder.Configuration.GetSection(StatisticalEngineOptions.Key).Bind(statisticalEngineOptions);
+        configurator.Configuration.GetSection(StatisticalEngineOptions.Key).Bind(statisticalEngineOptions);
         string? statisticsDriveLetter = Path.GetPathRoot(statisticalEngineOptions.EnginesDir)?[..1];
         if (smtDriveLetter is null || statisticsDriveLetter is null)
             throw new InvalidOperationException("SMT Engine and Statistical directory is required");
         if (smtDriveLetter != statisticsDriveLetter)
             throw new InvalidOperationException("SMT Engine and Statistical directory must be on the same drive");
         // add health check for disk storage capacity
-        builder
+        configurator
             .Services.AddHealthChecks()
             .AddDiskStorageHealthCheck(
                 x => x.AddDrive(smtDriveLetter, 1_000), // 1GB
                 "SMT and Statistical Engine Storage Capacity",
                 HealthStatus.Degraded
             );
-        return builder;
+        return configurator;
     }
 }
