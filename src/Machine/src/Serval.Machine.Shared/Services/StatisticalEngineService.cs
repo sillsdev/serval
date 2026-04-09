@@ -6,7 +6,6 @@ namespace Serval.Machine.Shared.Services;
 public class StatisticalEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
     [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
-    IDataAccessContext dataAccessContext,
     IRepository<WordAlignmentEngine> engines,
     StatisticalEngineStateService stateService,
     IBuildJobService<WordAlignmentEngine> buildJobService,
@@ -15,7 +14,6 @@ public class StatisticalEngineService(
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
-    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<WordAlignmentEngine> _engines = engines;
     private readonly StatisticalEngineStateService _stateService = stateService;
     private readonly IBuildJobService<WordAlignmentEngine> _buildJobService = buildJobService;
@@ -105,16 +103,10 @@ public class StatisticalEngineService(
         state.IsMarkedForDeletion = true;
 
         await CancelBuildJobAsync(engineId, cancellationToken);
+        await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
+        await _buildJobService.DeleteEngineAsync(engineId, cancellationToken);
 
-        await _dataAccessContext.WithTransactionAsync(
-            async ct =>
-            {
-                await _engines.DeleteAsync(e => e.EngineId == engineId, ct);
-            },
-            cancellationToken: CancellationToken.None
-        );
-        await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
-
+        // after this point, we cannot cancel
         _stateService.Remove(engineId);
         state.DeleteData();
         state.Dispose();
@@ -129,25 +121,19 @@ public class StatisticalEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        await _dataAccessContext.WithTransactionAsync(
-            async ct =>
-            {
-                bool building = !await _buildJobService.StartBuildJobAsync(
-                    BuildJobRunnerType.Hangfire,
-                    EngineType.Statistical,
-                    engineId,
-                    buildId,
-                    BuildStage.Preprocess,
-                    corpora,
-                    options,
-                    ct
-                );
-                // If there is a pending/running build, then no need to start a new one.
-                if (building)
-                    await _platformService.BuildCanceledAsync(buildId, ct);
-            },
+        bool building = !await _buildJobService.StartBuildJobAsync(
+            BuildJobRunnerType.Hangfire,
+            EngineType.Statistical,
+            engineId,
+            buildId,
+            BuildStage.Preprocess,
+            corpora,
+            options,
             cancellationToken
         );
+        // If there is a pending/running build, then no need to start a new one.
+        if (building)
+            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
 
         StatisticalEngineState state = _stateService.Get(engineId);
         state.Touch();
@@ -171,16 +157,12 @@ public class StatisticalEngineService(
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
-        string? buildId = null;
-        await _dataAccessContext.WithTransactionAsync(
-            async ct =>
-            {
-                (buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(engineId, ct);
-                if (buildId is not null && jobState is BuildJobState.None)
-                    await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
-            },
-            cancellationToken: cancellationToken
+        (string? buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(
+            engineId,
+            cancellationToken
         );
+        if (buildId is not null && jobState is BuildJobState.None)
+            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
         return buildId;
     }
 

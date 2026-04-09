@@ -70,7 +70,7 @@ public class CreateEngineHandler(
                         engine.SourceLanguage,
                         engine.TargetLanguage,
                         engine.Name,
-                        engine.IsModelPersisted ?? false,
+                        engine.IsModelPersisted,
                         ct
                     );
                 return new CreateEngineResponse(mapper.Map(engine));

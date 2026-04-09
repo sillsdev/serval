@@ -324,7 +324,6 @@ public class StatisticalEngineServiceTests
             return new StatisticalEngineService(
                 _lockFactory,
                 PlatformService,
-                new MemoryDataAccessContext(),
                 Engines,
                 StateService,
                 BuildJobService,

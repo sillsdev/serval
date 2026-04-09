@@ -6,7 +6,6 @@ namespace Serval.Machine.Shared.Services;
 public class SmtTransferEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
     [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
-    IDataAccessContext dataAccessContext,
     IRepository<TranslationEngine> engines,
     IRepository<TrainSegmentPair> trainSegmentPairs,
     SmtTransferEngineStateService stateService,
@@ -16,7 +15,6 @@ public class SmtTransferEngineService(
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
-    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
     private readonly SmtTransferEngineStateService _stateService = stateService;
@@ -55,21 +53,15 @@ public class SmtTransferEngineService(
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        // there is no way to cancel this call
         SmtTransferEngineState state = _stateService.Get(engineId);
         state.IsMarkedForDeletion = true;
 
-        await CancelBuildJobAsync(engineId, CancellationToken.None);
+        await CancelBuildJobAsync(engineId, cancellationToken);
+        await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
+        await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+        await _buildJobService.DeleteEngineAsync(engineId, cancellationToken);
 
-        await _dataAccessContext.WithTransactionAsync(
-            async ct =>
-            {
-                await _engines.DeleteAsync(e => e.EngineId == engineId, ct);
-                await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, ct);
-            },
-            cancellationToken: CancellationToken.None
-        );
-        await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
+        // after this point, we cannot cancel
         _stateService.Remove(engineId);
         state.DeleteData();
         state.Dispose();
@@ -214,7 +206,7 @@ public class SmtTransferEngineService(
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
-            throw new InvalidOperationException("The engine is already building or in the process of canceling.");
+            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
 
         SmtTransferEngineState state = _stateService.Get(engineId);
         state.Touch();
@@ -246,16 +238,12 @@ public class SmtTransferEngineService(
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
-        string? buildId = null;
-        await _dataAccessContext.WithTransactionAsync(
-            async ct =>
-            {
-                (buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(engineId, ct);
-                if (buildId is not null && jobState is BuildJobState.None)
-                    await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
-            },
-            cancellationToken: cancellationToken
+        (string? buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(
+            engineId,
+            cancellationToken
         );
+        if (buildId is not null && jobState is BuildJobState.None)
+            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
         return buildId;
     }
 

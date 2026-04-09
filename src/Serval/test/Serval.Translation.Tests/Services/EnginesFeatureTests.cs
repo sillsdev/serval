@@ -1919,7 +1919,13 @@ public class EnginesFeatureTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        CancelBuildHandler handler = new(env.Engines, env.Builds, env.EngineServiceFactory, env.DtoMapper);
+        CancelBuildHandler handler = new(
+            env.DataAccessContext,
+            env.Engines,
+            env.Builds,
+            env.EngineServiceFactory,
+            env.DtoMapper
+        );
         await handler.HandleAsync(new CancelBuild(OWNER, engineId), CancellationToken.None);
     }
 

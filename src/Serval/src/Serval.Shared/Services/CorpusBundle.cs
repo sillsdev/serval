@@ -81,25 +81,45 @@ public class CorpusBundle
 
         SourceTextCorpora = parallelCorpora.SelectMany(parallelCorpus =>
             parallelCorpus.SourceCorpora.Select(corpus =>
-                (parallelCorpus, corpus, corpus.Files, CreateTextCorpora(corpus.Files))
+                (
+                    parallelCorpus,
+                    corpus,
+                    (IReadOnlyList<CorpusFileContract>)corpus.Files,
+                    CreateTextCorpora(corpus.Files)
+                )
             )
         );
 
         TargetTextCorpora = parallelCorpora.SelectMany(parallelCorpus =>
             parallelCorpus.TargetCorpora.Select(corpus =>
-                (parallelCorpus, corpus, corpus.Files, CreateTextCorpora(corpus.Files))
+                (
+                    parallelCorpus,
+                    corpus,
+                    (IReadOnlyList<CorpusFileContract>)corpus.Files,
+                    CreateTextCorpora(corpus.Files)
+                )
             )
         );
 
         SourceTermCorpora = parallelCorpora.SelectMany(parallelCorpus =>
             parallelCorpus.SourceCorpora.Select(corpus =>
-                (parallelCorpus, corpus, corpus.Files, CreateTermCorpora(corpus.Files))
+                (
+                    parallelCorpus,
+                    corpus,
+                    (IReadOnlyList<CorpusFileContract>)corpus.Files,
+                    CreateTermCorpora(corpus.Files)
+                )
             )
         );
 
         TargetTermCorpora = parallelCorpora.SelectMany(parallelCorpus =>
             parallelCorpus.TargetCorpora.Select(corpus =>
-                (parallelCorpus, corpus, corpus.Files, CreateTermCorpora(corpus.Files))
+                (
+                    parallelCorpus,
+                    corpus,
+                    (IReadOnlyList<CorpusFileContract>)corpus.Files,
+                    CreateTermCorpora(corpus.Files)
+                )
             )
         );
     }

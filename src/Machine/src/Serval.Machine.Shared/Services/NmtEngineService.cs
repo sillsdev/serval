@@ -5,7 +5,6 @@ namespace Serval.Machine.Shared.Services;
 
 public class NmtEngineService(
     ITranslationPlatformService platformService,
-    IDataAccessContext dataAccessContext,
     IRepository<TranslationEngine> engines,
     IBuildJobService<TranslationEngine> buildJobService,
     ILanguageTagService languageTagService,
@@ -14,7 +13,6 @@ public class NmtEngineService(
 ) : ITranslationEngineService
 {
     private readonly ITranslationPlatformService _platformService = platformService;
-    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IBuildJobService<TranslationEngine> _buildJobService = buildJobService;
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
@@ -59,9 +57,8 @@ public class NmtEngineService(
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
     {
         await CancelBuildJobAsync(engineId, cancellationToken);
-
         await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
-        await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
+        await _buildJobService.DeleteEngineAsync(engineId, cancellationToken);
     }
 
     public async Task UpdateAsync(
@@ -94,25 +91,19 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
-            {
-                bool building = !await _buildJobService.StartBuildJobAsync(
-                    BuildJobRunnerType.Hangfire,
-                    EngineType.Nmt,
-                    engineId,
-                    buildId,
-                    BuildStage.Preprocess,
-                    corpora,
-                    options,
-                    ct
-                );
-                // If there is a pending/running build, then no need to start a new one.
-                if (building)
-                    await _platformService.BuildCanceledAsync(buildId, ct);
-            },
-            cancellationToken: cancellationToken
+        bool building = !await _buildJobService.StartBuildJobAsync(
+            BuildJobRunnerType.Hangfire,
+            EngineType.Nmt,
+            engineId,
+            buildId,
+            BuildStage.Preprocess,
+            corpora,
+            options,
+            cancellationToken
         );
+        // If there is a pending/running build, then no need to start a new one.
+        if (building)
+            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
     }
 
     public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
@@ -202,16 +193,12 @@ public class NmtEngineService(
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
-        string? buildId = null;
-        await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
-            {
-                (buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(engineId, ct);
-                if (buildId is not null && jobState is BuildJobState.None)
-                    await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
-            },
-            cancellationToken: cancellationToken
+        (string? buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(
+            engineId,
+            cancellationToken
         );
+        if (buildId is not null && jobState is BuildJobState.None)
+            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
         return buildId;
     }
 
