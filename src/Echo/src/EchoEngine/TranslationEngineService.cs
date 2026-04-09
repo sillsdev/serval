@@ -31,7 +31,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
             return Task.FromResult<string?>(build.buildId);
         }
 
-        throw new InvalidOperationException("No build running");
+        return Task.FromResult<string?>(null);
     }
 
     public Task DeleteAsync(string engineId, CancellationToken cancellationToken = default) => Task.CompletedTask;

@@ -49,7 +49,7 @@ public class ContractMapper(
             {
                 Id = source.Id,
                 Language = source.SourceLanguage,
-                Files = source.SourceFiles.Select(Map).ToArray(),
+                Files = [.. source.SourceFiles.Select(Map)],
                 TrainOnTextIds = trainOnAllCorpora || trainingCorpus is not null ? null : [],
                 InferenceTextIds = pretranslateAllCorpora || pretranslateCorpus is not null ? null : [],
             };
@@ -57,7 +57,7 @@ public class ContractMapper(
             {
                 Id = source.Id,
                 Language = source.TargetLanguage,
-                Files = source.TargetFiles.Select(Map).ToArray(),
+                Files = [.. source.TargetFiles.Select(Map)],
                 TrainOnTextIds = trainOnAllCorpora || trainingCorpus is not null ? null : [],
                 InferenceTextIds = pretranslateAllCorpora || pretranslateCorpus is not null ? null : [],
             };
@@ -163,8 +163,9 @@ public class ContractMapper(
                 new ParallelCorpusContract
                 {
                     Id = source.Id,
-                    SourceCorpora = source
-                        .SourceCorpora.Select(sc =>
+                    SourceCorpora =
+                    [
+                        .. source.SourceCorpora.Select(sc =>
                             Map(
                                 parallelCorpora,
                                 sc,
@@ -176,10 +177,11 @@ public class ContractMapper(
                                 pretranslateAllCorpora
                                     || (pretranslateCorpus is not null && pretranslateCorpus.SourceFilters is null)
                             )
-                        )
-                        .ToArray(),
-                    TargetCorpora = source
-                        .TargetCorpora.Select(tc =>
+                        ),
+                    ],
+                    TargetCorpora =
+                    [
+                        .. source.TargetCorpora.Select(tc =>
                             Map(
                                 parallelCorpora,
                                 tc,
@@ -190,8 +192,8 @@ public class ContractMapper(
                                     || (trainingCorpus is not null && trainingCorpus.TargetFilters is null),
                                 pretranslateAllCorpora || pretranslateCorpus is not null
                             )
-                        )
-                        .ToArray(),
+                        ),
+                    ],
                 }
             );
         }
@@ -244,7 +246,7 @@ public class ContractMapper(
         {
             Id = inputCorpus.Id,
             Language = inputCorpus.Language,
-            Files = inputCorpus.Files.Select(Map).ToArray(),
+            Files = [.. inputCorpus.Files.Select(Map)],
             TrainOnTextIds = trainOnAll ? null : [],
             InferenceTextIds = pretranslateAll ? null : [],
         };
@@ -287,8 +289,8 @@ public class ContractMapper(
         return new ParallelCorpusContract
         {
             Id = source.Id,
-            SourceCorpora = source.SourceFiles.Select(f => Map(f, engine.SourceLanguage)).ToArray(),
-            TargetCorpora = source.TargetFiles.Select(f => Map(f, engine.TargetLanguage)).ToArray(),
+            SourceCorpora = [.. source.SourceFiles.Select(f => Map(f, engine.SourceLanguage))],
+            TargetCorpora = [.. source.TargetFiles.Select(f => Map(f, engine.TargetLanguage))],
         };
     }
 
@@ -317,8 +319,8 @@ public class ContractMapper(
         return new ParallelCorpusContract
         {
             Id = source.Id,
-            SourceCorpora = source.SourceCorpora.Select(Map).ToArray(),
-            TargetCorpora = source.TargetCorpora.Select(Map).ToArray(),
+            SourceCorpora = [.. source.SourceCorpora.Select(Map)],
+            TargetCorpora = [.. source.TargetCorpora.Select(Map)],
         };
     }
 

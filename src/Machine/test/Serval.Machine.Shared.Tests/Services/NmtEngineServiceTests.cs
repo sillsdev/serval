@@ -245,7 +245,6 @@ public class NmtEngineServiceTests
         {
             return new NmtEngineService(
                 TranslationPlatformService,
-                new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
                 new LanguageTagService(),

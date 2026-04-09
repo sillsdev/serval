@@ -14,6 +14,11 @@ public class WebhookService(IRepository<Webhook> hooks, IBackgroundJobClient job
     )
     {
         if (await Entities.ExistsAsync(h => h.Owner == owner && h.Events.Contains(webhookEvent), cancellationToken))
-            _jobClient.Enqueue<WebhookJob>(j => j.RunAsync(webhookEvent, owner, payload, CancellationToken.None));
+        {
+            _jobClient.Enqueue<WebhookJob>(
+                "webhook",
+                j => j.RunAsync(webhookEvent, owner, payload, CancellationToken.None)
+            );
+        }
     }
 }

@@ -9,6 +9,8 @@ public static class IServalConfiguratorExtensions
 
         configurator.AddWebhooksDataAccess();
 
+        configurator.JobQueues.Add("webhook");
+
         configurator.AddHandlers(Assembly.GetExecutingAssembly());
 
         return configurator;

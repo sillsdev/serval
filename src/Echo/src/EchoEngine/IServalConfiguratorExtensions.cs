@@ -6,8 +6,8 @@ public static class IServalConfiguratorExtensions
     {
         configurator.Services.AddHostedService<BackgroundTaskService>();
         configurator.Services.AddSingleton<BackgroundTaskQueue>();
-        configurator.AddTranslationEngine<TranslationEngineService>("echo");
-        configurator.AddWordAlignmentEngine<WordAlignmentEngineService>("echo");
+        configurator.AddTranslationEngine<TranslationEngineService>("Echo");
+        configurator.AddWordAlignmentEngine<WordAlignmentEngineService>("EchoWordAlignment");
         return configurator;
     }
 }

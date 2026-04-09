@@ -17,8 +17,6 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
         CancellationToken cancellationToken = default
     )
     {
-        if (sourceLanguage != targetLanguage)
-            throw new InvalidOperationException("Source and target languages must be the same");
         return Task.CompletedTask;
     }
 
@@ -60,7 +58,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
             return Task.FromResult<string?>(build.buildId);
         }
 
-        throw new InvalidOperationException("No build running");
+        return Task.FromResult<string?>(null);
     }
 
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default) => Task.FromResult(0);

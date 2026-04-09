@@ -60,11 +60,11 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddSingleton<ITransferEngineFactory, TransferEngineFactory>();
         configurator.Services.AddSingleton<ITruecaserFactory, UnigramTruecaserFactory>();
         configurator.AddTranslationEngine<SmtTransferEngineService>(EngineType.SmtTransfer.ToString());
-        configurator.JobQueues.Add(EngineType.SmtTransfer.ToString());
+        configurator.JobQueues.Add("smt_transfer");
 
         // NMT Engine
         configurator.AddTranslationEngine<NmtEngineService>(EngineType.Nmt.ToString());
-        configurator.JobQueues.Add(EngineType.Nmt.ToString());
+        configurator.JobQueues.Add("nmt");
 
         return configurator;
     }
@@ -83,7 +83,7 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddSingleton<IWordAlignmentModelFactory, ThotWordAlignmentModelFactory>();
         configurator.AddWordAlignmentEngine<StatisticalEngineService>(EngineType.Statistical.ToString());
         configurator.Services.AddHostedService<StatisticalEngineCommitService>();
-        configurator.JobQueues.Add(EngineType.Statistical.ToString());
+        configurator.JobQueues.Add("statistical");
 
         return configurator;
     }
