@@ -8,6 +8,7 @@ public record CancelBuildResponse(
 );
 
 public class CancelBuildHandler(
+    IDataAccessContext dataAccessContext,
     IRepository<Engine> engines,
     IRepository<Build> builds,
     IEngineServiceFactory engineServiceFactory,
@@ -16,23 +17,29 @@ public class CancelBuildHandler(
 {
     public async Task<CancelBuildResponse> HandleAsync(CancelBuild request, CancellationToken cancellationToken)
     {
-        Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-        if (engine.Owner != request.Owner)
-            throw new ForbiddenException();
+        return await dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                Engine? engine = await engines.GetAsync(request.EngineId, ct);
+                if (engine is null)
+                    throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
+                if (engine.Owner != request.Owner)
+                    throw new ForbiddenException();
 
-        string? buildId = await engineServiceFactory
-            .GetEngineService(engine.Type)
-            .CancelBuildAsync(request.EngineId, cancellationToken);
-        if (buildId is null)
-            return new(IsBuildRunning: false);
+                string? buildId = await engineServiceFactory
+                    .GetEngineService(engine.Type)
+                    .CancelBuildAsync(request.EngineId, ct);
+                if (buildId is null)
+                    return new CancelBuildResponse(IsBuildRunning: false);
 
-        Build? currentBuild = await builds.GetAsync(buildId, cancellationToken);
-        if (currentBuild is null)
-            return new(IsBuildRunning: false);
+                Build? currentBuild = await builds.GetAsync(buildId, ct);
+                if (currentBuild is null)
+                    return new CancelBuildResponse(IsBuildRunning: false);
 
-        return new(IsBuildRunning: true, mapper.Map(currentBuild));
+                return new CancelBuildResponse(IsBuildRunning: true, mapper.Map(currentBuild));
+            },
+            cancellationToken: cancellationToken
+        );
     }
 }
 

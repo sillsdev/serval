@@ -447,7 +447,6 @@ public class SmtTransferEngineServiceTests
             return new SmtTransferEngineService(
                 _lockFactory,
                 PlatformService,
-                new MemoryDataAccessContext(),
                 Engines,
                 TrainSegmentPairs,
                 StateService,

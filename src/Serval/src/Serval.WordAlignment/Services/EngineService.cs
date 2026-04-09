@@ -51,6 +51,7 @@ public class EngineService(
                     {
                         SourceIndex = p.SourceIndex,
                         TargetIndex = p.TargetIndex,
+                        Score = p.Score,
                     }),
                 ],
             };
