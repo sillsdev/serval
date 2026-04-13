@@ -111,11 +111,10 @@ public class ParallelCorpusService : IParallelCorpusService
             ) in corpusBundle.TextCorpora
         )
         {
-            foreach (CorpusFile file in files.Where(f => f.Format == FileFormat.Paratext))
+            foreach (CorpusFile file in files)
             {
-                using ZipArchive archive = ZipFile.OpenRead(file.Location);
-                ParatextProjectSettings settings = Machine.Corpora.ZipParatextProjectSettingsParser.Parse(archive);
-                if (settings.HasParent && corpusBundle.ParentOf(file.Location) == null)
+                ParatextProjectSettings? settings = corpusBundle.GetSettings(file.Location);
+                if (settings != null && settings.HasParent && settings.Parent == null)
                 {
                     errors.Add(
                         (

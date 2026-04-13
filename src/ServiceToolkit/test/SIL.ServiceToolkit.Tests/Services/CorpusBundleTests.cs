@@ -8,11 +8,19 @@ public class CorpusBundleTests
     public void GetSettings()
     {
         using TestEnvironment env = new(addParatext: true, addText: false);
-        string fileLocation = env.CorpusBundle.ParallelCorpora[0].SourceCorpora[0].Files[0].Location;
-        ParatextProjectSettings? settings = env.CorpusBundle.GetSettings(fileLocation);
-        Assert.That(settings, Is.Not.Null);
-        Assert.That(settings.Name, Is.EqualTo("Te1"));
-        Assert.That(env.CorpusBundle.ParentOf(fileLocation), Is.Null);
+        string sourceFileLocation = env.CorpusBundle.ParallelCorpora[0].SourceCorpora[0].Files[0].Location;
+        ParatextProjectSettings? sourceSettings = env.CorpusBundle.GetSettings(sourceFileLocation);
+        Assert.That(sourceSettings, Is.Not.Null);
+        Assert.That(sourceSettings.Name, Is.EqualTo("Te1"));
+        Assert.That(env.CorpusBundle.ParentOf(sourceFileLocation), Is.Null);
+
+        string targetFileLocation = env.CorpusBundle.ParallelCorpora[0].TargetCorpora[0].Files[0].Location;
+        ParatextProjectSettings? targetSettings = env.CorpusBundle.GetSettings(targetFileLocation);
+        Assert.That(targetSettings, Is.Not.Null);
+        Assert.That(targetSettings.Name, Is.EqualTo("Te2"));
+        (string Location, ParatextProjectSettings Settings)? parent = env.CorpusBundle.ParentOf(targetFileLocation);
+        Assert.That(parent?.Location, Is.EqualTo(sourceFileLocation));
+        Assert.That(parent?.Settings.Name, Is.EqualTo(sourceSettings.Name));
     }
 
     [Test]
