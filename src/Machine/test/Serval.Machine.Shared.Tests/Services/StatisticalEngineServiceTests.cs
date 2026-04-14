@@ -302,7 +302,7 @@ public class StatisticalEngineServiceTests
             var jobServerOptions = new BackgroundJobServerOptions
             {
                 Activator = new EnvActivator(this),
-                Queues = new[] { "statistical" },
+                Queues = new[] { BuildJobQueues.Statistical },
                 CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
             };
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
@@ -353,7 +353,7 @@ public class StatisticalEngineServiceTests
         public async Task WaitForAllHangfireJobsToFinishAsync()
         {
             IMonitoringApi monitoringApi = _memoryStorage.GetMonitoringApi();
-            while (monitoringApi.EnqueuedCount("statistical") > 0 || monitoringApi.ProcessingCount() > 0)
+            while (monitoringApi.EnqueuedCount(BuildJobQueues.Statistical) > 0 || monitoringApi.ProcessingCount() > 0)
                 await Task.Delay(50);
         }
 

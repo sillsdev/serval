@@ -22,7 +22,7 @@ public static class IServiceCollectionExtensions
         services.AddHealthChecks().AddMongoDb(name: "Mongo");
 
         services.AddHangfire(c =>
-            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseMongoStorage(

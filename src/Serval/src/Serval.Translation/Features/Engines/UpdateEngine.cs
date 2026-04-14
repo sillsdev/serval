@@ -1,6 +1,6 @@
 ﻿namespace Serval.Translation.Features.Engines;
 
-public class TranslationEngineUpdateConfigDto
+public record TranslationEngineUpdateConfigDto
 {
     public string? SourceLanguage { get; init; }
 

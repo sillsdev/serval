@@ -1,8 +1,8 @@
 namespace Serval.ApiServer.Dtos;
 
-public class HealthReportDto
+public record HealthReportDto
 {
-    public string Status { get; set; } = default!;
-    public string TotalDuration { get; set; } = default!;
-    public IDictionary<string, HealthReportEntryDto> Results { get; set; } = default!;
+    public required string Status { get; init; }
+    public required string TotalDuration { get; init; }
+    public required IDictionary<string, HealthReportEntryDto> Results { get; init; }
 }

@@ -15,11 +15,11 @@ public class NmtHangfireBuildJobFactory : IHangfireBuildJobFactory
                 TranslationEngine,
                 NmtPreprocessBuildJob,
                 IReadOnlyList<ParallelCorpusContract>
-            >(engineId, buildId, "nmt", data, buildOptions),
+            >(engineId, buildId, BuildJobQueues.Nmt, data, buildOptions),
             BuildStage.Postprocess => CreateJob<TranslationEngine, TranslationPostprocessBuildJob, (int, double)>(
                 engineId,
                 buildId,
-                "nmt",
+                BuildJobQueues.Nmt,
                 data,
                 buildOptions
             ),

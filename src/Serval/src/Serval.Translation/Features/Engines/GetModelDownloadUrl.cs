@@ -1,10 +1,10 @@
 ﻿namespace Serval.Translation.Features.Engines;
 
-public class ModelDownloadUrlDto
+public record ModelDownloadUrlDto
 {
-    public string Url { get; set; } = default!;
-    public int ModelRevision { get; set; } = default!;
-    public DateTime ExpiresAt { get; set; } = default!;
+    public required string Url { get; init; }
+    public required int ModelRevision { get; init; }
+    public required DateTime ExpiresAt { get; init; }
 }
 
 public record GetModelDownloadUrl(string Owner, string EngineId) : IRequest<GetModelDownloadUrlResponse>;

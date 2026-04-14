@@ -139,7 +139,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
 
                     await platform.InsertWordAlignmentsAsync(
                         engineId,
-                        ToAsyncEnumerable(wordAlignments),
+                        wordAlignments.ToAsyncEnumerable(),
                         linkedCts.Token
                     );
 
@@ -155,7 +155,7 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
                     await platform.UpdateBuildExecutionDataAsync(
                         engineId,
                         buildId,
-                        new Serval.WordAlignment.Contracts.ExecutionDataContract
+                        new ExecutionDataContract
                         {
                             TrainCount = trainCount,
                             WordAlignCount = wordAlignCount,
@@ -188,11 +188,5 @@ public class WordAlignmentEngineService(BackgroundTaskQueue taskQueue, IParallel
                 }
             }
         );
-    }
-
-    private static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> source)
-    {
-        foreach (T item in source)
-            yield return item;
     }
 }

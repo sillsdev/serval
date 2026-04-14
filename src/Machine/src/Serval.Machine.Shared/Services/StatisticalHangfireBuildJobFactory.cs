@@ -15,18 +15,18 @@ public class StatisticalHangfireBuildJobFactory : IHangfireBuildJobFactory
                 WordAlignmentEngine,
                 WordAlignmentPreprocessBuildJob,
                 IReadOnlyList<ParallelCorpusContract>
-            >(engineId, buildId, "statistical", data, buildOptions),
+            >(engineId, buildId, BuildJobQueues.Statistical, data, buildOptions),
             BuildStage.Postprocess => CreateJob<WordAlignmentEngine, StatisticalPostprocessBuildJob, (int, double)>(
                 engineId,
                 buildId,
-                "statistical",
+                BuildJobQueues.Statistical,
                 data,
                 buildOptions
             ),
             BuildStage.Train => CreateJob<WordAlignmentEngine, StatisticalTrainBuildJob>(
                 engineId,
                 buildId,
-                "statistical",
+                BuildJobQueues.Statistical,
                 buildOptions
             ),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),

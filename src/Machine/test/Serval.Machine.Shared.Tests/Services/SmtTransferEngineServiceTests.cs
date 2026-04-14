@@ -423,7 +423,7 @@ public class SmtTransferEngineServiceTests
             var jobServerOptions = new BackgroundJobServerOptions
             {
                 Activator = new EnvActivator(this),
-                Queues = new[] { "smt_transfer" },
+                Queues = new[] { BuildJobQueues.SmtTransfer },
                 CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
             };
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
@@ -604,7 +604,7 @@ public class SmtTransferEngineServiceTests
         public async Task WaitForAllHangfireJobsToFinishAsync()
         {
             IMonitoringApi monitoringApi = _memoryStorage.GetMonitoringApi();
-            while (monitoringApi.EnqueuedCount("smt_transfer") > 0 || monitoringApi.ProcessingCount() > 0)
+            while (monitoringApi.EnqueuedCount(BuildJobQueues.SmtTransfer) > 0 || monitoringApi.ProcessingCount() > 0)
                 await Task.Delay(50);
         }
 
