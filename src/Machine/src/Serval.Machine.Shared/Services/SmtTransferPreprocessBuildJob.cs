@@ -1,6 +1,4 @@
-﻿using Serval.Shared.Contracts;
-
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferPreprocessBuildJob(
     [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,

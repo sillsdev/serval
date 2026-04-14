@@ -20,39 +20,6 @@
             },
         },
         {
-            "name": "Echo Docker",
-            "type": "docker",
-            "containerName": "echo_cntr",
-            "request": "attach",
-            "platform": "netCore",
-            "processName": "EchoEngine",
-            "sourceFileMap": {
-                "/app": "${workspaceFolder}"
-            },
-        },
-        {
-            "name": "Machine Engine Docker",
-            "type": "docker",
-            "containerName": "machine-engine-cntr",
-            "request": "attach",
-            "platform": "netCore",
-            "processName": "Serval.Machine.EngineServer",
-            "sourceFileMap": {
-                "/app": "${workspaceFolder}"
-            },
-        },
-        {
-            "name": "Machine Job Docker",
-            "type": "docker",
-            "containerName": "machine-job-cntr",
-            "request": "attach",
-            "platform": "netCore",
-            "processName": "Serval.Machine.JobServer",
-            "sourceFileMap": {
-                "/app": "${workspaceFolder}"
-            },
-        },
-        {
             "name": "Launch Serval",
             "type": "coreclr",
             "request": "launch",
@@ -73,49 +40,10 @@
             },
         },
         {
-            "name": "Launch Echo",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Echo/src/EchoEngine/bin/Debug/net10.0/EchoEngine.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/Echo/src/EchoEngine",
-            "stopAtEntry": false,
-            "console": "internalConsole",
-            "justMyCode": false,
-            "symbolOptions": {
-                "searchPaths": [],
-                "searchMicrosoftSymbolServer": true,
-                "searchNuGetOrgSymbolServer": true
-            },
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-        },
-        {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
         }
     ],
-    "compounds": [
-        {
-            "name": "ServalComb",
-            "configurations": [
-                "Launch Serval",
-                "Launch Echo"
-            ]
-        },
-        {
-            "name": "DockerComb",
-            "justMyCode": false,
-            "configurations": [
-                "ServalApi Docker",
-                "Echo Docker",
-                "Machine Engine Docker",
-                "Machine Job Docker"
-            ]
-        }
-    ]
 }

@@ -17,7 +17,7 @@ public record TranslationBuildConfigDto
 public record StartBuild(string Owner, string EngineId, TranslationBuildConfigDto BuildConfig)
     : IRequest<StartBuildResponse>;
 
-public record struct StartBuildResponse(
+public record StartBuildResponse(
     [property: MemberNotNullWhen(false, nameof(Build))] bool IsBuildRunning,
     TranslationBuildDto? Build = null
 );

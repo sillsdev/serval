@@ -136,7 +136,7 @@ public class DistributedReaderWriterLockTests
     }
 
     [Test]
-    public async Task ReaderLockAsync_Cancelled()
+    public async Task ReaderLockAsync_Canceled()
     {
         TestEnvironment env = new();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
@@ -377,7 +377,7 @@ public class DistributedReaderWriterLockTests
     }
 
     [Test]
-    public async Task WriterLockAsync_Cancelled()
+    public async Task WriterLockAsync_Canceled()
     {
         var env = new TestEnvironment();
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");

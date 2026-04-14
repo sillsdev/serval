@@ -1,6 +1,4 @@
-﻿using Serval.Shared.Contracts;
-
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 public abstract class PreprocessBuildJob<TEngine>(
     IPlatformService platformService,

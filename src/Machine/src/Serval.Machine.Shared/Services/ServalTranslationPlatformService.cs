@@ -1,4 +1,3 @@
-using Serval.Shared.Contracts;
 using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
