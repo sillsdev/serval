@@ -36,7 +36,7 @@ public class StatusController(
         {
             _logger.LogWarning("Health check failed: {Report}", Newtonsoft.Json.JsonConvert.SerializeObject(report));
         }
-        return Ok(Map(report));
+        return Ok(Map(report, includeResults: true));
     }
 
     /// <summary>
@@ -55,10 +55,8 @@ public class StatusController(
             _logger.LogWarning("Health check failed: {Report}", Newtonsoft.Json.JsonConvert.SerializeObject(report));
         }
 
-        HealthReportDto reportDto = Map(report);
-
         // remove results as this is a public endpoint
-        reportDto.Results = new Dictionary<string, HealthReportEntryDto>();
+        HealthReportDto reportDto = Map(report, includeResults: false);
 
         return Ok(reportDto);
     }
@@ -84,12 +82,12 @@ public class StatusController(
         );
     }
 
-    private static HealthReportDto Map(HealthReport healthReport)
+    private static HealthReportDto Map(HealthReport healthReport, bool includeResults)
     {
         return new HealthReportDto
         {
             Status = healthReport.Status.ToString(),
-            Results = healthReport.Entries.ToDictionary(f => f.Key, f => Map(f.Value)),
+            Results = includeResults ? healthReport.Entries.ToDictionary(f => f.Key, f => Map(f.Value)) : [],
             TotalDuration = healthReport.TotalDuration.ToString(),
         };
     }

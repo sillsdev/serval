@@ -1,4 +1,3 @@
-using Serval.Shared.Contracts;
 using Serval.Translation.Contracts;
 
 namespace EchoEngine;
@@ -227,7 +226,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
 
                     await platform.InsertPretranslationsAsync(
                         engineId,
-                        ToAsyncEnumerable(pretranslations),
+                        pretranslations.ToAsyncEnumerable(),
                         linkedCts.Token
                     );
 
@@ -278,11 +277,5 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                 }
             }
         );
-    }
-
-    private static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> source)
-    {
-        foreach (T item in source)
-            yield return item;
     }
 }
