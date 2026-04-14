@@ -1,8 +1,8 @@
 ﻿namespace Serval.Translation.Contracts;
 
-public class ModelDownloadUrlContract
+public record ModelDownloadUrlContract
 {
-    public string Url { get; set; } = default!;
-    public int ModelRevision { get; set; } = default!;
-    public DateTime ExpiresAt { get; set; } = default!;
+    public required string Url { get; init; }
+    public required int ModelRevision { get; init; }
+    public required DateTime ExpiresAt { get; init; }
 }

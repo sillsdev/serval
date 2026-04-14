@@ -2,7 +2,7 @@
 
 [ApiController]
 [Produces("application/json")]
-[TypeFilter(typeof(OperationCancelledExceptionFilter))]
+[TypeFilter(typeof(OperationCanceledExceptionFilter))]
 [TypeFilter(typeof(NotSupportedExceptionFilter))]
 [TypeFilter(typeof(ServiceUnavailableExceptionFilter))]
 [TypeFilter(typeof(ErrorResultFilter))]

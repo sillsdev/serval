@@ -1,5 +1,4 @@
-﻿using Serval.Shared.Contracts;
-using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
+﻿using static Serval.Machine.Shared.Services.HangfireBuildJobRunner;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -15,18 +14,18 @@ public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
                 TranslationEngine,
                 SmtTransferPreprocessBuildJob,
                 IReadOnlyList<ParallelCorpusContract>
-            >(engineId, buildId, "smt_transfer", data, buildOptions),
+            >(engineId, buildId, BuildJobQueues.SmtTransfer, data, buildOptions),
             BuildStage.Postprocess => CreateJob<TranslationEngine, SmtTransferPostprocessBuildJob, (int, double)>(
                 engineId,
                 buildId,
-                "smt_transfer",
+                BuildJobQueues.SmtTransfer,
                 data,
                 buildOptions
             ),
             BuildStage.Train => CreateJob<TranslationEngine, SmtTransferTrainBuildJob>(
                 engineId,
                 buildId,
-                "smt_transfer",
+                BuildJobQueues.SmtTransfer,
                 buildOptions
             ),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),

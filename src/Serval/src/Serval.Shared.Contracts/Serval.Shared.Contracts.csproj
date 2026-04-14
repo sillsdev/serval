@@ -1,11 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
+	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
@@ -14,4 +15,5 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess.Abstractions\SIL.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
+
 </Project>

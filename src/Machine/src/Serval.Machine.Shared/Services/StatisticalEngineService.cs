@@ -1,4 +1,3 @@
-using Serval.Shared.Contracts;
 using Serval.WordAlignment.Contracts;
 
 namespace Serval.Machine.Shared.Services;
@@ -18,8 +17,6 @@ public class StatisticalEngineService(
     private readonly StatisticalEngineStateService _stateService = stateService;
     private readonly IBuildJobService<WordAlignmentEngine> _buildJobService = buildJobService;
     private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
-
-    public string Type => EngineType.Statistical.ToString().ToCamelCase();
 
     public async Task CreateAsync(
         string engineId,

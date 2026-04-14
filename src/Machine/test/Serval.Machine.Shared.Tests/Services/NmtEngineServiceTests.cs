@@ -1,5 +1,4 @@
-﻿using Serval.Shared.Contracts;
-using Serval.Translation.Contracts;
+﻿using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -235,7 +234,7 @@ public class NmtEngineServiceTests
             var jobServerOptions = new BackgroundJobServerOptions
             {
                 Activator = new EnvActivator(this),
-                Queues = new[] { "nmt" },
+                Queues = new[] { BuildJobQueues.Nmt },
                 CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
             };
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
