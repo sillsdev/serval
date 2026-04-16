@@ -92,22 +92,56 @@ public class PretranslationService(
         Build? build = (await _builds.GetAllAsync(b => b.EngineRef == engineId, cancellationToken))
             .OrderByDescending(b => b.DateFinished)
             .FirstOrDefault();
-        if (build is null || build.DateFinished is null)
+        if (build?.DateFinished is null)
             throw new InvalidOperationException($"Could not find any completed builds for engine '{engineId}'.");
 
-        string disclaimerRemark = string.Format(
-            CultureInfo.InvariantCulture,
-            AIDisclaimerRemark,
-            textId,
-            build.DateFinished.Value.ToUniversalTime().ToString("u")
-        );
         string markerPlacementRemark = GenerateMarkerPlacementRemark(
             paragraphMarkerBehavior,
             embedBehavior,
             styleMarkerBehavior
         );
 
-        List<string> remarks = [disclaimerRemark, markerPlacementRemark];
+        // Determine if book level or chapter level remarks should be added
+        List<(int, string)> remarks = [];
+        List<int> chapters =
+            build
+                .Pretranslate?.SelectMany(p => p.SourceFilters ?? [])
+                .SelectMany(s =>
+                    ScriptureRangeParser
+                        .GetChapters(s.ScriptureRange)
+                        .TryGetValue(textId, out List<int>? filterChapters)
+                        ? filterChapters
+                        : []
+                )
+                .ToList()
+            ?? [];
+        if (chapters.Count > 0)
+        {
+            // Chapter level remarks
+            foreach (int chapterNum in chapters)
+            {
+                string disclaimerRemark = string.Format(
+                    CultureInfo.InvariantCulture,
+                    AIDisclaimerRemark,
+                    $"{textId} {chapterNum}",
+                    build.DateFinished.Value.ToUniversalTime().ToString("u")
+                );
+                remarks.Add((chapterNum, disclaimerRemark));
+                remarks.Add((chapterNum, markerPlacementRemark));
+            }
+        }
+        else
+        {
+            // Book level remarks
+            string disclaimerRemark = string.Format(
+                CultureInfo.InvariantCulture,
+                AIDisclaimerRemark,
+                textId,
+                build.DateFinished.Value.ToUniversalTime().ToString("u")
+            );
+            remarks.Add((0, disclaimerRemark));
+            remarks.Add((0, markerPlacementRemark));
+        }
 
         SIL.ServiceToolkit.Models.ParallelCorpus[] parallelCorpora = _corpusMappingService.Map(build, engine).ToArray();
 

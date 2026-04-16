@@ -543,7 +543,7 @@ public class ParallelCorpusService : IParallelCorpusService
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
         bool placeParagraphMarkers,
-        IEnumerable<string>? remarks,
+        IEnumerable<(int, string)>? remarks,
         string? targetQuoteConvention
     )
     {
@@ -572,7 +572,7 @@ public class ParallelCorpusService : IParallelCorpusService
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
-        IEnumerable<string>? remarks,
+        IEnumerable<(int, string)>? remarks,
         string? targetQuoteConvention
     )
     {
@@ -602,7 +602,7 @@ public class ParallelCorpusService : IParallelCorpusService
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
         IEnumerable<IUsfmUpdateBlockHandler>? updateBlockHandlers,
-        IEnumerable<string>? remarks,
+        IEnumerable<(int, string)>? remarks,
         string? targetQuoteConvention,
         bool isSource
     )
@@ -740,7 +740,7 @@ public class ParallelCorpusService : IParallelCorpusService
         int denormalizableChapterCount = bestChapterStrategies.Count(tup =>
             tup.Strategy != QuotationMarkUpdateStrategy.Skip
         );
-        List<string> remarks = [];
+        List<(int, string)> remarks = [];
         string quotationDenormalizationRemark;
         if (denormalizableChapterCount == bestChapterStrategies.Count)
         {
@@ -764,7 +764,8 @@ public class ParallelCorpusService : IParallelCorpusService
             quotationDenormalizationRemark =
                 "The quote style was not automatically adjusted to match the rest of your project in any chapters.";
         }
-        remarks.Add(quotationDenormalizationRemark);
+        // TODO: Add remarks per chapter if partial book drafting is used
+        remarks.Add((0, quotationDenormalizationRemark));
 
         var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer], remarks: remarks);
         UsfmParser.Parse(usfm, updater);

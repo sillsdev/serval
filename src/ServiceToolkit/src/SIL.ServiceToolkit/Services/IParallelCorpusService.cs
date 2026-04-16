@@ -33,7 +33,7 @@ public interface IParallelCorpusService
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
         bool placeParagraphMarkers,
-        IEnumerable<string>? remarks,
+        IEnumerable<(int, string)>? remarks,
         string? targetQuoteConvention
     );
 
@@ -46,7 +46,7 @@ public interface IParallelCorpusService
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
-        IEnumerable<string>? remarks,
+        IEnumerable<(int, string)>? remarks,
         string? targetQuoteConvention
     );
 
