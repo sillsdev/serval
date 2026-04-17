@@ -461,6 +461,7 @@ public class SmtTransferEngineServiceTests
                 "esto es una prueba .".Split(),
                 "this is a TEST .".Split(),
                 [1.0, 1.0, 1.0, 1.0, 1.0],
+                1.0,
                 [
                     TranslationSources.Smt,
                     TranslationSources.Smt,
@@ -551,6 +552,7 @@ public class SmtTransferEngineServiceTests
                         "esto es una prueba .".Split(),
                         "this is a TEST .".Split(),
                         [1.0, 1.0, 1.0, 1.0, 1.0],
+                        1.0,
                         [
                             TranslationSources.Transfer,
                             TranslationSources.Transfer,
