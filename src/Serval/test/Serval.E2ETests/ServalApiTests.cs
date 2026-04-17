@@ -83,15 +83,15 @@ public class ServalApiTests
     [TestCase(false)]
     public async Task Echo_WordAlignment(bool paratext)
     {
-        string engineId = await _helperClient.CreateNewEngineAsync("EchoWordAlignment", "es", "en", "Echo4");
+        string engineId = await _helperClient.CreateNewEngineAsync("EchoWordAlignment", "es", "es", "Echo4");
         if (paratext)
         {
-            await _helperClient.AddParatextCorpusToEngineAsync(engineId, "es", "en", false);
+            await _helperClient.AddParatextCorpusToEngineAsync(engineId, "es", "es", false);
         }
         else
         {
             string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
-            ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
+            ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "es", false);
             await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
         }
 
