@@ -63,6 +63,7 @@ public class CorpusBundle
 
         foreach ((string daughterLocation, ParatextProjectSettings daughterSettings) in paratextProjects)
         {
+            _settings[daughterLocation] = (daughterSettings, null, null);
             foreach ((string parentLocation, ParatextProjectSettings parentSettings) in paratextProjects)
             {
                 if (
@@ -73,10 +74,7 @@ public class CorpusBundle
                 {
                     daughterSettings.Parent = parentSettings;
                     _settings[daughterLocation] = (daughterSettings, parentLocation, parentSettings);
-                }
-                else
-                {
-                    _settings[daughterLocation] = (daughterSettings, null, null);
+                    break;
                 }
             }
         }
