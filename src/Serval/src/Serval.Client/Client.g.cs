@@ -7362,7 +7362,7 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (createdAfter != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("created-after")).Append('=').Append(System.Uri.EscapeDataString(createdAfter.Value.ToString("s", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("created-after")).Append('=').Append(System.Uri.EscapeDataString(createdAfter.Value.ToString("u", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -7464,7 +7464,7 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (finishedAfter != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("finished-after")).Append('=').Append(System.Uri.EscapeDataString(finishedAfter.Value.ToString("s", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("finished-after")).Append('=').Append(System.Uri.EscapeDataString(finishedAfter.Value.ToString("u", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
