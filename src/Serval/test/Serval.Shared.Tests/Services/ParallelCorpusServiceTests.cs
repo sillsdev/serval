@@ -100,15 +100,18 @@ public class ParallelCorpusServiceTests
             Assert.That(inferenceCount, Is.EqualTo(17));
         });
     }
-    
+
     [Test]
     public void FindMissingParentProjects()
     {
         using var env = new TestEnvironment();
-        ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).First();
+        ParallelCorpusContract parallelCorpus = env.GetCorpora(paratextProject: true).First();
 
-        IReadOnlyList<(string ParallelCorpusId, string MonolingualCorpusId, MissingParentProjectError error)> errors =
-            env.Processor.FindMissingParentProjects([parallelCorpus]);
+        IReadOnlyList<(
+            string ParallelCorpusId,
+            string MonolingualCorpusId,
+            MissingParentProjectErrorContract Error
+        )> errors = env.Processor.FindMissingParentProjects([parallelCorpus]);
 
         Assert.That(errors, Has.Count.EqualTo(0));
     }
@@ -117,10 +120,13 @@ public class ParallelCorpusServiceTests
     public void FindMissingParentProjects_MissingParent()
     {
         using var env = new TestEnvironment();
-        ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).Last();
+        ParallelCorpusContract parallelCorpus = env.GetCorpora(paratextProject: true).Last();
 
-        IReadOnlyList<(string ParallelCorpusId, string MonolingualCorpusId, MissingParentProjectError Error)> errors =
-            env.Processor.FindMissingParentProjects([parallelCorpus]);
+        IReadOnlyList<(
+            string ParallelCorpusId,
+            string MonolingualCorpusId,
+            MissingParentProjectErrorContract Error
+        )> errors = env.Processor.FindMissingParentProjects([parallelCorpus]);
 
         Assert.That(errors, Has.Count.EqualTo(1));
         Assert.That(errors[0].Error.ProjectName, Is.EqualTo("Te2"));
@@ -131,19 +137,19 @@ public class ParallelCorpusServiceTests
     public void AnalyzeUsfmVersification()
     {
         using var env = new TestEnvironment();
-        ParallelCorpus parallelCorpus = env.GetCorpora(paratextProject: true).First();
+        ParallelCorpusContract parallelCorpus = env.GetCorpora(paratextProject: true).First();
 
         IReadOnlyList<(
             string ParallelCorpusId,
             string MonolingualCorpusId,
-            IReadOnlyList<UsfmVersificationError> UsfmErrors
+            IReadOnlyList<UsfmVersificationErrorContract> UsfmErrors
         )> errors = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);
 
         Assert.That(errors, Has.Count.EqualTo(1));
         Assert.That(errors[0].UsfmErrors, Has.Count.EqualTo(3));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
+        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
+        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
+        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
     }
 
     [Test]
@@ -875,7 +881,7 @@ Target one, chapter one, verse nine and ten.
                                 Language = "en",
                                 Files =
                                 [
-                                    new CorpusFile
+                                    new CorpusFileContract
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Paratext,
@@ -886,13 +892,13 @@ Target one, chapter one, verse nine and ten.
                             },
                         ],
                     },
-                    new ParallelCorpus
+                    new ParallelCorpusContract
                     {
                         Id = "corpus3",
                         SourceCorpora = [],
                         TargetCorpora =
                         [
-                            new MonolingualCorpus
+                            new MonolingualCorpusContract
                             {
                                 Id = "pt-target2",
                                 Language = "en",

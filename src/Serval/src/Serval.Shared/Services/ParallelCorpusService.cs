@@ -157,7 +157,7 @@ public class ParallelCorpusService : IParallelCorpusService
             ) in corpusBundle.TextCorpora
         )
         {
-            foreach (CorpusFile file in files)
+            foreach (CorpusFileContract file in files)
             {
                 ParatextProjectSettings? settings = corpusBundle.GetSettings(file.Location);
                 if (settings != null && settings.HasParent && settings.Parent == null)
