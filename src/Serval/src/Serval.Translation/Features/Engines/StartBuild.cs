@@ -43,11 +43,7 @@ public class StartBuildHandler(
         return dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Engine? engine = await engines.GetAsync(request.EngineId, ct);
-                if (engine is null)
-                    throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-                if (engine.Owner != request.Owner)
-                    throw new ForbiddenException();
+                Engine engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
                 if (
                     await builds.ExistsAsync(

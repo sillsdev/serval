@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Features.Engines;
+namespace Serval.Translation.Features.Engines;
 
 public record TranslationResultDto
 {
@@ -30,11 +30,7 @@ public class TranslateHandler(IRepository<Engine> engines, IEngineServiceFactory
 {
     public async Task<TranslateResponse> HandleAsync(Translate request, CancellationToken cancellationToken = default)
     {
-        Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-        if (engine.Owner != request.Owner)
-            throw new ForbiddenException();
+        Engine engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, cancellationToken);
         if (engine.ModelRevision == 0)
             return new(IsAvailable: false);
 
@@ -101,13 +97,14 @@ public partial class TranslationEnginesController
         [NotNull] string id,
         [FromBody] string segment,
         [FromServices] IRequestHandler<Translate, TranslateResponse> handler,
+        [FromServices] ILogger<TranslationEnginesController> logger,
         CancellationToken cancellationToken
     )
     {
         TranslateResponse response = await handler.HandleAsync(new Translate(Owner, id, segment), cancellationToken);
         if (!response.IsAvailable)
             return Conflict();
-        _logger.LogInformation("Translated segment for engine {EngineId}", id);
+        logger.LogInformation("Translated segment for engine {EngineId}", id);
         return Ok(response.Results?.First());
     }
 
@@ -141,13 +138,14 @@ public partial class TranslationEnginesController
         [NotNull] int n,
         [FromBody] string segment,
         [FromServices] IRequestHandler<Translate, TranslateResponse> handler,
+        [FromServices] ILogger<TranslationEnginesController> logger,
         CancellationToken cancellationToken
     )
     {
         TranslateResponse response = await handler.HandleAsync(new(Owner, id, segment, n), cancellationToken);
         if (!response.IsAvailable)
             return Conflict();
-        _logger.LogInformation("Translated {n} segments for engine {EngineId}", n, id);
+        logger.LogInformation("Translated {n} segments for engine {EngineId}", n, id);
         return Ok(response.Results);
     }
 }

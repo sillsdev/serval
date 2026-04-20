@@ -20,11 +20,7 @@ public class CancelBuildHandler(
         return await dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Engine? engine = await engines.GetAsync(request.EngineId, ct);
-                if (engine is null)
-                    throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-                if (engine.Owner != request.Owner)
-                    throw new ForbiddenException();
+                Engine engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
                 string? buildId = await engineServiceFactory
                     .GetEngineService(engine.Type)

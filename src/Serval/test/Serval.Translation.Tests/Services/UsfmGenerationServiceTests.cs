@@ -1,7 +1,7 @@
 ﻿namespace Serval.Translation.Services;
 
 [TestFixture]
-public class PretranslationServiceTests
+public class UsfmGenerationServiceTests
 {
     [Test]
     public async Task GetUsfmAsync_Source_PreferExisting()
@@ -441,7 +441,7 @@ public class PretranslationServiceTests
     [TestCase(new int[] { 1 }, "1")]
     public void GetChapterRanges(int[] chapterNumbers, string expectedRangeString)
     {
-        string actualRangeString = PretranslationService.GetChapterRangesString([.. chapterNumbers]);
+        string actualRangeString = UsfmGenerationService.GetChapterRangesString([.. chapterNumbers]);
         Assert.That(actualRangeString, Is.EqualTo(expectedRangeString));
     }
 
@@ -667,7 +667,7 @@ public class PretranslationServiceTests
             ]);
             IOptionsMonitor<DataFileOptions> dataFileOptions = Substitute.For<IOptionsMonitor<DataFileOptions>>();
             dataFileOptions.CurrentValue.Returns(new DataFileOptions() { FilesDirectory = _tempDir.Path });
-            Service = new PretranslationService(
+            Service = new UsfmGenerationService(
                 Pretranslations,
                 Engines,
                 Builds,
@@ -675,7 +675,7 @@ public class PretranslationServiceTests
             );
         }
 
-        public PretranslationService Service { get; }
+        public UsfmGenerationService Service { get; }
         public MemoryRepository<Pretranslation> Pretranslations { get; }
         public MemoryRepository<Engine> Engines { get; }
         public MemoryRepository<Build> Builds { get; }

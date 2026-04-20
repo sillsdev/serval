@@ -21,13 +21,9 @@ public class UpdateEngineHandler(
         return dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                Engine? engine = await engines.GetAsync(request.EngineId, ct);
-                if (engine is null)
-                    throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-                if (engine.Owner != request.Owner)
-                    throw new ForbiddenException();
+                await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
-                engine = await engines.UpdateAsync(
+                Engine? engine = await engines.UpdateAsync(
                     request.EngineId,
                     u =>
                     {

@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Features.Engines;
+namespace Serval.Translation.Features.Engines;
 
 public record ModelDownloadUrlDto
 {
@@ -19,11 +19,7 @@ public class GetModelDownloadUrlHandler(IRepository<Engine> engines, IEngineServ
         CancellationToken cancellationToken
     )
     {
-        Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-        if (engine.Owner != request.Owner)
-            throw new ForbiddenException();
+        Engine engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, cancellationToken);
 
         if (engine.ModelRevision == 0)
             return new(IsModelAvailable: false);

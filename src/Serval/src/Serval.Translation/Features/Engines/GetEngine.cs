@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Features.Engines;
+namespace Serval.Translation.Features.Engines;
 
 public record GetEngine(string Owner, string EngineId) : IRequest<GetEngineResponse>;
 
@@ -9,11 +9,7 @@ public class GetEngineHandler(IRepository<Engine> engines, DtoMapper mapper)
 {
     public async Task<GetEngineResponse> HandleAsync(GetEngine request, CancellationToken cancellationToken)
     {
-        Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-        if (engine.Owner != request.Owner)
-            throw new ForbiddenException();
+        Engine engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, cancellationToken);
         return new(mapper.Map(engine));
     }
 }
