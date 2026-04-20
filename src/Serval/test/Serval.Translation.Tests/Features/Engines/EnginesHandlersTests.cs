@@ -1,9 +1,9 @@
-namespace Serval.Translation.Services;
+namespace Serval.Translation.Features.Engines;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
 [TestFixture]
-public class EnginesFeatureTests
+public class EnginesHandlersTests
 {
     const string OWNER = "owner1";
 
@@ -1930,39 +1930,138 @@ public class EnginesFeatureTests
     }
 
     [Test]
+    public async Task GetBuild_WithNoMinRevision_ReturnsFoundBuild()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        var build = new Build
+        {
+            Id = "build1",
+            EngineRef = engineId,
+            Owner = OWNER,
+            Progress = 0.1,
+        };
+        await env.Builds.InsertAsync(build);
+
+        GetBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
+        GetBuildResponse response = await handler.HandleAsync(new GetBuild(OWNER, engineId, build.Id, null));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Status, Is.EqualTo(GetBuildStatus.Found));
+            Assert.That(response.Build, Is.Not.Null);
+            Assert.That(response.Build!.Revision, Is.EqualTo(1));
+            Assert.That(response.Build.Progress, Is.EqualTo(0.1));
+        }
+    }
+
+    [Test]
+    public async Task GetBuild_WithMinRevision_Update_ReturnsFound()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        var build = new Build
+        {
+            Id = "build1",
+            EngineRef = engineId,
+            Owner = OWNER,
+        };
+        await env.Builds.InsertAsync(build);
+
+        GetBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
+        Task<GetBuildResponse> task = handler.HandleAsync(new GetBuild(OWNER, engineId, build.Id, 2));
+        await env.Builds.UpdateAsync(build, u => u.Set(b => b.Progress, 0.1));
+
+        GetBuildResponse response = await task;
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Status, Is.EqualTo(GetBuildStatus.Found));
+            Assert.That(response.Build, Is.Not.Null);
+            Assert.That(response.Build!.Revision, Is.EqualTo(2));
+            Assert.That(response.Build.Progress, Is.EqualTo(0.1));
+        }
+    }
+
+    [Test]
+    public async Task GetBuild_WithMinRevision_Delete_ReturnsDeleted()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        var build = new Build
+        {
+            Id = "build1",
+            EngineRef = engineId,
+            Owner = OWNER,
+        };
+        await env.Builds.InsertAsync(build);
+
+        GetBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
+        Task<GetBuildResponse> task = handler.HandleAsync(new GetBuild(OWNER, engineId, build.Id, 2));
+        await env.Builds.DeleteAsync(build);
+
+        GetBuildResponse response = await task;
+        Assert.That(response.Status, Is.EqualTo(GetBuildStatus.Deleted));
+        Assert.That(response.Build, Is.Null);
+    }
+
+    [Test]
+    public void GetBuild_BuildDoesNotExist_Throws()
+    {
+        var env = new TestEnvironment();
+        GetBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
+        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+            handler.HandleAsync(new GetBuild(OWNER, "engine1", "build1", 2))
+        );
+    }
+
+    [Test]
     public async Task UpdateCorpusAsync()
     {
         var env = new TestEnvironment();
         Engine engine = await env.CreateEngineWithTextFilesAsync();
         string corpusId = engine.Corpora[0].Id;
 
-        Corpus? corpus = await env.Service.UpdateCorpusAsync(
-            engine.Id,
-            corpusId,
-            sourceFiles:
-            [
-                new()
+        var getDataFileHandler = Substitute.For<IRequestHandler<GetDataFile, GetDataFileResponse>>();
+        getDataFileHandler
+            .HandleAsync(Arg.Is<GetDataFile>(r => r.DataFileId == "file1"), Arg.Any<CancellationToken>())
+            .Returns(
+                new GetDataFileResponse(true, new DataFileContract("file1", "file1", "file1.txt", FileFormat.Text))
+            );
+        getDataFileHandler
+            .HandleAsync(Arg.Is<GetDataFile>(r => r.DataFileId == "file3"), Arg.Any<CancellationToken>())
+            .Returns(
+                new GetDataFileResponse(true, new DataFileContract("file3", "file3", "file3.txt", FileFormat.Text))
+            );
+
+        var handler = new UpdateCorpusHandler(
+            env.DataAccessContext,
+            env.Engines,
+            env.Pretranslations,
+            getDataFileHandler,
+            env.DtoMapper
+        );
+        UpdateCorpusResponse response = await handler.HandleAsync(
+            new UpdateCorpus(
+                OWNER,
+                engine.Id,
+                corpusId,
+                new TranslationCorpusUpdateConfigDto
                 {
-                    Id = "file1",
-                    Filename = "file1.txt",
-                    Format = FileFormat.Text,
-                    TextId = "text1",
-                },
-                new()
-                {
-                    Id = "file3",
-                    Filename = "file3.txt",
-                    Format = FileFormat.Text,
-                    TextId = "text2",
-                },
-            ],
-            null
+                    SourceFiles =
+                    [
+                        new() { FileId = "file1", TextId = "text1" },
+                        new() { FileId = "file3", TextId = "text2" },
+                    ],
+                }
+            ),
+            CancellationToken.None
         );
 
+        TranslationCorpusDto corpus = response.Corpus;
         Assert.That(corpus, Is.Not.Null);
         Assert.That(corpus.SourceFiles, Has.Count.EqualTo(2));
-        Assert.That(corpus.SourceFiles[0].Id, Is.EqualTo("file1"));
-        Assert.That(corpus.SourceFiles[1].Id, Is.EqualTo("file3"));
+        Assert.That(corpus.SourceFiles[0].File.Id, Is.EqualTo("file1"));
+        Assert.That(corpus.SourceFiles[1].File.Id, Is.EqualTo("file3"));
         Assert.That(corpus.TargetFiles, Has.Count.EqualTo(1));
     }
 
@@ -2087,7 +2186,24 @@ public class EnginesFeatureTests
         var engine = await env.CreateEngineWithTextFilesAsync();
         await env.Pretranslations.InsertAsync(pretranslation);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
-        await env.Service.UpdateCorpusAsync(engine.Id, "corpus1", sourceFiles: [], targetFiles: []);
+
+        var getDataFileHandler = Substitute.For<IRequestHandler<GetDataFile, GetDataFileResponse>>();
+        var handler = new UpdateCorpusHandler(
+            env.DataAccessContext,
+            env.Engines,
+            env.Pretranslations,
+            getDataFileHandler,
+            env.DtoMapper
+        );
+        await handler.HandleAsync(
+            new UpdateCorpus(
+                OWNER,
+                engine.Id,
+                "corpus1",
+                new TranslationCorpusUpdateConfigDto { SourceFiles = [], TargetFiles = [] }
+            ),
+            CancellationToken.None
+        );
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
     }
 
@@ -2109,11 +2225,23 @@ public class EnginesFeatureTests
         var engine = await env.CreateParallelCorpusEngineWithTextFilesAsync();
         await env.Pretranslations.InsertAsync(pretranslation);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
-        await env.Service.UpdateParallelCorpusAsync(
-            engine.Id,
-            "parallel-corpus1",
-            sourceCorpora: [],
-            targetCorpora: []
+
+        var getCorpusHandler = Substitute.For<IRequestHandler<GetCorpus, GetCorpusResponse>>();
+        var handler = new UpdateParallelCorpusHandler(
+            env.DataAccessContext,
+            env.Engines,
+            env.Pretranslations,
+            getCorpusHandler,
+            env.DtoMapper
+        );
+        await handler.HandleAsync(
+            new UpdateParallelCorpus(
+                OWNER,
+                engine.Id,
+                "parallel-corpus1",
+                new TranslationParallelCorpusUpdateConfigDto()
+            ),
+            CancellationToken.None
         );
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
     }
@@ -2136,7 +2264,8 @@ public class EnginesFeatureTests
         await env.CreateEngineWithTextFilesAsync();
         await env.Pretranslations.InsertAsync(pretranslation);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
-        await env.Service.DeleteAllCorpusFilesAsync("file1");
+        var handler = new DataFileDeletedHandler(env.DataAccessContext, env.Engines, env.Pretranslations);
+        await handler.HandleAsync(new DataFileDeleted("file1"), CancellationToken.None);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
     }
 
@@ -2158,17 +2287,13 @@ public class EnginesFeatureTests
         await env.CreateEngineWithTextFilesAsync();
         await env.Pretranslations.InsertAsync(pretranslation);
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
-        await env.Service.UpdateCorpusFilesAsync(
-            "corpus1",
-            [
-                new()
-                {
-                    Id = "file1",
-                    Filename = "newfilename",
-                    TextId = "text1",
-                    Format = FileFormat.Text,
-                },
-            ]
+        var handler = new CorpusUpdatedHandler(env.DataAccessContext, env.Engines, env.Pretranslations);
+        await handler.HandleAsync(
+            new CorpusUpdated(
+                "corpus1",
+                [new(new DataFileContract("file1", "file1", "newfilename", FileFormat.Text), "text1")]
+            ),
+            CancellationToken.None
         );
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
     }
@@ -2179,6 +2304,8 @@ public class EnginesFeatureTests
         {
             Engines = new MemoryRepository<Engine>();
             TranslationEngineService = Substitute.For<ITranslationEngineService>();
+            ApiOptions = Substitute.For<IOptionsMonitor<ApiOptions>>();
+            ApiOptions.CurrentValue.Returns(new ApiOptions());
 
             var translationResult = new TranslationResultContract
             {
@@ -2333,12 +2460,6 @@ public class EnginesFeatureTests
                 });
             ContractMapper = new ContractMapper(dataFileOptions, parallelCorpusService);
             DataAccessContext = new MemoryDataAccessContext();
-            Service = new EngineService(
-                Engines,
-                Pretranslations,
-                Substitute.For<IRequestHandler<DeleteDataFile>>(),
-                DataAccessContext
-            );
             EngineServiceFactory = Substitute.For<IEngineServiceFactory>();
             EngineServiceFactory
                 .TryGetEngineService("Smt", out Arg.Any<ITranslationEngineService?>())
@@ -2350,11 +2471,11 @@ public class EnginesFeatureTests
             DtoMapper = new DtoMapper(Substitute.For<IUrlService>());
         }
 
-        public EngineService Service { get; }
         public IRepository<Engine> Engines { get; }
         public IRepository<Build> Builds { get; }
         public IRepository<Pretranslation> Pretranslations { get; }
         public ITranslationEngineService TranslationEngineService { get; }
+        public IOptionsMonitor<ApiOptions> ApiOptions { get; }
         public ContractMapper ContractMapper { get; }
         public IEngineServiceFactory EngineServiceFactory { get; }
         public IDataAccessContext DataAccessContext { get; }

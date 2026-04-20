@@ -6,8 +6,7 @@ public static class IServalConfiguratorExtensions
     {
         configurator.Services.AddScoped<IBuildService, BuildService>();
         configurator.Services.AddScoped<ContractMapper>();
-        configurator.Services.AddScoped<IPretranslationService, PretranslationService>();
-        configurator.Services.AddScoped<IEngineService, EngineService>();
+        configurator.Services.AddScoped<IUsfmGenerationService, UsfmGenerationService>();
         configurator.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
         configurator.Services.AddScoped<DtoMapper>();
         configurator.Services.AddScoped<ITranslationPlatformService, PlatformService>();

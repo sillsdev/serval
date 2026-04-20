@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Services;
+namespace Serval.Translation.Services;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
@@ -59,6 +59,79 @@ public class DtoMapper(IUrlService urlService)
             Analysis = source.Analysis?.Select(a => Map(a, targetQuoteConvention)).ToList(),
             TargetQuoteConvention = targetQuoteConvention,
             CanDenormalizeQuotes = targetQuoteConvention != "",
+        };
+    }
+
+    public TranslationCorpusDto Map(string engineId, Corpus source)
+    {
+        return new TranslationCorpusDto
+        {
+            Id = source.Id,
+            Url = _urlService.GetUrl(Endpoints.GetTranslationCorpus, new { id = engineId, corpusId = source.Id }),
+            Engine = new ResourceLinkDto
+            {
+                Id = engineId,
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId }),
+            },
+            Name = source.Name,
+            SourceLanguage = source.SourceLanguage,
+            TargetLanguage = source.TargetLanguage,
+            SourceFiles = source.SourceFiles.Select(Map).ToList(),
+            TargetFiles = source.TargetFiles.Select(Map).ToList(),
+        };
+    }
+
+    public TranslationParallelCorpusDto Map(string engineId, ParallelCorpus source)
+    {
+        return new TranslationParallelCorpusDto
+        {
+            Id = source.Id,
+            Url = _urlService.GetUrl(Endpoints.GetCorpus, new { id = engineId, corpusId = source.Id }),
+            Engine = new ResourceLinkDto
+            {
+                Id = engineId,
+                Url = _urlService.GetUrl(Endpoints.GetTranslationEngine, new { id = engineId }),
+            },
+            SourceCorpora = source
+                .SourceCorpora.Select(c => new ResourceLinkDto
+                {
+                    Id = c.Id,
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id }),
+                })
+                .ToList(),
+            TargetCorpora = source
+                .TargetCorpora.Select(c => new ResourceLinkDto
+                {
+                    Id = c.Id,
+                    Url = _urlService.GetUrl(Endpoints.GetCorpus, new { Id = c.Id }),
+                })
+                .ToList(),
+        };
+    }
+
+    public TranslationCorpusFileDto Map(CorpusFile source)
+    {
+        return new TranslationCorpusFileDto
+        {
+            File = new ResourceLinkDto
+            {
+                Id = source.Id,
+                Url = _urlService.GetUrl(Endpoints.GetDataFile, new { id = source.Id }),
+            },
+            TextId = source.TextId,
+        };
+    }
+
+    public static PretranslationDto Map(Pretranslation source)
+    {
+        return new PretranslationDto
+        {
+            TextId = source.TextId,
+            SourceRefs = source.SourceRefs ?? [],
+            TargetRefs = source.TargetRefs ?? [],
+            Refs = source.Refs,
+            Translation = source.Translation,
+            Confidence = source.Confidence ?? -1.0,
         };
     }
 

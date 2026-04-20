@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Features.Engines;
+namespace Serval.Translation.Features.Engines;
 
 public record SegmentPairDto
 {
@@ -19,11 +19,7 @@ public class TrainSegmentHandler(IRepository<Engine> engines, IEngineServiceFact
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-        if (engine.Owner != request.Owner)
-            throw new ForbiddenException();
+        Engine engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, cancellationToken);
         if (engine.ModelRevision == 0)
             return new(IsAvailable: false);
 
@@ -75,13 +71,14 @@ public partial class TranslationEnginesController
         [NotNull] string id,
         [FromBody] SegmentPairDto segmentPair,
         [FromServices] IRequestHandler<TrainSegment, TrainSegmentResponse> handler,
+        [FromServices] ILogger<TranslationEnginesController> logger,
         CancellationToken cancellationToken
     )
     {
         TrainSegmentResponse response = await handler.HandleAsync(new(Owner, id, segmentPair), cancellationToken);
         if (!response.IsAvailable)
             return Conflict();
-        _logger.LogInformation("Trained segment pair for engine {EngineId}", id);
+        logger.LogInformation("Trained segment pair for engine {EngineId}", id);
         return Ok();
     }
 }

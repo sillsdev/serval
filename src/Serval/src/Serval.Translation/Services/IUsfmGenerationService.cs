@@ -1,15 +1,7 @@
 ﻿namespace Serval.Translation.Services;
 
-public interface IPretranslationService
+public interface IUsfmGenerationService
 {
-    Task<IReadOnlyList<Pretranslation>> GetAllAsync(
-        string engineId,
-        int modelRevision,
-        string corpusId,
-        string? textId = null,
-        CancellationToken cancellationToken = default
-    );
-
     Task<string> GetUsfmAsync(
         string engineId,
         int modelRevision,

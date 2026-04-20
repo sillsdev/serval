@@ -5,36 +5,19 @@ using SIL.Scripture;
 
 namespace Serval.Translation.Services;
 
-public class PretranslationService(
+public class UsfmGenerationService(
     IRepository<Pretranslation> pretranslations,
     IRepository<Engine> engines,
     IRepository<Build> builds,
     ContractMapper contractMapper
-) : EntityServiceBase<Pretranslation>(pretranslations), IPretranslationService
+) : IUsfmGenerationService
 {
+    private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Build> _builds = builds;
     private readonly ContractMapper _contractMapper = contractMapper;
     private const string AIDisclaimerRemark =
         "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
-
-    public async Task<IReadOnlyList<Pretranslation>> GetAllAsync(
-        string engineId,
-        int modelRevision,
-        string corpusId,
-        string? textId = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await Entities.GetAllAsync(
-            pt =>
-                pt.EngineRef == engineId
-                && pt.ModelRevision == modelRevision
-                && pt.CorpusRef == corpusId
-                && (textId == null || pt.TextId == textId),
-            cancellationToken
-        );
-    }
 
     public async Task<string> GetUsfmAsync(
         string engineId,
@@ -112,11 +95,12 @@ public class PretranslationService(
 
         ParallelCorpusContract[] parallelCorpora = _contractMapper.Map(build, engine).ToArray();
 
-        IReadOnlyList<Pretranslation> pretranslations = await GetAllAsync(
-            engineId,
-            modelRevision,
-            corpusId,
-            textId,
+        IReadOnlyList<Pretranslation> pretranslations = await _pretranslations.GetAllAsync(
+            pt =>
+                pt.EngineRef == engineId
+                && pt.ModelRevision == modelRevision
+                && pt.CorpusRef == corpusId
+                && (textId == null || pt.TextId == textId),
             cancellationToken
         );
 

@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Features.Engines;
+namespace Serval.Translation.Features.Engines;
 
 public record WordGraphDto
 {
@@ -36,11 +36,7 @@ public class GetWordGraphHandler(IRepository<Engine> engines, IEngineServiceFact
         CancellationToken cancellationToken = default
     )
     {
-        Engine? engine = await engines.GetAsync(request.EngineId, cancellationToken);
-        if (engine is null)
-            throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
-        if (engine.Owner != request.Owner)
-            throw new ForbiddenException();
+        Engine engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, cancellationToken);
         if (engine.ModelRevision == 0)
             return new(IsAvailable: false);
 
@@ -110,13 +106,14 @@ public partial class TranslationEnginesController
         [NotNull] string id,
         [FromBody] string segment,
         [FromServices] IRequestHandler<GetWordGraph, GetWordGraphResponse> handler,
+        [FromServices] ILogger<TranslationEnginesController> logger,
         CancellationToken cancellationToken
     )
     {
         GetWordGraphResponse response = await handler.HandleAsync(new(Owner, id, segment), cancellationToken);
         if (!response.IsAvailable)
             return Conflict();
-        _logger.LogInformation("Got word graph for engine {EngineId}", id);
+        logger.LogInformation("Got word graph for engine {EngineId}", id);
         return Ok(response.WordGraph);
     }
 }
