@@ -59,7 +59,7 @@ jobs:
         run: docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
       - name: Debug network
-        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m serval-mongo-1
 
       - name: Pre-Test
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
@@ -76,19 +76,6 @@ jobs:
 
       - name: Restart Mongo
         run: docker start serval-mongo-1 && sleep 20
-
-      #Engine Server
-      - name: Test Working Engine Server
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerWorking" --collect:"Xplat Code Coverage"
-
-      - name: Kill Engine Server
-        run: docker stop machine-engine-cntr
-
-      - name: Test Not Working EngineServer
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory=EngineServerNotWorking" --collect:"Xplat Code Coverage"
-
-      - name: Restart Engine Server
-        run: docker start machine-engine-cntr && sleep 5
 
       #ClearML
       - name: Restart containers with new env
@@ -121,7 +108,7 @@ jobs:
       #Clean up
       - name: Debug network (Post test)
         if: ${{ failure() }}
-        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m serval-mongo-1
 
       - name: Stop containers
         if: ${{ success() || failure() }}

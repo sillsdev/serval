@@ -51,7 +51,7 @@ jobs:
         run: dotnet build && docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
       - name: Debug network
-        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m serval-mongo-1
 
       - name: Pre-Test
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
@@ -60,7 +60,7 @@ jobs:
         run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E" --collect:"Xplat Code Coverage"
 
       - name: Debug network again
-        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m serval-mongo-1
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -69,7 +69,7 @@ jobs:
 
       - name: Debug network (Post test)
         if: ${{ failure() }}
-        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m serval-mongo-1
 
       - name: Stop containers
         if: ${{ success() || failure() }}

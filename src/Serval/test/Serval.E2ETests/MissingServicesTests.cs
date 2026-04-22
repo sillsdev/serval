@@ -38,20 +38,6 @@ public class MissingServicesTests
     }
 
     [Test]
-    [Category("EngineServerWorking")]
-    public void UseEngineServerAsync()
-    {
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT3");
-            string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
-            ParallelCorpusConfig corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
-            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, corpus, false);
-            await _helperClient.BuildEngineAsync(engineId);
-        });
-    }
-
-    [Test]
     [Category("ClearMLNotWorking")]
     public void UseMissingClearMLAsync()
     {
@@ -102,22 +88,6 @@ public class MissingServicesTests
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             await _helperClient.DataFilesClient.GetAllAsync();
-        });
-        Assert.That(ex, Is.Not.Null);
-        Assert.That(ex.StatusCode, Is.EqualTo(503));
-    }
-
-    [Test]
-    [Category("EngineServerNotWorking")]
-    public void UseMissingEngineServerAsync()
-    {
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT3");
-            string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
-            ParallelCorpusConfig corpus = await _helperClient.MakeParallelTextCorpus(books, "es", "en", false);
-            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, corpus, false);
-            await _helperClient.BuildEngineAsync(engineId);
         });
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(503));
