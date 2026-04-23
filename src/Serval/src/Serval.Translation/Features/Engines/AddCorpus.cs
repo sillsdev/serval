@@ -2,6 +2,22 @@ namespace Serval.Translation.Features.Engines;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
+public record TranslationCorpusConfigDto
+{
+    /// <summary>
+    /// The corpus name.
+    /// </summary>
+    public string? Name { get; init; }
+
+    public required string SourceLanguage { get; init; }
+
+    public required string TargetLanguage { get; init; }
+
+    public required IReadOnlyList<TranslationCorpusFileConfigDto> SourceFiles { get; init; }
+
+    public required IReadOnlyList<TranslationCorpusFileConfigDto> TargetFiles { get; init; }
+}
+
 public record AddCorpus(string Owner, string EngineId, TranslationCorpusConfigDto CorpusConfig)
     : IRequest<AddCorpusResponse>;
 

@@ -1,5 +1,23 @@
 namespace Serval.Translation.Features.Engines;
 
+public record TranslationParallelCorpusUpdateConfigDto : IValidatableObject
+{
+    public IReadOnlyList<string>? SourceCorpusIds { get; init; }
+
+    public IReadOnlyList<string>? TargetCorpusIds { get; init; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (SourceCorpusIds is null && TargetCorpusIds is null)
+        {
+            yield return new ValidationResult(
+                "At least one field must be specified.",
+                [nameof(SourceCorpusIds), nameof(TargetCorpusIds)]
+            );
+        }
+    }
+}
+
 public record UpdateParallelCorpus(
     string Owner,
     string EngineId,
