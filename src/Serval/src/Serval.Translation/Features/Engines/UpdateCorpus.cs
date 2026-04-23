@@ -2,6 +2,24 @@ namespace Serval.Translation.Features.Engines;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
+public record TranslationCorpusUpdateConfigDto : IValidatableObject
+{
+    public IReadOnlyList<TranslationCorpusFileConfigDto>? SourceFiles { get; init; }
+
+    public IReadOnlyList<TranslationCorpusFileConfigDto>? TargetFiles { get; init; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (SourceFiles is null && TargetFiles is null)
+        {
+            yield return new ValidationResult(
+                "At least one field must be specified.",
+                [nameof(SourceFiles), nameof(TargetFiles)]
+            );
+        }
+    }
+}
+
 public record UpdateCorpus(
     string Owner,
     string EngineId,

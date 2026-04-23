@@ -4,7 +4,6 @@ public static class IServalConfiguratorExtensions
 {
     public static IServalConfigurator AddTranslation(this IServalConfigurator configurator)
     {
-        configurator.Services.AddScoped<IBuildService, BuildService>();
         configurator.Services.AddScoped<ContractMapper>();
         configurator.Services.AddScoped<IUsfmGenerationService, UsfmGenerationService>();
         configurator.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
