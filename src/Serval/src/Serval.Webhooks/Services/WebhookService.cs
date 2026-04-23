@@ -1,11 +1,7 @@
 ﻿namespace Serval.Webhooks.Services;
 
-public class WebhookService(IRepository<Webhook> hooks, IBackgroundJobClient jobClient)
-    : OwnedEntityServiceBase<Webhook>(hooks),
-        IWebhookService
+public class WebhookService(IRepository<Webhook> webhooks, IBackgroundJobClient jobClient) : IWebhookService
 {
-    private readonly IBackgroundJobClient _jobClient = jobClient;
-
     public async Task SendEventAsync(
         WebhookEvent webhookEvent,
         string owner,
@@ -13,9 +9,9 @@ public class WebhookService(IRepository<Webhook> hooks, IBackgroundJobClient job
         CancellationToken cancellationToken = default
     )
     {
-        if (await Entities.ExistsAsync(h => h.Owner == owner && h.Events.Contains(webhookEvent), cancellationToken))
+        if (await webhooks.ExistsAsync(h => h.Owner == owner && h.Events.Contains(webhookEvent), cancellationToken))
         {
-            _jobClient.Enqueue<WebhookJob>(
+            jobClient.Enqueue<WebhookJob>(
                 "webhook",
                 j => j.RunAsync(webhookEvent, owner, payload, CancellationToken.None)
             );
