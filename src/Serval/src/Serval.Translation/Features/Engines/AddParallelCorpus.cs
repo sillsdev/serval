@@ -1,5 +1,16 @@
 namespace Serval.Translation.Features.Engines;
 
+public record TranslationParallelCorpusConfigDto
+{
+    /// <summary>
+    /// The corpus name.
+    /// </summary>
+    public string? Name { get; init; }
+
+    public required IReadOnlyList<string> SourceCorpusIds { get; init; }
+    public required IReadOnlyList<string> TargetCorpusIds { get; init; }
+}
+
 public record AddParallelCorpus(string Owner, string EngineId, TranslationParallelCorpusConfigDto CorpusConfig)
     : IRequest<AddParallelCorpusResponse>;
 
