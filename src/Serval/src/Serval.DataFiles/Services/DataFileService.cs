@@ -1,4 +1,6 @@
-﻿namespace Serval.DataFiles.Services;
+﻿using SIL.Machine.Corpora;
+
+namespace Serval.DataFiles.Services;
 
 public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileService
 {
@@ -40,8 +42,15 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
         string path = GetDataFilePath(filename);
         try
         {
-            await using Stream fileStream = _fileSystem.OpenWrite(path);
-            await stream.CopyToAsync(fileStream, cancellationToken);
+            using (Stream fileStream = _fileSystem.OpenWrite(path))
+            {
+                await stream.CopyToAsync(fileStream, cancellationToken);
+            }
+            if (dataFile.Format == FileFormat.Paratext)
+            {
+                ParatextMetadata metadata = await ParseParatextMetadataAsync(path);
+                dataFile = dataFile with { ParatextMetadata = metadata };
+            }
             await Entities.InsertAsync(dataFile with { Filename = filename }, cancellationToken);
         }
         catch
@@ -80,6 +89,16 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
                     );
                     if (originalDataFile is null)
                         throw new EntityNotFoundException($"Could not find the DataFile '{id}'.");
+
+                    if (originalDataFile.Format == FileFormat.Paratext)
+                    {
+                        ParatextMetadata metadata = await ParseParatextMetadataAsync(path);
+                        await Entities.UpdateAsync(
+                            id,
+                            u => u.Set(f => f.ParatextMetadata, metadata),
+                            cancellationToken: ct
+                        );
+                    }
 
                     await _deletedFiles.InsertAsync(
                         new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
@@ -123,4 +142,23 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
         );
 
     private string GetDataFilePath(string filename) => Path.Combine(_options.CurrentValue.FilesDirectory, filename);
+
+    private static async Task<ParatextMetadata> ParseParatextMetadataAsync(string path)
+    {
+        using ZipContainer zipContainer = new(path);
+        try
+        {
+            ParatextProjectSettings projectSettings = new Shared.Services.ZipParatextProjectSettingsParser(
+                zipContainer
+            ).Parse();
+            return new ParatextMetadata { ProjectGuid = projectSettings.Guid, ProjectName = projectSettings.Name };
+        }
+        catch (Exception e) when (e is not OperationCanceledException)
+        {
+            throw new InvalidOperationException(
+                "Unable to parse the Paratext project settings for the uploaded data file.",
+                e
+            );
+        }
+    }
 }
