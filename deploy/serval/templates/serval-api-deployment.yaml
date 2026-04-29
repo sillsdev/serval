@@ -40,26 +40,6 @@ spec:
               value: $(mongodb_connection)serval_jobs
             - name: ASPNETCORE_ConnectionStrings__Mongo
               value: $(mongodb_connection)serval
-            - name: ASPNETCORE_Translation__Engines__0__Type
-              value: Echo
-            - name: ASPNETCORE_Translation__Engines__0__Address
-              value: http://echo
-            - name: ASPNETCORE_Translation__Engines__1__Type
-              value: SmtTransfer
-            - name: ASPNETCORE_Translation__Engines__1__Address
-              value: http://machine-engine
-            - name: ASPNETCORE_Translation__Engines__2__Type
-              value: Nmt
-            - name: ASPNETCORE_Translation__Engines__2__Address
-              value: http://machine-engine
-            - name: ASPNETCORE_WordAlignment__Engines__0__Type
-              value: EchoWordAlignment
-            - name: ASPNETCORE_WordAlignment__Engines__0__Address
-              value: http://echo
-            - name: ASPNETCORE_WordAlignment__Engines__1__Type
-              value: Statistical
-            - name: ASPNETCORE_WordAlignment__Engines__1__Address
-              value: http://machine-engine
             - name: Bugsnag__ReleaseStage
               value: {{ .Values.bugsnagReleaseStage}}
               {{- template "secrets.clearml" . }}
@@ -72,10 +52,11 @@ spec:
             - containerPort: 81
           resources:
             limits:
-              memory: "5500Mi"
+              memory: "8Gi"
+              cpu: "1.5"
             requests:
-              memory: "5500Mi"
-              cpu: "1200m"
+              memory: "8Gi"
+              cpu: "1.5"
           volumeMounts:
             - mountPath: /var/lib/machine
               name: machine-mount
