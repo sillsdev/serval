@@ -49,7 +49,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
             if (dataFile.Format == FileFormat.Paratext)
             {
                 ParatextMetadata metadata = await ParseParatextMetadataAsync(path);
-                dataFile = dataFile with { ParatextMetadata = metadata };
+                dataFile = dataFile with { FileMetadata = metadata };
             }
             await Entities.InsertAsync(dataFile with { Filename = filename }, cancellationToken);
         }
@@ -95,7 +95,7 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
                         ParatextMetadata metadata = await ParseParatextMetadataAsync(path);
                         await Entities.UpdateAsync(
                             id,
-                            u => u.Set(f => f.ParatextMetadata, metadata),
+                            u => u.Set(f => f.FileMetadata, metadata),
                             cancellationToken: ct
                         );
                     }
@@ -151,7 +151,14 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
             ParatextProjectSettings projectSettings = new Shared.Services.ZipParatextProjectSettingsParser(
                 zipContainer
             ).Parse();
-            return new ParatextMetadata { ProjectGuid = projectSettings.Guid, ProjectName = projectSettings.Name };
+            return new ParatextMetadata
+            {
+                ProjectGuid = projectSettings.Guid,
+                Name = projectSettings.Name,
+                LanguageCode = projectSettings.LanguageCode,
+                Versification = projectSettings.Versification.Name,
+                TranslationType = projectSettings.TranslationType,
+            };
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {

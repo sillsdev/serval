@@ -8,5 +8,5 @@ public record DataFile : IOwnedEntity
     public required string Name { get; init; }
     public string Filename { get; init; } = "";
     public required FileFormat Format { get; init; }
-    public ParatextMetadata? ParatextMetadata { get; init; }
+    public ParatextMetadata? FileMetadata { get; init; }
 }
