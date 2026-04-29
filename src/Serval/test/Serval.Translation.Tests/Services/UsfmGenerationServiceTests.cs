@@ -17,9 +17,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test1
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
@@ -44,9 +44,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test1
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
@@ -71,9 +71,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test1
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1
 \p
 \v 2
@@ -98,9 +98,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test1
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
@@ -126,9 +126,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test1
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Embed markers were moved to the end of the verse. Paragraph breaks have positions preserved. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Embed markers were moved to the end of the verse. Paragraph breaks have positions preserved. Style markers were removed.
 \v 1 Chapter 1, verse 1.
 \p ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
@@ -153,9 +153,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - TRG
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 TRG - Chapter one, verse one.
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
@@ -179,9 +179,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test3
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
@@ -218,9 +218,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test1
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
@@ -245,9 +245,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test3
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
@@ -278,11 +278,11 @@ public class UsfmGenerationServiceTests
         List<string> lines = [.. targetUsfm.Split('\n')];
 
         lines.Insert(
-            1,
-            @"\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully."
+            2,
+            @"\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully."
         );
         lines.Insert(
-            2,
+            3,
             @"\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed."
         );
         Assert.That(usfm, Is.EqualTo(string.Join('\n', lines)).IgnoreLineEndings());
@@ -302,9 +302,9 @@ public class UsfmGenerationServiceTests
             usfm,
             Is.EqualTo(
                     @"\id MAT - Test3
-\rem This draft of MAT was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \c 1
+\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
+\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3
@@ -431,18 +431,6 @@ public class UsfmGenerationServiceTests
                 quoteNormalizationBehavior: PretranslationNormalizationBehavior.Denormalized
             )
         );
-    }
-
-    [Test]
-    [TestCase(new int[] { 1, 2, 3 }, "1-3")]
-    [TestCase(new int[] { 1, 3, 4 }, "1, 3-4")]
-    [TestCase(new int[] { 2, 3, 4, 6, 8, 9 }, "2-4, 6, 8-9")]
-    [TestCase(new int[] { 1, 3, 2 }, "1-3")]
-    [TestCase(new int[] { 1 }, "1")]
-    public void GetChapterRanges(int[] chapterNumbers, string expectedRangeString)
-    {
-        string actualRangeString = UsfmGenerationService.GetChapterRangesString([.. chapterNumbers]);
-        Assert.That(actualRangeString, Is.EqualTo(expectedRangeString));
     }
 
     private class TestEnvironment : IDisposable
