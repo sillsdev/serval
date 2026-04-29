@@ -40,28 +40,10 @@ spec:
               value: $(mongodb_connection)serval_jobs
             - name: ASPNETCORE_ConnectionStrings__Mongo
               value: $(mongodb_connection)serval
-            - name: ASPNETCORE_Translation__Engines__0__Type
-              value: Echo
-            - name: ASPNETCORE_Translation__Engines__0__Address
-              value: http://echo
-            - name: ASPNETCORE_Translation__Engines__1__Type
-              value: SmtTransfer
-            - name: ASPNETCORE_Translation__Engines__1__Address
-              value: http://machine-engine
-            - name: ASPNETCORE_Translation__Engines__2__Type
-              value: Nmt
-            - name: ASPNETCORE_Translation__Engines__2__Address
-              value: http://machine-engine
-            - name: ASPNETCORE_WordAlignment__Engines__0__Type
-              value: EchoWordAlignment
-            - name: ASPNETCORE_WordAlignment__Engines__0__Address
-              value: http://echo
-            - name: ASPNETCORE_WordAlignment__Engines__1__Type
-              value: Statistical
-            - name: ASPNETCORE_WordAlignment__Engines__1__Address
-              value: http://machine-engine
             - name: Bugsnag__ReleaseStage
               value: {{ .Values.bugsnagReleaseStage}}
+              {{- template "secrets.clearml" . }}
+              {{- template "secrets.s3" . }}
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: serval-api
@@ -70,11 +52,14 @@ spec:
             - containerPort: 81
           resources:
             limits:
-              memory: "500Mi"
+              memory: "8Gi"
+              cpu: "1.5"
             requests:
-              memory: "500Mi"
-              cpu: "500m"
+              memory: "8Gi"
+              cpu: "1.5"
           volumeMounts:
+            - mountPath: /var/lib/machine
+              name: machine-mount
             - mountPath: /var/lib/serval
               name: serval-mount
             - mountPath: /root/.aspnet/DataProtection-Keys
@@ -86,6 +71,9 @@ spec:
           - 208.67.222.222
       restartPolicy: Always
       volumes:
+        - name: machine-mount
+          persistentVolumeClaim:
+            claimName: machine-claim
         - name: serval-mount
           persistentVolumeClaim:
             claimName: serval-claim
