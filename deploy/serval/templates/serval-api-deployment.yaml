@@ -62,6 +62,8 @@ spec:
               value: http://machine-engine
             - name: Bugsnag__ReleaseStage
               value: {{ .Values.bugsnagReleaseStage}}
+              {{- template "secrets.clearml" . }}
+              {{- template "secrets.s3" . }}
           image: {{ .Values.servalImage}}
           imagePullPolicy: "Always"
           name: serval-api
@@ -70,11 +72,13 @@ spec:
             - containerPort: 81
           resources:
             limits:
-              memory: "500Mi"
+              memory: "5500Mi"
             requests:
-              memory: "500Mi"
-              cpu: "500m"
+              memory: "5500Mi"
+              cpu: "1200m"
           volumeMounts:
+            - mountPath: /var/lib/machine
+              name: machine-mount
             - mountPath: /var/lib/serval
               name: serval-mount
             - mountPath: /root/.aspnet/DataProtection-Keys
@@ -86,6 +90,9 @@ spec:
           - 208.67.222.222
       restartPolicy: Always
       volumes:
+        - name: machine-mount
+          persistentVolumeClaim:
+            claimName: machine-claim
         - name: serval-mount
           persistentVolumeClaim:
             claimName: serval-claim
