@@ -6,6 +6,7 @@ public static class IServalConfiguratorExtensions
     {
         configurator.Services.AddHttpClient<WebhookJob>();
         configurator.Services.AddScoped<IWebhookService, WebhookService>();
+        configurator.Services.AddScoped<DtoMapper>();
 
         configurator.AddWebhooksDataAccess();
 
