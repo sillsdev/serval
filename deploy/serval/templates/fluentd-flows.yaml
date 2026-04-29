@@ -20,9 +20,6 @@ spec:
   match:
     - select:
         container_names:
-          - machine-job
-          - machine-engine
           - serval-api
-          - echo
         hosts: []
         labels: {}
