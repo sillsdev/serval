@@ -76,24 +76,60 @@ public class UsfmGenerationService(
         Build? build = (await _builds.GetAllAsync(b => b.EngineRef == engineId, cancellationToken))
             .OrderByDescending(b => b.DateFinished)
             .FirstOrDefault();
-        if (build is null || build.DateFinished is null)
+        if (build?.DateFinished is null)
             throw new InvalidOperationException($"Could not find any completed builds for engine '{engineId}'.");
 
-        string disclaimerRemark = string.Format(
-            CultureInfo.InvariantCulture,
-            AIDisclaimerRemark,
-            textId,
-            build.DateFinished.Value.ToUniversalTime().ToString("u")
-        );
         string markerPlacementRemark = GenerateMarkerPlacementRemark(
             paragraphMarkerBehavior,
             embedBehavior,
             styleMarkerBehavior
         );
 
-        List<string> remarks = [disclaimerRemark, markerPlacementRemark];
+        ParallelCorpusContract[] parallelCorpora = [.. _contractMapper.Map(build, engine)];
 
-        ParallelCorpusContract[] parallelCorpora = _contractMapper.Map(build, engine).ToArray();
+        // Get the versification for the project
+        CorpusBundle corpusBundle = new(parallelCorpora);
+        ParallelCorpusContract corpusContract = corpusBundle.ParallelCorpora.Single(c => c.Id == corpusId);
+        CorpusFileContract sourceFile = corpusContract.SourceCorpora[0].Files[0];
+        ParatextProjectSettings? sourceSettings = corpusBundle.GetSettings(sourceFile.Location);
+        ScrVers versification = sourceSettings?.Versification ?? ScrVers.Original;
+        var scriptureRangeParser = new ScriptureRangeParser(versification);
+
+        // Generate remarks for every chapter in the book
+        List<(int, string)> remarks = [];
+        List<int>? chapters =
+            build
+                .Pretranslate?.SelectMany(p => p.SourceFilters ?? [])
+                .SelectMany(s =>
+                    scriptureRangeParser
+                        .GetChapters(s.ScriptureRange)
+                        .TryGetValue(textId, out List<int>? filterChapters)
+                        ? filterChapters
+                        : []
+                )
+                .ToList()
+            ?? [];
+
+        // If there are no chapters, we need to set it to null so that the USFM updater
+        if (chapters.Count == 0)
+            chapters = null;
+
+        // Get all the chapters needing remarks
+        IEnumerable<int> chaptersNeedingRemarks =
+            chapters ?? Enumerable.Range(1, versification.GetLastChapter(Canon.BookIdToNumber(textId)));
+
+        // Add remarks to each chapter
+        foreach (int chapterNum in chaptersNeedingRemarks)
+        {
+            string disclaimerRemark = string.Format(
+                CultureInfo.InvariantCulture,
+                AIDisclaimerRemark,
+                $"{textId} {chapterNum}",
+                build.DateFinished.Value.ToUniversalTime().ToString("u")
+            );
+            remarks.Add((chapterNum, disclaimerRemark));
+            remarks.Add((chapterNum, markerPlacementRemark));
+        }
 
         IReadOnlyList<Pretranslation> pretranslations = await _pretranslations.GetAllAsync(
             pt =>
@@ -126,6 +162,7 @@ public class UsfmGenerationService(
                 corpusId,
                 textId,
                 textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations,
+                chapters,
                 textBehavior,
                 Map(paragraphMarkerBehavior),
                 Map(embedBehavior),
@@ -146,6 +183,7 @@ public class UsfmGenerationService(
                 corpusId,
                 textId,
                 textOrigin == PretranslationUsfmTextOrigin.OnlyExisting ? [] : pretranslations,
+                chapters,
                 Map(paragraphMarkerBehavior),
                 Map(embedBehavior),
                 Map(styleMarkerBehavior),
@@ -163,11 +201,12 @@ public class UsfmGenerationService(
         string corpusId,
         string bookId,
         IReadOnlyList<Pretranslation> pretranslations,
+        IReadOnlyList<int>? chapters,
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
         bool placeParagraphMarkers,
-        IEnumerable<string>? remarks,
+        IEnumerable<(int, string)>? remarks,
         string? targetQuoteConvention
     )
     {
@@ -176,6 +215,7 @@ public class UsfmGenerationService(
             corpusId,
             bookId,
             pretranslations,
+            chapters,
             UpdateUsfmTextBehavior.StripExisting,
             paragraphBehavior,
             embedBehavior,
@@ -192,11 +232,12 @@ public class UsfmGenerationService(
         string corpusId,
         string bookId,
         IReadOnlyList<Pretranslation> pretranslations,
+        IReadOnlyList<int>? chapters,
         UpdateUsfmTextBehavior textBehavior,
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
-        IEnumerable<string>? remarks,
+        IEnumerable<(int, string)>? remarks,
         string? targetQuoteConvention
     )
     {
@@ -205,6 +246,7 @@ public class UsfmGenerationService(
             corpusId,
             bookId,
             pretranslations,
+            chapters,
             textBehavior,
             paragraphBehavior,
             embedBehavior,
@@ -221,12 +263,13 @@ public class UsfmGenerationService(
         string corpusId,
         string bookId,
         IEnumerable<Pretranslation> pretranslations,
+        IReadOnlyList<int>? chapters,
         UpdateUsfmTextBehavior textBehavior,
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
         IEnumerable<IUsfmUpdateBlockHandler>? updateBlockHandlers,
-        IEnumerable<string>? remarks,
+        IEnumerable<(int, string)>? remarks,
         string? targetQuoteConvention,
         bool isSource
     )
@@ -258,13 +301,15 @@ public class UsfmGenerationService(
                     .Where(row => row.Refs.Any())
                     .OrderBy(row => row.Refs[0])
                     .ToArray(),
-                isSource ? sourceSettings?.FullName : targetSettings?.FullName,
+                chapters,
+                fullName: isSource ? sourceSettings?.FullName : targetSettings?.FullName,
                 textBehavior,
                 paragraphBehavior,
                 embedBehavior,
                 styleBehavior,
-                updateBlockHandlers: updateBlockHandlers,
-                remarks: remarks,
+                preserveParagraphStyles: null,
+                updateBlockHandlers,
+                remarks,
                 errorHandler: (_) => true,
                 compareSegments: isSource
             ) ?? "";
@@ -372,74 +417,17 @@ public class UsfmGenerationService(
         int denormalizableChapterCount = bestChapterStrategies.Count(tup =>
             tup.Strategy != QuotationMarkUpdateStrategy.Skip
         );
-        List<string> remarks = [];
-        string quotationDenormalizationRemark;
-        if (denormalizableChapterCount == bestChapterStrategies.Count)
-        {
-            quotationDenormalizationRemark =
-                "The quote style in all chapters has been automatically adjusted to match the rest of the project.";
-        }
-        else if (denormalizableChapterCount > 0)
-        {
-            quotationDenormalizationRemark =
-                "The quote style in the following chapters has been automatically adjusted to match the rest of the project: "
-                + GetChapterRangesString(
-                    bestChapterStrategies
-                        .Where(tuple => tuple.Strategy != QuotationMarkUpdateStrategy.Skip)
-                        .Select(tuple => tuple.ChapterNumber)
-                        .ToList()
-                )
-                + ".";
-        }
-        else
-        {
-            quotationDenormalizationRemark =
-                "The quote style was not automatically adjusted to match the rest of your project in any chapters.";
-        }
-        remarks.Add(quotationDenormalizationRemark);
+        List<(int, string)> remarks = [];
+        const string QuotationDenormalizationRemark =
+            "The quote style of this chapter has been automatically adjusted to match the rest of the project.";
+        for (int i = 1; i <= denormalizableChapterCount; i++)
+            remarks.Add((i, QuotationDenormalizationRemark));
 
         var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer], remarks: remarks);
         UsfmParser.Parse(usfm, updater);
 
         usfm = updater.GetUsfm();
         return usfm;
-    }
-
-    internal static string GetChapterRangesString(List<int> chapterNumbers)
-    {
-        chapterNumbers = chapterNumbers.Order().ToList();
-        int start = chapterNumbers[0];
-        int end = chapterNumbers[0];
-        List<string> chapterRangeStrings = [];
-        foreach (int chapterNumber in chapterNumbers[1..])
-        {
-            if (chapterNumber == end + 1)
-            {
-                end = chapterNumber;
-            }
-            else
-            {
-                if (start == end)
-                {
-                    chapterRangeStrings.Add(start.ToString(CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    chapterRangeStrings.Add($"{start}-{end}");
-                }
-                start = chapterNumber;
-                end = chapterNumber;
-            }
-        }
-        if (start == end)
-        {
-            chapterRangeStrings.Add(start.ToString(CultureInfo.InvariantCulture));
-        }
-        else
-        {
-            chapterRangeStrings.Add($"{start}-{end}");
-        }
-        return string.Join(", ", chapterRangeStrings);
     }
 
     /// <summary>
