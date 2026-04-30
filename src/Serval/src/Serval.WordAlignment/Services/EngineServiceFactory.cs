@@ -6,8 +6,9 @@ public class EngineServiceFactory(IServiceProvider serviceProvider) : IEngineSer
 
     public bool TryGetEngineService(string engineType, [NotNullWhen(true)] out IWordAlignmentEngineService? service)
     {
+        // We convert to pascal case first to correctly handle kebab case
         IWordAlignmentEngineService? engine = _serviceProvider.GetKeyedService<IWordAlignmentEngineService>(
-            engineType.ToLowerInvariant()
+            engineType.ToPascalCase().ToLowerInvariant()
         );
         if (engine is null)
         {

@@ -441,12 +441,6 @@ public class EngineService(
         await _wordAlignments.DeleteAllAsync(wa => wa.CorpusRef == corpusId, cancellationToken: cancellationToken);
     }
 
-    public async Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default)
-    {
-        int size = await _engineServiceFactory.GetEngineService(engineType).GetQueueSizeAsync(cancellationToken);
-        return new Queue { Size = size, EngineType = engineType };
-    }
-
     private ParallelCorpusContract MapToFilteredCorpus(
         ParallelCorpus source,
         TrainingCorpus? trainingCorpus,

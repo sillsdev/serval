@@ -1,13 +1,26 @@
-﻿namespace Serval.WordAlignment.Controllers;
+﻿namespace Serval.WordAlignment.Features.EngineTypes;
 
-[ApiVersion(1.0)]
-[Route("api/v{version:apiVersion}/word-alignment/engine-types")]
-[OpenApiTag("Word Alignment Engines")]
-public class WordAlignmentEngineTypesController(IAuthorizationService authService, IEngineService engineService)
-    : ServalControllerBase(authService)
+public record GetQueue(string EngineType) : IRequest<GetQueueResponse>;
+
+public record GetQueueResponse(QueueDto? Queue = null);
+
+public class GetQueueHandler(IEngineServiceFactory engineServiceFactory) : IRequestHandler<GetQueue, GetQueueResponse>
 {
-    private readonly IEngineService _engineService = engineService;
+    public async Task<GetQueueResponse> HandleAsync(GetQueue request, CancellationToken cancellationToken)
+    {
+        if (
+            engineServiceFactory.TryGetEngineService(request.EngineType, out IWordAlignmentEngineService? engineService)
+        )
+        {
+            int size = await engineService.GetQueueSizeAsync(cancellationToken);
+            return new(new QueueDto { EngineType = request.EngineType.ToKebabCase(), Size = size });
+        }
+        return new();
+    }
+}
 
+public partial class WordAlignmentEngineTypesController
+{
     /// <summary>
     /// Get queue information for a given engine type
     /// </summary>
@@ -25,19 +38,13 @@ public class WordAlignmentEngineTypesController(IAuthorizationService authServic
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<QueueDto>> GetQueueAsync(
         [NotNull] string engineType,
+        [FromServices] IRequestHandler<GetQueue, GetQueueResponse> handler,
         CancellationToken cancellationToken
     )
     {
-        try
-        {
-            return Map(await _engineService.GetQueueAsync(engineType, cancellationToken: cancellationToken));
-        }
-        catch (InvalidOperationException ioe)
-        {
-            return BadRequest(ioe.Message);
-        }
+        GetQueueResponse response = await handler.HandleAsync(new(engineType), cancellationToken);
+        if (response.Queue is not null)
+            return Ok(response.Queue);
+        return NotFound();
     }
-
-    private static QueueDto Map(Queue source) =>
-        new() { Size = source.Size, EngineType = source.EngineType.ToKebabCase() };
 }
