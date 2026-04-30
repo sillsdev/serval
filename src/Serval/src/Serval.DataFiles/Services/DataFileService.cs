@@ -155,9 +155,11 @@ public class DataFileService : OwnedEntityServiceBase<DataFile>, IDataFileServic
             {
                 ProjectGuid = projectSettings.Guid,
                 Name = projectSettings.Name,
-                LanguageCode = projectSettings.LanguageCode,
+                FullName = projectSettings.FullName,
                 Versification = projectSettings.Versification.Name,
                 TranslationType = projectSettings.TranslationType,
+                LanguageCode = projectSettings.LanguageCode,
+                Visibility = projectSettings.Visibility,
             };
         }
         catch (Exception e) when (e is not OperationCanceledException)
