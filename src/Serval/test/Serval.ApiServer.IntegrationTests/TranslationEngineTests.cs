@@ -2515,6 +2515,74 @@ public class TranslationEngineTests
         });
     }
 
+    [Test]
+    public async Task GetAllPretranslationConfidencesAsync_Exists()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE1_ID,
+            TestParallelCorpusConfig
+        );
+
+        await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
+        var pret = new Translation.Models.Pretranslation
+        {
+            CorpusRef = addedCorpus.Id,
+            TextId = "all",
+            EngineRef = ECHO_ENGINE1_ID,
+            SourceRefs = ["ref1", "ref2"],
+            TargetRefs = ["ref1", "ref2"],
+            Refs = ["ref1", "ref2"],
+            Translation = "translation",
+            ModelRevision = 1,
+            Confidence = 0.5,
+        };
+        await _env.Pretranslations.InsertAsync(pret);
+
+        ICollection<Client.PretranslationConfidence> results = await client.GetAllPretranslationConfidencesAsync(
+            ECHO_ENGINE1_ID,
+            addedCorpus.Id
+        );
+        Assert.That(results.All(p => p.Confidence == 0.5), Is.True);
+    }
+
+    [Test]
+    public void GetAllPretranslationConfidencesAsync_EngineDoesNotExist()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllPretranslationConfidencesAsync(DOES_NOT_EXIST_ENGINE_ID, "cccccccccccccccccccccccc")
+        );
+        Assert.That(ex?.StatusCode, Is.EqualTo(404));
+    }
+
+    [Test]
+    public void GetAllPretranslationConfidencesAsync_CorpusDoesNotExist()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllPretranslationConfidencesAsync(ECHO_ENGINE1_ID, "cccccccccccccccccccccccc")
+        );
+        Assert.That(ex?.StatusCode, Is.EqualTo(404));
+    }
+
+    [Test]
+    public async Task GetAllPretranslationConfidencesAsync_EngineNotBuilt()
+    {
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
+            ECHO_ENGINE2_ID,
+            TestParallelCorpusConfig
+        );
+
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllPretranslationConfidencesAsync(ECHO_ENGINE2_ID, addedCorpus.Id)
+        );
+        Assert.That(ex?.StatusCode, Is.EqualTo(409));
+    }
+
     [TearDown]
     public void TearDown()
     {
