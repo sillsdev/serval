@@ -46,6 +46,4 @@ public interface IEngineService
         IReadOnlyList<CorpusFile> files,
         CancellationToken cancellationToken = default
     );
-
-    Task<Queue> GetQueueAsync(string engineType, CancellationToken cancellationToken = default);
 }

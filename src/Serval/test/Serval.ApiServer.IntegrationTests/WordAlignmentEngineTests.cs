@@ -1601,6 +1601,29 @@ public class WordAlignmentEngineTests
         Assert.That(newEngine.ParallelCorpora[0].TargetCorpora[0].Files.Count, Is.EqualTo(1));
     }
 
+    [Test]
+    [TestCase("statistical")]
+    [TestCase("echo-word-alignment")]
+    [TestCase("EchoWordAlignment")]
+    public async Task GetQueueAsync(string engineType)
+    {
+        WordAlignmentEngineTypesClient client = _env.CreateWordAlignmentEngineTypesClient();
+        Queue queue = await client.GetQueueAsync(engineType);
+        Assert.That(queue.Size, Is.Zero);
+    }
+
+    [Test]
+    public void GetQueueAsync_NotAuthorized()
+    {
+        WordAlignmentEngineTypesClient client = _env.CreateWordAlignmentEngineTypesClient([Scopes.ReadFiles]);
+        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        {
+            Queue queue = await client.GetQueueAsync("Echo");
+        });
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex.StatusCode, Is.EqualTo(403));
+    }
+
     [TearDown]
     public void TearDown()
     {
@@ -1688,6 +1711,25 @@ public class WordAlignmentEngineTests
                 .CreateClient();
             httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
             return new WordAlignmentEnginesClient(httpClient);
+        }
+
+        public WordAlignmentEngineTypesClient CreateWordAlignmentEngineTypesClient(IEnumerable<string>? scope = null)
+        {
+            scope ??=
+            [
+                Scopes.CreateWordAlignmentEngines,
+                Scopes.ReadWordAlignmentEngines,
+                Scopes.UpdateWordAlignmentEngines,
+                Scopes.DeleteWordAlignmentEngines,
+            ];
+            HttpClient httpClient = Factory
+                .WithWebHostBuilder(builder =>
+                {
+                    builder.ConfigureTestServices(ConfigureEngineServices);
+                })
+                .CreateClient();
+            httpClient.DefaultRequestHeaders.Add("Scope", string.Join(" ", scope));
+            return new WordAlignmentEngineTypesClient(httpClient);
         }
 
         private void ConfigureEngineServices(IServiceCollection services)

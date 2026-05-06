@@ -6,8 +6,9 @@ public class EngineServiceFactory(IServiceProvider serviceProvider) : IEngineSer
 
     public bool TryGetEngineService(string engineType, [NotNullWhen(true)] out ITranslationEngineService? service)
     {
+        // We convert to pascal case first to correctly handle kebab case
         ITranslationEngineService? engine = _serviceProvider.GetKeyedService<ITranslationEngineService>(
-            engineType.ToLowerInvariant()
+            engineType.ToPascalCase().ToLowerInvariant()
         );
         if (engine is null)
         {
