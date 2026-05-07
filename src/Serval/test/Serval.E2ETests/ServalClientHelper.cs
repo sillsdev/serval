@@ -306,8 +306,14 @@ public class ServalClientHelper : IAsyncDisposable
                     );
                 }
                 if (!(result.State == JobState.Active || result.State == JobState.Pending))
+                {
                     // build completed
+                    if (result.State != JobState.Completed)
+                    {
+                        throw new InvalidOperationException($"Build was {JsonSerializer.Serialize(result)}");
+                    }
                     break;
+                }
                 revision = result.Revision;
             }
             catch (ServalApiException e)
