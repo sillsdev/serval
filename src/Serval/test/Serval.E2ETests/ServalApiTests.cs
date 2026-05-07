@@ -39,7 +39,7 @@ public class ServalApiTests
     }
 
     [TestCase(true)]
-    // [TestCase(false)]
+    [TestCase(false)]
     public async Task Echo_ParallelCorpus(bool paratext)
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Echo", "es", "es", "Echo2");
