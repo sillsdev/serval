@@ -79,35 +79,35 @@ public class ServalApiTests
         Assert.That(tResult.Translation, Is.EqualTo("Espíritu"));
     }
 
-    // [TestCase(true)]
-    // [TestCase(false)]
-    // public async Task Echo_WordAlignment(bool paratext)
-    // {
-    //     string engineId = await _helperClient.CreateNewEngineAsync("EchoWordAlignment", "es", "es", "Echo4");
-    //     if (paratext)
-    //     {
-    //         await _helperClient.AddParatextCorpusToEngineAsync(engineId, "es", "es", false);
-    //     }
-    //     else
-    //     {
-    //         string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
-    //         ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "es", false);
-    //         await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
-    //     }
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task Echo_WordAlignment(bool paratext)
+    {
+        string engineId = await _helperClient.CreateNewEngineAsync("EchoWordAlignment", "es", "es", "Echo4");
+        if (paratext)
+        {
+            await _helperClient.AddParatextCorpusToEngineAsync(engineId, "es", "es", false);
+        }
+        else
+        {
+            string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
+            ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "es", "es", false);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
+        }
 
-    //     await _helperClient.BuildEngineAsync(engineId);
-    //     WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
-    //         engineId,
-    //         new WordAlignmentRequest { SourceSegment = "espíritu verdad", TargetSegment = "espíritu verdad" }
-    //     );
-    //     AlignedWordPair pair = tResult.Alignment.First();
-    //     Assert.Multiple(() =>
-    //     {
-    //         Assert.That(pair.SourceIndex, Is.EqualTo(0));
-    //         Assert.That(pair.TargetIndex, Is.EqualTo(0));
-    //         Assert.That(pair.Score, Is.EqualTo(1.0).Within(1e-6)); // tolerate tiny fp deviations
-    //     });
-    // }
+        await _helperClient.BuildEngineAsync(engineId);
+        WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
+            engineId,
+            new WordAlignmentRequest { SourceSegment = "espíritu verdad", TargetSegment = "espíritu verdad" }
+        );
+        AlignedWordPair pair = tResult.Alignment.First();
+        Assert.Multiple(() =>
+        {
+            Assert.That(pair.SourceIndex, Is.EqualTo(0));
+            Assert.That(pair.TargetIndex, Is.EqualTo(0));
+            Assert.That(pair.Score, Is.EqualTo(1.0).Within(1e-6)); // tolerate tiny fp deviations
+        });
+    }
 
     // [Test]
     // public async Task Nmt_Batch()
