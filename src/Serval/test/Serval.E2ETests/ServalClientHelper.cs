@@ -8,15 +8,17 @@ public enum EngineGroup
 
 public record Build
 {
-    public string Id { get; set; }
-    public int Revision { get; set; }
-    public JobState State { get; set; }
+    public string Id { get; }
+    public int Revision { get; }
+    public JobState State { get; }
+    public string? Message { get; }
 
     public Build(TranslationBuild translationBuild)
     {
         Id = translationBuild.Id;
         Revision = translationBuild.Revision;
         State = translationBuild.State;
+        Message = translationBuild.Message;
     }
 
     public Build(WordAlignmentBuild wordAlignmentBuild)
@@ -24,6 +26,7 @@ public record Build
         Id = wordAlignmentBuild.Id;
         Revision = wordAlignmentBuild.Revision;
         State = wordAlignmentBuild.State;
+        Message = wordAlignmentBuild.Message;
     }
 }
 
