@@ -27,7 +27,7 @@ public class PlatformService(
                     cancellationToken: ct
                 );
                 if (build is null)
-                    throw new EntityNotFoundException($"Could not find the Build '{buildId}'.");
+                    throw new EntityNotFoundException($"BuildStarted1: Could not find the Build '{buildId}'.");
 
                 Engine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
@@ -36,7 +36,7 @@ public class PlatformService(
                 );
                 if (engine is null)
                 {
-                    throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
+                    throw new EntityNotFoundException($"BuildStarted2: Could not find the Engine '{build.EngineRef}'.");
                 }
 
                 await _eventRouter.PublishAsync(new TranslationBuildStarted(build.Id, engine.Id, engine.Owner), ct);
@@ -64,7 +64,7 @@ public class PlatformService(
                     cancellationToken: ct
                 );
                 if (build is null)
-                    throw new EntityNotFoundException($"Could not find the Build '{buildId}'.");
+                    throw new EntityNotFoundException($"BuildCompleted1: Could not find the Build '{buildId}'.");
 
                 Engine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
@@ -77,7 +77,9 @@ public class PlatformService(
                 );
                 if (engine is null)
                 {
-                    throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
+                    throw new EntityNotFoundException(
+                        $"BuildCompleted2: Could not find the Engine '{build.EngineRef}'."
+                    );
                 }
 
                 // delete pretranslations created by the previous build
@@ -116,7 +118,7 @@ public class PlatformService(
                     cancellationToken: ct
                 );
                 if (build is null)
-                    throw new EntityNotFoundException($"Could not find the Build '{buildId}'.");
+                    throw new EntityNotFoundException($"BuildCanceled1: Could not find the Build '{buildId}'.");
 
                 Engine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
@@ -125,7 +127,9 @@ public class PlatformService(
                 );
                 if (engine is null)
                 {
-                    throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
+                    throw new EntityNotFoundException(
+                        $"BuildCanceled2: Could not find the Engine '{build.EngineRef}'."
+                    );
                 }
 
                 // delete pretranslations that might have been created during the build
@@ -164,7 +168,7 @@ public class PlatformService(
                     cancellationToken: ct
                 );
                 if (build is null)
-                    throw new EntityNotFoundException($"Could not find the Build '{buildId}'.");
+                    throw new EntityNotFoundException($"BuildFaulted1: Could not find the Build '{buildId}'.");
 
                 Engine? engine = await _engines.UpdateAsync(
                     build.EngineRef,
@@ -173,7 +177,7 @@ public class PlatformService(
                 );
                 if (engine is null)
                 {
-                    throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
+                    throw new EntityNotFoundException($"BuildFaulted2:Could not find the Engine '{build.EngineRef}'.");
                 }
 
                 // delete pretranslations that might have been created during the build
@@ -213,12 +217,14 @@ public class PlatformService(
                     cancellationToken: ct
                 );
                 if (build is null)
-                    throw new EntityNotFoundException($"Could not find the Build '{buildId}'.");
+                    throw new EntityNotFoundException($"BuildRestarting1: Could not find the Build '{buildId}'.");
 
                 Engine? engine = await _engines.GetAsync(build.EngineRef, ct);
                 if (engine is null)
                 {
-                    throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
+                    throw new EntityNotFoundException(
+                        $"BuildRestarting2: Could not find the Engine '{build.EngineRef}'."
+                    );
                 }
 
                 // delete pretranslations that might have been created during the build
