@@ -152,20 +152,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 }
             );
         }
-        if (Environment.IsDevelopment())
-        {
-            services
-                .AddOpenTelemetry()
-                .WithTracing(builder =>
-                {
-                    builder
-                        .AddAspNetCoreInstrumentation()
-                        .AddHttpClientInstrumentation()
-                        .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
-                        .AddConsoleExporter();
-                });
-        }
-        else
+        if (!Environment.IsDevelopment())
         {
             services
                 .AddOpenTelemetry()
