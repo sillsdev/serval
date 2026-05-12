@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace Serval.Shared.Services;
+﻿namespace Serval.Shared.Services;
 
 public class EventRouter(IServiceProvider serviceProvider) : IEventRouter
 {

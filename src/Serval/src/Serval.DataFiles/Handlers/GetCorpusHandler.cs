@@ -1,40 +1,36 @@
 namespace Serval.DataFiles.Handlers;
 
-public class GetCorpusHandler(ICorpusService corpusService, IDataFileService dataFileService)
+public class GetCorpusHandler(IRepository<Corpus> corpora, IRepository<DataFile> dataFiles)
     : IRequestHandler<GetCorpus, GetCorpusResponse>
 {
     public async Task<GetCorpusResponse> HandleAsync(GetCorpus request, CancellationToken cancellationToken)
     {
-        try
-        {
-            Corpus corpus = await corpusService.GetAsync(request.CorpusId, request.Owner, cancellationToken);
-            IEnumerable<string> corpusFileIds = corpus.Files.Select(f => f.FileRef);
-            var corpusDataFilesDict = (
-                await dataFileService.GetAllAsync(corpusFileIds, cancellationToken)
-            ).ToDictionary(f => f.Id);
-            return new GetCorpusResponse(
-                IsFound: true,
-                new CorpusContract(
-                    corpus.Id,
-                    corpus.Language,
-                    corpus.Name,
-                    [
-                        .. corpus.Files.Select(f => new CorpusDataFileContract(
-                            File: Map(corpusDataFilesDict[f.FileRef]),
-                            f.TextId ?? corpusDataFilesDict[f.FileRef].Name
-                        )),
-                    ]
-                )
-            );
-        }
-        catch (EntityNotFoundException)
-        {
+        Corpus? corpus = await corpora.GetAsync(
+            c => c.Id == request.CorpusId && c.Owner == request.Owner,
+            cancellationToken
+        );
+        if (corpus is null)
             return new GetCorpusResponse(IsFound: false);
-        }
+        HashSet<string> corpusFileIds = corpus.Files.Select(f => f.FileRef).ToHashSet();
+        IDictionary<string, DataFile> corpusDataFilesDict = (
+            await dataFiles.GetAllAsync(f => corpusFileIds.Contains(f.Id), cancellationToken)
+        ).ToDictionary(f => f.Id);
+        return new GetCorpusResponse(
+            IsFound: true,
+            new CorpusContract(
+                corpus.Id,
+                corpus.Language,
+                corpus.Name,
+                [
+                    .. corpus.Files.Select(f => new CorpusDataFileContract(
+                        File: Map(corpusDataFilesDict[f.FileRef]),
+                        f.TextId ?? corpusDataFilesDict[f.FileRef].Name
+                    )),
+                ]
+            )
+        );
     }
 
-    private static DataFileContract Map(DataFile dataFile)
-    {
-        return new DataFileContract(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format);
-    }
+    private static DataFileContract Map(DataFile dataFile) =>
+        new(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format);
 }

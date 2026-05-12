@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Utils;
+﻿namespace Serval.Shared.Utils;
 
 public class StartupTask(IServiceProvider services, Func<IServiceProvider, CancellationToken, Task> task)
     : IHostedService

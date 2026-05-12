@@ -8,4 +8,6 @@ public interface IServalConfigurator
     IConfiguration Configuration { get; }
     IMongoDataAccessBuilder DataAccess { get; }
     ICollection<string> JobQueues { get; }
+
+    IServalConfigurator AddStartupTask(Func<IServiceProvider, CancellationToken, Task> startupTask);
 }
