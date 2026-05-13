@@ -17,7 +17,7 @@ public class UsfmGenerationService(
     private readonly IRepository<Build> _builds = builds;
     private readonly ContractMapper _contractMapper = contractMapper;
     private const string AIDisclaimerRemark =
-        "This draft of {0} was generated using AI on {1}. It should be reviewed and edited carefully.";
+        "This draft of {0} was generated using AI from {1} on {2}. It should be reviewed and edited carefully. {3}";
 
     public async Task<string> GetUsfmAsync(
         string engineId,
@@ -125,10 +125,11 @@ public class UsfmGenerationService(
                 CultureInfo.InvariantCulture,
                 AIDisclaimerRemark,
                 $"{textId} {chapterNum}",
-                build.DateFinished.Value.ToUniversalTime().ToString("u")
+                sourceSettings?.Name ?? "Unknown",
+                build.DateFinished.Value.ToUniversalTime().ToString("u"),
+                markerPlacementRemark
             );
             remarks.Add((chapterNum, disclaimerRemark));
-            remarks.Add((chapterNum, markerPlacementRemark));
         }
 
         IReadOnlyList<Pretranslation> pretranslations = await _pretranslations.GetAllAsync(
@@ -206,7 +207,7 @@ public class UsfmGenerationService(
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
         bool placeParagraphMarkers,
-        IEnumerable<(int, string)>? remarks,
+        IEnumerable<(int, string)> remarks,
         string? targetQuoteConvention
     )
     {
@@ -237,7 +238,7 @@ public class UsfmGenerationService(
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
-        IEnumerable<(int, string)>? remarks,
+        IEnumerable<(int, string)> remarks,
         string? targetQuoteConvention
     )
     {
@@ -269,7 +270,7 @@ public class UsfmGenerationService(
         UpdateUsfmMarkerBehavior embedBehavior,
         UpdateUsfmMarkerBehavior styleBehavior,
         IEnumerable<IUsfmUpdateBlockHandler>? updateBlockHandlers,
-        IEnumerable<(int, string)>? remarks,
+        IEnumerable<(int, string)> remarks,
         string? targetQuoteConvention,
         bool isSource
     )
@@ -309,13 +310,13 @@ public class UsfmGenerationService(
                 styleBehavior,
                 preserveParagraphStyles: null,
                 updateBlockHandlers,
-                remarks,
+                !string.IsNullOrEmpty(targetQuoteConvention) ? null : remarks, // Ensure we only add remarks once
                 errorHandler: (_) => true,
                 compareSegments: isSource
             ) ?? "";
 
         if (!string.IsNullOrEmpty(targetQuoteConvention))
-            usfm = DenormalizeQuotationMarks(usfm, targetQuoteConvention);
+            usfm = DenormalizeQuotationMarks(usfm, targetQuoteConvention, remarks);
         return usfm;
     }
 
@@ -396,7 +397,11 @@ public class UsfmGenerationService(
         return matrix;
     }
 
-    private static string DenormalizeQuotationMarks(string usfm, string quoteConvention)
+    private static string DenormalizeQuotationMarks(
+        string usfm,
+        string quoteConvention,
+        IEnumerable<(int, string)> remarks
+    )
     {
         QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(quoteConvention);
         if (targetQuoteConvention is null)
@@ -417,13 +422,29 @@ public class UsfmGenerationService(
         int denormalizableChapterCount = bestChapterStrategies.Count(tup =>
             tup.Strategy != QuotationMarkUpdateStrategy.Skip
         );
-        List<(int, string)> remarks = [];
         const string QuotationDenormalizationRemark =
             "The quote style of this chapter has been automatically adjusted to match the rest of the project.";
+        List<(int Chapter, string Remark)> combinedRemarks = [.. remarks];
         for (int i = 1; i <= denormalizableChapterCount; i++)
-            remarks.Add((i, QuotationDenormalizationRemark));
+        {
+            int index = combinedRemarks.FindLastIndex(r => r.Chapter == i);
+            if (index > -1)
+            {
+                combinedRemarks[index] = combinedRemarks[index] with
+                {
+                    Remark = $"{combinedRemarks[index].Remark} {QuotationDenormalizationRemark}",
+                };
+            }
+            else
+            {
+                combinedRemarks.Add((i, QuotationDenormalizationRemark));
+            }
+        }
 
-        var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer], remarks: remarks);
+        var updater = new UpdateUsfmParserHandler(
+            updateBlockHandlers: [quotationMarkDenormalizer],
+            remarks: combinedRemarks
+        );
         UsfmParser.Parse(usfm, updater);
 
         usfm = updater.GetUsfm();

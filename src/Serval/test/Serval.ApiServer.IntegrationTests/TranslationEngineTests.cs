@@ -2293,8 +2293,7 @@ public class TranslationEngineTests
                 @"\id MAT - Test1
 \h
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \p
 \v 1 translation
 \v 2
