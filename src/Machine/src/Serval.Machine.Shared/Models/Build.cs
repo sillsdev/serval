@@ -6,6 +6,7 @@ public enum BuildJobState
     Pending,
     Active,
     Canceling,
+    Queued,
     Deleting,
 }
 

@@ -16,7 +16,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
             .ToDictionary(r => r.Type);
         var engines = scope.ServiceProvider.GetRequiredService<IRepository<TEngine>>();
 
-        await DispatchPendingBuildsAsync(
+        await DispatchQueuedBuildsAsync(
             engines,
             runners,
             logger,
@@ -28,7 +28,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         await DeleteDeletingEngines(engines, runners, logger, cancellationToken);
     }
 
-    private static async Task DispatchPendingBuildsAsync(
+    private static async Task DispatchQueuedBuildsAsync(
         IRepository<TEngine> engines,
         IReadOnlyDictionary<BuildJobRunnerType, IBuildJobRunner> runners,
         ILogger<BuildJobRunnerManager<TEngine>> logger,
@@ -39,7 +39,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
     {
         foreach (
             TEngine engine in await engines.GetAllAsync(
-                e => e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Pending,
+                e => e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Queued,
                 cancellationToken
             )
         )
@@ -62,16 +62,27 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
             string? jobId = null;
             try
             {
-                jobId = await runner.CreateJobAsync(
-                    engine.Type,
-                    engine.EngineId,
-                    build.BuildId,
-                    build.Stage,
-                    build.Data,
-                    build.Options,
-                    cancellationToken
+                await dataAccessContext.WithTransactionAsync(
+                    async (ct) =>
+                    {
+                        await engines.UpdateAsync(
+                            e => e.EngineId == engine.Id && e.CurrentBuild == null,
+                            u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Pending),
+                            cancellationToken: ct
+                        );
+                        jobId = await runner.CreateJobAsync(
+                            engine.Type,
+                            engine.EngineId,
+                            build.BuildId,
+                            build.Stage,
+                            build.Data,
+                            build.Options,
+                            ct
+                        );
+                        await runner.EnqueueJobAsync(jobId, engine.Type, cancellationToken);
+                    },
+                    cancellationToken: CancellationToken.None
                 );
-                await runner.EnqueueJobAsync(jobId, engine.Type, cancellationToken);
             }
             catch (Exception e)
             {
@@ -143,7 +154,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
     {
         foreach (
             TEngine engine in await engines.GetAllAsync(
-                e => e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Canceling,
+                e => e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Deleting,
                 cancellationToken
             )
         )

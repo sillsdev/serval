@@ -74,7 +74,7 @@ public class BuildJobService<TEngine>(IRepository<TEngine> engines) : IBuildJobS
                         JobId = null,
                         BuildJobRunner = runnerType,
                         Stage = stage,
-                        JobState = BuildJobState.Pending,
+                        JobState = BuildJobState.Queued,
                         Options = buildOptions,
                         Data = data,
                         ExecutionData = new BuildExecutionData(),
@@ -96,7 +96,7 @@ public class BuildJobService<TEngine>(IRepository<TEngine> engines) : IBuildJobS
             e =>
                 e.EngineId == engineId
                 && e.CurrentBuild != null
-                && e.CurrentBuild.JobState == BuildJobState.Pending
+                && (e.CurrentBuild.JobState == BuildJobState.Pending || e.CurrentBuild.JobState == BuildJobState.Queued)
                 && e.CurrentBuild.JobId == null,
             u =>
             {
@@ -161,7 +161,7 @@ public class BuildJobService<TEngine>(IRepository<TEngine> engines) : IBuildJobS
     {
         return Engines.UpdateAsync(
             e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.BuildId == buildId,
-            u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Pending),
+            u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Queued),
             cancellationToken: cancellationToken
         );
     }
