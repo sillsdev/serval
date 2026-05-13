@@ -16,7 +16,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
             .ToDictionary(r => r.Type);
         var engines = scope.ServiceProvider.GetRequiredService<IRepository<TEngine>>();
 
-        await DispatchQueuedBuildsAsync(
+        await DispatchQueuedBuildJobsAsync(
             engines,
             runners,
             logger,
@@ -24,11 +24,11 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
             platformService,
             cancellationToken
         );
-        await StopCancelingBuildsAsync(engines, runners, logger, cancellationToken);
+        await StopCancelingBuildJobsAsync(engines, runners, logger, cancellationToken);
         await DeleteDeletingEngines(engines, runners, logger, cancellationToken);
     }
 
-    private static async Task DispatchQueuedBuildsAsync(
+    private static async Task DispatchQueuedBuildJobsAsync(
         IRepository<TEngine> engines,
         IReadOnlyDictionary<BuildJobRunnerType, IBuildJobRunner> runners,
         ILogger<BuildJobRunnerManager<TEngine>> logger,
@@ -102,7 +102,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         }
     }
 
-    private static async Task StopCancelingBuildsAsync(
+    private static async Task StopCancelingBuildJobsAsync(
         IRepository<TEngine> engines,
         IReadOnlyDictionary<BuildJobRunnerType, IBuildJobRunner> runners,
         ILogger<BuildJobRunnerManager<TEngine>> logger,
