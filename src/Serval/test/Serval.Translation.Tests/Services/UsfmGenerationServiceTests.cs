@@ -1,8 +1,11 @@
 ﻿namespace Serval.Translation.Services;
 
 [TestFixture]
-public class UsfmGenerationServiceTests
+public partial class UsfmGenerationServiceTests
 {
+    [GeneratedRegex(@"\\rem.+")]
+    private static partial Regex RemarkRegex();
+
     [Test]
     public async Task GetUsfmAsync_Source_PreferExisting()
     {
@@ -18,8 +21,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test1
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
@@ -45,8 +47,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test1
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
@@ -72,8 +73,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test1
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1
 \p
 \v 2
@@ -99,8 +99,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test1
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
@@ -127,8 +126,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test1
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Embed markers were moved to the end of the verse. Paragraph breaks have positions preserved. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Embed markers were moved to the end of the verse. Paragraph breaks have positions preserved. Style markers were removed.
 \v 1 Chapter 1, verse 1.
 \p ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
@@ -154,8 +152,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - TRG
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 TRG - Chapter one, verse one.
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
@@ -180,8 +177,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test3
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
@@ -219,8 +215,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test1
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \p
 \v 2 Chapter 1, verse 2.
@@ -246,8 +241,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test3
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3 TRG - Chapter one, verse three.
@@ -279,11 +273,7 @@ public class UsfmGenerationServiceTests
 
         lines.Insert(
             2,
-            @"\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully."
-        );
-        lines.Insert(
-            3,
-            @"\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed."
+            @"\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed."
         );
         Assert.That(usfm, Is.EqualTo(string.Join('\n', lines)).IgnoreLineEndings());
     }
@@ -303,8 +293,7 @@ public class UsfmGenerationServiceTests
             Is.EqualTo(
                     @"\id MAT - Test3
 \c 1
-\rem This draft of MAT 1 was generated using AI on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully.
-\rem Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
+\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. It should be reviewed and edited carefully. Paragraph breaks and embed markers were moved to the end of the verse. Style markers were removed.
 \v 1 Chapter 1, verse 1. ""Translated new paragraph""
 \v 2 Chapter 1, verse 2.
 \v 3
@@ -337,7 +326,18 @@ public class UsfmGenerationServiceTests
             quotationMarkBehavior: PretranslationNormalizationBehavior.Denormalized
         );
         Assert.That(usfm, Does.Contain("“Translated new paragraph”"));
-        Assert.That(Regex.Matches(usfm, @"\\rem"), Has.Count.EqualTo(3));
+        MatchCollection remarks = RemarkRegex().Matches(usfm);
+        Assert.That(remarks, Has.Count.EqualTo(1));
+        Assert.That(
+            remarks.First().Value,
+            Is.EqualTo(
+                @"\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. "
+                    + "It should be reviewed and edited carefully. "
+                    + "Paragraph breaks and embed markers were moved to the end of the verse. "
+                    + "Style markers were removed. "
+                    + "The quote style of this chapter has been automatically adjusted to match the rest of the project."
+            )
+        );
 
         usfm = await env.GetUsfmAsync(
             PretranslationUsfmTextOrigin.PreferExisting,
@@ -345,7 +345,17 @@ public class UsfmGenerationServiceTests
             quotationMarkBehavior: PretranslationNormalizationBehavior.Normalized
         );
         Assert.That(usfm, Does.Contain("\"Translated new paragraph\""));
-        Assert.That(Regex.Matches(usfm, @"\\rem"), Has.Count.EqualTo(2));
+        remarks = RemarkRegex().Matches(usfm);
+        Assert.That(remarks, Has.Count.EqualTo(1));
+        Assert.That(
+            remarks.First().Value,
+            Is.EqualTo(
+                @"\rem This draft of MAT 1 was generated using AI from Te1 on 1970-01-01 00:00:00Z. "
+                    + "It should be reviewed and edited carefully. "
+                    + "Paragraph breaks and embed markers were moved to the end of the verse. "
+                    + "Style markers were removed."
+            )
+        );
     }
 
     [Test]
