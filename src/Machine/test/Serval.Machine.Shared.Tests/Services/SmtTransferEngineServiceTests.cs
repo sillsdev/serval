@@ -344,14 +344,14 @@ public class SmtTransferEngineServiceTests
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService<TranslationEngine>(
-                [
-                    new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
-                    new ClearMLBuildJobRunner(
-                        ClearMLService,
-                        [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
-                        BuildJobOptions
-                    ),
-                ],
+                // [
+                //     new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
+                //     new ClearMLBuildJobRunner(
+                //         ClearMLService,
+                //         [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
+                //         BuildJobOptions
+                //     ),
+                // ],
                 Engines
             );
             _jobServer = CreateJobServer();

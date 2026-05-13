@@ -227,14 +227,14 @@ public class StatisticalEngineServiceTests
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService<WordAlignmentEngine>(
-                [
-                    new HangfireBuildJobRunner(_jobClient, [new StatisticalHangfireBuildJobFactory()]),
-                    new ClearMLBuildJobRunner(
-                        ClearMLService,
-                        [new StatisticalClearMLBuildJobFactory(SharedFileService, Engines)],
-                        BuildJobOptions
-                    ),
-                ],
+                // [
+                //     new HangfireBuildJobRunner(_jobClient, [new StatisticalHangfireBuildJobFactory()]),
+                //     new ClearMLBuildJobRunner(
+                //         ClearMLService,
+                //         [new StatisticalClearMLBuildJobFactory(SharedFileService, Engines)],
+                //         BuildJobOptions
+                //     ),
+                // ],
                 Engines
             );
             _jobServer = CreateJobServer();

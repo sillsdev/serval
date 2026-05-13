@@ -72,11 +72,11 @@ public class ClearMLMonitorService(
             if (engineToBuildServiceDict.Count == 0)
                 return;
 
+            IEnumerable<string> clearMLTaskIds = engineToBuildServiceDict
+                .Where(e => !string.IsNullOrEmpty(e.Key.CurrentBuild?.JobId))
+                .Select(e => e.Key.CurrentBuild?.JobId!);
             Dictionary<string, ClearMLTask> tasks = (
-                await _clearMLService.GetTasksByIdAsync(
-                    engineToBuildServiceDict.Select(e => e.Key.CurrentBuild!.JobId),
-                    cancellationToken
-                )
+                await _clearMLService.GetTasksByIdAsync(clearMLTaskIds, cancellationToken)
             ).ToDictionary(t => t.Id);
             Dictionary<EngineType, Dictionary<string, int>> queuePositionsPerEngineType = new();
 
@@ -117,8 +117,14 @@ public class ClearMLMonitorService(
                         ),
                     }
                 );
-                if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
+                if (
+                    engine.CurrentBuild is null
+                    || engine.CurrentBuild.JobId is null
+                    || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task)
+                )
+                {
                     continue;
+                }
 
                 if (
                     engine.CurrentBuild.JobState is BuildJobState.Pending

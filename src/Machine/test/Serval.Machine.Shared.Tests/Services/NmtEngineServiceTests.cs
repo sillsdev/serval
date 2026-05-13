@@ -173,20 +173,20 @@ public class NmtEngineServiceTests
                 }
             );
             BuildJobService = new BuildJobService<TranslationEngine>(
-                [
-                    new HangfireBuildJobRunner(_jobClient, [new NmtHangfireBuildJobFactory()]),
-                    new ClearMLBuildJobRunner(
-                        ClearMLService,
-                        [
-                            new NmtClearMLBuildJobFactory(
-                                SharedFileService,
-                                Substitute.For<ILanguageTagService>(),
-                                Engines
-                            ),
-                        ],
-                        BuildJobOptions
-                    ),
-                ],
+                // [
+                //     new HangfireBuildJobRunner(_jobClient, [new NmtHangfireBuildJobFactory()]),
+                //     new ClearMLBuildJobRunner(
+                //         ClearMLService,
+                //         [
+                //             new NmtClearMLBuildJobFactory(
+                //                 SharedFileService,
+                //                 Substitute.For<ILanguageTagService>(),
+                //                 Engines
+                //             ),
+                //         ],
+                //         BuildJobOptions
+                //     ),
+                // ],
                 Engines
             );
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();

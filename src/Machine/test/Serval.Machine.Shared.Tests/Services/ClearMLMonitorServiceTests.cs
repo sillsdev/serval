@@ -163,7 +163,7 @@ public class ClearMLMonitorServiceTests
         SetupBuildingEngines(engine);
 
         ClearMLTask task = CreateClearMLTask(
-            id: engine!.CurrentBuild!.JobId,
+            id: engine!.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Queued,
             created: DateTime.UtcNow
@@ -202,7 +202,7 @@ public class ClearMLMonitorServiceTests
         };
 
         ClearMLTask task = CreateClearMLTask(
-            id: engine!.CurrentBuild!.JobId,
+            id: engine!.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.InProgress,
             created: DateTime.UtcNow,
@@ -256,7 +256,7 @@ public class ClearMLMonitorServiceTests
         };
 
         ClearMLTask task = CreateClearMLTask(
-            id: engine!.CurrentBuild!.JobId,
+            id: engine!.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Completed,
             created: DateTime.UtcNow,
@@ -331,7 +331,7 @@ public class ClearMLMonitorServiceTests
 
         // Setup stopped task
         ClearMLTask task = CreateClearMLTask(
-            id: engine!.CurrentBuild!.JobId,
+            id: engine!.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Stopped,
             created: DateTime.UtcNow,
@@ -380,7 +380,7 @@ public class ClearMLMonitorServiceTests
 
         // Setup failed task
         ClearMLTask task = CreateClearMLTask(
-            id: engine.CurrentBuild.JobId,
+            id: engine.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Failed,
             created: DateTime.UtcNow,

@@ -258,24 +258,24 @@ public class PreprocessBuildJobTests
                 .Returns(Task.FromResult("job1"));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             BuildJobService = new BuildJobService<TranslationEngine>(
-                [
-                    new HangfireBuildJobRunner(
-                        Substitute.For<IBackgroundJobClient>(),
-                        [new NmtHangfireBuildJobFactory(), new SmtTransferHangfireBuildJobFactory()]
-                    ),
-                    new ClearMLBuildJobRunner(
-                        ClearMLService,
-                        [
-                            new NmtClearMLBuildJobFactory(
-                                SharedFileService,
-                                Substitute.For<ILanguageTagService>(),
-                                Engines
-                            ),
-                            new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines),
-                        ],
-                        BuildJobOptions
-                    ),
-                ],
+                // [
+                //     new HangfireBuildJobRunner(
+                //         Substitute.For<IBackgroundJobClient>(),
+                //         [new NmtHangfireBuildJobFactory(), new SmtTransferHangfireBuildJobFactory()]
+                //     ),
+                //     new ClearMLBuildJobRunner(
+                //         ClearMLService,
+                //         [
+                //             new NmtClearMLBuildJobFactory(
+                //                 SharedFileService,
+                //                 Substitute.For<ILanguageTagService>(),
+                //                 Engines
+                //             ),
+                //             new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines),
+                //         ],
+                //         BuildJobOptions
+                //     ),
+                // ],
                 Engines
             );
             ParallelCorpusService = Substitute.For<IParallelCorpusService>();
