@@ -46,18 +46,8 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         {
             Build build = engine.CurrentBuild!;
             if (!string.IsNullOrEmpty(build.JobId))
-                // TODO - should these be cleaned up?
+                //TODO - should these be cleaned up?
                 continue;
-
-            if (!runners.TryGetValue(build.BuildJobRunner, out IBuildJobRunner? runner) || runner is null)
-            {
-                logger.LogWarning(
-                    "No runner found for build {BuildId} on engine {EngineId}.",
-                    build.BuildId,
-                    engine.EngineId
-                );
-                continue;
-            }
 
             string? jobId = null;
             try
@@ -66,20 +56,21 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
                     async (ct) =>
                     {
                         await engines.UpdateAsync(
-                            e => e.EngineId == engine.Id && e.CurrentBuild == null,
+                            e => e.EngineId == engine.Id,
                             u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Pending),
                             cancellationToken: ct
                         );
-                        jobId = await runner.CreateJobAsync(
-                            engine.Type,
-                            engine.EngineId,
-                            build.BuildId,
-                            build.Stage,
-                            build.Data,
-                            build.Options,
-                            ct
-                        );
-                        await runner.EnqueueJobAsync(jobId, engine.Type, cancellationToken);
+                        jobId = await runners[build.BuildJobRunner]
+                            .CreateJobAsync(
+                                engine.Type,
+                                engine.EngineId,
+                                build.BuildId,
+                                build.Stage,
+                                build.Data,
+                                build.Options,
+                                ct
+                            );
+                        await runners[build.BuildJobRunner].EnqueueJobAsync(jobId, engine.Type, cancellationToken);
                     },
                     cancellationToken: CancellationToken.None
                 );
@@ -103,7 +94,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
                             cancellationToken: cancellationToken
                         );
                         if (jobId != null)
-                            await runner.DeleteJobAsync(jobId, CancellationToken.None);
+                            await runners[build.BuildJobRunner].DeleteJobAsync(jobId, CancellationToken.None);
                     },
                     cancellationToken: CancellationToken.None
                 );
@@ -127,6 +118,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         {
             Build build = engine.CurrentBuild!;
             if (string.IsNullOrEmpty(build.JobId))
+                //TODO - should these be cleaned up?
                 continue;
 
             try
@@ -152,6 +144,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         CancellationToken cancellationToken
     )
     {
+        //TODO what about non-building engines? For ClearML this would still be needed
         foreach (
             TEngine engine in await engines.GetAllAsync(
                 e => e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Deleting,
