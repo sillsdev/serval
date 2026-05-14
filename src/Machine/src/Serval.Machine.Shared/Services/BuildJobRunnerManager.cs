@@ -53,27 +53,21 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
             string? jobId = null;
             try
             {
-                await dataAccessContext.WithTransactionAsync(
-                    async (ct) =>
-                    {
-                        await engines.UpdateAsync(
-                            e => e.EngineId == engine.Id,
-                            u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Pending),
-                            cancellationToken: ct
-                        );
-                        jobId = await runners[build.BuildJobRunner]
-                            .CreateJobAsync(
-                                engine.Type,
-                                engine.EngineId,
-                                build.BuildId,
-                                build.Stage,
-                                build.Options,
-                                ct
-                            );
-                        await runners[build.BuildJobRunner].EnqueueJobAsync(jobId, engine.Type, cancellationToken);
-                    },
-                    cancellationToken: CancellationToken.None
+                await engines.UpdateAsync(
+                    e => e.EngineId == engine.Id,
+                    u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Pending),
+                    cancellationToken: cancellationToken
                 );
+                jobId = await runners[build.BuildJobRunner]
+                    .CreateJobAsync(
+                        engine.Type,
+                        engine.EngineId,
+                        build.BuildId,
+                        build.Stage,
+                        build.Options,
+                        cancellationToken
+                    );
+                await runners[build.BuildJobRunner].EnqueueJobAsync(jobId, engine.Type, cancellationToken);
             }
             catch (Exception e)
             {
