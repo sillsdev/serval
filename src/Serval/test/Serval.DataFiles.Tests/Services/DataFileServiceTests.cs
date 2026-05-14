@@ -42,6 +42,33 @@ public class DataFileServiceTests
     }
 
     [Test]
+    public async Task CreateAsync_Paratext()
+    {
+        var env = new TestEnvironment();
+        env.FileSystem.OpenWrite(Arg.Any<string>())
+            .Returns(callInfo => new FileStream(callInfo.Arg<string>(), FileMode.Create, FileAccess.Write));
+        string paratextZipPath = ZipParatextProject();
+        using (var stream = File.OpenRead(paratextZipPath))
+        {
+            await env.Service.CreateAsync(DefaultDataFile with { Format = FileFormat.Paratext }, stream);
+        }
+
+        DataFile dataFile = env.DataFiles.Get(DataFileId);
+        Assert.That(dataFile.FileMetadata, Is.Not.Null);
+        ParatextMetadata metadata = dataFile.FileMetadata;
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(metadata.ProjectGuid, Is.EqualTo("a7e0b3ce0200736062f9f810a444dbfbe64aca35"));
+            Assert.That(metadata.Name, Is.EqualTo("Te1"));
+            Assert.That(metadata.FullName, Is.EqualTo("Test1"));
+            Assert.That(metadata.TranslationType, Is.EqualTo("Standard"));
+            Assert.That(metadata.Versification, Does.StartWith("English"));
+            Assert.That(metadata.LanguageCode, Is.EqualTo("en"));
+            Assert.That(metadata.Visibility, Is.EqualTo("Public"));
+        }
+    }
+
+    [Test]
     public async Task DownloadAsync_Exists()
     {
         var env = new TestEnvironment();
@@ -172,5 +199,14 @@ public class DataFileServiceTests
         public IEventRouter EventRouter { get; }
         public MemoryRepository<DataFile> DataFiles { get; }
         public DataFileService Service { get; }
+    }
+
+    private static string ZipParatextProject()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "pt-project.zip");
+        if (File.Exists(path))
+            File.Delete(path);
+        ZipFile.CreateFromDirectory(Path.Combine("..", "..", "..", "data", "pt-project"), path);
+        return path;
     }
 }
