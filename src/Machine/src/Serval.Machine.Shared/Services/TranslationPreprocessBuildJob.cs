@@ -82,7 +82,11 @@ public class TranslationPreprocessBuildJob(
                     pretranslateWriter.WriteStartObject();
                     pretranslateWriter.WriteString("corpusId", corpusId);
                     pretranslateWriter.WriteString("textId", row.TextId);
-                    pretranslateWriter.WriteStartArray("refs");
+                    pretranslateWriter.WriteStartArray("sourceRefs");
+                    foreach (object rowRef in row.SourceRefs)
+                        pretranslateWriter.WriteStringValue(rowRef.ToString());
+                    pretranslateWriter.WriteEndArray();
+                    pretranslateWriter.WriteStartArray("targetRefs");
                     foreach (object rowRef in row.TargetRefs)
                         pretranslateWriter.WriteStringValue(rowRef.ToString());
                     pretranslateWriter.WriteEndArray();

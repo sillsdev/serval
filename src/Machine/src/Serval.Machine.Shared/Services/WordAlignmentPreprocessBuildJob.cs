@@ -82,7 +82,11 @@ public class WordAlignmentPreprocessBuildJob(
                     wordAlignmentWriter.WriteStartObject();
                     wordAlignmentWriter.WriteString("corpusId", corpusId);
                     wordAlignmentWriter.WriteString("textId", row.TextId);
-                    wordAlignmentWriter.WriteStartArray("refs");
+                    wordAlignmentWriter.WriteStartArray("sourceRefs");
+                    foreach (object rowRef in row.TargetRefs)
+                        wordAlignmentWriter.WriteStringValue(rowRef.ToString());
+                    wordAlignmentWriter.WriteEndArray();
+                    wordAlignmentWriter.WriteStartArray("targetRefs");
                     foreach (object rowRef in row.TargetRefs)
                         wordAlignmentWriter.WriteStringValue(rowRef.ToString());
                     wordAlignmentWriter.WriteEndArray();
