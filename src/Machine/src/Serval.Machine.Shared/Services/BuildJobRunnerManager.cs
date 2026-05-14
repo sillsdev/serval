@@ -46,10 +46,6 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         )
         {
             Build build = engine.CurrentBuild!;
-            if (!string.IsNullOrEmpty(build.JobId))
-                //TODO - should these be cleaned up?
-                continue;
-
             string? jobId = null;
             try
             {
@@ -67,6 +63,11 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
                         build.Options,
                         cancellationToken
                     );
+                await engines.UpdateAsync(
+                    e => e.EngineId == engine.Id,
+                    u => u.Set(e => e.CurrentBuild!.JobId, jobId),
+                    cancellationToken: cancellationToken
+                );
                 await runners[build.BuildJobRunner].EnqueueJobAsync(jobId, engine.Type, cancellationToken);
             }
             catch (Exception e)
