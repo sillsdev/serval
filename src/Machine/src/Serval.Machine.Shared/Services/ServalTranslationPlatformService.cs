@@ -190,6 +190,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                             textId = reader.GetString()!;
                             break;
                         case "refs":
+                            // Obsolete May 2026
                             reader.Read();
                             targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
                             break;
