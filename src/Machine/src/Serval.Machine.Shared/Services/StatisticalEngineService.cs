@@ -124,7 +124,7 @@ public class StatisticalEngineService(
             engineId,
             buildId,
             BuildStage.Preprocess,
-            corpora,
+            new BuildData { ParallelCorpora = corpora },
             options,
             cancellationToken
         );

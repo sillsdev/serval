@@ -22,12 +22,17 @@ public class TranslationPostprocessBuildJob(
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        (int, double) data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
     {
-        (int corpusSize, double confidence) = data;
+        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        if (engine is null)
+            throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
+
+        BuildData? data = engine.CurrentBuild?.Data;
+
+        (int corpusSize, double confidence) = (data?.CorpusSize ?? 0, data?.Confidence ?? 0);
 
         await using (
             Stream pretranslationsStream = await SharedFileService.OpenReadAsync(

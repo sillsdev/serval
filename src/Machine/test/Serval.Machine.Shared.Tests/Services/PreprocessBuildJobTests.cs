@@ -4,14 +4,17 @@ namespace Serval.Machine.Shared.Services;
 public class PreprocessBuildJobTests
 {
     [Test]
-    public void RunAsync_NothingToInference()
+    public async Task RunAsync_NothingToInference()
     {
         TestEnvironment env = new();
         ParallelCorpusContract corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: []);
-
+        await env.Engines.UpdateAsync(
+            e => e.EngineId == "engine1" && e.CurrentBuild != null,
+            u => u.Set(e => e.CurrentBuild!.Data, new BuildData { ParallelCorpora = [corpus1] })
+        );
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await env.RunBuildJobAsync(corpus1);
+            await env.RunBuildJobAsync();
         });
     }
 
@@ -41,6 +44,10 @@ public class PreprocessBuildJobTests
                 },
             ],
         };
+        await env.Engines.UpdateAsync(
+            e => e.EngineId == "engine4" && e.CurrentBuild != null,
+            u => u.Set(e => e.CurrentBuild!.Data, new BuildData { ParallelCorpora = [corpus1] })
+        );
         env.ParallelCorpusService.AnalyzeUsfmVersification(Arg.Any<IEnumerable<ParallelCorpusContract>>())
             .Returns([
                 (
@@ -65,24 +72,27 @@ public class PreprocessBuildJobTests
                 ),
             ]);
 
-        await env.RunBuildJobAsync(corpus1, engineId: "engine4");
+        await env.RunBuildJobAsync(engineId: "engine4");
         Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(2));
 
         env.BuildJobOptions.CurrentValue.Returns(new BuildJobOptions() { MaxWarnings = 1 });
-        await env.RunBuildJobAsync(corpus1, engineId: "engine4");
+        await env.RunBuildJobAsync(engineId: "engine4");
         // Two warnings after truncation + one warning mentioning that warnings were truncated
         Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(2));
     }
 
     [Test]
-    public void RunAsync_UnknownLanguageTagsNoData()
+    public async Task RunAsync_UnknownLanguageTagsNoData()
     {
         TestEnvironment env = new();
         ParallelCorpusContract corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
-
+        await env.Engines.UpdateAsync(
+            e => e.EngineId == "engine2" && e.CurrentBuild != null,
+            u => u.Set(e => e.CurrentBuild!.Data, new BuildData { ParallelCorpora = [corpus1] })
+        );
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await env.RunBuildJobAsync(corpus1, engineId: "engine2");
+            await env.RunBuildJobAsync(engineId: "engine2");
         });
     }
 
@@ -91,8 +101,12 @@ public class PreprocessBuildJobTests
     {
         TestEnvironment env = new();
         ParallelCorpusContract corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
+        await env.Engines.UpdateAsync(
+            e => e.EngineId == "engine3" && e.CurrentBuild != null,
+            u => u.Set(e => e.CurrentBuild!.Data, new BuildData { ParallelCorpora = [corpus1] })
+        );
 
-        await env.RunBuildJobAsync(corpus1, engineId: "engine3", engineType: EngineType.SmtTransfer);
+        await env.RunBuildJobAsync(engineId: "engine3", engineType: EngineType.SmtTransfer);
     }
 
     private class TestEnvironment
@@ -381,30 +395,13 @@ public class PreprocessBuildJobTests
         }
 
         public Task RunBuildJobAsync(
-            ParallelCorpusContract corpus,
-            bool useKeyTerms = true,
-            string engineId = "engine1",
-            EngineType engineType = EngineType.Nmt
-        )
-        {
-            return RunBuildJobAsync([corpus], useKeyTerms, engineId, engineType);
-        }
-
-        public Task RunBuildJobAsync(
-            IEnumerable<ParallelCorpusContract> corpora,
             bool useKeyTerms = true,
             string engineId = "engine1",
             EngineType engineType = EngineType.Nmt
         )
         {
             return GetBuildJob(engineType)
-                .RunAsync(
-                    engineId,
-                    "build1",
-                    corpora.ToList(),
-                    useKeyTerms ? null : "{\"use_key_terms\":false}",
-                    default
-                );
+                .RunAsync(engineId, "build1", useKeyTerms ? null : "{\"use_key_terms\":false}", default);
         }
 
         public static CorpusFileContract ParatextFile(string name)

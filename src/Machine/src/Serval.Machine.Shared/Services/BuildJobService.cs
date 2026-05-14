@@ -49,7 +49,7 @@ public class BuildJobService<TEngine>(IRepository<TEngine> engines) : IBuildJobS
         string engineId,
         string buildId,
         BuildStage stage,
-        object? data = null,
+        BuildData? data = null,
         string? buildOptions = null,
         CancellationToken cancellationToken = default
     )

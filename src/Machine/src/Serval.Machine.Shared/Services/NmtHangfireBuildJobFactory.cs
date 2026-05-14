@@ -6,20 +6,20 @@ public class NmtHangfireBuildJobFactory : IHangfireBuildJobFactory
 {
     public EngineType EngineType => EngineType.Nmt;
 
-    public Job CreateJob(string engineId, string buildId, BuildStage stage, object? data, string? buildOptions)
+    public Job CreateJob(string engineId, string buildId, BuildStage stage, string? buildOptions)
     {
         return stage switch
         {
-            BuildStage.Preprocess => CreateJob<
-                TranslationEngine,
-                NmtPreprocessBuildJob,
-                IReadOnlyList<ParallelCorpusContract>
-            >(engineId, buildId, BuildJobQueues.Nmt, data, buildOptions),
-            BuildStage.Postprocess => CreateJob<TranslationEngine, TranslationPostprocessBuildJob, (int, double)>(
+            BuildStage.Preprocess => CreateJob<TranslationEngine, NmtPreprocessBuildJob>(
                 engineId,
                 buildId,
                 BuildJobQueues.Nmt,
-                data,
+                buildOptions
+            ),
+            BuildStage.Postprocess => CreateJob<TranslationEngine, TranslationPostprocessBuildJob>(
+                engineId,
+                buildId,
+                BuildJobQueues.Nmt,
                 buildOptions
             ),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),

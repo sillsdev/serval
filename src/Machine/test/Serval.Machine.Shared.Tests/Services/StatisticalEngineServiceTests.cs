@@ -435,7 +435,7 @@ public class StatisticalEngineServiceTests
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,
-                    data: (0, 0.0)
+                    new BuildData { CorpusSize = 0, Confidence = 0.0 }
                 );
             }
             catch (OperationCanceledException)

@@ -297,7 +297,7 @@ public class NmtEngineServiceTests
                 "engine1",
                 "build1",
                 BuildStage.Postprocess,
-                (0, 0.0)
+                new BuildData { CorpusSize = 0, Confidence = 0.0 }
             );
         }
 

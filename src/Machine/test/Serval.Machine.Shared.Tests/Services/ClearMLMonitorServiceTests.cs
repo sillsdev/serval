@@ -274,7 +274,7 @@ public class ClearMLMonitorServiceTests
                 engine.EngineId,
                 engine.CurrentBuild.BuildId,
                 BuildStage.Postprocess,
-                Arg.Is<(int, double)>(x => x.Item1 == ExpectedCorpusSize && x.Item2 == ExpectedConfidence),
+                Arg.Is<BuildData>(x => x.CorpusSize == ExpectedCorpusSize && x.Confidence == ExpectedConfidence),
                 engine.CurrentBuild.Options,
                 Arg.Any<CancellationToken>()
             )
@@ -301,7 +301,7 @@ public class ClearMLMonitorServiceTests
                 engine.EngineId,
                 engine.CurrentBuild.BuildId,
                 BuildStage.Postprocess,
-                Arg.Is<(int, double)>(x => x.Item1 == ExpectedCorpusSize && x.Item2 == ExpectedConfidence),
+                Arg.Is<BuildData>(x => x.CorpusSize == ExpectedCorpusSize && x.Confidence == ExpectedConfidence),
                 engine.CurrentBuild.Options,
                 Arg.Any<CancellationToken>()
             );

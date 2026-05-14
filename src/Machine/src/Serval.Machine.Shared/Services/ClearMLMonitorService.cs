@@ -311,7 +311,7 @@ public class ClearMLMonitorService(
                 engineId,
                 buildId,
                 BuildStage.Postprocess,
-                (corpusSize, confidence),
+                new BuildData { CorpusSize = corpusSize, Confidence = confidence },
                 buildOptions,
                 cancellationToken
             );

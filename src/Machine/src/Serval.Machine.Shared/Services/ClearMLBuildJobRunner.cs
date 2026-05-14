@@ -28,7 +28,6 @@ public class ClearMLBuildJobRunner(
         string engineId,
         string buildId,
         BuildStage stage,
-        object? data = null,
         string? buildOptions = null,
         CancellationToken cancellationToken = default
     )
@@ -46,7 +45,6 @@ public class ClearMLBuildJobRunner(
             buildId,
             _options[engineType].ModelType,
             stage,
-            data,
             buildOptions,
             cancellationToken
         );

@@ -34,7 +34,6 @@ public class SmtTransferTrainBuildJob(
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        object? data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -56,7 +55,7 @@ public class SmtTransferTrainBuildJob(
 
         // train SMT model
         string engineDir = Path.Combine(tempDir.Path, "engine");
-        (int trainCorpusSize, double confidence) = await TrainAsync(
+        (int trainCount, double confidence) = await TrainAsync(
             buildId,
             engineDir,
             targetCorpus,
@@ -74,20 +73,15 @@ public class SmtTransferTrainBuildJob(
             engineId,
             buildId,
             BuildStage.Postprocess,
-            data: (trainCorpusSize, confidence),
-            buildOptions: buildOptions,
-            cancellationToken: cancellationToken
+            new BuildData { CorpusSize = trainCount, Confidence = confidence },
+            buildOptions,
+            cancellationToken
         );
         if (canceling)
             throw new OperationCanceledException();
     }
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        object? data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Canceled)
         {

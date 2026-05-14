@@ -31,6 +31,6 @@ public record Build
     public required BuildJobRunnerType BuildJobRunner { get; init; }
     public required BuildStage Stage { get; init; }
     public string? Options { get; set; }
-    public object? Data { get; init; }
+    public BuildData? Data { get; init; }
     public required BuildExecutionData ExecutionData { get; init; }
 }

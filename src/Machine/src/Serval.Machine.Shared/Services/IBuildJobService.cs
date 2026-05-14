@@ -11,7 +11,7 @@ public interface IBuildJobService
         string engineId,
         string buildId,
         BuildStage stage,
-        object? data = default,
+        BuildData? data = null,
         string? buildOptions = default,
         CancellationToken cancellationToken = default
     );

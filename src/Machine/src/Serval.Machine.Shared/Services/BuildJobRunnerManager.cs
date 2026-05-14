@@ -8,9 +8,10 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
+        EngineGroup engineGroup = GetEngineGroup<TEngine>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<BuildJobRunnerManager<TEngine>>>();
         var dataAccessContext = scope.ServiceProvider.GetRequiredService<IDataAccessContext>();
-        var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
+        var platformService = scope.ServiceProvider.GetRequiredKeyedService<IPlatformService>(engineGroup);
         var runners = scope
             .ServiceProvider.GetRequiredService<IEnumerable<IBuildJobRunner>>()
             .ToDictionary(r => r.Type);
@@ -66,7 +67,6 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
                                 engine.EngineId,
                                 build.BuildId,
                                 build.Stage,
-                                build.Data,
                                 build.Options,
                                 ct
                             );
@@ -165,5 +165,17 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
                 }
             }
         }
+    }
+
+    private static EngineGroup GetEngineGroup<T>()
+        where T : ITrainingEngine
+    {
+        //TODO is there a better way? Could just explicitly create translation and alignment managers?
+        return typeof(T).Name switch
+        {
+            nameof(TranslationEngine) => EngineGroup.Translation,
+            nameof(WordAlignmentEngine) => EngineGroup.WordAlignment,
+            _ => throw new InvalidOperationException($"Unknown engine type: {typeof(T).Name}"),
+        };
     }
 }
