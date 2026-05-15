@@ -8,7 +8,7 @@ public abstract class PostprocessBuildJob<TEngine>(
     ILogger<PostprocessBuildJob<TEngine>> logger,
     ISharedFileService sharedFileService,
     IOptionsMonitor<BuildJobOptions> options
-) : HangfireBuildJob<TEngine, (int, double)>(platformService, engines, dataAccessContext, buildJobService, logger)
+) : BuildJob<TEngine, (int, double)>(platformService, engines, dataAccessContext, buildJobService, logger)
     where TEngine : ITrainingEngine
 {
     protected ISharedFileService SharedFileService { get; } = sharedFileService;

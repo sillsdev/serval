@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
@@ -269,7 +267,7 @@ public class ClearMLMonitorServiceTests
 
         _translationBuildJobService
             .StartBuildJobAsync(
-                BuildJobRunnerType.Hangfire,
+                BuildJobRunnerType.Local,
                 engine.Type,
                 engine.EngineId,
                 engine.CurrentBuild.BuildId,
@@ -296,7 +294,7 @@ public class ClearMLMonitorServiceTests
         await _translationBuildJobService
             .Received(1)
             .StartBuildJobAsync(
-                BuildJobRunnerType.Hangfire,
+                BuildJobRunnerType.Local,
                 engine.Type,
                 engine.EngineId,
                 engine.CurrentBuild.BuildId,
