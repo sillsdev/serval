@@ -47,7 +47,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         {
             Build build = engine.CurrentBuild!;
             if (!string.IsNullOrEmpty(build.JobId))
-                //TODO - should these be cleaned up?
+                //TODO - how should these be cleaned up if somehow they existed? Just marked as failed?
                 continue;
             string? jobId = null;
             try
@@ -116,7 +116,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         {
             Build build = engine.CurrentBuild!;
             if (string.IsNullOrEmpty(build.JobId))
-                //TODO - should these be cleaned up?
+                //TODO - should these be cleaned up? I think we can just do nothing since the only responsibility of the this function is to stop the job and the job is already 'stopped', right?
                 continue;
 
             try
@@ -142,7 +142,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         CancellationToken cancellationToken
     )
     {
-        //TODO what about non-building engines? For ClearML this would still be needed
+        //TODO what about non-building engines? For ClearML this would still be needed. This may just need to be a new flag on the engine itself instead of a build state.
         foreach (
             TEngine engine in await engines.GetAllAsync(
                 e => e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Deleting,
