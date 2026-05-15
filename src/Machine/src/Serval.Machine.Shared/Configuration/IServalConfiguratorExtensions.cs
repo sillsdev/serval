@@ -60,11 +60,9 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddSingleton<ITransferEngineFactory, TransferEngineFactory>();
         configurator.Services.AddSingleton<ITruecaserFactory, UnigramTruecaserFactory>();
         configurator.AddTranslationEngine<SmtTransferEngineService>(EngineType.SmtTransfer.ToString());
-        configurator.JobQueues.Add(BuildJobQueues.SmtTransfer);
 
         // NMT Engine
         configurator.AddTranslationEngine<NmtEngineService>(EngineType.Nmt.ToString());
-        configurator.JobQueues.Add(BuildJobQueues.Nmt);
 
         return configurator;
     }
@@ -83,7 +81,6 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddSingleton<IWordAlignmentModelFactory, ThotWordAlignmentModelFactory>();
         configurator.AddWordAlignmentEngine<StatisticalEngineService>(EngineType.Statistical.ToString());
         configurator.Services.AddHostedService<StatisticalEngineCommitService>();
-        configurator.JobQueues.Add(BuildJobQueues.Statistical);
 
         return configurator;
     }
@@ -214,10 +211,12 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddSingleton<IClearMLQueueService>(x => x.GetRequiredService<ClearMLMonitorService>());
         configurator.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
 
-        configurator.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();
-        configurator.Services.AddScoped<IHangfireBuildJobFactory, NmtHangfireBuildJobFactory>();
-        configurator.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
-        configurator.Services.AddScoped<IHangfireBuildJobFactory, StatisticalHangfireBuildJobFactory>();
+        configurator.Services.AddSingleton<LocalBuildJobRunner>();
+        configurator.Services.AddSingleton<IBuildJobRunner>(sp => sp.GetRequiredService<LocalBuildJobRunner>());
+        configurator.Services.AddHostedService(sp => sp.GetRequiredService<LocalBuildJobRunner>());
+        configurator.Services.AddSingleton<ILocalBuildJobFactory, NmtLocalBuildJobFactory>();
+        configurator.Services.AddSingleton<ILocalBuildJobFactory, SmtTransferLocalBuildJobFactory>();
+        configurator.Services.AddSingleton<ILocalBuildJobFactory, StatisticalLocalBuildJobFactory>();
 
         var smtTransferEngineOptions = new SmtTransferEngineOptions();
         configurator.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);

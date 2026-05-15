@@ -7,7 +7,7 @@ public interface IBuildJobRunner
     Task CreateEngineAsync(string engineId, string? name = null, CancellationToken cancellationToken = default);
     Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<string> CreateJobAsync(
+    Task<(string JobId, string? JobData)> CreateJobAsync(
         EngineType engineType,
         string engineId,
         string buildId,

@@ -119,7 +119,7 @@ public class StatisticalEngineService(
     )
     {
         bool building = !await _buildJobService.StartBuildJobAsync(
-            BuildJobRunnerType.Hangfire,
+            BuildJobRunnerType.Local,
             EngineType.Statistical,
             engineId,
             buildId,

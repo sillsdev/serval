@@ -1,4 +1,4 @@
-﻿using Serval.Translation.Contracts;
+using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -28,7 +28,7 @@ public class SmtTransferEngineServiceTests
         env.TransferEngineFactory.Received().InitNew(engineDir);
     }
 
-    [TestCase(BuildJobRunnerType.Hangfire)]
+    [TestCase(BuildJobRunnerType.Local)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public async Task StartBuildAsync(BuildJobRunnerType trainJobRunnerType)
     {
@@ -88,7 +88,7 @@ public class SmtTransferEngineServiceTests
         _ = env.Truecaser.DidNotReceive().SaveAsync();
     }
 
-    [TestCase(BuildJobRunnerType.Hangfire)]
+    [TestCase(BuildJobRunnerType.Local)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public async Task CancelBuildAsync_Building(BuildJobRunnerType trainJobRunnerType)
     {
@@ -118,7 +118,7 @@ public class SmtTransferEngineServiceTests
     [Test]
     public async Task StartBuildAsync_RestartUnfinishedBuild()
     {
-        using var env = new TestEnvironment(BuildJobRunnerType.Hangfire);
+        using var env = new TestEnvironment(BuildJobRunnerType.Local);
         env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
@@ -139,7 +139,7 @@ public class SmtTransferEngineServiceTests
         Assert.That(engine.CurrentBuild, Is.Null);
     }
 
-    [TestCase(BuildJobRunnerType.Hangfire)]
+    [TestCase(BuildJobRunnerType.Local)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public async Task DeleteAsync_WhileBuilding(BuildJobRunnerType trainJobRunnerType)
     {
@@ -153,7 +153,6 @@ public class SmtTransferEngineServiceTests
         Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.DeleteAsync(EngineId1);
         await env.WaitForBuildToFinishAsync();
-        await env.WaitForAllHangfireJobsToFinishAsync();
         _ = env.SmtBatchTrainer.DidNotReceive().SaveAsync();
         _ = env.TruecaserTrainer.DidNotReceive().SaveAsync();
         Assert.That(env.Engines.Contains(EngineId1), Is.False);
@@ -169,7 +168,7 @@ public class SmtTransferEngineServiceTests
         Assert.That(engine.TargetLanguage, Is.EqualTo("en"));
     }
 
-    [TestCase(BuildJobRunnerType.Hangfire)]
+    [TestCase(BuildJobRunnerType.Local)]
     [TestCase(BuildJobRunnerType.ClearML)]
     public async Task TrainSegmentPairAsync(BuildJobRunnerType trainJobRunnerType)
     {
@@ -242,12 +241,14 @@ public class SmtTransferEngineServiceTests
 
     private class TestEnvironment : DisposableBase
     {
-        private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
-        private readonly BackgroundJobClient _jobClient;
-        private BackgroundJobServer _jobServer;
-        private readonly ITruecaserFactory _truecaserFactory;
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
         private readonly BuildJobRunnerType _trainJobRunnerType;
+        private readonly ClearMLBuildJobRunner _clearMLRunner;
+        private readonly ITruecaserFactory _truecaserFactory;
+        private readonly ServiceProvider _serviceProvider;
+        private IBuildJobService<TranslationEngine>? _deferredBuildJobService;
+        private LocalBuildJobRunner _jobRunner;
+        private CancellationTokenSource _runnerCts = new();
         private Task? _trainJobTask;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private bool _training = true;
@@ -269,8 +270,6 @@ public class SmtTransferEngineServiceTests
                 }
             );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
-            _memoryStorage = new Hangfire.InMemory.InMemoryStorage();
-            _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
             PlatformService.EngineGroup.Returns(EngineGroup.Translation);
             SmtModel = Substitute.For<IInteractiveTranslationModel>();
@@ -343,20 +342,42 @@ public class SmtTransferEngineServiceTests
                 BuildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
-            BuildJobService = new BuildJobService<TranslationEngine>(
-                [
-                    new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
-                    new ClearMLBuildJobRunner(
-                        ClearMLService,
-                        [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
-                        BuildJobOptions
-                    ),
-                ],
-                Engines
+
+            _clearMLRunner = new ClearMLBuildJobRunner(
+                ClearMLService,
+                [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
+                BuildJobOptions
             );
-            _jobServer = CreateJobServer();
+
+            var smtEngineOptions = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
+            smtEngineOptions.CurrentValue.Returns(new SmtTransferEngineOptions());
+
+            var services = new ServiceCollection();
+            services.AddScoped(_ => _deferredBuildJobService!);
+            services.AddSingleton(Substitute.For<IBuildJobService<WordAlignmentEngine>>());
+            services.AddKeyedSingleton(EngineGroup.Translation, (_, _) => PlatformService);
+            services.AddKeyedSingleton(EngineGroup.WordAlignment, (_, _) => Substitute.For<IPlatformService>());
+            services.AddSingleton<IRepository<TranslationEngine>>(Engines);
+            services.AddSingleton<IRepository<WordAlignmentEngine>>(new MemoryRepository<WordAlignmentEngine>());
+            services.AddSingleton<IRepository<TrainSegmentPair>>(TrainSegmentPairs);
+            services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());
+            services.AddSingleton(SharedFileService);
+            services.AddSingleton(_lockFactory);
+            services.AddSingleton(Substitute.For<IParallelCorpusService>());
+            services.AddSingleton(BuildJobOptions);
+            services.AddSingleton(_truecaserFactory);
+            services.AddSingleton(SmtModelFactory);
+            services.AddSingleton(TransferEngineFactory);
+            services.AddSingleton(smtEngineOptions);
+            services.AddLogging();
+            _serviceProvider = services.BuildServiceProvider();
+
+            _jobRunner = CreateJobRunner();
+            BuildJobService = CreateBuildJobService();
+            _deferredBuildJobService = BuildJobService;
             StateService = CreateStateService();
             Service = CreateService();
+            _ = _jobRunner.StartAsync(_runnerCts.Token);
         }
 
         public SmtTransferEngineService Service { get; private set; }
@@ -377,7 +398,7 @@ public class SmtTransferEngineServiceTests
 
         public ISharedFileService SharedFileService { get; }
 
-        public IBuildJobService<TranslationEngine> BuildJobService { get; }
+        public IBuildJobService<TranslationEngine> BuildJobService { get; private set; }
 
         public async Task CommitAsync(TimeSpan inactiveTimeout)
         {
@@ -386,15 +407,20 @@ public class SmtTransferEngineServiceTests
 
         public void StopServer()
         {
-            _jobServer.Dispose();
+            _runnerCts.Cancel();
             StateService.Dispose();
         }
 
         public void StartServer()
         {
-            _jobServer = CreateJobServer();
+            _runnerCts.Dispose();
+            _runnerCts = new CancellationTokenSource();
+            _jobRunner = CreateJobRunner();
+            BuildJobService = CreateBuildJobService();
+            _deferredBuildJobService = BuildJobService;
             StateService = CreateStateService();
             Service = CreateService();
+            _ = _jobRunner.StartAsync(_runnerCts.Token);
         }
 
         public void UseInfiniteTrainJob()
@@ -417,15 +443,18 @@ public class SmtTransferEngineServiceTests
             _training = false;
         }
 
-        private BackgroundJobServer CreateJobServer()
+        private LocalBuildJobRunner CreateJobRunner()
         {
-            var jobServerOptions = new BackgroundJobServerOptions
-            {
-                Activator = new EnvActivator(this),
-                Queues = new[] { BuildJobQueues.SmtTransfer },
-                CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
-            };
-            return new BackgroundJobServer(jobServerOptions, _memoryStorage);
+            return new LocalBuildJobRunner(
+                [new SmtTransferTestLocalBuildJobFactory(_trainJobRunnerType)],
+                _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
+                _serviceProvider.GetRequiredService<ILogger<LocalBuildJobRunner>>()
+            );
+        }
+
+        private IBuildJobService<TranslationEngine> CreateBuildJobService()
+        {
+            return new BuildJobService<TranslationEngine>([_jobRunner, _clearMLRunner], Engines);
         }
 
         private SmtTransferEngineStateService CreateStateService()
@@ -602,13 +631,6 @@ public class SmtTransferEngineServiceTests
             return sources;
         }
 
-        public async Task WaitForAllHangfireJobsToFinishAsync()
-        {
-            IMonitoringApi monitoringApi = _memoryStorage.GetMonitoringApi();
-            while (monitoringApi.EnqueuedCount(BuildJobQueues.SmtTransfer) > 0 || monitoringApi.ProcessingCount() > 0)
-                await Task.Delay(50);
-        }
-
         public async Task WaitForBuildToFinishAsync()
         {
             await WaitForBuildState(e => e.CurrentBuild is null);
@@ -650,7 +672,10 @@ public class SmtTransferEngineServiceTests
         protected override void DisposeManagedResources()
         {
             StateService.Dispose();
-            _jobServer.Dispose();
+            _runnerCts.Cancel();
+            _serviceProvider.Dispose();
+            _cancellationTokenSource.Dispose();
+            _runnerCts.Dispose();
         }
 
         private async Task RunTrainJob()
@@ -684,7 +709,7 @@ public class SmtTransferEngineServiceTests
                 );
 
                 await BuildJobService.StartBuildJobAsync(
-                    BuildJobRunnerType.Hangfire,
+                    BuildJobRunnerType.Local,
                     EngineType.SmtTransfer,
                     EngineId1,
                     BuildId1,
@@ -698,64 +723,53 @@ public class SmtTransferEngineServiceTests
             }
         }
 
-        private class EnvActivator(TestEnvironment env) : JobActivator
+        private class SmtTransferTestLocalBuildJobFactory(BuildJobRunnerType trainJobRunnerType) : ILocalBuildJobFactory
         {
-            private readonly TestEnvironment _env = env;
-
-            public override object ActivateJob(Type jobType)
+            private static readonly JsonSerializerOptions SerializerOptions = new()
             {
-                if (jobType == typeof(SmtTransferPreprocessBuildJob))
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+
+            public EngineType EngineType => EngineType.SmtTransfer;
+
+            public string? Serialize(BuildStage stage, object? data) =>
+                new SmtTransferLocalBuildJobFactory().Serialize(stage, data);
+
+            public async Task RunAsync(
+                IServiceProvider serviceProvider,
+                string engineId,
+                string buildId,
+                BuildStage stage,
+                string? jobData,
+                string? buildOptions,
+                CancellationToken cancellationToken
+            )
+            {
+                switch (stage)
                 {
-                    return new SmtTransferPreprocessBuildJob(
-                        _env.PlatformService,
-                        _env.Engines,
-                        new MemoryDataAccessContext(),
-                        Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
-                        _env.BuildJobService,
-                        _env.SharedFileService,
-                        _env._lockFactory,
-                        _env.TrainSegmentPairs,
-                        Substitute.For<IParallelCorpusService>(),
-                        _env.BuildJobOptions
-                    )
-                    {
-                        TrainJobRunnerType = _env._trainJobRunnerType,
-                    };
+                    case BuildStage.Preprocess:
+                        var preprocessJob = ActivatorUtilities.CreateInstance<SmtTransferPreprocessBuildJob>(
+                            serviceProvider
+                        );
+                        preprocessJob.TrainJobRunnerType = trainJobRunnerType;
+                        var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(
+                            jobData!,
+                            SerializerOptions
+                        )!;
+                        await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
+                        break;
+                    default:
+                        await new SmtTransferLocalBuildJobFactory().RunAsync(
+                            serviceProvider,
+                            engineId,
+                            buildId,
+                            stage,
+                            jobData,
+                            buildOptions,
+                            cancellationToken
+                        );
+                        break;
                 }
-                if (jobType == typeof(SmtTransferPostprocessBuildJob))
-                {
-                    var engineOptions = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
-                    engineOptions.CurrentValue.Returns(new SmtTransferEngineOptions());
-                    return new SmtTransferPostprocessBuildJob(
-                        _env.PlatformService,
-                        _env.Engines,
-                        new MemoryDataAccessContext(),
-                        _env.BuildJobService,
-                        Substitute.For<ILogger<SmtTransferPostprocessBuildJob>>(),
-                        _env.SharedFileService,
-                        _env._lockFactory,
-                        _env.TrainSegmentPairs,
-                        _env.SmtModelFactory,
-                        _env._truecaserFactory,
-                        _env.BuildJobOptions,
-                        engineOptions
-                    );
-                }
-                if (jobType == typeof(SmtTransferTrainBuildJob))
-                {
-                    return new SmtTransferTrainBuildJob(
-                        _env.PlatformService,
-                        _env.Engines,
-                        new MemoryDataAccessContext(),
-                        _env.BuildJobService,
-                        Substitute.For<ILogger<SmtTransferTrainBuildJob>>(),
-                        _env.SharedFileService,
-                        _env._truecaserFactory,
-                        _env.SmtModelFactory,
-                        _env.TransferEngineFactory
-                    );
-                }
-                return base.ActivateJob(jobType);
             }
         }
     }

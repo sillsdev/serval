@@ -300,7 +300,7 @@ public class ClearMLMonitorService(
         try
         {
             return await buildJobService.StartBuildJobAsync(
-                BuildJobRunnerType.Hangfire,
+                BuildJobRunnerType.Local,
                 engineType,
                 engineId,
                 buildId,
