@@ -1,4 +1,4 @@
-﻿using Serval.Translation.Contracts;
+using Serval.Translation.Contracts;
 
 namespace Serval.Machine.Shared.Services;
 
@@ -91,10 +91,9 @@ public class NmtEngineServiceTests
 
     private class TestEnvironment : DisposableBase
     {
-        private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
-        private readonly BackgroundJobClient _jobClient;
-        private BackgroundJobServer _jobServer;
-        private readonly IDistributedReaderWriterLockFactory _lockFactory;
+        private readonly LocalBuildJobRunner _jobRunner;
+        private readonly CancellationTokenSource _runnerCts = new();
+        private readonly ServiceProvider _serviceProvider;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private Func<Task> _trainJobFunc;
         private Task? _trainJobTask;
@@ -118,17 +117,9 @@ public class NmtEngineServiceTests
                     IsModelPersisted = false,
                 }
             );
-            _memoryStorage = new Hangfire.InMemory.InMemoryStorage();
-            _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
             PlatformService.EngineGroup.Returns(EngineGroup.Translation);
             TranslationPlatformService = Substitute.For<ITranslationPlatformService>();
-            _lockFactory = new DistributedReaderWriterLockFactory(
-                new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
-                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
-                new MemoryRepository<RWLock>(),
-                new ObjectIdGenerator()
-            );
             ClearMLService = Substitute.For<IClearMLService>();
             ClearMLService
                 .GetProjectIdAsync("engine1", Arg.Any<CancellationToken>())
@@ -172,9 +163,42 @@ public class NmtEngineServiceTests
                     ],
                 }
             );
+
+            IBuildJobService<TranslationEngine>? deferredBuildJobService = null;
+            var services = new ServiceCollection();
+            services.AddScoped(_ => deferredBuildJobService!);
+            services.AddSingleton(Substitute.For<IBuildJobService<WordAlignmentEngine>>());
+            services.AddKeyedSingleton(EngineGroup.Translation, (_, _) => PlatformService);
+            services.AddKeyedSingleton(EngineGroup.WordAlignment, (_, _) => Substitute.For<IPlatformService>());
+            services.AddSingleton<IRepository<TranslationEngine>>(Engines);
+            services.AddSingleton<IRepository<WordAlignmentEngine>>(new MemoryRepository<WordAlignmentEngine>());
+            services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());
+            services.AddSingleton(SharedFileService);
+            services.AddSingleton<ILanguageTagService>(new LanguageTagService());
+            services.AddSingleton(Substitute.For<IParallelCorpusService>());
+            services.AddSingleton(BuildJobOptions);
+            services.AddLogging();
+            _serviceProvider = services.BuildServiceProvider();
+
+            _jobRunner = new LocalBuildJobRunner(
+                [new NmtLocalBuildJobFactory()],
+                _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
+                _serviceProvider.GetRequiredService<ILogger<LocalBuildJobRunner>>()
+            );
+
+            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
+            clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
+            ClearMLQueueService = new ClearMLMonitorService(
+                Substitute.For<IServiceProvider>(),
+                ClearMLService,
+                SharedFileService,
+                clearMLOptions,
+                BuildJobOptions,
+                Substitute.For<ILogger<ClearMLMonitorService>>()
+            );
             BuildJobService = new BuildJobService<TranslationEngine>(
                 [
-                    new HangfireBuildJobRunner(_jobClient, [new NmtHangfireBuildJobFactory()]),
+                    _jobRunner,
                     new ClearMLBuildJobRunner(
                         ClearMLService,
                         [
@@ -189,17 +213,8 @@ public class NmtEngineServiceTests
                 ],
                 Engines
             );
-            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-            clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
-            ClearMLQueueService = new ClearMLMonitorService(
-                Substitute.For<IServiceProvider>(),
-                ClearMLService,
-                SharedFileService,
-                clearMLOptions,
-                BuildJobOptions,
-                Substitute.For<ILogger<ClearMLMonitorService>>()
-            );
-            _jobServer = CreateJobServer();
+            deferredBuildJobService = BuildJobService;
+            _ = _jobRunner.StartAsync(_runnerCts.Token);
             Service = CreateService();
         }
 
@@ -216,28 +231,6 @@ public class NmtEngineServiceTests
         public void PersistModel()
         {
             Engines.Replace(Engines.Get("engine1") with { IsModelPersisted = true });
-        }
-
-        public void StopServer()
-        {
-            _jobServer.Dispose();
-        }
-
-        public void StartServer()
-        {
-            _jobServer = CreateJobServer();
-            Service = CreateService();
-        }
-
-        private BackgroundJobServer CreateJobServer()
-        {
-            var jobServerOptions = new BackgroundJobServerOptions
-            {
-                Activator = new EnvActivator(this),
-                Queues = new[] { BuildJobQueues.Nmt },
-                CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
-            };
-            return new BackgroundJobServer(jobServerOptions, _memoryStorage);
         }
 
         private NmtEngineService CreateService()
@@ -292,7 +285,7 @@ public class NmtEngineServiceTests
             await using Stream stream = await SharedFileService.OpenWriteAsync("builds/build1/pretranslate.trg.json");
 
             await BuildJobService.StartBuildJobAsync(
-                BuildJobRunnerType.Hangfire,
+                BuildJobRunnerType.Local,
                 EngineType.Nmt,
                 "engine1",
                 "build1",
@@ -313,46 +306,10 @@ public class NmtEngineServiceTests
 
         protected override void DisposeManagedResources()
         {
-            _jobServer.Dispose();
+            _runnerCts.Cancel();
+            _serviceProvider.Dispose();
             _cancellationTokenSource.Dispose();
-        }
-
-        private class EnvActivator(TestEnvironment env) : JobActivator
-        {
-            private readonly TestEnvironment _env = env;
-
-            public override object ActivateJob(Type jobType)
-            {
-                if (jobType == typeof(NmtPreprocessBuildJob))
-                {
-                    return new NmtPreprocessBuildJob(
-                        _env.PlatformService,
-                        _env.Engines,
-                        new MemoryDataAccessContext(),
-                        Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
-                        _env.BuildJobService,
-                        _env.SharedFileService,
-                        new LanguageTagService(),
-                        Substitute.For<IParallelCorpusService>(),
-                        _env.BuildJobOptions
-                    );
-                }
-                if (jobType == typeof(TranslationPostprocessBuildJob))
-                {
-                    var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
-                    buildJobOptions.CurrentValue.Returns(new BuildJobOptions());
-                    return new TranslationPostprocessBuildJob(
-                        _env.PlatformService,
-                        _env.Engines,
-                        new MemoryDataAccessContext(),
-                        _env.BuildJobService,
-                        Substitute.For<ILogger<TranslationPostprocessBuildJob>>(),
-                        _env.SharedFileService,
-                        _env.BuildJobOptions
-                    );
-                }
-                return base.ActivateJob(jobType);
-            }
+            _runnerCts.Dispose();
         }
     }
 }

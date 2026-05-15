@@ -194,7 +194,7 @@ public class SmtTransferEngineService(
     )
     {
         bool building = !await _buildJobService.StartBuildJobAsync(
-            BuildJobRunnerType.Hangfire,
+            BuildJobRunnerType.Local,
             EngineType.SmtTransfer,
             engineId,
             buildId,
