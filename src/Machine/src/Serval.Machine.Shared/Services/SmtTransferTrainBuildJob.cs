@@ -10,7 +10,7 @@ public class SmtTransferTrainBuildJob(
     ITruecaserFactory truecaserFactory,
     ISmtModelFactory smtModelFactory,
     ITransferEngineFactory transferEngineFactory
-) : HangfireBuildJob<TranslationEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
+) : BuildJob<TranslationEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
 {
     // Using JavaScriptEncoder.Create(UnicodeRanges.All) to avoid escaping surrogate pairs
     // (including those outside of the BMP) which can result in invalid UTF-8.
@@ -69,7 +69,7 @@ public class SmtTransferTrainBuildJob(
         await GeneratePretranslationsAsync(buildId, engineDir, cancellationToken);
 
         bool canceling = !await BuildJobService.StartBuildJobAsync(
-            BuildJobRunnerType.Hangfire,
+            BuildJobRunnerType.Local,
             EngineType.SmtTransfer,
             engineId,
             buildId,

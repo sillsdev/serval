@@ -130,7 +130,7 @@ public class PreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        BuildJobRunner = BuildJobRunnerType.Local,
                         Stage = BuildStage.Preprocess,
                         ExecutionData = new BuildExecutionData(),
                     },
@@ -151,7 +151,7 @@ public class PreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        BuildJobRunner = BuildJobRunnerType.Local,
                         Stage = BuildStage.Preprocess,
                         ExecutionData = new BuildExecutionData(),
                     },
@@ -172,7 +172,7 @@ public class PreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        BuildJobRunner = BuildJobRunnerType.Local,
                         Stage = BuildStage.Preprocess,
                         ExecutionData = new BuildExecutionData(),
                     },
@@ -193,7 +193,7 @@ public class PreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        BuildJobRunner = BuildJobRunnerType.Local,
                         Stage = BuildStage.Preprocess,
                         ExecutionData = new BuildExecutionData(),
                     },
@@ -259,9 +259,10 @@ public class PreprocessBuildJobTests
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             BuildJobService = new BuildJobService<TranslationEngine>(
                 [
-                    new HangfireBuildJobRunner(
-                        Substitute.For<IBackgroundJobClient>(),
-                        [new NmtHangfireBuildJobFactory(), new SmtTransferHangfireBuildJobFactory()]
+                    new LocalBuildJobRunner(
+                        [new NmtLocalBuildJobFactory(), new SmtTransferLocalBuildJobFactory()],
+                        Substitute.For<IServiceScopeFactory>(),
+                        Substitute.For<ILogger<LocalBuildJobRunner>>()
                     ),
                     new ClearMLBuildJobRunner(
                         ClearMLService,

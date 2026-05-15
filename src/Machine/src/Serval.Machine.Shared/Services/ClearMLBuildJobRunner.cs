@@ -32,7 +32,7 @@ public class ClearMLBuildJobRunner(
             await _clearMLService.DeleteProjectAsync(projectId, cancellationToken);
     }
 
-    public async Task<string> CreateJobAsync(
+    public async Task<(string JobId, string? JobData)> CreateJobAsync(
         EngineType engineType,
         string engineId,
         string buildId,
@@ -47,7 +47,7 @@ public class ClearMLBuildJobRunner(
 
         ClearMLTask? task = await _clearMLService.GetTaskByNameAsync(buildId, cancellationToken);
         if (task is not null)
-            return task.Id;
+            return (task.Id, null);
 
         IClearMLBuildJobFactory buildJobFactory = _buildJobFactories[engineType];
         string script = await buildJobFactory.CreateJobScriptAsync(
@@ -59,13 +59,14 @@ public class ClearMLBuildJobRunner(
             buildOptions,
             cancellationToken
         );
-        return await _clearMLService.CreateTaskAsync(
+        string jobId = await _clearMLService.CreateTaskAsync(
             buildId,
             projectId,
             script,
             _options[engineType].DockerImage,
             cancellationToken
         );
+        return (jobId, null);
     }
 
     public Task<bool> DeleteJobAsync(string jobId, CancellationToken cancellationToken = default)
