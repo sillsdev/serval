@@ -4,10 +4,9 @@ public static class IServalConfiguratorExtensions
 {
     public static IServalConfigurator AddDataFiles(this IServalConfigurator configurator)
     {
-        configurator.Services.AddScoped<IDataFileService, DataFileService>();
         configurator.Services.AddHostedService<DeletedFileCleaner>();
-
-        configurator.Services.AddScoped<ICorpusService, CorpusService>();
+        configurator.Services.AddScoped<DtoMapper>();
+        configurator.Services.AddScoped<DataFileDeleter>();
 
         configurator.AddDataFilesDataAccess();
 

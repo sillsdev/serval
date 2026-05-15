@@ -1,9 +1,9 @@
 namespace Serval.DataFiles.Handlers;
 
-public class DeleteDataFileHandler(IDataFileService dataFileService) : IRequestHandler<DeleteDataFile>
+public class DeleteDataFileHandler(DataFileDeleter deleter) : IRequestHandler<DeleteDataFile>
 {
     public Task HandleAsync(DeleteDataFile request, CancellationToken cancellationToken)
     {
-        return dataFileService.DeleteAsync(request.DataFileId, cancellationToken);
+        return deleter.DeleteAsync(request.DataFileId, cancellationToken);
     }
 }

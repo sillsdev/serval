@@ -1,17 +1,15 @@
-﻿namespace Serval.DataFiles.Handlers;
+namespace Serval.DataFiles.Handlers;
 
-public class GetDataFileHandler(IDataFileService dataFileService) : IRequestHandler<GetDataFile, GetDataFileResponse>
+public class GetDataFileHandler(IRepository<DataFile> dataFiles) : IRequestHandler<GetDataFile, GetDataFileResponse>
 {
     public async Task<GetDataFileResponse> HandleAsync(GetDataFile request, CancellationToken cancellationToken)
     {
-        try
-        {
-            DataFile dataFile = await dataFileService.GetAsync(request.DataFileId, request.Owner, cancellationToken);
-            return new(IsFound: true, new(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format));
-        }
-        catch (EntityNotFoundException)
-        {
+        DataFile? dataFile = await dataFiles.GetAsync(
+            f => f.Id == request.DataFileId && f.Owner == request.Owner,
+            cancellationToken
+        );
+        if (dataFile is null)
             return new(IsFound: false);
-        }
+        return new(IsFound: true, new(dataFile.Id, dataFile.Name, dataFile.Filename, dataFile.Format));
     }
 }

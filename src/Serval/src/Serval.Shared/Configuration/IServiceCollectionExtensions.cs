@@ -46,6 +46,25 @@ public static class IServiceCollectionExtensions
         services.AddHangfireServer(o => o.Queues = [.. configurator.JobQueues]);
         services.AddHealthChecks().AddCheck<HangfireHealthCheck>("Hangfire");
 
+        services.AddStartupTask(
+            (sp, ct) =>
+            {
+                var fileSystem = sp.GetRequiredService<IFileSystem>();
+                var dataFileOptions = sp.GetRequiredService<IOptionsSnapshot<DataFileOptions>>();
+                fileSystem.CreateDirectory(dataFileOptions.Value.FilesDirectory);
+                return Task.CompletedTask;
+            }
+        );
+
+        return services;
+    }
+
+    public static IServiceCollection AddStartupTask(
+        this IServiceCollection services,
+        Func<IServiceProvider, CancellationToken, Task> startupTask
+    )
+    {
+        services.AddHostedService(sp => new StartupTask(sp, startupTask));
         return services;
     }
 }

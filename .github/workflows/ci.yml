@@ -38,7 +38,7 @@ jobs:
       - name: Build
         run: dotnet build --no-restore -c Release
       - name: Pre-Test
-        run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
+        run: sudo mkdir -p /var/lib/serval/files && sudo chmod -R 777 /var/lib/serval
       - name: Test
         run: dotnet test --verbosity normal --filter "TestCategory!=E2E&TestCategory!=E2EMissingServices" --collect:"Xplat Code Coverage" --logger "trx;LogFileName=test-results.trx"
       - name: Test report

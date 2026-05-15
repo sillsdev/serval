@@ -17,10 +17,6 @@ public static class IServalConfiguratorExtensions
         services.AddSingleton<ILanguageTagService, LanguageTagService>();
 
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
-        services.AddStartupTask(
-            (sp, cancellationToken) =>
-                sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
-        );
 
         services.Configure<ServiceOptions>(configuration.GetSection(ServiceOptions.Key));
         services.Configure<SharedFileOptions>(configuration.GetSection(SharedFileOptions.Key));
@@ -40,6 +36,11 @@ public static class IServalConfiguratorExtensions
 
         configurator.AddTranslationEngines();
         configurator.AddWordAlignmentEngines();
+
+        configurator.AddStartupTask(
+            (sp, cancellationToken) =>
+                sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
+        );
 
         return configurator;
     }
@@ -86,15 +87,6 @@ public static class IServalConfiguratorExtensions
         configurator.JobQueues.Add(BuildJobQueues.Statistical);
 
         return configurator;
-    }
-
-    private static IServiceCollection AddStartupTask(
-        this IServiceCollection services,
-        Func<IServiceProvider, CancellationToken, Task> startupTask
-    )
-    {
-        services.AddHostedService(sp => new StartupTask(sp, startupTask));
-        return services;
     }
 
     private static IServalConfigurator AddClearMLService(this IServalConfigurator builder)
