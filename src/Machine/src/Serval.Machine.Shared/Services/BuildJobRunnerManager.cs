@@ -46,11 +46,14 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
         )
         {
             Build build = engine.CurrentBuild!;
+            if (!string.IsNullOrEmpty(build.JobId))
+                //TODO - should these be cleaned up?
+                continue;
             string? jobId = null;
             try
             {
                 await engines.UpdateAsync(
-                    e => e.EngineId == engine.Id,
+                    e => e.EngineId == engine.EngineId,
                     u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Pending),
                     cancellationToken: cancellationToken
                 );
@@ -64,7 +67,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
                         cancellationToken
                     );
                 await engines.UpdateAsync(
-                    e => e.EngineId == engine.Id,
+                    e => e.EngineId == engine.EngineId,
                     u => u.Set(e => e.CurrentBuild!.JobId, jobId),
                     cancellationToken: cancellationToken
                 );
@@ -79,7 +82,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
                         await platformService.BuildFaultedAsync(build.BuildId, e.Message, CancellationToken.None);
                         await engines.UpdateAsync(
                             e =>
-                                e.EngineId == engine.Id
+                                e.EngineId == engine.EngineId
                                 && e.CurrentBuild != null
                                 && e.CurrentBuild.BuildId == build.BuildId,
                             u =>
@@ -152,7 +155,7 @@ public class BuildJobRunnerManager<TEngine>(IServiceProvider services, ILogger<R
                 IBuildJobRunner runner = runners[runnerType];
                 try
                 {
-                    await runner.DeleteEngineAsync(engine.Id, cancellationToken);
+                    await runner.DeleteEngineAsync(engine.EngineId, cancellationToken);
                 }
                 catch (Exception e)
                 {
