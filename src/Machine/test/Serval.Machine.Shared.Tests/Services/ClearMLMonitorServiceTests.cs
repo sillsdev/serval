@@ -163,7 +163,7 @@ public class ClearMLMonitorServiceTests
         SetupBuildingEngines(engine);
 
         ClearMLTask task = CreateClearMLTask(
-            id: engine!.CurrentBuild!.JobId,
+            id: engine!.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Queued,
             created: DateTime.UtcNow
@@ -202,7 +202,7 @@ public class ClearMLMonitorServiceTests
         };
 
         ClearMLTask task = CreateClearMLTask(
-            id: engine!.CurrentBuild!.JobId,
+            id: engine!.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.InProgress,
             created: DateTime.UtcNow,
@@ -256,7 +256,7 @@ public class ClearMLMonitorServiceTests
         };
 
         ClearMLTask task = CreateClearMLTask(
-            id: engine!.CurrentBuild!.JobId,
+            id: engine!.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Completed,
             created: DateTime.UtcNow,
@@ -274,7 +274,7 @@ public class ClearMLMonitorServiceTests
                 engine.EngineId,
                 engine.CurrentBuild.BuildId,
                 BuildStage.Postprocess,
-                Arg.Is<(int, double)>(x => x.Item1 == ExpectedCorpusSize && x.Item2 == ExpectedConfidence),
+                Arg.Is<BuildData>(x => x.CorpusSize == ExpectedCorpusSize && x.Confidence == ExpectedConfidence),
                 engine.CurrentBuild.Options,
                 Arg.Any<CancellationToken>()
             )
@@ -301,7 +301,7 @@ public class ClearMLMonitorServiceTests
                 engine.EngineId,
                 engine.CurrentBuild.BuildId,
                 BuildStage.Postprocess,
-                Arg.Is<(int, double)>(x => x.Item1 == ExpectedCorpusSize && x.Item2 == ExpectedConfidence),
+                Arg.Is<BuildData>(x => x.CorpusSize == ExpectedCorpusSize && x.Confidence == ExpectedConfidence),
                 engine.CurrentBuild.Options,
                 Arg.Any<CancellationToken>()
             );
@@ -331,7 +331,7 @@ public class ClearMLMonitorServiceTests
 
         // Setup stopped task
         ClearMLTask task = CreateClearMLTask(
-            id: engine!.CurrentBuild!.JobId,
+            id: engine!.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Stopped,
             created: DateTime.UtcNow,
@@ -380,7 +380,7 @@ public class ClearMLMonitorServiceTests
 
         // Setup failed task
         ClearMLTask task = CreateClearMLTask(
-            id: engine.CurrentBuild.JobId,
+            id: engine.CurrentBuild!.JobId!,
             name: engine.CurrentBuild.BuildId,
             status: ClearMLTaskStatus.Failed,
             created: DateTime.UtcNow,

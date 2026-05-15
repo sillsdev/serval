@@ -199,7 +199,7 @@ public class SmtTransferEngineService(
             engineId,
             buildId,
             BuildStage.Preprocess,
-            corpora,
+            new BuildData { ParallelCorpora = corpora },
             options,
             cancellationToken
         );

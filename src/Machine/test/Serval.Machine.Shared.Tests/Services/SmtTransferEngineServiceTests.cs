@@ -344,14 +344,14 @@ public class SmtTransferEngineServiceTests
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService<TranslationEngine>(
-                [
-                    new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
-                    new ClearMLBuildJobRunner(
-                        ClearMLService,
-                        [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
-                        BuildJobOptions
-                    ),
-                ],
+                // [
+                //     new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
+                //     new ClearMLBuildJobRunner(
+                //         ClearMLService,
+                //         [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
+                //         BuildJobOptions
+                //     ),
+                // ],
                 Engines
             );
             _jobServer = CreateJobServer();
@@ -689,7 +689,7 @@ public class SmtTransferEngineServiceTests
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,
-                    data: (0, 0.0)
+                    new BuildData { CorpusSize = 0, Confidence = 0.0 }
                 );
             }
             catch (OperationCanceledException)

@@ -66,6 +66,9 @@ public static class IServalConfiguratorExtensions
         configurator.AddTranslationEngine<NmtEngineService>(EngineType.Nmt.ToString());
         configurator.JobQueues.Add(BuildJobQueues.Nmt);
 
+        configurator.Services.AddSingleton<BuildJobRunnerManager<TranslationEngine>>();
+        configurator.Services.AddHostedService(p => p.GetRequiredService<BuildJobRunnerManager<TranslationEngine>>());
+
         return configurator;
     }
 
@@ -84,6 +87,9 @@ public static class IServalConfiguratorExtensions
         configurator.AddWordAlignmentEngine<StatisticalEngineService>(EngineType.Statistical.ToString());
         configurator.Services.AddHostedService<StatisticalEngineCommitService>();
         configurator.JobQueues.Add(BuildJobQueues.Statistical);
+
+        configurator.Services.AddSingleton<BuildJobRunnerManager<WordAlignmentEngine>>();
+        configurator.Services.AddHostedService(p => p.GetRequiredService<BuildJobRunnerManager<WordAlignmentEngine>>());
 
         return configurator;
     }

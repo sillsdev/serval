@@ -26,12 +26,7 @@ public class SmtTransferPreprocessBuildJob(
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
 
-    protected override async Task InitializeAsync(
-        string engineId,
-        string buildId,
-        IReadOnlyList<ParallelCorpusContract> data,
-        CancellationToken cancellationToken
-    )
+    protected override async Task InitializeAsync(string engineId, string buildId, CancellationToken cancellationToken)
     {
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         await @lock.WriterLockAsync(

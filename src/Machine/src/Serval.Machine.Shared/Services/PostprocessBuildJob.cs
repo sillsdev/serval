@@ -8,7 +8,7 @@ public abstract class PostprocessBuildJob<TEngine>(
     ILogger<PostprocessBuildJob<TEngine>> logger,
     ISharedFileService sharedFileService,
     IOptionsMonitor<BuildJobOptions> options
-) : HangfireBuildJob<TEngine, (int, double)>(platformService, engines, dataAccessContext, buildJobService, logger)
+) : HangfireBuildJob<TEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
     where TEngine : ITrainingEngine
 {
     protected ISharedFileService SharedFileService { get; } = sharedFileService;
@@ -19,12 +19,7 @@ public abstract class PostprocessBuildJob<TEngine>(
         return Task.FromResult(0);
     }
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        (int, double) data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Restarting)
             return;

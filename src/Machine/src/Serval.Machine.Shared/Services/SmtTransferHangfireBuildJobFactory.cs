@@ -6,20 +6,20 @@ public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
 {
     public EngineType EngineType => EngineType.SmtTransfer;
 
-    public Job CreateJob(string engineId, string buildId, BuildStage stage, object? data, string? buildOptions)
+    public Job CreateJob(string engineId, string buildId, BuildStage stage, string? buildOptions)
     {
         return stage switch
         {
-            BuildStage.Preprocess => CreateJob<
-                TranslationEngine,
-                SmtTransferPreprocessBuildJob,
-                IReadOnlyList<ParallelCorpusContract>
-            >(engineId, buildId, BuildJobQueues.SmtTransfer, data, buildOptions),
-            BuildStage.Postprocess => CreateJob<TranslationEngine, SmtTransferPostprocessBuildJob, (int, double)>(
+            BuildStage.Preprocess => CreateJob<TranslationEngine, SmtTransferPreprocessBuildJob>(
                 engineId,
                 buildId,
                 BuildJobQueues.SmtTransfer,
-                data,
+                buildOptions
+            ),
+            BuildStage.Postprocess => CreateJob<TranslationEngine, SmtTransferPostprocessBuildJob>(
+                engineId,
+                buildId,
+                BuildJobQueues.SmtTransfer,
                 buildOptions
             ),
             BuildStage.Train => CreateJob<TranslationEngine, SmtTransferTrainBuildJob>(

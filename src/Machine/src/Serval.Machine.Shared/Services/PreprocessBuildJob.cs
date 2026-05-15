@@ -9,14 +9,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     ISharedFileService sharedFileService,
     IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
-)
-    : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpusContract>>(
-        platformService,
-        engines,
-        dataAccessContext,
-        buildJobService,
-        logger
-    )
+) : HangfireBuildJob<TEngine>(platformService, engines, dataAccessContext, buildJobService, logger)
     where TEngine : ITrainingEngine
 {
     // Using JavaScriptEncoder.Create(UnicodeRanges.All) to avoid escaping surrogate pairs
@@ -36,7 +29,6 @@ public abstract class PreprocessBuildJob<TEngine>(
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        IReadOnlyList<ParallelCorpusContract> data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -44,6 +36,8 @@ public abstract class PreprocessBuildJob<TEngine>(
         TEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
+
+        IReadOnlyList<ParallelCorpusContract> data = engine.CurrentBuild?.Data?.ParallelCorpora ?? [];
 
         (int trainCount, int inferenceCount) = await WriteDataFilesAsync(
             buildId,
@@ -112,12 +106,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         CancellationToken cancellationToken
     );
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        IReadOnlyList<ParallelCorpusContract> data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Canceled)
         {

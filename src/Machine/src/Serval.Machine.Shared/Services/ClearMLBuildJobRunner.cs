@@ -16,15 +16,6 @@ public class ClearMLBuildJobRunner(
 
     public BuildJobRunnerType Type => BuildJobRunnerType.ClearML;
 
-    public async Task CreateEngineAsync(
-        string engineId,
-        string? name = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        await _clearMLService.CreateProjectAsync(engineId, name, cancellationToken);
-    }
-
     public async Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default)
     {
         string? projectId = await _clearMLService.GetProjectIdAsync(engineId, cancellationToken);
@@ -37,7 +28,6 @@ public class ClearMLBuildJobRunner(
         string engineId,
         string buildId,
         BuildStage stage,
-        object? data = null,
         string? buildOptions = null,
         CancellationToken cancellationToken = default
     )
@@ -55,7 +45,6 @@ public class ClearMLBuildJobRunner(
             buildId,
             _options[engineType].ModelType,
             stage,
-            data,
             buildOptions,
             cancellationToken
         );

@@ -227,14 +227,14 @@ public class StatisticalEngineServiceTests
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService<WordAlignmentEngine>(
-                [
-                    new HangfireBuildJobRunner(_jobClient, [new StatisticalHangfireBuildJobFactory()]),
-                    new ClearMLBuildJobRunner(
-                        ClearMLService,
-                        [new StatisticalClearMLBuildJobFactory(SharedFileService, Engines)],
-                        BuildJobOptions
-                    ),
-                ],
+                // [
+                //     new HangfireBuildJobRunner(_jobClient, [new StatisticalHangfireBuildJobFactory()]),
+                //     new ClearMLBuildJobRunner(
+                //         ClearMLService,
+                //         [new StatisticalClearMLBuildJobFactory(SharedFileService, Engines)],
+                //         BuildJobOptions
+                //     ),
+                // ],
                 Engines
             );
             _jobServer = CreateJobServer();
@@ -435,7 +435,7 @@ public class StatisticalEngineServiceTests
                     EngineId1,
                     BuildId1,
                     BuildStage.Postprocess,
-                    data: (0, 0.0)
+                    new BuildData { CorpusSize = 0, Confidence = 0.0 }
                 );
             }
             catch (OperationCanceledException)

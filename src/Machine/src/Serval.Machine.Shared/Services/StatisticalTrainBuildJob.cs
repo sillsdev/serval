@@ -30,7 +30,6 @@ public class StatisticalTrainBuildJob(
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
-        object? data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -68,20 +67,15 @@ public class StatisticalTrainBuildJob(
             engineId,
             buildId,
             BuildStage.Postprocess,
-            buildOptions: buildOptions,
-            data: (trainCount, 0.0),
-            cancellationToken: cancellationToken
+            new BuildData { CorpusSize = trainCount, Confidence = 0.0 },
+            buildOptions,
+            cancellationToken
         );
         if (canceling)
             throw new OperationCanceledException();
     }
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        object? data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Canceled)
         {

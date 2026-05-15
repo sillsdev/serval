@@ -3,9 +3,6 @@
 public interface IBuildJobService
 {
     Task<bool> IsEngineBuilding(string engineId, CancellationToken cancellationToken = default);
-
-    Task CreateEngineAsync(string engineId, string? name = null, CancellationToken cancellationToken = default);
-
     Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<bool> StartBuildJobAsync(
@@ -14,7 +11,7 @@ public interface IBuildJobService
         string engineId,
         string buildId,
         BuildStage stage,
-        object? data = default,
+        BuildData? data = null,
         string? buildOptions = default,
         CancellationToken cancellationToken = default
     );

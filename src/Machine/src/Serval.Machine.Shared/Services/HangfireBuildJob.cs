@@ -6,27 +6,6 @@ public abstract class HangfireBuildJob<TEngine>(
     IDataAccessContext dataAccessContext,
     IBuildJobService<TEngine> buildJobService,
     ILogger<HangfireBuildJob<TEngine>> logger
-) : HangfireBuildJob<TEngine, object?>(platformService, engines, dataAccessContext, buildJobService, logger)
-    where TEngine : ITrainingEngine
-{
-    [AutomaticRetry(Attempts = 0)]
-    public virtual Task RunAsync(
-        string engineId,
-        string buildId,
-        string? buildOptions,
-        CancellationToken cancellationToken
-    )
-    {
-        return RunAsync(engineId, buildId, null, buildOptions, cancellationToken);
-    }
-}
-
-public abstract class HangfireBuildJob<TEngine, TData>(
-    IPlatformService platformService,
-    IRepository<TEngine> engines,
-    IDataAccessContext dataAccessContext,
-    IBuildJobService<TEngine> buildJobService,
-    ILogger<HangfireBuildJob<TEngine, TData>> logger
 )
     where TEngine : ITrainingEngine
 {
@@ -34,13 +13,12 @@ public abstract class HangfireBuildJob<TEngine, TData>(
     protected IRepository<TEngine> Engines { get; } = engines;
     protected IDataAccessContext DataAccessContext { get; } = dataAccessContext;
     protected IBuildJobService<TEngine> BuildJobService { get; } = buildJobService;
-    protected ILogger<HangfireBuildJob<TEngine, TData>> Logger { get; } = logger;
+    protected ILogger<HangfireBuildJob<TEngine>> Logger { get; } = logger;
 
     [AutomaticRetry(Attempts = 0)]
     public virtual async Task RunAsync(
         string engineId,
         string buildId,
-        TData data,
         string? buildOptions,
         CancellationToken cancellationToken
     )
@@ -48,14 +26,14 @@ public abstract class HangfireBuildJob<TEngine, TData>(
         JobCompletionStatus completionStatus = JobCompletionStatus.Completed;
         try
         {
-            await InitializeAsync(engineId, buildId, data, cancellationToken);
+            await InitializeAsync(engineId, buildId, cancellationToken);
             if (!await BuildJobService.BuildJobStartedAsync(engineId, buildId, cancellationToken))
             {
                 completionStatus = JobCompletionStatus.Canceled;
                 return;
             }
 
-            await DoWorkAsync(engineId, buildId, data, buildOptions, cancellationToken);
+            await DoWorkAsync(engineId, buildId, buildOptions, cancellationToken);
         }
         catch (OperationCanceledException e)
         {
@@ -128,16 +106,11 @@ public abstract class HangfireBuildJob<TEngine, TData>(
         }
         finally
         {
-            await CleanupAsync(engineId, buildId, data, completionStatus);
+            await CleanupAsync(engineId, buildId, completionStatus);
         }
     }
 
-    protected virtual Task InitializeAsync(
-        string engineId,
-        string buildId,
-        TData data,
-        CancellationToken cancellationToken
-    )
+    protected virtual Task InitializeAsync(string engineId, string buildId, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
@@ -145,17 +118,11 @@ public abstract class HangfireBuildJob<TEngine, TData>(
     protected abstract Task DoWorkAsync(
         string engineId,
         string buildId,
-        TData data,
         string? buildOptions,
         CancellationToken cancellationToken
     );
 
-    protected virtual Task CleanupAsync(
-        string engineId,
-        string buildId,
-        TData data,
-        JobCompletionStatus completionStatus
-    )
+    protected virtual Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         return Task.CompletedTask;
     }

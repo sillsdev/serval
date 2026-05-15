@@ -1,10 +1,8 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRepository<TEngine> engines)
-    : IBuildJobService<TEngine>
+public class BuildJobService<TEngine>(IRepository<TEngine> engines) : IBuildJobService<TEngine>
     where TEngine : ITrainingEngine
 {
-    protected readonly Dictionary<BuildJobRunnerType, IBuildJobRunner> Runners = runners.ToDictionary(r => r.Type);
     protected readonly IRepository<TEngine> Engines = engines;
 
     public Task<bool> IsEngineBuilding(string engineId, CancellationToken cancellationToken = default)
@@ -36,26 +34,13 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
         return engine?.CurrentBuild;
     }
 
-    public async Task CreateEngineAsync(
-        string engineId,
-        string? name = null,
-        CancellationToken cancellationToken = default
-    )
+    public Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        foreach (BuildJobRunnerType runnerType in Runners.Keys)
-        {
-            IBuildJobRunner runner = Runners[runnerType];
-            await runner.CreateEngineAsync(engineId, name, cancellationToken);
-        }
-    }
-
-    public async Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default)
-    {
-        foreach (BuildJobRunnerType runnerType in Runners.Keys)
-        {
-            IBuildJobRunner runner = Runners[runnerType];
-            await runner.DeleteEngineAsync(engineId, cancellationToken);
-        }
+        return Engines.UpdateAsync(
+            e => e.EngineId == engineId && e.CurrentBuild != null && (e.CurrentBuild.JobState == BuildJobState.Active),
+            u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Deleting),
+            cancellationToken: cancellationToken
+        );
     }
 
     public async Task<bool> StartBuildJobAsync(
@@ -64,63 +49,41 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
         string engineId,
         string buildId,
         BuildStage stage,
-        object? data = null,
+        BuildData? data = null,
         string? buildOptions = null,
         CancellationToken cancellationToken = default
     )
     {
-        IBuildJobRunner runner = Runners[runnerType];
-        string jobId = await runner.CreateJobAsync(
-            engineType,
-            engineId,
-            buildId,
-            stage,
-            data,
-            buildOptions,
-            cancellationToken
+        TEngine? engine = await Engines.UpdateAsync(
+            e =>
+                e.EngineId == engineId
+                && (
+                    (stage == BuildStage.Preprocess && e.CurrentBuild == null)
+                    || (
+                        stage != BuildStage.Preprocess
+                        && e.CurrentBuild != null
+                        && e.CurrentBuild.JobState != BuildJobState.Canceling
+                    )
+                ),
+            u =>
+                u.Set(
+                    e => e.CurrentBuild,
+                    new Build
+                    {
+                        BuildId = buildId,
+                        JobId = null,
+                        BuildJobRunner = runnerType,
+                        Stage = stage,
+                        JobState = BuildJobState.Queued,
+                        Options = buildOptions,
+                        Data = data,
+                        ExecutionData = new BuildExecutionData(),
+                    }
+                ),
+            cancellationToken: cancellationToken
         );
-        try
-        {
-            TEngine? engine = await Engines.UpdateAsync(
-                e =>
-                    e.EngineId == engineId
-                    && (
-                        (stage == BuildStage.Preprocess && e.CurrentBuild == null)
-                        || (
-                            stage != BuildStage.Preprocess
-                            && e.CurrentBuild != null
-                            && e.CurrentBuild.JobState != BuildJobState.Canceling
-                        )
-                    ),
-                u =>
-                    u.Set(
-                        e => e.CurrentBuild,
-                        new Build
-                        {
-                            BuildId = buildId,
-                            JobId = jobId,
-                            BuildJobRunner = runner.Type,
-                            Stage = stage,
-                            JobState = BuildJobState.Pending,
-                            Options = buildOptions,
-                            ExecutionData = new BuildExecutionData(),
-                        }
-                    ),
-                cancellationToken: cancellationToken
-            );
-            if (engine is null)
-            {
-                await runner.DeleteJobAsync(jobId, CancellationToken.None);
-                return false;
-            }
-            await runner.EnqueueJobAsync(jobId, engine.Type, cancellationToken);
-            return true;
-        }
-        catch
-        {
-            await runner.DeleteJobAsync(jobId, CancellationToken.None);
-            throw;
-        }
+
+        return engine is not null;
     }
 
     public virtual async Task<(string? BuildId, BuildJobState State)> CancelBuildJobAsync(
@@ -130,7 +93,11 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
     {
         // cancel a job that hasn't started yet
         TEngine? engine = await Engines.UpdateAsync(
-            e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Pending,
+            e =>
+                e.EngineId == engineId
+                && e.CurrentBuild != null
+                && (e.CurrentBuild.JobState == BuildJobState.Pending || e.CurrentBuild.JobState == BuildJobState.Queued)
+                && e.CurrentBuild.JobId == null,
             u =>
             {
                 u.Unset(b => b.CurrentBuild);
@@ -139,25 +106,16 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
             cancellationToken: cancellationToken
         );
         if (engine is not null && engine.CurrentBuild is not null)
-        {
-            // job will be deleted from the queue
-            IBuildJobRunner runner = Runners[engine.CurrentBuild.BuildJobRunner];
-            await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
             return (engine.CurrentBuild.BuildId, BuildJobState.None);
-        }
 
-        // cancel a job that is already running
+        // mark a job that is already running as canceling and the dispatcher will stop it
         engine = await Engines.UpdateAsync(
-            e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.JobState == BuildJobState.Active,
+            e => e.EngineId == engineId && e.CurrentBuild != null && (e.CurrentBuild.JobState == BuildJobState.Active),
             u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Canceling),
             cancellationToken: cancellationToken
         );
         if (engine is not null && engine.CurrentBuild is not null)
-        {
-            IBuildJobRunner runner = Runners[engine.CurrentBuild.BuildJobRunner];
-            await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
             return (engine.CurrentBuild.BuildId, BuildJobState.Canceling);
-        }
 
         return (null, BuildJobState.None);
     }
@@ -203,7 +161,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
     {
         return Engines.UpdateAsync(
             e => e.EngineId == engineId && e.CurrentBuild != null && e.CurrentBuild.BuildId == buildId,
-            u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Pending),
+            u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Queued),
             cancellationToken: cancellationToken
         );
     }
