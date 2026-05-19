@@ -335,7 +335,7 @@ public partial class UsfmGenerationServiceTests
                     + "It should be reviewed and edited carefully. "
                     + "Paragraph breaks and embed markers were moved to the end of the verse. "
                     + "Style markers were removed. "
-                    + "The quote style of this chapter has been automatically adjusted to match the rest of the project."
+                    + "The quote style has been automatically adjusted to match the rest of the project."
             )
         );
 

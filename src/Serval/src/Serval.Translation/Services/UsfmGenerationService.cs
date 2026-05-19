@@ -423,7 +423,7 @@ public class UsfmGenerationService(
             tup.Strategy != QuotationMarkUpdateStrategy.Skip
         );
         const string QuotationDenormalizationRemark =
-            "The quote style of this chapter has been automatically adjusted to match the rest of the project.";
+            "The quote style has been automatically adjusted to match the rest of the project.";
         List<(int Chapter, string Remark)> combinedRemarks = [.. remarks];
         for (int i = 1; i <= denormalizableChapterCount; i++)
         {
