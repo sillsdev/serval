@@ -91,6 +91,35 @@ public class DataFilesHandlersTests
     }
 
     [Test]
+    public async Task CreateDataFile_Paratext()
+    {
+        var env = new TestEnvironment();
+        env.FileSystem.OpenWrite(Arg.Any<string>())
+            .Returns(callInfo => new FileStream(callInfo.Arg<string>(), FileMode.Create, FileAccess.Write));
+        string paratextZipPath = ZipParatextProject();
+        CreateDataFileHandler handler = new(env.DataFiles, env.IdGenerator, env.Options, env.FileSystem, env.Mapper);
+        using FileStream stream = File.OpenRead(paratextZipPath);
+        CreateDataFileResponse response = await handler.HandleAsync(
+            new(Owner, "file1", "file1.txt", FileFormat.Paratext, stream),
+            CancellationToken.None
+        );
+        DataFile? dataFile = await env.DataFiles.GetAsync(response.DataFile.Id, CancellationToken.None);
+        Assert.That(dataFile, Is.Not.Null);
+        Assert.That(dataFile.FileMetadata, Is.Not.Null);
+        ParatextMetadata metadata = dataFile.FileMetadata;
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(metadata.ProjectGuid, Is.EqualTo("a7e0b3ce0200736062f9f810a444dbfbe64aca35"));
+            Assert.That(metadata.Name, Is.EqualTo("Te1"));
+            Assert.That(metadata.FullName, Is.EqualTo("Test1"));
+            Assert.That(metadata.TranslationType, Is.EqualTo("Standard"));
+            Assert.That(metadata.Versification, Does.StartWith("English"));
+            Assert.That(metadata.LanguageCode, Is.EqualTo("en"));
+            Assert.That(metadata.Visibility, Is.EqualTo("Public"));
+        }
+    }
+
+    [Test]
     public async Task DownloadDataFile_FileExists()
     {
         var env = new TestEnvironment();
@@ -272,5 +301,14 @@ public class DataFilesHandlersTests
             await DataFiles.InsertAsync(file);
             return file;
         }
+    }
+
+    private static string ZipParatextProject()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "pt-project.zip");
+        if (File.Exists(path))
+            File.Delete(path);
+        ZipFile.CreateFromDirectory(Path.Combine("..", "..", "..", "data", "pt-project"), path);
+        return path;
     }
 }

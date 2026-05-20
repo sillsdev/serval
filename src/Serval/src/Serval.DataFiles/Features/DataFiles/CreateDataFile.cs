@@ -27,8 +27,15 @@ public class CreateDataFileHandler(
         };
         try
         {
-            await using Stream fileStream = fileSystem.OpenWrite(path);
-            await request.FileStream.CopyToAsync(fileStream, cancellationToken);
+            using (Stream fileStream = fileSystem.OpenWrite(path))
+            {
+                await request.FileStream.CopyToAsync(fileStream, cancellationToken);
+            }
+            if (dataFile.Format == FileFormat.Paratext)
+            {
+                ParatextMetadata metadata = await ParatextProjectDataParser.ParseParatextMetadataAsync(path);
+                dataFile = dataFile with { FileMetadata = metadata };
+            }
             await dataFiles.InsertAsync(dataFile, cancellationToken);
         }
         catch
