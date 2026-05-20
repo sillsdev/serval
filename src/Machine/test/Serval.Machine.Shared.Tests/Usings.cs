@@ -1,4 +1,6 @@
-﻿global using Hangfire;
+﻿global using System.Text.Json;
+global using System.Text.Json.Nodes;
+global using Hangfire;
 global using Hangfire.Storage;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Hosting.Internal;
@@ -14,6 +16,8 @@ global using RichardSzalay.MockHttp;
 global using Serval.Machine.Shared.Configuration;
 global using Serval.Machine.Shared.Models;
 global using Serval.Shared.Contracts;
+global using Serval.Translation.Contracts;
+global using Serval.WordAlignment.Contracts;
 global using SIL.DataAccess;
 global using SIL.Machine.Annotations;
 global using SIL.Machine.Corpora;

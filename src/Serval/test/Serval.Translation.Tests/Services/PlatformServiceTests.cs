@@ -285,6 +285,9 @@ public class PlatformServiceTests
             SourceRefs = ["ref1"],
             TargetRefs = ["ref1"],
             Translation = "test",
+            SourceTokens = [],
+            TranslationTokens = [],
+            Alignment = [],
         };
         await Task.CompletedTask;
     }

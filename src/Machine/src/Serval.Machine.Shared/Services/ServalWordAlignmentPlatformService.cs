@@ -140,14 +140,15 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                 TargetRefs = record.TargetRefs,
                 SourceTokens = record.SourceTokens,
                 TargetTokens = record.TargetTokens,
-                Alignment = record
-                    .Alignment.Select(a => new AlignedWordPairContract
+                Alignment =
+                [
+                    .. record.Alignment.Select(a => new AlignedWordPairContract
                     {
                         SourceIndex = a.SourceIndex,
                         TargetIndex = a.TargetIndex,
                         Score = a.TranslationScore,
-                    })
-                    .ToList(),
+                    }),
+                ],
             };
         }
     }
