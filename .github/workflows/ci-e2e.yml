@@ -54,7 +54,7 @@ jobs:
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m serval-mongo-1
 
       - name: Pre-Test
-        run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
+        run: sudo mkdir -p /var/lib/serval/files && sudo chmod -R 777 /var/lib/serval
 
       - name: Test
         run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E" --collect:"Xplat Code Coverage"
