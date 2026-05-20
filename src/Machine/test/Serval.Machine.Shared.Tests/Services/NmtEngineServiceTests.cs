@@ -1,5 +1,3 @@
-using Serval.Translation.Contracts;
-
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]

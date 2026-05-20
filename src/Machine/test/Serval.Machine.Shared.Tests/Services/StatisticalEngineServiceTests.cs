@@ -1,5 +1,3 @@
-using Serval.WordAlignment.Contracts;
-
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
