@@ -10,7 +10,6 @@ public enum BuildJobState
 
 public enum BuildJobRunnerType
 {
-    Hangfire,
     ClearML,
     Local,
 }
