@@ -2,19 +2,13 @@
 
 public abstract class ModelFactoryBase : IModelFactory
 {
-    public virtual ITrainer CreateTrainer(
+    public abstract ITrainer CreateTrainer(
         string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
         IParallelTextCorpus corpus
-    )
-    {
-        throw new NotImplementedException();
-    }
+    );
 
-    public virtual void InitNew(string engineDir)
-    {
-        throw new NotImplementedException();
-    }
+    public abstract void InitNew(string engineDir);
 
     public abstract void Cleanup(string engineDir);
 
@@ -39,25 +33,5 @@ public abstract class ModelFactoryBase : IModelFactory
             overwriteFiles: true,
             cancellationToken: cancellationToken
         );
-    }
-
-    public async Task SaveEngineToAsync(
-        string engineDir,
-        Stream destination,
-        CancellationToken cancellationToken = default
-    )
-    {
-        // create zip archive in memory stream
-        // This cannot be created directly to the shared stream because it all needs to be written at once
-        await using MemoryStream memoryStream = new();
-        await TarFile.CreateFromDirectoryAsync(
-            engineDir,
-            memoryStream,
-            includeBaseDirectory: false,
-            cancellationToken: cancellationToken
-        );
-        memoryStream.Seek(0, SeekOrigin.Begin);
-        await using GZipStream gzipStream = new(destination, CompressionMode.Compress);
-        await memoryStream.CopyToAsync(gzipStream, cancellationToken);
     }
 }

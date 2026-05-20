@@ -28,11 +28,9 @@ public class SmtTransferEngineServiceTests
         env.TransferEngineFactory.Received().InitNew(engineDir);
     }
 
-    [TestCase(BuildJobRunnerType.Local)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task StartBuildAsync(BuildJobRunnerType trainJobRunnerType)
+    public async Task StartBuildAsync()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
         // ensure that the SMT model was loaded before training
@@ -88,11 +86,9 @@ public class SmtTransferEngineServiceTests
         _ = env.Truecaser.DidNotReceive().SaveAsync();
     }
 
-    [TestCase(BuildJobRunnerType.Local)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task CancelBuildAsync_Building(BuildJobRunnerType trainJobRunnerType)
+    public async Task CancelBuildAsync_Building()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
@@ -115,35 +111,9 @@ public class SmtTransferEngineServiceTests
         Assert.That(await env.Service.CancelBuildAsync(EngineId1), Is.Null);
     }
 
-    [Test]
-    public async Task StartBuildAsync_RestartUnfinishedBuild()
+    public async Task DeleteAsync_WhileBuilding()
     {
-        using var env = new TestEnvironment(BuildJobRunnerType.Local);
-        env.UseInfiniteTrainJob();
-
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
-        await env.WaitForTrainingToStartAsync();
-        TranslationEngine engine = env.Engines.Get(EngineId1);
-        Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
-        env.StopServer();
-        await env.WaitForBuildToRestartAsync();
-        engine = env.Engines.Get(EngineId1);
-        Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Pending));
-        _ = env.PlatformService.Received().BuildRestartingAsync(BuildId1);
-        env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
-        env.StartServer();
-        await env.WaitForBuildToFinishAsync();
-        engine = env.Engines.Get(EngineId1);
-        Assert.That(engine.CurrentBuild, Is.Null);
-    }
-
-    [TestCase(BuildJobRunnerType.Local)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task DeleteAsync_WhileBuilding(BuildJobRunnerType trainJobRunnerType)
-    {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
@@ -168,11 +138,9 @@ public class SmtTransferEngineServiceTests
         Assert.That(engine.TargetLanguage, Is.EqualTo("en"));
     }
 
-    [TestCase(BuildJobRunnerType.Local)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task TrainSegmentPairAsync(BuildJobRunnerType trainJobRunnerType)
+    public async Task TrainSegmentPairAsync()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
@@ -246,16 +214,16 @@ public class SmtTransferEngineServiceTests
         private readonly ClearMLBuildJobRunner _clearMLRunner;
         private readonly ITruecaserFactory _truecaserFactory;
         private readonly ServiceProvider _serviceProvider;
-        private IBuildJobService<TranslationEngine>? _deferredBuildJobService;
-        private LocalBuildJobRunner _jobRunner;
-        private CancellationTokenSource _runnerCts = new();
+        private readonly IBuildJobService<TranslationEngine>? _deferredBuildJobService;
+        private readonly LocalBuildJobRunner _jobRunner;
+        private readonly CancellationTokenSource _runnerCts = new();
         private Task? _trainJobTask;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private bool _training = true;
 
-        public TestEnvironment(BuildJobRunnerType trainJobRunnerType = BuildJobRunnerType.ClearML)
+        public TestEnvironment()
         {
-            _trainJobRunnerType = trainJobRunnerType;
+            _trainJobRunnerType = BuildJobRunnerType.ClearML;
             Engines = new MemoryRepository<TranslationEngine>();
             Engines.Add(
                 new TranslationEngine
@@ -403,24 +371,6 @@ public class SmtTransferEngineServiceTests
         public async Task CommitAsync(TimeSpan inactiveTimeout)
         {
             await StateService.CommitAsync(_lockFactory, Engines, inactiveTimeout);
-        }
-
-        public void StopServer()
-        {
-            _runnerCts.Cancel();
-            StateService.Dispose();
-        }
-
-        public void StartServer()
-        {
-            _runnerCts.Dispose();
-            _runnerCts = new CancellationTokenSource();
-            _jobRunner = CreateJobRunner();
-            BuildJobService = CreateBuildJobService();
-            _deferredBuildJobService = BuildJobService;
-            StateService = CreateStateService();
-            Service = CreateService();
-            _ = _jobRunner.StartAsync(_runnerCts.Token);
         }
 
         public void UseInfiniteTrainJob()

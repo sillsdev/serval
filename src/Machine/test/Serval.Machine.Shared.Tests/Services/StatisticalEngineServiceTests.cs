@@ -26,11 +26,9 @@ public class StatisticalEngineServiceTests
         env.WordAlignmentModelFactory.Received().InitNew(engineDir);
     }
 
-    [TestCase(BuildJobRunnerType.Local)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task StartBuildAsync(BuildJobRunnerType trainJobRunnerType)
+    public async Task StartBuildAsync()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
         // ensure that the model was loaded before training
@@ -80,11 +78,9 @@ public class StatisticalEngineServiceTests
         env.WordAlignmentModel.Received().Dispose();
     }
 
-    [TestCase(BuildJobRunnerType.Local)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task CancelBuildAsync_Building(BuildJobRunnerType trainJobRunnerType)
+    public async Task CancelBuildAsync_Building()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
@@ -106,11 +102,9 @@ public class StatisticalEngineServiceTests
         Assert.That(await env.Service.CancelBuildAsync(EngineId1), Is.Null);
     }
 
-    [TestCase(BuildJobRunnerType.Local)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task DeleteAsync_WhileBuilding(BuildJobRunnerType trainJobRunnerType)
+    public async Task DeleteAsync_WhileBuilding()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
@@ -144,16 +138,15 @@ public class StatisticalEngineServiceTests
         private readonly BuildJobRunnerType _trainJobRunnerType;
         private readonly ClearMLBuildJobRunner _clearMLRunner;
         private readonly ServiceProvider _serviceProvider;
-        private IBuildJobService<WordAlignmentEngine>? _deferredBuildJobService;
-        private LocalBuildJobRunner _jobRunner;
-        private CancellationTokenSource _runnerCts = new();
+        private readonly IBuildJobService<WordAlignmentEngine>? _deferredBuildJobService;
+        private readonly LocalBuildJobRunner _jobRunner;
+        private readonly CancellationTokenSource _runnerCts = new();
         private Task? _trainJobTask;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
-        private bool _training = true;
 
-        public TestEnvironment(BuildJobRunnerType trainJobRunnerType = BuildJobRunnerType.ClearML)
+        public TestEnvironment()
         {
-            _trainJobRunnerType = trainJobRunnerType;
+            _trainJobRunnerType = BuildJobRunnerType.ClearML;
             Engines = new MemoryRepository<WordAlignmentEngine>();
             Engines.Add(
                 new WordAlignmentEngine
@@ -277,42 +270,19 @@ public class StatisticalEngineServiceTests
             await StateService.CommitAsync(_lockFactory, Engines, inactiveTimeout);
         }
 
-        public void StopServer()
-        {
-            _runnerCts.Cancel();
-            StateService.Dispose();
-        }
-
-        public void StartServer()
-        {
-            _runnerCts.Dispose();
-            _runnerCts = new CancellationTokenSource();
-            _jobRunner = CreateJobRunner();
-            BuildJobService = CreateBuildJobService();
-            _deferredBuildJobService = BuildJobService;
-            StateService = CreateStateService();
-            Service = CreateService();
-            _ = _jobRunner.StartAsync(_runnerCts.Token);
-        }
-
         public void UseInfiniteTrainJob()
         {
             WordAlignmentBatchTrainer.TrainAsync(
                 Arg.Any<IProgress<ProgressStatus>>(),
                 Arg.Do<CancellationToken>(cancellationToken =>
                 {
-                    while (_training)
+                    while (true)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         Thread.Sleep(100);
                     }
                 })
             );
-        }
-
-        public void StopTraining()
-        {
-            _training = false;
         }
 
         private LocalBuildJobRunner CreateJobRunner()

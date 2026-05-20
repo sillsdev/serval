@@ -40,10 +40,6 @@ public class SmtTransferLocalBuildJobFactory : ILocalBuildJobFactory
                 var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(jobData!, SerializerOptions)!;
                 await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
                 break;
-            case BuildStage.Train:
-                var trainJob = ActivatorUtilities.CreateInstance<SmtTransferTrainBuildJob>(serviceProvider);
-                await trainJob.RunAsync(engineId, buildId, buildOptions, cancellationToken);
-                break;
             case BuildStage.Postprocess:
                 var postprocessJob = ActivatorUtilities.CreateInstance<SmtTransferPostprocessBuildJob>(serviceProvider);
                 var postData = JsonSerializer.Deserialize<PostprocessData>(jobData!, SerializerOptions)!;
