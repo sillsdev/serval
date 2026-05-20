@@ -82,12 +82,7 @@ public class SmtTransferTrainBuildJob(
             throw new OperationCanceledException();
     }
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        object? data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Canceled)
         {
@@ -131,7 +126,7 @@ public class SmtTransferTrainBuildJob(
             cancellationToken
         );
         await using FileStream tgtKeyTermsFileStream = File.Create(Path.Combine(corpusDir, "train.key-terms.trg.txt"));
-        await tgtKeyTermsFileStream.CopyToAsync(tgtKeyTermsText, cancellationToken);
+        await tgtKeyTermsText.CopyToAsync(tgtKeyTermsFileStream, cancellationToken);
     }
 
     private async Task<(int TrainCorpusSize, double Confidence)> TrainAsync(
@@ -208,6 +203,7 @@ public class SmtTransferTrainBuildJob(
         );
         HybridTranslationEngine hybridEngine = new(smtModel, transferEngine) { TargetDetokenizer = detokenizer };
 
+        targetWriter.WriteStartArray();
         await foreach (IReadOnlyList<Pretranslation> batch in BatchAsync(pretranslations))
         {
             string[] segments = batch.Select(p => p.Translation).ToArray();
@@ -227,6 +223,7 @@ public class SmtTransferTrainBuildJob(
                 );
             }
         }
+        targetWriter.WriteEndArray();
     }
 
     public static async IAsyncEnumerable<IReadOnlyList<Pretranslation>> BatchAsync(

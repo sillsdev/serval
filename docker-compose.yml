@@ -20,11 +20,11 @@ services:
       - "ClearML__AccessKey=${ClearML_AccessKey:?access key needed}"
       - "ClearML__SecretKey=${ClearML_SecretKey:?secret key needed}"
       - BuildJob__ClearML__0__Queue=${CLEARML_GPU_QUEUE:-lambert_24gb}
-      - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:latest}
+      - BuildJob__ClearML__0__DockerImage=${MACHINE_PY_IMAGE:-ghcr.io/sillsdev/machine.py:1.12.0}
       - BuildJob__ClearML__1__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
-      - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
+      - BuildJob__ClearML__1__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:1.12.0.cpu_only}
       - BuildJob__ClearML__2__Queue=${CLEARML_CPU_QUEUE:-lambert_24gb.cpu_only}
-      - BuildJob__ClearML__2__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:latest.cpu_only}
+      - BuildJob__ClearML__2__DockerImage=${MACHINE_PY_CPU_IMAGE:-ghcr.io/sillsdev/machine.py:1.12.0.cpu_only}
       - SharedFile__Uri=s3://silnlp/docker-compose/
       - "SharedFile__S3AccessKeyId=${AWS_ACCESS_KEY_ID:?access key needed}"
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
@@ -42,7 +42,7 @@ services:
       - ~/.nuget/packages:/root/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
-    working_dir: '/app/src/Serval/src/Serval.ApiServer'
+    working_dir: "/app/src/Serval/src/Serval.ApiServer"
     entrypoint:
       - dotnet
       - run
@@ -63,7 +63,7 @@ services:
     # then hang forever so the container does not exit
     command:
       [
-        '/bin/sh',
-        '-c',
-        'mongod --quiet --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity'
+        "/bin/sh",
+        "-c",
+        'mongod --quiet --replSet myRS --bind_ip 0.0.0.0 & sleep 2s; mongosh --host localhost:27017 --eval '' config = { "_id" : "myRS", "members" : [{"_id" : 0,"host" : "mongo:27017"}] }; rs.initiate(config, { force: true }); '' ; sleep infinity',
       ]

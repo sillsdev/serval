@@ -112,12 +112,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         CancellationToken cancellationToken
     );
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        IReadOnlyList<ParallelCorpusContract> data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Canceled)
         {

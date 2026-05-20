@@ -124,7 +124,7 @@ public abstract class BuildJob<TEngine, TData>(
         }
         finally
         {
-            await CleanupAsync(engineId, buildId, data, completionStatus);
+            await CleanupAsync(engineId, buildId, completionStatus);
         }
     }
 
@@ -146,12 +146,7 @@ public abstract class BuildJob<TEngine, TData>(
         CancellationToken cancellationToken
     );
 
-    protected virtual Task CleanupAsync(
-        string engineId,
-        string buildId,
-        TData data,
-        JobCompletionStatus completionStatus
-    )
+    protected virtual Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         return Task.CompletedTask;
     }

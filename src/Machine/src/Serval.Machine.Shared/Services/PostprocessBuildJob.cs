@@ -19,12 +19,7 @@ public abstract class PostprocessBuildJob<TEngine>(
         return Task.FromResult(0);
     }
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        (int, double) data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Restarting)
             return;

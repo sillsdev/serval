@@ -55,7 +55,6 @@ public class ClearMLBuildJobRunner(
             buildId,
             _options[engineType].ModelType,
             stage,
-            data,
             buildOptions,
             cancellationToken
         );
