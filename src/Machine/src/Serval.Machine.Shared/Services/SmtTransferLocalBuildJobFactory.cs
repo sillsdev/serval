@@ -37,7 +37,6 @@ public class SmtTransferLocalBuildJobFactory : ILocalBuildJobFactory
         {
             case BuildStage.Preprocess:
                 var preprocessJob = ActivatorUtilities.CreateInstance<SmtTransferPreprocessBuildJob>(serviceProvider);
-                preprocessJob.TrainJobRunnerType = BuildJobRunnerType.Local;
                 var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(jobData!, SerializerOptions)!;
                 await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
                 break;

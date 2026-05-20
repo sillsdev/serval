@@ -15,7 +15,6 @@ public class SmtTransferClearMLBuildJobFactory(
         string buildId,
         string modelType,
         BuildStage stage,
-        object? data = null,
         string? buildOptions = null,
         CancellationToken cancellationToken = default
     )

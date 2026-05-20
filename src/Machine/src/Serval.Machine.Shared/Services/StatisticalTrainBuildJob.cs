@@ -76,12 +76,7 @@ public class StatisticalTrainBuildJob(
             throw new OperationCanceledException();
     }
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        object? data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Canceled)
         {
