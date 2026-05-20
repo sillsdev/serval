@@ -137,15 +137,16 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 SourceRefs = pretranslation.SourceRefs,
                 TargetRefs = pretranslation.TargetRefs,
                 Translation = pretranslation.Translation,
-                SourceTokens = pretranslation.SourceTokens?.ToList(),
-                TranslationTokens = pretranslation.TranslationTokens?.ToList(),
-                Alignment = pretranslation
-                    .Alignment?.Select(a => new AlignedWordPairContract
+                SourceTokens = [.. pretranslation.SourceTokens],
+                TranslationTokens = [.. pretranslation.TranslationTokens],
+                Alignment =
+                [
+                    .. pretranslation.Alignment.Select(a => new AlignedWordPairContract
                     {
                         SourceIndex = a.SourceIndex,
                         TargetIndex = a.TargetIndex,
-                    })
-                    .ToList(),
+                    }),
+                ],
                 Confidence = pretranslation.Confidence,
             };
         }

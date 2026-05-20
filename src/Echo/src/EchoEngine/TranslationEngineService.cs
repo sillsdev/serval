@@ -202,16 +202,17 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
                                 {
                                     CorpusId = corpusId,
                                     TextId = row.TextId,
-                                    SourceRefs = row.SourceRefs.Select(r => r.ToString()!).ToArray(),
-                                    TargetRefs = row.TargetRefs.Select(r => r.ToString()!).ToArray(),
+                                    SourceRefs = [.. row.SourceRefs.Select(r => r.ToString()!)],
+                                    TargetRefs = [.. row.TargetRefs.Select(r => r.ToString()!)],
                                     Translation = row.SourceSegment,
                                     SourceTokens = tokens,
                                     TranslationTokens = tokens,
-                                    Alignment = tokens
-                                        .Select(
+                                    Alignment =
+                                    [
+                                        .. tokens.Select(
                                             (_, i) => new AlignedWordPairContract { SourceIndex = i, TargetIndex = i }
-                                        )
-                                        .ToList(),
+                                        ),
+                                    ],
                                     Confidence = 1.0,
                                 }
                             );
