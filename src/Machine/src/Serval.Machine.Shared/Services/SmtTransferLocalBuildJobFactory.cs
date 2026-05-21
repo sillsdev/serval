@@ -55,6 +55,4 @@ public class SmtTransferLocalBuildJobFactory : ILocalBuildJobFactory
                 throw new ArgumentException($"Unsupported stage: {stage}", nameof(stage));
         }
     }
-
-    private record PostprocessData(int TrainCount, double Confidence);
 }

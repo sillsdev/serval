@@ -56,6 +56,4 @@ public class StatisticalLocalBuildJobFactory : ILocalBuildJobFactory
                 throw new ArgumentException($"Unsupported stage: {stage}", nameof(stage));
         }
     }
-
-    private record PostprocessData(int TrainCount, double Confidence);
 }

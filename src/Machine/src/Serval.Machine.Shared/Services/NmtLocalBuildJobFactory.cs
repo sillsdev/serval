@@ -54,6 +54,4 @@ public class NmtLocalBuildJobFactory : ILocalBuildJobFactory
                 throw new ArgumentException($"NMT does not support local stage: {stage}", nameof(stage));
         }
     }
-
-    private record PostprocessData(int TrainCount, double Confidence);
 }
