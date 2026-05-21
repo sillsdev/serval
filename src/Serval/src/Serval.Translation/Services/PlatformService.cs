@@ -233,8 +233,7 @@ public class PlatformService(
 
     public async Task<bool> BuildExistsAsync(string buildId, CancellationToken cancellationToken = default)
     {
-        Build? build = await _builds.GetAsync(b => b.Id == buildId, cancellationToken);
-        return build is not null;
+        return await _builds.ExistsAsync(b => b.Id == buildId, cancellationToken);
     }
 
     public async Task UpdateBuildStatusAsync(
