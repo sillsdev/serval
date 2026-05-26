@@ -228,9 +228,9 @@ public class LocalBuildJobRunner(
         while (!cancellationToken.IsCancellationRequested)
         {
             EntityChange<TEngine> change = subscription.Change;
-            if (change.Type is EntityChangeType.Insert or EntityChangeType.Update)
+            if (change.Type is EntityChangeType.Insert or EntityChangeType.Update && change.Entity != null)
             {
-                TEngine engine = change.Entity!;
+                TEngine engine = change.Entity;
                 Build? build = engine.CurrentBuild;
                 if (
                     build?.BuildJobRunner == BuildJobRunnerType.Local
