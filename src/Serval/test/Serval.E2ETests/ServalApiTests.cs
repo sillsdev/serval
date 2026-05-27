@@ -100,7 +100,7 @@ public class ServalApiTests
         }
 
         string buildId = await _helperClient.BuildEngineAsync(engineId);
-        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+        WordAlignmentBuild build = await _helperClient.WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId);
         Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
         WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
             engineId,
