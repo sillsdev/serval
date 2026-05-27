@@ -22,6 +22,7 @@ public interface IWordAlignmentPlatformService
         CancellationToken cancellationToken = default
     );
     Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default);
+    Task<bool> BuildExistsAsync(string buildId, CancellationToken cancellationToken = default);
     Task IncrementEngineCorpusSizeAsync(string engineId, int count = 1, CancellationToken cancellationToken = default);
     Task InsertWordAlignmentsAsync(
         string engineId,
