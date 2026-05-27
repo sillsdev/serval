@@ -10,7 +10,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
 )
-    : HangfireBuildJob<TEngine, IReadOnlyList<ParallelCorpusContract>>(
+    : BuildJob<TEngine, IReadOnlyList<ParallelCorpusContract>>(
         platformService,
         engines,
         dataAccessContext,
@@ -28,7 +28,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
     };
 
-    internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
+    internal BuildJobRunnerType TrainJobRunnerType { get; set; } = BuildJobRunnerType.ClearML;
     protected readonly BuildJobOptions BuildJobOptions = options.CurrentValue;
     protected readonly ISharedFileService SharedFileService = sharedFileService;
     protected readonly IParallelCorpusService ParallelCorpusService = parallelCorpusService;
@@ -112,12 +112,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         CancellationToken cancellationToken
     );
 
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        IReadOnlyList<ParallelCorpusContract> data,
-        JobCompletionStatus completionStatus
-    )
+    protected override async Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         if (completionStatus is JobCompletionStatus.Canceled)
         {

@@ -26,11 +26,9 @@ public class StatisticalEngineServiceTests
         env.WordAlignmentModelFactory.Received().InitNew(engineDir);
     }
 
-    [TestCase(BuildJobRunnerType.Hangfire)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task StartBuildAsync(BuildJobRunnerType trainJobRunnerType)
+    public async Task StartBuildAsync()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
         // ensure that the model was loaded before training
@@ -80,11 +78,9 @@ public class StatisticalEngineServiceTests
         env.WordAlignmentModel.Received().Dispose();
     }
 
-    [TestCase(BuildJobRunnerType.Hangfire)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task CancelBuildAsync_Building(BuildJobRunnerType trainJobRunnerType)
+    public async Task CancelBuildAsync_Building()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
@@ -99,19 +95,16 @@ public class StatisticalEngineServiceTests
         Assert.That(engine.CurrentBuild, Is.Null);
     }
 
-    [TestCase(BuildJobRunnerType.Hangfire)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task CancelBuildAsync_NotBuilding(BuildJobRunnerType trainJobRunnerType)
+    [Test]
+    public async Task CancelBuildAsync_NotBuilding()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         Assert.That(await env.Service.CancelBuildAsync(EngineId1), Is.Null);
     }
 
-    [TestCase(BuildJobRunnerType.Hangfire)]
-    [TestCase(BuildJobRunnerType.ClearML)]
-    public async Task DeleteAsync_WhileBuilding(BuildJobRunnerType trainJobRunnerType)
+    public async Task DeleteAsync_WhileBuilding()
     {
-        using var env = new TestEnvironment(trainJobRunnerType);
+        using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
@@ -121,7 +114,6 @@ public class StatisticalEngineServiceTests
         Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.DeleteAsync(EngineId1);
         await env.WaitForBuildToFinishAsync();
-        await env.WaitForAllHangfireJobsToFinishAsync();
         _ = env.WordAlignmentBatchTrainer.DidNotReceive().SaveAsync();
         Assert.That(env.Engines.Contains(EngineId1), Is.False);
     }
@@ -142,18 +134,19 @@ public class StatisticalEngineServiceTests
 
     private class TestEnvironment : DisposableBase
     {
-        private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
-        private readonly BackgroundJobClient _jobClient;
-        private BackgroundJobServer _jobServer;
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
         private readonly BuildJobRunnerType _trainJobRunnerType;
+        private readonly ClearMLBuildJobRunner _clearMLRunner;
+        private readonly ServiceProvider _serviceProvider;
+        private readonly IBuildJobService<WordAlignmentEngine>? _deferredBuildJobService;
+        private readonly LocalBuildJobRunner _jobRunner;
+        private readonly CancellationTokenSource _runnerCts = new();
         private Task? _trainJobTask;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
-        private bool _training = true;
 
-        public TestEnvironment(BuildJobRunnerType trainJobRunnerType = BuildJobRunnerType.ClearML)
+        public TestEnvironment()
         {
-            _trainJobRunnerType = trainJobRunnerType;
+            _trainJobRunnerType = BuildJobRunnerType.ClearML;
             Engines = new MemoryRepository<WordAlignmentEngine>();
             Engines.Add(
                 new WordAlignmentEngine
@@ -166,8 +159,6 @@ public class StatisticalEngineServiceTests
                     BuildRevision = 1,
                 }
             );
-            _memoryStorage = new Hangfire.InMemory.InMemoryStorage();
-            _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
             PlatformService.EngineGroup.Returns(EngineGroup.WordAlignment);
             WordAlignmentModel = Substitute.For<IWordAlignmentModel>();
@@ -226,20 +217,39 @@ public class StatisticalEngineServiceTests
                 BuildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
-            BuildJobService = new BuildJobService<WordAlignmentEngine>(
-                [
-                    new HangfireBuildJobRunner(_jobClient, [new StatisticalHangfireBuildJobFactory()]),
-                    new ClearMLBuildJobRunner(
-                        ClearMLService,
-                        [new StatisticalClearMLBuildJobFactory(SharedFileService, Engines)],
-                        BuildJobOptions
-                    ),
-                ],
-                Engines
+
+            _clearMLRunner = new ClearMLBuildJobRunner(
+                ClearMLService,
+                [new StatisticalClearMLBuildJobFactory(SharedFileService, Engines)],
+                BuildJobOptions
             );
-            _jobServer = CreateJobServer();
+
+            var statisticalEngineOptions = Substitute.For<IOptionsMonitor<StatisticalEngineOptions>>();
+            statisticalEngineOptions.CurrentValue.Returns(new StatisticalEngineOptions());
+
+            var services = new ServiceCollection();
+            services.AddScoped(_ => _deferredBuildJobService!);
+            services.AddSingleton(Substitute.For<IBuildJobService<TranslationEngine>>());
+            services.AddKeyedSingleton(EngineGroup.WordAlignment, (_, _) => PlatformService);
+            services.AddKeyedSingleton(EngineGroup.Translation, (_, _) => Substitute.For<IPlatformService>());
+            services.AddSingleton<IRepository<TranslationEngine>>(new MemoryRepository<TranslationEngine>());
+            services.AddSingleton<IRepository<WordAlignmentEngine>>(Engines);
+            services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());
+            services.AddSingleton(SharedFileService);
+            services.AddSingleton(_lockFactory);
+            services.AddSingleton(Substitute.For<IParallelCorpusService>());
+            services.AddSingleton(BuildJobOptions);
+            services.AddSingleton(WordAlignmentModelFactory);
+            services.AddSingleton(statisticalEngineOptions);
+            services.AddLogging();
+            _serviceProvider = services.BuildServiceProvider();
+
+            _jobRunner = CreateJobRunner();
+            BuildJobService = CreateBuildJobService();
+            _deferredBuildJobService = BuildJobService;
             StateService = CreateStateService();
             Service = CreateService();
+            _ = _jobRunner.StartAsync(_runnerCts.Token);
         }
 
         public StatisticalEngineService Service { get; private set; }
@@ -249,31 +259,15 @@ public class StatisticalEngineServiceTests
         public ITrainer WordAlignmentBatchTrainer { get; }
         public IWordAlignmentModel WordAlignmentModel { get; }
         public IPlatformService PlatformService { get; }
-
         public IClearMLService ClearMLService { get; }
         public IClearMLQueueService ClearMLMonitorService { get; }
-
         public ISharedFileService SharedFileService { get; }
-
-        public IBuildJobService<WordAlignmentEngine> BuildJobService { get; }
+        public IBuildJobService<WordAlignmentEngine> BuildJobService { get; private set; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public async Task CommitAsync(TimeSpan inactiveTimeout)
         {
             await StateService.CommitAsync(_lockFactory, Engines, inactiveTimeout);
-        }
-
-        public void StopServer()
-        {
-            _jobServer.Dispose();
-            StateService.Dispose();
-        }
-
-        public void StartServer()
-        {
-            _jobServer = CreateJobServer();
-            StateService = CreateStateService();
-            Service = CreateService();
         }
 
         public void UseInfiniteTrainJob()
@@ -282,7 +276,7 @@ public class StatisticalEngineServiceTests
                 Arg.Any<IProgress<ProgressStatus>>(),
                 Arg.Do<CancellationToken>(cancellationToken =>
                 {
-                    while (_training)
+                    while (true)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         Thread.Sleep(100);
@@ -291,20 +285,18 @@ public class StatisticalEngineServiceTests
             );
         }
 
-        public void StopTraining()
+        private LocalBuildJobRunner CreateJobRunner()
         {
-            _training = false;
+            return new LocalBuildJobRunner(
+                [new StatisticalTestLocalBuildJobFactory(_trainJobRunnerType)],
+                _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
+                _serviceProvider.GetRequiredService<ILogger<LocalBuildJobRunner>>()
+            );
         }
 
-        private BackgroundJobServer CreateJobServer()
+        private IBuildJobService<WordAlignmentEngine> CreateBuildJobService()
         {
-            var jobServerOptions = new BackgroundJobServerOptions
-            {
-                Activator = new EnvActivator(this),
-                Queues = new[] { BuildJobQueues.Statistical },
-                CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
-            };
-            return new BackgroundJobServer(jobServerOptions, _memoryStorage);
+            return new BuildJobService<WordAlignmentEngine>([_jobRunner, _clearMLRunner], Engines);
         }
 
         private StatisticalEngineStateService CreateStateService()
@@ -349,13 +341,6 @@ public class StatisticalEngineServiceTests
             return factory;
         }
 
-        public async Task WaitForAllHangfireJobsToFinishAsync()
-        {
-            IMonitoringApi monitoringApi = _memoryStorage.GetMonitoringApi();
-            while (monitoringApi.EnqueuedCount(BuildJobQueues.Statistical) > 0 || monitoringApi.ProcessingCount() > 0)
-                await Task.Delay(50);
-        }
-
         public async Task WaitForBuildToFinishAsync()
         {
             await WaitForBuildState(e => e.CurrentBuild is null);
@@ -397,7 +382,10 @@ public class StatisticalEngineServiceTests
         protected override void DisposeManagedResources()
         {
             StateService.Dispose();
-            _jobServer.Dispose();
+            _runnerCts.Cancel();
+            _serviceProvider.Dispose();
+            _cancellationTokenSource.Dispose();
+            _runnerCts.Dispose();
         }
 
         private async Task RunTrainJob()
@@ -430,7 +418,7 @@ public class StatisticalEngineServiceTests
                 );
 
                 await BuildJobService.StartBuildJobAsync(
-                    BuildJobRunnerType.Hangfire,
+                    BuildJobRunnerType.Local,
                     EngineType.Statistical,
                     EngineId1,
                     BuildId1,
@@ -444,58 +432,53 @@ public class StatisticalEngineServiceTests
             }
         }
 
-        private class EnvActivator(TestEnvironment env) : JobActivator
+        private class StatisticalTestLocalBuildJobFactory(BuildJobRunnerType trainJobRunnerType) : ILocalBuildJobFactory
         {
-            private readonly TestEnvironment _env = env;
-
-            public override object ActivateJob(Type jobType)
+            private static readonly JsonSerializerOptions SerializerOptions = new()
             {
-                if (jobType == typeof(WordAlignmentPreprocessBuildJob))
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+
+            public EngineType EngineType => EngineType.Statistical;
+
+            public string? Serialize(BuildStage stage, object? data) =>
+                new StatisticalLocalBuildJobFactory().Serialize(stage, data);
+
+            public async Task RunAsync(
+                IServiceProvider serviceProvider,
+                string engineId,
+                string buildId,
+                BuildStage stage,
+                string? jobData,
+                string? buildOptions,
+                CancellationToken cancellationToken
+            )
+            {
+                switch (stage)
                 {
-                    return new WordAlignmentPreprocessBuildJob(
-                        _env.PlatformService,
-                        _env.Engines,
-                        new MemoryDataAccessContext(),
-                        Substitute.For<ILogger<WordAlignmentPreprocessBuildJob>>(),
-                        _env.BuildJobService,
-                        _env.SharedFileService,
-                        Substitute.For<IParallelCorpusService>(),
-                        _env.BuildJobOptions
-                    )
-                    {
-                        TrainJobRunnerType = _env._trainJobRunnerType,
-                    };
+                    case BuildStage.Preprocess:
+                        var preprocessJob = ActivatorUtilities.CreateInstance<WordAlignmentPreprocessBuildJob>(
+                            serviceProvider
+                        );
+                        preprocessJob.TrainJobRunnerType = trainJobRunnerType;
+                        var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(
+                            jobData!,
+                            SerializerOptions
+                        )!;
+                        await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
+                        break;
+                    default:
+                        await new StatisticalLocalBuildJobFactory().RunAsync(
+                            serviceProvider,
+                            engineId,
+                            buildId,
+                            stage,
+                            jobData,
+                            buildOptions,
+                            cancellationToken
+                        );
+                        break;
                 }
-                if (jobType == typeof(StatisticalPostprocessBuildJob))
-                {
-                    var engineOptions = Substitute.For<IOptionsMonitor<StatisticalEngineOptions>>();
-                    engineOptions.CurrentValue.Returns(new StatisticalEngineOptions());
-                    return new StatisticalPostprocessBuildJob(
-                        _env.PlatformService,
-                        _env.Engines,
-                        new MemoryDataAccessContext(),
-                        _env.BuildJobService,
-                        Substitute.For<ILogger<StatisticalPostprocessBuildJob>>(),
-                        _env.SharedFileService,
-                        _env._lockFactory,
-                        _env.WordAlignmentModelFactory,
-                        _env.BuildJobOptions,
-                        engineOptions
-                    );
-                }
-                if (jobType == typeof(StatisticalTrainBuildJob))
-                {
-                    return new StatisticalTrainBuildJob(
-                        _env.PlatformService,
-                        _env.Engines,
-                        new MemoryDataAccessContext(),
-                        _env.BuildJobService,
-                        Substitute.For<ILogger<StatisticalTrainBuildJob>>(),
-                        _env.SharedFileService,
-                        _env.WordAlignmentModelFactory
-                    );
-                }
-                return base.ActivateJob(jobType);
             }
         }
     }

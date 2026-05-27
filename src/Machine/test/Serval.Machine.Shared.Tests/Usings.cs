@@ -1,12 +1,11 @@
-﻿global using Hangfire;
-global using Hangfire.Storage;
+﻿global using System.Text.Json;
+global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Hosting.Internal;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using Nito.AsyncEx;
 global using NSubstitute;
-global using NSubstitute.ClearExtensions;
 global using NSubstitute.ReceivedExtensions;
 global using NUnit.Framework;
 global using NUnit.Framework.Constraints;

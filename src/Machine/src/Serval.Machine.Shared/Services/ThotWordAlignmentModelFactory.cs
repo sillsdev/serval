@@ -20,6 +20,12 @@ public class ThotWordAlignmentModelFactory(IOptionsMonitor<ThotWordAlignmentMode
         return new SymmetrizedWordAlignmentModel(directModel, inverseModel);
     }
 
+    public override ITrainer CreateTrainer(
+        string engineDir,
+        IRangeTokenizer<string, int, string> tokenizer,
+        IParallelTextCorpus corpus
+    ) => CreateTrainer(engineDir, tokenizer, corpus);
+
     public ITrainer CreateTrainer(
         string engineDir,
         ITokenizer<string, int, string> tokenizer,

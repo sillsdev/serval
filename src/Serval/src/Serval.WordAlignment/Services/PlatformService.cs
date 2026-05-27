@@ -224,6 +224,11 @@ public class PlatformService(
         );
     }
 
+    public async Task<bool> BuildExistsAsync(string buildId, CancellationToken cancellationToken = default)
+    {
+        return await _builds.ExistsAsync(b => b.Id == buildId, cancellationToken);
+    }
+
     public async Task UpdateBuildStatusAsync(
         string buildId,
         BuildProgressStatusContract progressStatus,

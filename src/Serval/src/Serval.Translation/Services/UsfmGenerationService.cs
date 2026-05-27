@@ -258,13 +258,13 @@ public class UsfmGenerationService(
                     .Where(row => row.Refs.Any())
                     .OrderBy(row => row.Refs[0])
                     .ToArray(),
-                isSource ? sourceSettings?.FullName : targetSettings?.FullName,
-                textBehavior,
-                paragraphBehavior,
-                embedBehavior,
-                styleBehavior,
+                fullName: isSource ? sourceSettings?.FullName : targetSettings?.FullName,
+                textBehavior: textBehavior,
+                paragraphBehavior: paragraphBehavior,
+                embedBehavior: embedBehavior,
+                styleBehavior: styleBehavior,
                 updateBlockHandlers: updateBlockHandlers,
-                remarks: remarks,
+                remarks: remarks?.Select(r => (0, r)),
                 errorHandler: (_) => true,
                 compareSegments: isSource
             ) ?? "";
@@ -398,7 +398,10 @@ public class UsfmGenerationService(
         }
         remarks.Add(quotationDenormalizationRemark);
 
-        var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer], remarks: remarks);
+        var updater = new UpdateUsfmParserHandler(
+            updateBlockHandlers: [quotationMarkDenormalizer],
+            remarks: remarks.Select(r => (0, r))
+        );
         UsfmParser.Parse(usfm, updater);
 
         usfm = updater.GetUsfm();

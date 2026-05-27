@@ -10,8 +10,8 @@ public enum BuildJobState
 
 public enum BuildJobRunnerType
 {
-    Hangfire,
     ClearML,
+    Local,
 }
 
 public enum BuildStage
@@ -28,6 +28,8 @@ public record Build
     public required string JobId { get; init; }
     public required BuildJobRunnerType BuildJobRunner { get; init; }
     public required BuildStage Stage { get; init; }
+    public DateTimeOffset QueuedAt { get; init; }
     public string? Options { get; set; }
+    public string? JobData { get; init; }
     public required BuildExecutionData ExecutionData { get; init; }
 }

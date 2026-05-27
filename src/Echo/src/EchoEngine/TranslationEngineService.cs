@@ -180,6 +180,16 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
 
                 try
                 {
+                    //Wait for build to exist in the database before starting the build.
+                    TimeSpan timeout = TimeSpan.FromSeconds(60);
+                    DateTime start = DateTime.UtcNow;
+                    while (
+                        (DateTime.UtcNow - start < timeout)
+                        && !await platform.BuildExistsAsync(buildId, linkedCts.Token)
+                    )
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(10), linkedCts.Token);
+                    }
                     await platform.BuildStartedAsync(buildId, linkedCts.Token);
 
                     int trainCount = 0;

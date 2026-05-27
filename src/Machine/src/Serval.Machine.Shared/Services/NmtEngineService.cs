@@ -91,7 +91,7 @@ public class NmtEngineService(
     )
     {
         bool building = !await _buildJobService.StartBuildJobAsync(
-            BuildJobRunnerType.Hangfire,
+            BuildJobRunnerType.Local,
             EngineType.Nmt,
             engineId,
             buildId,

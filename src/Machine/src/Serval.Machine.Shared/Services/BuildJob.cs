@@ -1,15 +1,14 @@
-﻿namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Shared.Services;
 
-public abstract class HangfireBuildJob<TEngine>(
+public abstract class BuildJob<TEngine>(
     IPlatformService platformService,
     IRepository<TEngine> engines,
     IDataAccessContext dataAccessContext,
     IBuildJobService<TEngine> buildJobService,
-    ILogger<HangfireBuildJob<TEngine>> logger
-) : HangfireBuildJob<TEngine, object?>(platformService, engines, dataAccessContext, buildJobService, logger)
+    ILogger<BuildJob<TEngine>> logger
+) : BuildJob<TEngine, object?>(platformService, engines, dataAccessContext, buildJobService, logger)
     where TEngine : ITrainingEngine
 {
-    [AutomaticRetry(Attempts = 0)]
     public virtual Task RunAsync(
         string engineId,
         string buildId,
@@ -21,12 +20,12 @@ public abstract class HangfireBuildJob<TEngine>(
     }
 }
 
-public abstract class HangfireBuildJob<TEngine, TData>(
+public abstract class BuildJob<TEngine, TData>(
     IPlatformService platformService,
     IRepository<TEngine> engines,
     IDataAccessContext dataAccessContext,
     IBuildJobService<TEngine> buildJobService,
-    ILogger<HangfireBuildJob<TEngine, TData>> logger
+    ILogger<BuildJob<TEngine, TData>> logger
 )
     where TEngine : ITrainingEngine
 {
@@ -34,9 +33,8 @@ public abstract class HangfireBuildJob<TEngine, TData>(
     protected IRepository<TEngine> Engines { get; } = engines;
     protected IDataAccessContext DataAccessContext { get; } = dataAccessContext;
     protected IBuildJobService<TEngine> BuildJobService { get; } = buildJobService;
-    protected ILogger<HangfireBuildJob<TEngine, TData>> Logger { get; } = logger;
+    protected ILogger<BuildJob<TEngine, TData>> Logger { get; } = logger;
 
-    [AutomaticRetry(Attempts = 0)]
     public virtual async Task RunAsync(
         string engineId,
         string buildId,
@@ -59,8 +57,7 @@ public abstract class HangfireBuildJob<TEngine, TData>(
         }
         catch (OperationCanceledException e)
         {
-            // Log the full exception for debugging purposes
-            Logger.LogInformation(e, "Build Hangfire job canceled ({0})", buildId);
+            Logger.LogInformation(e, "Build job canceled ({0})", buildId);
 
             // Check if the cancellation was initiated by an API call or a shutdown.
             TEngine? engine = await Engines.GetAsync(
@@ -87,8 +84,7 @@ public abstract class HangfireBuildJob<TEngine, TData>(
             }
             else if (engine is not null)
             {
-                // the build was canceled, because of a server shutdown
-                // switch state back to pending
+                // the build was canceled because of a server shutdown — switch state back to pending
                 completionStatus = JobCompletionStatus.Restarting;
                 await DataAccessContext.WithTransactionAsync(
                     async (ct) =>
@@ -128,7 +124,7 @@ public abstract class HangfireBuildJob<TEngine, TData>(
         }
         finally
         {
-            await CleanupAsync(engineId, buildId, data, completionStatus);
+            await CleanupAsync(engineId, buildId, completionStatus);
         }
     }
 
@@ -150,12 +146,7 @@ public abstract class HangfireBuildJob<TEngine, TData>(
         CancellationToken cancellationToken
     );
 
-    protected virtual Task CleanupAsync(
-        string engineId,
-        string buildId,
-        TData data,
-        JobCompletionStatus completionStatus
-    )
+    protected virtual Task CleanupAsync(string engineId, string buildId, JobCompletionStatus completionStatus)
     {
         return Task.CompletedTask;
     }

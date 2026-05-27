@@ -26,7 +26,9 @@ public class ServalApiTests
         string engineId = await _helperClient.CreateNewEngineAsync("Echo", "es", "es", "Echo1");
         string[] books = ["1JN.txt", "2JN.txt", "3JN.txt"];
         string corpusId = await _helperClient.AddLegacyCorpusToEngineAsync(engineId, books, "es", "es", true);
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
 
         // Test Pretranslation
         IList<Pretranslation> pretranslations =
@@ -65,7 +67,9 @@ public class ServalApiTests
             corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, pretranslateCorpus, true);
         }
 
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
 
         // Test Pretranslation
         IList<Pretranslation> pretranslations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
@@ -95,7 +99,9 @@ public class ServalApiTests
             await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
         }
 
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
+        WordAlignmentBuild build = await _helperClient.WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
         WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
             engineId,
             new WordAlignmentRequest { SourceSegment = "espíritu verdad", TargetSegment = "espíritu verdad" }
@@ -163,6 +169,8 @@ public class ServalApiTests
 
         // Validate an NMT build using text files
         string buildId = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
         await Task.Delay(1000);
         IList<Pretranslation> lTrans1 = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
@@ -174,7 +182,6 @@ public class ServalApiTests
             cId2
         );
 
-        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
         Assert.That(build.ExecutionData, Is.Not.Null);
 
         var executionData = build.ExecutionData;
@@ -199,7 +206,9 @@ public class ServalApiTests
         );
         await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
         string cId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, pretranslateCorpus, true);
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
         await Task.Delay(1000);
         IList<Pretranslation> lTrans = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
@@ -280,11 +289,9 @@ public class ServalApiTests
         _helperClient.TranslationBuildConfig.Options =
             "{\"max_steps\":50, \"use_key_terms\":true, \"parent_model_name\": \"facebook/nllb-200-distilled-600M\", \"train_params\": {\"per_device_train_batch_size\":4}, \"generate_params\":{\"num_beams\": 2}}";
 
-        await _helperClient.BuildEngineAsync(engineId);
-        Assert.That(
-            (await _helperClient.TranslationEnginesClient.GetAllBuildsAsync(engineId)).First().State,
-            Is.EqualTo(JobState.Completed)
-        );
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
 
         IList<Pretranslation> translations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,
@@ -442,7 +449,9 @@ public class ServalApiTests
             false,
             legacyCorpus
         );
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
         TranslationResult tResult = await _helperClient.TranslationEnginesClient.TranslateAsync(
             engineId,
             "verdad mundo"
@@ -458,7 +467,9 @@ public class ServalApiTests
             false,
             legacyCorpus
         );
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId2 = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build2 = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId2);
+        Assert.That(build2.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build2));
         TranslationResult tResult2 = await _helperClient.TranslationEnginesClient.TranslateAsync(
             engineId,
             "verdad mundo"
@@ -515,7 +526,9 @@ public class ServalApiTests
             false,
             legacyCorpus
         );
-        await _helperClient.BuildEngineAsync(engineId);
+        string buildId3 = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build3 = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId3);
+        Assert.That(build3.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build3));
 
         WordGraph result = await _helperClient.TranslationEnginesClient.GetWordGraphAsync(engineId, "verdad");
         Assert.That(result.SourceTokens, Has.Count.EqualTo(1));
@@ -544,6 +557,9 @@ public class ServalApiTests
             new WordAlignmentCorpusConfig() { ParallelCorpusId = corpusId },
         ];
         string buildId = await _helperClient.BuildEngineAsync(engineId);
+        WordAlignmentBuild build = await _helperClient.WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId);
+        Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
+
         WordAlignmentResult tResult = await _helperClient.WordAlignmentEnginesClient.AlignAsync(
             engineId,
             new WordAlignmentRequest() { SourceSegment = "espíritu verdad", TargetSegment = "spirit truth" }
@@ -568,7 +584,6 @@ public class ServalApiTests
             Assert.That(secondPair.Score, Is.EqualTo(0.9).Within(0.1));
         });
 
-        WordAlignmentBuild build = await _helperClient.WordAlignmentEnginesClient.GetBuildAsync(engineId, buildId);
         Assert.That(build.ExecutionData, Is.Not.Null);
 
         var executionData = build.ExecutionData;

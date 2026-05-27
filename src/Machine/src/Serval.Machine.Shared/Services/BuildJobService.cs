@@ -70,7 +70,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
     )
     {
         IBuildJobRunner runner = Runners[runnerType];
-        string jobId = await runner.CreateJobAsync(
+        (string jobId, string? jobData) = await runner.CreateJobAsync(
             engineType,
             engineId,
             buildId,
@@ -102,7 +102,9 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
                             BuildJobRunner = runner.Type,
                             Stage = stage,
                             JobState = BuildJobState.Pending,
+                            QueuedAt = DateTimeOffset.UtcNow,
                             Options = buildOptions,
+                            JobData = jobData,
                             ExecutionData = new BuildExecutionData(),
                         }
                     ),
