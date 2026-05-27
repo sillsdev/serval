@@ -140,14 +140,15 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                 TargetRefs = record.TargetRefs,
                 SourceTokens = record.SourceTokens,
                 TargetTokens = record.TargetTokens,
-                Alignment = record
-                    .Alignment.Select(a => new AlignedWordPairContract
+                Alignment =
+                [
+                    .. record.Alignment.Select(a => new AlignedWordPairContract
                     {
                         SourceIndex = a.SourceIndex,
                         TargetIndex = a.TargetIndex,
                         Score = a.TranslationScore,
-                    })
-                    .ToList(),
+                    }),
+                ],
             };
         }
     }
@@ -187,6 +188,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                             textId = reader.GetString()!;
                             break;
                         case "refs":
+                            // Obsolete May 2026
                             reader.Read();
                             targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
                             break;

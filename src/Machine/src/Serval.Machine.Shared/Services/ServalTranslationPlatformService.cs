@@ -137,15 +137,16 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 SourceRefs = pretranslation.SourceRefs,
                 TargetRefs = pretranslation.TargetRefs,
                 Translation = pretranslation.Translation,
-                SourceTokens = pretranslation.SourceTokens?.ToList(),
-                TranslationTokens = pretranslation.TranslationTokens?.ToList(),
-                Alignment = pretranslation
-                    .Alignment?.Select(a => new AlignedWordPairContract
+                SourceTokens = [.. pretranslation.SourceTokens],
+                TranslationTokens = [.. pretranslation.TranslationTokens],
+                Alignment =
+                [
+                    .. pretranslation.Alignment.Select(a => new AlignedWordPairContract
                     {
                         SourceIndex = a.SourceIndex,
                         TargetIndex = a.TargetIndex,
-                    })
-                    .ToList(),
+                    }),
+                ],
                 Confidence = pretranslation.Confidence,
             };
         }
@@ -190,6 +191,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                             textId = reader.GetString()!;
                             break;
                         case "refs":
+                            // Obsolete May 2026
                             reader.Read();
                             targetRefs = JsonSerializer.Deserialize<IList<string>>(ref reader, options)!.ToArray();
                             break;
