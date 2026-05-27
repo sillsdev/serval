@@ -38,7 +38,9 @@ public partial class TranslationBuildsController
     /// <summary>
     /// Get all builds for your translation engines that are created after the specified date.
     /// </summary>
-    /// <param name="createdAfter">The date and time in UTC that the builds were created after (optional).</param>
+    /// <param name="createdAfter">
+    /// The date and time (either in UTC or with offset) that the builds were created after (optional).
+    /// </param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The engines</response>
     /// <response code="401">The client is not authenticated.</response>

@@ -66,7 +66,7 @@ public partial class TranslationBuildsController
     /// Serval will wait until a build is finished after that date and time.
     /// </summary>
     /// <param name="finishedAfter">
-    /// The date and time in UTC that the next build should have finished after.
+    /// The date and time (either in UTC or with offset) that the next build should have finished after.
     /// You should use the <c>finished</c> timestamp of the build previously returned when calling this endpoint.
     /// </param>
     /// <param name="cancellationToken"></param>
