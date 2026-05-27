@@ -36,6 +36,16 @@ public class UpdateDataFileHandler(
                     );
                     if (originalDataFile is null)
                         throw new EntityNotFoundException($"Could not find the DataFile '{request.FileId}'.");
+                    if (originalDataFile.Format == FileFormat.Paratext)
+                    {
+                        ParatextMetadata metadata = await ParatextProjectDataParser.ParseParatextMetadataAsync(path);
+                        await dataFiles.UpdateAsync(
+                            request.FileId,
+                            u => u.Set(f => f.FileMetadata, metadata),
+                            cancellationToken: ct
+                        );
+                    }
+
                     await deletedFiles.InsertAsync(
                         new DeletedFile { Filename = originalDataFile.Filename, DeletedAt = DateTime.UtcNow },
                         ct
