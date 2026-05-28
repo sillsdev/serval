@@ -69,7 +69,10 @@ public class DistributedReaderWriterLock(
         (bool acquired, DateTime expiresAt) = await TryAcquireReaderLock(lockId, resolvedLifetime, cancellationToken);
         if (!acquired)
         {
-            using ISubscription<RWLock> sub = await _locks.SubscribeAsync(rwl => rwl.Id == _id, cancellationToken);
+            using ISubscription<RWLock> sub = await _locks.SubscribeAsync(
+                rwl => rwl.Id == _id,
+                cancellationToken: cancellationToken
+            );
             do
             {
                 RWLock? rwLock = sub.Change.Entity;
@@ -134,7 +137,10 @@ public class DistributedReaderWriterLock(
             );
             try
             {
-                using ISubscription<RWLock> sub = await _locks.SubscribeAsync(rwl => rwl.Id == _id, cancellationToken);
+                using ISubscription<RWLock> sub = await _locks.SubscribeAsync(
+                    rwl => rwl.Id == _id,
+                    cancellationToken: cancellationToken
+                );
                 do
                 {
                     RWLock? rwLock = sub.Change.Entity;

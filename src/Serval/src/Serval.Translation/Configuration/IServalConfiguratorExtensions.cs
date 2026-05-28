@@ -84,6 +84,10 @@ public static class IServalConfiguratorExtensions
                         .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
                         .ToListAsync(),
                 MongoMigrations.MigrateTargetQuoteConvention,
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.DateFinished))
+                    ),
             ]
         );
         configurator.DataAccess.AddRepository<Pretranslation>(
