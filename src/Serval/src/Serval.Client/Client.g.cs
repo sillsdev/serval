@@ -7398,22 +7398,21 @@ namespace Serval.Client
         /// <summary>
         /// Get all builds for your translation engines that are created after the specified date.
         /// </summary>
-        /// <param name="createdAfter">The date and time in UTC that the builds were created after (optional).</param>
+        /// <param name="createdAfter">The date and time (either in UTC or with offset) that the builds were created after (optional).</param>
         /// <returns>The engines</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationBuild>> GetAllBuildsCreatedAfterAsync(System.DateTimeOffset? createdAfter = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get the next build that finished after the specified date and time.
-        /// <br/>If not build has yet completed after that timestamp,
-        /// <br/>Serval will wait until a build is finished after that date and time.
+        /// Get the next build that finishes after the specified build id.
+        /// <br/>If no build has yet completed after that id, or you do not specify the id,
+        /// <br/>Serval will wait until the next build is finished.
         /// </summary>
-        /// <param name="finishedAfter">The date and time in UTC that the next build should have finished after.
-        /// <br/>You should use the finished timestamp of the build previously returned when calling this endpoint.</param>
-        /// <returns>The engines</returns>
+        /// <param name="finishedAfter">The id of the build that the next build must finish after (optional)</param>
+        /// <returns>The build</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TranslationBuild> GetNextFinishedBuildAsync(System.DateTimeOffset? finishedAfter = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<TranslationBuild> GetNextFinishedBuildAsync(string? finishedAfter = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
     }
 
@@ -7469,7 +7468,7 @@ namespace Serval.Client
         /// <summary>
         /// Get all builds for your translation engines that are created after the specified date.
         /// </summary>
-        /// <param name="createdAfter">The date and time in UTC that the builds were created after (optional).</param>
+        /// <param name="createdAfter">The date and time (either in UTC or with offset) that the builds were created after (optional).</param>
         /// <returns>The engines</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<TranslationBuild>> GetAllBuildsCreatedAfterAsync(System.DateTimeOffset? createdAfter = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
@@ -7490,7 +7489,7 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (createdAfter != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("created-after")).Append('=').Append(System.Uri.EscapeDataString(createdAfter.Value.ToString("u", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("created-after")).Append('=').Append(System.Uri.EscapeDataString(createdAfter.Value.ToString("o", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -7566,15 +7565,14 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get the next build that finished after the specified date and time.
-        /// <br/>If not build has yet completed after that timestamp,
-        /// <br/>Serval will wait until a build is finished after that date and time.
+        /// Get the next build that finishes after the specified build id.
+        /// <br/>If no build has yet completed after that id, or you do not specify the id,
+        /// <br/>Serval will wait until the next build is finished.
         /// </summary>
-        /// <param name="finishedAfter">The date and time in UTC that the next build should have finished after.
-        /// <br/>You should use the finished timestamp of the build previously returned when calling this endpoint.</param>
-        /// <returns>The engines</returns>
+        /// <param name="finishedAfter">The id of the build that the next build must finish after (optional)</param>
+        /// <returns>The build</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetNextFinishedBuildAsync(System.DateTimeOffset? finishedAfter = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<TranslationBuild> GetNextFinishedBuildAsync(string? finishedAfter = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -7592,7 +7590,7 @@ namespace Serval.Client
                     urlBuilder_.Append('?');
                     if (finishedAfter != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("finished-after")).Append('=').Append(System.Uri.EscapeDataString(finishedAfter.Value.ToString("u", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("finished-after")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(finishedAfter, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 

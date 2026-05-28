@@ -239,6 +239,7 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
 
     public async Task<ISubscription<T>> SubscribeAsync(
         Expression<Func<T, bool>> filter,
+        IEnumerable<(Expression<Func<T, object?>> Field, SortOrder SortOrder)>? sort = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -253,6 +254,21 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
             { "limit", 1 },
             { "singleBatch", true },
         };
+        if (sort is not null && sort.Any())
+        {
+            findCommand.Add(
+                "sort",
+                Builders<T>
+                    .Sort.Combine(
+                        sort.Select(s =>
+                            s.SortOrder == SortOrder.Ascending
+                                ? Builders<T>.Sort.Ascending(s.Field)
+                                : Builders<T>.Sort.Descending(s.Field)
+                        )
+                    )
+                    .Render(new RenderArgs<T>(_collection.DocumentSerializer, _collection.Settings.SerializerRegistry))
+            );
+        }
         BsonDocument result;
         if (_context.Session is not null)
         {

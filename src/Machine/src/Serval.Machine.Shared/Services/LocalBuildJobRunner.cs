@@ -103,14 +103,14 @@ public class LocalBuildJobRunner(
                 e.CurrentBuild != null
                 && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
                 && e.CurrentBuild.JobState == BuildJobState.Pending,
-            stoppingToken
+            cancellationToken: stoppingToken
         );
         using ISubscription<WordAlignmentEngine> wordAlignmentSub = await wordAlignmentEngines.SubscribeAsync(
             e =>
                 e.CurrentBuild != null
                 && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
                 && e.CurrentBuild.JobState == BuildJobState.Pending,
-            stoppingToken
+            cancellationToken: stoppingToken
         );
 
         await RecoverPendingJobsAsync(scope.ServiceProvider, stoppingToken);

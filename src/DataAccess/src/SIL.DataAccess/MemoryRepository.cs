@@ -298,13 +298,33 @@ public class MemoryRepository<T> : IRepository<T>
 
     public async Task<ISubscription<T>> SubscribeAsync(
         Expression<Func<T, bool>> filter,
+        IEnumerable<(Expression<Func<T, object?>> Field, SortOrder SortOrder)>? sort = null,
         CancellationToken cancellationToken = default
     )
     {
         cancellationToken.ThrowIfCancellationRequested();
         using (await _lock.LockAsync(cancellationToken))
         {
-            T? initialEntity = Entities.AsQueryable().FirstOrDefault(filter);
+            IQueryable<T> query = Entities.AsQueryable().Where(filter);
+            if (sort is not null && sort.Any())
+            {
+                (Expression<Func<T, object?>> firstField, SortOrder firstSortOrder) = sort.First();
+                IOrderedQueryable<T> orderedQuery =
+                    firstSortOrder == SortOrder.Ascending
+                        ? query.OrderBy(firstField)
+                        : query.OrderByDescending(firstField);
+
+                foreach ((Expression<Func<T, object?>> field, SortOrder sortOrder) in sort.Skip(1))
+                {
+                    orderedQuery =
+                        sortOrder == SortOrder.Ascending
+                            ? orderedQuery.ThenBy(field)
+                            : orderedQuery.ThenByDescending(field);
+                }
+
+                query = orderedQuery;
+            }
+            T? initialEntity = query.FirstOrDefault();
             var subscription = new MemorySubscription<T>(initialEntity, RemoveSubscription);
             _subscriptions[subscription] = filter.Compile();
             return subscription;

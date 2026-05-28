@@ -1,6 +1,6 @@
 namespace Serval.Translation.Features.Builds;
 
-public record GetNextFinishedBuild(string Owner, DateTime FinishedAfter) : IRequest<GetNextFinishedBuildResponse>;
+public record GetNextFinishedBuild(string Owner, string? Id = null) : IRequest<GetNextFinishedBuildResponse>;
 
 public record GetNextFinishedBuildResponse(
     [property: MemberNotNullWhen(false, nameof(Build))] bool TimedOut,
@@ -18,10 +18,14 @@ public class GetNextFinishedBuildHandler(
         CancellationToken cancellationToken = default
     )
     {
-        DateTime finishedAfter =
-            request.FinishedAfter.Kind == DateTimeKind.Unspecified
-                ? DateTime.SpecifyKind(request.FinishedAfter, DateTimeKind.Utc)
-                : request.FinishedAfter.ToUniversalTime();
+        DateTime dateFinished = DateTime.UtcNow;
+        string? id = request.Id;
+        if (id is not null)
+        {
+            Build? build = await builds.GetAsync(id, cancellationToken);
+            if (build is not null)
+                dateFinished = build.DateFinished ?? DateTime.UtcNow;
+        }
 
         (_, EntityChange<Build> change) = await TaskEx.Timeout(
             async ct =>
@@ -32,7 +36,10 @@ public class GetNextFinishedBuildHandler(
                         && (
                             b.State == JobState.Completed || b.State == JobState.Canceled || b.State == JobState.Faulted
                         )
-                        && b.DateFinished > finishedAfter,
+                        && (
+                            b.DateFinished > dateFinished || (b.DateFinished == dateFinished && b.Id.CompareTo(id) > 0)
+                        ),
+                    [(b => b.DateFinished, SortOrder.Ascending), (b => b.Id, SortOrder.Ascending)],
                     ct
                 );
                 EntityChange<Build> curChange = subscription.Change;
@@ -61,16 +68,13 @@ public class GetNextFinishedBuildHandler(
 public partial class TranslationBuildsController
 {
     /// <summary>
-    /// Get the next build that finished after the specified date and time.
-    /// If not build has yet completed after that timestamp,
-    /// Serval will wait until a build is finished after that date and time.
+    /// Get the next build that finishes after the specified build id.
+    /// If no build has yet completed after that id, or you do not specify the id,
+    /// Serval will wait until the next build is finished.
     /// </summary>
-    /// <param name="finishedAfter">
-    /// The date and time in UTC that the next build should have finished after.
-    /// You should use the <c>finished</c> timestamp of the build previously returned when calling this endpoint.
-    /// </param>
+    /// <param name="finishedAfter">The id of the build that the next build must finish after (optional)</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">The engines</response>
+    /// <response code="200">The build</response>
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client cannot perform the operation.</response>
     /// <response code="408">The long polling request timed out.</response>
@@ -83,7 +87,7 @@ public partial class TranslationBuildsController
     [ProducesResponseType(typeof(void), StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<TranslationBuildDto>> GetNextFinishedBuildAsync(
-        [FromQuery(Name = "finished-after")] DateTime finishedAfter,
+        [FromQuery(Name = "finished-after")] string? finishedAfter,
         [FromServices] IRequestHandler<GetNextFinishedBuild, GetNextFinishedBuildResponse> handler,
         CancellationToken cancellationToken
     )

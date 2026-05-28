@@ -90,6 +90,7 @@ public class TranslationEngineTests
     private const string TARGET_CORPUS_ID = "cc0000000000000000000004";
     private const string TARGET_CORPUS_ID_PT = "cc0000000000000000000005";
     private const string EMPTY_CORPUS_ID = "cc0000000000000000000006";
+    private const string BUILD1_ID = "b00000000000000000000001";
 
     private const string DOES_NOT_EXIST_ENGINE_ID = "e00000000000000000000004";
     private const string DOES_NOT_EXIST_CORPUS_ID = "c00000000000000000000001";
@@ -1470,29 +1471,43 @@ public class TranslationEngineTests
     }
 
     [Test]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200)]
-    [TestCase(new[] { Scopes.ReadTranslationEngines }, 408)]
-    [TestCase(new[] { Scopes.ReadFiles }, 403)] // Arbitrary unrelated privilege
-    public async Task GetNextFinishedBuildAsync(IEnumerable<string> scope, int expectedStatusCode)
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, null)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 200, BUILD1_ID)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, 408, null)]
+    [TestCase(new[] { Scopes.ReadFiles }, 403, null)] // Arbitrary unrelated privilege
+    public async Task GetNextFinishedBuildAsync(
+        IEnumerable<string> scope,
+        int expectedStatusCode,
+        string? finishedAfter
+    )
     {
         TranslationBuildsClient client = _env.CreateTranslationBuildsClient(scope);
-        Build? build = new Build
+        Build? build1 = new Build
         {
+            Id = BUILD1_ID,
             EngineRef = ECHO_ENGINE1_ID,
             Owner = "client1",
-            DateFinished = DateTime.UtcNow,
+            DateFinished = DateTime.UtcNow.AddHours(expectedStatusCode == 408 ? -1 : 1),
             State = Shared.Contracts.JobState.Completed,
         };
-        await _env.Builds.InsertAsync(build);
+        await _env.Builds.InsertAsync(build1);
+        Build? build2 = new Build
+        {
+            EngineRef = ECHO_ENGINE2_ID,
+            Owner = "client1",
+            DateFinished = DateTime.UtcNow.AddHours(expectedStatusCode == 408 ? -2 : 2),
+            State = Shared.Contracts.JobState.Completed,
+        };
+        await _env.Builds.InsertAsync(build2);
         switch (expectedStatusCode)
         {
             case 200:
-                TranslationBuild result = await client.GetNextFinishedBuildAsync(DateTime.UtcNow.AddDays(-2));
+                TranslationBuild result = await client.GetNextFinishedBuildAsync(finishedAfter);
                 Assert.That(result, Is.Not.Null);
                 Assert.Multiple(() =>
                 {
                     Assert.That(result.Revision, Is.EqualTo(1));
-                    Assert.That(result.Id, Is.EqualTo(build?.Id));
+                    Assert.That(result.Id, Is.EqualTo((finishedAfter is null ? build1 : build2)?.Id));
                     Assert.That(result.State, Is.EqualTo(Client.JobState.Completed));
                 });
                 break;
@@ -1501,7 +1516,7 @@ public class TranslationEngineTests
             {
                 ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
                 {
-                    await client.GetNextFinishedBuildAsync(DateTime.UtcNow.AddDays(2));
+                    await client.GetNextFinishedBuildAsync(finishedAfter);
                 });
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -1952,15 +1967,13 @@ public class TranslationEngineTests
     )
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient(scope);
-
-        string buildId = "b00000000000000000000000";
         if (addBuild)
         {
             _env.EchoService.CancelBuildAsync(engineId, Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult<string?>(buildId));
+                .Returns(Task.FromResult<string?>(BUILD1_ID));
             var build = new Build
             {
-                Id = buildId,
+                Id = BUILD1_ID,
                 EngineRef = engineId,
                 Owner = "client1",
             };
@@ -1971,7 +1984,7 @@ public class TranslationEngineTests
         {
             case 200:
                 TranslationBuild build = await client.CancelBuildAsync(engineId);
-                Assert.That(build.Id, Is.EqualTo("b00000000000000000000000"));
+                Assert.That(build.Id, Is.EqualTo(BUILD1_ID));
                 break;
             case 204:
             case 403:
@@ -2266,7 +2279,7 @@ public class TranslationEngineTests
         await _env.Builds.InsertAsync(
             new Build
             {
-                Id = "b10000000000000000000000",
+                Id = BUILD1_ID,
                 EngineRef = ECHO_ENGINE1_ID,
                 Owner = "client1",
                 Revision = 1,
@@ -2358,7 +2371,7 @@ public class TranslationEngineTests
         await _env.Builds.InsertAsync(
             new Build
             {
-                Id = "b10000000000000000000000",
+                Id = BUILD1_ID,
                 EngineRef = ECHO_ENGINE1_ID,
                 Owner = "client1",
                 Revision = 1,
