@@ -4,6 +4,7 @@ namespace Serval.Translation.Features.Builds;
 public class BuildsHandlersTests
 {
     const string BUILD1_ID = "b00000000000000000000001";
+    const string BUILD2_ID = "b00000000000000000000002";
 
     [Test]
     public async Task GetAllBuildsCreatedAfter_NoFilter_Success()
@@ -91,11 +92,46 @@ public class BuildsHandlersTests
     }
 
     [Test]
+    public async Task GetNextFinishedBuild_FinishedAtSameTime()
+    {
+        TestEnvironment env = new();
+        DateTime dateFinished = DateTime.UtcNow;
+        await env.Builds.InsertAsync(
+            new()
+            {
+                Id = BUILD1_ID,
+                EngineRef = "engine1",
+                Owner = "user1",
+                State = JobState.Completed,
+                DateFinished = dateFinished,
+            }
+        );
+        await env.Builds.InsertAsync(
+            new()
+            {
+                Id = BUILD2_ID,
+                EngineRef = "engine1",
+                Owner = "user1",
+                State = JobState.Completed,
+                DateFinished = dateFinished,
+            }
+        );
+        GetNextFinishedBuildHandler handler = new(env.Builds, env.DtoMapper, env.ApiOptions);
+        GetNextFinishedBuildResponse response = await handler.HandleAsync(new("user1", BUILD1_ID));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.TimedOut, Is.False);
+            Assert.That(response.Build?.Id, Is.EqualTo(BUILD2_ID));
+            Assert.That(response.Build?.State, Is.EqualTo(JobState.Completed));
+        }
+    }
+
+    [Test]
     public async Task GetNextFinishedBuild_Insert()
     {
         TestEnvironment env = new();
         GetNextFinishedBuildHandler handler = new(env.Builds, env.DtoMapper, env.ApiOptions);
-        Task<GetNextFinishedBuildResponse> task = handler.HandleAsync(new("user1", DateTime.UtcNow.AddMinutes(-1)));
+        Task<GetNextFinishedBuildResponse> task = handler.HandleAsync(new("user1", null));
 
         await env.Builds.InsertAsync(
             new()
@@ -116,6 +152,40 @@ public class BuildsHandlersTests
     }
 
     [Test]
+    public async Task GetNextFinishedBuild_PreviousBuild()
+    {
+        TestEnvironment env = new();
+        await env.Builds.InsertAsync(
+            new()
+            {
+                Id = BUILD2_ID,
+                EngineRef = "engine1",
+                Owner = "user1",
+                State = JobState.Completed,
+                DateFinished = DateTime.UtcNow.AddMinutes(-2),
+            }
+        );
+        await env.Builds.InsertAsync(
+            new()
+            {
+                Id = BUILD1_ID,
+                EngineRef = "engine1",
+                Owner = "user1",
+                State = JobState.Completed,
+                DateFinished = DateTime.UtcNow,
+            }
+        );
+        GetNextFinishedBuildHandler handler = new(env.Builds, env.DtoMapper, env.ApiOptions);
+        GetNextFinishedBuildResponse response = await handler.HandleAsync(new("user1", BUILD2_ID));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.TimedOut, Is.False);
+            Assert.That(response.Build?.Id, Is.EqualTo(BUILD1_ID));
+            Assert.That(response.Build?.State, Is.EqualTo(JobState.Completed));
+        }
+    }
+
+    [Test]
     public async Task GetNextFinishedBuild_Update()
     {
         TestEnvironment env = new();
@@ -128,7 +198,7 @@ public class BuildsHandlersTests
         await env.Builds.InsertAsync(build);
 
         GetNextFinishedBuildHandler handler = new(env.Builds, env.DtoMapper, env.ApiOptions);
-        Task<GetNextFinishedBuildResponse> task = handler.HandleAsync(new("user1", DateTime.UtcNow.AddMinutes(-1)));
+        Task<GetNextFinishedBuildResponse> task = handler.HandleAsync(new("user1", null));
 
         await env.Builds.UpdateAsync(
             build,

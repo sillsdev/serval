@@ -9,7 +9,10 @@ internal static class BuildRepositoryExtensions
         CancellationToken cancellationToken = default
     )
     {
-        using ISubscription<Build> subscription = await repository.SubscribeAsync(filter, cancellationToken);
+        using ISubscription<Build> subscription = await repository.SubscribeAsync(
+            filter,
+            cancellationToken: cancellationToken
+        );
         EntityChange<Build> curChange = subscription.Change;
         if (curChange.Type == EntityChangeType.Delete && minRevision > 1)
             return curChange;
