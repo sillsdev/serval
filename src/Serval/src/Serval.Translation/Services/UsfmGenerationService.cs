@@ -499,7 +499,7 @@ public class UsfmGenerationService(
                 string markersPlural =
                     kvp.Value.Count == 1
                         ? kvp.Value[0] + "s"
-                        : string.Join(", ", kvp.Value[..^1] + "s") + " and " + kvp.Value[^1] + "s";
+                        : string.Join(", ", kvp.Value[..^1].Select(v => v + "s")) + " and " + kvp.Value[^1] + "s";
                 string sentence = kvp.Key switch
                 {
                     PretranslationUsfmMarkerBehavior.Preserve =>
