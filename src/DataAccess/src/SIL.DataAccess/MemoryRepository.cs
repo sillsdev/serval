@@ -299,6 +299,7 @@ public class MemoryRepository<T> : IRepository<T>
     public async Task<ISubscription<T>> SubscribeAsync(
         Expression<Func<T, bool>> filter,
         IEnumerable<(Expression<Func<T, object?>> Field, SortOrder SortOrder)>? sort = null,
+        IReadOnlySet<EntityChangeType>? changeTypes = null,
         CancellationToken cancellationToken = default
     )
     {

@@ -103,6 +103,7 @@ public class LocalBuildJobRunner(
                 e.CurrentBuild != null
                 && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
                 && e.CurrentBuild.JobState == BuildJobState.Pending,
+            changeTypes: new HashSet<EntityChangeType> { EntityChangeType.Insert, EntityChangeType.Update },
             cancellationToken: stoppingToken
         );
         using ISubscription<WordAlignmentEngine> wordAlignmentSub = await wordAlignmentEngines.SubscribeAsync(
@@ -110,6 +111,7 @@ public class LocalBuildJobRunner(
                 e.CurrentBuild != null
                 && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
                 && e.CurrentBuild.JobState == BuildJobState.Pending,
+            changeTypes: new HashSet<EntityChangeType> { EntityChangeType.Insert, EntityChangeType.Update },
             cancellationToken: stoppingToken
         );
 
@@ -227,42 +229,43 @@ public class LocalBuildJobRunner(
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            EntityChange<TEngine> change = subscription.Change;
-            if (change.Type is EntityChangeType.Insert or EntityChangeType.Update && change.Entity != null)
-            {
-                TEngine engine = change.Entity;
-                Build? build = engine.CurrentBuild;
-                if (
-                    build?.BuildJobRunner == BuildJobRunnerType.Local
-                    && build.JobState == BuildJobState.Pending
-                    && !_activeCts.ContainsKey(build.JobId)
-                    && _pendingJobs.TryAdd(
-                        build.JobId,
-                        new JobInfo(
-                            engine.EngineId,
-                            build.BuildId,
-                            engine.Type,
-                            build.Stage,
-                            build.JobData,
-                            build.Options
-                        )
-                    )
-                )
-                {
-                    _jobChannels[engineGroup].Writer.TryWrite(build.JobId);
-                }
-            }
-
             try
             {
-                await subscription.WaitForChangeAsync(
-                    changeTypes: new HashSet<EntityChangeType> { EntityChangeType.Insert, EntityChangeType.Update },
-                    cancellationToken: cancellationToken
-                );
+                EntityChange<TEngine> change = subscription.Change;
+                if (change.Type is EntityChangeType.Insert or EntityChangeType.Update && change.Entity != null)
+                {
+                    TEngine engine = change.Entity;
+                    Build? build = engine.CurrentBuild;
+                    if (
+                        build?.BuildJobRunner == BuildJobRunnerType.Local
+                        && build.JobState == BuildJobState.Pending
+                        && !_activeCts.ContainsKey(build.JobId)
+                        && _pendingJobs.TryAdd(
+                            build.JobId,
+                            new JobInfo(
+                                engine.EngineId,
+                                build.BuildId,
+                                engine.Type,
+                                build.Stage,
+                                build.JobData,
+                                build.Options
+                            )
+                        )
+                    )
+                    {
+                        _jobChannels[engineGroup].Writer.TryWrite(build.JobId);
+                    }
+                }
+                await subscription.WaitForChangeAsync(cancellationToken: cancellationToken);
             }
             catch (OperationCanceledException)
             {
                 break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception while watching {EngineGroup} engines.", engineGroup);
+                throw;
             }
         }
     }
