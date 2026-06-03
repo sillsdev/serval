@@ -28,7 +28,7 @@ public interface IRepository<T>
     Task<ISubscription<T>> SubscribeAsync(
         Expression<Func<T, bool>> filter,
         IEnumerable<(Expression<Func<T, object?>> Field, SortOrder SortOrder)>? sort = null,
-        IReadOnlySet<EntityChangeType>? changeTypes = null,
+        SubscriptionMode mode = SubscriptionMode.Entity,
         CancellationToken cancellationToken = default
     );
 }

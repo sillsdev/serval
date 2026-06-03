@@ -8,8 +8,6 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
     private readonly Action<MemorySubscription<T>> _remove = remove;
     private readonly AsyncAutoResetEvent _changeEvent = new();
 
-    public DateTime Timestamp { get; private set; } = DateTime.UnixEpoch;
-
     public EntityChange<T> Change { get; private set; } =
         new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update, initialEntity);
 

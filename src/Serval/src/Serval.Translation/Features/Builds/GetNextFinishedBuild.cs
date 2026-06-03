@@ -40,7 +40,7 @@ public class GetNextFinishedBuildHandler(
                             b.DateFinished > dateFinished || (b.DateFinished == dateFinished && b.Id.CompareTo(id) > 0)
                         ),
                     [(b => b.DateFinished, SortOrder.Ascending), (b => b.Id, SortOrder.Ascending)],
-                    new HashSet<EntityChangeType> { EntityChangeType.Insert, EntityChangeType.Update },
+                    SubscriptionMode.Repository,
                     ct
                 );
                 EntityChange<Build> curChange = subscription.Change;

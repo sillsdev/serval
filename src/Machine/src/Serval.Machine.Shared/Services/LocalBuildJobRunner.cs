@@ -103,7 +103,7 @@ public class LocalBuildJobRunner(
                 e.CurrentBuild != null
                 && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
                 && e.CurrentBuild.JobState == BuildJobState.Pending,
-            changeTypes: new HashSet<EntityChangeType> { EntityChangeType.Insert, EntityChangeType.Update },
+            mode: SubscriptionMode.Repository,
             cancellationToken: stoppingToken
         );
         using ISubscription<WordAlignmentEngine> wordAlignmentSub = await wordAlignmentEngines.SubscribeAsync(
@@ -111,7 +111,7 @@ public class LocalBuildJobRunner(
                 e.CurrentBuild != null
                 && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
                 && e.CurrentBuild.JobState == BuildJobState.Pending,
-            changeTypes: new HashSet<EntityChangeType> { EntityChangeType.Insert, EntityChangeType.Update },
+            mode: SubscriptionMode.Repository,
             cancellationToken: stoppingToken
         );
 
