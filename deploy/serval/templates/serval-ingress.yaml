@@ -3,14 +3,17 @@ kind: Ingress
 metadata:
   name: serval-ingress
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Values.namespace }}-maxrequestbody-limit@kubernetescrd,{{ .Values.namespace }}-redirectmetrics@kubernetescrd
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   {{- if .Values.enableTls }}
   tls:
     - hosts:
         - {{.Values.externalHost}}
-  #    secretName: testsecret-tls
+      {{- if eq .Values.namespace "nlp"}}
+      secretName: qa-int-serval-api-tls
+      {{- end}}
   {{- end }}
   rules:
     - host: {{.Values.externalHost}}
@@ -23,18 +26,3 @@ spec:
                 name: serval-api
                 port:
                   number: 80
-            # hide metrics and health endpoints
-          - path: /metrics
-            pathType: Prefix
-            backend:
-              service:
-                name: default-http-backend
-                port:
-                  number: 80
-          - path: /health
-            pathType: Prefix
-            backend:
-              service:
-                name: default-http-backend
-                port:
-                  number: 81
