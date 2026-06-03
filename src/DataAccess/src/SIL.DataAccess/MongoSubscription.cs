@@ -9,8 +9,8 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
     private readonly Func<T, bool> _filter;
     private IChangeStreamCursor<ChangeStreamDocument<T>>? _cursor;
     private readonly Expression<Func<ChangeStreamDocument<T>, bool>> _changeEventFilter;
-    public DateTime Timestamp => DateTime.UnixEpoch.AddSeconds(_timestamp.Timestamp);
-
+    private TimeSpan? _timeout;
+    private BsonDocument? _resumeToken;
     public EntityChange<T> Change { get; private set; }
 
     public MongoSubscription(
@@ -19,7 +19,7 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
         Func<T, bool> filter,
         BsonTimestamp timestamp,
         T? initialEntity,
-        IReadOnlySet<EntityChangeType>? changeTypes = null
+        SubscriptionMode mode = SubscriptionMode.Repository
     )
     {
         _context = context;
@@ -31,25 +31,15 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
             initialEntity
         );
         Expression<Func<ChangeStreamDocument<T>, bool>> changeEventFilter;
-        if (changeTypes is not null && changeTypes.Count > 0)
+        if (mode == SubscriptionMode.Repository)
         {
-            HashSet<ChangeStreamOperationType> ops =
-            [
-                .. changeTypes.SelectMany<EntityChangeType, ChangeStreamOperationType>(ct =>
-                    ct switch
-                    {
-                        EntityChangeType.Insert => [ChangeStreamOperationType.Insert],
-                        EntityChangeType.Update =>
-                        [
-                            ChangeStreamOperationType.Update,
-                            ChangeStreamOperationType.Replace,
-                        ],
-                        EntityChangeType.Delete => [ChangeStreamOperationType.Delete],
-                        _ => throw new ArgumentException("No valid change types specified.", nameof(changeTypes)),
-                    }
-                ),
-            ];
-            changeEventFilter = ce => ops.Contains(ce.OperationType);
+            changeEventFilter = ce =>
+                new HashSet<ChangeStreamOperationType>
+                {
+                    ChangeStreamOperationType.Insert,
+                    ChangeStreamOperationType.Update,
+                    ChangeStreamOperationType.Replace,
+                }.Contains(ce.OperationType);
         }
         else if (Change.Entity is null)
         {
@@ -69,14 +59,23 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
 
     public async Task WaitForChangeAsync(TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
-        if (_cursor is null)
+        if (_cursor is null || !timeout.Equals(_timeout))
         {
+            _cursor?.Dispose();
+            _timeout = timeout;
             var options = new ChangeStreamOptions
             {
                 FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
-                MaxAwaitTime = timeout,
-                StartAtOperationTime = _timestamp,
+                MaxAwaitTime = _timeout,
             };
+            if (_resumeToken is not null)
+            {
+                options.ResumeAfter = _resumeToken;
+            }
+            else
+            {
+                options.StartAtOperationTime = _timestamp;
+            }
             PipelineDefinition<ChangeStreamDocument<T>, ChangeStreamDocument<T>> pipelineDef = PipelineDefinitionBuilder
                 .For<ChangeStreamDocument<T>>()
                 .Match(_changeEventFilter);
@@ -94,42 +93,62 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
 
         DateTime started = DateTime.UtcNow;
 
-        while (await _cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            bool entityNotFound = Change.Entity is null;
-            bool changed = false;
-            foreach (ChangeStreamDocument<T> ce in _cursor.Current)
+            while (await _cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
             {
-                EntityChangeType changeType = ce.OperationType switch
+                bool entityNotFound = Change.Entity is null;
+                bool changed = false;
+                foreach (ChangeStreamDocument<T> ce in _cursor.Current)
                 {
-                    ChangeStreamOperationType.Insert => EntityChangeType.Insert,
-                    ChangeStreamOperationType.Replace or ChangeStreamOperationType.Update => EntityChangeType.Update,
-                    ChangeStreamOperationType.Delete => EntityChangeType.Delete,
-                    _ => EntityChangeType.None,
-                };
+                    _timestamp = ce.ClusterTime;
+                    _resumeToken = ce.ResumeToken;
 
-                if (entityNotFound)
-                {
-                    if (ce.FullDocument is not null && _filter(ce.FullDocument))
+                    if (
+                        ce.FullDocument is not null
+                        && Change.Entity is not null
+                        && ce.FullDocument.Equals(Change.Entity)
+                    )
+                    {
+                        continue;
+                    }
+
+                    EntityChangeType changeType = ce.OperationType switch
+                    {
+                        ChangeStreamOperationType.Insert => EntityChangeType.Insert,
+                        ChangeStreamOperationType.Replace or ChangeStreamOperationType.Update =>
+                            EntityChangeType.Update,
+                        ChangeStreamOperationType.Delete => EntityChangeType.Delete,
+                        _ => EntityChangeType.None,
+                    };
+
+                    if (entityNotFound)
+                    {
+                        if (ce.FullDocument is not null && _filter(ce.FullDocument))
+                        {
+                            Change = new EntityChange<T>(changeType, ce.FullDocument);
+                            changed = true;
+                        }
+                    }
+                    else
                     {
                         Change = new EntityChange<T>(changeType, ce.FullDocument);
                         changed = true;
                     }
                 }
-                else
-                {
-                    Change = new EntityChange<T>(changeType, ce.FullDocument);
-                    changed = true;
-                }
 
-                _timestamp = ce.ClusterTime;
+                if (changed)
+                    return;
+
+                if (timeout.HasValue && DateTime.UtcNow - started >= timeout)
+                    return;
             }
-
-            if (changed)
-                return;
-
-            if (timeout.HasValue && DateTime.UtcNow - started >= timeout)
-                return;
+        }
+        catch (MongoException)
+        {
+            _cursor?.Dispose();
+            _cursor = null;
+            throw;
         }
     }
 

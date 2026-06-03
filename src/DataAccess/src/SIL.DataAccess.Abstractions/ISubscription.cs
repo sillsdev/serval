@@ -5,5 +5,4 @@ public interface ISubscription<T> : IDisposable
 {
     EntityChange<T> Change { get; }
     Task WaitForChangeAsync(TimeSpan? timeout = null, CancellationToken cancellationToken = default);
-    DateTime Timestamp { get; }
 }
