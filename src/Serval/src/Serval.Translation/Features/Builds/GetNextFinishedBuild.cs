@@ -40,6 +40,7 @@ public class GetNextFinishedBuildHandler(
                             b.DateFinished > dateFinished || (b.DateFinished == dateFinished && b.Id.CompareTo(id) > 0)
                         ),
                     [(b => b.DateFinished, SortOrder.Ascending), (b => b.Id, SortOrder.Ascending)],
+                    SubscriptionMode.Repository,
                     ct
                 );
                 EntityChange<Build> curChange = subscription.Change;
@@ -47,10 +48,7 @@ public class GetNextFinishedBuildHandler(
                 {
                     if (curChange.Type is not EntityChangeType.None and not EntityChangeType.Delete)
                         return curChange;
-                    await subscription.WaitForChangeAsync(
-                        changeTypes: new HashSet<EntityChangeType> { EntityChangeType.Insert, EntityChangeType.Update },
-                        cancellationToken: ct
-                    );
+                    await subscription.WaitForChangeAsync(cancellationToken: ct);
                     curChange = subscription.Change;
                 }
             },

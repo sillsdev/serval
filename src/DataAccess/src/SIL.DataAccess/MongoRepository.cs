@@ -240,6 +240,7 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
     public async Task<ISubscription<T>> SubscribeAsync(
         Expression<Func<T, bool>> filter,
         IEnumerable<(Expression<Func<T, object?>> Field, SortOrder SortOrder)>? sort = null,
+        SubscriptionMode mode = SubscriptionMode.Entity,
         CancellationToken cancellationToken = default
     )
     {
@@ -289,7 +290,14 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
         BsonDocument? initialEntityDoc = result["cursor"]["firstBatch"].AsBsonArray.FirstOrDefault()?.AsBsonDocument;
         T? initialEntity = initialEntityDoc is null ? default : BsonSerializer.Deserialize<T>(initialEntityDoc);
         var timestamp = (BsonTimestamp)result["operationTime"];
-        var subscription = new MongoSubscription<T>(_context, _collection, filter.Compile(), timestamp, initialEntity);
+        var subscription = new MongoSubscription<T>(
+            _context,
+            _collection,
+            filter.Compile(),
+            timestamp,
+            initialEntity,
+            mode
+        );
         return subscription;
     }
 
