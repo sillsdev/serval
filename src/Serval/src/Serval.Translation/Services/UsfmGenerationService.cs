@@ -79,11 +79,7 @@ public class UsfmGenerationService(
         if (build?.DateFinished is null)
             throw new InvalidOperationException($"Could not find any completed builds for engine '{engineId}'.");
 
-        string markerPlacementRemark = GenerateMarkerPlacementRemark(
-            paragraphMarkerBehavior,
-            embedBehavior,
-            styleMarkerBehavior
-        );
+        string markerPlacementRemark = GenerateMarkerPlacementRemark(paragraphMarkerBehavior);
 
         ParallelCorpusContract[] parallelCorpora = [.. _contractMapper.Map(build, engine)];
 
@@ -453,75 +449,29 @@ public class UsfmGenerationService(
     }
 
     /// <summary>
-    /// Generate a natural sounding remark/comment describing marker placement.
+    /// Generate a natural sounding remark/comment describing paragraph break placement.
     /// </summary>
     /// <param name="paragraphMarkerBehavior">The paragraph marker behavior.</param>
-    /// <param name="embedBehavior">The embed marker behavior.</param>
-    /// <param name="styleMarkerBehavior">The style marker behavior.</param>
-    /// <returns>One to three sentences describing the marker placement behavior.</returns>
+    /// <returns>A sentence describing the paragraph marker placement behavior.</returns>
     /// <remarks>
-    /// <para>Remarks are generated in the format:</para>
-    /// <list type="bullet">
-    /// <item><description>
-    /// Paragraph breaks, embed markers, and style marker positions were moved to the end of the verse.
-    /// </description></item>
-    /// <item><description>
-    /// Paragraph break positions were moved to the end of the verse. Embed marker positions have been preserved. Style markers were removed.
-    /// </description></item>
-    /// <item><description>
-    /// Paragraph break and style marker positions were moved to the end of the verse. Embed markers were removed.
-    /// </description></item>
-    /// </list>
+    /// Support for embed marker and style marker remarks has been removed as Scripture Forge does not require these.
     /// </remarks>
-    private static string GenerateMarkerPlacementRemark(
-        PretranslationUsfmMarkerBehavior paragraphMarkerBehavior,
-        PretranslationUsfmMarkerBehavior embedBehavior,
-        PretranslationUsfmMarkerBehavior styleMarkerBehavior
-    )
-    {
-        var behaviorMap = new Dictionary<PretranslationUsfmMarkerBehavior, List<string>>
+    private static string GenerateMarkerPlacementRemark(PretranslationUsfmMarkerBehavior paragraphMarkerBehavior) =>
+        paragraphMarkerBehavior switch
         {
-            { PretranslationUsfmMarkerBehavior.Preserve, [] },
-            { PretranslationUsfmMarkerBehavior.PreservePosition, [] },
-            { PretranslationUsfmMarkerBehavior.Strip, [] },
+            PretranslationUsfmMarkerBehavior.Preserve =>
+                $"Paragraph break positions were moved to the end of the verse.",
+            PretranslationUsfmMarkerBehavior.PreservePosition => $"Paragraph break positions were preserved.",
+            PretranslationUsfmMarkerBehavior.Strip => $"Paragraph breaks were removed.",
+            _ => throw new InvalidEnumArgumentException(nameof(paragraphMarkerBehavior)),
         };
 
-        behaviorMap[paragraphMarkerBehavior].Add("paragraph break");
-        behaviorMap[embedBehavior].Add("embed marker");
-        behaviorMap[styleMarkerBehavior].Add("style marker");
-
-        IEnumerable<string> sentences = behaviorMap
-            .Where(kvp => kvp.Value.Count > 0)
-            .Select(kvp =>
-            {
-                string markersSingular =
-                    kvp.Value.Count == 1 ? kvp.Value[0] : string.Join(", ", kvp.Value[..^1]) + " and " + kvp.Value[^1];
-                string markersPlural =
-                    kvp.Value.Count == 1
-                        ? kvp.Value[0] + "s"
-                        : string.Join(", ", kvp.Value[..^1].Select(v => v + "s")) + " and " + kvp.Value[^1] + "s";
-                string sentence = kvp.Key switch
-                {
-                    PretranslationUsfmMarkerBehavior.Preserve =>
-                        $"{markersSingular} positions were moved to the end of the verse.",
-                    PretranslationUsfmMarkerBehavior.PreservePosition => $"{markersSingular} positions were preserved.",
-                    PretranslationUsfmMarkerBehavior.Strip => $"{markersPlural} were removed.",
-                    _ => $"{markersPlural} have unknown behavior.",
-                };
-                return char.ToUpperInvariant(sentence[0]) + sentence[1..];
-            });
-
-        return string.Join(" ", sentences);
-    }
-
-    private static UpdateUsfmMarkerBehavior Map(PretranslationUsfmMarkerBehavior behavior)
-    {
-        return behavior switch
+    private static UpdateUsfmMarkerBehavior Map(PretranslationUsfmMarkerBehavior behavior) =>
+        behavior switch
         {
             PretranslationUsfmMarkerBehavior.Preserve => UpdateUsfmMarkerBehavior.Preserve,
             PretranslationUsfmMarkerBehavior.PreservePosition => UpdateUsfmMarkerBehavior.Preserve,
             PretranslationUsfmMarkerBehavior.Strip => UpdateUsfmMarkerBehavior.Strip,
             _ => throw new InvalidEnumArgumentException(nameof(behavior)),
         };
-    }
 }
