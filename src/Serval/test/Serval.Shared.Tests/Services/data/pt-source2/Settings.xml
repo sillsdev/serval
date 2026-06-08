@@ -1,4 +1,4 @@
-﻿<ScriptureText>
+<ScriptureText>
   <StyleSheet>usfm.sty</StyleSheet>
   <Versification>4</Versification>
   <LanguageIsoCode>en:::</LanguageIsoCode>
@@ -24,7 +24,7 @@
   <AllowReadAccess>F</AllowReadAccess>
   <AllowSharingWithSLDR>F</AllowSharingWithSLDR>
   <Visibility>Public</Visibility>
-  <TranslationInfo>Standard::</TranslationInfo>
+  <TranslationInfo>Auxiliary:Te1:a7e0b3ce0200736062f9f810a444dbfbe64aca35</TranslationInfo>
   <EncodingConverter />
   <UsfmVersion>3</UsfmVersion>
   <ParallelPassagesBooks>000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000</ParallelPassagesBooks>
