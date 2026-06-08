@@ -66,6 +66,40 @@ public class CorpusBundleTests
     }
 
     [Test]
+    public void GetTextUpdater_WithParentProject()
+    {
+        using TestEnvironment env = new(addParatext: true, addText: false, projectNumber: 2);
+        string fileLocation = env.CorpusBundle.ParallelCorpora[0].SourceCorpora[0].Files[0].Location;
+        using ZipParatextProjectTextUpdater updater = env.CorpusBundle.GetTextUpdater(fileLocation);
+        Assert.That(
+            updater.UpdateUsfm("MAT", [], textBehavior: UpdateUsfmTextBehavior.PreferExisting).ReplaceLineEndings("\n"),
+            Is.EqualTo(
+                    $@"\id MAT - Test
+\h Matthew
+\mt Matthew
+\ip An introduction to Matthew
+\c 1
+\p
+\v 1 Source two, chapter one, verse one.
+\v 2 Source two, chapter one, verse two.
+\v 3 Source two, chapter one, verse three.
+\v 4 Source two, chapter one, verse four.
+\v 5 Source two, chapter one, verse five.
+\v 6 Source two, chapter one, verse six.
+\v 7 Source two, chapter one, verse seven.
+\v 8 Source two, chapter one, verse eight.
+\v 9 Source two, chapter one, verse nine.
+\v 10 Source two, chapter one, verse ten.
+\c 2
+\p
+\v 1 Source two, chapter two, verse one.
+"
+                )
+                .IgnoreLineEndings()
+        );
+    }
+
+    [Test]
     public void GetTextUpdater_TextFile()
     {
         using TestEnvironment env = new(addParatext: false, addText: true);
@@ -105,9 +139,9 @@ public class CorpusBundleTests
 
     private class TestEnvironment : DisposableBase
     {
-        public TestEnvironment(bool addParatext, bool addText)
+        public TestEnvironment(bool addParatext, bool addText, int projectNumber = 1)
         {
-            CorpusBundle = new CorpusBundle(GetCorpora(addParatext, addText));
+            CorpusBundle = new CorpusBundle(GetCorpora(addParatext, addText, projectNumber));
         }
 
         public CorpusBundle CorpusBundle { get; }
@@ -122,7 +156,7 @@ public class CorpusBundleTests
         );
         private readonly TempDirectory _tempDir = new(name: "CorpusBundleTests");
 
-        public ParallelCorpusContract[] GetCorpora(bool addParatext, bool addText)
+        public ParallelCorpusContract[] GetCorpora(bool addParatext, bool addText, int projectNumber = 1)
         {
             List<ParallelCorpusContract> parallelCorpora = [];
             if (addParatext)
@@ -135,7 +169,7 @@ public class CorpusBundleTests
                         [
                             new MonolingualCorpusContract
                             {
-                                Id = "pt-source1",
+                                Id = $"pt-source{projectNumber}",
                                 Language = "en",
                                 Files =
                                 [
@@ -143,7 +177,7 @@ public class CorpusBundleTests
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Paratext,
-                                        Location = ZipParatextProject("pt-source1"),
+                                        Location = ZipParatextProject($"pt-source{projectNumber}"),
                                     },
                                 ],
                                 InferenceTextIds = [],
@@ -153,7 +187,7 @@ public class CorpusBundleTests
                         [
                             new MonolingualCorpusContract
                             {
-                                Id = "pt-target1",
+                                Id = $"pt-target{projectNumber}",
                                 Language = "en",
                                 Files =
                                 [
@@ -161,7 +195,7 @@ public class CorpusBundleTests
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Paratext,
-                                        Location = ZipParatextProject("pt-target1"),
+                                        Location = ZipParatextProject($"pt-target{projectNumber}"),
                                     },
                                 ],
                             },
@@ -174,6 +208,7 @@ public class CorpusBundleTests
                         [
                             new MonolingualCorpusContract
                             {
+                                // This is always pt-source1 to ensure the parent project for source 2 is uploaded
                                 Id = "pt-source1",
                                 Language = "en",
                                 Files =
@@ -192,7 +227,7 @@ public class CorpusBundleTests
                         [
                             new MonolingualCorpusContract
                             {
-                                Id = "pt-target1",
+                                Id = $"pt-target{projectNumber}",
                                 Language = "en",
                                 Files =
                                 [
@@ -200,7 +235,7 @@ public class CorpusBundleTests
                                     {
                                         TextId = "textId1",
                                         Format = FileFormat.Paratext,
-                                        Location = ZipParatextProject("pt-target1"),
+                                        Location = ZipParatextProject($"pt-target{projectNumber}"),
                                     },
                                 ],
                                 TrainOnTextIds = [],
