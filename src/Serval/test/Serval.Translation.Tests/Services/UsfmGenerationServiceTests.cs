@@ -584,6 +584,14 @@ public partial class UsfmGenerationServiceTests
                     Owner = "owner1",
                     DateFinished = DateTime.UnixEpoch,
                     TargetQuoteConvention = "standard_english",
+                    Pretranslate =
+                    [
+                        new()
+                        {
+                            ParallelCorpusRef = "parallel_corpus1",
+                            SourceFilters = [new() { CorpusRef = "src_1", TextIds = ["MAT"] }],
+                        },
+                    ],
                 },
             ]);
             Pretranslations = new MemoryRepository<Pretranslation>([
