@@ -97,16 +97,21 @@ public class UsfmGenerationService(
             build
                 .Pretranslate?.SelectMany(p => p.SourceFilters ?? [])
                 .SelectMany(s =>
-                    scriptureRangeParser
-                        .GetChapters(s.ScriptureRange)
-                        .TryGetValue(textId, out List<int>? filterChapters)
-                        ? filterChapters
-                        : []
-                )
+                {
+                    if (s.ScriptureRange is not null)
+                    {
+                        return scriptureRangeParser
+                            .GetChapters(s.ScriptureRange)
+                            .TryGetValue(textId, out List<int>? filterChapters)
+                            ? filterChapters
+                            : [];
+                    }
+                    return [];
+                })
                 .ToList()
             ?? [];
 
-        // If there are no chapters, we need to set it to null so that the USFM updater
+        // If there are no chapters, we need to set it to null so that the USFM updater does not filter by chapter
         if (chapters.Count == 0)
             chapters = null;
 
