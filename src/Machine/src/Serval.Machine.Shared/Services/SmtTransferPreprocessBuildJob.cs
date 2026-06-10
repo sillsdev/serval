@@ -7,7 +7,7 @@ public class SmtTransferPreprocessBuildJob(
     ILogger<SmtTransferPreprocessBuildJob> logger,
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
-    IDistributedReaderWriterLockFactory lockFactory,
+    SmtTransferEngineStateService stateService,
     IRepository<TrainSegmentPair> trainSegmentPairs,
     IParallelCorpusService parallelCorpusService,
     IOptionsMonitor<BuildJobOptions> options
@@ -23,7 +23,7 @@ public class SmtTransferPreprocessBuildJob(
         options
     )
 {
-    private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
+    private readonly SmtTransferEngineStateService _stateService = stateService;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
 
     protected override async Task InitializeAsync(
@@ -33,18 +33,15 @@ public class SmtTransferPreprocessBuildJob(
         CancellationToken cancellationToken
     )
     {
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await @lock.WriterLockAsync(
-            async ct =>
-            {
-                await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, ct);
-                await Engines.UpdateAsync(
-                    engineId,
-                    u => u.Set(e => e.CollectTrainSegmentPairs, true),
-                    cancellationToken: ct
-                );
-            },
-            cancellationToken: cancellationToken
-        );
+        SmtTransferEngineState state = _stateService.Get(engineId);
+        using (await state.Lock.WriterLockAsync(cancellationToken))
+        {
+            await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+            await Engines.UpdateAsync(
+                engineId,
+                u => u.Set(e => e.CollectTrainSegmentPairs, true),
+                cancellationToken: cancellationToken
+            );
+        }
     }
 }

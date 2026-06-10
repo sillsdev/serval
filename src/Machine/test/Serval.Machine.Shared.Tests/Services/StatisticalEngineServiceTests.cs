@@ -132,7 +132,6 @@ public class StatisticalEngineServiceTests
 
     private class TestEnvironment : DisposableBase
     {
-        private readonly IDistributedReaderWriterLockFactory _lockFactory;
         private readonly BuildJobRunnerType _trainJobRunnerType;
         private readonly ClearMLBuildJobRunner _clearMLRunner;
         private readonly ServiceProvider _serviceProvider;
@@ -163,12 +162,6 @@ public class StatisticalEngineServiceTests
             WordAlignmentBatchTrainer = Substitute.For<ITrainer>();
             WordAlignmentBatchTrainer.Stats.Returns(new TrainStats { TrainCorpusSize = 0 });
             WordAlignmentModelFactory = CreateWordAlignmentModelFactory();
-            _lockFactory = new DistributedReaderWriterLockFactory(
-                new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
-                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
-                new MemoryRepository<RWLock>(),
-                new ObjectIdGenerator()
-            );
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
@@ -234,7 +227,6 @@ public class StatisticalEngineServiceTests
             services.AddSingleton<IRepository<WordAlignmentEngine>>(Engines);
             services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());
             services.AddSingleton(SharedFileService);
-            services.AddSingleton(_lockFactory);
             services.AddSingleton(Substitute.For<IParallelCorpusService>());
             services.AddSingleton(BuildJobOptions);
             services.AddSingleton(WordAlignmentModelFactory);
@@ -263,10 +255,8 @@ public class StatisticalEngineServiceTests
         public IBuildJobService<WordAlignmentEngine> BuildJobService { get; private set; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
-        public async Task CommitAsync(TimeSpan inactiveTimeout)
-        {
-            await StateService.CommitAsync(_lockFactory, Engines, inactiveTimeout);
-        }
+        public async Task CommitAsync(TimeSpan inactiveTimeout) =>
+            await StateService.CommitAsync(Engines, inactiveTimeout);
 
         public void UseInfiniteTrainJob()
         {
@@ -308,17 +298,14 @@ public class StatisticalEngineServiceTests
             );
         }
 
-        private StatisticalEngineService CreateService()
-        {
-            return new StatisticalEngineService(
-                _lockFactory,
+        private StatisticalEngineService CreateService() =>
+            new StatisticalEngineService(
                 PlatformService,
                 Engines,
                 StateService,
                 BuildJobService,
                 ClearMLMonitorService
             );
-        }
 
         private IWordAlignmentModelFactory CreateWordAlignmentModelFactory()
         {

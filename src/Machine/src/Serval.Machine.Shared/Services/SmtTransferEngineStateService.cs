@@ -30,7 +30,6 @@ public class SmtTransferEngineStateService(
     }
 
     public async Task CommitAsync(
-        IDistributedReaderWriterLockFactory lockFactory,
         IRepository<TranslationEngine> engines,
         TimeSpan inactiveTimeout,
         CancellationToken cancellationToken = default
@@ -45,18 +44,13 @@ public class SmtTransferEngineStateService(
 
             try
             {
-                IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(state.EngineId, cancellationToken);
-                await @lock.WriterLockAsync(
-                    async ct =>
-                    {
-                        TranslationEngine? engine = await engines.GetAsync(state.EngineId, ct);
-                        if (engine is not null && !(engine.CollectTrainSegmentPairs ?? false))
-                            // there is no way to cancel this call
-                            state.Commit(engine.BuildRevision, inactiveTimeout);
-                    },
-                    _options.CurrentValue.EngineCommitTimeout,
-                    cancellationToken: cancellationToken
-                );
+                using (await state.Lock.WriterLockAsync(cancellationToken))
+                {
+                    TranslationEngine? engine = await engines.GetAsync(state.EngineId, cancellationToken);
+                    if (engine is not null && !(engine.CollectTrainSegmentPairs ?? false))
+                        // there is no way to cancel this call
+                        state.Commit(engine.BuildRevision, inactiveTimeout);
+                }
             }
             catch (Exception e)
             {
