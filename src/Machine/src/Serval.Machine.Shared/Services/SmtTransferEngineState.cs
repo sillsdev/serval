@@ -21,6 +21,7 @@ public class SmtTransferEngineState(
 
     public string EngineId { get; } = engineId;
 
+    public AsyncReaderWriterLock Lock { get; } = new();
     public bool IsUpdated { get; set; }
     public bool IsMarkedForDeletion { get; set; }
     public int CurrentBuildRevision { get; set; } = -1;

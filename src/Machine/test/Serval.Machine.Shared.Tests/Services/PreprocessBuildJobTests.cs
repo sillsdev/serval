@@ -101,11 +101,11 @@ public class PreprocessBuildJobTests
         public IPlatformService PlatformService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
-        public IDistributedReaderWriterLockFactory LockFactory { get; }
         public IBuildJobService<TranslationEngine> BuildJobService { get; }
         public IClearMLService ClearMLService { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
         public IParallelCorpusService ParallelCorpusService { get; }
+        public SmtTransferEngineStateService StateService { get; private set; }
 
         public BuildExecutionData ExecutionData { get; private set; } = new BuildExecutionData();
 
@@ -208,12 +208,6 @@ public class PreprocessBuildJobTests
                 Arg.Do<BuildExecutionData>(data => ExecutionData = data),
                 Arg.Any<CancellationToken>()
             );
-            LockFactory = new DistributedReaderWriterLockFactory(
-                new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
-                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
-                new MemoryRepository<RWLock>(),
-                new ObjectIdGenerator()
-            );
             BuildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
             BuildJobOptions.CurrentValue.Returns(
                 new BuildJobOptions
@@ -280,6 +274,7 @@ public class PreprocessBuildJobTests
                 Engines
             );
             ParallelCorpusService = Substitute.For<IParallelCorpusService>();
+            StateService = CreateStateService();
         }
 
         public PreprocessBuildJob<TranslationEngine> GetBuildJob(EngineType engineType)
@@ -309,7 +304,7 @@ public class PreprocessBuildJobTests
                         Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
-                        LockFactory,
+                        StateService,
                         TrainSegmentPairs,
                         ParallelCorpusService,
                         BuildJobOptions
@@ -426,6 +421,19 @@ public class PreprocessBuildJobTests
                 Format = FileFormat.Text,
                 Location = $"{name}.txt",
             };
+        }
+
+        private static SmtTransferEngineStateService CreateStateService()
+        {
+            var options = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
+            options.CurrentValue.Returns(new SmtTransferEngineOptions());
+            return new SmtTransferEngineStateService(
+                Substitute.For<ISmtModelFactory>(),
+                Substitute.For<ITransferEngineFactory>(),
+                Substitute.For<ITruecaserFactory>(),
+                options,
+                Substitute.For<ILogger<SmtTransferEngineStateService>>()
+            );
         }
     }
 }

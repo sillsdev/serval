@@ -6,7 +6,6 @@ global using System.Diagnostics.CodeAnalysis;
 global using System.Formats.Tar;
 global using System.Globalization;
 global using System.IO.Compression;
-global using System.Linq.Expressions;
 global using System.Net;
 global using System.Net.Mime;
 global using System.Reflection;
