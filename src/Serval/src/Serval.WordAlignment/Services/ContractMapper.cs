@@ -156,7 +156,7 @@ public class ContractMapper(
         )
         {
             throw new InvalidOperationException(
-                "Cannot specify both TextIds and ScriptureRange in the pretranslation filter."
+                "Cannot specify both TextIds and ScriptureRange in the word alignment filter."
             );
         }
 

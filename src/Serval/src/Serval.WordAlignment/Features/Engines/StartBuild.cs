@@ -164,7 +164,7 @@ public class StartBuildHandler(
             )
             {
                 throw new InvalidOperationException(
-                    $"Only the first source corpus in a parallel corpus may be filtered for pretranslation."
+                    $"Only the first source corpus in a parallel corpus may be filtered for word alignment."
                 );
             }
             wordAlignOnCorpora.Add(
