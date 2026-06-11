@@ -2015,6 +2015,91 @@ public class EnginesHandlersTests
     }
 
     [Test]
+    public async Task GetCurrentBuild_WithNoMinRevision_ReturnsFoundBuild()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        var build = new Build
+        {
+            Id = "build1",
+            EngineRef = engineId,
+            Owner = OWNER,
+            Progress = 0.1,
+        };
+        await env.Builds.InsertAsync(build);
+
+        GetCurrentBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
+        GetCurrentBuildResponse response = await handler.HandleAsync(new GetCurrentBuild(OWNER, engineId, null));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Status, Is.EqualTo(GetCurrentBuildStatus.Found));
+            Assert.That(response.Build, Is.Not.Null);
+            Assert.That(response.Build!.Revision, Is.EqualTo(1));
+            Assert.That(response.Build.Progress, Is.EqualTo(0.1));
+        }
+    }
+
+    [Test]
+    public async Task GetCurrentBuild_WithMinRevision_Update_ReturnsFound()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        var build = new Build
+        {
+            Id = "build1",
+            EngineRef = engineId,
+            Owner = OWNER,
+        };
+        await env.Builds.InsertAsync(build);
+
+        GetCurrentBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
+        Task<GetCurrentBuildResponse> task = handler.HandleAsync(new GetCurrentBuild(OWNER, engineId, 2));
+        await env.Builds.UpdateAsync(build, u => u.Set(b => b.Progress, 0.1));
+
+        GetCurrentBuildResponse response = await task;
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Status, Is.EqualTo(GetCurrentBuildStatus.Found));
+            Assert.That(response.Build, Is.Not.Null);
+            Assert.That(response.Build!.Revision, Is.EqualTo(2));
+            Assert.That(response.Build.Progress, Is.EqualTo(0.1));
+        }
+    }
+
+    [Test]
+    public async Task GetCurrentBuild_WithMinRevision_Delete_ReturnsDeleted()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        var build = new Build
+        {
+            Id = "build1",
+            EngineRef = engineId,
+            Owner = OWNER,
+        };
+        await env.Builds.InsertAsync(build);
+
+        GetCurrentBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
+        Task<GetCurrentBuildResponse> task = handler.HandleAsync(new GetCurrentBuild(OWNER, engineId, 2));
+        await env.Builds.DeleteAsync(build);
+
+        GetCurrentBuildResponse response = await task;
+        Assert.That(response.Status, Is.EqualTo(GetCurrentBuildStatus.NotActive));
+        Assert.That(response.Build, Is.Null);
+    }
+
+    [Test]
+    public void GetCurrentBuild_BuildDoesNotExist_Throws()
+    {
+        var env = new TestEnvironment();
+        GetCurrentBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
+        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+            handler.HandleAsync(new GetCurrentBuild(OWNER, "engine1", 2))
+        );
+    }
+
+    [Test]
     public async Task UpdateCorpusAsync()
     {
         var env = new TestEnvironment();
@@ -2166,6 +2251,266 @@ public class EnginesHandlersTests
         Assert.That(updatedEngine.SourceLanguage, Is.EqualTo(engine.SourceLanguage));
         Assert.That(updatedEngine.TargetLanguage, Is.Not.Null);
         Assert.That(updatedEngine.TargetLanguage, Is.EqualTo(engine.TargetLanguage));
+    }
+
+    [Test]
+    public async Task GetPretranslationsByTextId()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetPretranslationsByTextIdHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetPretranslationsByTextIdHandler>>()
+        );
+        GetPretranslationsByTextIdResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Not.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.Found));
+        }
+    }
+
+    [Test]
+    public async Task GetPretranslationsByTextId_EngineNotBuild()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        GetPretranslationsByTextIdHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetPretranslationsByTextIdHandler>>()
+        );
+        GetPretranslationsByTextIdResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.NotBuilt));
+        }
+    }
+
+    [Test]
+    public async Task GetPretranslationsByTextId_CorpusNotFound()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetPretranslationsByTextIdHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetPretranslationsByTextIdHandler>>()
+        );
+        GetPretranslationsByTextIdResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.CorpusNotFound));
+        }
+    }
+
+    [Test]
+    public async Task GetAllPretranslations()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetAllPretranslationsHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetAllPretranslationsHandler>>()
+        );
+        GetAllPretranslationsResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Not.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.Found));
+        }
+    }
+
+    [Test]
+    public async Task GetAllPretranslations_EngineNotBuild()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        GetAllPretranslationsHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetAllPretranslationsHandler>>()
+        );
+        GetAllPretranslationsResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.NotBuilt));
+        }
+    }
+
+    [Test]
+    public async Task GetAllPretranslations_CorpusNotFound()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetAllPretranslationsHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetAllPretranslationsHandler>>()
+        );
+        GetAllPretranslationsResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.CorpusNotFound));
+        }
+    }
+
+    [Test]
+    public async Task GetCorpusPretranslationsByTextId()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetCorpusPretranslationsByTextIdHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetCorpusPretranslationsByTextIdHandler>>()
+        );
+        GetCorpusPretranslationsByTextIdResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Not.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.Found));
+        }
+    }
+
+    [Test]
+    public async Task GetCorpusPretranslationsByTextId_EngineNotBuild()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        GetCorpusPretranslationsByTextIdHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetCorpusPretranslationsByTextIdHandler>>()
+        );
+        GetCorpusPretranslationsByTextIdResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.NotBuilt));
+        }
+    }
+
+    [Test]
+    public async Task GetCorpusPretranslationsByTextId_CorpusNotFound()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetCorpusPretranslationsByTextIdHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetCorpusPretranslationsByTextIdHandler>>()
+        );
+        GetCorpusPretranslationsByTextIdResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Pretranslations, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.CorpusNotFound));
+        }
+    }
+
+    [Test]
+    public async Task GetAllPretranslationConfidences()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetAllPretranslationConfidencesHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetAllPretranslationConfidencesHandler>>()
+        );
+        GetAllPretranslationConfidencesResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.PretranslationConfidences, Is.Not.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.Found));
+        }
+    }
+
+    [Test]
+    public async Task GetAllPretranslationConfidences_EngineNotBuild()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateParallelCorpusEngineWithParatextProjectAsync()).Id;
+        GetAllPretranslationConfidencesHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetAllPretranslationConfidencesHandler>>()
+        );
+        GetAllPretranslationConfidencesResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.PretranslationConfidences, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.NotBuilt));
+        }
+    }
+
+    [Test]
+    public async Task GetAllPretranslationConfidences_CorpusNotFound()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetAllPretranslationConfidencesHandler handler = new(
+            env.Engines,
+            env.Pretranslations,
+            Substitute.For<ILogger<GetAllPretranslationConfidencesHandler>>()
+        );
+        GetAllPretranslationConfidencesResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.PretranslationConfidences, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(PretranslationStatus.CorpusNotFound));
+        }
     }
 
     [Test]

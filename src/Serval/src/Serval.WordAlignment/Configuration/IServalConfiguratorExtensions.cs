@@ -4,10 +4,9 @@ public static class IServalConfiguratorExtensions
 {
     public static IServalConfigurator AddWordAlignment(this IServalConfigurator configurator)
     {
-        configurator.Services.AddScoped<IBuildService, BuildService>();
-        configurator.Services.AddScoped<IWordAlignmentService, WordAlignmentService>();
-        configurator.Services.AddScoped<IEngineService, EngineService>();
+        configurator.Services.AddScoped<ContractMapper>();
         configurator.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
+        configurator.Services.AddScoped<DtoMapper>();
         configurator.Services.AddScoped<IWordAlignmentPlatformService, PlatformService>();
 
         configurator.AddWordAlignmentDataAccess();
