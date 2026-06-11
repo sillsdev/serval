@@ -1306,6 +1306,8 @@ public class WordAlignmentEngineTests
         string buildId = "b00000000000000000000000";
         if (addBuild)
         {
+            _env.EchoService.CancelBuildAsync(engineId, Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<string?>(buildId));
             var build = new Build { Id = buildId, EngineRef = engineId };
             await _env.Builds.InsertAsync(build);
         }
