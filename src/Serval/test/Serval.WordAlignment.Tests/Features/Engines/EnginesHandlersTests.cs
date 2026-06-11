@@ -1161,6 +1161,67 @@ public class EnginesHandlersTests
     }
 
     [Test]
+    public async Task GetAllWordAlignments()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithMultipleParatextProjectAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetAllWordAlignmentsHandler handler = new(
+            env.Engines,
+            env.WordAlignments,
+            Substitute.For<ILogger<GetAllWordAlignmentsHandler>>()
+        );
+        GetAllWordAlignmentsResponse response = await handler.HandleAsync(new(OWNER, engineId, "corpus1", "MAT"));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.WordAlignments, Is.Not.Null);
+            Assert.That(response.Status, Is.EqualTo(WordAlignmentStatus.Found));
+        }
+    }
+
+    [Test]
+    public async Task GetAllWordAlignments_EngineNotBuild()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithMultipleParatextProjectAsync()).Id;
+        GetAllWordAlignmentsHandler handler = new(
+            env.Engines,
+            env.WordAlignments,
+            Substitute.For<ILogger<GetAllWordAlignmentsHandler>>()
+        );
+        GetAllWordAlignmentsResponse response = await handler.HandleAsync(new(OWNER, engineId, "corpus1", "MAT"));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.WordAlignments, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(WordAlignmentStatus.NotBuilt));
+        }
+    }
+
+    [Test]
+    public async Task GetAllWordAlignments_CorpusNotFound()
+    {
+        var env = new TestEnvironment();
+        string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
+        await env.Engines.UpdateAsync(e => e.Id == engineId, u => u.Inc(e => e.ModelRevision));
+        GetAllWordAlignmentsHandler handler = new(
+            env.Engines,
+            env.WordAlignments,
+            Substitute.For<ILogger<GetAllWordAlignmentsHandler>>()
+        );
+        GetAllWordAlignmentsResponse response = await handler.HandleAsync(
+            new(OWNER, engineId, "parallel-corpus1", "MAT")
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.WordAlignments, Is.Null);
+            Assert.That(response.Status, Is.EqualTo(WordAlignmentStatus.CorpusNotFound));
+        }
+    }
+
+    [Test]
     public async Task DeleteWordAlignmentsWhenParallelCorpusIsUpdated()
     {
         var env = new TestEnvironment();
