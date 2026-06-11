@@ -395,6 +395,7 @@ public class PlatformService(
                         {
                             SourceIndex = a.SourceIndex,
                             TargetIndex = a.TargetIndex,
+                            Score = a.Score,
                         })
                         .ToList(),
                     Confidence = item.Confidence,
