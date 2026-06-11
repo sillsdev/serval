@@ -102,7 +102,15 @@ public class ServalTranslationPlatformServiceTests
                         Translation = "translation",
                         SourceTokens = ["sourceToken1"],
                         TranslationTokens = ["translationToken1"],
-                        Alignment = [new AlignedWordPairContract { SourceIndex = 0, TargetIndex = 0 }],
+                        Alignment =
+                        [
+                            new AlignedWordPairContract
+                            {
+                                SourceIndex = 0,
+                                TargetIndex = 0,
+                                Score = -1,
+                            },
+                        ],
                         Confidence = 0.0,
                     }
                 )
