@@ -8824,42 +8824,21 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Starts a build job for a translation engine.
+        /// Starts a build job for a engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and text ids/scripture ranges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
-        /// <br/>Specifying a corpus:
-        /// <br/>* A (legacy) corpus is selected by specifying `corpusId` and a parallel corpus is selected by specifying `parallelCorpusId`.
-        /// <br/>* A parallel corpus can be further filtered by specifying particular corpusIds in `sourceFilters` or `targetFilters`.
+        /// Specify the corpora and textIds to train on. If no `trainOn` field is provided, all corpora will be used. Only parallel corpora are supported.
+        /// <br/>Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
+        /// <br/>Filters can also be supplied via `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
-        /// <br/>Filtering by text id or chapter:
-        /// <br/>* Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
-        /// <br/>* Filters can also be supplied via the `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range).
-        /// <br/>* All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
-        /// <br/>            
-        /// <br/>Filter - train on all or none
-        /// <br/>* If `trainOn` or `pretranslate` is not provided, all corpora will be used for training or pretranslation respectively
-        /// <br/>* If a corpus is selected for training or pretranslation and neither `scriptureRange` nor `textIds` is defined, all of the selected corpus will be used.
-        /// <br/>* If a corpus is selected for training or pretranslation and an empty `scriptureRange` or `textIds` is defined, none of the selected corpus will be used.
-        /// <br/>* If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
-        /// <br/>            
-        /// <br/>Specify the corpora and text ids/scripture ranges within those corpora to pretranslate. When a corpus is selected for pretranslation,
-        /// <br/>the following text will be pretranslated:
-        /// <br/>* Text segments that are in the source but do not exist in the target.
-        /// <br/>* Text segments that are in the source and the target, but because of `trainOn` filtering, have not been trained on.
-        /// <br/>If the engine does not support pretranslation, these fields have no effect.
-        /// <br/>Pretranslating uses the same filtering as training.
+        /// <br/>Specify the corpora or text ids to word align on.
+        /// <br/>When a corpus or text id is selected for word align on, only text segments that are in both the source and the target will be aligned.
         /// <br/>            
         /// <br/>The `options` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-        /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
-        /// <br/>See [smt-transfer job settings documentation](https://github.com/sillsdev/serval/wiki/SMT-Transfer-Build-Options) about configuring job parameters.
-        /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
-        /// <br/>            
-        /// <br/>Note that when using a parallel corpus:
-        /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
-        /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
+        /// <br/>See [statistical alignment job settings documentation](https://github.com/sillsdev/serval/wiki/Statistical-Alignment-Build-Options) about configuring job parameters.
         /// </remarks>
-        /// <param name="id">The translation engine id</param>
+        /// <param name="id">The engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
         /// <returns>The new build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -10314,42 +10293,21 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Starts a build job for a translation engine.
+        /// Starts a build job for a engine.
         /// </summary>
         /// <remarks>
-        /// Specify the corpora and text ids/scripture ranges within those corpora to train on. Only one type of corpus may be used: either (legacy) corpora (see /translation/engines/{id}/corpora) or parallel corpora (see /translation/engines/{id}/parallel-corpora).
-        /// <br/>Specifying a corpus:
-        /// <br/>* A (legacy) corpus is selected by specifying `corpusId` and a parallel corpus is selected by specifying `parallelCorpusId`.
-        /// <br/>* A parallel corpus can be further filtered by specifying particular corpusIds in `sourceFilters` or `targetFilters`.
+        /// Specify the corpora and textIds to train on. If no `trainOn` field is provided, all corpora will be used. Only parallel corpora are supported.
+        /// <br/>Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
+        /// <br/>Filters can also be supplied via `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range)
+        /// <br/>All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
         /// <br/>            
-        /// <br/>Filtering by text id or chapter:
-        /// <br/>* Paratext projects can be filtered by [book using the `textIds`](https://github.com/sillsdev/libpalaso/blob/master/SIL.Scripture/Canon.cs).
-        /// <br/>* Filters can also be supplied via the `scriptureRange` parameter as ranges of biblical text. See [here](https://github.com/sillsdev/serval/wiki/Filtering-Paratext-Project-Data-with-a-Scripture-Range).
-        /// <br/>* All Paratext project filtering follows original versification. See [here](https://github.com/sillsdev/serval/wiki/Versification-in-Serval) for more information.
-        /// <br/>            
-        /// <br/>Filter - train on all or none
-        /// <br/>* If `trainOn` or `pretranslate` is not provided, all corpora will be used for training or pretranslation respectively
-        /// <br/>* If a corpus is selected for training or pretranslation and neither `scriptureRange` nor `textIds` is defined, all of the selected corpus will be used.
-        /// <br/>* If a corpus is selected for training or pretranslation and an empty `scriptureRange` or `textIds` is defined, none of the selected corpus will be used.
-        /// <br/>* If a corpus is selected for training or pretranslation but no further filters are provided, all selected corpora will be used for training or pretranslation respectively.
-        /// <br/>            
-        /// <br/>Specify the corpora and text ids/scripture ranges within those corpora to pretranslate. When a corpus is selected for pretranslation,
-        /// <br/>the following text will be pretranslated:
-        /// <br/>* Text segments that are in the source but do not exist in the target.
-        /// <br/>* Text segments that are in the source and the target, but because of `trainOn` filtering, have not been trained on.
-        /// <br/>If the engine does not support pretranslation, these fields have no effect.
-        /// <br/>Pretranslating uses the same filtering as training.
+        /// <br/>Specify the corpora or text ids to word align on.
+        /// <br/>When a corpus or text id is selected for word align on, only text segments that are in both the source and the target will be aligned.
         /// <br/>            
         /// <br/>The `options` parameter of the build config provides the ability to pass build configuration parameters as a JSON object.
-        /// <br/>See [nmt job settings documentation](https://github.com/sillsdev/serval/wiki/NMT-Build-Options) about configuring job parameters.
-        /// <br/>See [smt-transfer job settings documentation](https://github.com/sillsdev/serval/wiki/SMT-Transfer-Build-Options) about configuring job parameters.
-        /// <br/>See [keyterms parsing documentation](https://github.com/sillsdev/serval/wiki/Paratext-Key-Terms-Parsing) on how to use keyterms for training.
-        /// <br/>            
-        /// <br/>Note that when using a parallel corpus:
-        /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
-        /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
+        /// <br/>See [statistical alignment job settings documentation](https://github.com/sillsdev/serval/wiki/Statistical-Alignment-Build-Options) about configuring job parameters.
         /// </remarks>
-        /// <param name="id">The translation engine id</param>
+        /// <param name="id">The engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
         /// <returns>The new build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -10429,7 +10387,7 @@ namespace Serval.Client
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the translation engine.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client does not own the engine.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 404)
@@ -12490,9 +12448,8 @@ namespace Serval.Client
     public partial class WordAlignmentCorpusConfig
     {
 
-        [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string ParallelCorpusId { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("parallelCorpusId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ParallelCorpusId { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<ParallelCorpusFilterConfig>? SourceFilters { get; set; } = default!;
