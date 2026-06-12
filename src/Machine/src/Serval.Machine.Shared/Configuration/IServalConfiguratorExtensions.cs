@@ -16,16 +16,11 @@ public static class IServalConfiguratorExtensions
 
         services.AddSingleton<ILanguageTagService, LanguageTagService>();
 
-        services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
-
         services.Configure<ServiceOptions>(configuration.GetSection(ServiceOptions.Key));
         services.Configure<SharedFileOptions>(configuration.GetSection(SharedFileOptions.Key));
         services.Configure<SmtTransferEngineOptions>(configuration.GetSection(SmtTransferEngineOptions.Key));
         services.Configure<StatisticalEngineOptions>(configuration.GetSection(StatisticalEngineOptions.Key));
         services.Configure<ClearMLOptions>(configuration.GetSection(ClearMLOptions.Key));
-        services.Configure<DistributedReaderWriterLockOptions>(
-            configuration.GetSection(DistributedReaderWriterLockOptions.Key)
-        );
         services.Configure<BuildJobOptions>(configuration.GetSection(BuildJobOptions.Key));
 
         services.AddHostedService<ModelCleanupService>();
@@ -36,11 +31,6 @@ public static class IServalConfiguratorExtensions
 
         configurator.AddTranslationEngines();
         configurator.AddWordAlignmentEngines();
-
-        configurator.AddStartupTask(
-            (sp, cancellationToken) =>
-                sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
-        );
 
         return configurator;
     }

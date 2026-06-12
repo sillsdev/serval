@@ -39,7 +39,7 @@ public class TranslationPostprocessBuildJob(
             await PlatformService.InsertInferenceResultsAsync(engineId, pretranslationsStream, cancellationToken);
         }
 
-        int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
+        int additionalCorpusSize = await SaveModelAsync(engineId, buildId, cancellationToken);
         await DataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
