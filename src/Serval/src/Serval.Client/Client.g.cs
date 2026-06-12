@@ -8678,11 +8678,46 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all word alignment engines
+        /// Add a parallel corpus to an engine
         /// </summary>
-        /// <returns>The engines</returns>
+        /// <remarks>
+        /// ## Parameters
+        /// <br/>* **`sourceCorpusIds`**: The source corpora associated with the parallel corpus
+        /// <br/>* **`targetCorpusIds`**: The target corpora associated with the parallel corpus
+        /// </remarks>
+        /// <param name="id">The engine id</param>
+        /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
+        /// <returns>The added corpus</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignmentEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<WordAlignmentParallelCorpus> AddParallelCorpusAsync(string id, WordAlignmentParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get all parallel corpora for a engine
+        /// </summary>
+        /// <param name="id">The engine id</param>
+        /// <returns>The parallel corpora</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignmentParallelCorpus>> GetAllParallelCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Align words between a source and target segment
+        /// </summary>
+        /// <param name="id">The engine id</param>
+        /// <param name="wordAlignmentRequest">The source and target segment</param>
+        /// <returns>The word alignment result</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<WordAlignmentResult> AlignAsync(string id, WordAlignmentRequest wordAlignmentRequest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Cancel the current build job (whether pending or active) for a engine
+        /// </summary>
+        /// <param name="id">The engine id</param>
+        /// <returns>The build job was cancelled successfully.</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<WordAlignmentBuild> CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -8717,12 +8752,11 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get a word alignment engine by unique id
+        /// Get all word alignment engines
         /// </summary>
-        /// <param name="id">The engine id</param>
-        /// <returns>The engine</returns>
+        /// <returns>The engines</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentEngine> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignmentEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -8735,61 +8769,12 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Align words between a source and target segment
+        /// Get a word alignment engine by unique id
         /// </summary>
         /// <param name="id">The engine id</param>
-        /// <param name="wordAlignmentRequest">The source and target segment</param>
-        /// <returns>The word alignment result</returns>
+        /// <returns>The engine</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentResult> AlignAsync(string id, WordAlignmentRequest wordAlignmentRequest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Add a parallel corpus to an engine
-        /// </summary>
-        /// <remarks>
-        /// ## Parameters
-        /// <br/>* **`sourceCorpusIds`**: The source corpora associated with the parallel corpus
-        /// <br/>* **`targetCorpusIds`**: The target corpora associated with the parallel corpus
-        /// </remarks>
-        /// <param name="id">The engine id</param>
-        /// <param name="corpusConfig">The corpus configuration (see remarks)</param>
-        /// <returns>The added corpus</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentParallelCorpus> AddParallelCorpusAsync(string id, WordAlignmentParallelCorpusConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Get all parallel corpora for a engine
-        /// </summary>
-        /// <param name="id">The engine id</param>
-        /// <returns>The parallel corpora</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignmentParallelCorpus>> GetAllParallelCorporaAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Update a parallel corpus with a new set of corpora
-        /// </summary>
-        /// <remarks>
-        /// Will completely replace the parallel corpus' file associations. Will not affect jobs already queued or running. Will not affect existing word graphs until new build is complete.
-        /// </remarks>
-        /// <param name="id">The engine id</param>
-        /// <param name="parallelCorpusId">The parallel corpus id</param>
-        /// <param name="corpusConfig">The corpus configuration</param>
-        /// <returns>The corpus was updated successfully</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentParallelCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, WordAlignmentParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Get the configuration of a parallel corpus for a engine
-        /// </summary>
-        /// <param name="id">The engine id</param>
-        /// <param name="parallelCorpusId">The parallel corpus id</param>
-        /// <returns>The parallel corpus configuration</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentParallelCorpus> GetParallelCorpusAsync(string id, string parallelCorpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<WordAlignmentEngine> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -8806,27 +8791,27 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all word alignments in a corpus of a engine
+        /// Get the configuration of a parallel corpus for an engine
+        /// </summary>
+        /// <param name="id">The engine id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
+        /// <returns>The parallel corpus configuration</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<WordAlignmentParallelCorpus> GetParallelCorpusAsync(string id, string parallelCorpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Update a parallel corpus with a new set of corpora
         /// </summary>
         /// <remarks>
-        /// Word alignments are arranged in a list of dictionaries with the following fields per word alignment:
-        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
-        /// <br/>* **`refs`** (a list of strings): A list of references including:
-        /// <br/>  * The references defined in the source file per line, if any.
-        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
-        /// <br/>* **`sourceTokens`**: the tokenized source segment
-        /// <br/>* **`targetTokens`**: the tokenized target segment
-        /// <br/>* **`alignment`**: a list of aligned word pairs with associated scores
-        /// <br/>            
-        /// <br/>Word alignments can be filtered by text id if provided.
-        /// <br/>Only word alignments for the most recent successful build of the engine are returned.
+        /// Will completely replace the parallel corpus' file associations. Will not affect jobs already queued or running. Will not affect existing word alignments until new build is complete.
         /// </remarks>
         /// <param name="id">The engine id</param>
-        /// <param name="corpusId">The corpus id</param>
-        /// <param name="textId">The text id (optional)</param>
-        /// <returns>The word alignments</returns>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
+        /// <param name="corpusConfig">The corpus configuration</param>
+        /// <returns>The corpus was updated successfully</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignment>> GetAllWordAlignmentsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<WordAlignmentParallelCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, WordAlignmentParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -8861,6 +8846,30 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
+        /// Get all word alignments in a corpus of a engine
+        /// </summary>
+        /// <remarks>
+        /// Word alignments are arranged in a list of dictionaries with the following fields per word alignment:
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`sourceTokens`**: the tokenized source segment
+        /// <br/>* **`targetTokens`**: the tokenized target segment
+        /// <br/>* **`alignment`**: a list of aligned word pairs with associated scores
+        /// <br/>            
+        /// <br/>Word alignments can be filtered by text id if provided.
+        /// <br/>Only word alignments for the most recent successful build of the engine are returned.
+        /// </remarks>
+        /// <param name="id">The engine id</param>
+        /// <param name="corpusId">The corpus id</param>
+        /// <param name="textId">The text id (optional)</param>
+        /// <returns>The word alignments</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignment>> GetAllWordAlignmentsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
         /// Get a build job
         /// </summary>
         /// <remarks>
@@ -8878,7 +8887,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<WordAlignmentBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -8892,15 +8901,6 @@ namespace Serval.Client
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<WordAlignmentBuild> GetCurrentBuildAsync(string id, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Cancel the current build job (whether pending or active) for a engine
-        /// </summary>
-        /// <param name="id">The engine id</param>
-        /// <returns>The build job was cancelled successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<WordAlignmentBuild> CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
     }
 
@@ -8951,556 +8951,6 @@ namespace Serval.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Get all word alignment engines
-        /// </summary>
-        /// <returns>The engines</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignmentEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
-        {
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
-
-                    var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines"
-                    urlBuilder_.Append("word-alignment/engines");
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
-                        foreach (var item_ in response_.Headers)
-                            headers_[item_.Key] = item_.Value;
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<WordAlignmentEngine>>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        if (status_ == 401)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 403)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 503)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
-                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Create a new word alignment engine
-        /// </summary>
-        /// <remarks>
-        /// ## Parameters
-        /// <br/>* **`name`**: (optional) A name to help identify and distinguish the file.
-        /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
-        /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
-        /// <br/>* **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
-        /// <br/>* **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **type**: **`statistical`** or **`echo-word-alignment`**
-        /// <br/>### statistical
-        /// <br/>The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
-        /// <br/>### echo-word-alignment
-        /// <br/>The echo-word-alignment engine has full coverage of all endpoints. Endpoints like create and build return empty responses.
-        /// <br/>Endpoints like align echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
-        /// <br/>## Sample request:
-        /// <br/>            
-        /// <br/>    {
-        /// <br/>      "name": "myTeam:myProject:myEngine",
-        /// <br/>      "sourceLanguage": "el",
-        /// <br/>      "targetLanguage": "en",
-        /// <br/>      "type": "statistical"
-        /// <br/>    }
-        /// </remarks>
-        /// <param name="engineConfig">The engine configuration (see above)</param>
-        /// <returns>The new engine</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentEngine> CreateAsync(WordAlignmentEngineConfig engineConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
-        {
-            if (engineConfig == null)
-                throw new System.ArgumentNullException("engineConfig");
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(engineConfig, JsonSerializerSettings);
-                    var content_ = new System.Net.Http.StringContent(json_);
-                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
-                    request_.Content = content_;
-                    request_.Method = new System.Net.Http.HttpMethod("POST");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
-
-                    var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines"
-                    urlBuilder_.Append("word-alignment/engines");
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
-                        foreach (var item_ in response_.Headers)
-                            headers_[item_.Key] = item_.Value;
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 201)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentEngine>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        if (status_ == 400)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("Bad request. Is the engine type correct?", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 401)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 403)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the engine.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 503)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
-                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Get a word alignment engine by unique id
-        /// </summary>
-        /// <param name="id">The engine id</param>
-        /// <returns>The engine</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentEngine> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
-        {
-            if (id == null)
-                throw new System.ArgumentNullException("id");
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
-
-                    var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines/{id}"
-                    urlBuilder_.Append("word-alignment/engines/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
-                        foreach (var item_ in response_.Headers)
-                            headers_[item_.Key] = item_.Value;
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentEngine>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        if (status_ == 401)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 403)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the engine.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 404)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 503)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
-                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Delete a word alignment engine
-        /// </summary>
-        /// <param name="id">The engine id</param>
-        /// <returns>The engine was successfully deleted.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
-        {
-            if (id == null)
-                throw new System.ArgumentNullException("id");
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
-
-                    var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines/{id}"
-                    urlBuilder_.Append("word-alignment/engines/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
-                        foreach (var item_ in response_.Headers)
-                            headers_[item_.Key] = item_.Value;
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            return;
-                        }
-                        else
-                        if (status_ == 401)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 403)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the engine.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 404)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist and therefore cannot be deleted.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 503)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
-                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Align words between a source and target segment
-        /// </summary>
-        /// <param name="id">The engine id</param>
-        /// <param name="wordAlignmentRequest">The source and target segment</param>
-        /// <returns>The word alignment result</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentResult> AlignAsync(string id, WordAlignmentRequest wordAlignmentRequest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
-        {
-            if (id == null)
-                throw new System.ArgumentNullException("id");
-
-            if (wordAlignmentRequest == null)
-                throw new System.ArgumentNullException("wordAlignmentRequest");
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(wordAlignmentRequest, JsonSerializerSettings);
-                    var content_ = new System.Net.Http.StringContent(json_);
-                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
-                    request_.Content = content_;
-                    request_.Method = new System.Net.Http.HttpMethod("POST");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
-
-                    var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines/{id}/align"
-                    urlBuilder_.Append("word-alignment/engines/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/align");
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
-                        foreach (var item_ in response_.Headers)
-                            headers_[item_.Key] = item_.Value;
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentResult>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        if (status_ == 400)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("Bad request", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 401)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 403)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the engine.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 404)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 405)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The method is not supported.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 409)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine needs to be built before it can align segments.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 503)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
-                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -9731,26 +9181,19 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Update a parallel corpus with a new set of corpora
+        /// Align words between a source and target segment
         /// </summary>
-        /// <remarks>
-        /// Will completely replace the parallel corpus' file associations. Will not affect jobs already queued or running. Will not affect existing word graphs until new build is complete.
-        /// </remarks>
         /// <param name="id">The engine id</param>
-        /// <param name="parallelCorpusId">The parallel corpus id</param>
-        /// <param name="corpusConfig">The corpus configuration</param>
-        /// <returns>The corpus was updated successfully</returns>
+        /// <param name="wordAlignmentRequest">The source and target segment</param>
+        /// <returns>The word alignment result</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentParallelCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, WordAlignmentParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<WordAlignmentResult> AlignAsync(string id, WordAlignmentRequest wordAlignmentRequest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
-            if (parallelCorpusId == null)
-                throw new System.ArgumentNullException("parallelCorpusId");
-
-            if (corpusConfig == null)
-                throw new System.ArgumentNullException("corpusConfig");
+            if (wordAlignmentRequest == null)
+                throw new System.ArgumentNullException("wordAlignmentRequest");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -9758,20 +9201,19 @@ namespace Serval.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(corpusConfig, JsonSerializerSettings);
+                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(wordAlignmentRequest, JsonSerializerSettings);
                     var content_ = new System.Net.Http.StringContent(json_);
                     content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
                     request_.Content = content_;
-                    request_.Method = new System.Net.Http.HttpMethod("PATCH");
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines/{id}/parallel-corpora/{parallelCorpusId}"
+                    // Operation Path: "word-alignment/engines/{id}/align"
                     urlBuilder_.Append("word-alignment/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/parallel-corpora/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/align");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -9798,7 +9240,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentResult>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -9827,7 +9269,19 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 405)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The method is not supported.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 409)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine needs to be built before it can align segments.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -9857,19 +9311,15 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get the configuration of a parallel corpus for a engine
+        /// Cancel the current build job (whether pending or active) for a engine
         /// </summary>
         /// <param name="id">The engine id</param>
-        /// <param name="parallelCorpusId">The parallel corpus id</param>
-        /// <returns>The parallel corpus configuration</returns>
+        /// <returns>The build job was cancelled successfully.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentParallelCorpus> GetParallelCorpusAsync(string id, string parallelCorpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<WordAlignmentBuild> CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
-
-            if (parallelCorpusId == null)
-                throw new System.ArgumentNullException("parallelCorpusId");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -9877,16 +9327,16 @@ namespace Serval.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines/{id}/parallel-corpora/{parallelCorpusId}"
+                    // Operation Path: "word-alignment/engines/{id}/current-build/cancel"
                     urlBuilder_.Append("word-alignment/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/parallel-corpora/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/current-build/cancel");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -9913,7 +9363,439 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentBuild>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 204)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("There is no active build job.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client does not own the engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 405)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine does not support cancelling builds.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Create a new word alignment engine
+        /// </summary>
+        /// <remarks>
+        /// ## Parameters
+        /// <br/>* **`name`**: (optional) A name to help identify and distinguish the file.
+        /// <br/>  * Recommendation: Create a multi-part name to distinguish between projects, uses, etc.
+        /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
+        /// <br/>* **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
+        /// <br/>* **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
+        /// <br/>* **type**: **`statistical`** or **`echo-word-alignment`**
+        /// <br/>### statistical
+        /// <br/>The Statistical engine is based off of the [Thot library](https://github.com/sillsdev/thot) and contains IBM-1, IBM-2, IBM-3, IBM-4, FastAlign and HMM algorithms.
+        /// <br/>### echo-word-alignment
+        /// <br/>The echo-word-alignment engine has full coverage of all endpoints. Endpoints like create and build return empty responses.
+        /// <br/>Endpoints like align echo the sent content back to the user in the proper format. This engine is useful for debugging and testing purposes.
+        /// <br/>## Sample request:
+        /// <br/>            
+        /// <br/>    {
+        /// <br/>      "name": "myTeam:myProject:myEngine",
+        /// <br/>      "sourceLanguage": "el",
+        /// <br/>      "targetLanguage": "en",
+        /// <br/>      "type": "statistical"
+        /// <br/>    }
+        /// </remarks>
+        /// <param name="engineConfig">The engine configuration (see above)</param>
+        /// <returns>The new engine</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<WordAlignmentEngine> CreateAsync(WordAlignmentEngineConfig engineConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (engineConfig == null)
+                throw new System.ArgumentNullException("engineConfig");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(engineConfig, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.StringContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "word-alignment/engines"
+                    urlBuilder_.Append("word-alignment/engines");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 201)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentEngine>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("Bad request. Is the engine type correct?", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get all word alignment engines
+        /// </summary>
+        /// <returns>The engines</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignmentEngine>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "word-alignment/engines"
+                    urlBuilder_.Append("word-alignment/engines");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<WordAlignmentEngine>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Delete a word alignment engine
+        /// </summary>
+        /// <param name="id">The engine id</param>
+        /// <returns>The engine was successfully deleted.</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task DeleteAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "word-alignment/engines/{id}"
+                    urlBuilder_.Append("word-alignment/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine does not exist and therefore cannot be deleted.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get a word alignment engine by unique id
+        /// </summary>
+        /// <param name="id">The engine id</param>
+        /// <returns>The engine</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<WordAlignmentEngine> GetAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "word-alignment/engines/{id}"
+                    urlBuilder_.Append("word-alignment/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentEngine>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -9936,7 +9818,7 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or parallel corpus does not exist.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -10072,33 +9954,19 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get all word alignments in a corpus of a engine
+        /// Get the configuration of a parallel corpus for an engine
         /// </summary>
-        /// <remarks>
-        /// Word alignments are arranged in a list of dictionaries with the following fields per word alignment:
-        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
-        /// <br/>* **`refs`** (a list of strings): A list of references including:
-        /// <br/>  * The references defined in the source file per line, if any.
-        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
-        /// <br/>* **`sourceTokens`**: the tokenized source segment
-        /// <br/>* **`targetTokens`**: the tokenized target segment
-        /// <br/>* **`alignment`**: a list of aligned word pairs with associated scores
-        /// <br/>            
-        /// <br/>Word alignments can be filtered by text id if provided.
-        /// <br/>Only word alignments for the most recent successful build of the engine are returned.
-        /// </remarks>
         /// <param name="id">The engine id</param>
-        /// <param name="corpusId">The corpus id</param>
-        /// <param name="textId">The text id (optional)</param>
-        /// <returns>The word alignments</returns>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
+        /// <returns>The parallel corpus configuration</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignment>> GetAllWordAlignmentsAsync(string id, string corpusId, string? textId = null, string? textIdCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<WordAlignmentParallelCorpus> GetParallelCorpusAsync(string id, string parallelCorpusId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
-            if (corpusId == null)
-                throw new System.ArgumentNullException("corpusId");
+            if (parallelCorpusId == null)
+                throw new System.ArgumentNullException("parallelCorpusId");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -10111,22 +9979,11 @@ namespace Serval.Client
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines/{id}/corpora/{corpusId}/word-alignments"
+                    // Operation Path: "word-alignment/engines/{id}/parallel-corpora/{parallelCorpusId}"
                     urlBuilder_.Append("word-alignment/engines/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/corpora/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/word-alignments");
-                    urlBuilder_.Append('?');
-                    if (textId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("text-id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (textIdCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("textId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textIdCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    urlBuilder_.Append("/parallel-corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture)));
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -10153,7 +10010,7 @@ namespace Serval.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<WordAlignment>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -10176,13 +10033,133 @@ namespace Serval.Client
                         if (status_ == 404)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The engine or parallel corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
-                        if (status_ == 409)
+                        if (status_ == 503)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Update a parallel corpus with a new set of corpora
+        /// </summary>
+        /// <remarks>
+        /// Will completely replace the parallel corpus' file associations. Will not affect jobs already queued or running. Will not affect existing word alignments until new build is complete.
+        /// </remarks>
+        /// <param name="id">The engine id</param>
+        /// <param name="parallelCorpusId">The parallel corpus id</param>
+        /// <param name="corpusConfig">The corpus configuration</param>
+        /// <returns>The corpus was updated successfully</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<WordAlignmentParallelCorpus> UpdateParallelCorpusAsync(string id, string parallelCorpusId, WordAlignmentParallelCorpusUpdateConfig corpusConfig, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (parallelCorpusId == null)
+                throw new System.ArgumentNullException("parallelCorpusId");
+
+            if (corpusConfig == null)
+                throw new System.ArgumentNullException("corpusConfig");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(corpusConfig, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.StringContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("PATCH");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "word-alignment/engines/{id}/parallel-corpora/{parallelCorpusId}"
+                    urlBuilder_.Append("word-alignment/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/parallel-corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(parallelCorpusId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentParallelCorpus>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("Bad request", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -10452,6 +10429,142 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
+        /// Get all word alignments in a corpus of a engine
+        /// </summary>
+        /// <remarks>
+        /// Word alignments are arranged in a list of dictionaries with the following fields per word alignment:
+        /// <br/>* **`textId`**: The text id of the source file defined when the corpus was created.
+        /// <br/>* **`refs`** (a list of strings): A list of references including:
+        /// <br/>  * The references defined in the source file per line, if any.
+        /// <br/>  * An auto-generated reference of `[textId]:[lineNumber]`, 1 indexed.
+        /// <br/>* **`sourceTokens`**: the tokenized source segment
+        /// <br/>* **`targetTokens`**: the tokenized target segment
+        /// <br/>* **`alignment`**: a list of aligned word pairs with associated scores
+        /// <br/>            
+        /// <br/>Word alignments can be filtered by text id if provided.
+        /// <br/>Only word alignments for the most recent successful build of the engine are returned.
+        /// </remarks>
+        /// <param name="id">The engine id</param>
+        /// <param name="corpusId">The corpus id</param>
+        /// <param name="textId">The text id (optional)</param>
+        /// <returns>The word alignments</returns>
+        /// <exception cref="ServalApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IList<WordAlignment>> GetAllWordAlignmentsAsync(string id, string corpusId, string? textId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (corpusId == null)
+                throw new System.ArgumentNullException("corpusId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "word-alignment/engines/{id}/corpora/{corpusId}/word-alignments"
+                    urlBuilder_.Append("word-alignment/engines/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/corpora/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(corpusId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/word-alignments");
+                    urlBuilder_.Append('?');
+                    if (textId != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("text-id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(textId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IList<WordAlignment>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The authenticated client cannot perform the operation or does not own the engine.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine or corpus does not exist.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 409)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine needs to be built first.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 503)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
         /// Get a build job
         /// </summary>
         /// <remarks>
@@ -10469,7 +10582,7 @@ namespace Serval.Client
         /// <param name="minRevision">The minimum revision</param>
         /// <returns>The build job</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, long? minRevisionCamelCase = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<WordAlignmentBuild> GetBuildAsync(string id, string buildId, long? minRevision = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -10497,10 +10610,6 @@ namespace Serval.Client
                     if (minRevision != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("min-revision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevision, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    if (minRevisionCamelCase != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("minRevision")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(minRevisionCamelCase, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -10695,123 +10804,6 @@ namespace Serval.Client
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                             throw new ServalApiException("The long polling request timed out. This is expected behavior if you\'re using long-polling with the minRevision strategy specified in the docs.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 503)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("A necessary service is currently unavailable. Check `/health` for more details.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
-                            throw new ServalApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <summary>
-        /// Cancel the current build job (whether pending or active) for a engine
-        /// </summary>
-        /// <param name="id">The engine id</param>
-        /// <returns>The build job was cancelled successfully.</returns>
-        /// <exception cref="ServalApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<WordAlignmentBuild> CancelBuildAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
-        {
-            if (id == null)
-                throw new System.ArgumentNullException("id");
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
-                    request_.Method = new System.Net.Http.HttpMethod("POST");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
-
-                    var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "word-alignment/engines/{id}/current-build/cancel"
-                    urlBuilder_.Append("word-alignment/engines/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append("/current-build/cancel");
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
-                        foreach (var item_ in response_.Headers)
-                            headers_[item_.Key] = item_.Value;
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<WordAlignmentBuild>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new ServalApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        if (status_ == 204)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("There is no active build job.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 401)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 403)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client does not own the engine.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 404)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not exist.", status_, responseText_, headers_, null);
-                        }
-                        else
-                        if (status_ == 405)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The engine does not support cancelling builds.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 503)
@@ -12124,115 +12116,6 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class WordAlignmentEngine
-    {
-
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Id { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Url { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Name { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string SourceLanguage { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TargetLanguage { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Type { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("isBuilding", Required = Newtonsoft.Json.Required.Always)]
-        public bool IsBuilding { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("modelRevision", Required = Newtonsoft.Json.Required.Always)]
-        public int ModelRevision { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.Always)]
-        public double Confidence { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("corpusSize", Required = Newtonsoft.Json.Required.Always)]
-        public int CorpusSize { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("dateCreated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.DateTimeOffset? DateCreated { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class WordAlignmentEngineConfig
-    {
-
-        /// <summary>
-        /// The word alignment engine name.
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? Name { get; set; } = default!;
-
-        /// <summary>
-        /// The source language tag.
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string SourceLanguage { get; set; } = default!;
-
-        /// <summary>
-        /// The target language tag.
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TargetLanguage { get; set; } = default!;
-
-        /// <summary>
-        /// The translation engine type.
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string Type { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class WordAlignmentResult
-    {
-
-        [Newtonsoft.Json.JsonProperty("sourceTokens", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> SourceTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
-
-        [Newtonsoft.Json.JsonProperty("targetTokens", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> TargetTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
-
-        [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class WordAlignmentRequest
-    {
-
-        [Newtonsoft.Json.JsonProperty("sourceSegment", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string SourceSegment { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetSegment", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TargetSegment { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordAlignmentParallelCorpus
     {
 
@@ -12279,36 +12162,8 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class WordAlignmentParallelCorpusUpdateConfig
+    public partial class WordAlignmentResult
     {
-
-        [Newtonsoft.Json.JsonProperty("sourceCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<string>? SourceCorpusIds { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.IList<string>? TargetCorpusIds { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class WordAlignment
-    {
-
-        [Newtonsoft.Json.JsonProperty("textId", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TextId { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("sourceRefs", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> SourceRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
-
-        [Newtonsoft.Json.JsonProperty("targetRefs", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<string> TargetRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
-
-        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public System.Collections.Generic.IList<string>? Refs { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceTokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -12321,6 +12176,20 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
         public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WordAlignmentRequest
+    {
+
+        [Newtonsoft.Json.JsonProperty("sourceSegment", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string SourceSegment { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetSegment", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string TargetSegment { get; set; } = default!;
 
     }
 
@@ -12441,6 +12310,123 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WordAlignmentEngine
+    {
+
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Id { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Url { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Name { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string SourceLanguage { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string TargetLanguage { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Type { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("isBuilding", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsBuilding { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("modelRevision", Required = Newtonsoft.Json.Required.Always)]
+        public int ModelRevision { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.Always)]
+        public double Confidence { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("corpusSize", Required = Newtonsoft.Json.Required.Always)]
+        public int CorpusSize { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("dateCreated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTimeOffset? DateCreated { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WordAlignmentEngineConfig
+    {
+
+        /// <summary>
+        /// The word alignment engine name.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// The source language tag.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("sourceLanguage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string SourceLanguage { get; set; } = default!;
+
+        /// <summary>
+        /// The target language tag.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("targetLanguage", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string TargetLanguage { get; set; } = default!;
+
+        /// <summary>
+        /// The translation engine type.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Type { get; set; } = default!;
+
+        /// <summary>
+        /// The model is saved when built and can be retrieved.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("isModelPersisted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? IsModelPersisted { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WordAlignment
+    {
+
+        [Newtonsoft.Json.JsonProperty("textId", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string TextId { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceRefs", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> SourceRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("targetRefs", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> TargetRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.Obsolete]
+        public System.Collections.Generic.IList<string>? Refs { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("sourceTokens", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> SourceTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("targetTokens", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<string> TargetTokens { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("alignment", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IList<AlignedWordPair> Alignment { get; set; } = new System.Collections.ObjectModel.Collection<AlignedWordPair>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class WordAlignmentBuildConfig
     {
 
@@ -12470,6 +12456,18 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("targetFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<ParallelCorpusFilterConfig>? TargetFilters { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WordAlignmentParallelCorpusUpdateConfig
+    {
+
+        [Newtonsoft.Json.JsonProperty("sourceCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? SourceCorpusIds { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("targetCorpusIds", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<string>? TargetCorpusIds { get; set; } = default!;
 
     }
 
