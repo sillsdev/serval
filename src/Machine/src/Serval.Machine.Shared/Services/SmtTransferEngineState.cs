@@ -44,7 +44,7 @@ public class SmtTransferEngineState(
         if (IsMarkedForDeletion)
             throw new InvalidOperationException("Engine is marked for deletion");
 
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             if (_hybridEngine is not null && CurrentBuildRevision != -1 && buildRevision != CurrentBuildRevision)
             {

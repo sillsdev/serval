@@ -39,14 +39,14 @@ public class ClearMLHealthCheck(
                     );
                 case QueueHealth.Healthy:
                 default:
-                    using (await _lock.LockAsync(cancellationToken))
+                    using (await _lock.AcquireAsync(cancellationToken))
                         cache.Set(FailureCountKey, 0);
                     return HealthCheckResult.Healthy("ClearML is available");
             }
         }
         catch (Exception e)
         {
-            using (await _lock.LockAsync(cancellationToken))
+            using (await _lock.AcquireAsync(cancellationToken))
             {
                 int numConsecutiveFailures = cache.Get<int>(FailureCountKey);
                 cache.Set(FailureCountKey, ++numConsecutiveFailures);

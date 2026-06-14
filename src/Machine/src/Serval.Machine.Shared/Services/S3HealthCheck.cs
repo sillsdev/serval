@@ -29,13 +29,13 @@ public class S3HealthCheck(IMemoryCache cache, IOptions<SharedFileOptions> optio
                     RegionEndpoint = RegionEndpoint.GetBySystemName(options.Value.S3Region),
                 }
             ).ListObjectsV2Async(request, cancellationToken);
-            using (await _lock.LockAsync(cancellationToken))
+            using (await _lock.AcquireAsync(cancellationToken))
                 cache.Set(FailureCountKey, 0);
             return HealthCheckResult.Healthy("The S3 bucket is available");
         }
         catch (Exception e)
         {
-            using (await _lock.LockAsync(cancellationToken))
+            using (await _lock.AcquireAsync(cancellationToken))
             {
                 int numConsecutiveFailures = cache.Get<int>(FailureCountKey);
                 cache.Set(FailureCountKey, ++numConsecutiveFailures);

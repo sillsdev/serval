@@ -94,7 +94,7 @@ public class MemoryRepository<T> : IRepository<T>
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             return Entities.AsQueryable().FirstOrDefault(filter);
         }
@@ -106,7 +106,7 @@ public class MemoryRepository<T> : IRepository<T>
     )
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             return Entities.AsQueryable().Where(filter).ToList();
         }
@@ -115,7 +115,7 @@ public class MemoryRepository<T> : IRepository<T>
     public async Task<bool> ExistsAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             return Entities.AsQueryable().Any(filter);
         }
@@ -129,7 +129,7 @@ public class MemoryRepository<T> : IRepository<T>
         var allSubscriptions = new List<MemorySubscription<T>>();
         string serializedEntity;
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             if (_entities.ContainsKey(entity.Id) || CheckDuplicateKeys(entity))
                 throw new DuplicateKeyException();
@@ -150,7 +150,7 @@ public class MemoryRepository<T> : IRepository<T>
         }
         var serializedEntities = new List<(string, string, List<MemorySubscription<T>>)>();
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             foreach (T entity in entities)
             {
@@ -185,7 +185,7 @@ public class MemoryRepository<T> : IRepository<T>
         string? serializedEntity = null;
         Func<T, bool> filterFunc = filter.Compile();
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             entity = Entities.FirstOrDefault(e =>
             {
@@ -239,7 +239,7 @@ public class MemoryRepository<T> : IRepository<T>
     )
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             T[] entities = Entities.AsQueryable().Where(filter).ToArray();
             foreach (T entity in entities)
@@ -266,7 +266,7 @@ public class MemoryRepository<T> : IRepository<T>
         T? entity;
         string? serializedEntity = null;
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             entity = Entities.AsQueryable().FirstOrDefault(filter);
             if (entity != null)
@@ -287,7 +287,7 @@ public class MemoryRepository<T> : IRepository<T>
     )
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             T[] entities = Entities.AsQueryable().Where(filter).ToArray();
             foreach (T entity in entities)
@@ -304,7 +304,7 @@ public class MemoryRepository<T> : IRepository<T>
     )
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             IQueryable<T> query = Entities.AsQueryable().Where(filter);
             if (sort is not null && sort.Any())
@@ -326,15 +326,15 @@ public class MemoryRepository<T> : IRepository<T>
                 query = orderedQuery;
             }
             T? initialEntity = query.FirstOrDefault();
-            var subscription = new MemorySubscription<T>(initialEntity, RemoveSubscription);
+            var subscription = new MemorySubscription<T>(initialEntity, async o => await RemoveSubscriptionAsync(o));
             _subscriptions[subscription] = filter.Compile();
             return subscription;
         }
     }
 
-    private void RemoveSubscription(MemorySubscription<T> subscription)
+    private async Task RemoveSubscriptionAsync(MemorySubscription<T> subscription)
     {
-        using (_lock.Lock())
+        using (await _lock.AcquireAsync(CancellationToken.None))
         {
             _subscriptions.Remove(subscription);
         }

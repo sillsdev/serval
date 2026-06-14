@@ -40,7 +40,7 @@ public class StatisticalEngineStateService(
 
             try
             {
-                using (await state.Lock.WriterLockAsync(cancellationToken))
+                using (await AcquireWriteLockAsync(state.Lock, cancellationToken))
                 {
                     WordAlignmentEngine? engine = await engines.GetAsync(state.EngineId, cancellationToken);
                     if (engine is not null)

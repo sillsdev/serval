@@ -119,21 +119,21 @@ public class S3WriteStream(
 
     protected override void Dispose(bool disposing)
     {
-        UploadPartAsync().WaitAndUnwrapException();
+        UploadPartAsync().GetAwaiter().GetResult();
         try
         {
             if (disposing)
             {
                 if (_uploadResponses.Count == 0)
                 {
-                    AbortAsync().WaitAndUnwrapException();
+                    AbortAsync().GetAwaiter().GetResult();
                     PutObjectRequest request = new()
                     {
                         BucketName = _bucketName,
                         Key = _key,
                         ContentBody = "",
                     };
-                    PutObjectResponse response = _client.PutObjectAsync(request).WaitAndUnwrapException();
+                    PutObjectResponse response = _client.PutObjectAsync(request).GetAwaiter().GetResult();
                     if (response.HttpStatusCode != HttpStatusCode.OK)
                     {
                         throw new HttpRequestException(
@@ -154,7 +154,8 @@ public class S3WriteStream(
                         request.AddPartETags(_uploadResponses);
                         CompleteMultipartUploadResponse response = _client
                             .CompleteMultipartUploadAsync(request)
-                            .WaitAndUnwrapException();
+                            .GetAwaiter()
+                            .GetResult();
                         if (response.HttpStatusCode != HttpStatusCode.OK)
                         {
                             throw new HttpRequestException(
@@ -164,7 +165,7 @@ public class S3WriteStream(
                     }
                     catch (Exception e)
                     {
-                        AbortAsync(e).WaitAndUnwrapException();
+                        AbortAsync(e).GetAwaiter().GetResult();
                         throw;
                     }
                 }

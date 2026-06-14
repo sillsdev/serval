@@ -57,7 +57,7 @@ public class StatisticalEngineService(
             throw new InvalidOperationException("Engine is marked for deletion.");
 
         WordAlignmentResultContract result;
-        using (await state.Lock.ReaderLockAsync(cancellationToken))
+        using (await AcquireReadLockAsync(state.Lock, cancellationToken))
         {
             IWordAlignmentModel wordAlignmentModel = await state.GetEngineAsync(
                 engine.BuildRevision,

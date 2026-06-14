@@ -71,7 +71,7 @@ public class StatisticalPostprocessBuildJob(
     )
     {
         StatisticalEngineState state = _stateService.Get(engineId);
-        using (await state.Lock.WriterLockAsync(cancellationToken))
+        using (await AcquireWriteLockAsync(state.Lock, cancellationToken))
         {
             // Save the model to a temporary directory on Windows to avoid file locking issues. The directory will
             // be moved the next time the engine is used.

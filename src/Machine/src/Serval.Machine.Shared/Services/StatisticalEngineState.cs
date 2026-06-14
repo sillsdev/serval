@@ -38,7 +38,7 @@ public class StatisticalEngineState(
         if (IsMarkedForDeletion)
             throw new InvalidOperationException("Engine is marked for deletion");
 
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             if (_wordAlignmentModel is not null && CurrentBuildRevision != -1 && buildRevision != CurrentBuildRevision)
             {

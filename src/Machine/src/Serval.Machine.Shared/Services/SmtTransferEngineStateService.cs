@@ -44,7 +44,7 @@ public class SmtTransferEngineStateService(
 
             try
             {
-                using (await state.Lock.WriterLockAsync(cancellationToken))
+                using (await AcquireWriteLockAsync(state.Lock, cancellationToken))
                 {
                     TranslationEngine? engine = await engines.GetAsync(state.EngineId, cancellationToken);
                     if (engine is not null && !(engine.CollectTrainSegmentPairs ?? false))

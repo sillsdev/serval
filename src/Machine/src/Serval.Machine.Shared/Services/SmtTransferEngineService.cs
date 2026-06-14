@@ -97,7 +97,7 @@ public class SmtTransferEngineService(
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         IReadOnlyList<TranslationResult> results;
-        using (await state.Lock.ReaderLockAsync(cancellationToken))
+        using (await AcquireReadLockAsync(state.Lock, cancellationToken))
         {
             HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(
                 engine.BuildRevision,
@@ -123,7 +123,7 @@ public class SmtTransferEngineService(
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
         WordGraph result;
-        using (await state.Lock.ReaderLockAsync(cancellationToken))
+        using (await AcquireReadLockAsync(state.Lock, cancellationToken))
         {
             HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(
                 engine.BuildRevision,
@@ -149,7 +149,7 @@ public class SmtTransferEngineService(
         if (state.IsMarkedForDeletion)
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
-        using (await state.Lock.WriterLockAsync(cancellationToken))
+        using (await AcquireWriteLockAsync(state.Lock, cancellationToken))
         {
             TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
 
