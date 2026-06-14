@@ -17,6 +17,7 @@ public class S3WriteStream(
 
     private readonly Stream _stream = new MemoryStream();
     private int _bytesWritten = 0;
+    private bool _disposed = false;
 
     public const int MaxPartSize = 5 * 1024 * 1024;
 
@@ -119,11 +120,11 @@ public class S3WriteStream(
 
     protected override void Dispose(bool disposing)
     {
-        UploadPartAsync().GetAwaiter().GetResult();
         try
         {
-            if (disposing)
+            if (disposing && !_disposed)
             {
+                UploadPartAsync().GetAwaiter().GetResult();
                 if (_uploadResponses.Count == 0)
                 {
                     AbortAsync().GetAwaiter().GetResult();
@@ -173,58 +174,63 @@ public class S3WriteStream(
         }
         finally
         {
+            this._disposed = true;
             base.Dispose(disposing);
         }
     }
 
     public override async ValueTask DisposeAsync()
     {
-        await UploadPartAsync();
         try
         {
-            if (_uploadResponses.Count == 0)
+            if (!_disposed)
             {
-                await AbortAsync();
-                PutObjectRequest request = new()
+                await UploadPartAsync();
+                if (_uploadResponses.Count == 0)
                 {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    ContentBody = "",
-                };
-                PutObjectResponse response = await _client.PutObjectAsync(request);
-                if (response.HttpStatusCode != HttpStatusCode.OK)
-                {
-                    throw new HttpRequestException(
-                        $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
-                    );
-                }
+                    await AbortAsync();
+                    PutObjectRequest request = new()
+                    {
+                        BucketName = _bucketName,
+                        Key = _key,
+                        ContentBody = "",
+                    };
+                    PutObjectResponse response = await _client.PutObjectAsync(request);
+                    if (response.HttpStatusCode != HttpStatusCode.OK)
+                    {
+                        throw new HttpRequestException(
+                            $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                        );
+                    }
 
-                return;
-            }
-            try
-            {
-                CompleteMultipartUploadRequest request = new()
-                {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    UploadId = _uploadId,
-                };
-                request.AddPartETags(_uploadResponses);
-                CompleteMultipartUploadResponse response = await _client.CompleteMultipartUploadAsync(request);
-                if (response.HttpStatusCode != HttpStatusCode.OK)
-                {
-                    throw new HttpRequestException(
-                        $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
-                    );
+                    return;
                 }
-            }
-            catch (Exception e)
-            {
-                await AbortAsync(e);
+                try
+                {
+                    CompleteMultipartUploadRequest request = new()
+                    {
+                        BucketName = _bucketName,
+                        Key = _key,
+                        UploadId = _uploadId,
+                    };
+                    request.AddPartETags(_uploadResponses);
+                    CompleteMultipartUploadResponse response = await _client.CompleteMultipartUploadAsync(request);
+                    if (response.HttpStatusCode != HttpStatusCode.OK)
+                    {
+                        throw new HttpRequestException(
+                            $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                        );
+                    }
+                }
+                catch (Exception e)
+                {
+                    await AbortAsync(e);
+                }
             }
         }
         finally
         {
+            this._disposed = true;
             await base.DisposeAsync();
             GC.SuppressFinalize(this);
         }
