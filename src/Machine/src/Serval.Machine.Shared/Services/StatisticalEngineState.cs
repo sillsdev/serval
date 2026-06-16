@@ -16,6 +16,7 @@ public class StatisticalEngineState(
 
     public string EngineId { get; } = engineId;
 
+    public AsyncReaderWriterLock Lock { get; } = new();
     public bool IsUpdated { get; set; }
     public bool IsMarkedForDeletion { get; set; }
     public int CurrentBuildRevision { get; set; } = -1;
@@ -37,7 +38,7 @@ public class StatisticalEngineState(
         if (IsMarkedForDeletion)
             throw new InvalidOperationException("Engine is marked for deletion");
 
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             if (_wordAlignmentModel is not null && CurrentBuildRevision != -1 && buildRevision != CurrentBuildRevision)
             {

@@ -2,6 +2,7 @@
 global using System.Diagnostics;
 global using System.Linq.Expressions;
 global using System.Reflection;
+global using DotNext.Threading;
 global using Microsoft.Extensions.DependencyInjection.Extensions;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Options;
@@ -14,6 +15,6 @@ global using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 global using MongoDB.Driver.Linq;
 global using Newtonsoft.Json;
 global using Newtonsoft.Json.Serialization;
-global using Nito.AsyncEx;
 global using SIL.DataAccess;
 global using SIL.DataAccess.Models;
+global using Timeout = System.Threading.Timeout;

@@ -3,7 +3,6 @@
 namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferEngineService(
-    IDistributedReaderWriterLockFactory lockFactory,
     [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IRepository<TrainSegmentPair> trainSegmentPairs,
@@ -12,7 +11,6 @@ public class SmtTransferEngineService(
     IClearMLQueueService clearMLQueueService
 ) : ITranslationEngineService
 {
-    private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
@@ -64,7 +62,6 @@ public class SmtTransferEngineService(
         _stateService.Remove(engineId);
         state.DeleteData();
         state.Dispose();
-        await _lockFactory.DeleteAsync(engineId, CancellationToken.None);
     }
 
     public async Task UpdateAsync(
@@ -99,19 +96,19 @@ public class SmtTransferEngineService(
         if (state.IsMarkedForDeletion)
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        IReadOnlyList<TranslationResult> results = await @lock.ReaderLockAsync(
-            async ct =>
-            {
-                HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
-                // there is no way to cancel this call
-                return hybridEngine.Translate(n, segment);
-            },
-            cancellationToken: cancellationToken
-        );
+        IReadOnlyList<TranslationResult> results;
+        using (await AcquireReadLockAsync(state.Lock, cancellationToken))
+        {
+            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(
+                engine.BuildRevision,
+                cancellationToken
+            );
+            // there is no way to cancel this call
+            results = hybridEngine.Translate(n, segment);
+        }
 
         state.Touch();
-        return results.Select(Map).ToList();
+        return [.. results.Select(Map)];
     }
 
     public async Task<WordGraphContract> GetWordGraphAsync(
@@ -125,16 +122,16 @@ public class SmtTransferEngineService(
         if (state.IsMarkedForDeletion)
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        WordGraph result = await @lock.ReaderLockAsync(
-            async ct =>
-            {
-                HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
-                // there is no way to cancel this call
-                return hybridEngine.GetWordGraph(segment);
-            },
-            cancellationToken: cancellationToken
-        );
+        WordGraph result;
+        using (await AcquireReadLockAsync(state.Lock, cancellationToken))
+        {
+            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(
+                engine.BuildRevision,
+                cancellationToken
+            );
+            // there is no way to cancel this call
+            result = hybridEngine.GetWordGraph(segment);
+        }
 
         state.Touch();
         return Map(result);
@@ -152,34 +149,33 @@ public class SmtTransferEngineService(
         if (state.IsMarkedForDeletion)
             throw new EngineNotFoundException($"The engine {engineId} is marked for deletion.");
 
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        await @lock.WriterLockAsync(
-            async ct =>
+        using (await AcquireWriteLockAsync(state.Lock, cancellationToken))
+        {
+            TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+
+            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(
+                engine.BuildRevision,
+                cancellationToken
+            );
+            // there is no way to cancel this call
+            hybridEngine.TrainSegment(sourceSegment, targetSegment, sentenceStart);
+
+            if (engine.CollectTrainSegmentPairs ?? false)
             {
-                TranslationEngine engine = await GetEngineAsync(engineId, ct);
+                await _trainSegmentPairs.InsertAsync(
+                    new TrainSegmentPair
+                    {
+                        TranslationEngineRef = engineId,
+                        Source = sourceSegment,
+                        Target = targetSegment,
+                        SentenceStart = sentenceStart,
+                    },
+                    CancellationToken.None
+                );
+            }
 
-                HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision, ct);
-                // there is no way to cancel this call
-                hybridEngine.TrainSegment(sourceSegment, targetSegment, sentenceStart);
-
-                if (engine.CollectTrainSegmentPairs ?? false)
-                {
-                    await _trainSegmentPairs.InsertAsync(
-                        new TrainSegmentPair
-                        {
-                            TranslationEngineRef = engineId,
-                            Source = sourceSegment,
-                            Target = targetSegment,
-                            SentenceStart = sentenceStart,
-                        },
-                        CancellationToken.None
-                    );
-                }
-
-                state.IsUpdated = true;
-            },
-            cancellationToken: cancellationToken
-        );
+            state.IsUpdated = true;
+        }
 
         await _platformService.IncrementTrainSizeAsync(engineId, cancellationToken: CancellationToken.None);
         state.Touch();

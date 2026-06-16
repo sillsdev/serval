@@ -7,7 +7,7 @@ public class StatisticalPostprocessBuildJob(
     IBuildJobService<WordAlignmentEngine> buildJobService,
     ILogger<StatisticalPostprocessBuildJob> logger,
     ISharedFileService sharedFileService,
-    IDistributedReaderWriterLockFactory lockFactory,
+    StatisticalEngineStateService stateService,
     IWordAlignmentModelFactory wordAlignmentModelFactory,
     IOptionsMonitor<BuildJobOptions> buildOptions,
     IOptionsMonitor<StatisticalEngineOptions> engineOptions
@@ -24,7 +24,7 @@ public class StatisticalPostprocessBuildJob(
 {
     private readonly IWordAlignmentModelFactory _wordAlignmentModelFactory = wordAlignmentModelFactory;
     private readonly IOptionsMonitor<StatisticalEngineOptions> _engineOptions = engineOptions;
-    private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
+    private readonly StatisticalEngineStateService _stateService = stateService;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -46,7 +46,7 @@ public class StatisticalPostprocessBuildJob(
             await PlatformService.InsertInferenceResultsAsync(engineId, wordAlignmentStream, cancellationToken);
         }
 
-        int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
+        int additionalCorpusSize = await SaveModelAsync(engineId, buildId, cancellationToken);
         await DataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
@@ -64,27 +64,28 @@ public class StatisticalPostprocessBuildJob(
         Logger.LogInformation("Build completed ({0}).", buildId);
     }
 
-    protected override async Task<int> SaveModelAsync(string engineId, string buildId)
+    protected override async Task<int> SaveModelAsync(
+        string engineId,
+        string buildId,
+        CancellationToken cancellationToken
+    )
     {
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId);
-        return await @lock.WriterLockAsync(
-            async ct =>
-            {
-                // Save the model to a temporary directory on Windows to avoid file locking issues. The directory will
-                // be moved the next time the engine is used.
-                string engineDir = Path.Combine(
-                    _engineOptions.CurrentValue.EnginesDir,
-                    OperatingSystem.IsWindows() ? engineId + "-new" : engineId
-                );
-                await using Stream engineStream = await SharedFileService.OpenReadAsync(
-                    $"builds/{buildId}/model.tar.gz",
-                    ct
-                );
+        StatisticalEngineState state = _stateService.Get(engineId);
+        using (await AcquireWriteLockAsync(state.Lock, cancellationToken))
+        {
+            // Save the model to a temporary directory on Windows to avoid file locking issues. The directory will
+            // be moved the next time the engine is used.
+            string engineDir = Path.Combine(
+                _engineOptions.CurrentValue.EnginesDir,
+                OperatingSystem.IsWindows() ? engineId + "-new" : engineId
+            );
+            await using Stream engineStream = await SharedFileService.OpenReadAsync(
+                $"builds/{buildId}/model.tar.gz",
+                cancellationToken
+            );
 
-                await _wordAlignmentModelFactory.UpdateEngineFromAsync(engineDir, engineStream, ct);
-                return 0;
-            },
-            _engineOptions.CurrentValue.SaveModelTimeout
-        );
+            await _wordAlignmentModelFactory.UpdateEngineFromAsync(engineDir, engineStream, cancellationToken);
+            return 0;
+        }
     }
 }

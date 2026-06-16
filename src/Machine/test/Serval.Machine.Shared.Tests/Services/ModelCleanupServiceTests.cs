@@ -97,7 +97,9 @@ public class ModelCleanupServiceTests
 
         private async Task WriteFileStubAsync(string path, string content)
         {
-            using StreamWriter streamWriter = new(await SharedFileService.OpenWriteAsync(path, CancellationToken.None));
+            await using StreamWriter streamWriter = new(
+                await SharedFileService.OpenWriteAsync(path, CancellationToken.None)
+            );
             await streamWriter.WriteAsync(content);
         }
     }

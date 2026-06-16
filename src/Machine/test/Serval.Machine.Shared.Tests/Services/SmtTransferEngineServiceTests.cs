@@ -207,7 +207,6 @@ public class SmtTransferEngineServiceTests
 
     private class TestEnvironment : DisposableBase
     {
-        private readonly IDistributedReaderWriterLockFactory _lockFactory;
         private readonly BuildJobRunnerType _trainJobRunnerType;
         private readonly ClearMLBuildJobRunner _clearMLRunner;
         private readonly ITruecaserFactory _truecaserFactory;
@@ -249,12 +248,6 @@ public class SmtTransferEngineServiceTests
             SmtModelFactory = CreateSmtModelFactory();
             TransferEngineFactory = CreateTransferEngineFactory();
             _truecaserFactory = CreateTruecaserFactory();
-            _lockFactory = new DistributedReaderWriterLockFactory(
-                new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
-                new OptionsWrapper<DistributedReaderWriterLockOptions>(new DistributedReaderWriterLockOptions()),
-                new MemoryRepository<RWLock>(),
-                new ObjectIdGenerator()
-            );
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
@@ -328,7 +321,6 @@ public class SmtTransferEngineServiceTests
             services.AddSingleton<IRepository<TrainSegmentPair>>(TrainSegmentPairs);
             services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());
             services.AddSingleton(SharedFileService);
-            services.AddSingleton(_lockFactory);
             services.AddSingleton(Substitute.For<IParallelCorpusService>());
             services.AddSingleton(BuildJobOptions);
             services.AddSingleton(_truecaserFactory);
@@ -366,10 +358,8 @@ public class SmtTransferEngineServiceTests
 
         public IBuildJobService<TranslationEngine> BuildJobService { get; private set; }
 
-        public async Task CommitAsync(TimeSpan inactiveTimeout)
-        {
-            await StateService.CommitAsync(_lockFactory, Engines, inactiveTimeout);
-        }
+        public async Task CommitAsync(TimeSpan inactiveTimeout) =>
+            await StateService.CommitAsync(Engines, inactiveTimeout);
 
         public void UseInfiniteTrainJob()
         {
@@ -421,7 +411,6 @@ public class SmtTransferEngineServiceTests
         private SmtTransferEngineService CreateService()
         {
             return new SmtTransferEngineService(
-                _lockFactory,
                 PlatformService,
                 Engines,
                 TrainSegmentPairs,

@@ -19,7 +19,7 @@ public class ClearMLAuthenticationService(
 
     public async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken = default)
     {
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             if (_authToken is "")
             {
@@ -35,7 +35,7 @@ public class ClearMLAuthenticationService(
     {
         try
         {
-            using (await _lock.LockAsync(cancellationToken))
+            using (await _lock.AcquireAsync(cancellationToken))
                 await AuthorizeAsync(cancellationToken);
         }
         catch (Exception e)

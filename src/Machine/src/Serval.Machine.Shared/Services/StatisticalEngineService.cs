@@ -3,7 +3,6 @@ using Serval.WordAlignment.Contracts;
 namespace Serval.Machine.Shared.Services;
 
 public class StatisticalEngineService(
-    IDistributedReaderWriterLockFactory lockFactory,
     [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
     IRepository<WordAlignmentEngine> engines,
     StatisticalEngineStateService stateService,
@@ -11,7 +10,6 @@ public class StatisticalEngineService(
     IClearMLQueueService clearMLQueueService
 ) : IWordAlignmentEngineService
 {
-    private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;
     private readonly IRepository<WordAlignmentEngine> _engines = engines;
     private readonly StatisticalEngineStateService _stateService = stateService;
@@ -58,36 +56,36 @@ public class StatisticalEngineService(
         if (state.IsMarkedForDeletion)
             throw new InvalidOperationException("Engine is marked for deletion.");
 
-        IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-        WordAlignmentResultContract result = await @lock.ReaderLockAsync(
-            async ct =>
-            {
-                IWordAlignmentModel wordAlignmentModel = await state.GetEngineAsync(engine.BuildRevision, ct);
-                LatinWordTokenizer tokenizer = new();
+        WordAlignmentResultContract result;
+        using (await AcquireReadLockAsync(state.Lock, cancellationToken))
+        {
+            IWordAlignmentModel wordAlignmentModel = await state.GetEngineAsync(
+                engine.BuildRevision,
+                cancellationToken
+            );
+            LatinWordTokenizer tokenizer = new();
 
-                // there is no way to cancel this call
-                IReadOnlyList<string> sourceTokens = tokenizer.Tokenize(sourceSegment).ToList();
-                IReadOnlyList<string> targetTokens = tokenizer.Tokenize(targetSegment).ToList();
-                IReadOnlyCollection<AlignedWordPair> wordPairs = wordAlignmentModel.GetBestAlignedWordPairs(
-                    sourceTokens,
-                    targetTokens
-                );
-                return new WordAlignmentResultContract
-                {
-                    SourceTokens = sourceTokens,
-                    TargetTokens = targetTokens,
-                    Alignment = wordPairs
-                        .Select(wp => new AlignedWordPairContract
-                        {
-                            SourceIndex = wp.SourceIndex,
-                            TargetIndex = wp.TargetIndex,
-                            Score = wp.TranslationScore,
-                        })
-                        .ToList(),
-                };
-            },
-            cancellationToken: cancellationToken
-        );
+            // there is no way to cancel this call
+            IReadOnlyList<string> sourceTokens = tokenizer.Tokenize(sourceSegment).ToList();
+            IReadOnlyList<string> targetTokens = tokenizer.Tokenize(targetSegment).ToList();
+            IReadOnlyCollection<AlignedWordPair> wordPairs = wordAlignmentModel.GetBestAlignedWordPairs(
+                sourceTokens,
+                targetTokens
+            );
+            result = new WordAlignmentResultContract
+            {
+                SourceTokens = sourceTokens,
+                TargetTokens = targetTokens,
+                Alignment = wordPairs
+                    .Select(wp => new AlignedWordPairContract
+                    {
+                        SourceIndex = wp.SourceIndex,
+                        TargetIndex = wp.TargetIndex,
+                        Score = wp.TranslationScore,
+                    })
+                    .ToList(),
+            };
+        }
 
         state.Touch();
         return result;
@@ -107,7 +105,6 @@ public class StatisticalEngineService(
         _stateService.Remove(engineId);
         state.DeleteData();
         state.Dispose();
-        await _lockFactory.DeleteAsync(engineId, CancellationToken.None);
     }
 
     public async Task StartBuildAsync(

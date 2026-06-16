@@ -6,7 +6,7 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
     where T : IEntity
 {
     private readonly Action<MemorySubscription<T>> _remove = remove;
-    private readonly AsyncAutoResetEvent _changeEvent = new();
+    private readonly AsyncAutoResetEvent _changeEvent = new(false);
 
     public EntityChange<T> Change { get; private set; } =
         new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update, initialEntity);
@@ -29,7 +29,7 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
     }
 
     private static async Task TaskTimeout(
-        Func<CancellationToken, Task> action,
+        Func<CancellationToken, ValueTask> action,
         TimeSpan timeout,
         CancellationToken cancellationToken = default
     )
@@ -41,7 +41,7 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
         else
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            Task task = action(cts.Token);
+            Task task = action(cts.Token).AsTask();
             Task completedTask = await Task.WhenAny(task, Task.Delay(timeout, cancellationToken)).ConfigureAwait(false);
             if (task != completedTask)
                 cts.Cancel();

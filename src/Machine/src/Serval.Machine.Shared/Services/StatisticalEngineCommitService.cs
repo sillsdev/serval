@@ -22,9 +22,7 @@ public class StatisticalEngineCommitService(
         try
         {
             var engines = scope.ServiceProvider.GetRequiredService<IRepository<WordAlignmentEngine>>();
-            var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
             await _stateService.CommitAsync(
-                lockFactory,
                 engines,
                 _engineOptions.CurrentValue.InactiveEngineTimeout,
                 cancellationToken

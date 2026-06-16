@@ -8,10 +8,10 @@ public class LocalStorageTests
     {
         using var tmpDir = new TempDirectory("test");
         using LocalStorage fs = new(tmpDir.Path);
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("file1")))
+        await using (StreamWriter sw = new(await fs.OpenWriteAsync("file1")))
         {
             string input = "Hello";
-            sw.WriteLine(input);
+            await sw.WriteLineAsync(input);
         }
         bool exists = await fs.ExistsAsync("file1");
         Assert.That(exists, Is.True);
@@ -23,16 +23,14 @@ public class LocalStorageTests
         using var tmpDir = new TempDirectory("test");
         using LocalStorage fs = new(tmpDir.Path);
         string input;
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("file1")))
+        await using (StreamWriter sw = new(await fs.OpenWriteAsync("file1")))
         {
             input = "Hello";
-            sw.WriteLine(input);
+            await sw.WriteLineAsync(input);
         }
         string? output;
         using (StreamReader sr = new(await fs.OpenReadAsync("file1")))
-        {
-            output = sr.ReadLine();
-        }
+            output = await sr.ReadLineAsync();
         Assert.That(input, Is.EqualTo(output), $"{input} | {output}");
     }
 
@@ -41,18 +39,18 @@ public class LocalStorageTests
     {
         using var tmpDir = new TempDirectory("test");
         using LocalStorage fs = new(tmpDir.Path);
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("test/file1")))
+        await using (StreamWriter sw = new(await fs.OpenWriteAsync("test/file1")))
         {
             string input = "Hello";
-            sw.WriteLine(input);
+            await sw.WriteLineAsync(input);
         }
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("test/test/file2")))
+        await using (StreamWriter sw = new(await fs.OpenWriteAsync("test/test/file2")))
         {
             string input2 = "Hola";
-            sw.WriteLine(input2);
+            await sw.WriteLineAsync(input2);
         }
         IReadOnlyCollection<string> files = await fs.ListFilesAsync("test", recurse: true);
-        Assert.That(files, Is.EquivalentTo(new[] { "test/file1", "test/test/file2" }));
+        Assert.That(files, Is.EquivalentTo(["test/file1", "test/test/file2"]));
     }
 
     [Test]
@@ -60,18 +58,18 @@ public class LocalStorageTests
     {
         using var tmpDir = new TempDirectory("test");
         using LocalStorage fs = new(tmpDir.Path);
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("test/file1")))
+        await using (StreamWriter sw = new(await fs.OpenWriteAsync("test/file1")))
         {
             string input = "Hello";
-            sw.WriteLine(input);
+            await sw.WriteLineAsync(input);
         }
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("test/test/file2")))
+        await using (StreamWriter sw = new(await fs.OpenWriteAsync("test/test/file2")))
         {
             string input2 = "Hola";
-            sw.WriteLine(input2);
+            await sw.WriteLineAsync(input2);
         }
         IReadOnlyCollection<string> files = await fs.ListFilesAsync("test", recurse: false);
-        Assert.That(files, Is.EquivalentTo(new[] { "test/file1" }));
+        Assert.That(files, Is.EquivalentTo(["test/file1"]));
     }
 
     [Test]
@@ -79,15 +77,15 @@ public class LocalStorageTests
     {
         using var tmpDir = new TempDirectory("test");
         using LocalStorage fs = new(tmpDir.Path);
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("test/file1")))
+        await using (StreamWriter sw = new(await fs.OpenWriteAsync("test/file1")))
         {
             string input = "Hello";
-            sw.WriteLine(input);
+            await sw.WriteLineAsync(input);
         }
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("test/test/file2")))
+        await using (StreamWriter sw = new(await fs.OpenWriteAsync("test/test/file2")))
         {
             string input2 = "Hola";
-            sw.WriteLine(input2);
+            await sw.WriteLineAsync(input2);
         }
         await fs.DeleteAsync("test", recurse: true);
         IReadOnlyCollection<string> files = await fs.ListFilesAsync("test", recurse: true);

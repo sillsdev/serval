@@ -14,7 +14,7 @@ public abstract class PostprocessBuildJob<TEngine>(
     protected ISharedFileService SharedFileService { get; } = sharedFileService;
     private readonly BuildJobOptions _buildJobOptions = options.CurrentValue;
 
-    protected virtual Task<int> SaveModelAsync(string engineId, string buildId)
+    protected virtual Task<int> SaveModelAsync(string engineId, string buildId, CancellationToken cancellationToken)
     {
         return Task.FromResult(0);
     }

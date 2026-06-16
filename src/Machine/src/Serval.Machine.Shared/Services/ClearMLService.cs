@@ -185,7 +185,7 @@ public class ClearMLService(
         CancellationToken cancellationToken = default
     )
     {
-        using (await _lock.LockAsync(cancellationToken))
+        using (await _lock.AcquireAsync(cancellationToken))
         {
             if (!refresh && _queueNamesToIds != null)
                 return _queueNamesToIds;
