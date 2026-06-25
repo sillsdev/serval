@@ -2414,24 +2414,31 @@ public class TranslationEngineTests
     public async Task GetLanguageInfoAsync(string engineType)
     {
         TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient();
-        Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync(engineType, "Alphabet");
-        Assert.Multiple(() =>
+        LanguageInfo languageInfo = await client.GetLanguageInfoAsync(engineType, "Alphabet");
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(languageInfo.InternalCode, Is.EqualTo("abc_123"));
-            Assert.That(languageInfo.IsNative, Is.EqualTo(true));
-        });
+            Assert.That(languageInfo.IsNative, Is.True);
+        }
     }
 
-    [Test]
-    public void GetLanguageInfo_Error()
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, "Nmt", "invalid_language", StatusCodes.Status400BadRequest)]
+    [TestCase(new[] { Scopes.ReadFiles }, "Nmt", "abc", StatusCodes.Status403Forbidden)]
+    [TestCase(new[] { Scopes.ReadTranslationEngines }, "invalid_engine", "en", StatusCodes.Status404NotFound)]
+    public void GetLanguageInfo_Error(
+        IEnumerable<string> scope,
+        string engineType,
+        string language,
+        int expectedStatusCode
+    )
     {
-        TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient([Scopes.ReadFiles]);
+        TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient(scope);
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
-            Client.LanguageInfo languageInfo = await client.GetLanguageInfoAsync("Nmt", "abc");
+            _ = await client.GetLanguageInfoAsync(engineType, language);
         });
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex.StatusCode, Is.EqualTo(403));
+        Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
     }
 
     [Test]
@@ -2747,6 +2754,9 @@ public class TranslationEngineTests
             NmtService
                 .GetLanguageInfoAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(languageInfo));
+            NmtService
+                .GetLanguageInfoAsync(Arg.Is("invalid_language"), Arg.Any<CancellationToken>())
+                .Returns(Task.FromException<LanguageInfoContract>(new InvalidOperationException()));
 
             SmtService = Substitute.For<ITranslationEngineService>();
             SmtService
