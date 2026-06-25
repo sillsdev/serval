@@ -10,7 +10,6 @@ public class LanguageTagServiceTests
             Sldr.Initialize();
     }
 
-    [Test]
     [TestCase("es", "spa_Latn", Description = "Iso639_1Code")]
     [TestCase("hne", "hne_Deva", Description = "Iso639_3Code")]
     [TestCase("ks-Arab", "kas_Arab", Description = "ScriptCode")]
@@ -27,6 +26,7 @@ public class LanguageTagServiceTests
     [TestCase("eng-Latn", "eng_Latn", Description = "DashToUnderscore")]
     [TestCase("kor", "kor_Hang", Description = "KoreanScript")]
     [TestCase("kor_Kore", "kor_Hang", Description = "KoreanScriptCorrection")]
+    [TestCase("unknown", "unknown", Description = "UnknownLanguage")]
     public void ConvertToFlores200CodeTest(string language, string internalCodeTruth)
     {
         new LanguageTagService().ConvertToFlores200Code(language, out string internalCode);
@@ -34,6 +34,11 @@ public class LanguageTagServiceTests
     }
 
     [Test]
+    public void ConvertToFlores200CodeTest_InvalidLanguage() =>
+        Assert.Throws<ArgumentException>(() =>
+            new LanguageTagService().ConvertToFlores200Code("'Invalid Language'", out string _)
+        );
+
     [TestCase("en", "eng_Latn", Flores200Support.LanguageAndScript)]
     [TestCase("ms", "zsm_Latn", Flores200Support.LanguageAndScript)]
     [TestCase("cmn", "zho_Hans", Flores200Support.LanguageAndScript)]

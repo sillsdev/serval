@@ -1,7 +1,10 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class LanguageTagService : ILanguageTagService
+public partial class LanguageTagService : ILanguageTagService
 {
+    [GeneratedRegex("^[A-Za-z0-9_-]+$")]
+    private static partial Regex BroadlyPermissibleLanguageTagPattern();
+
     private readonly HashSet<string> _flores200Languages = [];
     private readonly HashSet<string> _flores200Scripts = [];
     private readonly LanguageTagParser _parser = new();
@@ -40,9 +43,16 @@ public class LanguageTagService : ILanguageTagService
     public Flores200Support ConvertToFlores200Code(string languageTag, out string flores200Code)
     {
         if (_parser.TryParse(languageTag, out string? languageCode, out string? scriptCode))
+        {
             flores200Code = $"{languageCode}_{scriptCode}";
+        }
         else
+        {
+            if (!BroadlyPermissibleLanguageTagPattern().IsMatch(languageTag))
+                throw new ArgumentException($"Invalid language tag: {languageTag}");
             flores200Code = languageTag;
+        }
+
         if (_flores200Scripts.Contains(scriptCode ?? ""))
         {
             if (_flores200Languages.Contains(flores200Code))

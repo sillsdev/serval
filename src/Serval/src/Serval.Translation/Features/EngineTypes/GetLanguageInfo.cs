@@ -38,7 +38,7 @@ public class GetLanguageInfoHandler(IEngineServiceFactory engineServiceFactory)
 public partial class TranslationEngineTypesController
 {
     /// <summary>
-    /// Get information regarding a language for a given engine type
+    /// Get information regarding a language for a given engine type.
     /// </summary>
     /// <remarks>
     /// This endpoint exists primarily to support `nmt` model-training since `echo` and `smt-transfer` engines support all languages equally. Given a language tag, it provides the ISO 639-3 code that the tag maps to internally
@@ -51,18 +51,22 @@ public partial class TranslationEngineTypesController
     /// * **`isNative`**: Whether the base translation model supports this language without fine-tuning.
     /// * **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
     /// </remarks>
-    /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer</param>
+    /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer.</param>
     /// <param name="language">The language to retrieve information on.</param>
     /// <param name="cancellationToken"></param>
-    /// <response code="200">Language information for the specified engine type</response>
-    /// <response code="401">The client is not authenticated</response>
-    /// <response code="403">The authenticated client cannot perform the operation</response>
-    /// <response code="405">The method is not supported</response>
+    /// <response code="200">Language information for the specified engine type.</response>
+    /// <response code="400">The language is not valid.</response>
+    /// <response code="401">The client is not authenticated.</response>
+    /// <response code="403">The authenticated client cannot perform the operation.</response>
+    /// <response code="404">The engine type is not valid.</response>
+    /// <response code="405">The method is not supported.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{engineType}/languages/{language}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
     public async Task<ActionResult<LanguageInfoDto>> GetLanguageInfoAsync(
         [NotNull] string engineType,
@@ -71,9 +75,16 @@ public partial class TranslationEngineTypesController
         CancellationToken cancellationToken
     )
     {
-        GetLanguageInfoResponse response = await handler.HandleAsync(new(engineType, language), cancellationToken);
-        if (response.LanguageInfo is not null)
-            return Ok(response.LanguageInfo);
-        return NotFound();
+        try
+        {
+            GetLanguageInfoResponse response = await handler.HandleAsync(new(engineType, language), cancellationToken);
+            if (response.LanguageInfo is not null)
+                return Ok(response.LanguageInfo);
+            return NotFound();
+        }
+        catch (ArgumentException)
+        {
+            return BadRequest();
+        }
     }
 }
