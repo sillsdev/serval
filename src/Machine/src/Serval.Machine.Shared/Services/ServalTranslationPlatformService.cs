@@ -70,12 +70,14 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
 
     public async Task InsertInferenceResultsAsync(
         string engineId,
+        string buildId,
         Stream pretranslationsStream,
         CancellationToken cancellationToken = default
     )
     {
         await _platformService.InsertPretranslationsAsync(
             engineId,
+            buildId,
             ReadPretranslationsAsync(pretranslationsStream, cancellationToken),
             cancellationToken
         );

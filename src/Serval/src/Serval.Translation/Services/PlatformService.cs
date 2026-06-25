@@ -365,6 +365,7 @@ public class PlatformService(
 
     public async Task InsertPretranslationsAsync(
         string engineId,
+        string buildId,
         IAsyncEnumerable<PretranslationContract> pretranslations,
         CancellationToken cancellationToken = default
     )
@@ -375,6 +376,8 @@ public class PlatformService(
         int nextModelRevision = engine.ModelRevision + 1;
 
         var batch = new List<Pretranslation>();
+        double confidenceTotal = 0.0;
+        int numPretranslations = 0;
         await foreach (PretranslationContract item in pretranslations.WithCancellation(cancellationToken))
         {
             batch.Add(
@@ -401,6 +404,8 @@ public class PlatformService(
                     Confidence = item.Confidence,
                 }
             );
+            confidenceTotal += item.Confidence ?? 0.0;
+            numPretranslations += 1;
             if (batch.Count == PretranslationInsertBatchSize)
             {
                 await _pretranslations.InsertAllAsync(batch, cancellationToken);
@@ -409,5 +414,11 @@ public class PlatformService(
         }
         if (batch.Count > 0)
             await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
+
+        await _builds.UpdateAsync(
+            b => b.Id == buildId,
+            u => u.Set(b => b.ExecutionData.AveragePretranslationConfidence, confidenceTotal / numPretranslations),
+            cancellationToken: cancellationToken
+        );
     }
 }

@@ -24,13 +24,14 @@ public class ServalTranslationPlatformServiceTests
                 }
             );
             stream.Seek(0, SeekOrigin.Begin);
-            await env.Service.InsertInferenceResultsAsync("engine1", stream);
+            await env.Service.InsertInferenceResultsAsync("engine1", "build1", stream);
         }
 
         await env
             .PlatformService.Received()
             .InsertPretranslationsAsync(
                 "engine1",
+                "build1",
                 Arg.Any<IAsyncEnumerable<PretranslationContract>>(),
                 Arg.Any<CancellationToken>()
             );
@@ -79,13 +80,14 @@ public class ServalTranslationPlatformServiceTests
                 }
             );
             stream.Seek(0, SeekOrigin.Begin);
-            await env.Service.InsertInferenceResultsAsync("engine1", stream);
+            await env.Service.InsertInferenceResultsAsync("engine1", "build1", stream);
         }
 
         await env
             .PlatformService.Received()
             .InsertPretranslationsAsync(
                 "engine1",
+                "build1",
                 Arg.Any<IAsyncEnumerable<PretranslationContract>>(),
                 Arg.Any<CancellationToken>()
             );
@@ -125,6 +127,7 @@ public class ServalTranslationPlatformServiceTests
             PlatformService = Substitute.For<ITranslationPlatformService>();
             PlatformService
                 .InsertPretranslationsAsync(
+                    Arg.Any<string>(),
                     Arg.Any<string>(),
                     Arg.Any<IAsyncEnumerable<PretranslationContract>>(),
                     Arg.Any<CancellationToken>()
