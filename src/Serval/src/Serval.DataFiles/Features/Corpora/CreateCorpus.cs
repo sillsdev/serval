@@ -30,13 +30,14 @@ public class CreateCorpusHandler(
             Owner = request.Owner,
             Name = request.CorpusConfig.Name,
             Language = request.CorpusConfig.Language,
-            Files = await MapFilesAsync(request.CorpusConfig.Files, cancellationToken),
+            Files = await MapFilesAsync(request.Owner, request.CorpusConfig.Files, cancellationToken),
         };
         await corpora.InsertAsync(corpus, cancellationToken);
         return new(mapper.Map(corpus));
     }
 
     private async Task<IReadOnlyList<CorpusFile>> MapFilesAsync(
+        string owner,
         IReadOnlyList<CorpusFileConfigDto> files,
         CancellationToken cancellationToken
     )
@@ -44,7 +45,10 @@ public class CreateCorpusHandler(
         var corpusFiles = new List<CorpusFile>();
         foreach (CorpusFileConfigDto file in files)
         {
-            DataFile? dataFile = await dataFiles.GetAsync(file.FileId, cancellationToken);
+            DataFile? dataFile = await dataFiles.GetAsync(
+                e => e.Id == file.FileId && e.Owner == owner,
+                cancellationToken
+            );
             if (dataFile is null)
                 throw new EntityNotFoundException($"Could not find the DataFile '{file.FileId}'.");
             corpusFiles.Add(new CorpusFile { FileRef = file.FileId, TextId = file.TextId });
