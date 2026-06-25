@@ -39,7 +39,7 @@ public class PlatformServiceTests
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
-        await env.PlatformService.InsertPretranslationsAsync("e0", GetTestPretranslations());
+        await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
 
         await env.PlatformService.BuildFaultedAsync("b0", "");
@@ -48,12 +48,12 @@ public class PlatformServiceTests
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         await env.PlatformService.BuildRestartingAsync("b0");
-        await env.PlatformService.InsertPretranslationsAsync("e0", GetTestPretranslations());
+        await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         await env.PlatformService.BuildStartedAsync("b0");
-        await env.PlatformService.InsertPretranslationsAsync("e0", GetTestPretranslations());
+        await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
     }

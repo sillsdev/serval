@@ -25,7 +25,7 @@ public class ServalWordAlignmentPlatformServiceTests
                 }
             );
             stream.Seek(0, SeekOrigin.Begin);
-            await env.Service.InsertInferenceResultsAsync("engine1", stream);
+            await env.Service.InsertInferenceResultsAsync("engine1", "build1", stream);
         }
 
         await env
@@ -85,7 +85,7 @@ public class ServalWordAlignmentPlatformServiceTests
                 }
             );
             stream.Seek(0, SeekOrigin.Begin);
-            await env.Service.InsertInferenceResultsAsync("engine1", stream);
+            await env.Service.InsertInferenceResultsAsync("engine1", "build1", stream);
         }
 
         await env
