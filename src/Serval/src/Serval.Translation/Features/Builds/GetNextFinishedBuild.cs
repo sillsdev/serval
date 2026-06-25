@@ -22,7 +22,7 @@ public class GetNextFinishedBuildHandler(
         string? id = request.Id;
         if (id is not null)
         {
-            Build? build = await builds.GetAsync(id, cancellationToken);
+            Build? build = await builds.GetAsync(e => e.Id == id && e.Owner == request.Owner, cancellationToken);
             if (build is not null)
                 dateFinished = build.DateFinished ?? DateTime.UtcNow;
         }
