@@ -56,6 +56,10 @@ public class PlatformServiceTests
         await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
+        Assert.That(
+            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
+            Is.Zero
+        );
     }
 
     [Test]
