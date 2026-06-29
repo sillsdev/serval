@@ -38,7 +38,10 @@ public class GetBuildHandler(
         }
         else
         {
-            Build? build = await builds.GetAsync(e => e.Id == request.BuildId, cancellationToken);
+            Build? build = await builds.GetAsync(
+                e => e.Id == request.BuildId && e.EngineRef == request.EngineId,
+                cancellationToken
+            );
             if (build is null)
                 throw new EntityNotFoundException($"Could not find the Build '{request.BuildId}'.");
             return new(GetBuildStatus.Found, mapper.Map(build));
