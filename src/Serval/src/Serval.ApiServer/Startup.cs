@@ -173,11 +173,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         app.UseRequestTimeouts();
         app.UseOutputCache();
         app.UseAuthorization();
-        app.UseEndpoints(x =>
-        {
-            x.MapControllers();
-            x.MapHangfireDashboard();
-        });
+        app.UseEndpoints(x => x.MapControllers());
 
         app.UseOpenApi(o =>
         {
