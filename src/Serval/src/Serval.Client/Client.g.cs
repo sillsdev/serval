@@ -2186,7 +2186,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get information regarding a language for a given engine type
+        /// Get information regarding a language for a given engine type.
         /// </summary>
         /// <remarks>
         /// This endpoint exists primarily to support `nmt` model-training since `echo` and `smt-transfer` engines support all languages equally. Given a language tag, it provides the ISO 639-3 code that the tag maps to internally
@@ -2199,9 +2199,9 @@ namespace Serval.Client
         /// <br/>* **`isNative`**: Whether the base translation model supports this language without fine-tuning.
         /// <br/>* **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
         /// </remarks>
-        /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer</param>
+        /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer.</param>
         /// <param name="language">The language to retrieve information on.</param>
-        /// <returns>Language information for the specified engine type</returns>
+        /// <returns>Language information for the specified engine type.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<LanguageInfo> GetLanguageInfoAsync(string engineType, string language, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
@@ -2266,7 +2266,7 @@ namespace Serval.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get information regarding a language for a given engine type
+        /// Get information regarding a language for a given engine type.
         /// </summary>
         /// <remarks>
         /// This endpoint exists primarily to support `nmt` model-training since `echo` and `smt-transfer` engines support all languages equally. Given a language tag, it provides the ISO 639-3 code that the tag maps to internally
@@ -2279,9 +2279,9 @@ namespace Serval.Client
         /// <br/>* **`isNative`**: Whether the base translation model supports this language without fine-tuning.
         /// <br/>* **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
         /// </remarks>
-        /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer</param>
+        /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer.</param>
         /// <param name="language">The language to retrieve information on.</param>
-        /// <returns>Language information for the specified engine type</returns>
+        /// <returns>Language information for the specified engine type.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<LanguageInfo> GetLanguageInfoAsync(string engineType, string language, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
@@ -2341,22 +2341,34 @@ namespace Serval.Client
                             return objectResponse_.Object;
                         }
                         else
+                        if (status_ == 400)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The language is not valid.", status_, responseText_, headers_, null);
+                        }
+                        else
                         if (status_ == 401)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The client is not authenticated", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The client is not authenticated.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 403)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The authenticated client cannot perform the operation", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The authenticated client cannot perform the operation.", status_, responseText_, headers_, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ServalApiException("The engine type is not valid.", status_, responseText_, headers_, null);
                         }
                         else
                         if (status_ == 405)
                         {
                             string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ServalApiException("The method is not supported", status_, responseText_, headers_, null);
+                            throw new ServalApiException("The method is not supported.", status_, responseText_, headers_, null);
                         }
                         else
                         {
