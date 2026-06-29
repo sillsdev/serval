@@ -17,7 +17,7 @@ public class UpdateCorpusHandler(
     {
         await corpora.CheckOwnerAsync(request.CorpusId, request.Owner, cancellationToken);
 
-        IReadOnlyList<CorpusFile> files = await MapFilesAsync(request.Files, cancellationToken);
+        IReadOnlyList<CorpusFile> files = await MapFilesAsync(request.Owner, request.Files, cancellationToken);
 
         Corpus corpus = await dataAccessContext.WithTransactionAsync(
             async ct =>
@@ -29,7 +29,7 @@ public class UpdateCorpusHandler(
                 );
                 if (updated is null)
                     throw new EntityNotFoundException($"Could not find the Corpus '{request.CorpusId}'.");
-                HashSet<string> corpusFileIds = updated.Files.Select(f => f.FileRef).ToHashSet();
+                HashSet<string> corpusFileIds = [.. updated.Files.Select(f => f.FileRef)];
                 IDictionary<string, DataFile> corpusDataFilesDict = (
                     await dataFiles.GetAllAsync(f => corpusFileIds.Contains(f.Id), ct)
                 ).ToDictionary(f => f.Id);
@@ -54,6 +54,7 @@ public class UpdateCorpusHandler(
     }
 
     private async Task<IReadOnlyList<CorpusFile>> MapFilesAsync(
+        string owner,
         IReadOnlyList<CorpusFileConfigDto> files,
         CancellationToken cancellationToken
     )
@@ -61,7 +62,10 @@ public class UpdateCorpusHandler(
         var corpusFiles = new List<CorpusFile>();
         foreach (CorpusFileConfigDto file in files)
         {
-            DataFile? dataFile = await dataFiles.GetAsync(file.FileId, cancellationToken);
+            DataFile? dataFile = await dataFiles.GetAsync(
+                e => e.Id == file.FileId && e.Owner == owner,
+                cancellationToken
+            );
             if (dataFile is null)
                 throw new EntityNotFoundException($"Could not find the DataFile '{file.FileId}'.");
             corpusFiles.Add(new CorpusFile { FileRef = file.FileId, TextId = file.TextId });
