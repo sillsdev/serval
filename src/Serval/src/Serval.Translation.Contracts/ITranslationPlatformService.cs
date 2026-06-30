@@ -26,6 +26,7 @@ public interface ITranslationPlatformService
     Task IncrementEngineCorpusSizeAsync(string engineId, int count = 1, CancellationToken cancellationToken = default);
     Task InsertPretranslationsAsync(
         string engineId,
+        string buildId,
         IAsyncEnumerable<PretranslationContract> pretranslations,
         CancellationToken cancellationToken = default
     );

@@ -237,6 +237,7 @@ public class TranslationEngineService(BackgroundTaskQueue taskQueue, IParallelCo
 
                     await platform.InsertPretranslationsAsync(
                         engineId,
+                        buildId,
                         pretranslations.ToAsyncEnumerable(),
                         linkedCts.Token
                     );

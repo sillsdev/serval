@@ -236,6 +236,7 @@ public class DtoMapper(IUrlService urlService)
             EngineTargetLanguageTag = source.EngineTargetLanguageTag,
             ResolvedSourceLanguage = source.ResolvedSourceLanguage,
             ResolvedTargetLanguage = source.ResolvedTargetLanguage,
+            AveragePretranslationConfidence = source.AveragePretranslationConfidence,
         };
 }
 

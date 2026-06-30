@@ -43,7 +43,12 @@ public class StatisticalPostprocessBuildJob(
             )
         )
         {
-            await PlatformService.InsertInferenceResultsAsync(engineId, wordAlignmentStream, cancellationToken);
+            await PlatformService.InsertInferenceResultsAsync(
+                engineId,
+                buildId,
+                wordAlignmentStream,
+                cancellationToken
+            );
         }
 
         int additionalCorpusSize = await SaveModelAsync(engineId, buildId, cancellationToken);

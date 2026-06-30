@@ -70,6 +70,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
 
     public async Task InsertInferenceResultsAsync(
         string engineId,
+        string buildId,
         Stream wordAlignmentsStream,
         CancellationToken cancellationToken = default
     )

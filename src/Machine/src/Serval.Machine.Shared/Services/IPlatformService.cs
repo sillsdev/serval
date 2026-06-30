@@ -28,6 +28,7 @@ public interface IPlatformService
 
     Task InsertInferenceResultsAsync(
         string engineId,
+        string buildId,
         Stream pretranslationsStream,
         CancellationToken cancellationToken = default
     );
