@@ -1,4 +1,6 @@
-﻿namespace Serval.Machine.Shared.Services;
+﻿using SIL.Extensions;
+
+namespace Serval.Machine.Shared.Services;
 
 public class WordAlignmentPreprocessBuildJob(
     [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
@@ -21,7 +23,7 @@ public class WordAlignmentPreprocessBuildJob(
         options
     )
 {
-    protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
+    protected override async Task<PreprocessStats> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
@@ -51,9 +53,20 @@ public class WordAlignmentPreprocessBuildJob(
             cancellationToken
         );
         await using Utf8JsonWriter wordAlignmentWriter = new(wordAlignmentStream, InferenceWriterOptions);
-
+        bool isTrainFilteredByChapter = parallelCorpora.Any(pc =>
+            pc.SourceCorpora.Any(c =>
+                c.TrainOnChapters is not null && c.TrainOnChapters.Values.Any(chapters => chapters.Count > 0)
+            )
+        );
+        bool isWordAlignmentFilteredByChapter = parallelCorpora.Any(pc =>
+            pc.SourceCorpora.Any(c =>
+                c.InferenceChapters is not null && c.InferenceChapters.Values.Any(chapters => chapters.Count > 0)
+            )
+        );
         int trainCount = 0;
         int inferenceCount = 0;
+        Dictionary<string, Dictionary<string, int>> trainVerseCountByChapter = [];
+        Dictionary<string, Dictionary<string, int>> wordAlignVerseCountByChapter = [];
         wordAlignmentWriter.WriteStartArray();
         await ParallelCorpusService.PreprocessAsync(
             parallelCorpora,
@@ -73,6 +86,24 @@ public class WordAlignmentPreprocessBuildJob(
                     }
 
                     trainCount++;
+                    foreach (object? reference in row.SourceRefs)
+                    {
+                        if (reference is not null and ScriptureRef sr)
+                        {
+                            trainVerseCountByChapter.UpdateValue(
+                                sr.Book,
+                                () => [],
+                                chapters =>
+                                {
+                                    if (chapters.TryGetValue(sr.Chapter, out int count))
+                                        chapters[sr.Chapter] = count + 1;
+                                    else
+                                        chapters[sr.Chapter] = 1;
+                                    return chapters;
+                                }
+                            );
+                        }
+                    }
                 }
             },
             async (row, isInTrainingData, corpusId) =>
@@ -94,6 +125,24 @@ public class WordAlignmentPreprocessBuildJob(
                     wordAlignmentWriter.WriteString("target", row.TargetSegment);
                     wordAlignmentWriter.WriteEndObject();
                     inferenceCount++;
+                    foreach (object? reference in row.SourceRefs)
+                    {
+                        if (reference is not null and ScriptureRef sr)
+                        {
+                            wordAlignVerseCountByChapter.UpdateValue(
+                                sr.Book,
+                                () => [],
+                                chapters =>
+                                {
+                                    if (chapters.TryGetValue(sr.Chapter, out int count))
+                                        chapters[sr.Chapter] = count + 1;
+                                    else
+                                        chapters[sr.Chapter] = 1;
+                                    return chapters;
+                                }
+                            );
+                        }
+                    }
                 }
                 if (wordAlignmentWriter.BytesPending > 1024 * 1024)
                     await wordAlignmentWriter.FlushAsync();
@@ -103,14 +152,21 @@ public class WordAlignmentPreprocessBuildJob(
 
         wordAlignmentWriter.WriteEndArray();
 
-        return (trainCount, inferenceCount);
+        return new PreprocessStats
+        {
+            TrainCount = trainCount,
+            InferenceCount = inferenceCount,
+            IsTrainFilteredByChapter = isTrainFilteredByChapter,
+            IsInferenceFilteredByChapter = isWordAlignmentFilteredByChapter,
+            TrainVerseCount = trainVerseCountByChapter,
+            InferenceVerseCount = wordAlignVerseCountByChapter,
+        };
     }
 
     protected override async Task UpdateBuildExecutionData(
         string engineId,
         string buildId,
-        int trainCount,
-        int wordAlignCount,
+        PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
@@ -118,8 +174,8 @@ public class WordAlignmentPreprocessBuildJob(
     )
     {
         IReadOnlyList<string> warnings = GetWarnings(
-            trainCount,
-            wordAlignCount,
+            stats.TrainCount,
+            stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
             parallelCorpora
@@ -131,8 +187,8 @@ public class WordAlignmentPreprocessBuildJob(
             { "Event", "BuildPreprocess" },
             { "EngineId", engineId },
             { "BuildId", buildId },
-            { "NumTrainRows", trainCount },
-            { "NumWordAlignRows", wordAlignCount },
+            { "NumTrainRows", stats.TrainCount },
+            { "NumWordAlignRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
             { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) },
@@ -140,8 +196,12 @@ public class WordAlignmentPreprocessBuildJob(
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
         var executionData = new BuildExecutionData()
         {
-            TrainCount = trainCount,
-            WordAlignCount = wordAlignCount,
+            TrainCount = stats.TrainCount,
+            InferenceCount = stats.InferenceCount,
+            TrainVerseCount = stats.TrainVerseCount,
+            InferenceVerseCount = stats.InferenceVerseCount,
+            IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
+            IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             Warnings = warnings,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,

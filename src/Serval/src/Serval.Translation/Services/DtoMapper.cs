@@ -231,6 +231,10 @@ public class DtoMapper(IUrlService urlService)
         {
             TrainCount = source.TrainCount ?? 0,
             PretranslateCount = source.PretranslateCount ?? 0,
+            PretranslateVerseCount = source.PretranslateVerseCount,
+            TrainVerseCount = source.TrainVerseCount,
+            IsPretranslateFilteredByChapter = source.IsPretranslateFilteredByChapter ?? false,
+            IsTrainFilteredByChapter = source.IsTrainFilteredByChapter ?? false,
             Warnings = source.Warnings ?? [],
             EngineSourceLanguageTag = source.EngineSourceLanguageTag,
             EngineTargetLanguageTag = source.EngineTargetLanguageTag,

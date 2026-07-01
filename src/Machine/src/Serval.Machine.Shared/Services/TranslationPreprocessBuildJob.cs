@@ -1,3 +1,5 @@
+using SIL.Extensions;
+
 namespace Serval.Machine.Shared.Services;
 
 public class TranslationPreprocessBuildJob(
@@ -21,7 +23,7 @@ public class TranslationPreprocessBuildJob(
         options
     )
 {
-    protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
+    protected override async Task<PreprocessStats> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
@@ -51,9 +53,20 @@ public class TranslationPreprocessBuildJob(
             cancellationToken
         );
         await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, InferenceWriterOptions);
-
+        bool isTrainFilteredByChapter = parallelCorpora.Any(pc =>
+            pc.SourceCorpora.Any(c =>
+                c.TrainOnChapters is not null && c.TrainOnChapters.Values.Any(chapters => chapters.Count > 0)
+            )
+        );
+        bool isPretranslationFilteredByChapter = parallelCorpora.Any(pc =>
+            pc.SourceCorpora.Any(c =>
+                c.InferenceChapters is not null && c.InferenceChapters.Values.Any(chapters => chapters.Count > 0)
+            )
+        );
         int trainCount = 0;
         int pretranslateCount = 0;
+        Dictionary<string, Dictionary<string, int>> trainVerseCountByChapter = [];
+        Dictionary<string, Dictionary<string, int>> pretranslateVerseCountByChapter = [];
         pretranslateWriter.WriteStartArray();
         await ParallelCorpusService.PreprocessAsync(
             parallelCorpora,
@@ -73,7 +86,27 @@ public class TranslationPreprocessBuildJob(
                     }
                 }
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                {
                     trainCount++;
+                    foreach (object? reference in row.SourceRefs)
+                    {
+                        if (reference is not null and ScriptureRef sr)
+                        {
+                            trainVerseCountByChapter.UpdateValue(
+                                sr.Book,
+                                () => [],
+                                chapters =>
+                                {
+                                    if (chapters.TryGetValue(sr.Chapter, out int count))
+                                        chapters[sr.Chapter] = count + 1;
+                                    else
+                                        chapters[sr.Chapter] = 1;
+                                    return chapters;
+                                }
+                            );
+                        }
+                    }
+                }
             },
             async (row, isInTrainingData, corpusId) =>
             {
@@ -93,6 +126,24 @@ public class TranslationPreprocessBuildJob(
                     pretranslateWriter.WriteString("translation", row.SourceSegment);
                     pretranslateWriter.WriteEndObject();
                     pretranslateCount++;
+                    foreach (object? reference in row.SourceRefs)
+                    {
+                        if (reference is not null and ScriptureRef sr)
+                        {
+                            pretranslateVerseCountByChapter.UpdateValue(
+                                sr.Book,
+                                () => [],
+                                chapters =>
+                                {
+                                    if (chapters.TryGetValue(sr.Chapter, out int count))
+                                        chapters[sr.Chapter] = count + 1;
+                                    else
+                                        chapters[sr.Chapter] = 1;
+                                    return chapters;
+                                }
+                            );
+                        }
+                    }
                 }
                 if (pretranslateWriter.BytesPending > 1024 * 1024)
                     await pretranslateWriter.FlushAsync();
@@ -103,14 +154,21 @@ public class TranslationPreprocessBuildJob(
 
         pretranslateWriter.WriteEndArray();
 
-        return (trainCount, pretranslateCount);
+        return new PreprocessStats
+        {
+            TrainCount = trainCount,
+            InferenceCount = pretranslateCount,
+            IsTrainFilteredByChapter = isTrainFilteredByChapter,
+            IsInferenceFilteredByChapter = isPretranslationFilteredByChapter,
+            TrainVerseCount = trainVerseCountByChapter,
+            InferenceVerseCount = pretranslateVerseCountByChapter,
+        };
     }
 
     protected override async Task UpdateBuildExecutionData(
         string engineId,
         string buildId,
-        int trainCount,
-        int pretranslateCount,
+        PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
@@ -118,8 +176,8 @@ public class TranslationPreprocessBuildJob(
     )
     {
         IReadOnlyList<string> warnings = GetWarnings(
-            trainCount,
-            pretranslateCount,
+            stats.TrainCount,
+            stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
             parallelCorpora
@@ -131,8 +189,8 @@ public class TranslationPreprocessBuildJob(
             { "Event", "BuildPreprocess" },
             { "EngineId", engineId },
             { "BuildId", buildId },
-            { "NumTrainRows", trainCount },
-            { "NumPretranslateRows", pretranslateCount },
+            { "NumTrainRows", stats.TrainCount },
+            { "NumPretranslateRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
             { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) },
@@ -140,8 +198,12 @@ public class TranslationPreprocessBuildJob(
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
         var executionData = new BuildExecutionData()
         {
-            TrainCount = trainCount,
-            PretranslateCount = pretranslateCount,
+            TrainCount = stats.TrainCount,
+            InferenceCount = stats.InferenceCount,
+            IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
+            IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
+            TrainVerseCount = stats.TrainVerseCount,
+            InferenceVerseCount = stats.InferenceVerseCount,
             Warnings = warnings,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
