@@ -376,7 +376,7 @@ public class PlatformService(
         int nextModelRevision = engine.ModelRevision + 1;
 
         var batch = new List<Pretranslation>();
-        double confidenceTotal = 0.0;
+        double totalConfidence = 0.0;
         int numPretranslations = 0;
         await foreach (PretranslationContract item in pretranslations.WithCancellation(cancellationToken))
         {
@@ -404,7 +404,7 @@ public class PlatformService(
                     Confidence = item.Confidence,
                 }
             );
-            confidenceTotal += item.Confidence ?? 0.0;
+            totalConfidence += item.Confidence ?? 0.0;
             numPretranslations += 1;
             if (batch.Count == PretranslationInsertBatchSize)
             {
@@ -417,7 +417,11 @@ public class PlatformService(
 
         await _builds.UpdateAsync(
             b => b.Id == buildId,
-            u => u.Set(b => b.ExecutionData.AveragePretranslationConfidence, confidenceTotal / numPretranslations),
+            u =>
+                u.Set(
+                    b => b.ExecutionData.AveragePretranslationConfidence,
+                    numPretranslations > 0 ? totalConfidence / numPretranslations : 0.0
+                ),
             cancellationToken: cancellationToken
         );
     }
