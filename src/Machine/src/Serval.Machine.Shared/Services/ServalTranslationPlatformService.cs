@@ -101,7 +101,11 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
             new ExecutionDataContract
             {
                 TrainCount = executionData.TrainCount,
-                PretranslateCount = executionData.PretranslateCount,
+                PretranslateCount = executionData.InferenceCount,
+                TrainVerseCount = executionData.TrainVerseCount,
+                PretranslateVerseCount = executionData.InferenceVerseCount,
+                IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
+                IsPretranslateFilteredByChapter = executionData.IsInferenceFilteredByChapter,
                 Warnings = executionData.Warnings,
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,

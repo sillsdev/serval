@@ -311,6 +311,10 @@ public class PlatformService(
                     {
                         TrainCount = executionData.TrainCount,
                         PretranslateCount = executionData.PretranslateCount,
+                        TrainVerseCount = executionData.TrainVerseCount,
+                        PretranslateVerseCount = executionData.PretranslateVerseCount,
+                        IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
+                        IsPretranslateFilteredByChapter = executionData.IsPretranslateFilteredByChapter,
                         Warnings = executionData.Warnings?.ToList() ?? [],
                         EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                         EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,

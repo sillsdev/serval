@@ -143,7 +143,27 @@ public class PlatformServiceTests
         await env.PlatformService.UpdateBuildExecutionDataAsync(
             engine.Id,
             "123",
-            new() { TrainCount = 4, PretranslateCount = 5 }
+            new()
+            {
+                TrainCount = 4,
+                PretranslateCount = 5,
+                TrainVerseCount = new()
+                {
+                    {
+                        "MAT",
+                        new() { { "1", 4 } }
+                    },
+                },
+                PretranslateVerseCount = new()
+                {
+                    {
+                        "MAT",
+                        new() { { "1", 10 } }
+                    },
+                },
+                IsTrainFilteredByChapter = false,
+                IsPretranslateFilteredByChapter = true,
+            }
         );
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
@@ -153,6 +173,19 @@ public class PlatformServiceTests
         Assert.That(executionData, Is.Not.Null);
         Assert.That(executionData.TrainCount, Is.GreaterThan(0));
         Assert.That(executionData.PretranslateCount, Is.GreaterThan(0));
+
+        Assert.That(executionData.TrainVerseCount, Is.Not.Null);
+        Assert.That(executionData.TrainVerseCount, Has.Count.EqualTo(1));
+        Assert.That(executionData.TrainVerseCount.First().Value, Has.Count.EqualTo(1));
+        Assert.That(executionData.TrainVerseCount.First().Value.First().Value, Is.EqualTo(4));
+
+        Assert.That(executionData.PretranslateVerseCount, Is.Not.Null);
+        Assert.That(executionData.PretranslateVerseCount, Has.Count.EqualTo(1));
+        Assert.That(executionData.PretranslateVerseCount.First().Value, Has.Count.EqualTo(1));
+        Assert.That(executionData.PretranslateVerseCount.First().Value.First().Value, Is.EqualTo(10));
+
+        Assert.That(executionData.IsTrainFilteredByChapter, Is.False);
+        Assert.That(executionData.IsPretranslateFilteredByChapter, Is.True);
     }
 
     [Test]

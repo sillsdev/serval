@@ -363,6 +363,10 @@ public class PlatformService(
                     {
                         TrainCount = executionData.TrainCount,
                         WordAlignCount = executionData.WordAlignCount,
+                        TrainVerseCount = executionData.TrainVerseCount,
+                        WordAlignVerseCount = executionData.WordAlignVerseCount,
+                        IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
+                        IsWordAlignFilteredByChapter = executionData.IsWordAlignmentFilteredByChapter,
                         Warnings = executionData.Warnings?.ToList() ?? [],
                         EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                         EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,

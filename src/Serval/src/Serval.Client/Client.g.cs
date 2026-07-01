@@ -11505,6 +11505,18 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("pretranslateCount", Required = Newtonsoft.Json.Required.Always)]
         public int PretranslateCount { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("isTrainFilteredByChapter", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsTrainFilteredByChapter { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("isPretranslateFilteredByChapter", Required = Newtonsoft.Json.Required.Always)]
+        public bool IsPretranslateFilteredByChapter { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("trainVerseCount", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IDictionary<string, System.Collections.Generic.IDictionary<string, int>>? TrainVerseCount { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("pretranslateVerseCount", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IDictionary<string, System.Collections.Generic.IDictionary<string, int>>? PretranslateVerseCount { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("warnings", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
         public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
@@ -12311,6 +12323,18 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("wordAlignCount", Required = Newtonsoft.Json.Required.Always)]
         public int WordAlignCount { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("isTrainFilteredByChapter", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? IsTrainFilteredByChapter { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("isWordAlignFilteredByChapter", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? IsWordAlignFilteredByChapter { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("trainVerseCount", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IDictionary<string, System.Collections.Generic.IDictionary<string, int>>? TrainVerseCount { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("wordAlignVerseCount", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IDictionary<string, System.Collections.Generic.IDictionary<string, int>>? WordAlignVerseCount { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("warnings", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
