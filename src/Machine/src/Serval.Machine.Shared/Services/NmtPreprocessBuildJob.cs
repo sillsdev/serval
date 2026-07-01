@@ -52,8 +52,7 @@ public class NmtPreprocessBuildJob(
     protected override async Task UpdateBuildExecutionData(
         string engineId,
         string buildId,
-        int trainCount,
-        int pretranslateCount,
+        PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
@@ -63,7 +62,7 @@ public class NmtPreprocessBuildJob(
         bool sourceLanguageHasNativeSupport = ResolveLanguageCode(sourceLanguageTag, out string resolvedSourceLanguage);
         bool targetLanguageHasNativeSupport = ResolveLanguageCode(targetLanguageTag, out string resolvedTargetLanguage);
 
-        if (trainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
+        if (stats.TrainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
         {
             throw new InvalidOperationException(
                 $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
@@ -71,8 +70,8 @@ public class NmtPreprocessBuildJob(
         }
 
         IReadOnlyList<string> warnings = GetWarnings(
-            trainCount,
-            pretranslateCount,
+            stats.TrainCount,
+            stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
             parallelCorpora
@@ -92,8 +91,8 @@ public class NmtPreprocessBuildJob(
             { "Event", "BuildPreprocess" },
             { "EngineId", engineId },
             { "BuildId", buildId },
-            { "NumTrainRows", trainCount },
-            { "NumPretranslateRows", pretranslateCount },
+            { "NumTrainRows", stats.TrainCount },
+            { "NumPretranslateRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
             { "SourceLanguageResolved", resolvedSourceLanguage },
@@ -103,8 +102,12 @@ public class NmtPreprocessBuildJob(
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
         var executionData = new BuildExecutionData()
         {
-            TrainCount = trainCount,
-            PretranslateCount = pretranslateCount,
+            TrainCount = stats.TrainCount,
+            InferenceCount = stats.InferenceCount,
+            TrainVerseCount = stats.TrainVerseCount,
+            InferenceVerseCount = stats.InferenceVerseCount,
+            IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
+            IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
             Warnings = warnings,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
