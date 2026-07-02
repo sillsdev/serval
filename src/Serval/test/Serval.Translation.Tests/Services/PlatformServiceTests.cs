@@ -52,13 +52,27 @@ public class PlatformServiceTests
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
+
         await env.PlatformService.BuildStartedAsync("b0");
         await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         Assert.That(
             (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
-            Is.Zero
+            Is.Zero.Within(0.001)
+        );
+
+        await env.PlatformService.BuildStartedAsync("b0");
+        await env.PlatformService.InsertPretranslationsAsync(
+            "e0",
+            "b0",
+            AsyncEnumerable.Empty<PretranslationContract>()
+        );
+        await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
+        Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
+        Assert.That(
+            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
+            Is.Zero.Within(0.001)
         );
     }
 
