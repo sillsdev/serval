@@ -35,7 +35,11 @@ public class StatisticalClearMLBuildJobFactory(
                 + $"    'build_id': '{buildId}',\n"
                 + $"    'shared_file_uri': '{baseUri}',\n"
                 + $"    'shared_file_folder': '{folder}',\n"
-                + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
+                + (
+                    buildOptions is not null
+                        ? $"    'build_options': '''{Convert.ToBase64String(Encoding.UTF8.GetBytes(buildOptions))}''',\n"
+                        : ""
+                )
                 + $"    'clearml': True\n"
                 + "}\n"
                 + "run(args)\n";
