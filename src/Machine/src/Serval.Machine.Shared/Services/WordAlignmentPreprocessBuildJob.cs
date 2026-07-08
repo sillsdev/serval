@@ -127,8 +127,14 @@ public class WordAlignmentPreprocessBuildJob(
         {
             TrainCount = stats.TrainCount,
             InferenceCount = stats.InferenceCount,
-            TrainVerseCount = stats.TrainVerseCount,
-            InferenceVerseCount = stats.InferenceVerseCount,
+            TrainVerseCount = stats.TrainVerseCount.ToDictionary(
+                kv => kv.Key,
+                kv => (IReadOnlyDictionary<string, int>)kv.Value
+            ),
+            InferenceVerseCount = stats.InferenceVerseCount.ToDictionary(
+                kv => kv.Key,
+                kv => (IReadOnlyDictionary<string, int>)kv.Value
+            ),
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             Warnings = warnings,

@@ -190,8 +190,9 @@ public class DtoMapper(IUrlService urlService)
         {
             TrainCount = source.TrainCount ?? 0,
             WordAlignCount = source.WordAlignCount ?? 0,
-            TrainVerseCount = source.TrainVerseCount ?? [],
-            WordAlignVerseCount = source.WordAlignVerseCount ?? [],
+            TrainVerseCount = source.TrainVerseCount ?? new Dictionary<string, IReadOnlyDictionary<string, int>>(),
+            WordAlignVerseCount =
+                source.WordAlignVerseCount ?? new Dictionary<string, IReadOnlyDictionary<string, int>>(),
             IsTrainFilteredByChapter = source.IsTrainFilteredByChapter,
             IsWordAlignFilteredByChapter = source.IsWordAlignFilteredByChapter,
             Warnings = source.Warnings ?? [],
