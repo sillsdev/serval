@@ -63,106 +63,33 @@ public class TranslationPreprocessBuildJob(
                 c.InferenceChapters is not null && c.InferenceChapters.Values.Any(chapters => chapters.Count > 0)
             )
         );
-        int trainCount = 0;
-        int pretranslateCount = 0;
-        Dictionary<string, Dictionary<string, int>> trainVerseCountByChapter = [];
-        Dictionary<string, Dictionary<string, int>> pretranslateVerseCountByChapter = [];
+        PreprocessStats preprocessStats = new()
+        {
+            IsTrainFilteredByChapter = isTrainFilteredByChapter,
+            IsInferenceFilteredByChapter = isPretranslationFilteredByChapter,
+        };
+
         pretranslateWriter.WriteStartArray();
         await ParallelCorpusService.PreprocessAsync(
             parallelCorpora,
             async (row, trainingDataType) =>
-            {
-                if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
-                {
-                    if (trainingDataType == TrainingDataType.KeyTerm)
-                    {
-                        await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                        await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                    }
-                    else
-                    {
-                        await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                        await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                    }
-                }
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-                {
-                    trainCount++;
-                    foreach (object? reference in row.SourceRefs)
-                    {
-                        if (reference is not null and ScriptureRef sr)
-                        {
-                            trainVerseCountByChapter.UpdateValue(
-                                sr.Book,
-                                () => [],
-                                chapters =>
-                                {
-                                    if (chapters.TryGetValue(sr.Chapter, out int count))
-                                        chapters[sr.Chapter] = count + 1;
-                                    else
-                                        chapters[sr.Chapter] = 1;
-                                    return chapters;
-                                }
-                            );
-                        }
-                    }
-                }
-            },
+                await preprocessStats.ProcessTranslationTrainingRowAsync(
+                    row,
+                    trainingDataType,
+                    sourceTrainWriter,
+                    targetTrainWriter,
+                    sourceKeyTermsTrainWriter,
+                    targetKeyTermsTrainWriter
+                ),
             async (row, isInTrainingData, corpusId) =>
-            {
-                if (row.SourceSegment.Length > 0 && !isInTrainingData)
-                {
-                    pretranslateWriter.WriteStartObject();
-                    pretranslateWriter.WriteString("corpusId", corpusId);
-                    pretranslateWriter.WriteString("textId", row.TextId);
-                    pretranslateWriter.WriteStartArray("sourceRefs");
-                    foreach (object rowRef in row.SourceRefs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteStartArray("targetRefs");
-                    foreach (object rowRef in row.TargetRefs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteString("translation", row.SourceSegment);
-                    pretranslateWriter.WriteEndObject();
-                    pretranslateCount++;
-                    foreach (object? reference in row.SourceRefs)
-                    {
-                        if (reference is not null and ScriptureRef sr)
-                        {
-                            pretranslateVerseCountByChapter.UpdateValue(
-                                sr.Book,
-                                () => [],
-                                chapters =>
-                                {
-                                    if (chapters.TryGetValue(sr.Chapter, out int count))
-                                        chapters[sr.Chapter] = count + 1;
-                                    else
-                                        chapters[sr.Chapter] = 1;
-                                    return chapters;
-                                }
-                            );
-                        }
-                    }
-                }
-                if (pretranslateWriter.BytesPending > 1024 * 1024)
-                    await pretranslateWriter.FlushAsync();
-            },
+                await preprocessStats.ProcessPretranslateRowAsync(row, isInTrainingData, corpusId, pretranslateWriter),
             (bool?)buildOptionsObject?["use_key_terms"] ?? true,
             ignoreUsfmMarkers: ["rem", "r"]
         );
 
         pretranslateWriter.WriteEndArray();
 
-        return new PreprocessStats
-        {
-            TrainCount = trainCount,
-            InferenceCount = pretranslateCount,
-            IsTrainFilteredByChapter = isTrainFilteredByChapter,
-            IsInferenceFilteredByChapter = isPretranslationFilteredByChapter,
-            TrainVerseCount = trainVerseCountByChapter,
-            InferenceVerseCount = pretranslateVerseCountByChapter,
-        };
+        return preprocessStats;
     }
 
     protected override async Task UpdateBuildExecutionData(
@@ -209,5 +136,102 @@ public class TranslationPreprocessBuildJob(
             EngineTargetLanguageTag = targetLanguageTag,
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
+    }
+}
+
+public static partial class PreprocessStatsExtensions
+{
+    public static async Task ProcessTranslationTrainingRowAsync(
+        this PreprocessStats stats,
+        ParallelRowContract row,
+        TrainingDataType trainingDataType,
+        StreamWriter sourceTrainWriter,
+        StreamWriter targetTrainWriter,
+        StreamWriter sourceKeyTermsTrainWriter,
+        StreamWriter targetKeyTermsTrainWriter
+    )
+    {
+        if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
+        {
+            if (trainingDataType == TrainingDataType.KeyTerm)
+            {
+                await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+            }
+            else
+            {
+                await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+            }
+        }
+        if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+        {
+            stats.TrainCount++;
+            foreach (object? reference in row.SourceRefs)
+            {
+                if (reference is not null and ScriptureRef sr && sr.IsVerse)
+                {
+                    stats.TrainVerseCount.UpdateValue(
+                        sr.Book,
+                        () => [],
+                        chapters =>
+                        {
+                            if (chapters.TryGetValue(sr.Chapter, out int count))
+                                chapters[sr.Chapter] = count + 1;
+                            else
+                                chapters[sr.Chapter] = 1;
+                            return chapters;
+                        }
+                    );
+                }
+            }
+        }
+    }
+
+    public static async Task ProcessPretranslateRowAsync(
+        this PreprocessStats stats,
+        ParallelRowContract row,
+        bool isInTrainingData,
+        string corpusId,
+        Utf8JsonWriter pretranslateWriter
+    )
+    {
+        if (row.SourceSegment.Length > 0 && !isInTrainingData)
+        {
+            pretranslateWriter.WriteStartObject();
+            pretranslateWriter.WriteString("corpusId", corpusId);
+            pretranslateWriter.WriteString("textId", row.TextId);
+            pretranslateWriter.WriteStartArray("sourceRefs");
+            foreach (object rowRef in row.SourceRefs)
+                pretranslateWriter.WriteStringValue(rowRef.ToString());
+            pretranslateWriter.WriteEndArray();
+            pretranslateWriter.WriteStartArray("targetRefs");
+            foreach (object rowRef in row.TargetRefs)
+                pretranslateWriter.WriteStringValue(rowRef.ToString());
+            pretranslateWriter.WriteEndArray();
+            pretranslateWriter.WriteString("translation", row.SourceSegment);
+            pretranslateWriter.WriteEndObject();
+            stats.InferenceCount++;
+            foreach (object? reference in row.SourceRefs)
+            {
+                if (reference is not null and ScriptureRef sr && sr.IsVerse)
+                {
+                    stats.InferenceVerseCount.UpdateValue(
+                        sr.Book,
+                        () => [],
+                        chapters =>
+                        {
+                            if (chapters.TryGetValue(sr.Chapter, out int count))
+                                chapters[sr.Chapter] = count + 1;
+                            else
+                                chapters[sr.Chapter] = 1;
+                            return chapters;
+                        }
+                    );
+                }
+            }
+        }
+        if (pretranslateWriter.BytesPending > 1024 * 1024)
+            await pretranslateWriter.FlushAsync();
     }
 }
