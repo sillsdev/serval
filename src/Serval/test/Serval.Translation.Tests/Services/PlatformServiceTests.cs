@@ -161,18 +161,18 @@ public class PlatformServiceTests
             {
                 TrainCount = 4,
                 PretranslateCount = 5,
-                TrainVerseCount = new()
+                TrainVerseCount = new Dictionary<string, IReadOnlyDictionary<string, int>>()
                 {
                     {
                         "MAT",
-                        new() { { "1", 4 } }
+                        new Dictionary<string, int>() { { "1", 4 } }
                     },
                 },
-                PretranslateVerseCount = new()
+                PretranslateVerseCount = new Dictionary<string, IReadOnlyDictionary<string, int>>()
                 {
                     {
                         "MAT",
-                        new() { { "1", 10 } }
+                        new Dictionary<string, int>() { { "1", 10 } }
                     },
                 },
                 IsTrainFilteredByChapter = false,
