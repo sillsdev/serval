@@ -23,7 +23,6 @@ public class ServalSharedTests
                 c.AddTranslationDataAccess();
                 c.AddWordAlignmentDataAccess();
                 c.AddDataFilesDataAccess();
-                c.AddWebhooksDataAccess();
             }
         );
 

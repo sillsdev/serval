@@ -14,7 +14,6 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
       - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
-      - ASPNETCORE_ConnectionStrings__Hangfire=${MONGO_CONNECTION_STRING:?connection string needed}/${MONGO_CONNECTION_PREFIX:?mongo prefix needed}serval_jobs${MONGO_EXTENSIONS}
       - ASPNETCORE_ConnectionStrings__Mongo=${MONGO_CONNECTION_STRING}/${MONGO_CONNECTION_PREFIX}serval${MONGO_EXTENSIONS}
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Project=docker-compose

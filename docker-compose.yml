@@ -13,7 +13,6 @@ services:
       - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
       - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
       - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
-      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/serval_jobs?replicaSet=myRS
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/serval?replicaSet=myRS
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
       - ClearML__Project=docker-compose

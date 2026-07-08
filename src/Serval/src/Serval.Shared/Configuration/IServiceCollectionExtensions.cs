@@ -21,30 +21,8 @@ public static class IServiceCollectionExtensions
         IMongoDataAccessBuilder dataAccess = services.AddMongoDataAccess(mongoConnectionString, "Serval");
         services.AddHealthChecks().AddMongoDb(name: "Mongo");
 
-        services.AddHangfire(c =>
-            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseMongoStorage(
-                    configuration.GetConnectionString("Hangfire"),
-                    new MongoStorageOptions
-                    {
-                        MigrationOptions = new MongoMigrationOptions
-                        {
-                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                            BackupStrategy = new CollectionMongoBackupStrategy(),
-                        },
-                        CheckConnection = true,
-                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
-                    }
-                )
-        );
-
         ServalConfigurator configurator = new(services, configuration, dataAccess);
         configure(configurator);
-
-        services.AddHangfireServer(o => o.Queues = [.. configurator.JobQueues]);
-        services.AddHealthChecks().AddCheck<HangfireHealthCheck>("Hangfire");
 
         services.AddStartupTask(
             (sp, ct) =>

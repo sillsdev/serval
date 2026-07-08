@@ -1766,11 +1766,7 @@ public class WordAlignmentEngineTests
             return new CorporaClient(httpClient);
         }
 
-        public void ResetDatabases()
-        {
-            _mongoClient.DropDatabase("serval_test");
-            _mongoClient.DropDatabase("serval_test_jobs");
-        }
+        public void ResetDatabases() => _mongoClient.DropDatabase("serval_test");
 
         private static IFileSystem CreateFileSystem(IServiceProvider sp)
         {

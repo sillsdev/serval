@@ -36,7 +36,6 @@
 		<ProjectReference Include="..\..\src\Serval.DataFiles\Serval.DataFiles.csproj" />
 		<ProjectReference Include="..\..\src\Serval.Shared\Serval.Shared.csproj" />
 		<ProjectReference Include="..\..\src\Serval.Translation\Serval.Translation.csproj" />
-		<ProjectReference Include="..\..\src\Serval.Webhooks\Serval.Webhooks.csproj" />
 		<ProjectReference Include="..\..\\src\Serval.WordAlignment\Serval.WordAlignment.csproj" />
 	</ItemGroup>
 

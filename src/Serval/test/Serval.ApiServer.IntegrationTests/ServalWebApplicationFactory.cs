@@ -11,7 +11,6 @@ public class ServalWebApplicationFactory : WebApplicationFactory<Program>
                     new Dictionary<string, string?>
                     {
                         ["ConnectionStrings:Mongo"] = "mongodb://localhost:27017/serval_test",
-                        ["ConnectionStrings:Hangfire"] = "mongodb://localhost:27017/serval_test_jobs",
                     }
                 );
             }
