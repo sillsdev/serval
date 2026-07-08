@@ -63,104 +63,33 @@ public class WordAlignmentPreprocessBuildJob(
                 c.InferenceChapters is not null && c.InferenceChapters.Values.Any(chapters => chapters.Count > 0)
             )
         );
-        int trainCount = 0;
-        int inferenceCount = 0;
-        Dictionary<string, Dictionary<string, int>> trainVerseCountByChapter = [];
-        Dictionary<string, Dictionary<string, int>> wordAlignVerseCountByChapter = [];
+
+        PreprocessStats preprocessStats = new()
+        {
+            IsTrainFilteredByChapter = isTrainFilteredByChapter,
+            IsInferenceFilteredByChapter = isWordAlignmentFilteredByChapter,
+        };
+
         wordAlignmentWriter.WriteStartArray();
         await ParallelCorpusService.PreprocessAsync(
             parallelCorpora,
             async (row, trainingDataType) =>
-            {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-                {
-                    if (trainingDataType == TrainingDataType.KeyTerm)
-                    {
-                        await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                        await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                    }
-                    else
-                    {
-                        await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                        await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                    }
-
-                    trainCount++;
-                    foreach (object? reference in row.SourceRefs)
-                    {
-                        if (reference is not null and ScriptureRef sr)
-                        {
-                            trainVerseCountByChapter.UpdateValue(
-                                sr.Book,
-                                () => [],
-                                chapters =>
-                                {
-                                    if (chapters.TryGetValue(sr.Chapter, out int count))
-                                        chapters[sr.Chapter] = count + 1;
-                                    else
-                                        chapters[sr.Chapter] = 1;
-                                    return chapters;
-                                }
-                            );
-                        }
-                    }
-                }
-            },
+                await preprocessStats.ProcessWordAlignmentTrainingRowAsync(
+                    row,
+                    trainingDataType,
+                    sourceTrainWriter,
+                    targetTrainWriter,
+                    sourceKeyTermsTrainWriter,
+                    targetKeyTermsTrainWriter
+                ),
             async (row, isInTrainingData, corpusId) =>
-            {
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0 && !isInTrainingData)
-                {
-                    wordAlignmentWriter.WriteStartObject();
-                    wordAlignmentWriter.WriteString("corpusId", corpusId);
-                    wordAlignmentWriter.WriteString("textId", row.TextId);
-                    wordAlignmentWriter.WriteStartArray("sourceRefs");
-                    foreach (object rowRef in row.SourceRefs)
-                        wordAlignmentWriter.WriteStringValue(rowRef.ToString());
-                    wordAlignmentWriter.WriteEndArray();
-                    wordAlignmentWriter.WriteStartArray("targetRefs");
-                    foreach (object rowRef in row.TargetRefs)
-                        wordAlignmentWriter.WriteStringValue(rowRef.ToString());
-                    wordAlignmentWriter.WriteEndArray();
-                    wordAlignmentWriter.WriteString("source", row.SourceSegment);
-                    wordAlignmentWriter.WriteString("target", row.TargetSegment);
-                    wordAlignmentWriter.WriteEndObject();
-                    inferenceCount++;
-                    foreach (object? reference in row.SourceRefs)
-                    {
-                        if (reference is not null and ScriptureRef sr)
-                        {
-                            wordAlignVerseCountByChapter.UpdateValue(
-                                sr.Book,
-                                () => [],
-                                chapters =>
-                                {
-                                    if (chapters.TryGetValue(sr.Chapter, out int count))
-                                        chapters[sr.Chapter] = count + 1;
-                                    else
-                                        chapters[sr.Chapter] = 1;
-                                    return chapters;
-                                }
-                            );
-                        }
-                    }
-                }
-                if (wordAlignmentWriter.BytesPending > 1024 * 1024)
-                    await wordAlignmentWriter.FlushAsync();
-            },
+                await preprocessStats.ProcessWordAlignRowAsync(row, isInTrainingData, corpusId, wordAlignmentWriter),
             (bool?)buildOptionsObject?["use_key_terms"] ?? true
         );
 
         wordAlignmentWriter.WriteEndArray();
 
-        return new PreprocessStats
-        {
-            TrainCount = trainCount,
-            InferenceCount = inferenceCount,
-            IsTrainFilteredByChapter = isTrainFilteredByChapter,
-            IsInferenceFilteredByChapter = isWordAlignmentFilteredByChapter,
-            TrainVerseCount = trainVerseCountByChapter,
-            InferenceVerseCount = wordAlignVerseCountByChapter,
-        };
+        return preprocessStats;
     }
 
     protected override async Task UpdateBuildExecutionData(
@@ -218,5 +147,101 @@ public class WordAlignmentPreprocessBuildJob(
     {
         // Word alignment does not support parallel corpus analysis
         return Task.CompletedTask;
+    }
+}
+
+public static partial class PreprocessStatsExtensions
+{
+    public static async Task ProcessWordAlignmentTrainingRowAsync(
+        this PreprocessStats stats,
+        ParallelRowContract row,
+        TrainingDataType trainingDataType,
+        StreamWriter sourceTrainWriter,
+        StreamWriter targetTrainWriter,
+        StreamWriter sourceKeyTermsTrainWriter,
+        StreamWriter targetKeyTermsTrainWriter
+    )
+    {
+        if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+        {
+            if (trainingDataType == TrainingDataType.KeyTerm)
+            {
+                await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+            }
+            else
+            {
+                await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+            }
+
+            stats.TrainCount++;
+            foreach (object? reference in row.SourceRefs)
+            {
+                if (reference is not null and ScriptureRef sr && sr.IsVerse)
+                {
+                    stats.TrainVerseCount.UpdateValue(
+                        sr.Book,
+                        () => [],
+                        chapters =>
+                        {
+                            if (chapters.TryGetValue(sr.Chapter, out int count))
+                                chapters[sr.Chapter] = count + 1;
+                            else
+                                chapters[sr.Chapter] = 1;
+                            return chapters;
+                        }
+                    );
+                }
+            }
+        }
+    }
+
+    public static async Task ProcessWordAlignRowAsync(
+        this PreprocessStats stats,
+        ParallelRowContract row,
+        bool isInTrainingData,
+        string corpusId,
+        Utf8JsonWriter wordAlignmentWriter
+    )
+    {
+        if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0 && !isInTrainingData)
+        {
+            wordAlignmentWriter.WriteStartObject();
+            wordAlignmentWriter.WriteString("corpusId", corpusId);
+            wordAlignmentWriter.WriteString("textId", row.TextId);
+            wordAlignmentWriter.WriteStartArray("sourceRefs");
+            foreach (object rowRef in row.SourceRefs)
+                wordAlignmentWriter.WriteStringValue(rowRef.ToString());
+            wordAlignmentWriter.WriteEndArray();
+            wordAlignmentWriter.WriteStartArray("targetRefs");
+            foreach (object rowRef in row.TargetRefs)
+                wordAlignmentWriter.WriteStringValue(rowRef.ToString());
+            wordAlignmentWriter.WriteEndArray();
+            wordAlignmentWriter.WriteString("source", row.SourceSegment);
+            wordAlignmentWriter.WriteString("target", row.TargetSegment);
+            wordAlignmentWriter.WriteEndObject();
+            stats.InferenceCount++;
+            foreach (object? reference in row.SourceRefs)
+            {
+                if (reference is not null and ScriptureRef sr && sr.IsVerse)
+                {
+                    stats.InferenceVerseCount.UpdateValue(
+                        sr.Book,
+                        () => [],
+                        chapters =>
+                        {
+                            if (chapters.TryGetValue(sr.Chapter, out int count))
+                                chapters[sr.Chapter] = count + 1;
+                            else
+                                chapters[sr.Chapter] = 1;
+                            return chapters;
+                        }
+                    );
+                }
+            }
+        }
+        if (wordAlignmentWriter.BytesPending > 1024 * 1024)
+            await wordAlignmentWriter.FlushAsync();
     }
 }
