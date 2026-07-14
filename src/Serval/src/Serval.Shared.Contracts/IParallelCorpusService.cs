@@ -7,7 +7,8 @@ public interface IParallelCorpusService
     IReadOnlyList<(
         string ParallelCorpusId,
         string MonolingualCorpusId,
-        IReadOnlyList<UsfmVersificationErrorContract> Errors
+        string ProjectName,
+        IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
     )> AnalyzeUsfmVersification(IEnumerable<ParallelCorpusContract> parallelCorpora);
 
     IReadOnlyList<(

@@ -142,14 +142,15 @@ public class ParallelCorpusServiceTests
         IReadOnlyList<(
             string ParallelCorpusId,
             string MonolingualCorpusId,
-            IReadOnlyList<UsfmVersificationErrorContract> UsfmErrors
-        )> errors = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);
+            string ProjectName,
+            IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
+        )> analysis = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);
 
-        Assert.That(errors, Has.Count.EqualTo(1));
-        Assert.That(errors[0].UsfmErrors, Has.Count.EqualTo(3));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
+        Assert.That(analysis, Has.Count.EqualTo(1));
+        Assert.That(analysis[0].Diagnostics, Has.Count.EqualTo(3));
+        Assert.That(analysis[0].Diagnostics[0].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
+        Assert.That(analysis[0].Diagnostics[1].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
+        Assert.That(analysis[0].Diagnostics[2].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
     }
 
     [Test]
