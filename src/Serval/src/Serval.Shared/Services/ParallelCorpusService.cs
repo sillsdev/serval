@@ -10,15 +10,17 @@ public class ParallelCorpusService : IParallelCorpusService
     public IReadOnlyList<(
         string ParallelCorpusId,
         string MonolingualCorpusId,
-        IReadOnlyList<UsfmVersificationErrorContract> Errors
+        string ProjectName,
+        IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
     )> AnalyzeUsfmVersification(IEnumerable<ParallelCorpusContract> parallelCorpora)
     {
         CorpusBundle corpusBundle = new(parallelCorpora);
         List<(
             string ParallelCorpusId,
             string MonolingualCorpusId,
-            IReadOnlyList<UsfmVersificationErrorContract> Errors
-        )> errorsPerCorpus = [];
+            string ProjectName,
+            IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
+        )> diagnosticsPerCorpus = [];
         foreach (
             (
                 ParallelCorpusContract parallelCorpus,
@@ -31,61 +33,56 @@ public class ParallelCorpusService : IParallelCorpusService
             foreach (CorpusFileContract file in files.Where(f => f.Format == FileFormat.Paratext))
             {
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
-                IReadOnlyList<UsfmVersificationError> errors = new ZipParatextProjectVersificationErrorDetector(
+                UsfmVersificationAnalysis? analysis = new ZipUsfmVersificationAnalyzer(
                     zipArchive,
                     corpusBundle.ParentOf(file.Location)?.Settings
-                ).GetUsfmVersificationErrors(books: GetBooks(monolingualCorpus));
-                if (errors.Count > 0)
+                ).AnalyzeUsfmVersification(bookIdsAndChapters: GetBookIdsAndChapters(monolingualCorpus));
+                if (analysis.Diagnostics.Count > 0)
                 {
-                    errorsPerCorpus.Add(
+                    diagnosticsPerCorpus.Add(
                         (
                             parallelCorpus.Id,
                             monolingualCorpus.Id,
-                            errors
-                                .Select(e => new UsfmVersificationErrorContract
+                            analysis.ProjectSettings.Name,
+                            [
+                                .. analysis.Diagnostics.Select(d => new UsfmVersificationDiagnosticContract
                                 {
-                                    Type = Map(e.Type),
-                                    ProjectName = e.ProjectName,
-                                    ExpectedVerseRef = e.ExpectedVerseRef,
-                                    ActualVerseRef = e.ActualVerseRef,
-                                })
-                                .ToList()
+                                    Type = Map(d.Type),
+                                    NumAffectedVerses = d.NumAffectedVerses,
+                                    References = [.. d.References.Select(r => r.ToString())],
+                                    Filename = d.Filename,
+                                    LineNumbers = [.. d.LineNumbers],
+                                }),
+                            ]
                         )
                     );
                 }
             }
         }
-        return errorsPerCorpus;
+        return diagnosticsPerCorpus;
     }
 
-    private static Contracts.UsfmVersificationErrorType Map(SIL.Machine.Corpora.UsfmVersificationErrorType type)
+    private static Contracts.UsfmVersificationDiagnosticType Map(
+        SIL.Machine.Corpora.UsfmVersificationDiagnosticType type
+    )
     {
         return type switch
         {
-            SIL.Machine.Corpora.UsfmVersificationErrorType.MissingChapter => Contracts
-                .UsfmVersificationErrorType
-                .MissingChapter,
-            SIL.Machine.Corpora.UsfmVersificationErrorType.MissingVerse => Contracts
-                .UsfmVersificationErrorType
-                .MissingVerse,
-            SIL.Machine.Corpora.UsfmVersificationErrorType.ExtraVerse => Contracts
-                .UsfmVersificationErrorType
-                .ExtraVerse,
-            SIL.Machine.Corpora.UsfmVersificationErrorType.InvalidVerseRange => Contracts
-                .UsfmVersificationErrorType
-                .InvalidVerseRange,
-            SIL.Machine.Corpora.UsfmVersificationErrorType.MissingVerseSegment => Contracts
-                .UsfmVersificationErrorType
-                .MissingVerseSegment,
-            SIL.Machine.Corpora.UsfmVersificationErrorType.ExtraVerseSegment => Contracts
-                .UsfmVersificationErrorType
-                .ExtraVerseSegment,
-            SIL.Machine.Corpora.UsfmVersificationErrorType.InvalidChapterNumber => Contracts
-                .UsfmVersificationErrorType
-                .InvalidChapterNumber,
-            SIL.Machine.Corpora.UsfmVersificationErrorType.InvalidVerseNumber => Contracts
-                .UsfmVersificationErrorType
-                .InvalidVerseNumber,
+            SIL.Machine.Corpora.UsfmVersificationDiagnosticType.Missing => Contracts
+                .UsfmVersificationDiagnosticType
+                .Missing,
+            SIL.Machine.Corpora.UsfmVersificationDiagnosticType.Extra => Contracts
+                .UsfmVersificationDiagnosticType
+                .Extra,
+            SIL.Machine.Corpora.UsfmVersificationDiagnosticType.Invalid => Contracts
+                .UsfmVersificationDiagnosticType
+                .Invalid,
+            SIL.Machine.Corpora.UsfmVersificationDiagnosticType.IncorrectVerseSegment => Contracts
+                .UsfmVersificationDiagnosticType
+                .IncorrectVerseSegment,
+            SIL.Machine.Corpora.UsfmVersificationDiagnosticType.UnsupportedVerseRange => Contracts
+                .UsfmVersificationDiagnosticType
+                .UnsupportedVerseRange,
             _ => throw new InvalidOperationException($"Unknown USFM versification error type: {type}"),
         };
     }
@@ -589,31 +586,47 @@ public class ParallelCorpusService : IParallelCorpusService
         return row;
     }
 
-    private static HashSet<int>? GetBooks(MonolingualCorpusContract corpus)
+    private static Dictionary<string, HashSet<int>>? GetBookIdsAndChapters(MonolingualCorpusContract corpus)
     {
         if (!corpus.IsFiltered)
             return null;
 
-        List<string> books = [];
-        if (corpus.TrainOnTextIds != null)
+        Dictionary<string, HashSet<int>> bookIdsAndChapters = [];
+        if (corpus.TrainOnTextIds is not null)
         {
-            books.AddRange(corpus.TrainOnTextIds);
+            foreach (string textId in corpus.TrainOnTextIds)
+                bookIdsAndChapters.TryAdd(textId, []);
         }
         else if (corpus.TrainOnChapters != null)
         {
-            books.AddRange(corpus.TrainOnChapters.Keys);
+            foreach ((string textId, HashSet<int> chapters) in corpus.TrainOnChapters)
+            {
+                if (!bookIdsAndChapters.TryAdd(textId, chapters))
+                {
+                    foreach (int chapter in chapters)
+                        bookIdsAndChapters[textId].Add(chapter);
+                }
+            }
         }
 
-        if (corpus.InferenceTextIds != null)
+        if (corpus.InferenceTextIds is not null)
         {
-            books.AddRange(corpus.InferenceTextIds);
+            foreach (string textId in corpus.InferenceTextIds)
+                bookIdsAndChapters.TryAdd(textId, []);
         }
         else if (corpus.InferenceChapters != null)
         {
-            books.AddRange(corpus.InferenceChapters.Keys);
+            foreach ((string textId, HashSet<int> chapters) in corpus.InferenceChapters)
+            {
+                if (!bookIdsAndChapters.TryAdd(textId, chapters))
+                {
+                    foreach (int chapter in chapters)
+                        bookIdsAndChapters[textId].Add(chapter);
+                }
+            }
         }
 
-        return [.. books.Select(bookName => Canon.BookIdToNumber(bookName))];
+        return bookIdsAndChapters;
     }
 
     public Dictionary<string, List<int>> GetChapters(
