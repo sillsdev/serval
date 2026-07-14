@@ -134,21 +134,47 @@ public abstract class PreprocessBuildJob<TEngine>(
             (
                 string parallelCorpusId,
                 string monolingualCorpusId,
-                IReadOnlyList<UsfmVersificationErrorContract> errors
+                string projectName,
+                IReadOnlyList<UsfmVersificationDiagnosticContract> diagnostics
             ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
         )
         {
-            foreach (UsfmVersificationErrorContract error in errors)
+            foreach (UsfmVersificationDiagnosticContract diagnostic in diagnostics)
             {
+                var sb = new StringBuilder();
+                if (diagnostic.NumAffectedVerses > 1)
+                {
+                    sb.Append("for ");
+                    sb.Append(diagnostic.NumAffectedVerses);
+                    sb.Append(" verses ");
+                }
+
+                sb.Append("in project ");
+                sb.Append(projectName);
+                sb.Append(" at “");
+                sb.AppendJoin(", ", diagnostic.References);
+                sb.Append("” on ");
+                sb.Append(diagnostic.LineNumbers.Count == 1 ? "line" : "lines");
+                sb.Append(' ');
+                sb.AppendJoin(", ", diagnostic.LineNumbers);
+                sb.Append(" of ");
+                sb.Append(diagnostic.Filename);
+                sb.Append("(parallel corpus ");
+                sb.Append(parallelCorpusId);
+                sb.Append(", monolingual corpus ");
+                sb.Append(monolingualCorpusId);
+                sb.Append(')');
                 warnings.Add(
-                    error.Type switch
+                    diagnostic.Type switch
                     {
-                        Serval.Shared.Contracts.UsfmVersificationErrorType.InvalidChapterNumber =>
-                            $"Invalid chapter number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
-                        Serval.Shared.Contracts.UsfmVersificationErrorType.InvalidVerseNumber =>
-                            $"Invalid verse number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
-                        _ =>
-                            $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing => $"Missing content {sb}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra => $"Extra content {sb}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Invalid => $"Invalid reference {sb}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment =>
+                            $"Incorrect verse segment {sb}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange =>
+                            $"Unsupported verse range {sb}",
+                        _ => $"USFM versification issue {sb}",
                     }
                 );
             }
