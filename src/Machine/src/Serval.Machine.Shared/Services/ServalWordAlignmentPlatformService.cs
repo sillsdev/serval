@@ -1,5 +1,3 @@
-using Serval.WordAlignment.Contracts;
-
 namespace Serval.Machine.Shared.Services;
 
 public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService platformService) : IPlatformService
@@ -97,7 +95,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
         _platformService.UpdateBuildExecutionDataAsync(
             engineId,
             buildId,
-            new ExecutionDataContract
+            new WordAlignment.Contracts.ExecutionDataContract
             {
                 TrainCount = executionData.TrainCount,
                 WordAlignCount = executionData.WordAlignCount,

@@ -1,6 +1,4 @@
-﻿using Serval.Translation.Contracts;
-
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferEngineService(
     [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
