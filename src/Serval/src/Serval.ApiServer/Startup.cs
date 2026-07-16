@@ -82,7 +82,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 c.AddDataFiles();
                 c.AddWebhooks();
                 c.AddMachineEngines();
-                c.AddEchoEngines();
             }
         );
 
