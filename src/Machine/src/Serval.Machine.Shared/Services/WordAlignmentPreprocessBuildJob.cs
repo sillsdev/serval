@@ -22,6 +22,7 @@ public class WordAlignmentPreprocessBuildJob(
     )
 {
     protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
+        string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,

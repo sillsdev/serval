@@ -28,7 +28,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
     };
 
-    internal BuildJobRunnerType TrainJobRunnerType { get; set; } = BuildJobRunnerType.ClearML;
+    protected virtual BuildJobRunnerType TrainJobRunnerType { get; } = BuildJobRunnerType.ClearML;
     protected readonly BuildJobOptions BuildJobOptions = options.CurrentValue;
     protected readonly ISharedFileService SharedFileService = sharedFileService;
     protected readonly IParallelCorpusService ParallelCorpusService = parallelCorpusService;
@@ -46,6 +46,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
         (int trainCount, int inferenceCount) = await WriteDataFilesAsync(
+            engineId,
             buildId,
             data,
             buildOptions,
@@ -106,6 +107,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     ) => Task.CompletedTask;
 
     protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
+        string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
