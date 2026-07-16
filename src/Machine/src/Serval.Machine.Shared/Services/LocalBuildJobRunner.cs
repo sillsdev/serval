@@ -10,7 +10,9 @@ public class LocalBuildJobRunner(
     {
         [EngineType.SmtTransfer] = EngineGroup.Translation,
         [EngineType.Nmt] = EngineGroup.Translation,
+        [EngineType.Echo] = EngineGroup.Translation,
         [EngineType.Statistical] = EngineGroup.WordAlignment,
+        [EngineType.EchoWordAlignment] = EngineGroup.WordAlignment,
     };
 
     private static readonly BoundedChannelOptions ChannelOptions = new(128)

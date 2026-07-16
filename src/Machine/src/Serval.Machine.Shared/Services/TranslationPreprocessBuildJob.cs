@@ -22,6 +22,7 @@ public class TranslationPreprocessBuildJob(
     )
 {
     protected override async Task<PreprocessStats> WriteDataFilesAsync(
+        string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,

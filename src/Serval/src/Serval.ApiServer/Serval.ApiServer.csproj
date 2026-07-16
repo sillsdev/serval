@@ -42,7 +42,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\Echo\src\EchoEngine\EchoEngine.csproj" />
 		<ProjectReference Include="..\..\..\Machine\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
 		<ProjectReference Include="..\Serval.DataFiles\Serval.DataFiles.csproj" />
 		<ProjectReference Include="..\Serval.Translation\Serval.Translation.csproj" />
