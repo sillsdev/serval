@@ -132,7 +132,6 @@ public class StatisticalEngineServiceTests
 
     private class TestEnvironment : DisposableBase
     {
-        private readonly BuildJobRunnerType _trainJobRunnerType;
         private readonly ClearMLBuildJobRunner _clearMLRunner;
         private readonly ServiceProvider _serviceProvider;
         private readonly IBuildJobService<WordAlignmentEngine>? _deferredBuildJobService;
@@ -143,7 +142,6 @@ public class StatisticalEngineServiceTests
 
         public TestEnvironment()
         {
-            _trainJobRunnerType = BuildJobRunnerType.ClearML;
             Engines = new MemoryRepository<WordAlignmentEngine>();
             Engines.Add(
                 new WordAlignmentEngine
@@ -276,7 +274,7 @@ public class StatisticalEngineServiceTests
         private LocalBuildJobRunner CreateJobRunner()
         {
             return new LocalBuildJobRunner(
-                [new StatisticalTestLocalBuildJobFactory(_trainJobRunnerType)],
+                [new StatisticalTestLocalBuildJobFactory()],
                 _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
                 _serviceProvider.GetRequiredService<ILogger<LocalBuildJobRunner>>()
             );
@@ -417,7 +415,7 @@ public class StatisticalEngineServiceTests
             }
         }
 
-        private class StatisticalTestLocalBuildJobFactory(BuildJobRunnerType trainJobRunnerType) : ILocalBuildJobFactory
+        private class StatisticalTestLocalBuildJobFactory : ILocalBuildJobFactory
         {
             private static readonly JsonSerializerOptions SerializerOptions = new()
             {
@@ -445,7 +443,6 @@ public class StatisticalEngineServiceTests
                         var preprocessJob = ActivatorUtilities.CreateInstance<WordAlignmentPreprocessBuildJob>(
                             serviceProvider
                         );
-                        preprocessJob.TrainJobRunnerType = trainJobRunnerType;
                         var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(
                             jobData!,
                             SerializerOptions

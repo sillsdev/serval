@@ -81,7 +81,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 c.AddWordAlignment();
                 c.AddDataFiles();
                 c.AddMachineEngines();
-                c.AddEchoEngines();
             }
         );
 

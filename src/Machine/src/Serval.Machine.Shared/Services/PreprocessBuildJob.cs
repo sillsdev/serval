@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Shared.Services;
 
 public abstract class PreprocessBuildJob<TEngine>(
     IPlatformService platformService,
@@ -28,7 +28,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
     };
 
-    internal BuildJobRunnerType TrainJobRunnerType { get; set; } = BuildJobRunnerType.ClearML;
+    protected virtual BuildJobRunnerType TrainJobRunnerType { get; } = BuildJobRunnerType.ClearML;
     protected readonly BuildJobOptions BuildJobOptions = options.CurrentValue;
     protected readonly ISharedFileService SharedFileService = sharedFileService;
     protected readonly IParallelCorpusService ParallelCorpusService = parallelCorpusService;
@@ -45,7 +45,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
-        PreprocessStats stats = await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
+        PreprocessStats stats = await WriteDataFilesAsync(engineId, buildId, data, buildOptions, cancellationToken);
 
         await UpdateBuildExecutionData(
             engineId,
@@ -99,6 +99,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     ) => Task.CompletedTask;
 
     protected abstract Task<PreprocessStats> WriteDataFilesAsync(
+        string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,

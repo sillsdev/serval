@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Shared.Services;
 
 public class WordAlignmentPreprocessBuildJob(
     [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
@@ -22,6 +22,7 @@ public class WordAlignmentPreprocessBuildJob(
     )
 {
     protected override async Task<PreprocessStats> WriteDataFilesAsync(
+        string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
