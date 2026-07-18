@@ -26,6 +26,7 @@
   </Folder>
   <Folder Name="/Serval/" />
   <Folder Name="/Serval/src/">
+    <Project Path="src/Serval/src/Serval.ApiKeys/Serval.ApiKeys.csproj" />
     <Project Path="src/Serval/src/Serval.ApiServer/Serval.ApiServer.csproj" />
     <Project Path="src/Serval/src/Serval.Client/Serval.Client.csproj">
       <BuildDependency Project="src/Serval/src/Serval.ApiServer/Serval.ApiServer.csproj" />
@@ -40,6 +41,7 @@
     <Project Path="src/Serval/src/Serval.WordAlignment/Serval.WordAlignment.csproj" />
   </Folder>
   <Folder Name="/Serval/test/">
+    <Project Path="src/Serval/test/Serval.ApiKeys.Tests/Serval.ApiKeys.Tests.csproj" />
     <Project Path="src/Serval/test/Serval.ApiServer.IntegrationTests/Serval.ApiServer.IntegrationTests.csproj" />
     <Project Path="src/Serval/test/Serval.DataFiles.Tests/Serval.DataFiles.Tests.csproj" />
     <Project Path="src/Serval/test/Serval.E2ETests/Serval.E2ETests.csproj" />

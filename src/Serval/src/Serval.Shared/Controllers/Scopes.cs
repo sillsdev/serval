@@ -19,6 +19,10 @@ public static class Scopes
 
     public const string ReadStatus = "read:status";
 
+    public const string CreateApiKeys = "create:api_keys";
+    public const string ReadApiKeys = "read:api_keys";
+    public const string DeleteApiKeys = "delete:api_keys";
+
     public static IEnumerable<string> All =>
         [
             CreateTranslationEngines,
@@ -34,5 +38,10 @@ public static class Scopes
             UpdateFiles,
             DeleteFiles,
             ReadStatus,
+            CreateApiKeys,
+            ReadApiKeys,
+            DeleteApiKeys,
         ];
+
+    public static IEnumerable<string> Grantable => All.Except([CreateApiKeys, ReadApiKeys, DeleteApiKeys]);
 }

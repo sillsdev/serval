@@ -10,6 +10,7 @@ global using Microsoft.Extensions.Options;
 global using MongoDB.Driver;
 global using NSubstitute;
 global using NUnit.Framework;
+global using Serval.ApiKeys.Services;
 global using Serval.Client;
 global using Serval.Shared.Configuration;
 global using Serval.Shared.Contracts;

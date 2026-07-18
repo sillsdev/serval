@@ -1,7 +1,7 @@
-﻿namespace Serval.ApiServer;
+namespace Serval.ApiServer;
 
-public class HasScopeRequirement(string scope, string issuer) : IAuthorizationRequirement
+public class HasScopeRequirement(string scope, params string[] issuers) : IAuthorizationRequirement
 {
-    public string Issuer { get; } = issuer;
+    public IReadOnlySet<string> Issuers { get; } = issuers.ToHashSet();
     public string Scope { get; } = scope;
 }

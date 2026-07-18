@@ -21,9 +21,20 @@ public class ServalWebApplicationFactory : WebApplicationFactory<Program>
             services
                 .AddAuthentication(o =>
                 {
-                    o.DefaultAuthenticateScheme = "TestScheme";
-                    o.DefaultChallengeScheme = "TestScheme";
+                    o.DefaultAuthenticateScheme = "TestSchemeSelector";
+                    o.DefaultChallengeScheme = "TestSchemeSelector";
                 })
+                .AddPolicyScheme(
+                    "TestSchemeSelector",
+                    "Test Scheme or API Key",
+                    o =>
+                    {
+                        o.ForwardDefaultSelector = ctx =>
+                            ctx.Request.Headers.ContainsKey(ApiKeyDefaults.HeaderName)
+                                ? ApiKeyDefaults.AuthenticationScheme
+                                : "TestScheme";
+                    }
+                )
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("TestScheme", options => { });
 
             services.Configure<ApiOptions>(options => options.LongPollTimeout = TimeSpan.FromSeconds(1));
