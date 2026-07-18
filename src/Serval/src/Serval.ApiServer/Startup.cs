@@ -33,9 +33,20 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services
             .AddAuthentication(o =>
             {
-                o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultAuthenticateScheme = ApiKeyDefaults.PolicyScheme;
+                o.DefaultChallengeScheme = ApiKeyDefaults.PolicyScheme;
             })
+            .AddPolicyScheme(
+                ApiKeyDefaults.PolicyScheme,
+                "JWT or API Key",
+                o =>
+                {
+                    o.ForwardDefaultSelector = ctx =>
+                        ctx.Request.Headers.ContainsKey(ApiKeyDefaults.HeaderName)
+                            ? ApiKeyDefaults.AuthenticationScheme
+                            : JwtBearerDefaults.AuthenticationScheme;
+                }
+            )
             .AddJwtBearer(o =>
             {
                 o.Authority = authority;
@@ -44,7 +55,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 {
                     NameClaimType = ClaimTypes.NameIdentifier,
                 };
-            });
+            })
+            .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+                ApiKeyDefaults.AuthenticationScheme,
+                _ => { }
+            );
         services.AddHealthChecks().AddOpenIdConnectServer(new Uri(authority), name: "Auth0");
 
         var dataFileOptions = new DataFileOptions();
@@ -66,7 +81,12 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddAuthorization(o =>
         {
             foreach (string scope in Scopes.All)
-                o.AddPolicy(scope, policy => policy.Requirements.Add(new HasScopeRequirement(scope, authority)));
+            {
+                o.AddPolicy(
+                    scope,
+                    policy => policy.Requirements.Add(new HasScopeRequirement(scope, authority, ApiKeyDefaults.Issuer))
+                );
+            }
             o.AddPolicy("IsOwner", policy => policy.Requirements.Add(new IsOwnerRequirement()));
         });
         services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
@@ -80,6 +100,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 c.AddTranslation();
                 c.AddWordAlignment();
                 c.AddDataFiles();
+                c.AddApiKeys();
                 c.AddMachineEngines();
             }
         );
@@ -135,6 +156,18 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                         }
                     );
                     o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("bearer"));
+                    o.AddSecurity(
+                        "apiKey",
+                        Enumerable.Empty<string>(),
+                        new OpenApiSecurityScheme
+                        {
+                            Type = OpenApiSecuritySchemeType.ApiKey,
+                            Description = "API key authentication for special clients",
+                            Name = ApiKeyDefaults.HeaderName,
+                            In = OpenApiSecurityApiKeyLocation.Header,
+                        }
+                    );
+                    o.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("apiKey"));
 
                     o.SchemaSettings.AllowReferencesWithProperties = true;
                     o.PostProcess = document =>

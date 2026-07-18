@@ -11,5 +11,8 @@ public static class Endpoints
     public const string GetWordAlignmentEngine = "GetWordAlignmentEngine";
     public const string GetParallelWordAlignmentCorpus = "GetParallelWordAlignmentCorpus";
     public const string GetWordAlignmentBuild = "GetWordAlignmentBuild";
+
     public const string GetCorpus = "GetCorpus";
+
+    public const string GetApiKey = "GetApiKey";
 }

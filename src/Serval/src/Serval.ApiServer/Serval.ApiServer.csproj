@@ -43,6 +43,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Machine\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
+		<ProjectReference Include="..\Serval.ApiKeys\Serval.ApiKeys.csproj" />
 		<ProjectReference Include="..\Serval.DataFiles\Serval.DataFiles.csproj" />
 		<ProjectReference Include="..\Serval.Translation\Serval.Translation.csproj" />
 		<ProjectReference Include="..\Serval.WordAlignment\Serval.WordAlignment.csproj" />
