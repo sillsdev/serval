@@ -2853,11 +2853,7 @@ public class TranslationEngineTests
             return new CorporaClient(httpClient);
         }
 
-        public void ResetDatabases()
-        {
-            MongoClient.DropDatabase("serval_test");
-            MongoClient.DropDatabase("serval_test_jobs");
-        }
+        public void ResetDatabases() => MongoClient.DropDatabase("serval_test");
 
         protected override void DisposeManagedResources()
         {

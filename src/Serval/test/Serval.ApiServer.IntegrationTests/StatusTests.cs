@@ -27,7 +27,7 @@ public class StatusTests
                 HealthReport healthReport = await client.GetHealthAsync();
                 Assert.That(healthReport, Is.Not.Null);
                 Assert.That(healthReport.Status.ToString(), Is.Not.EqualTo("Healthy"));
-                Assert.That(healthReport.Results, Has.Count.EqualTo(7));
+                Assert.That(healthReport.Results, Has.Count.EqualTo(6));
                 break;
 
             case 401:
@@ -96,11 +96,7 @@ public class StatusTests
             return new StatusClient(httpClient);
         }
 
-        public void ResetDatabases()
-        {
-            _mongoClient.DropDatabase("serval_test");
-            _mongoClient.DropDatabase("serval_test_jobs");
-        }
+        public void ResetDatabases() => _mongoClient.DropDatabase("serval_test");
 
         protected override void DisposeManagedResources()
         {

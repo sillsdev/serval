@@ -301,11 +301,7 @@ public class CorporaTests
             return new CorporaClient(httpClient);
         }
 
-        public void ResetDatabases()
-        {
-            _mongoClient.DropDatabase("serval_test");
-            _mongoClient.DropDatabase("serval_test_jobs");
-        }
+        public void ResetDatabases() => _mongoClient.DropDatabase("serval_test");
 
         protected override void DisposeManagedResources()
         {

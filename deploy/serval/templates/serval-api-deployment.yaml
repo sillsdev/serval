@@ -36,8 +36,6 @@ spec:
             - name: ASPNETCORE_Kestrel__Endpoints__Http2__Protocols
               value: Http2
               {{- template "secrets.mongodb" . }}
-            - name: ASPNETCORE_ConnectionStrings__Hangfire
-              value: $(mongodb_connection)serval_jobs
             - name: ASPNETCORE_ConnectionStrings__Mongo
               value: $(mongodb_connection)serval
             - name: Bugsnag__ReleaseStage

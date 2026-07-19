@@ -341,11 +341,7 @@ public class DataFilesTests
             return new DataFilesClient(httpClient);
         }
 
-        public void ResetDatabases()
-        {
-            _mongoClient.DropDatabase("serval_test");
-            _mongoClient.DropDatabase("serval_test_jobs");
-        }
+        public void ResetDatabases() => _mongoClient.DropDatabase("serval_test");
 
         protected override void DisposeManagedResources()
         {
