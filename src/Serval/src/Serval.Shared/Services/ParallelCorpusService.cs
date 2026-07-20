@@ -33,7 +33,7 @@ public class ParallelCorpusService : IParallelCorpusService
             foreach (CorpusFileContract file in files.Where(f => f.Format == FileFormat.Paratext))
             {
                 using ZipArchive zipArchive = ZipFile.OpenRead(file.Location);
-                UsfmVersificationAnalysis? analysis = new ZipUsfmVersificationAnalyzer(
+                UsfmVersificationAnalysis analysis = new ZipUsfmVersificationAnalyzer(
                     zipArchive,
                     corpusBundle.ParentOf(file.Location)?.Settings
                 ).AnalyzeUsfmVersification(bookIdsAndChapters: GetBookIdsAndChapters(monolingualCorpus));
@@ -586,7 +586,7 @@ public class ParallelCorpusService : IParallelCorpusService
         return row;
     }
 
-    private static Dictionary<string, HashSet<int>>? GetBookIdsAndChapters(MonolingualCorpusContract corpus)
+    internal static Dictionary<string, HashSet<int>>? GetBookIdsAndChapters(MonolingualCorpusContract corpus)
     {
         if (!corpus.IsFiltered)
             return null;
@@ -600,28 +600,34 @@ public class ParallelCorpusService : IParallelCorpusService
         else if (corpus.TrainOnChapters != null)
         {
             foreach ((string textId, HashSet<int> chapters) in corpus.TrainOnChapters)
-            {
-                if (!bookIdsAndChapters.TryAdd(textId, chapters))
-                {
-                    foreach (int chapter in chapters)
-                        bookIdsAndChapters[textId].Add(chapter);
-                }
-            }
+                bookIdsAndChapters.TryAdd(textId, [.. chapters]);
         }
 
         if (corpus.InferenceTextIds is not null)
         {
             foreach (string textId in corpus.InferenceTextIds)
-                bookIdsAndChapters.TryAdd(textId, []);
+            {
+                if (!bookIdsAndChapters.TryAdd(textId, []))
+                    bookIdsAndChapters[textId] = [];
+            }
         }
         else if (corpus.InferenceChapters != null)
         {
             foreach ((string textId, HashSet<int> chapters) in corpus.InferenceChapters)
             {
-                if (!bookIdsAndChapters.TryAdd(textId, chapters))
+                if (!bookIdsAndChapters.TryAdd(textId, [.. chapters]))
                 {
-                    foreach (int chapter in chapters)
-                        bookIdsAndChapters[textId].Add(chapter);
+                    if (chapters.Count == 0)
+                    {
+                        // Clear all chapters, as we are to inference on all chapters
+                        bookIdsAndChapters[textId] = [];
+                    }
+                    else if (bookIdsAndChapters[textId].Count > 0)
+                    {
+                        // Only specify these chapters if chapters have already been specified
+                        foreach (int chapter in chapters)
+                            bookIdsAndChapters[textId].Add(chapter);
+                    }
                 }
             }
         }
