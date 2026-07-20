@@ -4,7 +4,8 @@ public enum UsfmVersificationDiagnosticType
 {
     Missing,
     Extra,
-    Invalid,
+    InvalidChapter,
+    InvalidVerse,
     IncorrectVerseSegment,
     UnsupportedVerseRange,
 }

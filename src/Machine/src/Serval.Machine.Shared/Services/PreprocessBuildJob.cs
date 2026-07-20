@@ -129,33 +129,39 @@ public abstract class PreprocessBuildJob<TEngine>(
     )
     {
         List<string> warnings = [];
+        HashSet<string> versifications = [];
 
         foreach (
             (
                 string parallelCorpusId,
                 string monolingualCorpusId,
                 string projectName,
+                string versificationName,
                 IReadOnlyList<UsfmVersificationDiagnosticContract> diagnostics
             ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
         )
         {
+            versifications.Add(versificationName);
             foreach (UsfmVersificationDiagnosticContract diagnostic in diagnostics)
             {
                 string diagnosticDetails =
-                    (diagnostic.NumAffectedVerses > 1 ? $"for {diagnostic.NumAffectedVerses} verses " : string.Empty)
-                    + $"in project {projectName} at “{string.Join(", ", diagnostic.References)}” on "
+                    $"in project {projectName} at {diagnostic.Filename} "
                     + (diagnostic.LineNumbers.Count == 1 ? "line " : "lines ")
-                    + $"{string.Join(", ", diagnostic.LineNumbers)} of {diagnostic.Filename} "
-                    + $"(parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})";
+                    + $"{string.Join(", ", diagnostic.LineNumbers)}, "
+                    + (diagnostic.NumAffectedVerses == 1 ? "verse " : "verses ")
+                    + $"{string.Join(", ", diagnostic.References)} "
+                    + $"(parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId}).";
                 warnings.Add(
                     diagnostic.Type switch
                     {
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing =>
-                            $"Missing content {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidChapter =>
+                            $"Invalid chapter number {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidVerse =>
+                            $"Invalid verse number {diagnosticDetails}",
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra =>
-                            $"Extra content {diagnosticDetails}",
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Invalid =>
-                            $"Invalid reference {diagnosticDetails}",
+                            $"{diagnostic.NumAffectedVerses} extra verses {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing =>
+                            $"Missing {diagnostic.NumAffectedVerses} verses {diagnosticDetails}",
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment =>
                             $"Incorrect verse segment {diagnosticDetails}",
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange =>
@@ -176,6 +182,13 @@ public abstract class PreprocessBuildJob<TEngine>(
         {
             warnings.Add(
                 $"Unable to locate parent project {error.ParentProjectName} of daughter project {error.ProjectName} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})"
+            );
+        }
+
+        if (versifications.Count > 1)
+        {
+            warnings.Add(
+                $"Multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", versifications)}"
             );
         }
 

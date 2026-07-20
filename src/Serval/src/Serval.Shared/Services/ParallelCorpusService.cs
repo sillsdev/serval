@@ -11,6 +11,7 @@ public class ParallelCorpusService : IParallelCorpusService
         string ParallelCorpusId,
         string MonolingualCorpusId,
         string ProjectName,
+        string VersificationName,
         IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
     )> AnalyzeUsfmVersification(IEnumerable<ParallelCorpusContract> parallelCorpora)
     {
@@ -19,6 +20,7 @@ public class ParallelCorpusService : IParallelCorpusService
             string ParallelCorpusId,
             string MonolingualCorpusId,
             string ProjectName,
+            string VersificationName,
             IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
         )> diagnosticsPerCorpus = [];
         foreach (
@@ -37,33 +39,32 @@ public class ParallelCorpusService : IParallelCorpusService
                     zipArchive,
                     corpusBundle.ParentOf(file.Location)?.Settings
                 ).AnalyzeUsfmVersification(bookIdsAndChapters: GetBookIdsAndChapters(monolingualCorpus));
-                if (analysis.Diagnostics.Count > 0)
-                {
-                    diagnosticsPerCorpus.Add(
-                        (
-                            parallelCorpus.Id,
-                            monolingualCorpus.Id,
-                            analysis.ProjectSettings.Name,
-                            [
-                                .. analysis.Diagnostics.Select(d => new UsfmVersificationDiagnosticContract
-                                {
-                                    Type = Map(d.Type),
-                                    NumAffectedVerses = d.NumAffectedVerses,
-                                    References = [.. d.References.Select(r => r.ToString())],
-                                    Filename = d.Filename,
-                                    LineNumbers = [.. d.LineNumbers],
-                                }),
-                            ]
-                        )
-                    );
-                }
+                diagnosticsPerCorpus.Add(
+                    (
+                        parallelCorpus.Id,
+                        monolingualCorpus.Id,
+                        analysis.ProjectSettings.Name,
+                        analysis.ProjectSettings.Versification.Name,
+                        [
+                            .. analysis.Diagnostics.Select(d => new UsfmVersificationDiagnosticContract
+                            {
+                                Type = Map(d.Type, d.References.FirstOrDefault()),
+                                NumAffectedVerses = d.NumAffectedVerses,
+                                References = [.. d.References.Select(r => r.ToString())],
+                                Filename = d.Filename,
+                                LineNumbers = [.. d.LineNumbers],
+                            }),
+                        ]
+                    )
+                );
             }
         }
         return diagnosticsPerCorpus;
     }
 
     private static Contracts.UsfmVersificationDiagnosticType Map(
-        SIL.Machine.Corpora.UsfmVersificationDiagnosticType type
+        SIL.Machine.Corpora.UsfmVersificationDiagnosticType type,
+        VerseRef verseRef
     )
     {
         return type switch
@@ -74,9 +75,12 @@ public class ParallelCorpusService : IParallelCorpusService
             SIL.Machine.Corpora.UsfmVersificationDiagnosticType.Extra => Contracts
                 .UsfmVersificationDiagnosticType
                 .Extra,
+            SIL.Machine.Corpora.UsfmVersificationDiagnosticType.Invalid when verseRef.ChapterNum == -1 => Contracts
+                .UsfmVersificationDiagnosticType
+                .InvalidChapter,
             SIL.Machine.Corpora.UsfmVersificationDiagnosticType.Invalid => Contracts
                 .UsfmVersificationDiagnosticType
-                .Invalid,
+                .InvalidVerse,
             SIL.Machine.Corpora.UsfmVersificationDiagnosticType.IncorrectVerseSegment => Contracts
                 .UsfmVersificationDiagnosticType
                 .IncorrectVerseSegment,
