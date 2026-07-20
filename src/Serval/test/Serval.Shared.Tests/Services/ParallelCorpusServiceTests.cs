@@ -218,14 +218,16 @@ public class ParallelCorpusServiceTests
             string ParallelCorpusId,
             string MonolingualCorpusId,
             string ProjectName,
+            string VersificationName,
             IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
         )> analysis = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);
 
-        Assert.That(analysis, Has.Count.EqualTo(1));
-        Assert.That(analysis[0].Diagnostics, Has.Count.EqualTo(3));
-        Assert.That(analysis[0].Diagnostics[0].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
-        Assert.That(analysis[0].Diagnostics[1].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
-        Assert.That(analysis[0].Diagnostics[2].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
+        Assert.That(analysis, Has.Count.EqualTo(2));
+        Assert.That(analysis[0].Diagnostics, Has.Count.EqualTo(0));
+        Assert.That(analysis[1].Diagnostics, Has.Count.EqualTo(3));
+        Assert.That(analysis[1].Diagnostics[0].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
+        Assert.That(analysis[1].Diagnostics[1].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
+        Assert.That(analysis[1].Diagnostics[2].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
     }
 
     [Test]
