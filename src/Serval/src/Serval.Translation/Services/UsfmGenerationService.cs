@@ -305,7 +305,7 @@ public class UsfmGenerationService(
                         .OrderBy(row => row.Refs[0]),
                 ],
                 chapters: chapters,
-                fullName: isSource ? sourceSettings?.FullName : targetSettings?.FullName,
+                fullName: targetSettings?.FullName,
                 textBehavior: textBehavior,
                 paragraphBehavior: paragraphBehavior,
                 embedBehavior: embedBehavior,
