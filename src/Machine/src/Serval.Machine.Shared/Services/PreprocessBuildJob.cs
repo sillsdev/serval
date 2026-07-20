@@ -141,40 +141,26 @@ public abstract class PreprocessBuildJob<TEngine>(
         {
             foreach (UsfmVersificationDiagnosticContract diagnostic in diagnostics)
             {
-                var sb = new StringBuilder();
-                if (diagnostic.NumAffectedVerses > 1)
-                {
-                    sb.Append("for ");
-                    sb.Append(diagnostic.NumAffectedVerses);
-                    sb.Append(" verses ");
-                }
-
-                sb.Append("in project ");
-                sb.Append(projectName);
-                sb.Append(" at “");
-                sb.AppendJoin(", ", diagnostic.References);
-                sb.Append("” on ");
-                sb.Append(diagnostic.LineNumbers.Count == 1 ? "line" : "lines");
-                sb.Append(' ');
-                sb.AppendJoin(", ", diagnostic.LineNumbers);
-                sb.Append(" of ");
-                sb.Append(diagnostic.Filename);
-                sb.Append("(parallel corpus ");
-                sb.Append(parallelCorpusId);
-                sb.Append(", monolingual corpus ");
-                sb.Append(monolingualCorpusId);
-                sb.Append(')');
+                string diagnosticDetails =
+                    (diagnostic.NumAffectedVerses > 1 ? $"for {diagnostic.NumAffectedVerses} verses " : string.Empty)
+                    + $"in project {projectName} at “{string.Join(", ", diagnostic.References)}” on "
+                    + (diagnostic.LineNumbers.Count == 1 ? "line " : "lines ")
+                    + $"{string.Join(", ", diagnostic.LineNumbers)} of {diagnostic.Filename} "
+                    + $"(parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})";
                 warnings.Add(
                     diagnostic.Type switch
                     {
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing => $"Missing content {sb}",
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra => $"Extra content {sb}",
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Invalid => $"Invalid reference {sb}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing =>
+                            $"Missing content {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra =>
+                            $"Extra content {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Invalid =>
+                            $"Invalid reference {diagnosticDetails}",
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment =>
-                            $"Incorrect verse segment {sb}",
+                            $"Incorrect verse segment {diagnosticDetails}",
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange =>
-                            $"Unsupported verse range {sb}",
-                        _ => $"USFM versification issue {sb}",
+                            $"Unsupported verse range {diagnosticDetails}",
+                        _ => $"USFM versification issue {diagnosticDetails}",
                     }
                 );
             }
