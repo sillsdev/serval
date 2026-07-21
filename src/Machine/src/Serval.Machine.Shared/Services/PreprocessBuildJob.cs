@@ -129,26 +129,44 @@ public abstract class PreprocessBuildJob<TEngine>(
     )
     {
         List<string> warnings = [];
+        HashSet<string> versifications = [];
 
         foreach (
             (
                 string parallelCorpusId,
                 string monolingualCorpusId,
-                IReadOnlyList<UsfmVersificationErrorContract> errors
+                string projectName,
+                string versificationName,
+                IReadOnlyList<UsfmVersificationDiagnosticContract> diagnostics
             ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
         )
         {
-            foreach (UsfmVersificationErrorContract error in errors)
+            versifications.Add(versificationName);
+            foreach (UsfmVersificationDiagnosticContract diagnostic in diagnostics)
             {
+                string diagnosticDetails =
+                    $"in project {projectName} at {diagnostic.Filename} "
+                    + (diagnostic.LineNumbers.Count == 1 ? "line " : "lines ")
+                    + $"{string.Join(", ", diagnostic.LineNumbers)}, "
+                    + (diagnostic.NumAffectedVerses == 1 ? "verse " : "verses ")
+                    + $"{string.Join(", ", diagnostic.References)} "
+                    + $"(parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId}).";
                 warnings.Add(
-                    error.Type switch
+                    diagnostic.Type switch
                     {
-                        Serval.Shared.Contracts.UsfmVersificationErrorType.InvalidChapterNumber =>
-                            $"Invalid chapter number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
-                        Serval.Shared.Contracts.UsfmVersificationErrorType.InvalidVerseNumber =>
-                            $"Invalid verse number error in project {error.ProjectName} at “{error.ActualVerseRef}” (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
-                        _ =>
-                            $"USFM versification error in project {error.ProjectName}, expected verse “{error.ExpectedVerseRef}”, actual verse “{error.ActualVerseRef}”, mismatch type {error.Type} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidChapter =>
+                            $"Invalid chapter number {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidVerse =>
+                            $"Invalid verse number {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra =>
+                            $"{diagnostic.NumAffectedVerses} extra verses {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing =>
+                            $"Missing {diagnostic.NumAffectedVerses} verses {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment =>
+                            $"Incorrect verse segment {diagnosticDetails}",
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange =>
+                            $"Unsupported verse range {diagnosticDetails}",
+                        _ => $"USFM versification issue {diagnosticDetails}",
                     }
                 );
             }
@@ -164,6 +182,13 @@ public abstract class PreprocessBuildJob<TEngine>(
         {
             warnings.Add(
                 $"Unable to locate parent project {error.ParentProjectName} of daughter project {error.ProjectName} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})"
+            );
+        }
+
+        if (versifications.Count > 1)
+        {
+            warnings.Add(
+                $"Multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", versifications)}"
             );
         }
 

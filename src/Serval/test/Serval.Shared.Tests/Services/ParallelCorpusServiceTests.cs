@@ -134,6 +134,81 @@ public class ParallelCorpusServiceTests
     }
 
     [Test]
+    public void GetBookIdsAndChapters()
+    {
+        var corpus = new MonolingualCorpusContract
+        {
+            Id = "corpus1",
+            Language = "en",
+            Files = [],
+        };
+
+        // Test no filter
+        Dictionary<string, HashSet<int>>? actual = ParallelCorpusService.GetBookIdsAndChapters(corpus);
+        Assert.That(actual, Is.Null);
+
+        // Test merging chapters
+        actual = ParallelCorpusService.GetBookIdsAndChapters(
+            corpus with
+            {
+                TrainOnChapters = new Dictionary<string, HashSet<int>> { { "MAT", [1, 2] } },
+                InferenceChapters = new Dictionary<string, HashSet<int>> { { "MAT", [2, 3] } },
+            }
+        );
+        var expected = new Dictionary<string, HashSet<int>> { { "MAT", [1, 2, 3] } };
+        Assert.That(actual, Is.EqualTo(expected));
+
+        // Test merging text ids
+        actual = ParallelCorpusService.GetBookIdsAndChapters(
+            corpus with
+            {
+                TrainOnTextIds = ["MAT", "MRK"],
+                InferenceTextIds = ["MRK", "LUK"],
+            }
+        );
+        expected = new Dictionary<string, HashSet<int>>
+        {
+            { "MAT", [] },
+            { "MRK", [] },
+            { "LUK", [] },
+        };
+        Assert.That(actual, Is.EqualTo(expected));
+
+        // Test merging text ids and chapters
+        actual = ParallelCorpusService.GetBookIdsAndChapters(
+            corpus with
+            {
+                TrainOnTextIds = ["MAT"],
+                InferenceChapters = new Dictionary<string, HashSet<int>> { { "MAT", [1] } },
+            }
+        );
+        expected = new Dictionary<string, HashSet<int>> { { "MAT", [] } };
+        Assert.That(actual, Is.EqualTo(expected));
+
+        // Test merging chapters and text ids
+        actual = ParallelCorpusService.GetBookIdsAndChapters(
+            corpus with
+            {
+                TrainOnChapters = new Dictionary<string, HashSet<int>> { { "MAT", [1] } },
+                InferenceTextIds = ["MAT"],
+            }
+        );
+        expected = new Dictionary<string, HashSet<int>> { { "MAT", [] } };
+        Assert.That(actual, Is.EqualTo(expected));
+
+        // Test merging hapters without numbers specified
+        actual = ParallelCorpusService.GetBookIdsAndChapters(
+            corpus with
+            {
+                TrainOnChapters = new Dictionary<string, HashSet<int>> { { "MAT", [] } },
+                InferenceChapters = new Dictionary<string, HashSet<int>> { { "MAT", [] } },
+            }
+        );
+        expected = new Dictionary<string, HashSet<int>> { { "MAT", [] } };
+        Assert.That(actual, Is.EqualTo(expected));
+    }
+
+    [Test]
     public void AnalyzeUsfmVersification()
     {
         using var env = new TestEnvironment();
@@ -142,14 +217,17 @@ public class ParallelCorpusServiceTests
         IReadOnlyList<(
             string ParallelCorpusId,
             string MonolingualCorpusId,
-            IReadOnlyList<UsfmVersificationErrorContract> UsfmErrors
-        )> errors = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);
+            string ProjectName,
+            string VersificationName,
+            IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
+        )> analysis = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);
 
-        Assert.That(errors, Has.Count.EqualTo(1));
-        Assert.That(errors[0].UsfmErrors, Has.Count.EqualTo(3));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
-        Assert.That(errors[0].UsfmErrors[0].Type, Is.EqualTo(Contracts.UsfmVersificationErrorType.MissingVerse));
+        Assert.That(analysis, Has.Count.EqualTo(2));
+        Assert.That(analysis[0].Diagnostics, Has.Count.EqualTo(0));
+        Assert.That(analysis[1].Diagnostics, Has.Count.EqualTo(3));
+        Assert.That(analysis[1].Diagnostics[0].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
+        Assert.That(analysis[1].Diagnostics[1].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
+        Assert.That(analysis[1].Diagnostics[2].Type, Is.EqualTo(Contracts.UsfmVersificationDiagnosticType.Missing));
     }
 
     [Test]

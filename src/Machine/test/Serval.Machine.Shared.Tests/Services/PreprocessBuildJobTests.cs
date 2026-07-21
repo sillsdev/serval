@@ -46,20 +46,24 @@ public class PreprocessBuildJobTests
                 (
                     "corpusId1",
                     "src_1",
+                    "pt-source1",
+                    "Original",
                     [
                         new()
                         {
-                            ActualVerseRef = "MAT 1:1",
-                            ExpectedVerseRef = "MAT 1:1",
-                            ProjectName = "pt-source1",
-                            Type = Serval.Shared.Contracts.UsfmVersificationErrorType.MissingVerse,
+                            NumAffectedVerses = 1,
+                            Filename = "41MAT.SFM",
+                            References = ["MAT 1:1"],
+                            LineNumbers = [3],
+                            Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing,
                         },
                         new()
                         {
-                            ActualVerseRef = "MAT 1:2",
-                            ExpectedVerseRef = "MAT 1:2",
-                            ProjectName = "pt-source1",
-                            Type = Serval.Shared.Contracts.UsfmVersificationErrorType.ExtraVerse,
+                            NumAffectedVerses = 2,
+                            Filename = "41MAT.SFM",
+                            References = ["MAT 1:2", "MAT 1:3"],
+                            LineNumbers = [4, 5],
+                            Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra,
                         },
                     ]
                 ),
