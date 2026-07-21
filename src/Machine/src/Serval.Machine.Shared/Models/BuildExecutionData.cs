@@ -6,8 +6,8 @@ public record BuildExecutionData
     public int? InferenceCount { get; init; }
     public bool? IsTrainFilteredByChapter { get; init; }
     public bool? IsInferenceFilteredByChapter { get; init; }
-    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>>? TrainVerseCount { get; init; }
-    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>>? InferenceVerseCount { get; init; }
+    public IReadOnlyDictionary<string, Dictionary<string, int>>? TrainVerseCount { get; init; }
+    public IReadOnlyDictionary<string, Dictionary<string, int>>? InferenceVerseCount { get; init; }
     public IReadOnlyList<string>? Warnings { get; init; }
     public string? EngineSourceLanguageTag { get; init; }
     public string? EngineTargetLanguageTag { get; init; }

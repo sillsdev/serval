@@ -161,14 +161,14 @@ public class PlatformServiceTests
             {
                 TrainCount = 4,
                 PretranslateCount = 5,
-                TrainVerseCount = new Dictionary<string, IReadOnlyDictionary<string, int>>()
+                TrainVerseCount = new Dictionary<string, Dictionary<string, int>>()
                 {
                     {
                         "MAT",
                         new Dictionary<string, int>() { { "1", 4 } }
                     },
                 },
-                PretranslateVerseCount = new Dictionary<string, IReadOnlyDictionary<string, int>>()
+                PretranslateVerseCount = new Dictionary<string, Dictionary<string, int>>()
                 {
                     {
                         "MAT",
