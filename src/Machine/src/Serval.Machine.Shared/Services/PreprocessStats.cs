@@ -23,7 +23,7 @@ public record PreprocessStats
         UpdateVerseCount(InferenceVerseCount, row);
     }
 
-    internal static void UpdateVerseCount(
+    private static void UpdateVerseCount(
         Dictionary<string, Dictionary<string, int>> verseCounts,
         ParallelRowContract row
     )
