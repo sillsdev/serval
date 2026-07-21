@@ -1,6 +1,4 @@
-﻿using SIL.Extensions;
-
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 public class WordAlignmentPreprocessBuildJob(
     [FromKeyedServices(EngineGroup.WordAlignment)] IPlatformService platformService,
@@ -53,21 +51,12 @@ public class WordAlignmentPreprocessBuildJob(
             cancellationToken
         );
         await using Utf8JsonWriter wordAlignmentWriter = new(wordAlignmentStream, InferenceWriterOptions);
-        bool isTrainFilteredByChapter = parallelCorpora.Any(pc =>
-            pc.SourceCorpora.Any(c =>
-                c.TrainOnChapters is not null && c.TrainOnChapters.Values.Any(chapters => chapters.Count > 0)
-            )
-        );
-        bool isWordAlignmentFilteredByChapter = parallelCorpora.Any(pc =>
-            pc.SourceCorpora.Any(c =>
-                c.InferenceChapters is not null && c.InferenceChapters.Values.Any(chapters => chapters.Count > 0)
-            )
-        );
 
+        (bool isTrainFilteredByChapter, bool isWordAlignFilteredByChapter) = CheckChapterFilters(parallelCorpora);
         PreprocessStats preprocessStats = new()
         {
             IsTrainFilteredByChapter = isTrainFilteredByChapter,
-            IsInferenceFilteredByChapter = isWordAlignmentFilteredByChapter,
+            IsInferenceFilteredByChapter = isWordAlignFilteredByChapter,
         };
 
         wordAlignmentWriter.WriteStartArray();
@@ -175,25 +164,7 @@ public static partial class PreprocessStatsExtensions
                 await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
             }
 
-            stats.TrainCount++;
-            foreach (object? reference in row.SourceRefs)
-            {
-                if (reference is not null and ScriptureRef sr && sr.IsVerse)
-                {
-                    stats.TrainVerseCount.UpdateValue(
-                        sr.Book,
-                        () => [],
-                        chapters =>
-                        {
-                            if (chapters.TryGetValue(sr.Chapter, out int count))
-                                chapters[sr.Chapter] = count + 1;
-                            else
-                                chapters[sr.Chapter] = 1;
-                            return chapters;
-                        }
-                    );
-                }
-            }
+            stats.UpdateTrainCount(row);
         }
     }
 
@@ -221,25 +192,8 @@ public static partial class PreprocessStatsExtensions
             wordAlignmentWriter.WriteString("source", row.SourceSegment);
             wordAlignmentWriter.WriteString("target", row.TargetSegment);
             wordAlignmentWriter.WriteEndObject();
-            stats.InferenceCount++;
-            foreach (object? reference in row.SourceRefs)
-            {
-                if (reference is not null and ScriptureRef sr && sr.IsVerse)
-                {
-                    stats.InferenceVerseCount.UpdateValue(
-                        sr.Book,
-                        () => [],
-                        chapters =>
-                        {
-                            if (chapters.TryGetValue(sr.Chapter, out int count))
-                                chapters[sr.Chapter] = count + 1;
-                            else
-                                chapters[sr.Chapter] = 1;
-                            return chapters;
-                        }
-                    );
-                }
-            }
+
+            stats.UpdateInferenceCount(row);
         }
         if (wordAlignmentWriter.BytesPending > 1024 * 1024)
             await wordAlignmentWriter.FlushAsync();

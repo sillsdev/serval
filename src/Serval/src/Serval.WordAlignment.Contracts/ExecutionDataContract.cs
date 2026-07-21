@@ -5,7 +5,7 @@ public record ExecutionDataContract
     public int? TrainCount { get; init; }
     public int? WordAlignCount { get; init; }
     public bool? IsTrainFilteredByChapter { get; init; }
-    public bool? IsWordAlignmentFilteredByChapter { get; init; }
+    public bool? IsWordAlignFilteredByChapter { get; init; }
     public IReadOnlyDictionary<string, Dictionary<string, int>>? TrainVerseCount { get; init; }
     public IReadOnlyDictionary<string, Dictionary<string, int>>? WordAlignVerseCount { get; init; }
     public IReadOnlyList<string>? Warnings { get; init; }

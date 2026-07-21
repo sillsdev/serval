@@ -10928,11 +10928,11 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("pretranslateCount", Required = Newtonsoft.Json.Required.Always)]
         public int PretranslateCount { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("isTrainFilteredByChapter", Required = Newtonsoft.Json.Required.Always)]
-        public bool IsTrainFilteredByChapter { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("isTrainFilteredByChapter", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? IsTrainFilteredByChapter { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("isPretranslateFilteredByChapter", Required = Newtonsoft.Json.Required.Always)]
-        public bool IsPretranslateFilteredByChapter { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("isPretranslateFilteredByChapter", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? IsPretranslateFilteredByChapter { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("trainVerseCount", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IDictionary<string, System.Collections.Generic.IDictionary<string, int>>? TrainVerseCount { get; set; } = default!;

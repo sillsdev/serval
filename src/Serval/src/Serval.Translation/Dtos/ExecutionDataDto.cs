@@ -4,8 +4,8 @@ public record ExecutionDataDto
 {
     public int TrainCount { get; init; }
     public int PretranslateCount { get; init; }
-    public bool IsTrainFilteredByChapter { get; init; }
-    public bool IsPretranslateFilteredByChapter { get; init; }
+    public bool? IsTrainFilteredByChapter { get; init; }
+    public bool? IsPretranslateFilteredByChapter { get; init; }
     public IReadOnlyDictionary<string, Dictionary<string, int>>? TrainVerseCount { get; init; }
     public IReadOnlyDictionary<string, Dictionary<string, int>>? PretranslateVerseCount { get; init; }
     public IReadOnlyList<string> Warnings { get; init; } = [];

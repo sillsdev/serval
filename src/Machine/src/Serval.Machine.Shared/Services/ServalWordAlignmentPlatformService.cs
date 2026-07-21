@@ -102,7 +102,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                 TrainCount = executionData.TrainCount,
                 WordAlignCount = executionData.InferenceCount,
                 IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
-                IsWordAlignmentFilteredByChapter = executionData.IsInferenceFilteredByChapter,
+                IsWordAlignFilteredByChapter = executionData.IsInferenceFilteredByChapter,
                 TrainVerseCount = executionData.TrainVerseCount,
                 WordAlignVerseCount = executionData.InferenceVerseCount,
                 Warnings = executionData.Warnings,
