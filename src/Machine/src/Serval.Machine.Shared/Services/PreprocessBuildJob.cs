@@ -45,18 +45,12 @@ public abstract class PreprocessBuildJob<TEngine>(
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
-        (int trainCount, int inferenceCount) = await WriteDataFilesAsync(
-            buildId,
-            data,
-            buildOptions,
-            cancellationToken
-        );
+        PreprocessStats stats = await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
 
         await UpdateBuildExecutionData(
             engineId,
             buildId,
-            trainCount,
-            inferenceCount,
+            stats,
             engine.SourceLanguage,
             engine.TargetLanguage,
             data,
@@ -65,7 +59,7 @@ public abstract class PreprocessBuildJob<TEngine>(
 
         await UpdateTargetQuoteConventionAsync(engineId, buildId, data, cancellationToken);
 
-        if (inferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
+        if (stats.InferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
         {
             throw new InvalidOperationException(
                 $"There was no data specified for inferencing in build {buildId}. Build canceled."
@@ -90,8 +84,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     protected abstract Task UpdateBuildExecutionData(
         string engineId,
         string buildId,
-        int trainCount,
-        int inferenceCount,
+        PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
@@ -105,7 +98,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         CancellationToken cancellationToken
     ) => Task.CompletedTask;
 
-    protected abstract Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
+    protected abstract Task<PreprocessStats> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
@@ -175,5 +168,26 @@ public abstract class PreprocessBuildJob<TEngine>(
         }
 
         return warnings;
+    }
+
+    protected static (bool IsTrainFilteredByChapter, bool IsInferenceFilteredByChapter) CheckChapterFilters(
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora
+    )
+    {
+        bool isTrainFilteredByChapter = parallelCorpora.Any(pc =>
+            pc.SourceCorpora.Any(c =>
+                c.TrainOnChapters is not null && c.TrainOnChapters.Values.Any(chapters => chapters.Count > 0)
+            )
+            || pc.TargetCorpora.Any(c =>
+                c.TrainOnChapters is not null && c.TrainOnChapters.Values.Any(chapters => chapters.Count > 0)
+            )
+        );
+        bool isInferenceFilteredByChapter = parallelCorpora.Any(pc =>
+            pc.SourceCorpora.Any(c =>
+                c.InferenceChapters is not null && c.InferenceChapters.Values.Any(chapters => chapters.Count > 0)
+            )
+        );
+
+        return (isTrainFilteredByChapter, isInferenceFilteredByChapter);
     }
 }

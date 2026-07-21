@@ -21,7 +21,7 @@ public class TranslationPreprocessBuildJob(
         options
     )
 {
-    protected override async Task<(int TrainCount, int InferenceCount)> WriteDataFilesAsync(
+    protected override async Task<PreprocessStats> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         string? buildOptions,
@@ -52,65 +52,40 @@ public class TranslationPreprocessBuildJob(
         );
         await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, InferenceWriterOptions);
 
-        int trainCount = 0;
-        int pretranslateCount = 0;
+        (bool isTrainFilteredByChapter, bool isPretranslateFilteredByChapter) = CheckChapterFilters(parallelCorpora);
+        PreprocessStats preprocessStats = new()
+        {
+            IsTrainFilteredByChapter = isTrainFilteredByChapter,
+            IsInferenceFilteredByChapter = isPretranslateFilteredByChapter,
+        };
+
         pretranslateWriter.WriteStartArray();
         await ParallelCorpusService.PreprocessAsync(
             parallelCorpora,
             async (row, trainingDataType) =>
-            {
-                if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
-                {
-                    if (trainingDataType == TrainingDataType.KeyTerm)
-                    {
-                        await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                        await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                    }
-                    else
-                    {
-                        await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                        await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                    }
-                }
-                if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-                    trainCount++;
-            },
+                await preprocessStats.ProcessTranslationTrainingRowAsync(
+                    row,
+                    trainingDataType,
+                    sourceTrainWriter,
+                    targetTrainWriter,
+                    sourceKeyTermsTrainWriter,
+                    targetKeyTermsTrainWriter
+                ),
             async (row, isInTrainingData, corpusId) =>
-            {
-                if (row.SourceSegment.Length > 0 && !isInTrainingData)
-                {
-                    pretranslateWriter.WriteStartObject();
-                    pretranslateWriter.WriteString("corpusId", corpusId);
-                    pretranslateWriter.WriteString("textId", row.TextId);
-                    pretranslateWriter.WriteStartArray("sourceRefs");
-                    foreach (object rowRef in row.SourceRefs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteStartArray("targetRefs");
-                    foreach (object rowRef in row.TargetRefs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteString("translation", row.SourceSegment);
-                    pretranslateWriter.WriteEndObject();
-                    pretranslateCount++;
-                }
-                if (pretranslateWriter.BytesPending > 1024 * 1024)
-                    await pretranslateWriter.FlushAsync();
-            },
+                await preprocessStats.ProcessPretranslateRowAsync(row, isInTrainingData, corpusId, pretranslateWriter),
             (bool?)buildOptionsObject?["use_key_terms"] ?? true,
             ignoreUsfmMarkers: ["rem", "r"]
         );
 
         pretranslateWriter.WriteEndArray();
 
-        return (trainCount, pretranslateCount);
+        return preprocessStats;
     }
 
     protected override async Task UpdateBuildExecutionData(
         string engineId,
         string buildId,
-        int trainCount,
-        int pretranslateCount,
+        PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
@@ -118,8 +93,8 @@ public class TranslationPreprocessBuildJob(
     )
     {
         IReadOnlyList<string> warnings = GetWarnings(
-            trainCount,
-            pretranslateCount,
+            stats.TrainCount,
+            stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
             parallelCorpora
@@ -131,8 +106,8 @@ public class TranslationPreprocessBuildJob(
             { "Event", "BuildPreprocess" },
             { "EngineId", engineId },
             { "BuildId", buildId },
-            { "NumTrainRows", trainCount },
-            { "NumPretranslateRows", pretranslateCount },
+            { "NumTrainRows", stats.TrainCount },
+            { "NumPretranslateRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
             { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) },
@@ -140,12 +115,76 @@ public class TranslationPreprocessBuildJob(
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
         var executionData = new BuildExecutionData()
         {
-            TrainCount = trainCount,
-            PretranslateCount = pretranslateCount,
+            TrainCount = stats.TrainCount,
+            InferenceCount = stats.InferenceCount,
+            IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
+            IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
+            TrainVerseCount = stats.TrainVerseCount,
+            InferenceVerseCount = stats.InferenceVerseCount,
             Warnings = warnings,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
+    }
+}
+
+public static partial class PreprocessStatsExtensions
+{
+    public static async Task ProcessTranslationTrainingRowAsync(
+        this PreprocessStats stats,
+        ParallelRowContract row,
+        TrainingDataType trainingDataType,
+        StreamWriter sourceTrainWriter,
+        StreamWriter targetTrainWriter,
+        StreamWriter sourceKeyTermsTrainWriter,
+        StreamWriter targetKeyTermsTrainWriter
+    )
+    {
+        if (row.SourceSegment.Length > 0 || row.TargetSegment.Length > 0)
+        {
+            if (trainingDataType == TrainingDataType.KeyTerm)
+            {
+                await sourceKeyTermsTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                await targetKeyTermsTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+            }
+            else
+            {
+                await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+            }
+        }
+        if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+            stats.UpdateTrainCount(row);
+    }
+
+    public static async Task ProcessPretranslateRowAsync(
+        this PreprocessStats stats,
+        ParallelRowContract row,
+        bool isInTrainingData,
+        string corpusId,
+        Utf8JsonWriter pretranslateWriter
+    )
+    {
+        if (row.SourceSegment.Length > 0 && !isInTrainingData)
+        {
+            pretranslateWriter.WriteStartObject();
+            pretranslateWriter.WriteString("corpusId", corpusId);
+            pretranslateWriter.WriteString("textId", row.TextId);
+            pretranslateWriter.WriteStartArray("sourceRefs");
+            foreach (object rowRef in row.SourceRefs)
+                pretranslateWriter.WriteStringValue(rowRef.ToString());
+            pretranslateWriter.WriteEndArray();
+            pretranslateWriter.WriteStartArray("targetRefs");
+            foreach (object rowRef in row.TargetRefs)
+                pretranslateWriter.WriteStringValue(rowRef.ToString());
+            pretranslateWriter.WriteEndArray();
+            pretranslateWriter.WriteString("translation", row.SourceSegment);
+            pretranslateWriter.WriteEndObject();
+
+            stats.UpdateInferenceCount(row);
+        }
+        if (pretranslateWriter.BytesPending > 1024 * 1024)
+            await pretranslateWriter.FlushAsync();
     }
 }
