@@ -104,14 +104,8 @@ public class NmtPreprocessBuildJob(
         {
             TrainCount = stats.TrainCount,
             InferenceCount = stats.InferenceCount,
-            TrainVerseCount = stats.TrainVerseCount.ToDictionary(
-                kv => kv.Key,
-                kv => (IReadOnlyDictionary<string, int>)kv.Value
-            ),
-            InferenceVerseCount = stats.InferenceVerseCount.ToDictionary(
-                kv => kv.Key,
-                kv => (IReadOnlyDictionary<string, int>)kv.Value
-            ),
+            TrainVerseCount = stats.TrainVerseCount,
+            InferenceVerseCount = stats.InferenceVerseCount,
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
             Warnings = warnings,

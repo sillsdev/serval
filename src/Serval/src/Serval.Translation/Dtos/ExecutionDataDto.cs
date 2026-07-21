@@ -6,8 +6,8 @@ public record ExecutionDataDto
     public int PretranslateCount { get; init; }
     public bool IsTrainFilteredByChapter { get; init; }
     public bool IsPretranslateFilteredByChapter { get; init; }
-    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>>? TrainVerseCount { get; init; }
-    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>>? PretranslateVerseCount { get; init; }
+    public IReadOnlyDictionary<string, Dictionary<string, int>>? TrainVerseCount { get; init; }
+    public IReadOnlyDictionary<string, Dictionary<string, int>>? PretranslateVerseCount { get; init; }
     public IReadOnlyList<string> Warnings { get; init; } = [];
     public string? EngineSourceLanguageTag { get; init; }
     public string? EngineTargetLanguageTag { get; init; }

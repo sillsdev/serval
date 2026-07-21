@@ -129,14 +129,8 @@ public class TranslationPreprocessBuildJob(
             InferenceCount = stats.InferenceCount,
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
-            TrainVerseCount = stats.TrainVerseCount.ToDictionary(
-                kv => kv.Key,
-                kv => (IReadOnlyDictionary<string, int>)kv.Value
-            ),
-            InferenceVerseCount = stats.InferenceVerseCount.ToDictionary(
-                kv => kv.Key,
-                kv => (IReadOnlyDictionary<string, int>)kv.Value
-            ),
+            TrainVerseCount = stats.TrainVerseCount,
+            InferenceVerseCount = stats.InferenceVerseCount,
             Warnings = warnings,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
