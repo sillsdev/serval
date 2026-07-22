@@ -13,9 +13,9 @@
 	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
-		<PackageReference Include="Asp.Versioning.Abstractions" Version="8.1.0" />
+		<PackageReference Include="Asp.Versioning.Abstractions" Version="10.0.0" />
 		<PackageReference Include="CaseExtensions" Version="1.1.0" />
-		<PackageReference Include="NSwag.Annotations" Version="14.6.3" />
+		<PackageReference Include="NSwag.Annotations" Version="14.7.1" />
 	</ItemGroup>
 
 	<ItemGroup>
