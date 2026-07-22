@@ -89,7 +89,7 @@ public class EchoWordAlignmentEngineService(
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
-            await platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+            throw new DuplicateKeyException();
     }
 
     public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default) =>

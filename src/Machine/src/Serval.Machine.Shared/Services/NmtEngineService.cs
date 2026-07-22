@@ -100,7 +100,7 @@ public class NmtEngineService(
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
-            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+            throw new DuplicateKeyException();
     }
 
     public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
