@@ -127,7 +127,7 @@ public class StatisticalEngineService(
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
-            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+            throw new DuplicateKeyException();
 
         StatisticalEngineState state = _stateService.Get(engineId);
         state.Touch();
