@@ -207,7 +207,6 @@ public class SmtTransferEngineServiceTests
 
     private class TestEnvironment : DisposableBase
     {
-        private readonly BuildJobRunnerType _trainJobRunnerType;
         private readonly ClearMLBuildJobRunner _clearMLRunner;
         private readonly ITruecaserFactory _truecaserFactory;
         private readonly ServiceProvider _serviceProvider;
@@ -220,7 +219,6 @@ public class SmtTransferEngineServiceTests
 
         public TestEnvironment()
         {
-            _trainJobRunnerType = BuildJobRunnerType.ClearML;
             Engines = new MemoryRepository<TranslationEngine>();
             Engines.Add(
                 new TranslationEngine
@@ -384,7 +382,7 @@ public class SmtTransferEngineServiceTests
         private LocalBuildJobRunner CreateJobRunner()
         {
             return new LocalBuildJobRunner(
-                [new SmtTransferTestLocalBuildJobFactory(_trainJobRunnerType)],
+                [new SmtTransferTestLocalBuildJobFactory()],
                 _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
                 _serviceProvider.GetRequiredService<ILogger<LocalBuildJobRunner>>()
             );
@@ -660,7 +658,7 @@ public class SmtTransferEngineServiceTests
             }
         }
 
-        private class SmtTransferTestLocalBuildJobFactory(BuildJobRunnerType trainJobRunnerType) : ILocalBuildJobFactory
+        private class SmtTransferTestLocalBuildJobFactory : ILocalBuildJobFactory
         {
             private static readonly JsonSerializerOptions SerializerOptions = new()
             {
@@ -688,7 +686,6 @@ public class SmtTransferEngineServiceTests
                         var preprocessJob = ActivatorUtilities.CreateInstance<SmtTransferPreprocessBuildJob>(
                             serviceProvider
                         );
-                        preprocessJob.TrainJobRunnerType = trainJobRunnerType;
                         var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(
                             jobData!,
                             SerializerOptions

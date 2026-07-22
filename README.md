@@ -20,8 +20,7 @@ Serval is designed as a modular monolith with a single deployable unit:
     - `Serval.DataFiles` — file and corpus management
     - `Serval.Shared` — common models, configuration, and services shared across modules
   - Engine implementations (also hosted in-process):
-    - `Serval.Machine.Shared` — NMT, SMT Transfer, and Statistical engine implementations; also runs build jobs and queues ClearML GPU training jobs
-    - `EchoEngine` — echo engine for testing (translation and word alignment stubs)
+    - `Serval.Machine.Shared` — NMT, SMT Transfer, Statistical, and Echo engine implementations; also runs build jobs and queues ClearML GPU training jobs
   - External runtime dependencies: MongoDB (persistence), ClearML (GPU training jobs), S3 (shared file storage for training data and models)
 - SIL.DataAccess
   - Abstracts all MongoDB operations
