@@ -431,7 +431,10 @@ public class PlatformService(
             u =>
                 u.Set(
                     b => b.ExecutionData.AveragePretranslationConfidence,
-                    confidenceCount > 0 ? Math.Exp(logConfidenceTotal / confidenceCount) : 0.0
+                    // Calculate the geometric mean of the pretranslation confidences
+                    confidenceCount > 0
+                        ? Math.Exp(logConfidenceTotal / confidenceCount)
+                        : 0.0
                 ),
             cancellationToken: cancellationToken
         );
