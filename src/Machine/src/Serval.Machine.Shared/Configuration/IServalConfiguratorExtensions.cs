@@ -169,7 +169,6 @@ public static class IServalConfiguratorExtensions
                     ),
             ]
         );
-        configurator.DataAccess.AddRepository<RWLock>("machine.locks");
         configurator.DataAccess.AddRepository<TrainSegmentPair>(
             "machine.train_segment_pairs",
             init:
