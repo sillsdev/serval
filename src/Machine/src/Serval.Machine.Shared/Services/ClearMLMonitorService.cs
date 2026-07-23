@@ -1,12 +1,12 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class ClearMLMonitorService(
+public class ClearMLMonitorService<TEngine>(
     IServiceProvider services,
     IClearMLService clearMLService,
     ISharedFileService sharedFileService,
     IOptionsMonitor<ClearMLOptions> clearMLOptions,
     IOptionsMonitor<BuildJobOptions> buildJobOptions,
-    ILogger<ClearMLMonitorService> logger
+    ILogger<ClearMLMonitorService<TEngine>> logger
 )
     : RecurrentTask(
         "ClearML monitor service",
@@ -15,7 +15,8 @@ public class ClearMLMonitorService(
         logger,
         clearMLOptions.CurrentValue.BuildPollingEnabled
     ),
-        IClearMLQueueService
+        IClearMLQueueService<TEngine>
+    where TEngine : ITrainingEngine
 {
     internal const string UserProperties = "properties";
     internal static readonly string SummaryMetric = CreateMD5("Summary");
@@ -24,7 +25,7 @@ public class ClearMLMonitorService(
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
-    private readonly ILogger<IClearMLQueueService> _logger = logger;
+    private readonly ILogger<IClearMLQueueService<TEngine>> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
     private readonly IReadOnlyDictionary<EngineType, string> _queuePerEngineType =
@@ -48,26 +49,11 @@ public class ClearMLMonitorService(
     {
         try
         {
-            var translationBuildJobService = scope.ServiceProvider.GetRequiredService<
-                IBuildJobService<TranslationEngine>
-            >();
-            var wordAlignmentBuildJobService = scope.ServiceProvider.GetRequiredService<
-                IBuildJobService<WordAlignmentEngine>
-            >();
+            var buildJobService = scope.ServiceProvider.GetRequiredService<IBuildJobService<TEngine>>();
 
             Dictionary<ITrainingEngine, IBuildJobService> engineToBuildServiceDict = (
-                await translationBuildJobService.GetBuildingEnginesAsync(BuildJobRunnerType.ClearML, cancellationToken)
-            ).ToDictionary(e => (ITrainingEngine)e, e => (IBuildJobService)translationBuildJobService);
-
-            foreach (
-                var engine in await wordAlignmentBuildJobService.GetBuildingEnginesAsync(
-                    BuildJobRunnerType.ClearML,
-                    cancellationToken
-                )
-            )
-            {
-                engineToBuildServiceDict[engine] = wordAlignmentBuildJobService;
-            }
+                await buildJobService.GetBuildingEnginesAsync(BuildJobRunnerType.ClearML, cancellationToken)
+            ).ToDictionary(e => (ITrainingEngine)e, e => (IBuildJobService)buildJobService);
 
             if (engineToBuildServiceDict.Count == 0)
                 return;

@@ -15,10 +15,14 @@
   <Folder Name="/Machine/" />
   <Folder Name="/Machine/src/">
     <Project Path="src/Machine/src/Serval.Machine.Shared/Serval.Machine.Shared.csproj" />
+    <Project Path="src/Machine/src/Serval.Machine.Translation/Serval.Machine.Translation.csproj" />
+    <Project Path="src/Machine/src/Serval.Machine.WordAlignment/Serval.Machine.WordAlignment.csproj" />
   </Folder>
   <Folder Name="/Machine/test/">
     <Project Path="src/Machine/test/Serval.Machine.IntegrationTests/Serval.Machine.IntegrationTests.csproj" />
     <Project Path="src/Machine/test/Serval.Machine.Shared.Tests/Serval.Machine.Shared.Tests.csproj" />
+    <Project Path="src/Machine/test/Serval.Machine.Translation.Tests/Serval.Machine.Translation.Tests.csproj" />
+    <Project Path="src/Machine/test/Serval.Machine.WordAlignment.Tests/Serval.Machine.WordAlignment.Tests.csproj" />
   </Folder>
   <Folder Name="/Serval/" />
   <Folder Name="/Serval/src/">

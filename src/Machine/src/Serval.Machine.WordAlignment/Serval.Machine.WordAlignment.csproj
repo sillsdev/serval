@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+	</PropertyGroup>
+
+	<Import Project="../../../AssemblyInfo.props" />
+
+	<ItemGroup>
+		<PackageReference Include="SIL.Machine.Translation.Thot" Version="3.9.1" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
+		<PackageReference Include="YamlDotNet" Version="18.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" Condition="Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
+		<ProjectReference Include="..\..\..\Serval\src\Serval.WordAlignment.Contracts\Serval.WordAlignment.Contracts.csproj" />
+		<ProjectReference Include="..\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

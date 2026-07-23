@@ -42,7 +42,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\Machine\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
+		<ProjectReference Include="..\..\..\Machine\src\Serval.Machine.Translation\Serval.Machine.Translation.csproj" />
+		<ProjectReference Include="..\..\..\Machine\src\Serval.Machine.WordAlignment\Serval.Machine.WordAlignment.csproj" />
 		<ProjectReference Include="..\Serval.DataFiles\Serval.DataFiles.csproj" />
 		<ProjectReference Include="..\Serval.Translation\Serval.Translation.csproj" />
 		<ProjectReference Include="..\Serval.WordAlignment\Serval.WordAlignment.csproj" />

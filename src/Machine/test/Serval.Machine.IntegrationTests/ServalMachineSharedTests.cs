@@ -16,7 +16,14 @@ public class ServalMachineSharedTests
     public async Task InitializesRepositories()
     {
         // Setup
-        _env.Services.AddServal(_env.Configuration, c => c.AddMachineDataAccess());
+        _env.Services.AddServal(
+            _env.Configuration,
+            c =>
+            {
+                c.AddTranslationEngineDataAccess();
+                c.AddWordAlignmentEngineDataAccess();
+            }
+        );
 
         // SUT
         await _env.InitializeDatabaseAsync();

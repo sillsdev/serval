@@ -22,7 +22,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     // Using JavaScriptEncoder.Create(UnicodeRanges.All) to avoid escaping surrogate pairs
     // (including those outside of the BMP) which can result in invalid UTF-8.
     // This is safe since the data written by this writer is only read internally and only as UTF-8 encoded JSON.
-    protected static readonly JsonWriterOptions InferenceWriterOptions = new()
+    protected readonly JsonWriterOptions InferenceWriterOptions = new()
     {
         Indented = true,
         Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
@@ -59,7 +59,7 @@ public abstract class PreprocessBuildJob<TEngine>(
 
         await UpdateTargetQuoteConventionAsync(engineId, buildId, data, cancellationToken);
 
-        if (stats.InferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
+        if (stats.InferenceCount == 0 && engine is IPersistableTrainingEngine { IsModelPersisted: false })
         {
             throw new InvalidOperationException(
                 $"There was no data specified for inferencing in build {buildId}. Build canceled."

@@ -1,6 +1,7 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public interface IBuildJobRunner
+public interface IBuildJobRunner<TEngine>
+    where TEngine : ITrainingEngine
 {
     BuildJobRunnerType Type { get; }
 

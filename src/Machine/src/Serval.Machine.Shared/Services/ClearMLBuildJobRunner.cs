@@ -1,10 +1,11 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class ClearMLBuildJobRunner(
+public class ClearMLBuildJobRunner<TEngine>(
     IClearMLService clearMLService,
     IEnumerable<IClearMLBuildJobFactory> buildJobFactories,
     IOptionsMonitor<BuildJobOptions> options
-) : IBuildJobRunner
+) : IBuildJobRunner<TEngine>
+    where TEngine : ITrainingEngine
 {
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly Dictionary<EngineType, IClearMLBuildJobFactory> _buildJobFactories =
