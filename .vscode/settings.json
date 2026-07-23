@@ -72,7 +72,7 @@
       "url": "https://github.com/sillsdev/serval/issues/<num>"
     }
   ],
-  "dotnet.defaultSolution": "Serval.sln",
+  "dotnet.defaultSolution": "Serval.slnx",
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   }
