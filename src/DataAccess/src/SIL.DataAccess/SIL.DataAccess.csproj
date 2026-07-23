@@ -25,7 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\SIL.DataAccess.Abstractions\SIL.DataAccess.Abstractions.csproj" />
+		<ProjectReference Include="..\SIL.DataAccess.Abstractions\SIL.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 
 </Project>
