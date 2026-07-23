@@ -261,8 +261,8 @@ public class ServalApiTests
         {
             ParallelCorpusConfig textCorpus = await _helperClient.MakeParallelTextCorpus(
                 ["1JN.txt"],
-                "es",
-                "en",
+                SourceLanguageCode,
+                TargetLanguageCode,
                 false
             );
             string textCorpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, textCorpus, false);
