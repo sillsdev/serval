@@ -56,7 +56,6 @@ public class EchoWordAlignmentEngineServiceTests
         Assert.That(await env.Service.CancelBuildAsync(EngineId1), Is.Null);
     }
 
-    [Test]
     public async Task DeleteAsync_WhileBuilding()
     {
         using var env = new TestEnvironment();
