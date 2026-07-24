@@ -32,10 +32,7 @@ public record PretranslateCorpusConfigDto
 public record StartBuild(string Owner, string EngineId, TranslationBuildConfigDto BuildConfig)
     : IRequest<StartBuildResponse>;
 
-public record StartBuildResponse(
-    [property: MemberNotNullWhen(false, nameof(Build))] bool IsBuildRunning,
-    TranslationBuildDto? Build = null
-);
+public record StartBuildResponse(TranslationBuildDto Build);
 
 public class StartBuildHandler(
     IDataAccessContext dataAccessContext,
@@ -69,7 +66,7 @@ public class StartBuildHandler(
                     )
                 )
                 {
-                    return new StartBuildResponse(IsBuildRunning: true);
+                    throw new ConflictException();
                 }
 
                 Build build = new()
@@ -123,7 +120,7 @@ public class StartBuildHandler(
                 await engineFactory
                     .GetEngineService(engine.Type)
                     .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, ct);
-                return new StartBuildResponse(IsBuildRunning: false, Build: dtoMapper.Map(build));
+                return new StartBuildResponse(dtoMapper.Map(build));
             },
             cancellationToken
         );
@@ -436,10 +433,6 @@ public partial class TranslationEnginesController
     )
     {
         StartBuildResponse response = await handler.HandleAsync(new(Owner, id, buildConfig), cancellationToken);
-
-        if (response.IsBuildRunning)
-            return Conflict();
-
         return Created(response.Build.Url, response.Build);
     }
 }

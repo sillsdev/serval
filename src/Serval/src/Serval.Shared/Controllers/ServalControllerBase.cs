@@ -9,6 +9,7 @@
 [TypeFilter(typeof(NotFoundExceptionFilter))]
 [TypeFilter(typeof(ForbiddenExceptionFilter))]
 [TypeFilter(typeof(BadRequestExceptionFilter))]
+[TypeFilter(typeof(ConflictExceptionFilter))]
 public abstract class ServalControllerBase(IAuthorizationService authService) : Controller
 {
     private readonly IAuthorizationService _authService = authService;
