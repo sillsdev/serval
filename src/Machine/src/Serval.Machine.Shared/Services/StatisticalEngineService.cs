@@ -1,5 +1,3 @@
-using Serval.WordAlignment.Contracts;
-
 namespace Serval.Machine.Shared.Services;
 
 public class StatisticalEngineService(
@@ -127,7 +125,7 @@ public class StatisticalEngineService(
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
-            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+            throw new ConflictException();
 
         StatisticalEngineState state = _stateService.Get(engineId);
         state.Touch();

@@ -119,7 +119,6 @@ public class EnginesHandlersTests
             env.DtoMapper,
             Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>()
         ).HandleAsync(new(OWNER, engineId, new()));
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -202,7 +201,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -287,7 +285,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -372,7 +369,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -448,7 +444,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -524,7 +519,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -701,7 +695,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -786,7 +779,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -879,7 +871,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(
@@ -1005,7 +996,6 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.Build, Is.Not.Null);
         await env
             .WordAlignmentEngineService.Received()
             .StartBuildAsync(

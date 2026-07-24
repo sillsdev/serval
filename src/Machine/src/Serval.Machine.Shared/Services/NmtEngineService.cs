@@ -1,6 +1,4 @@
-﻿using Serval.Translation.Contracts;
-
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 public class NmtEngineService(
     ITranslationPlatformService platformService,
@@ -102,7 +100,7 @@ public class NmtEngineService(
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
-            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+            throw new ConflictException();
     }
 
     public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)

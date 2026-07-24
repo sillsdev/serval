@@ -179,12 +179,11 @@ public class EnginesHandlersTests
         StartBuildResponse response = await handler.HandleAsync(
             new StartBuild(OWNER, engineId, new TranslationBuildConfigDto())
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -255,12 +254,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -333,12 +331,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -408,12 +405,11 @@ public class EnginesHandlersTests
                 new TranslationBuildConfigDto { TrainOn = [new TrainingCorpusConfigDto { CorpusId = "corpus1" }] }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -485,12 +481,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -562,12 +557,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -709,12 +703,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -787,12 +780,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -873,12 +865,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -990,12 +981,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -1077,12 +1067,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -1205,12 +1194,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -1335,12 +1323,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -1461,12 +1448,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -1622,12 +1608,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -1719,12 +1704,11 @@ public class EnginesHandlersTests
         StartBuildResponse response = await handler.HandleAsync(
             new StartBuild(OWNER, engineId, new TranslationBuildConfigDto())
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {
@@ -1833,12 +1817,11 @@ public class EnginesHandlersTests
                 }
             )
         );
-        Assert.That(response.IsBuildRunning, Is.False);
         await env
             .TranslationEngineService.Received()
             .StartBuildAsync(
                 engineId,
-                response.Build!.Id,
+                response.Build.Id,
                 ArgEx.IsEquivalentTo<IReadOnlyList<ParallelCorpusContract>>([
                     new()
                     {

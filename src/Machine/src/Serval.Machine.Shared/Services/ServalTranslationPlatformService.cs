@@ -1,5 +1,3 @@
-using Serval.Translation.Contracts;
-
 namespace Serval.Machine.Shared.Services;
 
 public class ServalTranslationPlatformService(ITranslationPlatformService platformService) : IPlatformService
@@ -98,7 +96,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
         _platformService.UpdateBuildExecutionDataAsync(
             engineId,
             buildId,
-            new ExecutionDataContract
+            new Translation.Contracts.ExecutionDataContract
             {
                 TrainCount = executionData.TrainCount,
                 PretranslateCount = executionData.InferenceCount,

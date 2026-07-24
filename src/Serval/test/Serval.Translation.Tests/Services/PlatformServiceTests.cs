@@ -77,6 +77,44 @@ public class PlatformServiceTests
     }
 
     [Test]
+    public async Task BuildCompletedAsync_AveragePretranslationConfidence()
+    {
+        var env = new TestEnvironment();
+        await env.Engines.InsertAsync(
+            new Engine()
+            {
+                Id = "e0",
+                Owner = "owner1",
+                Type = "nmt",
+                SourceLanguage = "en",
+                TargetLanguage = "es",
+                Corpora = [],
+            }
+        );
+        await env.Builds.InsertAsync(
+            new Build()
+            {
+                Id = "b0",
+                EngineRef = "e0",
+                Owner = "owner1",
+            }
+        );
+
+        await env.PlatformService.BuildStartedAsync("b0");
+        await env.PlatformService.InsertPretranslationsAsync(
+            "e0",
+            "b0",
+            GetTestPretranslationsWithConfidences([0.25, 0.5, 1.0])
+        );
+        await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
+
+        Assert.That(
+            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
+            Is.EqualTo(0.5).Within(0.0001)
+        );
+    }
+
+    [Test]
     public async Task UpdateBuildStatusAsync()
     {
         var env = new TestEnvironment();
@@ -340,6 +378,29 @@ public class PlatformServiceTests
             TranslationTokens = [],
             Alignment = [],
         };
+        await Task.CompletedTask;
+    }
+
+    private static async IAsyncEnumerable<PretranslationContract> GetTestPretranslationsWithConfidences(
+        IReadOnlyList<double> confidences
+    )
+    {
+        for (int index = 0; index < confidences.Count; index++)
+        {
+            yield return new PretranslationContract
+            {
+                CorpusId = "e0",
+                TextId = $"text{index}",
+                SourceRefs = [$"ref{index}"],
+                TargetRefs = [$"ref{index}"],
+                Translation = "test",
+                SourceTokens = [],
+                TranslationTokens = [],
+                Alignment = [],
+                Confidence = confidences[index],
+            };
+        }
+
         await Task.CompletedTask;
     }
 

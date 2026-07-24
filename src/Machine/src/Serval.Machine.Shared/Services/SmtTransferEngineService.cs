@@ -1,6 +1,4 @@
-﻿using Serval.Translation.Contracts;
-
-namespace Serval.Machine.Shared.Services;
+﻿namespace Serval.Machine.Shared.Services;
 
 public class SmtTransferEngineService(
     [FromKeyedServices(EngineGroup.Translation)] IPlatformService platformService,
@@ -201,7 +199,7 @@ public class SmtTransferEngineService(
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
-            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+            throw new ConflictException();
 
         SmtTransferEngineState state = _stateService.Get(engineId);
         state.Touch();

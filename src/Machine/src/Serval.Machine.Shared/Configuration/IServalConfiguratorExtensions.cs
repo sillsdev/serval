@@ -55,6 +55,9 @@ public static class IServalConfiguratorExtensions
         // NMT Engine
         configurator.AddTranslationEngine<NmtEngineService>(EngineType.Nmt.ToString());
 
+        // Echo Engine
+        configurator.AddTranslationEngine<EchoTranslationEngineService>(EngineType.Echo.ToString());
+
         return configurator;
     }
 
@@ -72,6 +75,9 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddSingleton<IWordAlignmentModelFactory, ThotWordAlignmentModelFactory>();
         configurator.AddWordAlignmentEngine<StatisticalEngineService>(EngineType.Statistical.ToString());
         configurator.Services.AddHostedService<StatisticalEngineCommitService>();
+
+        // Echo Engine
+        configurator.AddWordAlignmentEngine<EchoWordAlignmentEngineService>(EngineType.EchoWordAlignment.ToString());
 
         return configurator;
     }
@@ -199,6 +205,8 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddSingleton<ILocalBuildJobFactory, NmtLocalBuildJobFactory>();
         configurator.Services.AddSingleton<ILocalBuildJobFactory, SmtTransferLocalBuildJobFactory>();
         configurator.Services.AddSingleton<ILocalBuildJobFactory, StatisticalLocalBuildJobFactory>();
+        configurator.Services.AddSingleton<ILocalBuildJobFactory, EchoLocalBuildJobFactory>();
+        configurator.Services.AddSingleton<ILocalBuildJobFactory, EchoWordAlignmentLocalBuildJobFactory>();
 
         var smtTransferEngineOptions = new SmtTransferEngineOptions();
         configurator.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
