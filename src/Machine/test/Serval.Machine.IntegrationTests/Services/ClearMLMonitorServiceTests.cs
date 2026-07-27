@@ -1,7 +1,22 @@
-namespace Serval.Machine.Translation.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using NSubstitute;
+using Serval.Machine.Shared.Configuration;
+using Serval.Machine.Shared.Models;
+using Serval.Machine.Translation.Models;
+using Serval.Machine.Translation.Services;
+using Serval.Machine.WordAlignment.Models;
+using Serval.Machine.WordAlignment.Services;
+using SIL.Machine.Utils;
 
-[TestFixture]
-public class ClearMLMonitorServiceTests
+namespace Serval.Machine.Shared.Services;
+
+[TestFixture(typeof(TranslationEngine), typeof(TranslationEngineClearMLMonitorService), EngineType.Nmt)]
+[TestFixture(typeof(TranslationEngine), typeof(TranslationEngineClearMLMonitorService), EngineType.SmtTransfer)]
+[TestFixture(typeof(WordAlignmentEngine), typeof(WordAlignmentEngineClearMLMonitorService), EngineType.Statistical)]
+public class ClearMLMonitorServiceTests<TEngine, TClearMLMonitorService>(EngineType engineType)
+    where TEngine : ITrainingEngine, new()
+    where TClearMLMonitorService : ClearMLMonitorService<TEngine>
 {
     // Test constants
     private const string DefaultEngineId = "engine-123";
@@ -10,18 +25,20 @@ public class ClearMLMonitorServiceTests
     private const string DefaultProjectId = "proj1";
 
     // Service under test
-    private ClearMLMonitorService<TranslationEngine> _service;
+    private TClearMLMonitorService _service;
 
     // Dependencies
     private IClearMLService _clearMLService;
     private ISharedFileService _sharedFileService;
-    private ILogger<ClearMLMonitorService<TranslationEngine>> _logger;
+    private ILogger<ClearMLMonitorService<TEngine>> _logger;
     private IServiceProvider _serviceProvider;
     private IOptionsMonitor<BuildJobOptions> _buildJobOptions;
     private IOptionsMonitor<ClearMLOptions> _clearMLOptions;
     private IDataAccessContext _dataAccessContext;
     private IPlatformService _platformService;
-    private IBuildJobService<TranslationEngine> _translationBuildJobService;
+    private IBuildJobService<TEngine> _buildJobService;
+
+    // Test values
 
     [SetUp]
     public void Setup()
@@ -36,14 +53,7 @@ public class ClearMLMonitorServiceTests
         _serviceProvider = CreateServiceProvider();
 
         // Create service under test
-        _service = new ClearMLMonitorService<TranslationEngine>(
-            _serviceProvider,
-            _clearMLService,
-            _sharedFileService,
-            _clearMLOptions,
-            _buildJobOptions,
-            _logger
-        );
+        _service = CreateService();
     }
 
     [TearDown]
@@ -57,10 +67,10 @@ public class ClearMLMonitorServiceTests
     {
         _clearMLService = Substitute.For<IClearMLService>();
         _sharedFileService = Substitute.For<ISharedFileService>();
-        _logger = Substitute.For<ILogger<ClearMLMonitorService<TranslationEngine>>>();
+        _logger = Substitute.For<ILogger<TClearMLMonitorService>>();
         _dataAccessContext = Substitute.For<IDataAccessContext>();
         _platformService = Substitute.For<IPlatformService>();
-        _translationBuildJobService = Substitute.For<IBuildJobService<TranslationEngine>>();
+        _buildJobService = Substitute.For<IBuildJobService<TEngine>>();
 
         _buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
         _clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
@@ -69,7 +79,7 @@ public class ClearMLMonitorServiceTests
     private void ConfigureMockBehaviors()
     {
         _buildJobOptions.CurrentValue.Returns(
-            new BuildJobOptions { ClearML = [new ClearMLBuildQueue { EngineType = EngineType.Nmt, Queue = "default" }] }
+            new BuildJobOptions { ClearML = [new ClearMLBuildQueue { EngineType = engineType, Queue = "default" }] }
         );
 
         _clearMLOptions.CurrentValue.Returns(
@@ -77,24 +87,35 @@ public class ClearMLMonitorServiceTests
         );
     }
 
+    private TClearMLMonitorService CreateService(IServiceProvider? serviceProvider = null) =>
+        (TClearMLMonitorService)
+            Activator.CreateInstance(
+                typeof(TClearMLMonitorService),
+                serviceProvider ?? _serviceProvider,
+                _clearMLService,
+                _sharedFileService,
+                _clearMLOptions,
+                _buildJobOptions,
+                _logger
+            )!;
+
     private IServiceProvider CreateServiceProvider()
     {
         ServiceCollection serviceCollection = new ServiceCollection();
 
         // Register services
-        serviceCollection.AddScoped(_ => _translationBuildJobService);
+        serviceCollection.AddScoped(_ => _buildJobService);
         serviceCollection.AddScoped(_ => _dataAccessContext);
         serviceCollection.AddScoped(_ => _platformService);
 
         // Register keyed services
-        serviceCollection.AddKeyedScoped<IPlatformService>(EngineGroup.Translation, (_, _) => _platformService);
-        serviceCollection.AddKeyedScoped<IPlatformService>(EngineGroup.WordAlignment, (_, _) => _platformService);
+        serviceCollection.AddKeyedScoped<IPlatformService>(engineType.ToEngineGroup(), (_, _) => _platformService);
 
         return serviceCollection.BuildServiceProvider();
     }
 
     // Helper method to create test engines
-    private static TranslationEngine CreateTestEngine(
+    private TEngine CreateTestEngine(
         string engineId = DefaultEngineId,
         string buildId = DefaultBuildId,
         string jobId = DefaultJobId,
@@ -102,10 +123,10 @@ public class ClearMLMonitorServiceTests
         BuildStage stage = BuildStage.Train
     )
     {
-        return new TranslationEngine
+        return new TEngine
         {
             EngineId = engineId,
-            Type = EngineType.Nmt,
+            Type = engineType,
             CurrentBuild = new Build
             {
                 BuildId = buildId,
@@ -117,7 +138,6 @@ public class ClearMLMonitorServiceTests
             },
             SourceLanguage = "en",
             TargetLanguage = "fr",
-            IsModelPersisted = true,
         };
     }
 
@@ -154,7 +174,7 @@ public class ClearMLMonitorServiceTests
     [Test]
     public async Task MonitorClearMLTasksPerDomain_QueuedStatus_UpdatesQueuePosition()
     {
-        TranslationEngine engine = CreateTestEngine();
+        TEngine engine = CreateTestEngine();
         SetupBuildingEngines(engine);
 
         ClearMLTask task = CreateClearMLTask(
@@ -169,7 +189,7 @@ public class ClearMLMonitorServiceTests
         using IServiceScope scope = _serviceProvider.CreateScope();
         await _service.MonitorClearMLTasksPerDomain(scope, CancellationToken.None);
 
-        int queueSize = _service.GetQueueSize(EngineType.Nmt);
+        int queueSize = _service.GetQueueSize(engineType);
         Assert.That(queueSize, Is.EqualTo(1));
 
         await VerifyStatusUpdate(
@@ -183,16 +203,16 @@ public class ClearMLMonitorServiceTests
     [Test]
     public async Task MonitorClearMLTasksPerDomain_InProgress_UpdatesProgressCorrectly()
     {
-        TranslationEngine engine = CreateTestEngine(jobState: BuildJobState.Active);
+        TEngine engine = CreateTestEngine(jobState: BuildJobState.Active);
         SetupBuildingEngines(engine);
 
         var runtimeInfo = new Dictionary<string, string> { { "progress", "50" } };
 
         var hyperParams = new Dictionary<string, IReadOnlyDictionary<string, ClearMLParamsItem>>
         {
-            [ClearMLMonitorService<TranslationEngine>.UserProperties] = new Dictionary<string, ClearMLParamsItem>
+            [ClearMLMonitorService<TEngine>.UserProperties] = new Dictionary<string, ClearMLParamsItem>
             {
-                ["message"] = new ClearMLParamsItem { Name = "message", Value = "Training epoch 5/10" },
+                ["message"] = new() { Name = "message", Value = "Training epoch 5/10" },
             },
         };
 
@@ -227,7 +247,7 @@ public class ClearMLMonitorServiceTests
         const int ExpectedCorpusSize = 1000;
         const double ExpectedConfidence = 0.95;
 
-        TranslationEngine engine = CreateTestEngine(jobState: BuildJobState.Active, stage: BuildStage.Train);
+        TEngine engine = CreateTestEngine(jobState: BuildJobState.Active, stage: BuildStage.Train);
         SetupBuildingEngines(engine);
 
         Dictionary<string, IReadOnlyDictionary<string, ClearMLMetricsEvent>> lastMetrics = new Dictionary<
@@ -235,24 +255,18 @@ public class ClearMLMonitorServiceTests
             IReadOnlyDictionary<string, ClearMLMetricsEvent>
         >
         {
-            [ClearMLMonitorService<TranslationEngine>.SummaryMetric] = new Dictionary<string, ClearMLMetricsEvent>
+            [ClearMLMonitorService<TEngine>.SummaryMetric] = new Dictionary<string, ClearMLMetricsEvent>
             {
-                [ClearMLMonitorService<TranslationEngine>.TrainCorpusSizeVariant] = new ClearMLMetricsEvent
-                {
-                    Value = ExpectedCorpusSize,
-                },
-                [ClearMLMonitorService<TranslationEngine>.ConfidenceVariant] = new ClearMLMetricsEvent
-                {
-                    Value = ExpectedConfidence,
-                },
+                [ClearMLMonitorService<TEngine>.TrainCorpusSizeVariant] = new() { Value = ExpectedCorpusSize },
+                [ClearMLMonitorService<TEngine>.ConfidenceVariant] = new() { Value = ExpectedConfidence },
             },
         };
 
         var hyperParams = new Dictionary<string, IReadOnlyDictionary<string, ClearMLParamsItem>>
         {
-            [ClearMLMonitorService<TranslationEngine>.UserProperties] = new Dictionary<string, ClearMLParamsItem>
+            [ClearMLMonitorService<TEngine>.UserProperties] = new Dictionary<string, ClearMLParamsItem>
             {
-                ["message"] = new ClearMLParamsItem { Name = "message", Value = "Training complete" },
+                ["message"] = new() { Name = "message", Value = "Training complete" },
             },
         };
 
@@ -268,7 +282,7 @@ public class ClearMLMonitorServiceTests
 
         SetupClearMLTasks(task);
 
-        _translationBuildJobService
+        _buildJobService
             .StartBuildJobAsync(
                 BuildJobRunnerType.Local,
                 engine.Type,
@@ -294,7 +308,7 @@ public class ClearMLMonitorServiceTests
         );
 
         // Assert - Verify postprocessing job started
-        await _translationBuildJobService
+        await _buildJobService
             .Received(1)
             .StartBuildJobAsync(
                 BuildJobRunnerType.Local,
@@ -311,21 +325,14 @@ public class ClearMLMonitorServiceTests
     [Test]
     public async Task MonitorClearMLTasksPerDomain_StoppedStatus_CancelsBuildAndCleansUp()
     {
-        TranslationEngine engine = CreateTestEngine(jobState: BuildJobState.Active, stage: BuildStage.Train);
+        TEngine engine = CreateTestEngine(jobState: BuildJobState.Active, stage: BuildStage.Train);
 
         // Create real data access context
         MemoryDataAccessContext dataAccessContext = new MemoryDataAccessContext();
         IServiceProvider serviceProvider = CreateServiceProviderWithRealDataContext(dataAccessContext);
 
         // Create service with real data context
-        _service = new ClearMLMonitorService<TranslationEngine>(
-            serviceProvider,
-            _clearMLService,
-            _sharedFileService,
-            _clearMLOptions,
-            _buildJobOptions,
-            _logger
-        );
+        _service = CreateService(serviceProvider);
 
         // Setup building engines
         SetupBuildingEngines(engine);
@@ -355,7 +362,7 @@ public class ClearMLMonitorServiceTests
         const string ErrorMessage = "Training failed due to GPU memory error";
         const string ErrorReason = "RuntimeError";
 
-        TranslationEngine engine = CreateTestEngine(jobState: BuildJobState.Active, stage: BuildStage.Train);
+        TEngine engine = CreateTestEngine(jobState: BuildJobState.Active, stage: BuildStage.Train);
 
         // Use real implementations
         MemoryDataAccessContext dataAccessContext = new MemoryDataAccessContext();
@@ -367,14 +374,7 @@ public class ClearMLMonitorServiceTests
 
         // Setup service with real implementations
         IServiceProvider serviceProvider = CreateServiceProviderWithRealDataContext(dataAccessContext);
-        _service = new ClearMLMonitorService<TranslationEngine>(
-            serviceProvider,
-            _clearMLService,
-            _sharedFileService,
-            _clearMLOptions,
-            _buildJobOptions,
-            _logger
-        );
+        _service = CreateService(serviceProvider);
 
         // Setup building engines
         SetupBuildingEngines(engine);
@@ -404,28 +404,25 @@ public class ClearMLMonitorServiceTests
 
     #region Helper Methods
 
-    private void SetupBuildingEngines(TranslationEngine engine)
+    private void SetupBuildingEngines(TEngine engine)
     {
-        _translationBuildJobService
+        _buildJobService
             .GetBuildingEnginesAsync(BuildJobRunnerType.ClearML, Arg.Any<CancellationToken>())
-            .Returns(new[] { engine });
+            .Returns([engine]);
     }
 
     private void SetupClearMLTasks(ClearMLTask task)
     {
-        _clearMLService
-            .GetTasksByIdAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
-            .Returns(new[] { task });
+        _clearMLService.GetTasksByIdAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>()).Returns([task]);
     }
 
     private IServiceProvider CreateServiceProviderWithRealDataContext(IDataAccessContext dataAccessContext)
     {
         ServiceCollection serviceCollection = new ServiceCollection();
         serviceCollection.AddScoped<IDataAccessContext>(_ => dataAccessContext);
-        serviceCollection.AddScoped(_ => _translationBuildJobService);
+        serviceCollection.AddScoped(_ => _buildJobService);
         serviceCollection.AddScoped(_ => _platformService);
-        serviceCollection.AddKeyedScoped<IPlatformService>(EngineGroup.Translation, (_, _) => _platformService);
-        serviceCollection.AddKeyedScoped<IPlatformService>(EngineGroup.WordAlignment, (_, _) => _platformService);
+        serviceCollection.AddKeyedScoped<IPlatformService>(engineType.ToEngineGroup(), (_, _) => _platformService);
 
         return serviceCollection.BuildServiceProvider();
     }
@@ -476,13 +473,13 @@ public class ClearMLMonitorServiceTests
         }
     }
 
-    private async Task VerifyCancellationFlow(TranslationEngine engine)
+    private async Task VerifyCancellationFlow(TEngine engine)
     {
         await _platformService
             .Received(1)
             .BuildCanceledAsync(engine!.CurrentBuild!.BuildId, Arg.Any<CancellationToken>());
 
-        await _translationBuildJobService
+        await _buildJobService
             .Received(1)
             .BuildJobFinishedAsync(engine.EngineId, engine.CurrentBuild.BuildId, false, Arg.Any<CancellationToken>());
 
@@ -491,7 +488,7 @@ public class ClearMLMonitorServiceTests
             .DeleteAsync($"builds/{engine.CurrentBuild.BuildId}/", Arg.Any<CancellationToken>());
     }
 
-    private async Task VerifyFailureHandling(TranslationEngine engine, string errorReason, string errorMessage)
+    private async Task VerifyFailureHandling(TEngine engine, string errorReason, string errorMessage)
     {
         await _platformService
             .Received(1)
@@ -501,7 +498,7 @@ public class ClearMLMonitorServiceTests
                 Arg.Any<CancellationToken>()
             );
 
-        await _translationBuildJobService
+        await _buildJobService
             .Received(1)
             .BuildJobFinishedAsync(engine.EngineId, engine.CurrentBuild.BuildId, false, Arg.Any<CancellationToken>());
     }

@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Configuration;
+﻿namespace Serval.Machine.Translation.Configuration;
 
 public class SmtTransferEngineOptions
 {

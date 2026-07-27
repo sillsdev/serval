@@ -4,7 +4,4 @@ public class TranslationEngineLocalBuildJobRunner(
     IEnumerable<ILocalBuildJobFactory> factories,
     IServiceScopeFactory serviceScopeFactory,
     ILogger<TranslationEngineLocalBuildJobRunner> logger
-) : LocalBuildJobRunner<TranslationEngine>(factories, serviceScopeFactory, logger)
-{
-    protected override EngineGroup EngineGroup => EngineGroup.Translation;
-}
+) : LocalBuildJobRunner<TranslationEngine>(factories, serviceScopeFactory, logger, EngineGroup.Translation);

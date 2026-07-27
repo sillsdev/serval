@@ -183,13 +183,13 @@ public class NmtEngineServiceTests
 
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
-            ClearMLQueueService = new ClearMLMonitorService<TranslationEngine>(
+            ClearMLQueueService = new TranslationEngineClearMLMonitorService(
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
                 BuildJobOptions,
-                Substitute.For<ILogger<ClearMLMonitorService<TranslationEngine>>>()
+                Substitute.For<ILogger<TranslationEngineClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService<TranslationEngine>(
                 [

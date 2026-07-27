@@ -1,15 +1,17 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class ClearMLMonitorService<TEngine>(
+public abstract class ClearMLMonitorService<TEngine>(
     IServiceProvider services,
     IClearMLService clearMLService,
     ISharedFileService sharedFileService,
     IOptionsMonitor<ClearMLOptions> clearMLOptions,
     IOptionsMonitor<BuildJobOptions> buildJobOptions,
-    ILogger<ClearMLMonitorService<TEngine>> logger
+    ILogger<ClearMLMonitorService<TEngine>> logger,
+    EngineGroup engineGroup,
+    string serviceName
 )
     : RecurrentTask(
-        "ClearML monitor service",
+        serviceName,
         services,
         clearMLOptions.CurrentValue.BuildPollingTimeout,
         logger,
@@ -28,11 +30,14 @@ public class ClearMLMonitorService<TEngine>(
     private readonly ILogger<IClearMLQueueService<TEngine>> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
-    private readonly IReadOnlyDictionary<EngineType, string> _queuePerEngineType =
-        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.EngineType, x => x.Queue);
+    private readonly IReadOnlyDictionary<EngineType, string> _queuePerEngineType = buildJobOptions
+        .CurrentValue.ClearML.Where(c => c.EngineType.ToEngineGroup() == engineGroup)
+        .ToDictionary(c => c.EngineType, c => c.Queue);
 
     private readonly IDictionary<EngineType, int> _queueSizePerEngineType = new ConcurrentDictionary<EngineType, int>(
-        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.EngineType, x => 0)
+        buildJobOptions
+            .CurrentValue.ClearML.Where(c => c.EngineType.ToEngineGroup() == engineGroup)
+            .ToDictionary(x => x.EngineType, x => 0)
     );
 
     public int GetQueueSize(EngineType engineType)

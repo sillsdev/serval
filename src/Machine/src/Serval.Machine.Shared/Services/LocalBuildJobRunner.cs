@@ -3,19 +3,11 @@ namespace Serval.Machine.Shared.Services;
 public abstract class LocalBuildJobRunner<TEngine>(
     IEnumerable<ILocalBuildJobFactory> factories,
     IServiceScopeFactory serviceScopeFactory,
-    ILogger<LocalBuildJobRunner<TEngine>> logger
+    ILogger<LocalBuildJobRunner<TEngine>> logger,
+    EngineGroup engineGroup
 ) : BackgroundService, IBuildJobRunner<TEngine>
     where TEngine : ITrainingEngine
 {
-    private static readonly Dictionary<EngineType, EngineGroup> EngineGroups = new()
-    {
-        [EngineType.SmtTransfer] = EngineGroup.Translation,
-        [EngineType.Nmt] = EngineGroup.Translation,
-        [EngineType.Echo] = EngineGroup.Translation,
-        [EngineType.Statistical] = EngineGroup.WordAlignment,
-        [EngineType.EchoWordAlignment] = EngineGroup.WordAlignment,
-    };
-
     private static readonly BoundedChannelOptions ChannelOptions = new(128)
     {
         FullMode = BoundedChannelFullMode.Wait,
@@ -25,20 +17,17 @@ public abstract class LocalBuildJobRunner<TEngine>(
 
     private readonly Dictionary<EngineGroup, Channel<string>> _jobChannels = new()
     {
-        [EngineGroup.Translation] = Channel.CreateBounded<string>(ChannelOptions),
-        [EngineGroup.WordAlignment] = Channel.CreateBounded<string>(ChannelOptions),
+        [engineGroup] = Channel.CreateBounded<string>(ChannelOptions),
     };
     private readonly ConcurrentDictionary<string, JobInfo> _pendingJobs = new();
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _activeCts = new();
-    private readonly Dictionary<EngineType, ILocalBuildJobFactory> _factories = factories.ToDictionary(f =>
-        f.EngineType
-    );
+    private readonly Dictionary<EngineType, ILocalBuildJobFactory> _factories = factories
+        .Where(f => f.EngineType.ToEngineGroup() == engineGroup)
+        .ToDictionary(f => f.EngineType);
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
     private readonly ILogger<LocalBuildJobRunner<TEngine>> _logger = logger;
 
     public BuildJobRunnerType Type => BuildJobRunnerType.Local;
-
-    protected abstract EngineGroup EngineGroup { get; }
 
     public Task CreateEngineAsync(
         string engineId,
@@ -114,8 +103,8 @@ public abstract class LocalBuildJobRunner<TEngine>(
         await RecoverPendingJobsAsync(scope.ServiceProvider, stoppingToken);
 
         await Task.WhenAll(
-            WatchEngineGroupAsync(engineSub, EngineGroup, stoppingToken),
-            ProcessJobsAsync(EngineGroup, stoppingToken)
+            WatchEngineGroupAsync(engineSub, engineGroup, stoppingToken),
+            ProcessJobsAsync(engineGroup, stoppingToken)
         );
     }
 
@@ -123,7 +112,7 @@ public abstract class LocalBuildJobRunner<TEngine>(
     {
         var buildJobService = sp.GetRequiredService<IBuildJobService<TEngine>>();
         var dataAccessContext = sp.GetRequiredService<IDataAccessContext>();
-        var platform = sp.GetRequiredKeyedService<IPlatformService>(EngineGroup);
+        var platform = sp.GetRequiredKeyedService<IPlatformService>(engineGroup);
 
         await RecoverEngineGroupAsync(buildJobService, platform, dataAccessContext, cancellationToken);
     }
@@ -196,7 +185,7 @@ public abstract class LocalBuildJobRunner<TEngine>(
             )
         )
         {
-            _jobChannels[EngineGroups[engineType]].Writer.TryWrite(build.JobId);
+            _jobChannels[engineType.ToEngineGroup()].Writer.TryWrite(build.JobId);
         }
     }
 

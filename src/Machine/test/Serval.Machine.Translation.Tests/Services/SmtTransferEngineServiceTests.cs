@@ -291,13 +291,13 @@ public class SmtTransferEngineServiceTests
             ClearMLService
                 .When(x => x.StopTaskAsync("job1", Arg.Any<CancellationToken>()))
                 .Do(_ => _cancellationTokenSource.Cancel());
-            ClearMLMonitorService = new ClearMLMonitorService<TranslationEngine>(
+            ClearMLMonitorService = new TranslationEngineClearMLMonitorService(
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
                 BuildJobOptions,
-                Substitute.For<ILogger<ClearMLMonitorService<TranslationEngine>>>()
+                Substitute.For<ILogger<TranslationEngineClearMLMonitorService>>()
             );
 
             _clearMLRunner = new ClearMLBuildJobRunner<TranslationEngine>(
@@ -312,7 +312,6 @@ public class SmtTransferEngineServiceTests
             var services = new ServiceCollection();
             services.AddScoped(_ => _deferredBuildJobService!);
             services.AddKeyedSingleton(EngineGroup.Translation, (_, _) => PlatformService);
-            services.AddKeyedSingleton(EngineGroup.WordAlignment, (_, _) => Substitute.For<IPlatformService>());
             services.AddSingleton<IRepository<TranslationEngine>>(Engines);
             services.AddSingleton<IRepository<TrainSegmentPair>>(TrainSegmentPairs);
             services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());

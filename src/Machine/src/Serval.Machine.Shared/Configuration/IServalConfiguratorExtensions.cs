@@ -16,12 +16,9 @@ public static class IServalConfiguratorExtensions
 
         services.Configure<ServiceOptions>(configuration.GetSection(ServiceOptions.Key));
         services.Configure<SharedFileOptions>(configuration.GetSection(SharedFileOptions.Key));
-        services.Configure<SmtTransferEngineOptions>(configuration.GetSection(SmtTransferEngineOptions.Key));
-        services.Configure<StatisticalEngineOptions>(configuration.GetSection(StatisticalEngineOptions.Key));
         services.Configure<ClearMLOptions>(configuration.GetSection(ClearMLOptions.Key));
         services.Configure<BuildJobOptions>(configuration.GetSection(BuildJobOptions.Key));
 
-        configurator.AddHealthChecks();
         configurator.AddClearMLService();
 
         return configurator;
@@ -74,28 +71,5 @@ public static class IServalConfiguratorExtensions
 
         builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
         return builder;
-    }
-
-    private static IServalConfigurator AddHealthChecks(this IServalConfigurator configurator)
-    {
-        var smtTransferEngineOptions = new SmtTransferEngineOptions();
-        configurator.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
-        string? smtDriveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
-        var statisticalEngineOptions = new StatisticalEngineOptions();
-        configurator.Configuration.GetSection(StatisticalEngineOptions.Key).Bind(statisticalEngineOptions);
-        string? statisticsDriveLetter = Path.GetPathRoot(statisticalEngineOptions.EnginesDir)?[..1];
-        if (smtDriveLetter is null || statisticsDriveLetter is null)
-            throw new InvalidOperationException("SMT Engine and Statistical directory is required");
-        if (smtDriveLetter != statisticsDriveLetter)
-            throw new InvalidOperationException("SMT Engine and Statistical directory must be on the same drive");
-        // add health check for disk storage capacity
-        configurator
-            .Services.AddHealthChecks()
-            .AddDiskStorageHealthCheck(
-                x => x.AddDrive(smtDriveLetter, 1_000), // 1GB
-                "SMT and Statistical Engine Storage Capacity",
-                HealthStatus.Degraded
-            );
-        return configurator;
     }
 }
