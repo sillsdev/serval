@@ -26,8 +26,8 @@ public class StatusTests
                 // the grpc services are not running, so the health check will fail
                 HealthReport healthReport = await client.GetHealthAsync();
                 Assert.That(healthReport, Is.Not.Null);
-                Assert.That(healthReport.Status.ToString(), Is.Not.EqualTo("Healthy"));
-                Assert.That(healthReport.Results, Has.Count.EqualTo(6));
+                Assert.That(healthReport.Status, Is.Not.EqualTo("Healthy"));
+                Assert.That(healthReport.Results, Has.Count.EqualTo(7));
                 break;
 
             case 401:

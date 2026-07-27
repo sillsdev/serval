@@ -8,6 +8,7 @@ global using NUnit.Framework;
 global using Serval.Machine.Shared.Configuration;
 global using Serval.Machine.Shared.Models;
 global using Serval.Machine.Shared.Services;
+global using Serval.Machine.Translation.Configuration;
 global using Serval.Machine.Translation.Models;
 global using Serval.Shared.Contracts;
 global using Serval.Translation.Contracts;

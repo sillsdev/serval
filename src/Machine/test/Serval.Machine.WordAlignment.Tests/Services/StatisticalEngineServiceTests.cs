@@ -198,13 +198,13 @@ public class StatisticalEngineServiceTests
             ClearMLService
                 .When(x => x.StopTaskAsync("job1", Arg.Any<CancellationToken>()))
                 .Do(_ => _cancellationTokenSource.Cancel());
-            ClearMLMonitorService = new ClearMLMonitorService<WordAlignmentEngine>(
+            ClearMLMonitorService = new WordAlignmentEngineClearMLMonitorService(
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
                 BuildJobOptions,
-                Substitute.For<ILogger<ClearMLMonitorService<WordAlignmentEngine>>>()
+                Substitute.For<ILogger<WordAlignmentEngineClearMLMonitorService>>()
             );
 
             _clearMLRunner = new ClearMLBuildJobRunner<WordAlignmentEngine>(

@@ -4,7 +4,4 @@ public class WordAlignmentEngineLocalBuildJobRunner(
     IEnumerable<ILocalBuildJobFactory> factories,
     IServiceScopeFactory serviceScopeFactory,
     ILogger<WordAlignmentEngineLocalBuildJobRunner> logger
-) : LocalBuildJobRunner<WordAlignmentEngine>(factories, serviceScopeFactory, logger)
-{
-    protected override EngineGroup EngineGroup => EngineGroup.WordAlignment;
-}
+) : LocalBuildJobRunner<WordAlignmentEngine>(factories, serviceScopeFactory, logger, EngineGroup.WordAlignment);

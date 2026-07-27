@@ -1,4 +1,4 @@
-﻿namespace Serval.Machine.Shared.Configuration;
+﻿namespace Serval.Machine.WordAlignment.Configuration;
 
 public class StatisticalEngineOptions
 {

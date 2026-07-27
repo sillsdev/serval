@@ -4,6 +4,11 @@ public static class IServalConfiguratorExtensions
 {
     public static IServalConfigurator AddMachineWordAlignment(this IServalConfigurator configurator)
     {
+        configurator.Services.Configure<StatisticalEngineOptions>(
+            configurator.Configuration.GetSection(StatisticalEngineOptions.Key)
+        );
+
+        configurator.AddWordAlignmentEngineHealthChecks();
         configurator.AddWordAlignmentEngineBuildJobService();
         configurator.AddWordAlignmentEngineDataAccess();
         configurator.AddWordAlignmentEngines();
@@ -41,11 +46,11 @@ public static class IServalConfiguratorExtensions
 
         configurator.Services.AddScoped<IClearMLBuildJobFactory, StatisticalClearMLBuildJobFactory>();
 
-        configurator.Services.AddSingleton<ClearMLMonitorService<WordAlignmentEngine>>();
+        configurator.Services.AddSingleton<WordAlignmentEngineClearMLMonitorService>();
         configurator.Services.AddSingleton<IClearMLQueueService<WordAlignmentEngine>>(x =>
-            x.GetRequiredService<ClearMLMonitorService<WordAlignmentEngine>>()
+            x.GetRequiredService<WordAlignmentEngineClearMLMonitorService>()
         );
-        configurator.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService<WordAlignmentEngine>>());
+        configurator.Services.AddHostedService(p => p.GetRequiredService<WordAlignmentEngineClearMLMonitorService>());
 
         configurator.Services.AddSingleton<WordAlignmentEngineLocalBuildJobRunner>();
         configurator.Services.AddSingleton<IBuildJobRunner<WordAlignmentEngine>>(sp =>
@@ -77,6 +82,24 @@ public static class IServalConfiguratorExtensions
                     ),
             ]
         );
+        return configurator;
+    }
+
+    private static IServalConfigurator AddWordAlignmentEngineHealthChecks(this IServalConfigurator configurator)
+    {
+        var statisticalEngineOptions = new StatisticalEngineOptions();
+        configurator.Configuration.GetSection(StatisticalEngineOptions.Key).Bind(statisticalEngineOptions);
+        string? statisticsDriveLetter = Path.GetPathRoot(statisticalEngineOptions.EnginesDir)?[..1];
+        if (statisticsDriveLetter is null)
+            throw new InvalidOperationException("Statistical Engine directory is required");
+        // add health check for disk storage capacity
+        configurator
+            .Services.AddHealthChecks()
+            .AddDiskStorageHealthCheck(
+                x => x.AddDrive(statisticsDriveLetter, 1_000), // 1GB
+                "Statistical Engine Storage Capacity",
+                HealthStatus.Degraded
+            );
         return configurator;
     }
 }

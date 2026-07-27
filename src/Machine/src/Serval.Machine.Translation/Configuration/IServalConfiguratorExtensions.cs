@@ -4,9 +4,13 @@ public static class IServalConfiguratorExtensions
 {
     public static IServalConfigurator AddMachineTranslation(this IServalConfigurator configurator)
     {
+        configurator.Services.Configure<SmtTransferEngineOptions>(
+            configurator.Configuration.GetSection(SmtTransferEngineOptions.Key)
+        );
         configurator.Services.AddSingleton<ILanguageTagService, LanguageTagService>();
         configurator.Services.AddHostedService<ModelCleanupService>();
 
+        configurator.AddTranslationEngineHealthChecks();
         configurator.AddTranslationEngineBuildJobService();
         configurator.AddTranslationEngineDataAccess();
         configurator.AddTranslationEngines();
@@ -48,11 +52,11 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
         configurator.Services.AddScoped<IClearMLBuildJobFactory, SmtTransferClearMLBuildJobFactory>();
 
-        configurator.Services.AddSingleton<ClearMLMonitorService<TranslationEngine>>();
+        configurator.Services.AddSingleton<TranslationEngineClearMLMonitorService>();
         configurator.Services.AddSingleton<IClearMLQueueService<TranslationEngine>>(x =>
-            x.GetRequiredService<ClearMLMonitorService<TranslationEngine>>()
+            x.GetRequiredService<TranslationEngineClearMLMonitorService>()
         );
-        configurator.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService<TranslationEngine>>());
+        configurator.Services.AddHostedService(p => p.GetRequiredService<TranslationEngineClearMLMonitorService>());
 
         configurator.Services.AddSingleton<TranslationEngineLocalBuildJobRunner>();
         configurator.Services.AddSingleton<IBuildJobRunner<TranslationEngine>>(sp =>
@@ -97,6 +101,24 @@ public static class IServalConfiguratorExtensions
                     ),
             ]
         );
+        return configurator;
+    }
+
+    private static IServalConfigurator AddTranslationEngineHealthChecks(this IServalConfigurator configurator)
+    {
+        var smtTransferEngineOptions = new SmtTransferEngineOptions();
+        configurator.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
+        string? smtDriveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
+        if (smtDriveLetter is null)
+            throw new InvalidOperationException("SMT Engine directory is required");
+        // add health check for disk storage capacity
+        configurator
+            .Services.AddHealthChecks()
+            .AddDiskStorageHealthCheck(
+                x => x.AddDrive(smtDriveLetter, 1_000), // 1GB
+                "SMT Engine Storage Capacity",
+                HealthStatus.Degraded
+            );
         return configurator;
     }
 }
