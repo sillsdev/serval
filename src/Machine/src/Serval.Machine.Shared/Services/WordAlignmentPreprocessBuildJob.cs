@@ -88,6 +88,7 @@ public class WordAlignmentPreprocessBuildJob(
         PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool isNonPersistedTranslationEngine,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
@@ -97,6 +98,25 @@ public class WordAlignmentPreprocessBuildJob(
             stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
+            parallelCorpora
+        );
+
+        int maxWarnings = BuildJobOptions.MaxWarnings;
+        if (warnings.Count > maxWarnings)
+        {
+            string tooManyWarningsWarning =
+                $"There were {warnings.Count} warnings. Only the first {maxWarnings} are shown.";
+            warnings = [tooManyWarningsWarning, .. warnings.Take(maxWarnings)];
+        }
+
+        IReadOnlyList<BuildDiagnostic> diagnostics = GetDiagnostics(
+            stats.TrainCount,
+            stats.InferenceCount,
+            sourceLanguageTag,
+            targetLanguageTag,
+            true,
+            true,
+            isNonPersistedTranslationEngine,
             parallelCorpora
         );
 
@@ -122,6 +142,7 @@ public class WordAlignmentPreprocessBuildJob(
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             Warnings = warnings,
+            Diagnostics = diagnostics,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
         };

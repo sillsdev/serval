@@ -64,7 +64,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         if (stats.InferenceCount == 0 && isNonPersistedTranslationEngine)
         {
             throw new InvalidOperationException(
-                $"There was no data specified for inferencing in build {buildId}. Build canceled."
+                $"There was no data specified for inferencing in build {buildId} and the model is not persisted. Build canceled."
             );
         }
 

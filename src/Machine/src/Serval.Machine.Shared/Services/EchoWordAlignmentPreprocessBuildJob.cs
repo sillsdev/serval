@@ -90,6 +90,7 @@ public class EchoWordAlignmentPreprocessBuildJob(
         PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool isNonPersistedTranslationEngine,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )

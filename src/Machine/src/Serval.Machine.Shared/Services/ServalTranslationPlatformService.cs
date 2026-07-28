@@ -105,6 +105,16 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
                 IsPretranslateFilteredByChapter = executionData.IsInferenceFilteredByChapter,
                 Warnings = executionData.Warnings,
+                Diagnostics = executionData
+                    .Diagnostics?.Select(d => new DiagnosticContract
+                    {
+                        Code = d.Code,
+                        Category = d.Category,
+                        Message = d.Message,
+                        Severity = (DiagnosticSeverity)d.Severity,
+                        Data = d.Data,
+                    })
+                    .ToList(),
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
                 ResolvedSourceLanguage = executionData.ResolvedSourceLanguage,

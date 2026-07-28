@@ -9,9 +9,10 @@ public record ExecutionData
     public IReadOnlyDictionary<string, Dictionary<string, int>>? TrainVerseCount { get; init; }
     public IReadOnlyDictionary<string, Dictionary<string, int>>? PretranslateVerseCount { get; init; }
     public IReadOnlyList<string>? Warnings { get; init; }
+    public IReadOnlyList<Diagnostic>? Diagnostics { get; init; }
     public string? EngineSourceLanguageTag { get; init; }
     public string? EngineTargetLanguageTag { get; init; }
     public string? ResolvedSourceLanguage { get; init; }
     public string? ResolvedTargetLanguage { get; init; }
-    public double? AveragePretranslationConfidence { get; init; }
+    public double? AverageVersePretranslationConfidence { get; init; }
 }

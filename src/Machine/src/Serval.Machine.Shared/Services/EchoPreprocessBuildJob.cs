@@ -30,6 +30,7 @@ public class EchoPreprocessBuildJob(
         PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool isNonPersistedTranslationEngine,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
@@ -49,6 +50,17 @@ public class EchoPreprocessBuildJob(
                 $"There were {warnings.Count} warnings. Only the first {maxWarnings} are shown.";
             warnings = [tooManyWarningsWarning, .. warnings.Take(maxWarnings)];
         }
+
+        IReadOnlyList<BuildDiagnostic> diagnostics = GetDiagnostics(
+            stats.TrainCount,
+            stats.InferenceCount,
+            sourceLanguageTag,
+            targetLanguageTag,
+            true,
+            true,
+            isNonPersistedTranslationEngine,
+            parallelCorpora
+        );
 
         // Log summary of build data
         var buildPreprocessSummary = new JsonObject
@@ -74,6 +86,7 @@ public class EchoPreprocessBuildJob(
             TrainVerseCount = stats.TrainVerseCount,
             InferenceVerseCount = stats.InferenceVerseCount,
             Warnings = warnings,
+            Diagnostics = diagnostics,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
             ResolvedSourceLanguage = sourceLanguageTag,

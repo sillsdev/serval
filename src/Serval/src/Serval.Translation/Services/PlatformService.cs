@@ -1,3 +1,5 @@
+using SIL.Machine.Corpora;
+
 namespace Serval.Translation.Services;
 
 public class PlatformService(
@@ -9,6 +11,9 @@ public class PlatformService(
 ) : ITranslationPlatformService
 {
     private const int PretranslationInsertBatchSize = 128;
+
+    private const double BadBookConfidenceThreshold = 0.35;
+    private const string ModelName = "NLLB";
 
     private readonly IRepository<Build> _builds = builds;
     private readonly IRepository<Engine> _engines = engines;
@@ -316,6 +321,16 @@ public class PlatformService(
                         IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
                         IsPretranslateFilteredByChapter = executionData.IsPretranslateFilteredByChapter,
                         Warnings = executionData.Warnings?.ToList() ?? [],
+                        Diagnostics = executionData
+                            .Diagnostics?.Select(d => new Diagnostic
+                            {
+                                Code = d.Code,
+                                Category = d.Category,
+                                Message = d.Message,
+                                Severity = (Models.DiagnosticSeverity)d.Severity,
+                                Data = d.Data,
+                            })
+                            .ToList(),
                         EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                         EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
                         ResolvedSourceLanguage = executionData.ResolvedSourceLanguage,
@@ -383,6 +398,8 @@ public class PlatformService(
         double logConfidenceTotal = 0.0;
         int confidenceCount = 0;
         int numPretranslations = 0;
+        Dictionary<string, double> logConfidenceTotalPerBook = [];
+        Dictionary<string, int> confidenceCountPerBook = [];
         await foreach (PretranslationContract item in pretranslations.WithCancellation(cancellationToken))
         {
             batch.Add(
@@ -399,7 +416,7 @@ public class PlatformService(
                     SourceTokens = item.SourceTokens,
                     TranslationTokens = item.TranslationTokens,
                     Alignment = item
-                        .Alignment?.Select(a => new AlignedWordPair
+                        .Alignment?.Select(a => new Shared.Models.AlignedWordPair
                         {
                             SourceIndex = a.SourceIndex,
                             TargetIndex = a.TargetIndex,
@@ -409,11 +426,25 @@ public class PlatformService(
                     Confidence = item.Confidence,
                 }
             );
-            double? confidence = item.Confidence;
-            if (confidence != null && confidence > 0.0)
+
+            if (item.TargetRefs.Count > 0 && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef))
             {
-                logConfidenceTotal += Math.Log((double)confidence);
-                confidenceCount++;
+                string bookId = scriptureRef.Book;
+                double? confidence = item.Confidence;
+                if (confidence != null && confidence > 0.0)
+                {
+                    double logConfidence = Math.Log((double)confidence);
+                    logConfidenceTotal += logConfidence;
+                    confidenceCount++;
+
+                    if (!logConfidenceTotalPerBook.ContainsKey(bookId))
+                        logConfidenceTotalPerBook[bookId] = 0.0;
+                    logConfidenceTotalPerBook[bookId] += logConfidence;
+
+                    if (!confidenceCountPerBook.ContainsKey(bookId))
+                        confidenceCountPerBook[bookId] = 0;
+                    confidenceCountPerBook[bookId]++;
+                }
             }
 
             numPretranslations++;
@@ -426,11 +457,53 @@ public class PlatformService(
         if (batch.Count > 0)
             await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
 
+        IEnumerable<Diagnostic> badBookConfidences = logConfidenceTotalPerBook
+            .Select(kvp =>
+            {
+                string bookId = kvp.Key;
+                double logTotal = kvp.Value;
+                int count = confidenceCountPerBook[bookId];
+                double averageConfidence = count > 0 ? Math.Exp(logTotal / count) : 0.0;
+                return (bookId, averageConfidence);
+            })
+            .Where(b => b.averageConfidence < BadBookConfidenceThreshold)
+            .Select(b => new Diagnostic
+            {
+                Code = "MODEL-004",
+                Category = "MODEL",
+                Severity = Models.DiagnosticSeverity.Warn,
+                Message =
+                    $"The average pretranslation model confidence {b.averageConfidence} in book {b.bookId} is unusually low for the base model {ModelName}",
+                Data = new Dictionary<string, object>
+                {
+                    { "bookId", b.bookId },
+                    { "averagePretranslationConfidence", b.averageConfidence },
+                    { "modelName", ModelName },
+                },
+            });
+
+        if (badBookConfidences.Any())
+        {
+            Build? currentBuild = await _builds.GetAsync(b => b.Id == buildId, cancellationToken);
+
+            await _builds.UpdateAsync(
+                b => b.Id == buildId,
+                u =>
+                    u.Set(
+                        b => b.ExecutionData.Diagnostics,
+                        currentBuild?.ExecutionData.Diagnostics is null
+                            ? [.. badBookConfidences]
+                            : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
+                    ),
+                cancellationToken: cancellationToken
+            );
+        }
+
         await _builds.UpdateAsync(
             b => b.Id == buildId,
             u =>
                 u.Set(
-                    b => b.ExecutionData.AveragePretranslationConfidence,
+                    b => b.ExecutionData.AverageVersePretranslationConfidence,
                     // Calculate the geometric mean of the pretranslation confidences
                     confidenceCount > 0
                         ? Math.Exp(logConfidenceTotal / confidenceCount)
