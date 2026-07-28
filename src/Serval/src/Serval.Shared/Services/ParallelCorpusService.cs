@@ -11,6 +11,7 @@ public class ParallelCorpusService : IParallelCorpusService
         string ParallelCorpusId,
         string MonolingualCorpusId,
         string ProjectName,
+        string ProjectGuid,
         string VersificationName,
         IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
     )> AnalyzeUsfmVersification(IEnumerable<ParallelCorpusContract> parallelCorpora)
@@ -20,6 +21,7 @@ public class ParallelCorpusService : IParallelCorpusService
             string ParallelCorpusId,
             string MonolingualCorpusId,
             string ProjectName,
+            string ProjectGuid,
             string VersificationName,
             IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
         )> diagnosticsPerCorpus = [];
@@ -44,6 +46,7 @@ public class ParallelCorpusService : IParallelCorpusService
                         parallelCorpus.Id,
                         monolingualCorpus.Id,
                         analysis.ProjectSettings.Name,
+                        analysis.ProjectSettings.Guid,
                         analysis.ProjectSettings.Versification.Name,
                         [
                             .. analysis.Diagnostics.Select(d => new UsfmVersificationDiagnosticContract
@@ -167,7 +170,13 @@ public class ParallelCorpusService : IParallelCorpusService
                         (
                             parallelCorpus.Id,
                             monolingualCorpus.Id,
-                            new() { ProjectName = settings.Name, ParentProjectName = settings.ParentName }
+                            new()
+                            {
+                                ProjectName = settings.Name,
+                                ProjectGuid = settings.Guid,
+                                ParentProjectName = settings.ParentName,
+                                ParentProjectGuid = settings.ParentGuid,
+                            }
                         )
                     );
                 }

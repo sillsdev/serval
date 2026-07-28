@@ -218,6 +218,7 @@ public class ParallelCorpusServiceTests
             string ParallelCorpusId,
             string MonolingualCorpusId,
             string ProjectName,
+            string ProjectGuid,
             string VersificationName,
             IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
         )> analysis = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);

@@ -23,6 +23,8 @@ public class NmtPreprocessBuildJob(
     )
 {
     private readonly ILanguageTagService _languageTagService = languageTagService;
+    private const string ModelName = "NLLB";
+    private const string MinimumTrainCount = "600"; //TODO move to options?
 
     private bool ResolveLanguageCode(string languageCode, out string resolvedCode)
     {
@@ -55,19 +57,13 @@ public class NmtPreprocessBuildJob(
         PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool isNonPersistedTranslationEngine,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
         bool sourceLanguageHasNativeSupport = ResolveLanguageCode(sourceLanguageTag, out string resolvedSourceLanguage);
         bool targetLanguageHasNativeSupport = ResolveLanguageCode(targetLanguageTag, out string resolvedTargetLanguage);
-
-        if (stats.TrainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
-        {
-            throw new InvalidOperationException(
-                $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
-            );
-        }
 
         IReadOnlyList<string> warnings = GetWarnings(
             stats.TrainCount,
@@ -84,6 +80,17 @@ public class NmtPreprocessBuildJob(
                 $"There were {warnings.Count} warnings. Only the first {maxWarnings} are shown.";
             warnings = [tooManyWarningsWarning, .. warnings.Take(maxWarnings)];
         }
+
+        IReadOnlyList<BuildDiagnostic> diagnostics = GetDiagnostics(
+            stats.TrainCount,
+            stats.InferenceCount,
+            sourceLanguageTag,
+            targetLanguageTag,
+            sourceLanguageHasNativeSupport,
+            targetLanguageHasNativeSupport,
+            isNonPersistedTranslationEngine,
+            parallelCorpora
+        );
 
         // Log summary of build data
         JsonObject buildPreprocessSummary = new()
@@ -109,12 +116,20 @@ public class NmtPreprocessBuildJob(
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
             Warnings = warnings,
+            Diagnostics = diagnostics,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
             ResolvedSourceLanguage = resolvedSourceLanguage,
             ResolvedTargetLanguage = resolvedTargetLanguage,
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
+
+        if (stats.TrainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
+        {
+            throw new InvalidOperationException(
+                $"At least one language code in build {buildId} is unknown to the base model {ModelName}, and no data was specified for training. Build canceled."
+            );
+        }
     }
 
     protected override IReadOnlyList<string> GetWarnings(
@@ -141,14 +156,133 @@ public class NmtPreprocessBuildJob(
             == Flores200Support.None
         )
         {
-            warnings.Add($"The script for the source language '{resolvedCode}' is not in Flores-200");
+            warnings.Add(
+                $"The script for the source language '{resolvedCode}' is not known to the base model {ModelName}"
+            );
         }
 
         if (_languageTagService.ConvertToFlores200Code(targetLanguageTag, out resolvedCode) == Flores200Support.None)
         {
-            warnings.Add($"The script for the target language '{resolvedCode}' is not in Flores-200");
+            warnings.Add(
+                $"The script for the target language '{resolvedCode}' is not known to the base model {ModelName}"
+            );
         }
 
         return warnings;
+    }
+
+    protected override IReadOnlyList<BuildDiagnostic> GetDiagnostics(
+        int trainCount,
+        int inferenceCount,
+        string sourceLanguageTag,
+        string targetLanguageTag,
+        bool sourceLanguageHasNativeSupport,
+        bool targetLanguageHasNativeSupport,
+        bool isNonPersistedTranslationEngine,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora
+    )
+    {
+        List<BuildDiagnostic> diagnostics =
+        [
+            .. base.GetDiagnostics(
+                trainCount,
+                inferenceCount,
+                sourceLanguageTag,
+                targetLanguageTag,
+                sourceLanguageHasNativeSupport,
+                targetLanguageHasNativeSupport,
+                isNonPersistedTranslationEngine,
+                parallelCorpora
+            ),
+        ];
+
+        // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere
+        if (trainCount < 600 && trainCount != 0)
+        {
+            diagnostics.Add(
+                new BuildDiagnostic
+                {
+                    Code = "CONFIG-003",
+                    Category = "CONFIG",
+                    Severity = BuildDiagnosticSeverity.Warn,
+                    Message =
+                        $"Only {trainCount} segments were selected for training. Training on fewer than {MinimumTrainCount} is not recommended.",
+                    Data = new Dictionary<string, object>
+                    {
+                        { "trainCount", trainCount },
+                        { "minimumTrainCount", MinimumTrainCount },
+                    },
+                }
+            );
+        }
+
+        if (
+            _languageTagService.ConvertToFlores200Code(sourceLanguageTag, out string resolvedCode)
+            == Flores200Support.None
+        )
+        {
+            diagnostics.Add(
+                new BuildDiagnostic
+                {
+                    Code = "MODEL-001",
+                    Category = "MODEL",
+                    Severity = BuildDiagnosticSeverity.Warn,
+                    Message =
+                        $"The script for the source language '{resolvedCode}' is not known to the base model {ModelName}",
+                    Data = new Dictionary<string, object>
+                    {
+                        { "resolvedCode", sourceLanguageTag },
+                        { "modelName", ModelName },
+                    },
+                }
+            );
+        }
+
+        if (_languageTagService.ConvertToFlores200Code(targetLanguageTag, out resolvedCode) == Flores200Support.None)
+        {
+            diagnostics.Add(
+                new BuildDiagnostic
+                {
+                    Code = "MODEL-002",
+                    Category = "MODEL",
+                    Severity = BuildDiagnosticSeverity.Warn,
+                    Message =
+                        $"The script for the target language '{resolvedCode}' is not known to the base model {ModelName}",
+                    Data = new Dictionary<string, object>
+                    {
+                        { "resolvedCode", targetLanguageTag },
+                        { "modelName", ModelName },
+                    },
+                }
+            );
+        }
+
+        if (trainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
+        {
+            List<string> unknownLanguageCodes = new[]
+            {
+                !sourceLanguageHasNativeSupport ? sourceLanguageTag : "",
+                !targetLanguageHasNativeSupport ? targetLanguageTag : "",
+            }
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
+            diagnostics.Add(
+                new BuildDiagnostic
+                {
+                    Code = "MODEL-004",
+                    Category = "MODEL",
+                    Severity = BuildDiagnosticSeverity.Error,
+                    Message =
+                        $"The following language codes are unknown to the base model {ModelName}: {string.Join(", ", unknownLanguageCodes)}; and no language data was selected for training.",
+                    Data = new Dictionary<string, object>
+                    {
+                        { "modelName", ModelName },
+                        { "unknownLanguageCodes", unknownLanguageCodes },
+                    },
+                }
+            );
+        }
+
+        return diagnostics;
     }
 }

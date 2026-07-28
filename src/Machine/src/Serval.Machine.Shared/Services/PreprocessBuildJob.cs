@@ -46,6 +46,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
         PreprocessStats stats = await WriteDataFilesAsync(engineId, buildId, data, buildOptions, cancellationToken);
+        bool isNonPersistedTranslationEngine = engine is TranslationEngine { IsModelPersisted: false };
 
         await UpdateBuildExecutionData(
             engineId,
@@ -53,13 +54,14 @@ public abstract class PreprocessBuildJob<TEngine>(
             stats,
             engine.SourceLanguage,
             engine.TargetLanguage,
+            isNonPersistedTranslationEngine,
             data,
             cancellationToken
         );
 
         await UpdateTargetQuoteConventionAsync(engineId, buildId, data, cancellationToken);
 
-        if (stats.InferenceCount == 0 && engine is TranslationEngine { IsModelPersisted: false })
+        if (stats.InferenceCount == 0 && isNonPersistedTranslationEngine)
         {
             throw new InvalidOperationException(
                 $"There was no data specified for inferencing in build {buildId}. Build canceled."
@@ -87,6 +89,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool isNonPersistedTranslationEngine,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     );
@@ -137,6 +140,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                 string parallelCorpusId,
                 string monolingualCorpusId,
                 string projectName,
+                string projectGuid,
                 string versificationName,
                 IReadOnlyList<UsfmVersificationDiagnosticContract> diagnostics
             ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
@@ -146,7 +150,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             foreach (UsfmVersificationDiagnosticContract diagnostic in diagnostics)
             {
                 string diagnosticDetails =
-                    $"in project {projectName} at {diagnostic.Filename} "
+                    $"in project {projectName} {projectGuid} at {diagnostic.Filename} "
                     + (diagnostic.LineNumbers.Count == 1 ? "line " : "lines ")
                     + $"{string.Join(", ", diagnostic.LineNumbers)}, "
                     + (diagnostic.NumAffectedVerses == 1 ? "verse " : "verses ")
@@ -182,7 +186,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         )
         {
             warnings.Add(
-                $"Unable to locate parent project {error.ParentProjectName} of daughter project {error.ProjectName} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})"
+                $"Unable to locate parent project {error.ParentProjectName} {error.ParentProjectGuid} of daughter project {error.ProjectName} {error.ProjectGuid} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})"
             );
         }
 
@@ -194,6 +198,240 @@ public abstract class PreprocessBuildJob<TEngine>(
         }
 
         return warnings;
+    }
+
+    protected virtual IReadOnlyList<BuildDiagnostic> GetDiagnostics(
+        int trainCount,
+        int inferenceCount,
+        string sourceLanguageTag,
+        string targetLanguageTag,
+        bool sourceLanguageHasNativeSupport,
+        bool targetLanguageHasNativeSupport,
+        bool isNonPersistedTranslationEngine,
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora
+    )
+    {
+        List<BuildDiagnostic> diagnostics = [];
+        Dictionary<string, string> projectVersifications = [];
+
+        foreach (
+            (
+                string parallelCorpusId,
+                string monolingualCorpusId,
+                string projectName,
+                string projectGuid,
+                string versificationName,
+                IReadOnlyList<UsfmVersificationDiagnosticContract> usfmDiagnostics
+            ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
+        )
+        {
+            projectVersifications[projectGuid] = versificationName;
+            foreach (UsfmVersificationDiagnosticContract usfmDiagnostic in usfmDiagnostics)
+            {
+                string diagnosticDetails =
+                    $"in project {projectName} {projectGuid} at {usfmDiagnostic.Filename} "
+                    + (usfmDiagnostic.LineNumbers.Count == 1 ? "line " : "lines ")
+                    + $"{string.Join(", ", usfmDiagnostic.LineNumbers)}, "
+                    + (usfmDiagnostic.NumAffectedVerses == 1 ? "verse " : "verses ")
+                    + $"{string.Join(", ", usfmDiagnostic.References)} "
+                    + $"(parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId}).";
+                diagnostics.Add(
+                    usfmDiagnostic.Type switch
+                    {
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidChapter => new BuildDiagnostic
+                        {
+                            Code = "USFM-001",
+                            Category = "USFM",
+                            Severity = BuildDiagnosticSeverity.Warn,
+                            Message = $"Invalid chapter number {diagnosticDetails}",
+                            Data = new Dictionary<string, object>
+                            {
+                                { "projectName", projectName },
+                                { "projectGuid", projectGuid },
+                                { "usfmFilename", usfmDiagnostic.Filename },
+                                {
+                                    "lineNumber",
+                                    usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
+                                },
+                                {
+                                    "verseReference",
+                                    usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
+                                },
+                                { "parallelCorpusId", parallelCorpusId },
+                                { "monolingualCorpusId", monolingualCorpusId },
+                            },
+                        },
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidVerse => new BuildDiagnostic
+                        {
+                            Code = "USFM-002",
+                            Category = "USFM",
+                            Severity = BuildDiagnosticSeverity.Warn,
+                            Message = $"Invalid verse number {diagnosticDetails}",
+                            Data = new Dictionary<string, object>
+                            {
+                                { "projectName", projectName },
+                                { "projectGuid", projectGuid },
+                                { "usfmFilename", usfmDiagnostic.Filename },
+                                {
+                                    "lineNumber",
+                                    usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
+                                },
+                                {
+                                    "verseReference",
+                                    usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
+                                },
+                                { "parallelCorpusId", parallelCorpusId },
+                                { "monolingualCorpusId", monolingualCorpusId },
+                            },
+                        },
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra => new BuildDiagnostic
+                        {
+                            Code = "USFM-003",
+                            Category = "USFM",
+                            Severity = BuildDiagnosticSeverity.Info,
+                            Message = $"{usfmDiagnostic.NumAffectedVerses} extra verses {diagnosticDetails}",
+                            Data = new Dictionary<string, object>
+                            {
+                                { "numberOfVerses", usfmDiagnostic.NumAffectedVerses },
+                                { "projectName", projectName },
+                                { "projectGuid", projectGuid },
+                                { "usfmFilename", usfmDiagnostic.Filename },
+                                { "lineNumbers", usfmDiagnostic.LineNumbers },
+                                { "verseReferences", usfmDiagnostic.References },
+                                { "parallelCorpusId", parallelCorpusId },
+                                { "monolingualCorpusId", monolingualCorpusId },
+                            },
+                        },
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing => new BuildDiagnostic
+                        {
+                            Code = "USFM-004",
+                            Category = "USFM",
+                            Severity = BuildDiagnosticSeverity.Warn,
+                            Message = $"Missing {usfmDiagnostic.NumAffectedVerses} verses {diagnosticDetails}",
+                            Data = new Dictionary<string, object>
+                            {
+                                { "numberOfVerses", usfmDiagnostic.NumAffectedVerses },
+                                { "projectName", projectName },
+                                { "projectGuid", projectGuid },
+                                { "usfmFilename", usfmDiagnostic.Filename },
+                                { "lineNumbers", usfmDiagnostic.LineNumbers },
+                                { "verseReferences", usfmDiagnostic.References },
+                                { "parallelCorpusId", parallelCorpusId },
+                                { "monolingualCorpusId", monolingualCorpusId },
+                            },
+                        },
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment =>
+                            new BuildDiagnostic
+                            {
+                                Code = "USFM-005",
+                                Category = "USFM",
+                                Severity = BuildDiagnosticSeverity.Info,
+                                Message = $"Incorrect verse segment {diagnosticDetails}",
+                                Data = new Dictionary<string, object>
+                                {
+                                    { "projectName", projectName },
+                                    { "projectGuid", projectGuid },
+                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    {
+                                        "lineNumber",
+                                        usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
+                                    },
+                                    {
+                                        "verseReference",
+                                        usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
+                                    },
+                                    { "parallelCorpusId", parallelCorpusId },
+                                    { "monolingualCorpusId", monolingualCorpusId },
+                                },
+                            },
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange =>
+                            new BuildDiagnostic
+                            {
+                                Code = "USFM-006",
+                                Category = "USFM",
+                                Severity = BuildDiagnosticSeverity.Info,
+                                Message = $"Unsupported verse range {diagnosticDetails}",
+                                Data = new Dictionary<string, object>
+                                {
+                                    { "projectName", projectName },
+                                    { "projectGuid", projectGuid },
+                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    {
+                                        "lineNumber",
+                                        usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
+                                    },
+                                    {
+                                        "verseReference",
+                                        usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
+                                    },
+                                    { "parallelCorpusId", parallelCorpusId },
+                                    { "monolingualCorpusId", monolingualCorpusId },
+                                },
+                            },
+                        _ => throw new InvalidEnumArgumentException(nameof(usfmDiagnostic.Type)),
+                    }
+                );
+            }
+        }
+
+        foreach (
+            (
+                string parallelCorpusId,
+                string monolingualCorpusId,
+                MissingParentProjectErrorContract error
+            ) in ParallelCorpusService.FindMissingParentProjects(parallelCorpora)
+        )
+        {
+            diagnostics.Add(
+                new BuildDiagnostic
+                {
+                    Code = "CONFIG-001",
+                    Category = "CONFIG",
+                    Severity = BuildDiagnosticSeverity.Warn,
+                    Message =
+                        $"Unable to locate parent project {error.ParentProjectName} {error.ParentProjectGuid} of daughter project {error.ProjectName} {error.ProjectGuid} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
+                    Data = new Dictionary<string, object>
+                    {
+                        { "parentProjectName", error.ParentProjectName },
+                        { "parentProjectGuid", error.ParentProjectGuid },
+                        { "daughterProjectName", error.ProjectName },
+                        { "daughterProjectGuid", error.ProjectGuid },
+                        { "parallelCorpusId", parallelCorpusId },
+                        { "monolingualCorpusId", monolingualCorpusId },
+                    },
+                }
+            );
+        }
+
+        if (projectVersifications.Count > 1)
+        {
+            diagnostics.Add(
+                new BuildDiagnostic
+                {
+                    Code = "CONFIG-002",
+                    Category = "CONFIG",
+                    Severity = BuildDiagnosticSeverity.Info,
+                    Message =
+                        $"Multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", projectVersifications)}",
+                    Data = new Dictionary<string, object> { { "projectVersifications", projectVersifications } },
+                }
+            );
+        }
+
+        if (inferenceCount == 0 && isNonPersistedTranslationEngine)
+        {
+            diagnostics.Add(
+                new BuildDiagnostic
+                {
+                    Code = "CONFIG-004",
+                    Category = "CONFIG",
+                    Severity = BuildDiagnosticSeverity.Error,
+                    Message = "There was no data specified for inferencing and the model is not persisted.",
+                    Data = [],
+                }
+            );
+        }
+        return diagnostics;
     }
 
     protected static (bool IsTrainFilteredByChapter, bool IsInferenceFilteredByChapter) CheckChapterFilters(

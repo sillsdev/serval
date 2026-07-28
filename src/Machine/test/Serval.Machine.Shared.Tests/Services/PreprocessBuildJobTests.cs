@@ -46,6 +46,7 @@ public class PreprocessBuildJobTests
                 (
                     "corpusId1",
                     "src_1",
+                    "0000",
                     "pt-source1",
                     "Original",
                     [
