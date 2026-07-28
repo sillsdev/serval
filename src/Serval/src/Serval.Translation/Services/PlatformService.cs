@@ -13,7 +13,7 @@ public class PlatformService(
     private const int PretranslationInsertBatchSize = 128;
 
     private const double BadBookConfidenceThreshold = 0.35;
-    private const string ModelName = "NLLB";
+    private const string ModelName = "NLLB"; //TODO where can we store this since it's used in multiple classes? In a constants.cs? On the build object itself?
 
     private readonly IRepository<Build> _builds = builds;
     private readonly IRepository<Engine> _engines = engines;
