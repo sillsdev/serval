@@ -97,6 +97,7 @@ public class PlatformServiceTests
                 Id = "b0",
                 EngineRef = "e0",
                 Owner = "owner1",
+                BaseModel = BaseModel.NLLB,
             }
         );
 
@@ -104,14 +105,25 @@ public class PlatformServiceTests
         await env.PlatformService.InsertPretranslationsAsync(
             "e0",
             "b0",
-            GetTestPretranslationsWithConfidences([0.25, 0.5, 1.0])
+            GetTestScripturePretranslationsWithConfidences([0.25, 0.49, 0.25, 0.125])
         );
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
-
+        ExecutionData? executionData = (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData;
+        Assert.That(executionData, Is.Not.Null);
+        Assert.That(executionData.AveragePretranslationConfidence, Is.EqualTo(0.2487).Within(0.0001));
+        Assert.That(executionData.Diagnostics, Has.Count.EqualTo(1));
+        Assert.That(executionData.Diagnostics[0].Code, Is.EqualTo("MODEL-0003"));
         Assert.That(
-            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
-            Is.EqualTo(0.5).Within(0.0001)
+            executionData
+                .Diagnostics[0]
+                .Data.Keys.SequenceEqual(["bookId", "averagePretranslationConfidence", "modelName"])
         );
+        Assert.That(executionData.Diagnostics[0].Data["bookId"], Is.EqualTo("MAT"));
+        Assert.That(
+            executionData.Diagnostics[0].Data["averagePretranslationConfidence"],
+            Is.EqualTo(0.2487).Within(0.0001)
+        );
+        Assert.That(executionData.Diagnostics[0].Data["modelName"], Is.EqualTo("NLLB"));
     }
 
     [Test]
@@ -381,7 +393,7 @@ public class PlatformServiceTests
         await Task.CompletedTask;
     }
 
-    private static async IAsyncEnumerable<PretranslationContract> GetTestPretranslationsWithConfidences(
+    private static async IAsyncEnumerable<PretranslationContract> GetTestScripturePretranslationsWithConfidences(
         IReadOnlyList<double> confidences
     )
     {
@@ -390,9 +402,9 @@ public class PlatformServiceTests
             yield return new PretranslationContract
             {
                 CorpusId = "e0",
-                TextId = $"text{index}",
-                SourceRefs = [$"ref{index}"],
-                TargetRefs = [$"ref{index}"],
+                TextId = "MAT",
+                SourceRefs = [$"MAT 1:{index + 1}"],
+                TargetRefs = [$"MAT 1:{index + 1}"],
                 Translation = "test",
                 SourceTokens = [],
                 TranslationTokens = [],
@@ -426,12 +438,25 @@ public class PlatformServiceTests
                     return ((Func<CancellationToken, Task>)x[0])((CancellationToken)x[1]);
                 });
 
+            var buildDiagnosticService = Substitute.For<IBuildDiagnosticService>();
+            buildDiagnosticService
+                .CreateDiagnostic(Arg.Any<string>(), Arg.Any<Dictionary<string, object>>())
+                .Returns(ci => new DiagnosticContract
+                {
+                    Code = ci.ArgAt<string>(0),
+                    Category = "",
+                    Severity = Shared.Contracts.DiagnosticSeverity.Info,
+                    Message = "",
+                    Data = ci.ArgAt<Dictionary<string, object>>(1),
+                });
+
             PlatformService = new PlatformService(
                 Builds,
                 Engines,
                 Pretranslations,
                 DataAccessContext,
-                Substitute.For<IEventRouter>()
+                Substitute.For<IEventRouter>(),
+                buildDiagnosticService
             );
         }
 

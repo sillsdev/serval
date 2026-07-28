@@ -225,6 +225,7 @@ public class EnginesHandlersTests
                     },
                 ]),
                 null,
+                null,
                 Arg.Any<CancellationToken>()
             );
     }
@@ -301,6 +302,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -379,6 +381,7 @@ public class EnginesHandlersTests
                     },
                 ]),
                 null,
+                null,
                 Arg.Any<CancellationToken>()
             );
     }
@@ -450,6 +453,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -526,6 +530,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -645,6 +650,7 @@ public class EnginesHandlersTests
                     },
                 ]),
                 null,
+                null,
                 Arg.Any<CancellationToken>()
             );
     }
@@ -751,6 +757,7 @@ public class EnginesHandlersTests
                     },
                 ]),
                 null,
+                null,
                 Arg.Any<CancellationToken>()
             );
     }
@@ -827,6 +834,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -943,6 +951,7 @@ public class EnginesHandlersTests
                     },
                 ]),
                 null,
+                null,
                 Arg.Any<CancellationToken>()
             );
     }
@@ -1028,6 +1037,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -1157,6 +1167,7 @@ public class EnginesHandlersTests
                     },
                 ]),
                 null,
+                null,
                 Arg.Any<CancellationToken>()
             );
     }
@@ -1271,6 +1282,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -1403,6 +1415,7 @@ public class EnginesHandlersTests
                     },
                 ]),
                 null,
+                null,
                 Arg.Any<CancellationToken>()
             );
     }
@@ -1525,6 +1538,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -1682,6 +1696,7 @@ public class EnginesHandlersTests
                     },
                 ]),
                 null,
+                null,
                 Arg.Any<CancellationToken>()
             );
     }
@@ -1777,6 +1792,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -1892,6 +1908,7 @@ public class EnginesHandlersTests
                         ],
                     },
                 ]),
+                null,
                 null,
                 Arg.Any<CancellationToken>()
             );
@@ -2758,6 +2775,7 @@ public class EnginesHandlersTests
                     Arg.Any<string>(),
                     Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
                     Arg.Any<string?>(),
+                    Arg.Any<BaseModelContract?>(),
                     Arg.Any<CancellationToken>()
                 )
                 .Returns(Task.CompletedTask);

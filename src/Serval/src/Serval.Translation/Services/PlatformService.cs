@@ -1,3 +1,5 @@
+using SIL.Machine.Corpora;
+
 namespace Serval.Translation.Services;
 
 public class PlatformService(
@@ -5,16 +7,17 @@ public class PlatformService(
     IRepository<Engine> engines,
     IRepository<Pretranslation> pretranslations,
     IDataAccessContext dataAccessContext,
-    IEventRouter eventRouter
+    IEventRouter eventRouter,
+    IBuildDiagnosticService buildDiagnosticService
 ) : ITranslationPlatformService
 {
     private const int PretranslationInsertBatchSize = 128;
-
     private readonly IRepository<Build> _builds = builds;
     private readonly IRepository<Engine> _engines = engines;
     private readonly IRepository<Pretranslation> _pretranslations = pretranslations;
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IEventRouter _eventRouter = eventRouter;
+    private readonly IBuildDiagnosticService _buildDiagnosticService = buildDiagnosticService;
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
@@ -316,6 +319,17 @@ public class PlatformService(
                         IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
                         IsPretranslateFilteredByChapter = executionData.IsPretranslateFilteredByChapter,
                         Warnings = executionData.Warnings?.ToList() ?? [],
+                        Diagnostics = executionData
+                            .Diagnostics?.Select(d => new Diagnostic
+                            {
+                                Code = d.Code,
+                                Category = d.Category,
+                                Message = d.Message,
+                                Severity = (Shared.Models.DiagnosticSeverity)d.Severity,
+                                Data = d.Data,
+                            })
+                            .ToList(),
+                        DiagnosticsTruncated = executionData.DiagnosticsTruncated,
                         EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                         EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
                         ResolvedSourceLanguage = executionData.ResolvedSourceLanguage,
@@ -383,6 +397,8 @@ public class PlatformService(
         double logConfidenceTotal = 0.0;
         int confidenceCount = 0;
         int numPretranslations = 0;
+        Dictionary<string, double> logConfidenceTotalPerBook = [];
+        Dictionary<string, int> confidenceCountPerBook = [];
         await foreach (PretranslationContract item in pretranslations.WithCancellation(cancellationToken))
         {
             batch.Add(
@@ -399,7 +415,7 @@ public class PlatformService(
                     SourceTokens = item.SourceTokens,
                     TranslationTokens = item.TranslationTokens,
                     Alignment = item
-                        .Alignment?.Select(a => new AlignedWordPair
+                        .Alignment?.Select(a => new Shared.Models.AlignedWordPair
                         {
                             SourceIndex = a.SourceIndex,
                             TargetIndex = a.TargetIndex,
@@ -412,8 +428,25 @@ public class PlatformService(
             double? confidence = item.Confidence;
             if (confidence != null && confidence > 0.0)
             {
-                logConfidenceTotal += Math.Log((double)confidence);
+                double logConfidence = Math.Log((double)confidence);
+                logConfidenceTotal += logConfidence;
                 confidenceCount++;
+
+                if (
+                    item.TargetRefs.Count > 0
+                    && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef)
+                )
+                {
+                    string bookId = scriptureRef.Book;
+
+                    if (!logConfidenceTotalPerBook.ContainsKey(bookId))
+                        logConfidenceTotalPerBook[bookId] = 0.0;
+                    logConfidenceTotalPerBook[bookId] += logConfidence;
+
+                    if (!confidenceCountPerBook.ContainsKey(bookId))
+                        confidenceCountPerBook[bookId] = 0;
+                    confidenceCountPerBook[bookId]++;
+                }
             }
 
             numPretranslations++;
@@ -426,16 +459,81 @@ public class PlatformService(
         if (batch.Count > 0)
             await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
 
+        BaseModel? baseModel = (await _builds.GetAsync(b => b.Id == buildId, cancellationToken))?.BaseModel;
+
+        List<Diagnostic> badBookConfidences = logConfidenceTotalPerBook
+            .Select(kvp =>
+            {
+                string bookId = kvp.Key;
+                double logTotal = kvp.Value;
+                int count = confidenceCountPerBook[bookId];
+                double averageConfidence = count > 0 ? Math.Exp(logTotal / count) : 0.0;
+                return (bookId, averageConfidence);
+            })
+            .Where(b =>
+                PretranslationConfidenceEvaluator.IsBookPretranslationConfidenceUnusuallyLow(
+                    b.averageConfidence,
+                    b.bookId,
+                    baseModel
+                )
+            )
+            .Select(b =>
+                _buildDiagnosticService.CreateDiagnostic(
+                    "MODEL-0003",
+                    new Dictionary<string, object>
+                    {
+                        { "bookId", b.bookId },
+                        { "averagePretranslationConfidence", b.averageConfidence },
+                        { "modelName", baseModel?.ToString() ?? "Unknown" },
+                    }
+                )
+            )
+            .Select(d => new Diagnostic
+            {
+                Code = d.Code,
+                Category = d.Category,
+                Message = d.Message,
+                Severity = (Shared.Models.DiagnosticSeverity)d.Severity,
+                Data = d.Data,
+            })
+            .ToList();
+
+        Build? currentBuild = null;
+        if (badBookConfidences.Count > 0)
+        {
+            currentBuild = await _builds.GetAsync(b => b.Id == buildId, cancellationToken);
+
+            await _builds.UpdateAsync(
+                b => b.Id == buildId,
+                u =>
+                    u.Set(
+                        b => b.ExecutionData.Diagnostics,
+                        currentBuild?.ExecutionData.Diagnostics is null
+                            ? [.. badBookConfidences]
+                            : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
+                    ),
+                cancellationToken: cancellationToken
+            );
+        }
+
         await _builds.UpdateAsync(
             b => b.Id == buildId,
             u =>
+            {
                 u.Set(
                     b => b.ExecutionData.AveragePretranslationConfidence,
                     // Calculate the geometric mean of the pretranslation confidences
                     confidenceCount > 0
                         ? Math.Exp(logConfidenceTotal / confidenceCount)
                         : 0.0
-                ),
+                );
+                u.Set(
+                    b => b.ExecutionData.Diagnostics,
+                    currentBuild?.ExecutionData.Diagnostics is null
+                        ? [.. badBookConfidences]
+                        : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
+                );
+            },
             cancellationToken: cancellationToken
         );
     }

@@ -85,7 +85,7 @@ public class EchoWordAlignmentEngineService(
             BuildStage.Preprocess,
             corpora,
             options,
-            cancellationToken
+            cancellationToken: cancellationToken
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
