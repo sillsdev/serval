@@ -8,6 +8,7 @@ public interface IParallelCorpusService
         string ParallelCorpusId,
         string MonolingualCorpusId,
         string ProjectName,
+        string ProjectGuid,
         string VersificationName,
         IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
     )> AnalyzeUsfmVersification(IEnumerable<ParallelCorpusContract> parallelCorpora);

@@ -236,12 +236,25 @@ public class DtoMapper(IUrlService urlService)
             IsPretranslateFilteredByChapter = source.IsPretranslateFilteredByChapter ?? false,
             IsTrainFilteredByChapter = source.IsTrainFilteredByChapter ?? false,
             Warnings = source.Warnings ?? [],
+            Diagnostics = source.Diagnostics?.Select(Map).ToList() ?? [],
             EngineSourceLanguageTag = source.EngineSourceLanguageTag,
             EngineTargetLanguageTag = source.EngineTargetLanguageTag,
             ResolvedSourceLanguage = source.ResolvedSourceLanguage,
             ResolvedTargetLanguage = source.ResolvedTargetLanguage,
             AveragePretranslationConfidence = source.AveragePretranslationConfidence,
         };
+
+    private static DiagnosticDto Map(Diagnostic source)
+    {
+        return new DiagnosticDto
+        {
+            Code = source.Code,
+            Category = source.Category,
+            Message = source.Message,
+            Severity = (Shared.Dtos.DiagnosticSeverity)source.Severity,
+            Data = source.Data,
+        };
+    }
 }
 
 #pragma warning restore CS0612 // Type or member is obsolete

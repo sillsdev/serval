@@ -298,7 +298,7 @@ public abstract class ClearMLMonitorService<TEngine>(
                 BuildStage.Postprocess,
                 (corpusSize, confidence),
                 buildOptions,
-                cancellationToken
+                cancellationToken: cancellationToken
             );
         }
         finally

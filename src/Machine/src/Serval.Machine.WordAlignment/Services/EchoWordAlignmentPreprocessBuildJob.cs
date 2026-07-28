@@ -8,6 +8,7 @@ public class EchoWordAlignmentPreprocessBuildJob(
     IBuildJobService<WordAlignmentEngine> buildJobService,
     ISharedFileService sharedFileService,
     IParallelCorpusService parallelCorpusService,
+    IBuildDiagnosticService buildDiagnosticService,
     IWordAlignmentPlatformService wordAlignmentPlatformService,
     IOptionsMonitor<BuildJobOptions> options
 )
@@ -19,6 +20,7 @@ public class EchoWordAlignmentPreprocessBuildJob(
         buildJobService,
         sharedFileService,
         parallelCorpusService,
+        buildDiagnosticService,
         options
     )
 {
@@ -90,17 +92,43 @@ public class EchoWordAlignmentPreprocessBuildJob(
         PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool isNonPersistedTranslationEngine,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<string> warnings = GetWarnings(
+        string modelName =
+            (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))?.CurrentBuild?.BaseModel.ToString()
+            ?? "Unknown";
+        IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
             stats.TrainCount,
             stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
+            sourceLanguageHasNativeSupport: true,
+            targetLanguageHasNativeSupport: true,
+            isNonPersistedTranslationEngine,
+            modelName,
             parallelCorpora
         );
+
+        IReadOnlyList<string> warnings = diagnostics.Select(d => d.Message).ToList();
+
+        int maxDiagnostics = BuildJobOptions.MaxDiagnostics;
+        bool diagnosticsTruncated = false;
+        if (diagnostics.Count > maxDiagnostics)
+        {
+            diagnosticsTruncated = true;
+            diagnostics = diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics).ToList();
+        }
+
+        int maxWarnings = BuildJobOptions.MaxWarnings;
+        if (warnings.Count > maxWarnings)
+        {
+            string tooManyWarningsWarning =
+                $"There were {warnings.Count} warnings. Only the first {maxWarnings} are shown.";
+            warnings = [tooManyWarningsWarning, .. warnings.Take(maxWarnings)];
+        }
 
         // Log summary of build data
         var buildPreprocessSummary = new JsonObject
@@ -124,6 +152,8 @@ public class EchoWordAlignmentPreprocessBuildJob(
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             Warnings = warnings,
+            Diagnostics = diagnostics,
+            DiagnosticsTruncated = diagnosticsTruncated,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
         };

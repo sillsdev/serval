@@ -291,6 +291,7 @@ public class ClearMLMonitorServiceTests<TEngine, TClearMLMonitorService>(EngineT
                 BuildStage.Postprocess,
                 Arg.Is<(int, double)>(x => x.Item1 == ExpectedCorpusSize && x.Item2 == ExpectedConfidence),
                 engine.CurrentBuild.Options,
+                engine.CurrentBuild.BaseModel,
                 Arg.Any<CancellationToken>()
             )
             .Returns(true);
@@ -318,6 +319,7 @@ public class ClearMLMonitorServiceTests<TEngine, TClearMLMonitorService>(EngineT
                 BuildStage.Postprocess,
                 Arg.Is<(int, double)>(x => x.Item1 == ExpectedCorpusSize && x.Item2 == ExpectedConfidence),
                 engine.CurrentBuild.Options,
+                engine.CurrentBuild.BaseModel,
                 Arg.Any<CancellationToken>()
             );
     }

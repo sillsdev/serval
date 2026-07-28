@@ -16,6 +16,7 @@ public record Build : IOwnedEntity
     public JobState State { get; init; } = JobState.Pending;
     public DateTime? DateFinished { get; init; }
     public IReadOnlyDictionary<string, object>? Options { get; init; }
+    public BaseModel? BaseModel { get; init; }
     public string? DeploymentVersion { get; init; }
     public ExecutionData ExecutionData { get; init; } = new ExecutionData();
     public DateTime? DateCreated { get; set; }

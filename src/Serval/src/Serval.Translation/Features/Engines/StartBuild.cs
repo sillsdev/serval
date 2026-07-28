@@ -1,5 +1,10 @@
 ﻿namespace Serval.Translation.Features.Engines;
 
+public enum BaseModelDto
+{
+    NLLB,
+}
+
 public record TranslationBuildConfigDto
 {
     public string? Name { get; init; }
@@ -12,6 +17,7 @@ public record TranslationBuildConfigDto
     /// }
     /// </example>
     public object? Options { get; init; }
+    public BaseModelDto? BaseModel { get; init; }
 }
 
 public record PretranslateCorpusConfigDto
@@ -69,6 +75,11 @@ public class StartBuildHandler(
                     throw new ConflictException();
                 }
 
+                (Dictionary<string, object>? options, BaseModel? baseModel) = MapOptions(
+                    request.BuildConfig.Options,
+                    request.BuildConfig.BaseModel
+                );
+
                 Build build = new()
                 {
                     EngineRef = engine.Id,
@@ -76,9 +87,10 @@ public class StartBuildHandler(
                     Name = request.BuildConfig.Name,
                     Pretranslate = Map(engine, request.BuildConfig.Pretranslate),
                     TrainOn = Map(engine, request.BuildConfig.TrainOn),
-                    Options = MapOptions(request.BuildConfig.Options),
+                    Options = options,
                     DeploymentVersion = configuration.GetValue<string>("deploymentVersion") ?? "Unknown",
                     DateCreated = DateTime.UtcNow,
+                    BaseModel = baseModel,
                 };
                 await builds.InsertAsync(build, ct);
 
@@ -119,7 +131,14 @@ public class StartBuildHandler(
 
                 await engineFactory
                     .GetEngineService(engine.Type)
-                    .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, ct);
+                    .StartBuildAsync(
+                        engine.Id,
+                        build.Id,
+                        corpora,
+                        buildOptions,
+                        (BaseModelContract?)build.BaseModel,
+                        ct
+                    );
                 return new StartBuildResponse(dtoMapper.Map(build));
             },
             cancellationToken
@@ -350,21 +369,32 @@ public class StartBuildHandler(
         };
     }
 
-    private static Dictionary<string, object>? MapOptions(object? source)
+    private static (Dictionary<string, object>? Options, BaseModel? BaseModel) MapOptions(
+        object? sourceOptions,
+        BaseModelDto? sourceBaseModel
+    )
     {
-        if (source is null)
-            return null;
-        try
+        Dictionary<string, object>? options = [];
+        BaseModel? baseModel = (BaseModel?)sourceBaseModel;
+        if (sourceOptions != null)
         {
-            return JsonSerializer.Deserialize<Dictionary<string, object>>(
-                source.ToString()!,
-                ObjectJsonSerializerOptions
-            );
+            try
+            {
+                options = JsonSerializer.Deserialize<Dictionary<string, object>>(
+                    sourceOptions.ToString()!,
+                    ObjectJsonSerializerOptions
+                );
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Unable to parse field 'options' : {e.Message}", e);
+            }
         }
-        catch (Exception e)
+        if (sourceBaseModel != null && !options!.ContainsKey("parent_model_name"))
         {
-            throw new InvalidOperationException($"Unable to parse field 'options' : {e.Message}", e);
+            options.Add("parent_model_name", ((BaseModel)sourceBaseModel).ToModelName());
         }
+        return (options, baseModel);
     }
 }
 
