@@ -106,12 +106,12 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 IsPretranslateFilteredByChapter = executionData.IsInferenceFilteredByChapter,
                 Warnings = executionData.Warnings,
                 Diagnostics = executionData
-                    .Diagnostics?.Select(d => new DiagnosticContract
+                    .Diagnostics?.Select(d => new Translation.Contracts.DiagnosticContract
                     {
                         Code = d.Code,
                         Category = d.Category,
                         Message = d.Message,
-                        Severity = (DiagnosticSeverity)d.Severity,
+                        Severity = (Translation.Contracts.DiagnosticSeverity)d.Severity,
                         Data = d.Data,
                     })
                     .ToList(),

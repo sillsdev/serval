@@ -103,6 +103,25 @@ public class EchoWordAlignmentPreprocessBuildJob(
             parallelCorpora
         );
 
+        int maxWarnings = BuildJobOptions.MaxWarnings;
+        if (warnings.Count > maxWarnings)
+        {
+            string tooManyWarningsWarning =
+                $"There were {warnings.Count} warnings. Only the first {maxWarnings} are shown.";
+            warnings = [tooManyWarningsWarning, .. warnings.Take(maxWarnings)];
+        }
+
+        IReadOnlyList<BuildDiagnostic> diagnostics = GetDiagnostics(
+            stats.TrainCount,
+            stats.InferenceCount,
+            sourceLanguageTag,
+            targetLanguageTag,
+            true,
+            true,
+            isNonPersistedTranslationEngine,
+            parallelCorpora
+        );
+
         // Log summary of build data
         var buildPreprocessSummary = new JsonObject
         {
@@ -125,6 +144,7 @@ public class EchoWordAlignmentPreprocessBuildJob(
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             Warnings = warnings,
+            Diagnostics = diagnostics,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
         };

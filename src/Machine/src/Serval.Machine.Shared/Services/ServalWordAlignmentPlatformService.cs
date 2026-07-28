@@ -104,6 +104,18 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                 TrainVerseCount = executionData.TrainVerseCount,
                 WordAlignVerseCount = executionData.InferenceVerseCount,
                 Warnings = executionData.Warnings,
+                Diagnostics =
+                    executionData
+                        .Diagnostics?.Select(d => new WordAlignment.Contracts.DiagnosticContract
+                        {
+                            Code = d.Code,
+                            Category = d.Category,
+                            Message = d.Message,
+                            Severity = (WordAlignment.Contracts.DiagnosticSeverity)d.Severity,
+                            Data = d.Data,
+                        })
+                        .ToList()
+                    ?? [],
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
             },
