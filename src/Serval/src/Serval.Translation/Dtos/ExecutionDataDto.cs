@@ -8,6 +8,8 @@ public record ExecutionDataDto
     public bool? IsPretranslateFilteredByChapter { get; init; }
     public IReadOnlyDictionary<string, Dictionary<string, int>>? TrainVerseCount { get; init; }
     public IReadOnlyDictionary<string, Dictionary<string, int>>? PretranslateVerseCount { get; init; }
+
+    [Obsolete]
     public IReadOnlyList<string> Warnings { get; init; } = [];
     public IReadOnlyList<DiagnosticDto> Diagnostics { get; init; } = [];
     public string? EngineSourceLanguageTag { get; init; }

@@ -10942,6 +10942,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("warnings", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("diagnostics", Required = Newtonsoft.Json.Required.Always)]
@@ -11740,6 +11741,7 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("warnings", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
         [Newtonsoft.Json.JsonProperty("diagnostics", Required = Newtonsoft.Json.Required.Always)]
