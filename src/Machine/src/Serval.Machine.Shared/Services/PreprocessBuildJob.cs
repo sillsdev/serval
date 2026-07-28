@@ -193,7 +193,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         if (versifications.Count > 1)
         {
             warnings.Add(
-                $"Multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", versifications)}"
+                $"There are multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", versifications)}."
             );
         }
 
@@ -412,7 +412,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                     Category = "CONFIG",
                     Severity = BuildDiagnosticSeverity.Info,
                     Message =
-                        $"Multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", projectVersifications)}",
+                        $"There are multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", projectVersifications)}.",
                     Data = new Dictionary<string, object> { { "projectVersifications", projectVersifications } },
                 }
             );
