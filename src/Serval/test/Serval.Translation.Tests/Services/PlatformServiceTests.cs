@@ -58,7 +58,7 @@ public class PlatformServiceTests
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
         Assert.That(
-            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AverageVersePretranslationConfidence,
+            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
             Is.Zero.Within(0.001)
         );
 
@@ -71,13 +71,13 @@ public class PlatformServiceTests
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
         Assert.That(
-            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AverageVersePretranslationConfidence,
+            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
             Is.Zero.Within(0.001)
         );
     }
 
     [Test]
-    public async Task BuildCompletedAsync_AverageVersePretranslationConfidence()
+    public async Task BuildCompletedAsync_AveragePretranslationConfidence()
     {
         var env = new TestEnvironment();
         await env.Engines.InsertAsync(
@@ -109,7 +109,7 @@ public class PlatformServiceTests
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
 
         Assert.That(
-            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AverageVersePretranslationConfidence,
+            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
             Is.EqualTo(0.5).Within(0.0001)
         );
     }

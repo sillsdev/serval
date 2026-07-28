@@ -426,16 +426,19 @@ public class PlatformService(
                     Confidence = item.Confidence,
                 }
             );
-
-            if (item.TargetRefs.Count > 0 && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef))
+            double? confidence = item.Confidence;
+            if (confidence != null && confidence > 0.0)
             {
-                string bookId = scriptureRef.Book;
-                double? confidence = item.Confidence;
-                if (confidence != null && confidence > 0.0)
+                double logConfidence = Math.Log((double)confidence);
+                logConfidenceTotal += logConfidence;
+                confidenceCount++;
+
+                if (
+                    item.TargetRefs.Count > 0
+                    && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef)
+                )
                 {
-                    double logConfidence = Math.Log((double)confidence);
-                    logConfidenceTotal += logConfidence;
-                    confidenceCount++;
+                    string bookId = scriptureRef.Book;
 
                     if (!logConfidenceTotalPerBook.ContainsKey(bookId))
                         logConfidenceTotalPerBook[bookId] = 0.0;
@@ -503,7 +506,7 @@ public class PlatformService(
             b => b.Id == buildId,
             u =>
                 u.Set(
-                    b => b.ExecutionData.AverageVersePretranslationConfidence,
+                    b => b.ExecutionData.AveragePretranslationConfidence,
                     // Calculate the geometric mean of the pretranslation confidences
                     confidenceCount > 0
                         ? Math.Exp(logConfidenceTotal / confidenceCount)

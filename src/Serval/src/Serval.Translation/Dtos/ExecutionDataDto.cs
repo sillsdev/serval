@@ -14,5 +14,5 @@ public record ExecutionDataDto
     public string? EngineTargetLanguageTag { get; init; }
     public string? ResolvedSourceLanguage { get; init; }
     public string? ResolvedTargetLanguage { get; init; }
-    public double? AverageVersePretranslationConfidence { get; init; }
+    public double? AveragePretranslationConfidence { get; init; }
 }
