@@ -13,8 +13,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="10.0.1">
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		  <PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
 		<PackageReference Include="NSubstitute" Version="5.3.0" />
@@ -34,6 +34,8 @@
 		<ProjectReference Include="..\..\..\DataAccess\src\SIL.DataAccess\SIL.DataAccess.csproj" />
 		<ProjectReference Include="..\..\..\Serval\src\Serval.Shared\Serval.Shared.csproj" />
 		<ProjectReference Include="..\..\src\Serval.Machine.Shared\Serval.Machine.Shared.csproj" />
+		<ProjectReference Include="..\..\src\Serval.Machine.Translation\Serval.Machine.Translation.csproj" />
+		<ProjectReference Include="..\..\src\Serval.Machine.WordAlignment\Serval.Machine.WordAlignment.csproj" />
 	</ItemGroup>
 
 </Project>

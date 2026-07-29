@@ -55,7 +55,7 @@ Install MongoDB 8.0 as a replica set run it on localhost:27017. (You can run `do
 
 Make sure that the environment variable ASPNETCORE_ENVIRONMENT is set to "Development" by running `export ASPNETCORE_ENVIRONMENT=Development` or adding it to your `.bashrc`.
 
-Open "Serval.sln" and debug the ApiServer.
+Open "Serval.slnx" and debug the ApiServer.
 
 ## Coding guidelines
 

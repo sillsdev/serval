@@ -1,20 +1,13 @@
 namespace Serval.Machine.Shared.Services;
 
-public class LocalBuildJobRunner(
+public abstract class LocalBuildJobRunner<TEngine>(
     IEnumerable<ILocalBuildJobFactory> factories,
     IServiceScopeFactory serviceScopeFactory,
-    ILogger<LocalBuildJobRunner> logger
-) : BackgroundService, IBuildJobRunner
+    ILogger<LocalBuildJobRunner<TEngine>> logger,
+    EngineGroup engineGroup
+) : BackgroundService, IBuildJobRunner<TEngine>
+    where TEngine : ITrainingEngine
 {
-    private static readonly Dictionary<EngineType, EngineGroup> EngineGroups = new()
-    {
-        [EngineType.SmtTransfer] = EngineGroup.Translation,
-        [EngineType.Nmt] = EngineGroup.Translation,
-        [EngineType.Echo] = EngineGroup.Translation,
-        [EngineType.Statistical] = EngineGroup.WordAlignment,
-        [EngineType.EchoWordAlignment] = EngineGroup.WordAlignment,
-    };
-
     private static readonly BoundedChannelOptions ChannelOptions = new(128)
     {
         FullMode = BoundedChannelFullMode.Wait,
@@ -24,16 +17,15 @@ public class LocalBuildJobRunner(
 
     private readonly Dictionary<EngineGroup, Channel<string>> _jobChannels = new()
     {
-        [EngineGroup.Translation] = Channel.CreateBounded<string>(ChannelOptions),
-        [EngineGroup.WordAlignment] = Channel.CreateBounded<string>(ChannelOptions),
+        [engineGroup] = Channel.CreateBounded<string>(ChannelOptions),
     };
     private readonly ConcurrentDictionary<string, JobInfo> _pendingJobs = new();
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _activeCts = new();
-    private readonly Dictionary<EngineType, ILocalBuildJobFactory> _factories = factories.ToDictionary(f =>
-        f.EngineType
-    );
+    private readonly Dictionary<EngineType, ILocalBuildJobFactory> _factories = factories
+        .Where(f => f.EngineType.ToEngineGroup() == engineGroup)
+        .ToDictionary(f => f.EngineType);
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
-    private readonly ILogger<LocalBuildJobRunner> _logger = logger;
+    private readonly ILogger<LocalBuildJobRunner<TEngine>> _logger = logger;
 
     public BuildJobRunnerType Type => BuildJobRunnerType.Local;
 
@@ -96,19 +88,10 @@ public class LocalBuildJobRunner(
     {
         // Scope lives for the duration of ExecuteAsync to keep subscriptions alive.
         using IServiceScope scope = _serviceScopeFactory.CreateScope();
-        var translationEngines = scope.ServiceProvider.GetRequiredService<IRepository<TranslationEngine>>();
-        var wordAlignmentEngines = scope.ServiceProvider.GetRequiredService<IRepository<WordAlignmentEngine>>();
+        var engines = scope.ServiceProvider.GetRequiredService<IRepository<TEngine>>();
 
         // Subscriptions are created before recovery so no changes are missed during the recovery window.
-        using ISubscription<TranslationEngine> translationSub = await translationEngines.SubscribeAsync(
-            e =>
-                e.CurrentBuild != null
-                && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
-                && e.CurrentBuild.JobState == BuildJobState.Pending,
-            mode: SubscriptionMode.Repository,
-            cancellationToken: stoppingToken
-        );
-        using ISubscription<WordAlignmentEngine> wordAlignmentSub = await wordAlignmentEngines.SubscribeAsync(
+        using ISubscription<TEngine> engineSub = await engines.SubscribeAsync(
             e =>
                 e.CurrentBuild != null
                 && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
@@ -120,42 +103,26 @@ public class LocalBuildJobRunner(
         await RecoverPendingJobsAsync(scope.ServiceProvider, stoppingToken);
 
         await Task.WhenAll(
-            WatchEngineGroupAsync(translationSub, EngineGroup.Translation, stoppingToken),
-            WatchEngineGroupAsync(wordAlignmentSub, EngineGroup.WordAlignment, stoppingToken),
-            ProcessJobsAsync(EngineGroup.Translation, stoppingToken),
-            ProcessJobsAsync(EngineGroup.WordAlignment, stoppingToken)
+            WatchEngineGroupAsync(engineSub, engineGroup, stoppingToken),
+            ProcessJobsAsync(engineGroup, stoppingToken)
         );
     }
 
     private async Task RecoverPendingJobsAsync(IServiceProvider sp, CancellationToken cancellationToken)
     {
-        var translationBuildJobService = sp.GetRequiredService<IBuildJobService<TranslationEngine>>();
-        var wordAlignmentBuildJobService = sp.GetRequiredService<IBuildJobService<WordAlignmentEngine>>();
+        var buildJobService = sp.GetRequiredService<IBuildJobService<TEngine>>();
         var dataAccessContext = sp.GetRequiredService<IDataAccessContext>();
-        var translationPlatform = sp.GetRequiredKeyedService<IPlatformService>(EngineGroup.Translation);
-        var wordAlignmentPlatform = sp.GetRequiredKeyedService<IPlatformService>(EngineGroup.WordAlignment);
+        var platform = sp.GetRequiredKeyedService<IPlatformService>(engineGroup);
 
-        await RecoverEngineGroupAsync(
-            translationBuildJobService,
-            translationPlatform,
-            dataAccessContext,
-            cancellationToken
-        );
-        await RecoverEngineGroupAsync(
-            wordAlignmentBuildJobService,
-            wordAlignmentPlatform,
-            dataAccessContext,
-            cancellationToken
-        );
+        await RecoverEngineGroupAsync(buildJobService, platform, dataAccessContext, cancellationToken);
     }
 
-    private async Task RecoverEngineGroupAsync<TEngine>(
+    private async Task RecoverEngineGroupAsync(
         IBuildJobService<TEngine> buildJobService,
         IPlatformService platformService,
         IDataAccessContext dataAccessContext,
         CancellationToken cancellationToken
     )
-        where TEngine : ITrainingEngine
     {
         IReadOnlyList<TEngine> engines = await buildJobService.GetBuildingEnginesAsync(
             BuildJobRunnerType.Local,
@@ -218,16 +185,15 @@ public class LocalBuildJobRunner(
             )
         )
         {
-            _jobChannels[EngineGroups[engineType]].Writer.TryWrite(build.JobId);
+            _jobChannels[engineType.ToEngineGroup()].Writer.TryWrite(build.JobId);
         }
     }
 
-    private async Task WatchEngineGroupAsync<TEngine>(
+    private async Task WatchEngineGroupAsync(
         ISubscription<TEngine> subscription,
         EngineGroup engineGroup,
         CancellationToken cancellationToken
     )
-        where TEngine : ITrainingEngine
     {
         while (!cancellationToken.IsCancellationRequested)
         {

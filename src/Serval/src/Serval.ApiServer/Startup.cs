@@ -80,7 +80,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 c.AddTranslation();
                 c.AddWordAlignment();
                 c.AddDataFiles();
-                c.AddMachineEngines();
+                c.AddMachine();
+                c.AddMachineTranslation();
+                c.AddMachineWordAlignment();
             }
         );
 

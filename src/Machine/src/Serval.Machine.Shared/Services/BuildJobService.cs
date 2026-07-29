@@ -1,10 +1,12 @@
 ﻿namespace Serval.Machine.Shared.Services;
 
-public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRepository<TEngine> engines)
+public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runners, IRepository<TEngine> engines)
     : IBuildJobService<TEngine>
     where TEngine : ITrainingEngine
 {
-    protected readonly Dictionary<BuildJobRunnerType, IBuildJobRunner> Runners = runners.ToDictionary(r => r.Type);
+    protected readonly Dictionary<BuildJobRunnerType, IBuildJobRunner<TEngine>> Runners = runners.ToDictionary(r =>
+        r.Type
+    );
     protected readonly IRepository<TEngine> Engines = engines;
 
     public Task<bool> IsEngineBuilding(string engineId, CancellationToken cancellationToken = default)
@@ -44,7 +46,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
     {
         foreach (BuildJobRunnerType runnerType in Runners.Keys)
         {
-            IBuildJobRunner runner = Runners[runnerType];
+            IBuildJobRunner<TEngine> runner = Runners[runnerType];
             await runner.CreateEngineAsync(engineId, name, cancellationToken);
         }
     }
@@ -53,7 +55,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
     {
         foreach (BuildJobRunnerType runnerType in Runners.Keys)
         {
-            IBuildJobRunner runner = Runners[runnerType];
+            IBuildJobRunner<TEngine> runner = Runners[runnerType];
             await runner.DeleteEngineAsync(engineId, cancellationToken);
         }
     }
@@ -69,7 +71,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
         CancellationToken cancellationToken = default
     )
     {
-        IBuildJobRunner runner = Runners[runnerType];
+        IBuildJobRunner<TEngine> runner = Runners[runnerType];
         (string jobId, string? jobData) = await runner.CreateJobAsync(
             engineType,
             engineId,
@@ -140,10 +142,10 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
             returnOriginal: true,
             cancellationToken: cancellationToken
         );
-        if (engine is not null && engine.CurrentBuild is not null)
+        if (engine?.CurrentBuild is not null)
         {
             // job will be deleted from the queue
-            IBuildJobRunner runner = Runners[engine.CurrentBuild.BuildJobRunner];
+            IBuildJobRunner<TEngine> runner = Runners[engine.CurrentBuild.BuildJobRunner];
             await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
             return (engine.CurrentBuild.BuildId, BuildJobState.None);
         }
@@ -154,9 +156,9 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner> runners, IRep
             u => u.Set(e => e.CurrentBuild!.JobState, BuildJobState.Canceling),
             cancellationToken: cancellationToken
         );
-        if (engine is not null && engine.CurrentBuild is not null)
+        if (engine?.CurrentBuild is not null)
         {
-            IBuildJobRunner runner = Runners[engine.CurrentBuild.BuildJobRunner];
+            IBuildJobRunner<TEngine> runner = Runners[engine.CurrentBuild.BuildJobRunner];
             await runner.StopJobAsync(engine.CurrentBuild.JobId, CancellationToken.None);
             return (engine.CurrentBuild.BuildId, BuildJobState.Canceling);
         }

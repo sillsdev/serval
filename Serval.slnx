@@ -1,0 +1,59 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/DataAccess/" />
+  <Folder Name="/DataAccess/src/">
+    <Project Path="src/DataAccess/src/SIL.DataAccess.Abstractions/SIL.DataAccess.Abstractions.csproj" />
+    <Project Path="src/DataAccess/src/SIL.DataAccess/SIL.DataAccess.csproj" />
+  </Folder>
+  <Folder Name="/DataAccess/test/">
+    <Project Path="src/DataAccess/test/SIL.DataAccess.Tests/SIL.DataAccess.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Machine/" />
+  <Folder Name="/Machine/src/">
+    <Project Path="src/Machine/src/Serval.Machine.Shared/Serval.Machine.Shared.csproj" />
+    <Project Path="src/Machine/src/Serval.Machine.Translation/Serval.Machine.Translation.csproj" />
+    <Project Path="src/Machine/src/Serval.Machine.WordAlignment/Serval.Machine.WordAlignment.csproj" />
+  </Folder>
+  <Folder Name="/Machine/test/">
+    <Project Path="src/Machine/test/Serval.Machine.IntegrationTests/Serval.Machine.IntegrationTests.csproj" />
+    <Project Path="src/Machine/test/Serval.Machine.Shared.Tests/Serval.Machine.Shared.Tests.csproj" />
+    <Project Path="src/Machine/test/Serval.Machine.Translation.Tests/Serval.Machine.Translation.Tests.csproj" />
+    <Project Path="src/Machine/test/Serval.Machine.WordAlignment.Tests/Serval.Machine.WordAlignment.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Serval/" />
+  <Folder Name="/Serval/src/">
+    <Project Path="src/Serval/src/Serval.ApiServer/Serval.ApiServer.csproj" />
+    <Project Path="src/Serval/src/Serval.Client/Serval.Client.csproj">
+      <BuildDependency Project="src/Serval/src/Serval.ApiServer/Serval.ApiServer.csproj" />
+    </Project>
+    <Project Path="src/Serval/src/Serval.DataFiles.Contracts/Serval.DataFiles.Contracts.csproj" />
+    <Project Path="src/Serval/src/Serval.DataFiles/Serval.DataFiles.csproj" />
+    <Project Path="src/Serval/src/Serval.Shared.Contracts/Serval.Shared.Contracts.csproj" />
+    <Project Path="src/Serval/src/Serval.Shared/Serval.Shared.csproj" />
+    <Project Path="src/Serval/src/Serval.Translation.Contracts/Serval.Translation.Contracts.csproj" />
+    <Project Path="src/Serval/src/Serval.Translation/Serval.Translation.csproj" />
+    <Project Path="src/Serval/src/Serval.WordAlignment.Contracts/Serval.WordAlignment.Contracts.csproj" />
+    <Project Path="src/Serval/src/Serval.WordAlignment/Serval.WordAlignment.csproj" />
+  </Folder>
+  <Folder Name="/Serval/test/">
+    <Project Path="src/Serval/test/Serval.ApiServer.IntegrationTests/Serval.ApiServer.IntegrationTests.csproj" />
+    <Project Path="src/Serval/test/Serval.DataFiles.Tests/Serval.DataFiles.Tests.csproj" />
+    <Project Path="src/Serval/test/Serval.E2ETests/Serval.E2ETests.csproj" />
+    <Project Path="src/Serval/test/Serval.IntegrationTests/Serval.IntegrationTests.csproj" />
+    <Project Path="src/Serval/test/Serval.Shared.Tests/Serval.Shared.Tests.csproj" />
+    <Project Path="src/Serval/test/Serval.Translation.Tests/Serval.Translation.Tests.csproj" />
+    <Project Path="src/Serval/test/Serval.WordAlignment.Tests/Serval.WordAlignment.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".csharpierrc.yaml" />
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+    <File Path="src/AssemblyInfo.props" />
+  </Folder>
+</Solution>
