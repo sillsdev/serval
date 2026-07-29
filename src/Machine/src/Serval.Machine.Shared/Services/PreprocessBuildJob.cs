@@ -124,82 +124,6 @@ public abstract class PreprocessBuildJob<TEngine>(
         }
     }
 
-    protected virtual IReadOnlyList<string> GetWarnings(
-        int trainCount,
-        int inferenceCount,
-        string sourceLanguageTag,
-        string targetLanguageTag,
-        IReadOnlyList<ParallelCorpusContract> parallelCorpora
-    )
-    {
-        List<string> warnings = [];
-        HashSet<string> versifications = [];
-
-        foreach (
-            (
-                string parallelCorpusId,
-                string monolingualCorpusId,
-                string projectName,
-                string projectGuid,
-                string versificationName,
-                IReadOnlyList<UsfmVersificationDiagnosticContract> diagnostics
-            ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
-        )
-        {
-            versifications.Add(versificationName);
-            foreach (UsfmVersificationDiagnosticContract diagnostic in diagnostics)
-            {
-                string diagnosticDetails =
-                    $"in project {projectName} {projectGuid} at {diagnostic.Filename} "
-                    + (diagnostic.LineNumbers.Count == 1 ? "line " : "lines ")
-                    + $"{string.Join(", ", diagnostic.LineNumbers)}, "
-                    + (diagnostic.NumAffectedVerses == 1 ? "verse " : "verses ")
-                    + $"{string.Join(", ", diagnostic.References)} "
-                    + $"(parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId}).";
-                warnings.Add(
-                    diagnostic.Type switch
-                    {
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidChapter =>
-                            $"Invalid chapter number {diagnosticDetails}",
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidVerse =>
-                            $"Invalid verse number {diagnosticDetails}",
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra =>
-                            $"{diagnostic.NumAffectedVerses} extra verses {diagnosticDetails}",
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing =>
-                            $"Missing {diagnostic.NumAffectedVerses} verses {diagnosticDetails}",
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment =>
-                            $"Incorrect verse segment {diagnosticDetails}",
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange =>
-                            $"Unsupported verse range {diagnosticDetails}",
-                        _ => $"USFM versification issue {diagnosticDetails}",
-                    }
-                );
-            }
-        }
-
-        foreach (
-            (
-                string parallelCorpusId,
-                string monolingualCorpusId,
-                MissingParentProjectErrorContract error
-            ) in ParallelCorpusService.FindMissingParentProjects(parallelCorpora)
-        )
-        {
-            warnings.Add(
-                $"Unable to locate parent project {error.ParentProjectName} {error.ParentProjectGuid} of daughter project {error.ProjectName} {error.ProjectGuid} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})"
-            );
-        }
-
-        if (versifications.Count > 1)
-        {
-            warnings.Add(
-                $"There are multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", versifications)}."
-            );
-        }
-
-        return warnings;
-    }
-
     protected virtual IReadOnlyList<BuildDiagnostic> GetDiagnostics(
         int trainCount,
         int inferenceCount,
@@ -240,7 +164,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                     {
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidChapter => new BuildDiagnostic
                         {
-                            Code = "USFM-001",
+                            Code = "USFM-0001",
                             Category = "USFM",
                             Severity = BuildDiagnosticSeverity.Warn,
                             Message = $"Invalid chapter number {diagnosticDetails}",
@@ -263,7 +187,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                         },
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidVerse => new BuildDiagnostic
                         {
-                            Code = "USFM-002",
+                            Code = "USFM-0002",
                             Category = "USFM",
                             Severity = BuildDiagnosticSeverity.Warn,
                             Message = $"Invalid verse number {diagnosticDetails}",
@@ -286,7 +210,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                         },
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra => new BuildDiagnostic
                         {
-                            Code = "USFM-003",
+                            Code = "USFM-0003",
                             Category = "USFM",
                             Severity = BuildDiagnosticSeverity.Info,
                             Message = $"{usfmDiagnostic.NumAffectedVerses} extra verses {diagnosticDetails}",
@@ -304,7 +228,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                         },
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing => new BuildDiagnostic
                         {
-                            Code = "USFM-004",
+                            Code = "USFM-0004",
                             Category = "USFM",
                             Severity = BuildDiagnosticSeverity.Warn,
                             Message = $"Missing {usfmDiagnostic.NumAffectedVerses} verses {diagnosticDetails}",
@@ -323,7 +247,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment =>
                             new BuildDiagnostic
                             {
-                                Code = "USFM-005",
+                                Code = "USFM-0005",
                                 Category = "USFM",
                                 Severity = BuildDiagnosticSeverity.Info,
                                 Message = $"Incorrect verse segment {diagnosticDetails}",
@@ -347,7 +271,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange =>
                             new BuildDiagnostic
                             {
-                                Code = "USFM-006",
+                                Code = "USFM-0006",
                                 Category = "USFM",
                                 Severity = BuildDiagnosticSeverity.Info,
                                 Message = $"Unsupported verse range {diagnosticDetails}",
@@ -385,7 +309,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             diagnostics.Add(
                 new BuildDiagnostic
                 {
-                    Code = "CONFIG-001",
+                    Code = "CONFIG-0001",
                     Category = "CONFIG",
                     Severity = BuildDiagnosticSeverity.Warn,
                     Message =
@@ -403,12 +327,12 @@ public abstract class PreprocessBuildJob<TEngine>(
             );
         }
 
-        if (projectVersifications.Count > 1)
+        if (projectVersifications.Values.Distinct().Count() > 1)
         {
             diagnostics.Add(
                 new BuildDiagnostic
                 {
-                    Code = "CONFIG-002",
+                    Code = "CONFIG-0002",
                     Category = "CONFIG",
                     Severity = BuildDiagnosticSeverity.Info,
                     Message =
@@ -423,7 +347,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             diagnostics.Add(
                 new BuildDiagnostic
                 {
-                    Code = "CONFIG-004",
+                    Code = "CONFIG-0004",
                     Category = "CONFIG",
                     Severity = BuildDiagnosticSeverity.Error,
                     Message = "There was no data specified for inferencing and the model is not persisted.",

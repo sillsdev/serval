@@ -35,13 +35,24 @@ public class EchoPreprocessBuildJob(
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<string> warnings = GetWarnings(
+        IReadOnlyList<BuildDiagnostic> diagnostics = GetDiagnostics(
             stats.TrainCount,
             stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
+            sourceLanguageHasNativeSupport: true,
+            targetLanguageHasNativeSupport: true,
+            isNonPersistedTranslationEngine,
             parallelCorpora
         );
+
+        IReadOnlyList<string> warnings = diagnostics.Select(d => d.Message).ToList();
+
+        int maxDiagnostics = BuildJobOptions.MaxDiagnostics;
+        if (diagnostics.Count > maxDiagnostics)
+        {
+            diagnostics = diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics).ToList();
+        }
 
         int maxWarnings = BuildJobOptions.MaxWarnings;
         if (warnings.Count > maxWarnings)
@@ -50,17 +61,6 @@ public class EchoPreprocessBuildJob(
                 $"There were {warnings.Count} warnings. Only the first {maxWarnings} are shown.";
             warnings = [tooManyWarningsWarning, .. warnings.Take(maxWarnings)];
         }
-
-        IReadOnlyList<BuildDiagnostic> diagnostics = GetDiagnostics(
-            stats.TrainCount,
-            stats.InferenceCount,
-            sourceLanguageTag,
-            targetLanguageTag,
-            true,
-            true,
-            isNonPersistedTranslationEngine,
-            parallelCorpora
-        );
 
         // Log summary of build data
         var buildPreprocessSummary = new JsonObject

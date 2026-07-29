@@ -10945,9 +10945,8 @@ namespace Serval.Client
         [System.Obsolete]
         public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
-        [Newtonsoft.Json.JsonProperty("diagnostics", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<Diagnostic> Diagnostics { get; set; } = new System.Collections.ObjectModel.Collection<Diagnostic>();
+        [Newtonsoft.Json.JsonProperty("diagnostics", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<TranslationDiagnostic>? Diagnostics { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("engineSourceLanguageTag", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? EngineSourceLanguageTag { get; set; } = default!;
@@ -10967,7 +10966,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Diagnostic
+    public partial class TranslationDiagnostic
     {
 
         [Newtonsoft.Json.JsonProperty("code", Required = Newtonsoft.Json.Required.Always)]
@@ -10985,7 +10984,7 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("severity", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public DiagnosticSeverity Severity { get; set; } = default!;
+        public TranslationDiagnosticSeverity Severity { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("data", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -10994,7 +10993,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum DiagnosticSeverity
+    public enum TranslationDiagnosticSeverity
     {
 
         [System.Runtime.Serialization.EnumMember(Value = @"Info")]
@@ -11744,9 +11743,8 @@ namespace Serval.Client
         [System.Obsolete]
         public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
 
-        [Newtonsoft.Json.JsonProperty("diagnostics", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.IList<Diagnostic2> Diagnostics { get; set; } = new System.Collections.ObjectModel.Collection<Diagnostic2>();
+        [Newtonsoft.Json.JsonProperty("diagnostics", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<WordAlignmentDiagnostic>? Diagnostics { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("engineSourceLanguageTag", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? EngineSourceLanguageTag { get; set; } = default!;
@@ -11757,7 +11755,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Diagnostic2
+    public partial class WordAlignmentDiagnostic
     {
 
         [Newtonsoft.Json.JsonProperty("code", Required = Newtonsoft.Json.Required.Always)]
@@ -11775,7 +11773,7 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("severity", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public DiagnosticSeverity2 Severity { get; set; } = default!;
+        public WordAlignmentDiagnosticSeverity Severity { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("data", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
@@ -11784,7 +11782,7 @@ namespace Serval.Client
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum DiagnosticSeverity2
+    public enum WordAlignmentDiagnosticSeverity
     {
 
         [System.Runtime.Serialization.EnumMember(Value = @"Info")]

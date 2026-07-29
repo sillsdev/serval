@@ -244,14 +244,14 @@ public class DtoMapper(IUrlService urlService)
             AveragePretranslationConfidence = source.AveragePretranslationConfidence,
         };
 
-    private static DiagnosticDto Map(Diagnostic source)
+    private static TranslationDiagnosticDto Map(Diagnostic source)
     {
-        return new DiagnosticDto
+        return new TranslationDiagnosticDto
         {
             Code = source.Code,
             Category = source.Category,
             Message = source.Message,
-            Severity = (Dtos.DiagnosticSeverity)source.Severity,
+            Severity = (Dtos.TranslationDiagnosticSeverity)source.Severity,
             Data = source.Data,
         };
     }

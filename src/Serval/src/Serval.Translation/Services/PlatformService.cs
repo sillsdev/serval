@@ -460,7 +460,7 @@ public class PlatformService(
         if (batch.Count > 0)
             await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
 
-        IEnumerable<Diagnostic> badBookConfidences = logConfidenceTotalPerBook
+        List<Diagnostic> badBookConfidences = logConfidenceTotalPerBook
             .Select(kvp =>
             {
                 string bookId = kvp.Key;
@@ -472,22 +472,24 @@ public class PlatformService(
             .Where(b => b.averageConfidence < BadBookConfidenceThreshold)
             .Select(b => new Diagnostic
             {
-                Code = "MODEL-004",
+                Code = "MODEL-0003",
                 Category = "MODEL",
                 Severity = Models.DiagnosticSeverity.Warn,
                 Message =
-                    $"The average pretranslation model confidence {b.averageConfidence} in book {b.bookId} is unusually low for the base model {ModelName}",
+                    $"The average pretranslation model confidence {b.averageConfidence:f4} in book {b.bookId} is unusually low for the base model {ModelName}",
                 Data = new Dictionary<string, object>
                 {
                     { "bookId", b.bookId },
                     { "averagePretranslationConfidence", b.averageConfidence },
                     { "modelName", ModelName },
                 },
-            });
+            })
+            .ToList();
 
-        if (badBookConfidences.Any())
+        Build? currentBuild = null;
+        if (badBookConfidences.Count > 0)
         {
-            Build? currentBuild = await _builds.GetAsync(b => b.Id == buildId, cancellationToken);
+            currentBuild = await _builds.GetAsync(b => b.Id == buildId, cancellationToken);
 
             await _builds.UpdateAsync(
                 b => b.Id == buildId,
@@ -505,13 +507,21 @@ public class PlatformService(
         await _builds.UpdateAsync(
             b => b.Id == buildId,
             u =>
+            {
                 u.Set(
                     b => b.ExecutionData.AveragePretranslationConfidence,
                     // Calculate the geometric mean of the pretranslation confidences
                     confidenceCount > 0
                         ? Math.Exp(logConfidenceTotal / confidenceCount)
                         : 0.0
-                ),
+                );
+                u.Set(
+                    b => b.ExecutionData.Diagnostics,
+                    currentBuild?.ExecutionData.Diagnostics is null
+                        ? [.. badBookConfidences]
+                        : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
+                );
+            },
             cancellationToken: cancellationToken
         );
     }
