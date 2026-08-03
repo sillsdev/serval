@@ -106,12 +106,12 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                 Warnings = executionData.Warnings,
                 Diagnostics =
                     executionData
-                        .Diagnostics?.Select(d => new WordAlignment.Contracts.DiagnosticContract
+                        .Diagnostics?.Select(d => new DiagnosticContract
                         {
                             Code = d.Code,
                             Category = d.Category,
                             Message = d.Message,
-                            Severity = (WordAlignment.Contracts.DiagnosticSeverity)d.Severity,
+                            Severity = (DiagnosticSeverity)d.Severity,
                             Data = d.Data,
                         })
                         .ToList()

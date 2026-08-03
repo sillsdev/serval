@@ -9,6 +9,7 @@ public class NmtPreprocessBuildJob(
     ISharedFileService sharedFileService,
     ILanguageTagService languageTagService,
     IParallelCorpusService parallelCorpusService,
+    IBuildDiagnosticService buildDiagnosticService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
@@ -19,6 +20,7 @@ public class NmtPreprocessBuildJob(
         buildJobService,
         sharedFileService,
         parallelCorpusService,
+        buildDiagnosticService,
         options
     )
 {
@@ -81,7 +83,27 @@ public class NmtPreprocessBuildJob(
         int maxDiagnostics = BuildJobOptions.MaxDiagnostics;
         if (diagnostics.Count > maxDiagnostics)
         {
-            diagnostics = diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics).ToList();
+            DiagnosticContract diagnosticContract = BuildDiagnosticService.CreateDiagnostic(
+                "CONFIG-0005",
+                new Dictionary<string, object>
+                {
+                    { "diagnosticsCount", diagnostics.Count },
+                    { "maximumDiagnosticsCount", BuildJobOptions.MaxDiagnostics },
+                }
+            );
+            BuildDiagnostic tooManyDiagnosticsDiagnostic = new()
+            {
+                Code = diagnosticContract.Code,
+                Category = diagnosticContract.Category,
+                Message = diagnosticContract.Message,
+                Severity = (BuildDiagnosticSeverity)diagnosticContract.Severity,
+                Data = diagnosticContract.Data,
+            };
+            diagnostics =
+            [
+                .. diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics),
+                tooManyDiagnosticsDiagnostic,
+            ];
         }
 
         int maxWarnings = BuildJobOptions.MaxWarnings;
@@ -143,37 +165,20 @@ public class NmtPreprocessBuildJob(
         IReadOnlyList<ParallelCorpusContract> parallelCorpora
     )
     {
-        List<BuildDiagnostic> diagnostics =
-        [
-            .. base.GetDiagnostics(
-                trainCount,
-                inferenceCount,
-                sourceLanguageTag,
-                targetLanguageTag,
-                sourceLanguageHasNativeSupport,
-                targetLanguageHasNativeSupport,
-                isNonPersistedTranslationEngine,
-                parallelCorpora
-            ),
-        ];
+        List<DiagnosticContract> diagnostics = [];
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere
         if (trainCount < 600 && trainCount != 0)
         {
             diagnostics.Add(
-                new BuildDiagnostic
-                {
-                    Code = "CONFIG-0003",
-                    Category = "CONFIG",
-                    Severity = BuildDiagnosticSeverity.Warn,
-                    Message =
-                        $"Only {trainCount} segments were selected for training. Training on fewer than {MinimumTrainCount} is not recommended.",
-                    Data = new Dictionary<string, object>
+                BuildDiagnosticService.CreateDiagnostic(
+                    "CONFIG-0003",
+                    new Dictionary<string, object>
                     {
                         { "trainCount", trainCount },
                         { "minimumTrainCount", MinimumTrainCount },
-                    },
-                }
+                    }
+                )
             );
         }
 
@@ -183,38 +188,20 @@ public class NmtPreprocessBuildJob(
         )
         {
             diagnostics.Add(
-                new BuildDiagnostic
-                {
-                    Code = "MODEL-0001",
-                    Category = "MODEL",
-                    Severity = BuildDiagnosticSeverity.Warn,
-                    Message =
-                        $"The script for the source language '{resolvedCode}' is not known to the base model {ModelName}",
-                    Data = new Dictionary<string, object>
-                    {
-                        { "resolvedCode", resolvedCode },
-                        { "modelName", ModelName },
-                    },
-                }
+                BuildDiagnosticService.CreateDiagnostic(
+                    "MODEL-0001",
+                    new Dictionary<string, object> { { "resolvedCode", resolvedCode }, { "modelName", ModelName } }
+                )
             );
         }
 
         if (_languageTagService.ConvertToFlores200Code(targetLanguageTag, out resolvedCode) == Flores200Support.None)
         {
             diagnostics.Add(
-                new BuildDiagnostic
-                {
-                    Code = "MODEL-0002",
-                    Category = "MODEL",
-                    Severity = BuildDiagnosticSeverity.Warn,
-                    Message =
-                        $"The script for the target language '{resolvedCode}' is not known to the base model {ModelName}",
-                    Data = new Dictionary<string, object>
-                    {
-                        { "resolvedCode", resolvedCode },
-                        { "modelName", ModelName },
-                    },
-                }
+                BuildDiagnosticService.CreateDiagnostic(
+                    "MODEL-0002",
+                    new Dictionary<string, object> { { "resolvedCode", resolvedCode }, { "modelName", ModelName } }
+                )
             );
         }
 
@@ -228,22 +215,37 @@ public class NmtPreprocessBuildJob(
                 .Where(s => !string.IsNullOrEmpty(s))
                 .ToList();
             diagnostics.Add(
-                new BuildDiagnostic
-                {
-                    Code = "MODEL-0004",
-                    Category = "MODEL",
-                    Severity = BuildDiagnosticSeverity.Error,
-                    Message =
-                        $"The following language codes are unknown to the base model {ModelName}: {string.Join(", ", unknownLanguageCodes)}; and no language data was selected for training.",
-                    Data = new Dictionary<string, object>
+                BuildDiagnosticService.CreateDiagnostic(
+                    "MODEL-0004",
+                    new Dictionary<string, object>
                     {
-                        { "modelName", ModelName },
                         { "unknownLanguageCodes", unknownLanguageCodes },
-                    },
-                }
+                        { "modelName", ModelName },
+                    }
+                )
             );
         }
 
-        return diagnostics;
+        return
+        [
+            .. base.GetDiagnostics(
+                trainCount,
+                inferenceCount,
+                sourceLanguageTag,
+                targetLanguageTag,
+                sourceLanguageHasNativeSupport,
+                targetLanguageHasNativeSupport,
+                isNonPersistedTranslationEngine,
+                parallelCorpora
+            ),
+            .. diagnostics.Select(d => new BuildDiagnostic
+            {
+                Code = d.Code,
+                Category = d.Category,
+                Message = d.Message,
+                Severity = (BuildDiagnosticSeverity)d.Severity,
+                Data = d.Data,
+            }),
+        ];
     }
 }

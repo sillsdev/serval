@@ -46,18 +46,10 @@ public class PreprocessBuildJobTests
                 (
                     "corpusId1",
                     "src_1",
-                    "0000",
                     "pt-source1",
+                    "0000",
                     "Original",
                     [
-                        new()
-                        {
-                            NumAffectedVerses = 1,
-                            Filename = "41MAT.SFM",
-                            References = ["MAT 1:1"],
-                            LineNumbers = [3],
-                            Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing,
-                        },
                         new()
                         {
                             NumAffectedVerses = 2,
@@ -66,17 +58,75 @@ public class PreprocessBuildJobTests
                             LineNumbers = [4, 5],
                             Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra,
                         },
+                        new()
+                        {
+                            NumAffectedVerses = 1,
+                            Filename = "41MAT.SFM",
+                            References = ["MAT 1:1"],
+                            LineNumbers = [3],
+                            Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing,
+                        },
                     ]
                 ),
             ]);
 
         await env.RunBuildJobAsync(corpus1, engineId: "engine4");
         Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(2));
+        Assert.That(env.ExecutionData.Diagnostics, Has.Count.EqualTo(2));
 
-        env.BuildJobOptions.CurrentValue.Returns(new BuildJobOptions() { MaxWarnings = 1 });
+        Assert.That(env.ExecutionData.Diagnostics[0].Code, Is.EqualTo("USFM-0003"));
+        Dictionary<string, object> data = env.ExecutionData.Diagnostics[0].Data;
+
+        Assert.That(data, Has.Count.EqualTo(8));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["numberOfVerses"] is int numberOfVerses && numberOfVerses == 2);
+            Assert.That(data["projectName"] is string projectName && projectName == "pt-source1");
+            Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "0000");
+            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["lineNumbers"] is List<int> lineNumbers && lineNumbers.SequenceEqual([4, 5]));
+            Assert.That(
+                data["verseReferences"] is List<string> verseReferences
+                    && verseReferences.SequenceEqual(["MAT 1:2", "MAT 1:3"])
+            );
+            Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
+            Assert.That(data["monolingualCorpusId"] is string monolingualCorpusId && monolingualCorpusId == "src_1");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[1].Code, Is.EqualTo("USFM-0004"));
+        data = env.ExecutionData.Diagnostics[1].Data;
+
+        Assert.That(data, Has.Count.EqualTo(8));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["numberOfVerses"] is int numberOfVerses && numberOfVerses == 1);
+            Assert.That(data["projectName"] is string projectName && projectName == "pt-source1");
+            Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "0000");
+            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["lineNumbers"] is List<int> lineNumbers && lineNumbers.SequenceEqual([3]));
+            Assert.That(
+                data["verseReferences"] is List<string> verseReferences && verseReferences.SequenceEqual(["MAT 1:1"])
+            );
+            Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
+            Assert.That(data["monolingualCorpusId"] is string monolingualCorpusId && monolingualCorpusId == "src_1");
+        }
+
+        env.BuildJobOptions.CurrentValue.Returns(new BuildJobOptions() { MaxWarnings = 1, MaxDiagnostics = 1 });
         await env.RunBuildJobAsync(corpus1, engineId: "engine4");
         // Two warnings after truncation + one warning mentioning that warnings were truncated
         Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(2));
+        Assert.That(env.ExecutionData.Diagnostics, Has.Count.EqualTo(2));
+
+        Assert.That(env.ExecutionData.Diagnostics[0].Code, Is.EqualTo("USFM-0004"));
+        Assert.That(env.ExecutionData.Diagnostics[1].Code, Is.EqualTo("CONFIG-0005"));
+        data = env.ExecutionData.Diagnostics[1].Data;
+
+        Assert.That(data, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["diagnosticsCount"] is int diagnosticsCount && diagnosticsCount == 2);
+            Assert.That(data["maximumDiagnosticsCount"] is int maximumDiagnosticsCount && maximumDiagnosticsCount == 1);
+        }
     }
 
     [Test]
@@ -491,6 +541,7 @@ public class PreprocessBuildJobTests
         public IClearMLService ClearMLService { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
         public IParallelCorpusService ParallelCorpusService { get; }
+        public IBuildDiagnosticService BuildDiagnosticService { get; }
         public SmtTransferEngineStateService StateService { get; private set; }
 
         public BuildExecutionData ExecutionData { get; private set; } = new BuildExecutionData();
@@ -660,6 +711,17 @@ public class PreprocessBuildJobTests
                 Engines
             );
             ParallelCorpusService = Substitute.For<IParallelCorpusService>();
+            BuildDiagnosticService = Substitute.For<IBuildDiagnosticService>();
+            BuildDiagnosticService
+                .CreateDiagnostic(Arg.Any<string>(), Arg.Any<Dictionary<string, object>>())
+                .Returns(ci => new DiagnosticContract
+                {
+                    Code = ci.ArgAt<string>(0),
+                    Message = "",
+                    Category = "",
+                    Data = ci.ArgAt<Dictionary<string, object>>(1),
+                    Severity = ci.ArgAt<string>(0) == "USFM-0003" ? DiagnosticSeverity.Info : DiagnosticSeverity.Warn,
+                });
             StateService = CreateStateService();
         }
 
@@ -678,6 +740,7 @@ public class PreprocessBuildJobTests
                         SharedFileService,
                         new LanguageTagService(),
                         ParallelCorpusService,
+                        BuildDiagnosticService,
                         BuildJobOptions
                     );
                 }
@@ -693,6 +756,7 @@ public class PreprocessBuildJobTests
                         StateService,
                         TrainSegmentPairs,
                         ParallelCorpusService,
+                        BuildDiagnosticService,
                         BuildJobOptions
                     );
                 }

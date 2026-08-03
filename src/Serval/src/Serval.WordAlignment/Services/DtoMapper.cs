@@ -201,14 +201,14 @@ public class DtoMapper(IUrlService urlService)
         };
     }
 
-    private static WordAlignmentDiagnosticDto Map(Diagnostic source)
+    private static DiagnosticDto Map(Diagnostic source)
     {
-        return new WordAlignmentDiagnosticDto
+        return new DiagnosticDto
         {
             Code = source.Code,
             Category = source.Category,
             Message = source.Message,
-            Severity = (Dtos.WordAlignmentDiagnosticSeverity)source.Severity,
+            Severity = (Shared.Dtos.DiagnosticSeverity)source.Severity,
             Data = source.Data,
         };
     }

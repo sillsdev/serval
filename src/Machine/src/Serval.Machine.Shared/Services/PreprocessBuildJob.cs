@@ -8,6 +8,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     IBuildJobService<TEngine> buildJobService,
     ISharedFileService sharedFileService,
     IParallelCorpusService parallelCorpusService,
+    IBuildDiagnosticService buildDiagnosticService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : BuildJob<TEngine, IReadOnlyList<ParallelCorpusContract>>(
@@ -32,6 +33,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     protected readonly BuildJobOptions BuildJobOptions = options.CurrentValue;
     protected readonly ISharedFileService SharedFileService = sharedFileService;
     protected readonly IParallelCorpusService ParallelCorpusService = parallelCorpusService;
+    protected readonly IBuildDiagnosticService BuildDiagnosticService = buildDiagnosticService;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -135,7 +137,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         IReadOnlyList<ParallelCorpusContract> parallelCorpora
     )
     {
-        List<BuildDiagnostic> diagnostics = [];
+        List<DiagnosticContract> diagnostics = [];
         Dictionary<string, string> projectVersifications = [];
 
         foreach (
@@ -152,106 +154,84 @@ public abstract class PreprocessBuildJob<TEngine>(
             projectVersifications[projectGuid] = versificationName;
             foreach (UsfmVersificationDiagnosticContract usfmDiagnostic in usfmDiagnostics)
             {
-                string diagnosticDetails =
-                    $"in project {projectName} {projectGuid} at {usfmDiagnostic.Filename} "
-                    + (usfmDiagnostic.LineNumbers.Count == 1 ? "line " : "lines ")
-                    + $"{string.Join(", ", usfmDiagnostic.LineNumbers)}, "
-                    + (usfmDiagnostic.NumAffectedVerses == 1 ? "verse " : "verses ")
-                    + $"{string.Join(", ", usfmDiagnostic.References)} "
-                    + $"(parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId}).";
                 diagnostics.Add(
                     usfmDiagnostic.Type switch
                     {
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidChapter => new BuildDiagnostic
-                        {
-                            Code = "USFM-0001",
-                            Category = "USFM",
-                            Severity = BuildDiagnosticSeverity.Warn,
-                            Message = $"Invalid chapter number {diagnosticDetails}",
-                            Data = new Dictionary<string, object>
-                            {
-                                { "projectName", projectName },
-                                { "projectGuid", projectGuid },
-                                { "usfmFilename", usfmDiagnostic.Filename },
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidChapter =>
+                            BuildDiagnosticService.CreateDiagnostic(
+                                "USFM-0001",
+                                new Dictionary<string, object>
                                 {
-                                    "lineNumber",
-                                    usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
-                                },
+                                    { "projectName", projectName },
+                                    { "projectGuid", projectGuid },
+                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    {
+                                        "lineNumber",
+                                        usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
+                                    },
+                                    {
+                                        "verseReference",
+                                        usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
+                                    },
+                                    { "parallelCorpusId", parallelCorpusId },
+                                    { "monolingualCorpusId", monolingualCorpusId },
+                                }
+                            ),
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidVerse =>
+                            BuildDiagnosticService.CreateDiagnostic(
+                                "USFM-0002",
+                                new Dictionary<string, object>
                                 {
-                                    "verseReference",
-                                    usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
-                                },
-                                { "parallelCorpusId", parallelCorpusId },
-                                { "monolingualCorpusId", monolingualCorpusId },
-                            },
-                        },
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidVerse => new BuildDiagnostic
-                        {
-                            Code = "USFM-0002",
-                            Category = "USFM",
-                            Severity = BuildDiagnosticSeverity.Warn,
-                            Message = $"Invalid verse number {diagnosticDetails}",
-                            Data = new Dictionary<string, object>
-                            {
-                                { "projectName", projectName },
-                                { "projectGuid", projectGuid },
-                                { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "projectName", projectName },
+                                    { "projectGuid", projectGuid },
+                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    {
+                                        "lineNumber",
+                                        usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
+                                    },
+                                    {
+                                        "verseReference",
+                                        usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
+                                    },
+                                    { "parallelCorpusId", parallelCorpusId },
+                                    { "monolingualCorpusId", monolingualCorpusId },
+                                }
+                            ),
+
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra =>
+                            BuildDiagnosticService.CreateDiagnostic(
+                                "USFM-0003",
+                                new Dictionary<string, object>
                                 {
-                                    "lineNumber",
-                                    usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
-                                },
+                                    { "numberOfVerses", usfmDiagnostic.NumAffectedVerses },
+                                    { "projectName", projectName },
+                                    { "projectGuid", projectGuid },
+                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "lineNumbers", usfmDiagnostic.LineNumbers.ToList() },
+                                    { "verseReferences", usfmDiagnostic.References.ToList() },
+                                    { "parallelCorpusId", parallelCorpusId },
+                                    { "monolingualCorpusId", monolingualCorpusId },
+                                }
+                            ),
+                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing =>
+                            BuildDiagnosticService.CreateDiagnostic(
+                                "USFM-0004",
+                                new Dictionary<string, object>
                                 {
-                                    "verseReference",
-                                    usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
-                                },
-                                { "parallelCorpusId", parallelCorpusId },
-                                { "monolingualCorpusId", monolingualCorpusId },
-                            },
-                        },
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Extra => new BuildDiagnostic
-                        {
-                            Code = "USFM-0003",
-                            Category = "USFM",
-                            Severity = BuildDiagnosticSeverity.Info,
-                            Message = $"{usfmDiagnostic.NumAffectedVerses} extra verses {diagnosticDetails}",
-                            Data = new Dictionary<string, object>
-                            {
-                                { "numberOfVerses", usfmDiagnostic.NumAffectedVerses },
-                                { "projectName", projectName },
-                                { "projectGuid", projectGuid },
-                                { "usfmFilename", usfmDiagnostic.Filename },
-                                { "lineNumbers", usfmDiagnostic.LineNumbers },
-                                { "verseReferences", usfmDiagnostic.References },
-                                { "parallelCorpusId", parallelCorpusId },
-                                { "monolingualCorpusId", monolingualCorpusId },
-                            },
-                        },
-                        Serval.Shared.Contracts.UsfmVersificationDiagnosticType.Missing => new BuildDiagnostic
-                        {
-                            Code = "USFM-0004",
-                            Category = "USFM",
-                            Severity = BuildDiagnosticSeverity.Warn,
-                            Message = $"Missing {usfmDiagnostic.NumAffectedVerses} verses {diagnosticDetails}",
-                            Data = new Dictionary<string, object>
-                            {
-                                { "numberOfVerses", usfmDiagnostic.NumAffectedVerses },
-                                { "projectName", projectName },
-                                { "projectGuid", projectGuid },
-                                { "usfmFilename", usfmDiagnostic.Filename },
-                                { "lineNumbers", usfmDiagnostic.LineNumbers },
-                                { "verseReferences", usfmDiagnostic.References },
-                                { "parallelCorpusId", parallelCorpusId },
-                                { "monolingualCorpusId", monolingualCorpusId },
-                            },
-                        },
+                                    { "numberOfVerses", usfmDiagnostic.NumAffectedVerses },
+                                    { "projectName", projectName },
+                                    { "projectGuid", projectGuid },
+                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "lineNumbers", usfmDiagnostic.LineNumbers.ToList() },
+                                    { "verseReferences", usfmDiagnostic.References.ToList() },
+                                    { "parallelCorpusId", parallelCorpusId },
+                                    { "monolingualCorpusId", monolingualCorpusId },
+                                }
+                            ),
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment =>
-                            new BuildDiagnostic
-                            {
-                                Code = "USFM-0005",
-                                Category = "USFM",
-                                Severity = BuildDiagnosticSeverity.Info,
-                                Message = $"Incorrect verse segment {diagnosticDetails}",
-                                Data = new Dictionary<string, object>
+                            BuildDiagnosticService.CreateDiagnostic(
+                                "USFM-0005",
+                                new Dictionary<string, object>
                                 {
                                     { "projectName", projectName },
                                     { "projectGuid", projectGuid },
@@ -266,16 +246,12 @@ public abstract class PreprocessBuildJob<TEngine>(
                                     },
                                     { "parallelCorpusId", parallelCorpusId },
                                     { "monolingualCorpusId", monolingualCorpusId },
-                                },
-                            },
+                                }
+                            ),
                         Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange =>
-                            new BuildDiagnostic
-                            {
-                                Code = "USFM-0006",
-                                Category = "USFM",
-                                Severity = BuildDiagnosticSeverity.Info,
-                                Message = $"Unsupported verse range {diagnosticDetails}",
-                                Data = new Dictionary<string, object>
+                            BuildDiagnosticService.CreateDiagnostic(
+                                "USFM-0006",
+                                new Dictionary<string, object>
                                 {
                                     { "projectName", projectName },
                                     { "projectGuid", projectGuid },
@@ -284,14 +260,8 @@ public abstract class PreprocessBuildJob<TEngine>(
                                         "lineNumber",
                                         usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
                                     },
-                                    {
-                                        "verseReference",
-                                        usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
-                                    },
-                                    { "parallelCorpusId", parallelCorpusId },
-                                    { "monolingualCorpusId", monolingualCorpusId },
-                                },
-                            },
+                                }
+                            ),
                         _ => throw new InvalidEnumArgumentException(nameof(usfmDiagnostic.Type)),
                     }
                 );
@@ -307,14 +277,9 @@ public abstract class PreprocessBuildJob<TEngine>(
         )
         {
             diagnostics.Add(
-                new BuildDiagnostic
-                {
-                    Code = "CONFIG-0001",
-                    Category = "CONFIG",
-                    Severity = BuildDiagnosticSeverity.Warn,
-                    Message =
-                        $"Unable to locate parent project {error.ParentProjectName} {error.ParentProjectGuid} of daughter project {error.ProjectName} {error.ProjectGuid} (parallel corpus {parallelCorpusId}, monolingual corpus {monolingualCorpusId})",
-                    Data = new Dictionary<string, object>
+                BuildDiagnosticService.CreateDiagnostic(
+                    "CONFIG-0001",
+                    new Dictionary<string, object>
                     {
                         { "parentProjectName", error.ParentProjectName },
                         { "parentProjectGuid", error.ParentProjectGuid },
@@ -322,40 +287,35 @@ public abstract class PreprocessBuildJob<TEngine>(
                         { "daughterProjectGuid", error.ProjectGuid },
                         { "parallelCorpusId", parallelCorpusId },
                         { "monolingualCorpusId", monolingualCorpusId },
-                    },
-                }
+                    }
+                )
             );
         }
 
         if (projectVersifications.Values.Distinct().Count() > 1)
         {
             diagnostics.Add(
-                new BuildDiagnostic
-                {
-                    Code = "CONFIG-0002",
-                    Category = "CONFIG",
-                    Severity = BuildDiagnosticSeverity.Info,
-                    Message =
-                        $"There are multiple versifications represented among Paratext projects selected for training or inferencing: {string.Join(", ", projectVersifications)}.",
-                    Data = new Dictionary<string, object> { { "projectVersifications", projectVersifications } },
-                }
+                BuildDiagnosticService.CreateDiagnostic(
+                    "CONFIG-0002",
+                    new Dictionary<string, object> { { "projectVersifications", projectVersifications } }
+                )
             );
         }
 
         if (inferenceCount == 0 && isNonPersistedTranslationEngine)
         {
-            diagnostics.Add(
-                new BuildDiagnostic
-                {
-                    Code = "CONFIG-0004",
-                    Category = "CONFIG",
-                    Severity = BuildDiagnosticSeverity.Error,
-                    Message = "There was no data specified for inferencing and the model is not persisted.",
-                    Data = [],
-                }
-            );
+            diagnostics.Add(BuildDiagnosticService.CreateDiagnostic("CONFIG-0004", []));
         }
-        return diagnostics;
+        return diagnostics
+            .Select(d => new BuildDiagnostic
+            {
+                Code = d.Code,
+                Category = d.Category,
+                Message = d.Message,
+                Severity = (BuildDiagnosticSeverity)d.Severity,
+                Data = d.Data,
+            })
+            .ToList();
     }
 
     protected static (bool IsTrainFilteredByChapter, bool IsInferenceFilteredByChapter) CheckChapterFilters(

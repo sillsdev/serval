@@ -10,6 +10,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddTransient<IFileSystem, FileSystem>();
         services.AddSingleton<IParallelCorpusService, ParallelCorpusService>();
+        services.AddSingleton<IBuildDiagnosticService, BuildDiagnosticService>();
         services.AddScoped<IEventRouter, EventRouter>();
 
         services.Configure<DataFileOptions>(configuration.GetSection(DataFileOptions.Key));

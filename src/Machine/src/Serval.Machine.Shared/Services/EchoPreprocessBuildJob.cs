@@ -8,6 +8,7 @@ public class EchoPreprocessBuildJob(
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     IParallelCorpusService parallelCorpusService,
+    IBuildDiagnosticService buildDiagnosticService,
     ITranslationPlatformService translationPlatformService,
     IOptionsMonitor<BuildJobOptions> options
 )
@@ -19,6 +20,7 @@ public class EchoPreprocessBuildJob(
         buildJobService,
         sharedFileService,
         parallelCorpusService,
+        buildDiagnosticService,
         options
     )
 {
@@ -51,7 +53,27 @@ public class EchoPreprocessBuildJob(
         int maxDiagnostics = BuildJobOptions.MaxDiagnostics;
         if (diagnostics.Count > maxDiagnostics)
         {
-            diagnostics = diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics).ToList();
+            DiagnosticContract diagnosticContract = BuildDiagnosticService.CreateDiagnostic(
+                "CONFIG-0005",
+                new Dictionary<string, object>
+                {
+                    { "diagnosticsCount", diagnostics.Count },
+                    { "maximumDiagnosticsCount", BuildJobOptions.MaxDiagnostics },
+                }
+            );
+            BuildDiagnostic tooManyDiagnosticsDiagnostic = new()
+            {
+                Code = diagnosticContract.Code,
+                Category = diagnosticContract.Category,
+                Message = diagnosticContract.Message,
+                Severity = (BuildDiagnosticSeverity)diagnosticContract.Severity,
+                Data = diagnosticContract.Data,
+            };
+            diagnostics =
+            [
+                .. diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics),
+                tooManyDiagnosticsDiagnostic,
+            ];
         }
 
         int maxWarnings = BuildJobOptions.MaxWarnings;

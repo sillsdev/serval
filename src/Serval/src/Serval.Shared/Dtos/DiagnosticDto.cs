@@ -1,6 +1,6 @@
-namespace Serval.WordAlignment.Contracts;
+namespace Serval.Shared.Dtos;
 
-public record DiagnosticContract
+public record DiagnosticDto
 {
     public required string Code { get; init; }
     public required string Category { get; init; }

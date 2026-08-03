@@ -327,7 +327,7 @@ public class PlatformService(
                                 Code = d.Code,
                                 Category = d.Category,
                                 Message = d.Message,
-                                Severity = (Models.DiagnosticSeverity)d.Severity,
+                                Severity = (Shared.Models.DiagnosticSeverity)d.Severity,
                                 Data = d.Data,
                             })
                             .ToList(),
@@ -474,7 +474,7 @@ public class PlatformService(
             {
                 Code = "MODEL-0003",
                 Category = "MODEL",
-                Severity = Models.DiagnosticSeverity.Warn,
+                Severity = Shared.Models.DiagnosticSeverity.Warn,
                 Message =
                     $"The average pretranslation model confidence {b.averageConfidence:f4} in book {b.bookId} is unusually low for the base model {ModelName}",
                 Data = new Dictionary<string, object>

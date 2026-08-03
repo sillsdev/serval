@@ -10,6 +10,7 @@ public class SmtTransferPreprocessBuildJob(
     SmtTransferEngineStateService stateService,
     IRepository<TrainSegmentPair> trainSegmentPairs,
     IParallelCorpusService parallelCorpusService,
+    IBuildDiagnosticService buildDiagnosticService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
@@ -20,6 +21,7 @@ public class SmtTransferPreprocessBuildJob(
         buildJobService,
         sharedFileService,
         parallelCorpusService,
+        buildDiagnosticService,
         options
     )
 {

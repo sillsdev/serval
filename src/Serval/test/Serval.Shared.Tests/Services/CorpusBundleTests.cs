@@ -1,5 +1,6 @@
 namespace Serval.Shared.Services;
 
+[TestFixture]
 public class CorpusBundleTests
 {
     [Test]
