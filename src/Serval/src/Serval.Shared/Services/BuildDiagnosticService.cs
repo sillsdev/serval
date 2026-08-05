@@ -129,17 +129,6 @@ public class BuildDiagnosticService : IBuildDiagnosticService
             Severity = Contracts.DiagnosticSeverity.Error,
             DataTypes = [],
         },
-        ["CONFIG-0005"] = new DiagnosticInfo
-        {
-            MessageFormat = "{0} diagnostics were emitted by this build. Only the first {1} are saved.",
-            Category = "CONFIG",
-            Severity = Contracts.DiagnosticSeverity.Warn,
-            DataTypes = new Dictionary<string, Type>
-            {
-                ["numDiagnostics"] = typeof(int),
-                ["maximumNumDiagnostics"] = typeof(int),
-            },
-        },
         ["USFM-0001"] = new DiagnosticInfo
         {
             MessageFormat =

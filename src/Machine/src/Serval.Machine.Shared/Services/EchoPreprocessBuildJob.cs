@@ -51,29 +51,11 @@ public class EchoPreprocessBuildJob(
         IReadOnlyList<string> warnings = diagnostics.Select(d => d.Message).ToList();
 
         int maxDiagnostics = BuildJobOptions.MaxDiagnostics;
+        bool diagnosticsTruncated = false;
         if (diagnostics.Count > maxDiagnostics)
         {
-            DiagnosticContract diagnosticContract = BuildDiagnosticService.CreateDiagnostic(
-                "CONFIG-0005",
-                new Dictionary<string, object>
-                {
-                    { "diagnosticsCount", diagnostics.Count },
-                    { "maximumDiagnosticsCount", BuildJobOptions.MaxDiagnostics },
-                }
-            );
-            BuildDiagnostic tooManyDiagnosticsDiagnostic = new()
-            {
-                Code = diagnosticContract.Code,
-                Category = diagnosticContract.Category,
-                Message = diagnosticContract.Message,
-                Severity = (BuildDiagnosticSeverity)diagnosticContract.Severity,
-                Data = diagnosticContract.Data,
-            };
-            diagnostics =
-            [
-                .. diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics),
-                tooManyDiagnosticsDiagnostic,
-            ];
+            diagnosticsTruncated = true;
+            diagnostics = diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics).ToList();
         }
 
         int maxWarnings = BuildJobOptions.MaxWarnings;
@@ -109,6 +91,7 @@ public class EchoPreprocessBuildJob(
             InferenceVerseCount = stats.InferenceVerseCount,
             Warnings = warnings,
             Diagnostics = diagnostics,
+            DiagnosticsTruncated = diagnosticsTruncated,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
             ResolvedSourceLanguage = sourceLanguageTag,

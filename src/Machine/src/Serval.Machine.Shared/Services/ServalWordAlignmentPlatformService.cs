@@ -116,6 +116,7 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                         })
                         .ToList()
                     ?? [],
+                DiagnosticsTruncated = executionData.DiagnosticsTruncated,
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
             },

@@ -10,6 +10,7 @@ public record BuildExecutionData
     public IReadOnlyDictionary<string, Dictionary<string, int>>? InferenceVerseCount { get; init; }
     public IReadOnlyList<string>? Warnings { get; init; }
     public IReadOnlyList<BuildDiagnostic>? Diagnostics { get; init; }
+    public bool? DiagnosticsTruncated { get; init; }
     public string? EngineSourceLanguageTag { get; init; }
     public string? EngineTargetLanguageTag { get; init; }
     public string? ResolvedSourceLanguage { get; init; }

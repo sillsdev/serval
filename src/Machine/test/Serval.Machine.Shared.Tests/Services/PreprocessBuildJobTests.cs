@@ -41,6 +41,30 @@ public class PreprocessBuildJobTests
                 },
             ],
         };
+
+        env.ParallelCorpusService.PreprocessAsync(
+                Arg.Any<IEnumerable<ParallelCorpusContract>>(),
+                Arg.Any<Func<ParallelRowContract, TrainingDataType, Task>>(),
+                Arg.Any<Func<ParallelRowContract, bool, string, Task>>(),
+                Arg.Any<bool>(),
+                Arg.Any<HashSet<string>>()
+            )
+            .Returns(Task.CompletedTask)
+            .AndDoes(ci =>
+                ci.ArgAt<Func<ParallelRowContract, TrainingDataType, Task>>(1)
+                    .Invoke(
+                        new ParallelRowContract(
+                            "MAT",
+                            [ScriptureRef.Parse("MAT 1:1")],
+                            [ScriptureRef.Parse("MAT 1:1")],
+                            "Source Matthew 1:1",
+                            "Target Matthew 1:1",
+                            1
+                        ),
+                        TrainingDataType.Text
+                    )
+            );
+
         env.ParallelCorpusService.AnalyzeUsfmVersification(Arg.Any<IEnumerable<ParallelCorpusContract>>())
             .Returns([
                 (
@@ -68,15 +92,74 @@ public class PreprocessBuildJobTests
                         },
                     ]
                 ),
+                (
+                    "corpusId1",
+                    "trg_1",
+                    "pt-target1",
+                    "1111",
+                    "English",
+                    [
+                        new()
+                        {
+                            NumAffectedVerses = 1,
+                            Filename = "41MAT.SFM",
+                            References = ["MAT 1:4a"],
+                            LineNumbers = [6],
+                            Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.IncorrectVerseSegment,
+                        },
+                        new()
+                        {
+                            NumAffectedVerses = 1,
+                            Filename = "41MAT.SFM",
+                            References = ["MAT :1"],
+                            LineNumbers = [12],
+                            Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidChapter,
+                        },
+                        new()
+                        {
+                            NumAffectedVerses = 1,
+                            Filename = "41MAT.SFM",
+                            References = ["MAT 2:1$"],
+                            LineNumbers = [13],
+                            Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.InvalidVerse,
+                        },
+                        new()
+                        {
+                            NumAffectedVerses = 15,
+                            Filename = "41MAT.SFM",
+                            References = ["MAT 2:2-16"],
+                            LineNumbers = [20],
+                            Type = Serval.Shared.Contracts.UsfmVersificationDiagnosticType.UnsupportedVerseRange,
+                        },
+                    ]
+                ),
             ]);
 
+        env.ParallelCorpusService.FindMissingParentProjects(Arg.Any<IEnumerable<ParallelCorpusContract>>())
+            .Returns([
+                (
+                    "corpusId1",
+                    "src_1",
+                    new MissingParentProjectErrorContract
+                    {
+                        ProjectName = "pt-source1",
+                        ProjectGuid = "0000",
+                        ParentProjectGuid = "1111",
+                        ParentProjectName = "pt-source1-parent",
+                    }
+                ),
+            ]);
+
+        env.LanguageTagService.ConvertToFlores200Code(Arg.Any<string>(), out Arg.Any<string>())
+            .Returns(Flores200Support.None);
+
         await env.RunBuildJobAsync(corpus1, engineId: "engine4");
-        Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(2));
-        Assert.That(env.ExecutionData.Diagnostics, Has.Count.EqualTo(2));
+        Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(11));
+        Assert.That(env.ExecutionData.Diagnostics, Has.Count.EqualTo(11));
+        Assert.That(env.ExecutionData.DiagnosticsTruncated, Is.False);
 
         Assert.That(env.ExecutionData.Diagnostics[0].Code, Is.EqualTo("USFM-0003"));
         Dictionary<string, object> data = env.ExecutionData.Diagnostics[0].Data;
-
         Assert.That(data, Has.Count.EqualTo(8));
         using (Assert.EnterMultipleScope())
         {
@@ -95,7 +178,6 @@ public class PreprocessBuildJobTests
 
         Assert.That(env.ExecutionData.Diagnostics[1].Code, Is.EqualTo("USFM-0004"));
         data = env.ExecutionData.Diagnostics[1].Data;
-
         Assert.That(data, Has.Count.EqualTo(8));
         using (Assert.EnterMultipleScope())
         {
@@ -111,22 +193,124 @@ public class PreprocessBuildJobTests
             Assert.That(data["monolingualCorpusId"] is string monolingualCorpusId && monolingualCorpusId == "src_1");
         }
 
+        Assert.That(env.ExecutionData.Diagnostics[2].Code, Is.EqualTo("USFM-0005"));
+        data = env.ExecutionData.Diagnostics[2].Data;
+        Assert.That(data, Has.Count.EqualTo(7));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["projectName"] is string projectName && projectName == "pt-target1");
+            Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "1111");
+            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["lineNumber"] is int lineNumber && lineNumber == 6);
+            Assert.That(data["verseReference"] is string verseReference && verseReference == "MAT 1:4a");
+            Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
+            Assert.That(data["monolingualCorpusId"] is string monolingualCorpusId && monolingualCorpusId == "trg_1");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[3].Code, Is.EqualTo("USFM-0001"));
+        data = env.ExecutionData.Diagnostics[3].Data;
+        Assert.That(data, Has.Count.EqualTo(7));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["projectName"] is string projectName && projectName == "pt-target1");
+            Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "1111");
+            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["lineNumber"] is int lineNumber && lineNumber == 12);
+            Assert.That(data["verseReference"] is string verseReference && verseReference == "MAT :1");
+            Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
+            Assert.That(data["monolingualCorpusId"] is string monolingualCorpusId && monolingualCorpusId == "trg_1");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[4].Code, Is.EqualTo("USFM-0002"));
+        data = env.ExecutionData.Diagnostics[4].Data;
+        Assert.That(data, Has.Count.EqualTo(7));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["projectName"] is string projectName && projectName == "pt-target1");
+            Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "1111");
+            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["lineNumber"] is int lineNumber && lineNumber == 13);
+            Assert.That(data["verseReference"] is string verseReference && verseReference == "MAT 2:1$");
+            Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
+            Assert.That(data["monolingualCorpusId"] is string monolingualCorpusId && monolingualCorpusId == "trg_1");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[5].Code, Is.EqualTo("USFM-0006"));
+        data = env.ExecutionData.Diagnostics[5].Data;
+        Assert.That(data, Has.Count.EqualTo(7));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["projectName"] is string projectName && projectName == "pt-target1");
+            Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "1111");
+            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["lineNumber"] is int lineNumber && lineNumber == 20);
+            Assert.That(data["verseReference"] is string verseReference && verseReference == "MAT 2:2-16");
+            Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
+            Assert.That(data["monolingualCorpusId"] is string monolingualCorpusId && monolingualCorpusId == "trg_1");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[6].Code, Is.EqualTo("CONFIG-0001"));
+        data = env.ExecutionData.Diagnostics[6].Data;
+        Assert.That(data, Has.Count.EqualTo(6));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(
+                data["parentProjectName"] is string parentProjectName && parentProjectName == "pt-source1-parent"
+            );
+            Assert.That(data["parentProjectGuid"] is string parentProjectGuid && parentProjectGuid == "1111");
+            Assert.That(
+                data["daughterProjectName"] is string daughterProjectName && daughterProjectName == "pt-source1"
+            );
+            Assert.That(data["daughterProjectGuid"] is string daughterProjectGuid && daughterProjectGuid == "0000");
+            Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
+            Assert.That(data["monolingualCorpusId"] is string monolingualCorpusId && monolingualCorpusId == "src_1");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[7].Code, Is.EqualTo("CONFIG-0002"));
+        data = env.ExecutionData.Diagnostics[7].Data;
+        Assert.That(data, Has.Count.EqualTo(1));
+        Assert.That(
+            data["projectVersifications"] is Dictionary<string, string> projectVersifications
+                && projectVersifications.Count == 2
+                && projectVersifications["0000"] == "Original"
+                && projectVersifications["1111"] == "English"
+        );
+
+        Assert.That(env.ExecutionData.Diagnostics[8].Code, Is.EqualTo("CONFIG-0003"));
+        data = env.ExecutionData.Diagnostics[8].Data;
+        Assert.That(data, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["trainCount"] is int trainCount && trainCount == 1);
+            Assert.That(data["minimumTrainCount"] is int minimumTrainCount && minimumTrainCount == 600);
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[9].Code, Is.EqualTo("MODEL-0001"));
+        data = env.ExecutionData.Diagnostics[9].Data;
+        Assert.That(data, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["resolvedCode"], Is.Null);
+            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[10].Code, Is.EqualTo("MODEL-0002"));
+        data = env.ExecutionData.Diagnostics[10].Data;
+        Assert.That(data, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["resolvedCode"], Is.Null);
+            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+        }
+
         env.BuildJobOptions.CurrentValue.Returns(new BuildJobOptions() { MaxWarnings = 1, MaxDiagnostics = 1 });
         await env.RunBuildJobAsync(corpus1, engineId: "engine4");
         // Two warnings after truncation + one warning mentioning that warnings were truncated
         Assert.That(env.ExecutionData.Warnings, Has.Count.EqualTo(2));
-        Assert.That(env.ExecutionData.Diagnostics, Has.Count.EqualTo(2));
+        Assert.That(env.ExecutionData.Diagnostics, Has.Count.EqualTo(1));
+        Assert.That(env.ExecutionData.DiagnosticsTruncated, Is.True);
 
         Assert.That(env.ExecutionData.Diagnostics[0].Code, Is.EqualTo("USFM-0004"));
-        Assert.That(env.ExecutionData.Diagnostics[1].Code, Is.EqualTo("CONFIG-0005"));
-        data = env.ExecutionData.Diagnostics[1].Data;
-
-        Assert.That(data, Has.Count.EqualTo(2));
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(data["diagnosticsCount"] is int diagnosticsCount && diagnosticsCount == 2);
-            Assert.That(data["maximumDiagnosticsCount"] is int maximumDiagnosticsCount && maximumDiagnosticsCount == 1);
-        }
     }
 
     [Test]
@@ -540,6 +724,7 @@ public class PreprocessBuildJobTests
         public IBuildJobService<TranslationEngine> BuildJobService { get; }
         public IClearMLService ClearMLService { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
+        public ILanguageTagService LanguageTagService { get; }
         public IParallelCorpusService ParallelCorpusService { get; }
         public IBuildDiagnosticService BuildDiagnosticService { get; }
         public SmtTransferEngineStateService StateService { get; private set; }
@@ -688,6 +873,7 @@ public class PreprocessBuildJobTests
                 )
                 .Returns(Task.FromResult("job1"));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
+            LanguageTagService = Substitute.For<ILanguageTagService>();
             BuildJobService = new BuildJobService<TranslationEngine>(
                 [
                     new LocalBuildJobRunner(
@@ -698,11 +884,7 @@ public class PreprocessBuildJobTests
                     new ClearMLBuildJobRunner(
                         ClearMLService,
                         [
-                            new NmtClearMLBuildJobFactory(
-                                SharedFileService,
-                                Substitute.For<ILanguageTagService>(),
-                                Engines
-                            ),
+                            new NmtClearMLBuildJobFactory(SharedFileService, LanguageTagService, Engines),
                             new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines),
                         ],
                         BuildJobOptions
@@ -738,7 +920,7 @@ public class PreprocessBuildJobTests
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         BuildJobService,
                         SharedFileService,
-                        new LanguageTagService(),
+                        LanguageTagService,
                         ParallelCorpusService,
                         BuildDiagnosticService,
                         BuildJobOptions

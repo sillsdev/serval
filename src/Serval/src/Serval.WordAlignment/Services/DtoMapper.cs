@@ -196,6 +196,7 @@ public class DtoMapper(IUrlService urlService)
             IsWordAlignFilteredByChapter = source.IsWordAlignFilteredByChapter,
             Warnings = source.Warnings ?? [],
             Diagnostics = source.Diagnostics?.Select(Map).ToList() ?? [],
+            DiagnosticsTruncated = source.DiagnosticsTruncated,
             EngineSourceLanguageTag = source.EngineSourceLanguageTag,
             EngineTargetLanguageTag = source.EngineTargetLanguageTag,
         };

@@ -260,6 +260,12 @@ public abstract class PreprocessBuildJob<TEngine>(
                                         "lineNumber",
                                         usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
                                     },
+                                    {
+                                        "verseReference",
+                                        usfmDiagnostic.References.Count > 0 ? usfmDiagnostic.References[0] : ""
+                                    },
+                                    { "parallelCorpusId", parallelCorpusId },
+                                    { "monolingualCorpusId", monolingualCorpusId },
                                 }
                             ),
                         _ => throw new InvalidEnumArgumentException(nameof(usfmDiagnostic.Type)),

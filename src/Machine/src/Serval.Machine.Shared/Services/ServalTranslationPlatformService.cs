@@ -115,6 +115,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                         Data = d.Data,
                     })
                     .ToList(),
+                DiagnosticsTruncated = executionData.DiagnosticsTruncated,
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
                 ResolvedSourceLanguage = executionData.ResolvedSourceLanguage,
