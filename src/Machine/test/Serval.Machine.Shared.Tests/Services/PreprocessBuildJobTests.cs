@@ -1,3 +1,5 @@
+using NSubstitute.ClearExtensions;
+
 namespace Serval.Machine.Shared.Services;
 
 [TestFixture]
@@ -311,6 +313,64 @@ public class PreprocessBuildJobTests
         Assert.That(env.ExecutionData.DiagnosticsTruncated, Is.True);
 
         Assert.That(env.ExecutionData.Diagnostics[0].Code, Is.EqualTo("USFM-0004"));
+
+        env.ParallelCorpusService.ClearSubstitute();
+        env.ParallelCorpusService.AnalyzeUsfmVersification(Arg.Any<IEnumerable<ParallelCorpusContract>>()).Returns([]);
+        env.ParallelCorpusService.FindMissingParentProjects(Arg.Any<IEnumerable<ParallelCorpusContract>>()).Returns([]);
+
+        env.ParallelCorpusService.PreprocessAsync(
+                Arg.Any<IEnumerable<ParallelCorpusContract>>(),
+                Arg.Any<Func<ParallelRowContract, TrainingDataType, Task>>(),
+                Arg.Any<Func<ParallelRowContract, bool, string, Task>>(),
+                Arg.Any<bool>(),
+                Arg.Any<HashSet<string>>()
+            )
+            .Returns(Task.CompletedTask);
+
+        env.BuildJobOptions.ClearSubstitute();
+        env.BuildJobOptions.CurrentValue.Returns(new BuildJobOptions() { MaxWarnings = 1_000, MaxDiagnostics = 1_000 });
+
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await env.RunBuildJobAsync(corpus1, engineId: "engine1");
+        });
+
+        Assert.That(env.ExecutionData.DiagnosticsTruncated, Is.False);
+        Assert.That(env.ExecutionData.Diagnostics, Has.Count.EqualTo(4));
+
+        Assert.That(env.ExecutionData.Diagnostics[0].Code, Is.EqualTo("CONFIG-0004"));
+        data = env.ExecutionData.Diagnostics[0].Data;
+        Assert.That(data, Is.Empty);
+
+        Assert.That(env.ExecutionData.Diagnostics[1].Code, Is.EqualTo("MODEL-0001"));
+        data = env.ExecutionData.Diagnostics[1].Data;
+        Assert.That(data, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["resolvedCode"], Is.Null);
+            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[2].Code, Is.EqualTo("MODEL-0002"));
+        data = env.ExecutionData.Diagnostics[2].Data;
+        Assert.That(data, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["resolvedCode"], Is.Null);
+            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+        }
+
+        Assert.That(env.ExecutionData.Diagnostics[3].Code, Is.EqualTo("MODEL-0004"));
+        data = env.ExecutionData.Diagnostics[3].Data;
+        Assert.That(data, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+            Assert.That(
+                data["unknownLanguageCodes"] is List<string> unknownLanguageCodes
+                    && unknownLanguageCodes.SequenceEqual(["es", "en"])
+            );
+        }
     }
 
     [Test]
@@ -896,13 +956,18 @@ public class PreprocessBuildJobTests
             BuildDiagnosticService = Substitute.For<IBuildDiagnosticService>();
             BuildDiagnosticService
                 .CreateDiagnostic(Arg.Any<string>(), Arg.Any<Dictionary<string, object>>())
-                .Returns(ci => new DiagnosticContract
+                .Returns(ci =>
                 {
-                    Code = ci.ArgAt<string>(0),
-                    Message = "",
-                    Category = "",
-                    Data = ci.ArgAt<Dictionary<string, object>>(1),
-                    Severity = ci.ArgAt<string>(0) == "USFM-0003" ? DiagnosticSeverity.Info : DiagnosticSeverity.Warn,
+                    string code = ci.ArgAt<string>(0);
+                    return new DiagnosticContract
+                    {
+                        Code = code,
+                        Message = "",
+                        Category = "",
+                        Data = ci.ArgAt<Dictionary<string, object>>(1),
+                        //So that we can confirm that higher severity diagnostics are preserved when truncating
+                        Severity = code == "USFM-0003" ? DiagnosticSeverity.Info : DiagnosticSeverity.Warn,
+                    };
                 });
             StateService = CreateStateService();
         }
