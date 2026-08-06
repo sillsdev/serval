@@ -1,4 +1,4 @@
-namespace Serval.Machine.Shared.Services;
+namespace Serval.Machine.Translation.Services;
 
 [TestFixture]
 public class PreprocessBuildJobTests
