@@ -91,22 +91,55 @@ public abstract class LocalBuildJobRunner<TEngine>(
         using IServiceScope scope = _serviceScopeFactory.CreateScope();
         var engines = scope.ServiceProvider.GetRequiredService<IRepository<TEngine>>();
 
-        // Subscriptions are created before recovery so no changes are missed during the recovery window.
-        using ISubscription<TEngine> engineSub = await engines.SubscribeAsync(
-            e =>
-                e.CurrentBuild != null
-                && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
-                && e.CurrentBuild.JobState == BuildJobState.Pending,
-            mode: SubscriptionMode.Repository,
-            cancellationToken: stoppingToken
-        );
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                // Subscriptions are created before recovery so no changes are missed during the recovery window.
+                using ISubscription<TEngine> engineSub = await engines.SubscribeAsync(
+                    e =>
+                        e.CurrentBuild != null
+                        && e.CurrentBuild.BuildJobRunner == BuildJobRunnerType.Local
+                        && e.CurrentBuild.JobState == BuildJobState.Pending,
+                    mode: SubscriptionMode.Repository,
+                    cancellationToken: stoppingToken
+                );
 
-        await RecoverPendingJobsAsync(scope.ServiceProvider, stoppingToken);
+                await RecoverPendingJobsAsync(scope.ServiceProvider, stoppingToken);
 
-        await Task.WhenAll(
-            WatchEngineGroupAsync(engineSub, engineGroup, stoppingToken),
-            ProcessJobsAsync(engineGroup, stoppingToken)
-        );
+                // Allow either the watch or process task to complete first
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                Task watchTask = WatchEngineGroupAsync(engineSub, engineGroup, linkedCts.Token);
+                Task processTask = ProcessJobsAsync(engineGroup, linkedCts.Token);
+                Task completedTask = await Task.WhenAny(watchTask, processTask);
+
+                // If one of the tasks has faulted, cancel the other
+                if (completedTask.IsFaulted)
+                {
+                    await linkedCts.CancelAsync();
+                    _logger.LogError(
+                        completedTask.Exception,
+                        "Exception while executing task on local build runner for {EngineGroup} engines.",
+                        engineGroup
+                    );
+                }
+
+                // Wait for both jobs to have completed (faulted or otherwise)
+                await Task.WhenAll(watchTask, processTask);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Exception while executing local build runner for {EngineGroup} engines.",
+                    engineGroup
+                );
+            }
+        }
     }
 
     private async Task RecoverPendingJobsAsync(IServiceProvider sp, CancellationToken cancellationToken)
