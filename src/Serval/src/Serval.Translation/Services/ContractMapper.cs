@@ -154,11 +154,6 @@ public class ContractMapper(
             TrainingCorpus? trainingCorpus = trainingCorpora?.GetValueOrDefault(source.Id);
             PretranslateCorpus? pretranslateCorpus = pretranslateCorpora?.GetValueOrDefault(source.Id);
 
-            string? referenceFileLocation =
-                source.TargetCorpora.Count > 0 && source.TargetCorpora[0].Files.Count > 0
-                    ? Map(source.TargetCorpora[0].Files[0]).Location
-                    : null;
-
             mappedParallelCorpora.Add(
                 new ParallelCorpusContract
                 {
@@ -171,7 +166,6 @@ public class ContractMapper(
                                 sc,
                                 trainingCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
                                 pretranslateCorpus?.SourceFilters?.Where(sf => sf.CorpusRef == sc.Id).FirstOrDefault(),
-                                referenceFileLocation,
                                 trainOnAllCorpora
                                     || (trainingCorpus is not null && trainingCorpus.SourceFilters is null),
                                 pretranslateAllCorpora
@@ -187,7 +181,6 @@ public class ContractMapper(
                                 tc,
                                 trainingCorpus?.TargetFilters?.Where(sf => sf.CorpusRef == tc.Id).FirstOrDefault(),
                                 null,
-                                referenceFileLocation,
                                 trainOnAllCorpora
                                     || (trainingCorpus is not null && trainingCorpus.TargetFilters is null),
                                 pretranslateAllCorpora || pretranslateCorpus is not null
@@ -205,11 +198,11 @@ public class ContractMapper(
         MonolingualCorpus inputCorpus,
         ParallelCorpusFilter? trainingFilter,
         ParallelCorpusFilter? pretranslateFilter,
-        string? referenceFileLocation,
         bool trainOnAll,
         bool pretranslateAll
     )
     {
+        string? referenceFileLocation = inputCorpus.Files.Count > 0 ? Map(inputCorpus.Files[0]).Location : null;
         Dictionary<string, HashSet<int>>? trainOnChapters = null;
         if (
             trainingFilter is not null
