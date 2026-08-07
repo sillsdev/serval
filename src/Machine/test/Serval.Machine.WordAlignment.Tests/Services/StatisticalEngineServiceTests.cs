@@ -223,6 +223,7 @@ public class StatisticalEngineServiceTests
             services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());
             services.AddSingleton(SharedFileService);
             services.AddSingleton(Substitute.For<IParallelCorpusService>());
+            services.AddSingleton(Substitute.For<IBuildDiagnosticService>());
             services.AddSingleton(BuildJobOptions);
             services.AddSingleton(WordAlignmentModelFactory);
             services.AddSingleton(statisticalEngineOptions);

@@ -163,6 +163,7 @@ public class EchoTranslationEngineServiceTests
             services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());
             services.AddSingleton(Substitute.For<ISharedFileService>());
             services.AddSingleton(Substitute.For<IParallelCorpusService>());
+            services.AddSingleton(Substitute.For<IBuildDiagnosticService>());
             services.AddSingleton(buildJobOptions);
             services.AddSingleton(Substitute.For<ITranslationPlatformService>());
             services.AddLogging();
