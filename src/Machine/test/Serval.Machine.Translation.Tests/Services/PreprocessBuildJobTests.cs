@@ -375,6 +375,9 @@ public class PreprocessBuildJobTests
     public void RunAsync_UnknownLanguageTagsNoData()
     {
         TestEnvironment env = new();
+        env.LanguageTagService.ConvertToFlores200Code("xxx", out Arg.Any<string>())
+            .Returns(Flores200Support.OnlyScript);
+        env.LanguageTagService.ConvertToFlores200Code("zzz", out Arg.Any<string>()).Returns(Flores200Support.None);
         ParallelCorpusContract corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -387,6 +390,9 @@ public class PreprocessBuildJobTests
     public async Task RunAsync_UnknownLanguageTagsNoDataSmtTransfer()
     {
         TestEnvironment env = new();
+        env.LanguageTagService.ConvertToFlores200Code("xxx", out Arg.Any<string>())
+            .Returns(Flores200Support.OnlyScript);
+        env.LanguageTagService.ConvertToFlores200Code("zzz", out Arg.Any<string>()).Returns(Flores200Support.None);
         ParallelCorpusContract corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
 
         await env.RunBuildJobAsync(corpus1, engineId: "engine3", engineType: EngineType.SmtTransfer);
@@ -620,6 +626,7 @@ public class PreprocessBuildJobTests
                         BuildJobRunner = BuildJobRunnerType.Local,
                         Stage = BuildStage.Preprocess,
                         ExecutionData = new BuildExecutionData(),
+                        BaseModel = BaseModelContract.NLLB,
                     },
                 }
             );
@@ -683,6 +690,7 @@ public class PreprocessBuildJobTests
                         BuildJobRunner = BuildJobRunnerType.Local,
                         Stage = BuildStage.Preprocess,
                         ExecutionData = new BuildExecutionData(),
+                        BaseModel = BaseModelContract.NLLB,
                     },
                 }
             );
