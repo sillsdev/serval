@@ -13,8 +13,8 @@
 	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
-		<PackageReference Include="SIL.Machine.Morphology.HermitCrab" Version="3.9.1" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj')" />
-		<PackageReference Include="SIL.Machine.Translation.Thot" Version="3.9.1" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
+		<PackageReference Include="SIL.Machine.Morphology.HermitCrab" Version="3.9.2" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj')" />
+		<PackageReference Include="SIL.Machine.Translation.Thot" Version="3.9.2" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
 	</ItemGroup>
 
 	<ItemGroup>
