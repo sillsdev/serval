@@ -12,7 +12,7 @@ public record TranslationBuildConfigDto
     /// }
     /// </example>
     public object? Options { get; init; }
-    public string? BaseModel { get; init; }
+    public string? Model { get; init; }
 }
 
 public record PretranslateCorpusConfigDto
@@ -80,7 +80,7 @@ public class StartBuildHandler(
                     Options = MapOptions(request.BuildConfig.Options),
                     DeploymentVersion = configuration.GetValue<string>("deploymentVersion") ?? "Unknown",
                     DateCreated = DateTime.UtcNow,
-                    BaseModel = request.BuildConfig.BaseModel,
+                    Model = request.BuildConfig.Model,
                 };
                 await builds.InsertAsync(build, ct);
 
@@ -121,7 +121,7 @@ public class StartBuildHandler(
 
                 await engineFactory
                     .GetEngineService(engine.Type)
-                    .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, build.BaseModel, ct);
+                    .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, build.Model, ct);
                 return new StartBuildResponse(dtoMapper.Map(build));
             },
             cancellationToken

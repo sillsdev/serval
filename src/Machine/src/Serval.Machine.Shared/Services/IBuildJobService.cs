@@ -16,7 +16,7 @@ public interface IBuildJobService
         BuildStage stage,
         object? data = default,
         string? buildOptions = default,
-        string? baseModel = null,
+        string? model = null,
         CancellationToken cancellationToken = default
     );
 

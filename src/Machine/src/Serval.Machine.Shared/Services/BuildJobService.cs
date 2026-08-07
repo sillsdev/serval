@@ -68,7 +68,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,
-        string? baseModel = null,
+        string? model = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -80,7 +80,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
             stage,
             data,
             buildOptions,
-            baseModel,
+            model,
             cancellationToken
         );
         try
@@ -108,7 +108,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
                             JobState = BuildJobState.Pending,
                             QueuedAt = DateTimeOffset.UtcNow,
                             Options = buildOptions,
-                            BaseModel = baseModel,
+                            Model = model,
                             JobData = jobData,
                             ExecutionData = new BuildExecutionData(),
                         }

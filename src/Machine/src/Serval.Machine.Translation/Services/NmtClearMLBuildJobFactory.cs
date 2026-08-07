@@ -18,7 +18,7 @@ public class NmtClearMLBuildJobFactory(
         string modelType,
         BuildStage stage,
         string? buildOptions = null,
-        string? baseModel = null,
+        string? model = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -33,13 +33,13 @@ public class NmtClearMLBuildJobFactory(
             string folder = sharedFileUri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
             _languageTagService.ConvertToFlores200Code(engine.SourceLanguage, out string srcLang);
             _languageTagService.ConvertToFlores200Code(engine.TargetLanguage, out string trgLang);
-            if (buildOptions != null && baseModel != null)
+            if (buildOptions != null && model != null)
             {
                 try
                 {
                     JsonNode? buildOptionsJsonNode = JsonNode.Parse(buildOptions);
                     if (buildOptionsJsonNode != null && buildOptionsJsonNode is JsonObject buildOptionsJsonObject)
-                        buildOptionsJsonObject["parent_model_name"] = GetFullModelName(baseModel);
+                        buildOptionsJsonObject["parent_model_name"] = GetFullModelName(model);
                 }
                 catch (Exception e)
                 {
@@ -69,14 +69,14 @@ public class NmtClearMLBuildJobFactory(
         }
     }
 
-    private static string GetFullModelName(string baseModel)
+    private static string GetFullModelName(string model)
     {
-        return baseModel switch
+        return model switch
         {
-            BaseModels.Nllb => "facebook/nllb-200-distilled-1.3B",
-            BaseModels.Nllb600m => "facebook/nllb-200-distilled-600M",
-            BaseModels.NllbTesting => "hf-internal-testing/tiny-random-nllb",
-            _ => throw new ArgumentException($"Unknown base model {baseModel}."),
+            Models.Models.Nllb => "facebook/nllb-200-distilled-1.3B",
+            Models.Models.Nllb600m => "facebook/nllb-200-distilled-600M",
+            Models.Models.NllbTesting => "hf-internal-testing/tiny-random-nllb",
+            _ => throw new ArgumentException($"Unknown base model {model}."),
         };
     }
 }

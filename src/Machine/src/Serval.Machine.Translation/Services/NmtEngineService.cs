@@ -85,7 +85,7 @@ public class NmtEngineService(
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
-        string? baseModel = null,
+        string? model = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -97,7 +97,7 @@ public class NmtEngineService(
             BuildStage.Preprocess,
             corpora,
             options,
-            baseModel,
+            model,
             cancellationToken
         );
         // If there is a pending/running build, then no need to start a new one.

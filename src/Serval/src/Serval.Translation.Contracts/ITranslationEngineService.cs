@@ -46,7 +46,7 @@ public interface ITranslationEngineService
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
-        string? baseModel = null,
+        string? model = null,
         CancellationToken cancellationToken = default
     );
 

@@ -15,7 +15,7 @@ public interface IBuildJobRunner<TEngine>
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,
-        string? baseModel = null,
+        string? model = null,
         CancellationToken cancellationToken = default
     );
 
