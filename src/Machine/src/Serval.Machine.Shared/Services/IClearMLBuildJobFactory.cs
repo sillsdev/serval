@@ -10,6 +10,7 @@ public interface IClearMLBuildJobFactory
         string modelType,
         BuildStage stage,
         string? buildOptions = null,
+        string? baseModel = null,
         CancellationToken cancellationToken = default
     );
 }

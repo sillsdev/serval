@@ -68,7 +68,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,
-        BaseModelContract? baseModel = null,
+        string? baseModel = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -80,6 +80,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
             stage,
             data,
             buildOptions,
+            baseModel,
             cancellationToken
         );
         try

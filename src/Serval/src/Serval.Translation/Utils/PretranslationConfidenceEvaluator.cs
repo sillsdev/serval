@@ -7,7 +7,7 @@ public class PretranslationConfidenceEvaluator
     public static bool IsBookPretranslationConfidenceUnusuallyLow(
         double confidence,
         string bookId,
-        BaseModel? baseModel
+        string? baseModel
     )
     {
         return confidence < LowConfidenceThreshold;

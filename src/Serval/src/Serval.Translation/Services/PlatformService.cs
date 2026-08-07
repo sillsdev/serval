@@ -459,7 +459,7 @@ public class PlatformService(
         if (batch.Count > 0)
             await _pretranslations.InsertAllAsync(batch, CancellationToken.None);
 
-        BaseModel? baseModel = (await _builds.GetAsync(b => b.Id == buildId, cancellationToken))?.BaseModel;
+        string? baseModel = (await _builds.GetAsync(b => b.Id == buildId, cancellationToken))?.BaseModel;
 
         List<Diagnostic> badBookConfidences = logConfidenceTotalPerBook
             .Select(kvp =>
@@ -484,7 +484,7 @@ public class PlatformService(
                     {
                         { "bookId", b.bookId },
                         { "averagePretranslationConfidence", b.averageConfidence },
-                        { "modelName", baseModel?.ToString() ?? "Unknown" },
+                        { "modelName", baseModel ?? "Unknown" },
                     }
                 )
             )

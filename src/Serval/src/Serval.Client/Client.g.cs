@@ -12078,8 +12078,7 @@ namespace Serval.Client
         public object? Options { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("baseModel", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public BaseModel? BaseModel { get; set; } = default!;
+        public string? BaseModel { get; set; } = default!;
 
     }
 
@@ -12147,15 +12146,6 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("sourceFilters", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<ParallelCorpusFilterConfig>? SourceFilters { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum BaseModel
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NLLB")]
-        NLLB = 0,
 
     }
 

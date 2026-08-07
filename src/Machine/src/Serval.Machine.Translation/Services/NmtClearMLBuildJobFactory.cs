@@ -18,6 +18,7 @@ public class NmtClearMLBuildJobFactory(
         string modelType,
         BuildStage stage,
         string? buildOptions = null,
+        string? baseModel = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -32,6 +33,19 @@ public class NmtClearMLBuildJobFactory(
             string folder = sharedFileUri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
             _languageTagService.ConvertToFlores200Code(engine.SourceLanguage, out string srcLang);
             _languageTagService.ConvertToFlores200Code(engine.TargetLanguage, out string trgLang);
+            if (buildOptions != null && baseModel != null)
+            {
+                try
+                {
+                    JsonNode? buildOptionsJsonNode = JsonNode.Parse(buildOptions);
+                    if (buildOptionsJsonNode != null && buildOptionsJsonNode is JsonObject buildOptionsJsonObject)
+                        buildOptionsJsonObject["parent_model_name"] = GetFullModelName(baseModel);
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidOperationException($"Unable to parse field build options : {e.Message}", e);
+                }
+            }
             return "from machine.jobs.build_nmt_engine import run\n"
                 + "args = {\n"
                 + $"    'model_type': '{modelType}',\n"
@@ -53,5 +67,16 @@ public class NmtClearMLBuildJobFactory(
         {
             throw new ArgumentException("Unknown build stage.", nameof(stage));
         }
+    }
+
+    private static string GetFullModelName(string baseModel)
+    {
+        return baseModel switch
+        {
+            BaseModels.Nllb => "facebook/nllb-200-distilled-1.3B",
+            BaseModels.Nllb600m => "facebook/nllb-200-distilled-600M",
+            BaseModels.NllbTesting => "hf-internal-testing/tiny-random-nllb",
+            _ => throw new ArgumentException($"Unknown base model {baseModel}."),
+        };
     }
 }

@@ -16,6 +16,7 @@ public class StatisticalClearMLBuildJobFactory(
         string modelType,
         BuildStage stage,
         string? buildOptions = null,
+        string? baseModel = null,
         CancellationToken cancellationToken = default
     )
     {

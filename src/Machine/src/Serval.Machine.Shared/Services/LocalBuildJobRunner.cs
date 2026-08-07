@@ -44,6 +44,7 @@ public abstract class LocalBuildJobRunner<TEngine>(
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,
+        string? baseModel = null,
         CancellationToken cancellationToken = default
     )
     {

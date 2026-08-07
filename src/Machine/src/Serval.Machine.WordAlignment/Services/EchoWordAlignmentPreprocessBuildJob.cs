@@ -98,8 +98,9 @@ public class EchoWordAlignmentPreprocessBuildJob(
     )
     {
         string modelName =
-            (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))?.CurrentBuild?.BaseModel.ToString()
-            ?? "Unknown";
+            (
+                await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken)
+            )?.CurrentBuild?.BaseModel?.ToString() ?? "Unknown";
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
             stats.TrainCount,
             stats.InferenceCount,

@@ -184,7 +184,7 @@ public class SmtTransferEngineService(
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
-        BaseModelContract? baseModel = null,
+        string? baseModel = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -196,6 +196,7 @@ public class SmtTransferEngineService(
             BuildStage.Preprocess,
             corpora,
             options,
+            baseModel,
             cancellationToken: cancellationToken
         );
         // If there is a pending/running build, then no need to start a new one.

@@ -626,7 +626,7 @@ public class PreprocessBuildJobTests
                         BuildJobRunner = BuildJobRunnerType.Local,
                         Stage = BuildStage.Preprocess,
                         ExecutionData = new BuildExecutionData(),
-                        BaseModel = BaseModelContract.NLLB,
+                        BaseModel = BaseModels.Nllb,
                     },
                 }
             );
@@ -690,7 +690,7 @@ public class PreprocessBuildJobTests
                         BuildJobRunner = BuildJobRunnerType.Local,
                         Stage = BuildStage.Preprocess,
                         ExecutionData = new BuildExecutionData(),
-                        BaseModel = BaseModelContract.NLLB,
+                        BaseModel = BaseModels.Nllb,
                     },
                 }
             );

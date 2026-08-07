@@ -97,7 +97,7 @@ public class PlatformServiceTests
                 Id = "b0",
                 EngineRef = "e0",
                 Owner = "owner1",
-                BaseModel = BaseModel.NLLB,
+                BaseModel = "NLLB",
             }
         );
 
