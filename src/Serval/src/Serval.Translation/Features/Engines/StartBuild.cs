@@ -394,7 +394,7 @@ public class StartBuildHandler(
         {
             options.Add("parent_model_name", ((BaseModel)sourceBaseModel).ToModelName());
         }
-        return (options, baseModel);
+        return (sourceOptions != null ? options : null, baseModel);
     }
 }
 
