@@ -435,6 +435,8 @@ public partial class TranslationEnginesController
     /// Note that when using a parallel corpus:
     /// * If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
     /// * If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
+    ///
+    /// See [here](https://github.com/sillsdev/serval/wiki/Build-Diagnostics) for information about diagnostics emitted during the build process.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>
