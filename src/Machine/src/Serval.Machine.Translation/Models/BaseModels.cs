@@ -1,4 +1,4 @@
-namespace Serval.Machine.Shared.Models;
+namespace Serval.Machine.Translation.Models;
 
 public static class BaseModels
 {
