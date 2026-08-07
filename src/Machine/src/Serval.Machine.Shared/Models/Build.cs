@@ -30,6 +30,7 @@ public record Build
     public required BuildStage Stage { get; init; }
     public DateTimeOffset QueuedAt { get; init; }
     public string? Options { get; set; }
+    public string? Model { get; init; }
     public string? JobData { get; init; }
     public required BuildExecutionData ExecutionData { get; init; }
 }

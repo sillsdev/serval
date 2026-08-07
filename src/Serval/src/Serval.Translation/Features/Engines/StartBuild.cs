@@ -12,6 +12,7 @@ public record TranslationBuildConfigDto
     /// }
     /// </example>
     public object? Options { get; init; }
+    public string? Model { get; init; }
 }
 
 public record PretranslateCorpusConfigDto
@@ -79,6 +80,7 @@ public class StartBuildHandler(
                     Options = MapOptions(request.BuildConfig.Options),
                     DeploymentVersion = configuration.GetValue<string>("deploymentVersion") ?? "Unknown",
                     DateCreated = DateTime.UtcNow,
+                    Model = request.BuildConfig.Model,
                 };
                 await builds.InsertAsync(build, ct);
 
@@ -119,7 +121,7 @@ public class StartBuildHandler(
 
                 await engineFactory
                     .GetEngineService(engine.Type)
-                    .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, ct);
+                    .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, build.Model, ct);
                 return new StartBuildResponse(dtoMapper.Map(build));
             },
             cancellationToken
@@ -405,6 +407,8 @@ public partial class TranslationEnginesController
     /// Note that when using a parallel corpus:
     /// * If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
     /// * If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
+    ///
+    /// See [here](https://github.com/sillsdev/serval/wiki/Build-Diagnostics) for information about diagnostics emitted during the build process.
     /// </remarks>
     /// <param name="id">The translation engine id</param>
     /// <param name="buildConfig">The build config (see remarks)</param>

@@ -104,6 +104,8 @@ public class ServalWordAlignmentPlatformService(IWordAlignmentPlatformService pl
                 TrainVerseCount = executionData.TrainVerseCount,
                 WordAlignVerseCount = executionData.InferenceVerseCount,
                 Warnings = executionData.Warnings,
+                Diagnostics = executionData.Diagnostics,
+                DiagnosticsTruncated = executionData.DiagnosticsTruncated,
                 EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
             },

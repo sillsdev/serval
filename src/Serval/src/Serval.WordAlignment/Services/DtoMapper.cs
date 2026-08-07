@@ -195,8 +195,22 @@ public class DtoMapper(IUrlService urlService)
             IsTrainFilteredByChapter = source.IsTrainFilteredByChapter,
             IsWordAlignFilteredByChapter = source.IsWordAlignFilteredByChapter,
             Warnings = source.Warnings ?? [],
+            Diagnostics = source.Diagnostics?.Select(Map).ToList() ?? [],
+            DiagnosticsTruncated = source.DiagnosticsTruncated,
             EngineSourceLanguageTag = source.EngineSourceLanguageTag,
             EngineTargetLanguageTag = source.EngineTargetLanguageTag,
+        };
+    }
+
+    private static DiagnosticDto Map(Diagnostic source)
+    {
+        return new DiagnosticDto
+        {
+            Code = source.Code,
+            Category = source.Category,
+            Message = source.Message,
+            Severity = (Shared.Dtos.DiagnosticSeverity)source.Severity,
+            Data = source.Data,
         };
     }
 }

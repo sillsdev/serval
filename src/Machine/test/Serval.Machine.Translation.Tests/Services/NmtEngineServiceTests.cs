@@ -171,6 +171,7 @@ public class NmtEngineServiceTests
             services.AddSingleton(SharedFileService);
             services.AddSingleton<ILanguageTagService>(new LanguageTagService());
             services.AddSingleton(Substitute.For<IParallelCorpusService>());
+            services.AddSingleton(Substitute.For<IBuildDiagnosticService>());
             services.AddSingleton(BuildJobOptions);
             services.AddLogging();
             _serviceProvider = services.BuildServiceProvider();

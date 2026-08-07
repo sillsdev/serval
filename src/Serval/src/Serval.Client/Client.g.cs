@@ -3518,6 +3518,8 @@ namespace Serval.Client
         /// <br/>Note that when using a parallel corpus:
         /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
         /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
+        /// <br/>            
+        /// <br/>See [here](https://github.com/sillsdev/serval/wiki/Build-Diagnostics) for information about diagnostics emitted during the build process.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -5824,6 +5826,8 @@ namespace Serval.Client
         /// <br/>Note that when using a parallel corpus:
         /// <br/>* If, within a single parallel corpus, multiple source corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), those sources will be mixed where they overlap by randomly choosing from each source per line/verse.
         /// <br/>* If, within a single parallel corpus, multiple target corpora have data for the same text ids (for text files or Paratext Projects) or books (for Paratext Projects only using the scripture range), only the first of the targets that includes that text id/book will be used for that text id/book.
+        /// <br/>            
+        /// <br/>See [here](https://github.com/sillsdev/serval/wiki/Build-Diagnostics) for information about diagnostics emitted during the build process.
         /// </remarks>
         /// <param name="id">The translation engine id</param>
         /// <param name="buildConfig">The build config (see remarks)</param>
@@ -11639,7 +11643,14 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("warnings", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("diagnostics", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<Diagnostic>? Diagnostics { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("diagnosticsTruncated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? DiagnosticsTruncated { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("engineSourceLanguageTag", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? EngineSourceLanguageTag { get; set; } = default!;
@@ -11655,6 +11666,48 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("averagePretranslationConfidence", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? AveragePretranslationConfidence { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Diagnostic
+    {
+
+        [Newtonsoft.Json.JsonProperty("code", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Code { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("category", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Category { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Message { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("severity", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public DiagnosticSeverity Severity { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("data", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.IDictionary<string, object> Data { get; set; } = new System.Collections.Generic.Dictionary<string, object>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum DiagnosticSeverity
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Info")]
+        Info = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Warn")]
+        Warn = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Error")]
+        Error = 2,
 
     }
 
@@ -12024,6 +12077,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("options", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public object? Options { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("model", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Model { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -12391,7 +12447,14 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("warnings", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
+        [System.Obsolete]
         public System.Collections.Generic.IList<string> Warnings { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
+        [Newtonsoft.Json.JsonProperty("diagnostics", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.IList<Diagnostic>? Diagnostics { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("diagnosticsTruncated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? DiagnosticsTruncated { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("engineSourceLanguageTag", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? EngineSourceLanguageTag { get; set; } = default!;
