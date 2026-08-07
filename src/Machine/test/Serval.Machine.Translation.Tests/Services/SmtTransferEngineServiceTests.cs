@@ -317,6 +317,7 @@ public class SmtTransferEngineServiceTests
             services.AddScoped<IDataAccessContext>(_ => new MemoryDataAccessContext());
             services.AddSingleton(SharedFileService);
             services.AddSingleton(Substitute.For<IParallelCorpusService>());
+            services.AddSingleton(Substitute.For<IBuildDiagnosticService>());
             services.AddSingleton(BuildJobOptions);
             services.AddSingleton(_truecaserFactory);
             services.AddSingleton(SmtModelFactory);

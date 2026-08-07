@@ -8,6 +8,7 @@ public class EchoPreprocessBuildJob(
     IBuildJobService<TranslationEngine> buildJobService,
     ISharedFileService sharedFileService,
     IParallelCorpusService parallelCorpusService,
+    IBuildDiagnosticService buildDiagnosticService,
     ITranslationPlatformService translationPlatformService,
     IOptionsMonitor<BuildJobOptions> options
 )
@@ -19,6 +20,7 @@ public class EchoPreprocessBuildJob(
         buildJobService,
         sharedFileService,
         parallelCorpusService,
+        buildDiagnosticService,
         options
     )
 {
@@ -30,17 +32,35 @@ public class EchoPreprocessBuildJob(
         PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool isNonPersistedTranslationEngine,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<string> warnings = GetWarnings(
+        string modelName =
+            (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))?.CurrentBuild?.Model?.ToString()
+            ?? "Unknown";
+        IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
             stats.TrainCount,
             stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
+            sourceLanguageHasNativeSupport: true,
+            targetLanguageHasNativeSupport: true,
+            isNonPersistedTranslationEngine,
+            modelName,
             parallelCorpora
         );
+
+        IReadOnlyList<string> warnings = diagnostics.Select(d => d.Message).ToList();
+
+        int maxDiagnostics = BuildJobOptions.MaxDiagnostics;
+        bool diagnosticsTruncated = false;
+        if (diagnostics.Count > maxDiagnostics)
+        {
+            diagnosticsTruncated = true;
+            diagnostics = diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics).ToList();
+        }
 
         int maxWarnings = BuildJobOptions.MaxWarnings;
         if (warnings.Count > maxWarnings)
@@ -74,6 +94,8 @@ public class EchoPreprocessBuildJob(
             TrainVerseCount = stats.TrainVerseCount,
             InferenceVerseCount = stats.InferenceVerseCount,
             Warnings = warnings,
+            Diagnostics = diagnostics,
+            DiagnosticsTruncated = diagnosticsTruncated,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
             ResolvedSourceLanguage = sourceLanguageTag,

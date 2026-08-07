@@ -9,6 +9,7 @@ public class NmtPreprocessBuildJob(
     ISharedFileService sharedFileService,
     ILanguageTagService languageTagService,
     IParallelCorpusService parallelCorpusService,
+    IBuildDiagnosticService buildDiagnosticService,
     IOptionsMonitor<BuildJobOptions> options
 )
     : TranslationPreprocessBuildJob(
@@ -19,6 +20,7 @@ public class NmtPreprocessBuildJob(
         buildJobService,
         sharedFileService,
         parallelCorpusService,
+        buildDiagnosticService,
         options
     )
 {
@@ -55,6 +57,7 @@ public class NmtPreprocessBuildJob(
         PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool isNonPersistedTranslationEngine,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
@@ -62,20 +65,30 @@ public class NmtPreprocessBuildJob(
         bool sourceLanguageHasNativeSupport = ResolveLanguageCode(sourceLanguageTag, out string resolvedSourceLanguage);
         bool targetLanguageHasNativeSupport = ResolveLanguageCode(targetLanguageTag, out string resolvedTargetLanguage);
 
-        if (stats.TrainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
-        {
-            throw new InvalidOperationException(
-                $"At least one language code in build {buildId} is unknown to the base model, and the data specified for training was empty. Build canceled."
-            );
-        }
-
-        IReadOnlyList<string> warnings = GetWarnings(
+        string modelName =
+            (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))?.CurrentBuild?.Model?.ToString()
+            ?? "Unknown";
+        IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
             stats.TrainCount,
             stats.InferenceCount,
             sourceLanguageTag,
             targetLanguageTag,
+            sourceLanguageHasNativeSupport,
+            targetLanguageHasNativeSupport,
+            isNonPersistedTranslationEngine,
+            modelName,
             parallelCorpora
         );
+
+        IReadOnlyList<string> warnings = diagnostics.Select(d => d.Message).ToList();
+
+        int maxDiagnostics = BuildJobOptions.MaxDiagnostics;
+        bool diagnosticsTruncated = false;
+        if (diagnostics.Count > maxDiagnostics)
+        {
+            diagnosticsTruncated = true;
+            diagnostics = diagnostics.OrderByDescending(d => d.Severity).Take(maxDiagnostics).ToList();
+        }
 
         int maxWarnings = BuildJobOptions.MaxWarnings;
         if (warnings.Count > maxWarnings)
@@ -109,31 +122,50 @@ public class NmtPreprocessBuildJob(
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
             Warnings = warnings,
+            Diagnostics = diagnostics,
+            DiagnosticsTruncated = diagnosticsTruncated,
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
             ResolvedSourceLanguage = resolvedSourceLanguage,
             ResolvedTargetLanguage = resolvedTargetLanguage,
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
+
+        if (stats.TrainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
+        {
+            throw new InvalidOperationException(
+                $"At least one language code in build {buildId} is unknown to the base model {modelName}, and no data was specified for training. Build canceled."
+            );
+        }
     }
 
-    protected override IReadOnlyList<string> GetWarnings(
+    protected override IReadOnlyList<DiagnosticContract> GetDiagnostics(
         int trainCount,
         int inferenceCount,
         string sourceLanguageTag,
         string targetLanguageTag,
+        bool sourceLanguageHasNativeSupport,
+        bool targetLanguageHasNativeSupport,
+        bool isNonPersistedTranslationEngine,
+        string modelName,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora
     )
     {
-        List<string> warnings =
-        [
-            .. base.GetWarnings(trainCount, inferenceCount, sourceLanguageTag, targetLanguageTag, parallelCorpora),
-        ];
+        List<DiagnosticContract> diagnostics = [];
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere
         if (trainCount < 600 && trainCount != 0)
         {
-            warnings.Add($"Only {trainCount} segments were selected for training.");
+            diagnostics.Add(
+                BuildDiagnosticService.CreateDiagnostic(
+                    "CONFIG-0003",
+                    new Dictionary<string, object>
+                    {
+                        { "trainCount", trainCount },
+                        { "minimumTrainCount", BuildJobOptions.MinimumTrainCount },
+                    }
+                )
+            );
         }
 
         if (
@@ -141,14 +173,59 @@ public class NmtPreprocessBuildJob(
             == Flores200Support.None
         )
         {
-            warnings.Add($"The script for the source language '{resolvedCode}' is not in Flores-200");
+            diagnostics.Add(
+                BuildDiagnosticService.CreateDiagnostic(
+                    "MODEL-0001",
+                    new Dictionary<string, object> { { "resolvedCode", resolvedCode }, { "modelName", modelName } }
+                )
+            );
         }
 
         if (_languageTagService.ConvertToFlores200Code(targetLanguageTag, out resolvedCode) == Flores200Support.None)
         {
-            warnings.Add($"The script for the target language '{resolvedCode}' is not in Flores-200");
+            diagnostics.Add(
+                BuildDiagnosticService.CreateDiagnostic(
+                    "MODEL-0002",
+                    new Dictionary<string, object> { { "resolvedCode", resolvedCode }, { "modelName", modelName } }
+                )
+            );
         }
 
-        return warnings;
+        if (trainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
+        {
+            List<string> unknownLanguageCodes = new[]
+            {
+                !sourceLanguageHasNativeSupport ? sourceLanguageTag : "",
+                !targetLanguageHasNativeSupport ? targetLanguageTag : "",
+            }
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
+            diagnostics.Add(
+                BuildDiagnosticService.CreateDiagnostic(
+                    "MODEL-0004",
+                    new Dictionary<string, object>
+                    {
+                        { "unknownLanguageCodes", unknownLanguageCodes },
+                        { "modelName", modelName },
+                    }
+                )
+            );
+        }
+
+        return
+        [
+            .. base.GetDiagnostics(
+                trainCount,
+                inferenceCount,
+                sourceLanguageTag,
+                targetLanguageTag,
+                sourceLanguageHasNativeSupport,
+                targetLanguageHasNativeSupport,
+                isNonPersistedTranslationEngine,
+                modelName,
+                parallelCorpora
+            ),
+            .. diagnostics,
+        ];
     }
 }

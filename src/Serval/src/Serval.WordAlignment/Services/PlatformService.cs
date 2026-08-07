@@ -368,6 +368,7 @@ public class PlatformService(
                         IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
                         IsWordAlignFilteredByChapter = executionData.IsWordAlignFilteredByChapter,
                         Warnings = executionData.Warnings?.ToList() ?? [],
+                        DiagnosticsTruncated = executionData.DiagnosticsTruncated,
                         EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
                         EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
                     }

@@ -196,7 +196,7 @@ public class ParallelCorpusServiceTests
         expected = new Dictionary<string, HashSet<int>> { { "MAT", [] } };
         Assert.That(actual, Is.EqualTo(expected));
 
-        // Test merging hapters without numbers specified
+        // Test merging chapters without numbers specified
         actual = ParallelCorpusService.GetBookIdsAndChapters(
             corpus with
             {
@@ -218,6 +218,7 @@ public class ParallelCorpusServiceTests
             string ParallelCorpusId,
             string MonolingualCorpusId,
             string ProjectName,
+            string ProjectGuid,
             string VersificationName,
             IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
         )> analysis = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);

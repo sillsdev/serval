@@ -72,6 +72,7 @@ public class EchoTranslationEngineService(
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
         string? options = null,
+        string? model = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -83,7 +84,8 @@ public class EchoTranslationEngineService(
             BuildStage.Preprocess,
             corpora,
             options,
-            cancellationToken
+            model,
+            cancellationToken: cancellationToken
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)

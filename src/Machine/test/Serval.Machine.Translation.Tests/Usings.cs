@@ -4,6 +4,7 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using NSubstitute;
+global using NSubstitute.ClearExtensions;
 global using NUnit.Framework;
 global using Serval.Machine.Shared.Configuration;
 global using Serval.Machine.Shared.Models;
