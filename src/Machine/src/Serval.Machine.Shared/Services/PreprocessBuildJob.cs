@@ -165,7 +165,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                                 {
                                     { "projectName", projectName },
                                     { "projectGuid", projectGuid },
-                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "usfmFileName", usfmDiagnostic.Filename },
                                     {
                                         "lineNumber",
                                         usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
@@ -185,7 +185,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                                 {
                                     { "projectName", projectName },
                                     { "projectGuid", projectGuid },
-                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "usfmFileName", usfmDiagnostic.Filename },
                                     {
                                         "lineNumber",
                                         usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
@@ -207,7 +207,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                                     { "numberOfVerses", usfmDiagnostic.NumAffectedVerses },
                                     { "projectName", projectName },
                                     { "projectGuid", projectGuid },
-                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "usfmFileName", usfmDiagnostic.Filename },
                                     { "lineNumbers", usfmDiagnostic.LineNumbers.ToList() },
                                     { "verseReferences", usfmDiagnostic.References.ToList() },
                                     { "parallelCorpusId", parallelCorpusId },
@@ -222,7 +222,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                                     { "numberOfVerses", usfmDiagnostic.NumAffectedVerses },
                                     { "projectName", projectName },
                                     { "projectGuid", projectGuid },
-                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "usfmFileName", usfmDiagnostic.Filename },
                                     { "lineNumbers", usfmDiagnostic.LineNumbers.ToList() },
                                     { "verseReferences", usfmDiagnostic.References.ToList() },
                                     { "parallelCorpusId", parallelCorpusId },
@@ -236,7 +236,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                                 {
                                     { "projectName", projectName },
                                     { "projectGuid", projectGuid },
-                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "usfmFileName", usfmDiagnostic.Filename },
                                     {
                                         "lineNumber",
                                         usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1
@@ -256,7 +256,7 @@ public abstract class PreprocessBuildJob<TEngine>(
                                 {
                                     { "projectName", projectName },
                                     { "projectGuid", projectGuid },
-                                    { "usfmFilename", usfmDiagnostic.Filename },
+                                    { "usfmFileName", usfmDiagnostic.Filename },
                                     {
                                         "lineNumber",
                                         usfmDiagnostic.LineNumbers.Count > 0 ? usfmDiagnostic.LineNumbers[0] : -1

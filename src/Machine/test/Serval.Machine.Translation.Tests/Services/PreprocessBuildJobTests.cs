@@ -166,7 +166,7 @@ public class PreprocessBuildJobTests
             Assert.That(data["numberOfVerses"] is int numberOfVerses && numberOfVerses == 2);
             Assert.That(data["projectName"] is string projectName && projectName == "pt-source1");
             Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "0000");
-            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["usfmFileName"] is string usfmFileName && usfmFileName == "41MAT.SFM");
             Assert.That(data["lineNumbers"] is List<int> lineNumbers && lineNumbers.SequenceEqual([4, 5]));
             Assert.That(
                 data["verseReferences"] is List<string> verseReferences
@@ -184,7 +184,7 @@ public class PreprocessBuildJobTests
             Assert.That(data["numberOfVerses"] is int numberOfVerses && numberOfVerses == 1);
             Assert.That(data["projectName"] is string projectName && projectName == "pt-source1");
             Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "0000");
-            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["usfmFileName"] is string usfmFileName && usfmFileName == "41MAT.SFM");
             Assert.That(data["lineNumbers"] is List<int> lineNumbers && lineNumbers.SequenceEqual([3]));
             Assert.That(
                 data["verseReferences"] is List<string> verseReferences && verseReferences.SequenceEqual(["MAT 1:1"])
@@ -200,7 +200,7 @@ public class PreprocessBuildJobTests
         {
             Assert.That(data["projectName"] is string projectName && projectName == "pt-target1");
             Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "1111");
-            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["usfmFileName"] is string usfmFileName && usfmFileName == "41MAT.SFM");
             Assert.That(data["lineNumber"] is int lineNumber && lineNumber == 6);
             Assert.That(data["verseReference"] is string verseReference && verseReference == "MAT 1:4a");
             Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
@@ -214,7 +214,7 @@ public class PreprocessBuildJobTests
         {
             Assert.That(data["projectName"] is string projectName && projectName == "pt-target1");
             Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "1111");
-            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["usfmFileName"] is string usfmFileName && usfmFileName == "41MAT.SFM");
             Assert.That(data["lineNumber"] is int lineNumber && lineNumber == 12);
             Assert.That(data["verseReference"] is string verseReference && verseReference == "MAT :1");
             Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
@@ -228,7 +228,7 @@ public class PreprocessBuildJobTests
         {
             Assert.That(data["projectName"] is string projectName && projectName == "pt-target1");
             Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "1111");
-            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["usfmFileName"] is string usfmFileName && usfmFileName == "41MAT.SFM");
             Assert.That(data["lineNumber"] is int lineNumber && lineNumber == 13);
             Assert.That(data["verseReference"] is string verseReference && verseReference == "MAT 2:1$");
             Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
@@ -242,7 +242,7 @@ public class PreprocessBuildJobTests
         {
             Assert.That(data["projectName"] is string projectName && projectName == "pt-target1");
             Assert.That(data["projectGuid"] is string projectGuid && projectGuid == "1111");
-            Assert.That(data["usfmFilename"] is string usfmFilename && usfmFilename == "41MAT.SFM");
+            Assert.That(data["usfmFileName"] is string usfmFileName && usfmFileName == "41MAT.SFM");
             Assert.That(data["lineNumber"] is int lineNumber && lineNumber == 20);
             Assert.That(data["verseReference"] is string verseReference && verseReference == "MAT 2:2-16");
             Assert.That(data["parallelCorpusId"] is string parallelCorpusId && parallelCorpusId == "corpusId1");
