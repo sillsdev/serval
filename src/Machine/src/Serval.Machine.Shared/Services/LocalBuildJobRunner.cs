@@ -272,7 +272,7 @@ public abstract class LocalBuildJobRunner<TEngine>(
         }
     }
 
-    private async Task ProcessJobsAsync(EngineGroup engineGroup, CancellationToken stoppingToken)
+    protected virtual async Task ProcessJobsAsync(EngineGroup engineGroup, CancellationToken stoppingToken)
     {
         Channel<string> channel = _jobChannels[engineGroup];
         while (!stoppingToken.IsCancellationRequested)
