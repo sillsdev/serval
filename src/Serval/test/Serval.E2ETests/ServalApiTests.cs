@@ -430,6 +430,9 @@ public class ServalApiTests
     {
         string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT1");
 
+        // We do not use translation options for SMT builds
+        _helperClient.TranslationBuildConfig.Options = null;
+
         // Validate that get word graph fails when the engine is not built
         ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
         {
