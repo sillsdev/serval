@@ -209,6 +209,12 @@ public class ParallelCorpusService : IParallelCorpusService
 
         bool parallelTrainingDataPresent = false;
 
+        ScrVers referenceVersification =
+            corpusBundle
+                .TargetTextCorpora.SelectMany(c => c.TextCorpora.Select(tc => tc.Versification))
+                .FirstOrDefault()
+            ?? ScrVers.English;
+
         // Iterate over USFM and Text training corpora separately.
         // This is not only because they use different keys, but if we have text corpora
         // with scripture corpora, we don't want to exclude the text corpora from training.
@@ -220,7 +226,7 @@ public class ParallelCorpusService : IParallelCorpusService
             [
                 .. corpusBundle.SourceTextCorpora.SelectMany(c =>
                     c.TextCorpora.Where(tc => isScripture ? tc.IsScripture() : !tc.IsScripture())
-                        .Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
+                        .Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc, referenceVersification))
                 ),
             ];
 
@@ -228,7 +234,7 @@ public class ParallelCorpusService : IParallelCorpusService
             [
                 .. corpusBundle.TargetTextCorpora.SelectMany(c =>
                     c.TextCorpora.Where(tc => isScripture ? tc.IsScripture() : !tc.IsScripture())
-                        .Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
+                        .Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc, referenceVersification))
                 ),
             ];
 
@@ -274,7 +280,7 @@ public class ParallelCorpusService : IParallelCorpusService
         ITextCorpus[] targetCorpora =
         [
             .. corpusBundle.TargetTextCorpora.SelectMany(c =>
-                c.TextCorpora.Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc))
+                c.TextCorpora.Select(tc => FilterTrainingCorpora(c.MonolingualCorpus, tc, referenceVersification))
             ),
         ];
         ITextCorpus targetCorpus = targetCorpora.ChooseFirst();
@@ -293,7 +299,12 @@ public class ParallelCorpusService : IParallelCorpusService
                 .SourceTextCorpora.Where(c => c.ParallelCorpus.Id == parallelCorpus.Id)
                 .SelectMany(sc =>
                     sc.TextCorpora.Select(textCorpus =>
-                        FilterInferencingCorpora(sc.MonolingualCorpus, textCorpus, ignoreUsfmMarkers)
+                        FilterInferencingCorpora(
+                            sc.MonolingualCorpus,
+                            textCorpus,
+                            ignoreUsfmMarkers,
+                            referenceVersification
+                        )
                     )
                 )
                 .ChooseFirst();
@@ -302,7 +313,12 @@ public class ParallelCorpusService : IParallelCorpusService
                 .TargetTextCorpora.Where(c => c.ParallelCorpus.Id == parallelCorpus.Id)
                 .SelectMany(tc =>
                     tc.TextCorpora.Select(textCorpus =>
-                        FilterInferencingCorpora(tc.MonolingualCorpus, textCorpus, ignoreUsfmMarkers)
+                        FilterInferencingCorpora(
+                            tc.MonolingualCorpus,
+                            textCorpus,
+                            ignoreUsfmMarkers,
+                            referenceVersification
+                        )
                     )
                 )
                 .ChooseFirst();
@@ -360,7 +376,8 @@ public class ParallelCorpusService : IParallelCorpusService
     private static ITextCorpus FilterInferencingCorpora(
         MonolingualCorpusContract corpus,
         ITextCorpus textCorpus,
-        HashSet<string> ignoreUsfmMarkers
+        HashSet<string> ignoreUsfmMarkers,
+        ScrVers referenceVersification
     )
     {
         textCorpus = textCorpus.Transform(CleanSegment);
@@ -372,12 +389,18 @@ public class ParallelCorpusService : IParallelCorpusService
         {
             textCorpus = textCorpus
                 .FilterTexts(corpus.InferenceChapters.Keys)
-                .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.InferenceChapters));
+                .Where(row =>
+                    row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.InferenceChapters, referenceVersification)
+                );
         }
         return textCorpus.Where(row => row.Ref is not ScriptureRef sr || !HasIgnorableMarker(sr, ignoreUsfmMarkers));
     }
 
-    private static ITextCorpus FilterTrainingCorpora(MonolingualCorpusContract corpus, ITextCorpus textCorpus)
+    private static ITextCorpus FilterTrainingCorpora(
+        MonolingualCorpusContract corpus,
+        ITextCorpus textCorpus,
+        ScrVers referenceVersification
+    )
     {
         textCorpus = textCorpus.Transform(CleanSegment);
         if (corpus.TrainOnTextIds is not null)
@@ -388,7 +411,9 @@ public class ParallelCorpusService : IParallelCorpusService
         {
             return textCorpus
                 .FilterTexts(corpus.TrainOnChapters.Keys)
-                .Where(row => row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.TrainOnChapters));
+                .Where(row =>
+                    row.Ref is not ScriptureRef sr || IsInChapters(sr, corpus.TrainOnChapters, referenceVersification)
+                );
         }
         return textCorpus;
     }
@@ -580,11 +605,15 @@ public class ParallelCorpusService : IParallelCorpusService
         return parallelTextRow.Ref is ScriptureRef sr && sr.IsVerse;
     }
 
-    private static bool IsInChapters(ScriptureRef sr, Dictionary<string, HashSet<int>> selection)
+    private static bool IsInChapters(
+        ScriptureRef sr,
+        Dictionary<string, HashSet<int>> selection,
+        ScrVers referenceVersification
+    )
     {
         return selection.TryGetValue(sr.Book, out HashSet<int>? chapters)
             && chapters != null
-            && (chapters.Count == 0 || chapters.Contains(sr.ChapterNum));
+            && (chapters.Count == 0 || chapters.Contains(sr.ChangeVersification(referenceVersification).ChapterNum));
     }
 
     private static bool HasIgnorableMarker(ScriptureRef sr, HashSet<string> ignoreUsfmMarkers)

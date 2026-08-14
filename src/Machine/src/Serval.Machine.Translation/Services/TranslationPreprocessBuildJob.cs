@@ -201,7 +201,11 @@ public static class PreprocessStatsExtensions
         {
             pretranslateWriter.WriteStartObject();
             pretranslateWriter.WriteString("corpusId", corpusId);
-            pretranslateWriter.WriteString("textId", row.TextId);
+            pretranslateWriter.WriteString(
+                "textId",
+                row.TargetRefs.Where(r => r is ScriptureRef sr).Select(r => (ScriptureRef)r).FirstOrDefault()?.Book
+                    ?? row.TextId
+            );
             pretranslateWriter.WriteStartArray("sourceRefs");
             foreach (object rowRef in row.SourceRefs)
                 pretranslateWriter.WriteStringValue(rowRef.ToString());
