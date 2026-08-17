@@ -97,7 +97,7 @@ public class ParallelCorpusServiceTests
         Assert.Multiple(() =>
         {
             Assert.That(trainCount, Is.EqualTo(5));
-            Assert.That(inferenceCount, Is.EqualTo(17));
+            Assert.That(inferenceCount, Is.EqualTo(18));
         });
     }
 
@@ -353,7 +353,7 @@ public class ParallelCorpusServiceTests
         (int src1Count, int src2Count, int trgCount, int termCount) = result.GetTrainCount();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(14));
+            Assert.That(src1Count, Is.EqualTo(15));
             Assert.That(src2Count, Is.EqualTo(0));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(3652));
@@ -391,7 +391,7 @@ public class ParallelCorpusServiceTests
         (int src1Count, int src2Count, int trgCount, int termCount) = result.GetTrainCount();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(14));
+            Assert.That(src1Count, Is.EqualTo(15));
             Assert.That(src2Count, Is.EqualTo(0));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
@@ -420,7 +420,7 @@ public class ParallelCorpusServiceTests
 
         PreprocessResult result = await env.RunPreprocessAsync([corpus]);
 
-        Assert.That(result.Pretranslations.Count, Is.EqualTo(20));
+        Assert.That(result.Pretranslations.Count, Is.EqualTo(21));
     }
 
     [Test]
@@ -445,6 +445,23 @@ public class ParallelCorpusServiceTests
     }
 
     [Test]
+    public async Task PreprocessAsync_TrainOnChapters_CrossVersification()
+    {
+        using var env = new TestEnvironment();
+
+        PreprocessResult result = await env.RunPreprocessAsync(env.GetCrossVersificationCorpora(), useKeyTerms: false);
+
+        (int src1Count, int src2Count, int trgCount, int termCount) = result.GetTrainCount();
+        Assert.Multiple(() =>
+        {
+            Assert.That(src1Count, Is.EqualTo(3));
+            Assert.That(src2Count, Is.EqualTo(0));
+            Assert.That(trgCount, Is.EqualTo(0));
+            Assert.That(termCount, Is.EqualTo(0));
+        });
+    }
+
+    [Test]
     public async Task PreprocessAsync_MixedSource_Paratext()
     {
         using var env = new TestEnvironment();
@@ -455,12 +472,12 @@ public class ParallelCorpusServiceTests
         (int src1Count, int src2Count, int trgCount, int termCount) = result.GetTrainCount();
         Assert.Multiple(() =>
         {
-            Assert.That(src1Count, Is.EqualTo(7));
-            Assert.That(src2Count, Is.EqualTo(14));
+            Assert.That(src1Count, Is.EqualTo(9));
+            Assert.That(src2Count, Is.EqualTo(8));
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        Assert.That(result.Pretranslations.Count, Is.EqualTo(21));
+        Assert.That(result.Pretranslations.Count, Is.EqualTo(22));
     }
 
     [Test]
@@ -575,12 +592,13 @@ public class ParallelCorpusServiceTests
                 Is.EqualTo(
                         @"Source one, chapter fourteen, verse fifty-five. Segment b.
 Source one, chapter fourteen, verse fifty-six.
-Source one, chapter one, verse one.
-Source one, chapter one, verse two and three.
-Source one, chapter one, verse four.
-Source one, chapter one, verse five. Source two, chapter one, verse six.
-Source two, chapter one, verse seven. Source two, chapter one, verse eight.
-Source two, chapter one, verse nine. Source one, chapter one, verse ten.
+Source one, chapter fifteen, verse one.
+Source two, chapter one, verse one.
+Source two, chapter one, verse two.
+Source two, chapter one, verse three.
+Source two, chapter one, verse four.
+Source two, chapter one, verse five. Source two, chapter one, verse six.
+Source one, chapter one, verse seven, eight, and nine. Source one, chapter one, verse ten.
 Source two, chapter one, verse one.
 "
                     )
@@ -593,12 +611,13 @@ Source two, chapter one, verse one.
                 Is.EqualTo(
                         @"Target two, chapter fourteen, verse fifty-five.
 Target two, chapter fourteen, verse fifty-six.
+Target two, chapter fourteen, verse fifty-seven.
 Target one, chapter one, verse one.
-Target one, chapter one, verse two. Target one, chapter one, verse three.
+Target one, chapter one, verse two.
+Target one, chapter one, verse three.
 
 Target one, chapter one, verse five and six.
-Target one, chapter one, verse seven and eight.
-Target one, chapter one, verse nine and ten.
+Target one, chapter one, verse seven and eight. Target one, chapter one, verse nine and ten.
 
 "
                     )
@@ -1048,6 +1067,53 @@ Target one, chapter one, verse nine and ten.
                                     Location = Path.Combine(TestDataPath, "target1.txt"),
                                 },
                             ],
+                        },
+                    ],
+                },
+            ];
+        }
+
+        public ParallelCorpusContract[] GetCrossVersificationCorpora()
+        {
+            return
+            [
+                new ParallelCorpusContract
+                {
+                    Id = "corpus3",
+                    SourceCorpora =
+                    [
+                        new MonolingualCorpusContract
+                        {
+                            Id = "pt-source1",
+                            Language = "en",
+                            Files =
+                            [
+                                new CorpusFileContract
+                                {
+                                    TextId = "textId1",
+                                    Format = FileFormat.Paratext,
+                                    Location = ZipParatextProject("pt-source1"),
+                                },
+                            ],
+                            TrainOnChapters = new Dictionary<string, HashSet<int>> { ["LEV"] = [14] },
+                        },
+                    ],
+                    TargetCorpora =
+                    [
+                        new MonolingualCorpusContract
+                        {
+                            Id = "pt-target2",
+                            Language = "en",
+                            Files =
+                            [
+                                new CorpusFileContract
+                                {
+                                    TextId = "textId1",
+                                    Format = FileFormat.Paratext,
+                                    Location = ZipParatextProject("pt-target2"),
+                                },
+                            ],
+                            TrainOnChapters = new Dictionary<string, HashSet<int>> { ["LEV"] = [14] },
                         },
                     ],
                 },

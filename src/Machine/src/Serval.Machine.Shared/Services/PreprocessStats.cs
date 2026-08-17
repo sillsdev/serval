@@ -28,7 +28,7 @@ public record PreprocessStats
         ParallelRowContract row
     )
     {
-        foreach (object? reference in row.SourceRefs)
+        foreach (object? reference in row.TargetRefs)
         {
             if (reference is not null and ScriptureRef sr && sr.IsVerse)
             {
