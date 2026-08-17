@@ -524,6 +524,17 @@ public class PreprocessBuildJobTests
                 new("JHN", [ScriptureRef.Parse("JHN 1:1")], [ScriptureRef.Parse("JHN 1:1")], "Source John 1:1", "", 1),
                 false
             ),
+            (
+                new(
+                    "PSA",
+                    [ScriptureRef.Parse("PSA 151:1")],
+                    [ScriptureRef.Parse("PS2 1:1")],
+                    "Source Psalm 151:1",
+                    "",
+                    1
+                ),
+                false
+            ),
         ];
 
         using MemoryStream memoryStream = new();
@@ -574,16 +585,21 @@ public class PreprocessBuildJobTests
             Is.EqualTo(
                 "["
                     + "{\"corpusId\":\"corpus1\",\"textId\":\"MAT\",\"sourceRefs\":[\"MAT 1:1/s\"],\"targetRefs\":[\"MAT 1:1/s\"],\"translation\":\"Source Matthew section header\"},"
-                    + "{\"corpusId\":\"corpus1\",\"textId\":\"JHN\",\"sourceRefs\":[\"JHN 1:1\"],\"targetRefs\":[\"JHN 1:1\"],\"translation\":\"Source John 1:1\"}"
+                    + "{\"corpusId\":\"corpus1\",\"textId\":\"JHN\",\"sourceRefs\":[\"JHN 1:1\"],\"targetRefs\":[\"JHN 1:1\"],\"translation\":\"Source John 1:1\"},"
+                    + "{\"corpusId\":\"corpus1\",\"textId\":\"PS2\",\"sourceRefs\":[\"PSA 151:1\"],\"targetRefs\":[\"PS2 1:1\"],\"translation\":\"Source Psalm 151:1\"}"
                     + "]"
             )
         );
-        Assert.That(stats.InferenceCount, Is.EqualTo(2));
-        Assert.That(stats.InferenceVerseCount, Has.Count.EqualTo(1));
+        Assert.That(stats.InferenceCount, Is.EqualTo(3));
+        Assert.That(stats.InferenceVerseCount, Has.Count.EqualTo(2));
         Assert.That(stats.InferenceVerseCount, Does.ContainKey("JHN"));
         Assert.That(stats.InferenceVerseCount["JHN"], Has.Count.EqualTo(1));
         Assert.That(stats.InferenceVerseCount["JHN"], Does.ContainKey("1"));
         Assert.That(stats.InferenceVerseCount["JHN"]["1"], Is.EqualTo(1));
+        Assert.That(stats.InferenceVerseCount, Does.ContainKey("PS2"));
+        Assert.That(stats.InferenceVerseCount["PS2"], Has.Count.EqualTo(1));
+        Assert.That(stats.InferenceVerseCount["PS2"], Does.ContainKey("1"));
+        Assert.That(stats.InferenceVerseCount["PS2"]["1"], Is.EqualTo(1));
     }
 
     private class TestEnvironment
