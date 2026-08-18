@@ -1,3 +1,5 @@
+using SIL.Scripture;
+
 namespace Serval.Machine.WordAlignment.Services;
 
 [TestFixture]
@@ -36,8 +38,8 @@ public class PreprocessBuildJobTests
             (
                 new(
                     "MAT",
-                    [ScriptureRef.Parse("MAT 1:1")],
-                    [ScriptureRef.Parse("MAT 1:1")],
+                    [ScriptureRef.Parse("MAT 1:1", ScrVers.English)],
+                    [ScriptureRef.Parse("MAT 1:1", ScrVers.English)],
                     "Source Matthew 1:1",
                     "Target Matthew 1:1",
                     1
@@ -47,8 +49,8 @@ public class PreprocessBuildJobTests
             (
                 new(
                     "MAT",
-                    [ScriptureRef.Parse("MAT 1:2")],
-                    [ScriptureRef.Parse("MAT 1:2")],
+                    [ScriptureRef.Parse("MAT 1:2", ScrVers.English)],
+                    [ScriptureRef.Parse("MAT 1:2", ScrVers.English)],
                     "Source Matthew 1:2",
                     "",
                     1
@@ -58,8 +60,8 @@ public class PreprocessBuildJobTests
             (
                 new(
                     "MAT",
-                    [ScriptureRef.Parse("MAT 2:1")],
-                    [ScriptureRef.Parse("MAT 2:1")],
+                    [ScriptureRef.Parse("MAT 2:1", ScrVers.English)],
+                    [ScriptureRef.Parse("MAT 2:1", ScrVers.English)],
                     "Source Matthew 2:1",
                     "Target Matthew 2:1",
                     1
@@ -69,8 +71,8 @@ public class PreprocessBuildJobTests
             (
                 new(
                     "MRK",
-                    [ScriptureRef.Parse("MRK 1:1")],
-                    [ScriptureRef.Parse("MRK 1:1")],
+                    [ScriptureRef.Parse("MRK 1:1", ScrVers.English)],
+                    [ScriptureRef.Parse("MRK 1:1", ScrVers.English)],
                     "Source Mark 1:1",
                     "Target Mark 1:1",
                     1
@@ -117,8 +119,8 @@ public class PreprocessBuildJobTests
             (
                 new(
                     "MAT",
-                    [ScriptureRef.Parse("MAT 1:1")],
-                    [ScriptureRef.Parse("MAT 1:1")],
+                    [ScriptureRef.Parse("MAT 1:1", ScrVers.English)],
+                    [ScriptureRef.Parse("MAT 1:1", ScrVers.English)],
                     "Source Matthew 1:1",
                     "Target Matthew 1:1",
                     1
@@ -126,14 +128,21 @@ public class PreprocessBuildJobTests
                 true
             ),
             (
-                new("JHN", [ScriptureRef.Parse("JHN 1:1")], [ScriptureRef.Parse("JHN 1:1")], "Source John 1:1", "", 1),
+                new(
+                    "JHN",
+                    [ScriptureRef.Parse("JHN 1:1", ScrVers.English)],
+                    [ScriptureRef.Parse("JHN 1:1", ScrVers.English)],
+                    "Source John 1:1",
+                    "",
+                    1
+                ),
                 false
             ),
             (
                 new(
                     "JHN",
-                    [ScriptureRef.Parse("JHN 1:2")],
-                    [ScriptureRef.Parse("JHN 1:2")],
+                    [ScriptureRef.Parse("JHN 1:2", ScrVers.English)],
+                    [ScriptureRef.Parse("JHN 1:2", ScrVers.English)],
                     "Source John 1:2",
                     "Target John 1:2",
                     1
