@@ -7,18 +7,20 @@ public class NmtClearMLBuildJobFactoryTests
     public async Task CreateJobScriptAsync_BuildOptions()
     {
         var env = new TestEnvironment();
+        const string BuildOptions = "{ \"max_steps\": \"10\" }";
+        string buildOptionsBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(BuildOptions));
         string script = await env.BuildJobFactory.CreateJobScriptAsync(
             "engine1",
             "build1",
             "test_model",
             BuildStage.Train,
-            buildOptions: "{ \"max_steps\": \"10\" }"
+            buildOptions: BuildOptions
         );
         Assert.That(
             script,
             Is.EqualTo(
-                @"from machine.jobs.build_nmt_engine import run
-args = {
+                $@"from machine.jobs.build_nmt_engine import run
+args = {{
     'model_type': 'test_model',
     'engine_id': 'engine1',
     'build_id': 'build1',
@@ -26,9 +28,9 @@ args = {
     'trg_lang': 'eng_Latn',
     'shared_file_uri': 's3://bucket',
     'shared_file_folder': 'folder1/folder2',
-    'build_options': '''{ ""max_steps"": ""10"" }''',
+    'build_options': '''{buildOptionsBase64}''',
     'clearml': True
-}
+}}
 run(args)
 ".ReplaceLineEndings("\n")
             )
