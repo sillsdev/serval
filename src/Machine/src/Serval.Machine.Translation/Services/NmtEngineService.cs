@@ -89,6 +89,37 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
+        JsonNode? buildOptionsJsonNode = null;
+        if (options != null)
+        {
+            try
+            {
+                buildOptionsJsonNode = JsonNode.Parse(options);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Unable to parse field build options : {e.Message}", e);
+            }
+        }
+
+        if (buildOptionsJsonNode != null && buildOptionsJsonNode is JsonObject buildOptionsJsonObject)
+        {
+            if (buildOptionsJsonObject.ContainsKey("parent_model_name") && model == null)
+            {
+                model = GetModelName(buildOptionsJsonObject["parent_model_name"]?.GetValue<string>() ?? string.Empty);
+            }
+            else
+            {
+                model ??= Models.Models.Nllb;
+                buildOptionsJsonObject["parent_model_name"] = GetFullModelName(model);
+                options = buildOptionsJsonObject.ToJsonString();
+            }
+        }
+
+        model ??= Models.Models.Nllb;
+        CheckIsValidModel(model);
+        await _platformService.UpdateModelAsync(buildId, model, cancellationToken);
+
         bool building = !await _buildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Local,
             EngineType.Nmt,
@@ -207,5 +238,35 @@ public class NmtEngineService(
         if (engine is null)
             throw new EngineNotFoundException($"The engine {engineId} does not exist.");
         return engine;
+    }
+
+    private static string GetFullModelName(string model)
+    {
+        return model switch
+        {
+            Models.Models.Nllb => "facebook/nllb-200-distilled-1.3B",
+            Models.Models.Nllb600m => "facebook/nllb-200-distilled-600M",
+            Models.Models.NllbTesting => "hf-internal-testing/tiny-random-nllb",
+            _ => throw new ArgumentException($"Unknown model {model}."),
+        };
+    }
+
+    private static string GetModelName(string model)
+    {
+        return model switch
+        {
+            "facebook/nllb-200-distilled-1.3B" => Models.Models.Nllb,
+            "facebook/nllb-200-distilled-600M" => Models.Models.Nllb600m,
+            "hf-internal-testing/tiny-random-nllb" => Models.Models.NllbTesting,
+            _ => throw new ArgumentException($"Unknown model {model}."),
+        };
+    }
+
+    private static void CheckIsValidModel(string model)
+    {
+        if (model != Models.Models.Nllb && model != Models.Models.Nllb600m && model != Models.Models.NllbTesting)
+        {
+            throw new ArgumentException($"Unknown model {model}.");
+        }
     }
 }

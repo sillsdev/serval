@@ -80,11 +80,16 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
             stage,
             data,
             buildOptions,
-            model,
             cancellationToken
         );
         try
         {
+            string? currentModel = (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))
+                ?.CurrentBuild
+                ?.Model;
+            if (currentModel != null && model == null)
+                model = currentModel;
+
             TEngine? engine = await Engines.UpdateAsync(
                 e =>
                     e.EngineId == engineId
@@ -97,6 +102,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
                         )
                     ),
                 u =>
+                {
                     u.Set(
                         e => e.CurrentBuild,
                         new Build
@@ -112,7 +118,8 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
                             JobData = jobData,
                             ExecutionData = new BuildExecutionData(),
                         }
-                    ),
+                    );
+                },
                 cancellationToken: cancellationToken
             );
             if (engine is null)
