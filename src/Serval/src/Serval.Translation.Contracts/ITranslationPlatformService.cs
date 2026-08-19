@@ -42,4 +42,5 @@ public interface ITranslationPlatformService
         string quoteConvention,
         CancellationToken cancellationToken = default
     );
+    Task UpdateModelAsync(string buildId, string model, CancellationToken cancellationToken = default);
 }
