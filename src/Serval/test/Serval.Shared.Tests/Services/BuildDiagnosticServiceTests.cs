@@ -220,7 +220,7 @@ public class BuildDiagnosticServiceTests
         var code = "MODEL-0003";
         var data = new Dictionary<string, object>
         {
-            { "averagePretranslationConfidence", 0.37 },
+            { "averagePretranslationConfidence", 0.370111 },
             { "bookId", "MAT" },
             { "modelName", "test-model" },
         };
@@ -229,11 +229,11 @@ public class BuildDiagnosticServiceTests
 
         Assert.That(diagnostic.Code, Is.EqualTo(code));
         Assert.That(diagnostic.Category, Is.EqualTo("MODEL"));
-        Assert.That(diagnostic.Severity, Is.EqualTo(Contracts.DiagnosticSeverity.Warn));
+        Assert.That(diagnostic.Severity, Is.EqualTo(DiagnosticSeverity.Warn));
         Assert.That(
             diagnostic.Message,
             Is.EqualTo(
-                "The average pretranslation model confidence 0.37 in book MAT is unusually low for the base model test-model."
+                "The average pretranslation model confidence 0.370 in book MAT is unusually low for the base model test-model."
             )
         );
         Assert.That(diagnostic.Data, Is.EqualTo(data));

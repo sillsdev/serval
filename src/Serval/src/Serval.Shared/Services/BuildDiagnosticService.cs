@@ -58,6 +58,10 @@ public class BuildDiagnosticService : IBuildDiagnosticService
                 ["bookId"] = typeof(string),
                 ["modelName"] = typeof(string),
             },
+            DataFormatters = new Dictionary<string, Func<object, string?>>
+            {
+                ["averagePretranslationConfidence"] = obj => ((double)obj).ToString("F3", CultureInfo.InvariantCulture),
+            },
         },
         ["MODEL-0004"] = new DiagnosticInfo
         {
