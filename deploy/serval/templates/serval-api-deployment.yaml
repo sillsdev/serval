@@ -17,11 +17,15 @@ spec:
         app: serval-api
     spec:
       terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
       containers:
         - command:
             - dotnet
             - /app/api_server/Serval.ApiServer.dll
           workingDir: /app/api_server
+          securityContext:
+            allowPrivilegeEscalation: false
           env:
             - name: Auth__Domain
               value: {{ .Values.auth0Domain}}
@@ -30,9 +34,9 @@ spec:
             - name: ASPNETCORE_DeploymentVersion
               value: {{ default "undefined" .Values.deploymentVersion}}
             - name: ASPNETCORE_Kestrel__Endpoints__Http__Url
-              value: http://*:80
+              value: http://*:8080
             - name: ASPNETCORE_Kestrel__Endpoints__Http2__Url
-              value: http://*:81
+              value: http://*:8081
             - name: ASPNETCORE_Kestrel__Endpoints__Http2__Protocols
               value: Http2
               {{- template "secrets.mongodb" . }}
@@ -46,8 +50,8 @@ spec:
           imagePullPolicy: "Always"
           name: serval-api
           ports:
-            - containerPort: 80
-            - containerPort: 81
+            - containerPort: 8080
+            - containerPort: 8081
           resources:
             limits:
               memory: "8Gi"
@@ -60,7 +64,7 @@ spec:
               name: machine-mount
             - mountPath: /var/lib/serval
               name: serval-mount
-            - mountPath: /root/.aspnet/DataProtection-Keys
+            - mountPath: /home/app/.aspnet/DataProtection-Keys
               name: server-keys
       hostname: serval-api
       dnsConfig:

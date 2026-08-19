@@ -16,5 +16,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS production
 RUN apt-get update && apt-get install -y libgomp1
 WORKDIR /app
 COPY --from=build-env /app/out_api_server ./api_server
+USER $APP_UID
 
 CMD ["bash"]
