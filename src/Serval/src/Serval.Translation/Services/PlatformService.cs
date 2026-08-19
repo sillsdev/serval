@@ -435,6 +435,7 @@ public class PlatformService(
                 if (
                     item.TargetRefs.Count > 0
                     && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef)
+                    && scriptureRef.IsVerse
                 )
                 {
                     string bookId = scriptureRef.Book;
