@@ -21,4 +21,5 @@ global using Serval.Shared.Utils;
 global using SIL.DataAccess;
 global using SIL.IO;
 global using SIL.Machine.Corpora;
+global using SIL.Machine.Utils;
 global using SIL.ObjectModel;
