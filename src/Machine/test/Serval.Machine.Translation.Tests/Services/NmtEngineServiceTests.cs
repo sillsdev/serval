@@ -22,6 +22,85 @@ public class NmtEngineServiceTests
     }
 
     [Test]
+    public async Task StartBuildAsync_ModelIsCorrectlySet_DefaultModel()
+    {
+        using var env = new TestEnvironment();
+        env.PersistModel();
+
+        TranslationEngine engine = env.Engines.Get("engine1");
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.WaitForBuildToStartAsync();
+        engine = env.Engines.Get("engine1");
+        Assert.That(engine.CurrentBuild, Is.Not.Null);
+        Assert.That(engine.CurrentBuild.Model, Is.EqualTo(Models.Models.Nllb));
+        await env.Service.CancelBuildAsync("engine1");
+        await env.WaitForBuildToFinishAsync();
+    }
+
+    [Test]
+    public async Task StartBuildAsync_ModelIsCorrectlySet_SpecifyModelParameter()
+    {
+        using var env = new TestEnvironment();
+        env.PersistModel();
+
+        await env.Service.StartBuildAsync(
+            "engine1",
+            "build1",
+            Array.Empty<ParallelCorpusContract>(),
+            "{}",
+            Models.Models.NllbTesting
+        );
+        await env.WaitForBuildToStartAsync();
+        TranslationEngine engine = env.Engines.Get("engine1");
+        Assert.That(engine.CurrentBuild, Is.Not.Null);
+        Assert.That(engine.CurrentBuild.Model, Is.EqualTo(Models.Models.NllbTesting));
+        Assert.That(engine.CurrentBuild.Options, Does.Contain("hf-internal-testing/tiny-random-nllb"));
+        await env.Service.CancelBuildAsync("engine1");
+        await env.WaitForBuildToFinishAsync();
+    }
+
+    [Test]
+    public async Task StartBuildAsync_ModelIsCorrectlySet_SpecifyModelInOptionsAndModelParameter()
+    {
+        using var env = new TestEnvironment();
+        env.PersistModel();
+
+        // Non-default model and also specified in options
+        await env.Service.StartBuildAsync(
+            "engine1",
+            "build1",
+            Array.Empty<ParallelCorpusContract>(),
+            "{\"parent_model_name\": \"facebook/nllb-200-distilled-1.3B\"}",
+            Models.Models.NllbTesting
+        );
+        await env.WaitForBuildToStartAsync();
+        TranslationEngine engine = env.Engines.Get("engine1");
+        Assert.That(engine.CurrentBuild, Is.Not.Null);
+        Assert.That(engine.CurrentBuild.Model, Is.EqualTo(Models.Models.NllbTesting));
+        Assert.That(engine.CurrentBuild.Options, Does.Contain("hf-internal-testing/tiny-random-nllb"));
+        await env.Service.CancelBuildAsync("engine1");
+        await env.WaitForBuildToFinishAsync();
+    }
+
+    [Test]
+    public async Task StartBuildAsync_ModelIsCorrectlySet_InvalidModelParameter()
+    {
+        using var env = new TestEnvironment();
+        env.PersistModel();
+
+        // Invalid model
+        Assert.ThrowsAsync<ArgumentException>(async () =>
+            await env.Service.StartBuildAsync(
+                "engine1",
+                "build1",
+                Array.Empty<ParallelCorpusContract>(),
+                "{\"parent_model_name\": \"facebook/nllb-200-distilled-1.3B\"}",
+                "NLLBMisspelled"
+            )
+        );
+    }
+
+    [Test]
     public async Task CancelBuildAsync_Building()
     {
         using var env = new TestEnvironment();
