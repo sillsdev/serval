@@ -194,6 +194,7 @@ public abstract class ClearMLMonitorService<TEngine>(
                                 (int)GetMetric(task, SummaryMetric, TrainCorpusSizeVariant),
                                 GetMetric(task, SummaryMetric, ConfidenceVariant),
                                 engine.CurrentBuild.Options,
+                                engine.CurrentBuild.Model,
                                 cancellationToken
                             );
                             if (canceling)
@@ -285,6 +286,7 @@ public abstract class ClearMLMonitorService<TEngine>(
         int corpusSize,
         double confidence,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {
@@ -298,6 +300,7 @@ public abstract class ClearMLMonitorService<TEngine>(
                 BuildStage.Postprocess,
                 (corpusSize, confidence),
                 buildOptions,
+                model,
                 cancellationToken: cancellationToken
             );
         }

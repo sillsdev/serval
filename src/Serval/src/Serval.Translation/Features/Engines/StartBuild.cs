@@ -119,9 +119,10 @@ public class StartBuildHandler(
                     logger.LogInformation("Error parsing build request summary.");
                 }
 
-                await engineFactory
+                string? model = await engineFactory
                     .GetEngineService(engine.Type)
                     .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, build.Model, ct);
+                await builds.UpdateAsync(b => b.Id == build.Id, u => u.Set(b => b.Model, model), cancellationToken: ct);
                 return new StartBuildResponse(dtoMapper.Map(build));
             },
             cancellationToken

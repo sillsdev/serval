@@ -53,6 +53,7 @@ public class DtoMapper(IUrlService urlService)
             DateCompleted = source.DateCompleted,
             DateFinished = source.DateFinished,
             Options = source.Options,
+            Model = source.Model,
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList(),

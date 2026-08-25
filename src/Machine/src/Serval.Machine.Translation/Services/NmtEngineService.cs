@@ -17,6 +17,20 @@ public class NmtEngineService(
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     public const string ModelDirectory = "models/";
 
+    private static readonly IReadOnlyDictionary<string, string> ModelToFullModelName = new Dictionary<string, string>()
+    {
+        [Models.Models.Nllb] = "facebook/nllb-200-distilled-1.3B",
+        [Models.Models.Nllb600m] = "facebook/nllb-200-distilled-600M",
+        [Models.Models.NllbTesting] = "hf-internal-testing/tiny-random-nllb",
+    };
+
+    private static readonly IReadOnlyDictionary<string, string> FullModelNameToModel = new Dictionary<string, string>()
+    {
+        ["facebook/nllb-200-distilled-1.3B"] = Models.Models.Nllb,
+        ["facebook/nllb-200-distilled-600M"] = Models.Models.Nllb600m,
+        ["hf-internal-testing/tiny-random-nllb"] = Models.Models.NllbTesting,
+    };
+
     public static string GetModelPath(string engineId, int buildRevision)
     {
         return $"{ModelDirectory}{engineId}_{buildRevision}.tar.gz";
@@ -80,7 +94,7 @@ public class NmtEngineService(
         );
     }
 
-    public async Task StartBuildAsync(
+    public async Task<string?> StartBuildAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
@@ -89,12 +103,14 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        JsonNode? buildOptionsJsonNode = null;
+        JsonObject? buildOptionsJsonObject = [];
         if (options != null)
         {
             try
             {
-                buildOptionsJsonNode = JsonNode.Parse(options);
+                JsonNode? buildOptionsJsonNode = JsonNode.Parse(options);
+                if (buildOptionsJsonNode is JsonObject obj)
+                    buildOptionsJsonObject = obj;
             }
             catch (Exception e)
             {
@@ -102,23 +118,20 @@ public class NmtEngineService(
             }
         }
 
-        if (buildOptionsJsonNode != null && buildOptionsJsonNode is JsonObject buildOptionsJsonObject)
+        if (
+            buildOptionsJsonObject.ContainsKey("parent_model_name")
+            && buildOptionsJsonObject["parent_model_name"] != null
+            && model == null
+        )
         {
-            if (buildOptionsJsonObject.ContainsKey("parent_model_name") && model == null)
-            {
-                model = GetModelName(buildOptionsJsonObject["parent_model_name"]?.GetValue<string>() ?? string.Empty);
-            }
-            else
-            {
-                model ??= Models.Models.Nllb;
-                buildOptionsJsonObject["parent_model_name"] = GetFullModelName(model);
-                options = buildOptionsJsonObject.ToJsonString();
-            }
+            model = GetModelName(buildOptionsJsonObject["parent_model_name"]!.GetValue<string>());
         }
-
-        model ??= Models.Models.Nllb;
-        CheckIsValidModel(model);
-        await _platformService.UpdateModelAsync(buildId, model, cancellationToken);
+        else
+        {
+            model ??= Models.Models.Nllb;
+            buildOptionsJsonObject["parent_model_name"] = GetFullModelName(model);
+            options = buildOptionsJsonObject.ToJsonString();
+        }
 
         bool building = !await _buildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Local,
@@ -134,6 +147,8 @@ public class NmtEngineService(
         // If there is a pending/running build, then no need to start a new one.
         if (building)
             throw new ConflictException();
+
+        return model;
     }
 
     public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
@@ -242,31 +257,15 @@ public class NmtEngineService(
 
     private static string GetFullModelName(string model)
     {
-        return model switch
-        {
-            Models.Models.Nllb => "facebook/nllb-200-distilled-1.3B",
-            Models.Models.Nllb600m => "facebook/nllb-200-distilled-600M",
-            Models.Models.NllbTesting => "hf-internal-testing/tiny-random-nllb",
-            _ => throw new ArgumentException($"Unknown model {model}."),
-        };
+        if (ModelToFullModelName.TryGetValue(model, out string? fullModelName) && fullModelName != null)
+            return fullModelName;
+        throw new InvalidOperationException($"Unknown model {model}.");
     }
 
-    private static string GetModelName(string model)
+    private static string GetModelName(string fullModelName)
     {
-        return model switch
-        {
-            "facebook/nllb-200-distilled-1.3B" => Models.Models.Nllb,
-            "facebook/nllb-200-distilled-600M" => Models.Models.Nllb600m,
-            "hf-internal-testing/tiny-random-nllb" => Models.Models.NllbTesting,
-            _ => throw new ArgumentException($"Unknown model {model}."),
-        };
-    }
-
-    private static void CheckIsValidModel(string model)
-    {
-        if (model != Models.Models.Nllb && model != Models.Models.Nllb600m && model != Models.Models.NllbTesting)
-        {
-            throw new ArgumentException($"Unknown model {model}.");
-        }
+        if (FullModelNameToModel.TryGetValue(fullModelName, out string? model) && model != null)
+            return model;
+        throw new InvalidOperationException($"Unknown full model name {fullModelName}.");
     }
 }
