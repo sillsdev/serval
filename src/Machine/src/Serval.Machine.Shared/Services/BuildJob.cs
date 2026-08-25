@@ -13,10 +13,11 @@ public abstract class BuildJob<TEngine>(
         string engineId,
         string buildId,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {
-        return RunAsync(engineId, buildId, null, buildOptions, cancellationToken);
+        return RunAsync(engineId, buildId, null, buildOptions, model, cancellationToken);
     }
 }
 
@@ -40,6 +41,7 @@ public abstract class BuildJob<TEngine, TData>(
         string buildId,
         TData data,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {
@@ -53,7 +55,7 @@ public abstract class BuildJob<TEngine, TData>(
                 return;
             }
 
-            await DoWorkAsync(engineId, buildId, data, buildOptions, cancellationToken);
+            await DoWorkAsync(engineId, buildId, data, buildOptions, model, cancellationToken);
         }
         catch (OperationCanceledException e)
         {
@@ -143,6 +145,7 @@ public abstract class BuildJob<TEngine, TData>(
         string buildId,
         TData data,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     );
 

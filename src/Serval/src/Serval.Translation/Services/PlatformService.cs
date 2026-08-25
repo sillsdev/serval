@@ -538,13 +538,4 @@ public class PlatformService(
             cancellationToken: cancellationToken
         );
     }
-
-    public async Task UpdateModelAsync(string buildId, string model, CancellationToken cancellationToken = default)
-    {
-        await _builds.UpdateAsync(
-            b => b.Id == buildId,
-            u => u.Set(b => b.Model, model),
-            cancellationToken: cancellationToken
-        );
-    }
 }

@@ -30,6 +30,7 @@ public class EchoWordAlignmentLocalBuildJobFactory : ILocalBuildJobFactory
         BuildStage stage,
         string? jobData,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {
@@ -40,11 +41,11 @@ public class EchoWordAlignmentLocalBuildJobFactory : ILocalBuildJobFactory
                     serviceProvider
                 );
                 var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(jobData!, SerializerOptions)!;
-                await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
+                await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, model, cancellationToken);
                 break;
             case BuildStage.Train:
                 var trainJob = ActivatorUtilities.CreateInstance<EchoWordAlignmentTrainingBuildJob>(serviceProvider);
-                await trainJob.RunAsync(engineId, buildId, null, buildOptions, cancellationToken);
+                await trainJob.RunAsync(engineId, buildId, null, buildOptions, model, cancellationToken);
                 break;
             case BuildStage.Postprocess:
                 var postprocessJob = ActivatorUtilities.CreateInstance<EchoWordAlignmentPostprocessBuildJob>(
@@ -56,6 +57,7 @@ public class EchoWordAlignmentLocalBuildJobFactory : ILocalBuildJobFactory
                     buildId,
                     (postData.TrainCount, postData.Confidence),
                     buildOptions,
+                    model,
                     cancellationToken
                 );
                 break;

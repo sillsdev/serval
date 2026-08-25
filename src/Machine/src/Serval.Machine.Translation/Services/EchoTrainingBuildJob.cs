@@ -13,6 +13,7 @@ public class EchoTrainingBuildJob(
         string buildId,
         object? data,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {

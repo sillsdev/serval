@@ -13,6 +13,7 @@ public interface ILocalBuildJobFactory
         BuildStage stage,
         string? jobData,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     );
 }

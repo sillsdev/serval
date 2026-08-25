@@ -84,12 +84,6 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
         );
         try
         {
-            string? currentModel = (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))
-                ?.CurrentBuild
-                ?.Model;
-            if (currentModel != null && model == null)
-                model = currentModel;
-
             TEngine? engine = await Engines.UpdateAsync(
                 e =>
                     e.EngineId == engineId

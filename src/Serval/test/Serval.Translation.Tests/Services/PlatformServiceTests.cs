@@ -97,7 +97,7 @@ public class PlatformServiceTests
                 Id = "b0",
                 EngineRef = "e0",
                 Owner = "owner1",
-                Model = "NLLB",
+                Model = "nllb",
             }
         );
 
@@ -123,7 +123,7 @@ public class PlatformServiceTests
             executionData.Diagnostics[0].Data["averagePretranslationConfidence"],
             Is.EqualTo(0.2487).Within(0.0001)
         );
-        Assert.That(executionData.Diagnostics[0].Data["modelName"], Is.EqualTo("NLLB"));
+        Assert.That(executionData.Diagnostics[0].Data["modelName"], Is.EqualTo("nllb"));
     }
 
     [Test]

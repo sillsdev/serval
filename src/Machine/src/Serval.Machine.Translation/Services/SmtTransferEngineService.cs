@@ -179,7 +179,7 @@ public class SmtTransferEngineService(
         state.Touch();
     }
 
-    public async Task StartBuildAsync(
+    public async Task<string?> StartBuildAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
@@ -196,7 +196,6 @@ public class SmtTransferEngineService(
             BuildStage.Preprocess,
             corpora,
             options,
-            model,
             cancellationToken: cancellationToken
         );
         // If there is a pending/running build, then no need to start a new one.
@@ -205,6 +204,8 @@ public class SmtTransferEngineService(
 
         SmtTransferEngineState state = _stateService.Get(engineId);
         state.Touch();
+
+        return null;
     }
 
     public async Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)

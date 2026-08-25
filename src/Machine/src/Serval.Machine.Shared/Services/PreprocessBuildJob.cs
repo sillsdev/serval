@@ -40,6 +40,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         string buildId,
         IReadOnlyList<ParallelCorpusContract> data,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {
@@ -57,6 +58,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             engine.SourceLanguage,
             engine.TargetLanguage,
             isNonPersistedTranslationEngine,
+            model ?? "unknown",
             data,
             cancellationToken
         );
@@ -79,6 +81,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             buildId,
             BuildStage.Train,
             buildOptions: buildOptions,
+            model: model,
             cancellationToken: cancellationToken
         );
         if (canceling)
@@ -92,6 +95,7 @@ public abstract class PreprocessBuildJob<TEngine>(
         string sourceLanguageTag,
         string targetLanguageTag,
         bool isNonPersistedTranslationEngine,
+        string modelName,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     );
@@ -134,8 +138,8 @@ public abstract class PreprocessBuildJob<TEngine>(
         bool sourceLanguageHasNativeSupport,
         bool targetLanguageHasNativeSupport,
         bool isNonPersistedTranslationEngine,
-        string modelName,
-        IReadOnlyList<ParallelCorpusContract> parallelCorpora
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
+        string? modelName = null
     )
     {
         List<DiagnosticContract> diagnostics = [];

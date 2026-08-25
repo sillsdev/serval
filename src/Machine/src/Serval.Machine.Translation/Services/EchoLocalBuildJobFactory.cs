@@ -30,6 +30,7 @@ public class EchoLocalBuildJobFactory : ILocalBuildJobFactory
         BuildStage stage,
         string? jobData,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {
@@ -38,11 +39,11 @@ public class EchoLocalBuildJobFactory : ILocalBuildJobFactory
             case BuildStage.Preprocess:
                 var preprocessJob = ActivatorUtilities.CreateInstance<EchoPreprocessBuildJob>(serviceProvider);
                 var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(jobData!, SerializerOptions)!;
-                await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
+                await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, model, cancellationToken);
                 break;
             case BuildStage.Train:
                 var trainJob = ActivatorUtilities.CreateInstance<EchoTrainingBuildJob>(serviceProvider);
-                await trainJob.RunAsync(engineId, buildId, null, buildOptions, cancellationToken);
+                await trainJob.RunAsync(engineId, buildId, null, buildOptions, model, cancellationToken);
                 break;
             case BuildStage.Postprocess:
                 var postprocessJob = ActivatorUtilities.CreateInstance<EchoPostprocessBuildJob>(serviceProvider);
@@ -52,6 +53,7 @@ public class EchoLocalBuildJobFactory : ILocalBuildJobFactory
                     buildId,
                     (postData.TrainCount, postData.Confidence),
                     buildOptions,
+                    model,
                     cancellationToken
                 );
                 break;
