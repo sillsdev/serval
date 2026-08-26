@@ -94,7 +94,7 @@ public class NmtEngineService(
         );
     }
 
-    public async Task<string?> StartBuildAsync(
+    public async Task<StartBuildContract> StartBuildAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
@@ -148,7 +148,7 @@ public class NmtEngineService(
         if (building)
             throw new ConflictException();
 
-        return model;
+        return new() { Model = model };
     }
 
     public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
