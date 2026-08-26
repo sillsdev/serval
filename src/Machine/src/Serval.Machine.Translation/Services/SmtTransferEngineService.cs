@@ -179,7 +179,7 @@ public class SmtTransferEngineService(
         state.Touch();
     }
 
-    public async Task<string?> StartBuildAsync(
+    public async Task<StartBuildContract> StartBuildAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
@@ -205,7 +205,7 @@ public class SmtTransferEngineService(
         SmtTransferEngineState state = _stateService.Get(engineId);
         state.Touch();
 
-        return null;
+        return new();
     }
 
     public async Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
