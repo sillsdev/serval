@@ -1,5 +1,3 @@
-using SIL.Machine.QualityEstimation;
-
 namespace Serval.Translation.Utils;
 
 public class PretranslationConfidenceEvaluator
