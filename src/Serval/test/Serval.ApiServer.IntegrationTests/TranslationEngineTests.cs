@@ -2751,7 +2751,7 @@ public class TranslationEngineTests
                     Arg.Any<string?>(),
                     Arg.Any<CancellationToken>()
                 )
-                .Returns(new StartBuildContract());
+                .Returns(Task.FromResult(new StartBuildContract()));
 
             NmtService = Substitute.For<ITranslationEngineService>();
             NmtService
@@ -2776,7 +2776,7 @@ public class TranslationEngineTests
                     Arg.Any<string?>(),
                     Arg.Any<CancellationToken>()
                 )
-                .Returns(new StartBuildContract { Model = "nllb" });
+                .Returns(Task.FromResult(new StartBuildContract { Model = "nllb" }));
 
             SmtService = Substitute.For<ITranslationEngineService>();
             SmtService
@@ -2791,7 +2791,7 @@ public class TranslationEngineTests
                     Arg.Any<string?>(),
                     Arg.Any<CancellationToken>()
                 )
-                .Returns(new StartBuildContract());
+                .Returns(Task.FromResult(new StartBuildContract()));
             _dataFileOptions = _scope.ServiceProvider.GetRequiredService<IOptionsMonitor<DataFileOptions>>();
             ZipParatextProject(FILE3_FILENAME);
             ZipParatextProject(FILE4_FILENAME);
