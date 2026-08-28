@@ -26,6 +26,7 @@ public class NmtEngineServiceTests
     {
         using var env = new TestEnvironment();
         env.PersistModel();
+        env.UseInfiniteTrainJob();
 
         TranslationEngine engine = env.Engines.Get("engine1");
         await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
@@ -42,6 +43,7 @@ public class NmtEngineServiceTests
     {
         using var env = new TestEnvironment();
         env.PersistModel();
+        env.UseInfiniteTrainJob();
 
         await env.Service.StartBuildAsync(
             "engine1",
@@ -64,6 +66,7 @@ public class NmtEngineServiceTests
     {
         using var env = new TestEnvironment();
         env.PersistModel();
+        env.UseInfiniteTrainJob();
 
         // Non-default model and also specified in options
         await env.Service.StartBuildAsync(
@@ -89,7 +92,7 @@ public class NmtEngineServiceTests
         env.PersistModel();
 
         // Invalid model
-        Assert.ThrowsAsync<ArgumentException>(async () =>
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await env.Service.StartBuildAsync(
                 "engine1",
                 "build1",
