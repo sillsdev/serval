@@ -8,10 +8,10 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 80
+      targetPort: 8080
     - name: "81"
       port: 81
-      targetPort: 81
+      targetPort: 8081
   selector:
     app: serval-api
 status:
