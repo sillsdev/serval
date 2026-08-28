@@ -174,7 +174,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -244,7 +244,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -323,7 +323,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -402,7 +402,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -476,7 +476,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -554,7 +554,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -674,7 +674,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -704,7 +704,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -783,7 +783,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -862,7 +862,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -979,7 +979,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -1067,7 +1067,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -1197,7 +1197,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -1314,7 +1314,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -1447,7 +1447,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -1572,7 +1572,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -1626,7 +1626,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -1731,7 +1731,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -1829,7 +1829,7 @@ public class EnginesHandlersTests
             env.EngineServiceFactory,
             Substitute.For<ILogger<StartBuildHandler>>(),
             env.DtoMapper,
-            Substitute.For<IIdGenerator>(),
+            new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
         StartBuildResponse response = await handler.HandleAsync(
@@ -2797,7 +2797,7 @@ public class EnginesHandlersTests
                     Arg.Any<string?>(),
                     Arg.Any<CancellationToken>()
                 )
-                .Returns(Task.CompletedTask);
+                .Returns(Task.FromResult(new StartBuildContract()));
             TranslationEngineService
                 .UpdateAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                 .Returns(Task.CompletedTask);
