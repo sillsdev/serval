@@ -13,7 +13,7 @@
 	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
-		<PackageReference Include="SIL.Machine.Translation.Thot" Version="3.9.2" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
+		<PackageReference Include="SIL.Machine.Translation.Thot" Version="3.9.3" Condition="!Exists('..\..\..\..\..\machine\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj')" />
 		<PackageReference Include="YamlDotNet" Version="18.1.0" />
 	</ItemGroup>
 
