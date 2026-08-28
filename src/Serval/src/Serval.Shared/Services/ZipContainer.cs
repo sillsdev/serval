@@ -16,7 +16,7 @@ public class ZipContainer(string fileName) : DisposableBase, IZipContainer
         ZipArchiveEntry? entry = _archive.GetEntry(name);
         if (entry is null)
             throw new ArgumentException("The specified entry does not exist.", nameof(name));
-        return entry.Open();
+        return entry.OpenBoundedStream();
     }
 
     protected override void DisposeManagedResources()
