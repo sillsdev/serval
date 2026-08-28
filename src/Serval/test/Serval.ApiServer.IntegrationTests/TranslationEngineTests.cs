@@ -2742,6 +2742,16 @@ public class TranslationEngineTests
             EchoService
                 .GetLanguageInfoAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(languageInfo));
+            EchoService
+                .StartBuildAsync(
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(new StartBuildContract());
 
             NmtService = Substitute.For<ITranslationEngineService>();
             NmtService
@@ -2757,11 +2767,31 @@ public class TranslationEngineTests
             NmtService
                 .GetLanguageInfoAsync(Arg.Is("invalid_language"), Arg.Any<CancellationToken>())
                 .Returns(Task.FromException<LanguageInfoContract>(new InvalidOperationException()));
+            NmtService
+                .StartBuildAsync(
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(new StartBuildContract { Model = "nllb" });
 
             SmtService = Substitute.For<ITranslationEngineService>();
             SmtService
                 .GetLanguageInfoAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(languageInfo));
+            SmtService
+                .StartBuildAsync(
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<IReadOnlyList<ParallelCorpusContract>>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(new StartBuildContract());
             _dataFileOptions = _scope.ServiceProvider.GetRequiredService<IOptionsMonitor<DataFileOptions>>();
             ZipParatextProject(FILE3_FILENAME);
             ZipParatextProject(FILE4_FILENAME);

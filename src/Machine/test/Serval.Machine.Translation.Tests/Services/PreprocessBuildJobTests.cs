@@ -934,7 +934,7 @@ public class PreprocessBuildJobTests
                     "build1",
                     corpora.ToList(),
                     useKeyTerms ? null : "{\"use_key_terms\":false}",
-                    "test-model",
+                    "nllb",
                     default
                 );
         }
