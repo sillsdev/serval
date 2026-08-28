@@ -62,6 +62,29 @@ public class NmtEngineServiceTests
     }
 
     [Test]
+    public async Task StartBuildAsync_ModelIsCorrectlySet_SpecifyModelInOptions()
+    {
+        using var env = new TestEnvironment();
+        env.PersistModel();
+        env.UseInfiniteTrainJob();
+
+        // Non-default model and also specified in options
+        await env.Service.StartBuildAsync(
+            "engine1",
+            "build1",
+            Array.Empty<ParallelCorpusContract>(),
+            "{\"parent_model_name\": \"facebook/nllb-200-distilled-1.3B\"}"
+        );
+        await env.WaitForBuildToStartAsync();
+        TranslationEngine engine = env.Engines.Get("engine1");
+        Assert.That(engine.CurrentBuild, Is.Not.Null);
+        Assert.That(engine.CurrentBuild.Model, Is.EqualTo(Models.Models.Nllb));
+        Assert.That(engine.CurrentBuild.Options, Does.Contain("facebook/nllb-200-distilled-1.3B"));
+        await env.Service.CancelBuildAsync("engine1");
+        await env.WaitForBuildToFinishAsync();
+    }
+
+    [Test]
     public async Task StartBuildAsync_ModelIsCorrectlySet_SpecifyModelInOptionsAndModelParameter()
     {
         using var env = new TestEnvironment();
@@ -99,6 +122,23 @@ public class NmtEngineServiceTests
                 Array.Empty<ParallelCorpusContract>(),
                 "{\"parent_model_name\": \"facebook/nllb-200-distilled-1.3B\"}",
                 "NLLBMisspelled"
+            )
+        );
+    }
+
+    [Test]
+    public async Task StartBuildAsync_ModelIsCorrectlySet_InvalidModelInOptions()
+    {
+        using var env = new TestEnvironment();
+        env.PersistModel();
+
+        // Invalid model
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await env.Service.StartBuildAsync(
+                "engine1",
+                "build1",
+                Array.Empty<ParallelCorpusContract>(),
+                "{\"parent_model_name\": \"invalid-model\"}"
             )
         );
     }
