@@ -40,7 +40,6 @@ public class ClearMLBuildJobRunner<TEngine>(
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,
-        string? model = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -58,7 +57,6 @@ public class ClearMLBuildJobRunner<TEngine>(
             _options[engineType].ModelType,
             stage,
             buildOptions,
-            model,
             cancellationToken
         );
         string jobId = await _clearMLService.CreateTaskAsync(

@@ -24,6 +24,7 @@ public class EchoWordAlignmentPostprocessBuildJob(
         string buildId,
         (int, double) data,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {

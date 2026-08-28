@@ -485,7 +485,7 @@ public class PlatformService(
                     {
                         { "bookId", b.bookId },
                         { "averagePretranslationConfidence", b.averageConfidence },
-                        { "modelName", model ?? "Unknown" },
+                        { "modelName", model ?? "unknown" },
                     }
                 )
             )

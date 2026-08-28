@@ -293,7 +293,7 @@ public class PreprocessBuildJobTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(data["resolvedCode"], Is.Null);
-            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+            Assert.That(data["modelName"] is string modelName && modelName == "nllb");
         }
 
         Assert.That(env.ExecutionData.Diagnostics[10].Code, Is.EqualTo("MODEL-0002"));
@@ -302,7 +302,7 @@ public class PreprocessBuildJobTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(data["resolvedCode"], Is.Null);
-            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+            Assert.That(data["modelName"] is string modelName && modelName == "nllb");
         }
 
         env.BuildJobOptions.CurrentValue.Returns(new BuildJobOptions() { MaxWarnings = 1, MaxDiagnostics = 1 });
@@ -348,7 +348,7 @@ public class PreprocessBuildJobTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(data["resolvedCode"], Is.Null);
-            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+            Assert.That(data["modelName"] is string modelName && modelName == "nllb");
         }
 
         Assert.That(env.ExecutionData.Diagnostics[2].Code, Is.EqualTo("MODEL-0002"));
@@ -357,7 +357,7 @@ public class PreprocessBuildJobTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(data["resolvedCode"], Is.Null);
-            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+            Assert.That(data["modelName"] is string modelName && modelName == "nllb");
         }
 
         Assert.That(env.ExecutionData.Diagnostics[3].Code, Is.EqualTo("MODEL-0004"));
@@ -365,7 +365,7 @@ public class PreprocessBuildJobTests
         Assert.That(data, Has.Count.EqualTo(2));
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(data["modelName"] is string modelName && modelName == "NLLB");
+            Assert.That(data["modelName"] is string modelName && modelName == "nllb");
             Assert.That(
                 data["unknownLanguageCodes"] is List<string> unknownLanguageCodes
                     && unknownLanguageCodes.SequenceEqual(["es", "en"])
@@ -934,6 +934,7 @@ public class PreprocessBuildJobTests
                     "build1",
                     corpora.ToList(),
                     useKeyTerms ? null : "{\"use_key_terms\":false}",
+                    "nllb",
                     default
                 );
         }

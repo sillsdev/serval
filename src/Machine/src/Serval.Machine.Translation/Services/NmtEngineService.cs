@@ -17,6 +17,20 @@ public class NmtEngineService(
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     public const string ModelDirectory = "models/";
 
+    private static readonly IReadOnlyDictionary<string, string> ModelToFullModelName = new Dictionary<string, string>()
+    {
+        [Models.Models.Nllb] = "facebook/nllb-200-distilled-1.3B",
+        [Models.Models.Nllb600m] = "facebook/nllb-200-distilled-600M",
+        [Models.Models.NllbTesting] = "hf-internal-testing/tiny-random-nllb",
+    };
+
+    private static readonly IReadOnlyDictionary<string, string> FullModelNameToModel = new Dictionary<string, string>()
+    {
+        ["facebook/nllb-200-distilled-1.3B"] = Models.Models.Nllb,
+        ["facebook/nllb-200-distilled-600M"] = Models.Models.Nllb600m,
+        ["hf-internal-testing/tiny-random-nllb"] = Models.Models.NllbTesting,
+    };
+
     public static string GetModelPath(string engineId, int buildRevision)
     {
         return $"{ModelDirectory}{engineId}_{buildRevision}.tar.gz";
@@ -80,7 +94,7 @@ public class NmtEngineService(
         );
     }
 
-    public async Task StartBuildAsync(
+    public async Task<StartBuildContract> StartBuildAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
@@ -89,6 +103,36 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
+        JsonObject? buildOptionsJsonObject = [];
+        if (options != null)
+        {
+            try
+            {
+                JsonNode? buildOptionsJsonNode = JsonNode.Parse(options);
+                if (buildOptionsJsonNode is JsonObject obj)
+                    buildOptionsJsonObject = obj;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Unable to parse field build options : {e.Message}", e);
+            }
+        }
+
+        if (
+            buildOptionsJsonObject.ContainsKey("parent_model_name")
+            && buildOptionsJsonObject["parent_model_name"] != null
+            && model == null
+        )
+        {
+            model = GetModelName(buildOptionsJsonObject["parent_model_name"]!.GetValue<string>());
+        }
+        else
+        {
+            model ??= Models.Models.Nllb;
+            buildOptionsJsonObject["parent_model_name"] = GetFullModelName(model);
+            options = buildOptionsJsonObject.ToJsonString();
+        }
+
         bool building = !await _buildJobService.StartBuildJobAsync(
             BuildJobRunnerType.Local,
             EngineType.Nmt,
@@ -103,6 +147,8 @@ public class NmtEngineService(
         // If there is a pending/running build, then no need to start a new one.
         if (building)
             throw new ConflictException();
+
+        return new() { Model = model };
     }
 
     public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
@@ -207,5 +253,19 @@ public class NmtEngineService(
         if (engine is null)
             throw new EngineNotFoundException($"The engine {engineId} does not exist.");
         return engine;
+    }
+
+    private static string GetFullModelName(string model)
+    {
+        if (ModelToFullModelName.TryGetValue(model, out string? fullModelName) && fullModelName != null)
+            return fullModelName;
+        throw new InvalidOperationException($"Unknown model {model}.");
+    }
+
+    private static string GetModelName(string fullModelName)
+    {
+        if (FullModelNameToModel.TryGetValue(fullModelName, out string? model) && model != null)
+            return model;
+        throw new InvalidOperationException($"Unknown full model name {fullModelName}.");
     }
 }

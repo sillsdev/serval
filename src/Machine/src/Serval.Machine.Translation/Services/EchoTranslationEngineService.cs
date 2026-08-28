@@ -67,7 +67,7 @@ public class EchoTranslationEngineService(
         );
     }
 
-    public async Task StartBuildAsync(
+    public async Task<StartBuildContract> StartBuildAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,
@@ -84,12 +84,13 @@ public class EchoTranslationEngineService(
             BuildStage.Preprocess,
             corpora,
             options,
-            model,
             cancellationToken: cancellationToken
         );
         // If there is a pending/running build, then no need to start a new one.
         if (building)
             throw new ConflictException();
+
+        return new() { Model = model };
     }
 
     public Task<string?> CancelBuildAsync(string engineId, CancellationToken cancellationToken = default) =>
