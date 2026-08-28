@@ -675,6 +675,7 @@ public class SmtTransferEngineServiceTests
                 BuildStage stage,
                 string? jobData,
                 string? buildOptions,
+                string? model,
                 CancellationToken cancellationToken
             )
             {
@@ -688,7 +689,14 @@ public class SmtTransferEngineServiceTests
                             jobData!,
                             SerializerOptions
                         )!;
-                        await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
+                        await preprocessJob.RunAsync(
+                            engineId,
+                            buildId,
+                            corpora,
+                            buildOptions,
+                            model,
+                            cancellationToken
+                        );
                         break;
                     default:
                         await new SmtTransferLocalBuildJobFactory().RunAsync(
@@ -698,6 +706,7 @@ public class SmtTransferEngineServiceTests
                             stage,
                             jobData,
                             buildOptions,
+                            model,
                             cancellationToken
                         );
                         break;

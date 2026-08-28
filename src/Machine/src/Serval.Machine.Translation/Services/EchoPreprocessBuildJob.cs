@@ -33,13 +33,11 @@ public class EchoPreprocessBuildJob(
         string sourceLanguageTag,
         string targetLanguageTag,
         bool isNonPersistedTranslationEngine,
+        string modelName,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
-        string modelName =
-            (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))?.CurrentBuild?.Model?.ToString()
-            ?? "Unknown";
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
             stats.TrainCount,
             stats.InferenceCount,
@@ -48,7 +46,6 @@ public class EchoPreprocessBuildJob(
             sourceLanguageHasNativeSupport: true,
             targetLanguageHasNativeSupport: true,
             isNonPersistedTranslationEngine,
-            modelName,
             parallelCorpora
         );
 

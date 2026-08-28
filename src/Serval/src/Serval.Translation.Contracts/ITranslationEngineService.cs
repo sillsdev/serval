@@ -41,7 +41,7 @@ public interface ITranslationEngineService
         CancellationToken cancellationToken = default
     );
 
-    Task StartBuildAsync(
+    Task<StartBuildContract> StartBuildAsync(
         string engineId,
         string buildId,
         IReadOnlyList<ParallelCorpusContract> corpora,

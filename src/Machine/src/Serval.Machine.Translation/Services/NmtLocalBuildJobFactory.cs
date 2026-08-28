@@ -29,6 +29,7 @@ public class NmtLocalBuildJobFactory : ILocalBuildJobFactory
         BuildStage stage,
         string? jobData,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {
@@ -37,7 +38,7 @@ public class NmtLocalBuildJobFactory : ILocalBuildJobFactory
             case BuildStage.Preprocess:
                 var preprocessJob = ActivatorUtilities.CreateInstance<NmtPreprocessBuildJob>(serviceProvider);
                 var corpora = JsonSerializer.Deserialize<List<ParallelCorpusContract>>(jobData!, SerializerOptions)!;
-                await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
+                await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, model, cancellationToken);
                 break;
             case BuildStage.Postprocess:
                 var postprocessJob = ActivatorUtilities.CreateInstance<TranslationPostprocessBuildJob>(serviceProvider);
@@ -47,6 +48,7 @@ public class NmtLocalBuildJobFactory : ILocalBuildJobFactory
                     buildId,
                     (postData.TrainCount, postData.Confidence),
                     buildOptions,
+                    model,
                     cancellationToken
                 );
                 break;

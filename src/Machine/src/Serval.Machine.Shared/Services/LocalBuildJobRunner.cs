@@ -44,7 +44,6 @@ public abstract class LocalBuildJobRunner<TEngine>(
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,
-        string? model = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -215,7 +214,7 @@ public abstract class LocalBuildJobRunner<TEngine>(
         if (
             _pendingJobs.TryAdd(
                 build.JobId,
-                new JobInfo(engineId, build.BuildId, engineType, build.Stage, build.JobData, build.Options)
+                new JobInfo(engineId, build.BuildId, engineType, build.Stage, build.JobData, build.Options, build.Model)
             )
         )
         {
@@ -250,7 +249,8 @@ public abstract class LocalBuildJobRunner<TEngine>(
                                 engine.Type,
                                 build.Stage,
                                 build.JobData,
-                                build.Options
+                                build.Options,
+                                build.Model
                             )
                         )
                     )
@@ -316,6 +316,7 @@ public abstract class LocalBuildJobRunner<TEngine>(
                 info.Stage,
                 info.JobData,
                 info.BuildOptions,
+                info.Model,
                 cts.Token
             );
         }
@@ -336,6 +337,7 @@ public abstract class LocalBuildJobRunner<TEngine>(
         EngineType EngineType,
         BuildStage Stage,
         string? JobData,
-        string? BuildOptions
+        string? BuildOptions,
+        string? Model
     );
 }

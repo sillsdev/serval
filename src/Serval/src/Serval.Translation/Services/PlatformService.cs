@@ -433,6 +433,7 @@ public class PlatformService(
                 if (
                     item.TargetRefs.Count > 0
                     && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef)
+                    && scriptureRef.IsVerse
                 )
                 {
                     string bookId = scriptureRef.Book;
@@ -482,7 +483,7 @@ public class PlatformService(
                     {
                         { "bookId", b.bookId },
                         { "averagePretranslationConfidence", b.averageConfidence },
-                        { "modelName", model ?? "Unknown" },
+                        { "modelName", model ?? "unknown" },
                     }
                 )
             )

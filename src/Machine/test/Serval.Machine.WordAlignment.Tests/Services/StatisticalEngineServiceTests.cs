@@ -432,6 +432,7 @@ public class StatisticalEngineServiceTests
                 BuildStage stage,
                 string? jobData,
                 string? buildOptions,
+                string? model,
                 CancellationToken cancellationToken
             )
             {
@@ -445,7 +446,14 @@ public class StatisticalEngineServiceTests
                             jobData!,
                             SerializerOptions
                         )!;
-                        await preprocessJob.RunAsync(engineId, buildId, corpora, buildOptions, cancellationToken);
+                        await preprocessJob.RunAsync(
+                            engineId,
+                            buildId,
+                            corpora,
+                            buildOptions,
+                            model,
+                            cancellationToken
+                        );
                         break;
                     default:
                         await new StatisticalLocalBuildJobFactory().RunAsync(
@@ -455,6 +463,7 @@ public class StatisticalEngineServiceTests
                             stage,
                             jobData,
                             buildOptions,
+                            model,
                             cancellationToken
                         );
                         break;

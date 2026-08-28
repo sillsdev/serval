@@ -91,13 +91,11 @@ public class WordAlignmentPreprocessBuildJob(
         string sourceLanguageTag,
         string targetLanguageTag,
         bool isNonPersistedTranslationEngine,
+        string modelName,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
     {
-        string modelName =
-            (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))?.CurrentBuild?.Model?.ToString()
-            ?? "Unknown";
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
             stats.TrainCount,
             stats.InferenceCount,
@@ -106,8 +104,7 @@ public class WordAlignmentPreprocessBuildJob(
             sourceLanguageHasNativeSupport: true,
             targetLanguageHasNativeSupport: true,
             isNonPersistedTranslationEngine,
-            modelName,
-            parallelCorpora
+            parallelCorpora: parallelCorpora
         );
 
         IReadOnlyList<string> warnings = diagnostics.Select(d => d.Message).ToList();
@@ -152,7 +149,6 @@ public class WordAlignmentPreprocessBuildJob(
             Warnings = warnings,
             Diagnostics = diagnostics,
             DiagnosticsTruncated = diagnosticsTruncated,
-
             EngineSourceLanguageTag = sourceLanguageTag,
             EngineTargetLanguageTag = targetLanguageTag,
         };

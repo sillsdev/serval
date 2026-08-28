@@ -58,6 +58,7 @@ public class NmtPreprocessBuildJob(
         string sourceLanguageTag,
         string targetLanguageTag,
         bool isNonPersistedTranslationEngine,
+        string modelName,
         IReadOnlyList<ParallelCorpusContract> parallelCorpora,
         CancellationToken cancellationToken
     )
@@ -65,9 +66,6 @@ public class NmtPreprocessBuildJob(
         bool sourceLanguageHasNativeSupport = ResolveLanguageCode(sourceLanguageTag, out string resolvedSourceLanguage);
         bool targetLanguageHasNativeSupport = ResolveLanguageCode(targetLanguageTag, out string resolvedTargetLanguage);
 
-        string modelName =
-            (await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken))?.CurrentBuild?.Model?.ToString()
-            ?? "Unknown";
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
             stats.TrainCount,
             stats.InferenceCount,
@@ -76,8 +74,8 @@ public class NmtPreprocessBuildJob(
             sourceLanguageHasNativeSupport,
             targetLanguageHasNativeSupport,
             isNonPersistedTranslationEngine,
-            modelName,
-            parallelCorpora
+            parallelCorpora,
+            modelName
         );
 
         IReadOnlyList<string> warnings = diagnostics.Select(d => d.Message).ToList();
@@ -147,10 +145,12 @@ public class NmtPreprocessBuildJob(
         bool sourceLanguageHasNativeSupport,
         bool targetLanguageHasNativeSupport,
         bool isNonPersistedTranslationEngine,
-        string modelName,
-        IReadOnlyList<ParallelCorpusContract> parallelCorpora
+        IReadOnlyList<ParallelCorpusContract> parallelCorpora,
+        string? modelName = null
     )
     {
+        modelName ??= "unknown";
+
         List<DiagnosticContract> diagnostics = [];
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere
@@ -222,8 +222,8 @@ public class NmtPreprocessBuildJob(
                 sourceLanguageHasNativeSupport,
                 targetLanguageHasNativeSupport,
                 isNonPersistedTranslationEngine,
-                modelName,
-                parallelCorpora
+                parallelCorpora,
+                modelName
             ),
             .. diagnostics,
         ];

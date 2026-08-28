@@ -80,7 +80,6 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
             stage,
             data,
             buildOptions,
-            model,
             cancellationToken
         );
         try
@@ -97,6 +96,7 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
                         )
                     ),
                 u =>
+                {
                     u.Set(
                         e => e.CurrentBuild,
                         new Build
@@ -112,7 +112,8 @@ public class BuildJobService<TEngine>(IEnumerable<IBuildJobRunner<TEngine>> runn
                             JobData = jobData,
                             ExecutionData = new BuildExecutionData(),
                         }
-                    ),
+                    );
+                },
                 cancellationToken: cancellationToken
             );
             if (engine is null)

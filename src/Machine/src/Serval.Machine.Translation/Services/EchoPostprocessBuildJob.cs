@@ -24,6 +24,7 @@ public class EchoPostprocessBuildJob(
         string buildId,
         (int, double) data,
         string? buildOptions,
+        string? model,
         CancellationToken cancellationToken
     )
     {

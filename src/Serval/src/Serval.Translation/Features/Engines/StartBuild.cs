@@ -43,6 +43,7 @@ public class StartBuildHandler(
     IEngineServiceFactory engineFactory,
     ILogger<StartBuildHandler> logger,
     DtoMapper dtoMapper,
+    IIdGenerator idGenerator,
     IConfiguration configuration
 ) : IRequestHandler<StartBuild, StartBuildResponse>
 {
@@ -72,6 +73,7 @@ public class StartBuildHandler(
 
                 Build build = new()
                 {
+                    Id = idGenerator.GenerateId(),
                     EngineRef = engine.Id,
                     Owner = engine.Owner,
                     Name = request.BuildConfig.Name,
@@ -80,9 +82,7 @@ public class StartBuildHandler(
                     Options = MapOptions(request.BuildConfig.Options),
                     DeploymentVersion = configuration.GetValue<string>("deploymentVersion") ?? "Unknown",
                     DateCreated = DateTime.UtcNow,
-                    Model = request.BuildConfig.Model,
                 };
-                await builds.InsertAsync(build, ct);
 
                 IReadOnlyList<ParallelCorpusContract> corpora = contractMapper.Map(build, engine);
 
@@ -119,9 +119,13 @@ public class StartBuildHandler(
                     logger.LogInformation("Error parsing build request summary.");
                 }
 
-                await engineFactory
+                StartBuildContract result = await engineFactory
                     .GetEngineService(engine.Type)
                     .StartBuildAsync(engine.Id, build.Id, corpora, buildOptions, build.Model, ct);
+
+                build = build with { Model = result.Model };
+                await builds.InsertAsync(build, ct);
+
                 return new StartBuildResponse(dtoMapper.Map(build));
             },
             cancellationToken
