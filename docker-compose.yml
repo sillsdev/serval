@@ -10,8 +10,8 @@ services:
       - ASPNETCORE_DeploymentVersion=docker-compose
       - Auth__Domain=sil-appbuilder.auth0.com
       - Auth__Audience=https://serval-api.org/
-      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
-      - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:81
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:8080
+      - ASPNETCORE_Kestrel__Endpoints__Http2__Url=http://*:8081
       - ASPNETCORE_Kestrel__Endpoints__Http2__Protocols=Http2
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/serval?replicaSet=myRS
       - ClearML__ApiServer=https://api.sil.hosted.allegro.ai
@@ -29,16 +29,16 @@ services:
       - "SharedFile__S3SecretAccessKey=${AWS_SECRET_ACCESS_KEY:?secret key needed}"
       - "Bugsnag__ApiKey=${Bugsnag__ApiKey}"
     expose:
-      - 80
-      - 81
+      - 8080
+      - 8081
     ports:
-      - 80:80
+      - 80:8080
     depends_on:
       - mongo
     mem_limit: 8G
     volumes:
       - .:/app:ro
-      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - ~/.nuget/packages:/home/app/.nuget/packages:ro
       - /var/lib/machine:/var/lib/machine
       - /var/lib/serval:/var/lib/serval
     working_dir: "/app/src/Serval/src/Serval.ApiServer"
@@ -48,7 +48,7 @@ services:
       - --no-build
       - --no-launch-profile
       - --additionalProbingPath
-      - /root/.nuget/packages
+      - /home/app/.nuget/packages
   mongo:
     hostname: mongo
     image: mongo:8.0
