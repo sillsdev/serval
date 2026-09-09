@@ -11,6 +11,7 @@ spec:
     - parser:
         key_name: log
         reserve_data: true
+        emit_invalid_record_to_error: false
         parse:
           type: regexp
           expression: "/(?<type>fail|info).*\\: (?<source>[A-Za-z.0-9]+)/" # note double backslash and quotes around regexp
