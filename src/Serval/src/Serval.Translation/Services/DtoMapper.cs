@@ -243,6 +243,7 @@ public class DtoMapper(IUrlService urlService)
             ResolvedSourceLanguage = source.ResolvedSourceLanguage,
             ResolvedTargetLanguage = source.ResolvedTargetLanguage,
             AveragePretranslationConfidence = source.AveragePretranslationConfidence,
+            AverageAlignmentScore = source.AverageAlignmentScore,
         };
 
     private static DiagnosticDto Map(Diagnostic source)
