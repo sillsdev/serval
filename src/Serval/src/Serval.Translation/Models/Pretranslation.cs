@@ -16,4 +16,5 @@ public class Pretranslation : IEntity
     public IReadOnlyList<string>? TranslationTokens { get; init; }
     public IReadOnlyList<Shared.Models.AlignedWordPair>? Alignment { get; init; }
     public double? Confidence { get; init; }
+    public double? AlignmentScore { get; init; }
 }
