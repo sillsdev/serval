@@ -553,6 +553,6 @@ public class PlatformService(
 
     private static double GetAlignmentScore(IReadOnlyList<AlignedWordPairContract>? alignment)
     {
-        return alignment?.Average(wp => wp.Score) ?? 0.0;
+        return alignment != null && alignment.Count > 0 ? alignment.Average(wp => wp.Score) : 0.0;
     }
 }
