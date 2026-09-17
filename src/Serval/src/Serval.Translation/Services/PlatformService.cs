@@ -541,7 +541,7 @@ public class PlatformService(
                 );
                 u.Set(
                     b => b.ExecutionData.AverageAlignmentScore,
-                    alignmentScoreCount > 0 ? totalAlignmentScore / alignmentScoreCount : 0.0
+                    alignmentScoreCount > 0 ? totalAlignmentScore / alignmentScoreCount : null
                 );
                 u.Set(
                     b => b.ExecutionData.Diagnostics,
