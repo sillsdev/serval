@@ -388,9 +388,14 @@ public class UsfmGenerationService(
         }
 
         var matrix = new WordAlignmentMatrix(pretranslation.SourceTokens.Count, pretranslation.TranslationTokens.Count);
-        foreach (Shared.Models.AlignedWordPair wordPair in pretranslation.Alignment)
+        foreach (
+            Shared.Models.AlignedWordPair wordPair in pretranslation.Alignment.Where(wp =>
+                wp.SourceIndex != -1 && wp.TargetIndex != -1
+            )
+        )
+        {
             matrix[wordPair.SourceIndex, wordPair.TargetIndex] = true;
-
+        }
         return matrix;
     }
 

@@ -403,7 +403,7 @@ public class PlatformService(
 
         await foreach (PretranslationContract item in pretranslations.WithCancellation(cancellationToken))
         {
-            double alignmentScore = GetAlignmentScore(item.Alignment);
+            double? alignmentScore = GetAlignmentScore(item.Alignment);
             batch.Add(
                 new Pretranslation
                 {
@@ -436,8 +436,11 @@ public class PlatformService(
                 && scriptureRef.IsVerse
             )
             {
-                totalAlignmentScore += alignmentScore;
-                alignmentScoreCount++;
+                if (alignmentScore != null)
+                {
+                    totalAlignmentScore += (double)alignmentScore;
+                    alignmentScoreCount++;
+                }
 
                 double? confidence = item.Confidence;
                 if (confidence != null && confidence > 0.0)
@@ -551,8 +554,8 @@ public class PlatformService(
         );
     }
 
-    private static double GetAlignmentScore(IReadOnlyList<AlignedWordPairContract>? alignment)
+    private static double? GetAlignmentScore(IReadOnlyList<AlignedWordPairContract>? alignment)
     {
-        return alignment != null && alignment.Count > 0 ? alignment.Average(wp => wp.Score) : 0.0;
+        return alignment != null && alignment.Count > 0 ? alignment.Average(wp => wp.Score) : null;
     }
 }
