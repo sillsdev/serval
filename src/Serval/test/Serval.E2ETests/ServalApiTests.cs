@@ -294,6 +294,7 @@ public class ServalApiTests
         TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
         Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
         Assert.That(build.ExecutionData.AveragePretranslationConfidence, Is.GreaterThan(0.2));
+        Assert.That(build.ExecutionData.AverageAlignmentScore, Is.GreaterThan(0.1));
 
         IList<Pretranslation> translations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
             engineId,

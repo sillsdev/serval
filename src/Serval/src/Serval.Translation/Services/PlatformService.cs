@@ -397,8 +397,13 @@ public class PlatformService(
         int numPretranslations = 0;
         Dictionary<string, double> logConfidenceTotalPerBook = [];
         Dictionary<string, int> confidenceCountPerBook = [];
+
+        double totalAlignmentScore = 0.0;
+        int alignmentScoreCount = 0;
+
         await foreach (PretranslationContract item in pretranslations.WithCancellation(cancellationToken))
         {
+            double? alignmentScore = GetAlignmentScore(item.Alignment);
             batch.Add(
                 new Pretranslation
                 {
@@ -421,8 +426,16 @@ public class PlatformService(
                         })
                         .ToList(),
                     Confidence = item.Confidence,
+                    AlignmentScore = alignmentScore,
                 }
             );
+
+            if (alignmentScore != null && alignmentScore > 0.0)
+            {
+                totalAlignmentScore += (double)alignmentScore;
+                alignmentScoreCount++;
+            }
+
             double? confidence = item.Confidence;
             if (confidence != null && confidence > 0.0)
             {
@@ -527,6 +540,10 @@ public class PlatformService(
                         : 0.0
                 );
                 u.Set(
+                    b => b.ExecutionData.AverageAlignmentScore,
+                    alignmentScoreCount > 0 ? totalAlignmentScore / alignmentScoreCount : null
+                );
+                u.Set(
                     b => b.ExecutionData.Diagnostics,
                     currentBuild?.ExecutionData.Diagnostics is null
                         ? [.. badBookConfidences]
@@ -535,5 +552,10 @@ public class PlatformService(
             },
             cancellationToken: cancellationToken
         );
+    }
+
+    private static double? GetAlignmentScore(IReadOnlyList<AlignedWordPairContract>? alignment)
+    {
+        return alignment != null && alignment.Count > 0 ? alignment.Average(wp => wp.Score) : null;
     }
 }
