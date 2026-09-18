@@ -430,25 +430,25 @@ public class PlatformService(
                 }
             );
 
-            if (
-                item.TargetRefs.Count > 0
-                && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef)
-                && scriptureRef.IsVerse
-            )
+            if (alignmentScore != null && alignmentScore > 0.0)
             {
-                if (alignmentScore != null)
-                {
-                    totalAlignmentScore += (double)alignmentScore;
-                    alignmentScoreCount++;
-                }
+                totalAlignmentScore += (double)alignmentScore;
+                alignmentScoreCount++;
+            }
 
-                double? confidence = item.Confidence;
-                if (confidence != null && confidence > 0.0)
-                {
-                    double logConfidence = Math.Log((double)confidence);
-                    logConfidenceTotal += logConfidence;
-                    confidenceCount++;
+            double? confidence = item.Confidence;
+            if (confidence != null && confidence > 0.0)
+            {
+                double logConfidence = Math.Log((double)confidence);
+                logConfidenceTotal += logConfidence;
+                confidenceCount++;
 
+                if (
+                    item.TargetRefs.Count > 0
+                    && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef)
+                    && scriptureRef.IsVerse
+                )
+                {
                     string bookId = scriptureRef.Book;
 
                     if (!logConfidenceTotalPerBook.ContainsKey(bookId))
