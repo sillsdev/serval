@@ -367,6 +367,18 @@ public class PlatformService(
                         WordAlignVerseCount = executionData.WordAlignVerseCount,
                         IsTrainFilteredByChapter = executionData.IsTrainFilteredByChapter,
                         IsWordAlignFilteredByChapter = executionData.IsWordAlignFilteredByChapter,
+                        Diagnostics =
+                            executionData
+                                .Diagnostics?.Select(d => new Diagnostic
+                                {
+                                    Code = d.Code,
+                                    Category = d.Category,
+                                    Message = d.Message,
+                                    Severity = (Shared.Models.DiagnosticSeverity)d.Severity,
+                                    Data = d.Data,
+                                })
+                                .ToList()
+                            ?? [],
                         Warnings = executionData.Warnings?.ToList() ?? [],
                         DiagnosticsTruncated = executionData.DiagnosticsTruncated,
                         EngineSourceLanguageTag = executionData.EngineSourceLanguageTag,
