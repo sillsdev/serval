@@ -514,18 +514,21 @@ public class PlatformService(
                         ? Math.Exp(logConfidenceTotal / confidenceCount)
                         : 0.0
                 );
-                u.Set(
-                    b => b.ExecutionData.Diagnostics,
-                    currentBuild?.ExecutionData.Diagnostics is null
-                        ? [.. badBookConfidences]
-                        : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
-                );
-                u.Set(
-                    b => b.ExecutionData.Warnings,
-                    currentBuild?.ExecutionData.Warnings is null
-                        ? [.. badBookConfidences.Select(d => d.Message)]
-                        : [.. currentBuild.ExecutionData.Warnings, .. badBookConfidences.Select(d => d.Message)]
-                );
+                if (badBookConfidences.Count > 0)
+                {
+                    u.Set(
+                        b => b.ExecutionData.Diagnostics,
+                        currentBuild?.ExecutionData.Diagnostics is null
+                            ? [.. badBookConfidences]
+                            : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
+                    );
+                    u.Set(
+                        b => b.ExecutionData.Warnings,
+                        currentBuild?.ExecutionData.Warnings is null
+                            ? [.. badBookConfidences.Select(d => d.Message)]
+                            : [.. currentBuild.ExecutionData.Warnings, .. badBookConfidences.Select(d => d.Message)]
+                    );
+                }
             },
             cancellationToken: cancellationToken
         );
