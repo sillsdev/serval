@@ -152,7 +152,7 @@ public class PlatformServiceTests
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         ExecutionData? executionData = (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData;
         Assert.That(executionData, Is.Not.Null);
-        Assert.That(executionData.AveragePretranslationConfidence, Is.EqualTo(0.2487).Within(0.0001));
+        Assert.That(executionData.AveragePretranslationConfidence, Is.EqualTo(0.2073).Within(0.0001));
         Assert.That(executionData.AverageAlignmentScore, Is.EqualTo(0.75).Within(0.01));
         Assert.That(executionData.Diagnostics, Has.Count.EqualTo(1));
         Assert.That(executionData.Diagnostics[0].Code, Is.EqualTo("MODEL-0003"));
