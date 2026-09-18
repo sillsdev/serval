@@ -501,18 +501,6 @@ public class PlatformService(
         if (badBookConfidences.Count > 0)
         {
             currentBuild = await _builds.GetAsync(b => b.Id == buildId, cancellationToken);
-
-            await _builds.UpdateAsync(
-                b => b.Id == buildId,
-                u =>
-                    u.Set(
-                        b => b.ExecutionData.Diagnostics,
-                        currentBuild?.ExecutionData.Diagnostics is null
-                            ? [.. badBookConfidences]
-                            : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
-                    ),
-                cancellationToken: cancellationToken
-            );
         }
 
         await _builds.UpdateAsync(
@@ -526,12 +514,21 @@ public class PlatformService(
                         ? Math.Exp(logConfidenceTotal / confidenceCount)
                         : 0.0
                 );
-                u.Set(
-                    b => b.ExecutionData.Diagnostics,
-                    currentBuild?.ExecutionData.Diagnostics is null
-                        ? [.. badBookConfidences]
-                        : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
-                );
+                if (badBookConfidences.Count > 0)
+                {
+                    u.Set(
+                        b => b.ExecutionData.Diagnostics,
+                        currentBuild?.ExecutionData.Diagnostics is null
+                            ? [.. badBookConfidences]
+                            : [.. currentBuild.ExecutionData.Diagnostics, .. badBookConfidences]
+                    );
+                    u.Set(
+                        b => b.ExecutionData.Warnings,
+                        currentBuild?.ExecutionData.Warnings is null
+                            ? [.. badBookConfidences.Select(d => d.Message)]
+                            : [.. currentBuild.ExecutionData.Warnings, .. badBookConfidences.Select(d => d.Message)]
+                    );
+                }
             },
             cancellationToken: cancellationToken
         );
