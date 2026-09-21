@@ -430,25 +430,17 @@ public class PlatformService(
                 }
             );
 
-            if (alignmentScore != null && alignmentScore > 0.0)
+            if (
+                item.TargetRefs.Count > 0
+                && (!ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef) || scriptureRef.IsVerse)
+            )
             {
-                totalAlignmentScore += (double)alignmentScore;
-                alignmentScoreCount++;
-            }
-
-            double? confidence = item.Confidence;
-            if (confidence != null && confidence > 0.0)
-            {
-                double logConfidence = Math.Log((double)confidence);
-                logConfidenceTotal += logConfidence;
-                confidenceCount++;
-
-                if (
-                    item.TargetRefs.Count > 0
-                    && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef)
-                    && scriptureRef.IsVerse
-                )
+                double? confidence = item.Confidence;
+                if (confidence != null && confidence > 0.0)
                 {
+                    double logConfidence = Math.Log((double)confidence);
+                    logConfidenceTotal += logConfidence;
+                    confidenceCount++;
                     string bookId = scriptureRef.Book;
 
                     if (!logConfidenceTotalPerBook.ContainsKey(bookId))
@@ -458,6 +450,12 @@ public class PlatformService(
                     if (!confidenceCountPerBook.ContainsKey(bookId))
                         confidenceCountPerBook[bookId] = 0;
                     confidenceCountPerBook[bookId]++;
+                }
+
+                if (alignmentScore != null && alignmentScore > 0.0)
+                {
+                    totalAlignmentScore += (double)alignmentScore;
+                    alignmentScoreCount++;
                 }
             }
 
@@ -537,7 +535,7 @@ public class PlatformService(
                     // Calculate the geometric mean of the pretranslation confidences
                     confidenceCount > 0
                         ? Math.Exp(logConfidenceTotal / confidenceCount)
-                        : 0.0
+                        : null
                 );
                 u.Set(
                     b => b.ExecutionData.AverageAlignmentScore,

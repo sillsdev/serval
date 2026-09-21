@@ -57,10 +57,9 @@ public class PlatformServiceTests
         await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
-        Assert.That(
-            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
-            Is.Zero.Within(0.001)
-        );
+        ExecutionData? executionData = (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData;
+        Assert.That(executionData?.AveragePretranslationConfidence, Is.Null);
+        Assert.That(executionData?.AverageAlignmentScore, Is.Null);
 
         await env.PlatformService.BuildStartedAsync("b0");
         await env.PlatformService.InsertPretranslationsAsync(
@@ -70,10 +69,9 @@ public class PlatformServiceTests
         );
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
-        Assert.That(
-            (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData.AveragePretranslationConfidence,
-            Is.Zero.Within(0.001)
-        );
+        executionData = (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData;
+        Assert.That(executionData?.AveragePretranslationConfidence, Is.Null);
+        Assert.That(executionData?.AverageAlignmentScore, Is.Null);
     }
 
     [Test]
@@ -152,7 +150,7 @@ public class PlatformServiceTests
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
         ExecutionData? executionData = (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData;
         Assert.That(executionData, Is.Not.Null);
-        Assert.That(executionData.AveragePretranslationConfidence, Is.EqualTo(0.2073).Within(0.0001));
+        Assert.That(executionData.AveragePretranslationConfidence, Is.EqualTo(0.2487).Within(0.0001));
         Assert.That(executionData.AverageAlignmentScore, Is.EqualTo(0.75).Within(0.01));
         Assert.That(executionData.Diagnostics, Has.Count.EqualTo(1));
         Assert.That(executionData.Diagnostics[0].Code, Is.EqualTo("MODEL-0003"));
