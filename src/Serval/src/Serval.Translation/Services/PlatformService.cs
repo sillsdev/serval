@@ -441,18 +441,22 @@ public class PlatformService(
                     double logConfidence = Math.Log((double)confidence);
                     logConfidenceTotal += logConfidence;
                     confidenceCount++;
-                    string bookId = scriptureRef.Book;
 
-                    if (!logConfidenceTotalPerBook.ContainsKey(bookId))
-                        logConfidenceTotalPerBook[bookId] = 0.0;
-                    logConfidenceTotalPerBook[bookId] += logConfidence;
+                    if (!scriptureRef.IsEmpty)
+                    {
+                        string bookId = scriptureRef.Book;
 
-                    if (!confidenceCountPerBook.ContainsKey(bookId))
-                        confidenceCountPerBook[bookId] = 0;
-                    confidenceCountPerBook[bookId]++;
+                        if (!logConfidenceTotalPerBook.ContainsKey(bookId))
+                            logConfidenceTotalPerBook[bookId] = 0.0;
+                        logConfidenceTotalPerBook[bookId] += logConfidence;
+
+                        if (!confidenceCountPerBook.ContainsKey(bookId))
+                            confidenceCountPerBook[bookId] = 0;
+                        confidenceCountPerBook[bookId]++;
+                    }
                 }
 
-                if (alignmentScore != null && alignmentScore > 0.0)
+                if (alignmentScore != null)
                 {
                     totalAlignmentScore += (double)alignmentScore;
                     alignmentScoreCount++;
