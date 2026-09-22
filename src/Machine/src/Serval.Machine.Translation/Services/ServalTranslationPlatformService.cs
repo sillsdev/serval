@@ -151,7 +151,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                     {
                         SourceIndex = a.SourceIndex,
                         TargetIndex = a.TargetIndex,
-                        Score = a.AlignmentScore,
+                        Score = a.TranslationScore,
                     }),
                 ],
                 Confidence = pretranslation.Confidence,

@@ -397,8 +397,13 @@ public class PlatformService(
         int numPretranslations = 0;
         Dictionary<string, double> logConfidenceTotalPerBook = [];
         Dictionary<string, int> confidenceCountPerBook = [];
+
+        double totalAlignmentScore = 0.0;
+        int alignmentScoreCount = 0;
+
         await foreach (PretranslationContract item in pretranslations.WithCancellation(cancellationToken))
         {
+            double? alignmentScore = GetAlignmentScore(item.Alignment);
             batch.Add(
                 new Pretranslation
                 {
@@ -421,30 +426,40 @@ public class PlatformService(
                         })
                         .ToList(),
                     Confidence = item.Confidence,
+                    AlignmentScore = alignmentScore,
                 }
             );
-            double? confidence = item.Confidence;
-            if (confidence != null && confidence > 0.0)
+
+            if (
+                item.TargetRefs.Count > 0
+                && (!ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef) || scriptureRef.IsVerse)
+            )
             {
-                double logConfidence = Math.Log((double)confidence);
-                logConfidenceTotal += logConfidence;
-                confidenceCount++;
-
-                if (
-                    item.TargetRefs.Count > 0
-                    && ScriptureRef.TryParse(item.TargetRefs[0], out ScriptureRef scriptureRef)
-                    && scriptureRef.IsVerse
-                )
+                double? confidence = item.Confidence;
+                if (confidence != null && confidence > 0.0)
                 {
-                    string bookId = scriptureRef.Book;
+                    double logConfidence = Math.Log((double)confidence);
+                    logConfidenceTotal += logConfidence;
+                    confidenceCount++;
 
-                    if (!logConfidenceTotalPerBook.ContainsKey(bookId))
-                        logConfidenceTotalPerBook[bookId] = 0.0;
-                    logConfidenceTotalPerBook[bookId] += logConfidence;
+                    if (!scriptureRef.IsEmpty)
+                    {
+                        string bookId = scriptureRef.Book;
 
-                    if (!confidenceCountPerBook.ContainsKey(bookId))
-                        confidenceCountPerBook[bookId] = 0;
-                    confidenceCountPerBook[bookId]++;
+                        if (!logConfidenceTotalPerBook.ContainsKey(bookId))
+                            logConfidenceTotalPerBook[bookId] = 0.0;
+                        logConfidenceTotalPerBook[bookId] += logConfidence;
+
+                        if (!confidenceCountPerBook.ContainsKey(bookId))
+                            confidenceCountPerBook[bookId] = 0;
+                        confidenceCountPerBook[bookId]++;
+                    }
+                }
+
+                if (alignmentScore != null)
+                {
+                    totalAlignmentScore += (double)alignmentScore;
+                    alignmentScoreCount++;
                 }
             }
 
@@ -512,7 +527,11 @@ public class PlatformService(
                     // Calculate the geometric mean of the pretranslation confidences
                     confidenceCount > 0
                         ? Math.Exp(logConfidenceTotal / confidenceCount)
-                        : 0.0
+                        : null
+                );
+                u.Set(
+                    b => b.ExecutionData.AverageAlignmentScore,
+                    alignmentScoreCount > 0 ? totalAlignmentScore / alignmentScoreCount : null
                 );
                 if (badBookConfidences.Count > 0)
                 {
@@ -532,5 +551,10 @@ public class PlatformService(
             },
             cancellationToken: cancellationToken
         );
+    }
+
+    private static double? GetAlignmentScore(IReadOnlyList<AlignedWordPairContract>? alignment)
+    {
+        return alignment != null && alignment.Count > 0 ? alignment.Average(wp => wp.Score) : null;
     }
 }
