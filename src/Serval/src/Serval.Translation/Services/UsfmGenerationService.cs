@@ -333,9 +333,7 @@ public class UsfmGenerationService(
             };
         }
 
-        // the pretranslations are generated from the source book and inserted into the target book
-        // use relaxed references since the USFM structure may not be the same
-        ScriptureRef[] refs = [.. Map(pretranslation.TargetRefs ?? [], targetVersification).Select(r => r.ToRelaxed())];
+        ScriptureRef[] refs = [.. Map(pretranslation.TargetRefs ?? [], targetVersification)];
         return new UpdateUsfmRow(refs, pretranslation.Translation, metadata);
     }
 
