@@ -286,16 +286,7 @@ public class UsfmGenerationService(
                 bookId,
                 [
                     .. pretranslations
-                        .Select(p =>
-                            Map(
-                                p,
-                                isSource,
-                                sourceSettings?.Versification,
-                                targetSettings?.Versification,
-                                paragraphBehavior,
-                                styleBehavior
-                            )
-                        )
+                        .Select(p => Map(p, targetSettings?.Versification, paragraphBehavior, styleBehavior))
                         .Where(row => row.Refs.Any())
                         .OrderBy(row => row.Refs[0]),
                 ],
@@ -319,8 +310,6 @@ public class UsfmGenerationService(
 
     private static UpdateUsfmRow Map(
         Pretranslation pretranslation,
-        bool isSource,
-        ScrVers? sourceVersification,
         ScrVers? targetVersification,
         UpdateUsfmMarkerBehavior paragraphBehavior,
         UpdateUsfmMarkerBehavior styleBehavior
@@ -344,25 +333,9 @@ public class UsfmGenerationService(
             };
         }
 
-        ScriptureRef[] refs;
-        if (isSource)
-        {
-            refs =
-            [
-                .. (
-                    pretranslation.SourceRefs?.Any() ?? false
-                        ? Map(pretranslation.SourceRefs, sourceVersification)
-                        : Map(pretranslation.TargetRefs ?? [], targetVersification)
-                ),
-            ];
-        }
-        else
-        {
-            // the pretranslations are generated from the source book and inserted into the target book
-            // use relaxed references since the USFM structure may not be the same
-            refs = [.. Map(pretranslation.TargetRefs ?? [], targetVersification).Select(r => r.ToRelaxed())];
-        }
-
+        // the pretranslations are generated from the source book and inserted into the target book
+        // use relaxed references since the USFM structure may not be the same
+        ScriptureRef[] refs = [.. Map(pretranslation.TargetRefs ?? [], targetVersification).Select(r => r.ToRelaxed())];
         return new UpdateUsfmRow(refs, pretranslation.Translation, metadata);
     }
 
