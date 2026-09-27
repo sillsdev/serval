@@ -7,6 +7,8 @@ services:
       - 27017
     ports:
       - 27017:27017
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=1 # Fix MongoDB 8.0 on Linux Kernel 7.0 (see https://jira.mongodb.org/browse/SERVER-121912)
     restart: always
     # Run Mongo (with output to normal shell)
     # then configure the locally running mongo to be a standalone replica set
