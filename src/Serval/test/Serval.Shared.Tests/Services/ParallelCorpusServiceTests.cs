@@ -144,7 +144,7 @@ public class ParallelCorpusServiceTests
         };
 
         // Test no filter
-        Dictionary<string, HashSet<int>>? actual = ParallelCorpusService.GetBookIdsAndChapters(corpus);
+        Dictionary<string, HashSet<int>?>? actual = ParallelCorpusService.GetBookIdsAndChapters(corpus);
         Assert.That(actual, Is.Null);
 
         // Test merging chapters
@@ -155,7 +155,7 @@ public class ParallelCorpusServiceTests
                 InferenceChapters = new Dictionary<string, HashSet<int>> { { "MAT", [2, 3] } },
             }
         );
-        var expected = new Dictionary<string, HashSet<int>> { { "MAT", [1, 2, 3] } };
+        var expected = new Dictionary<string, HashSet<int>?> { { "MAT", [1, 2, 3] } };
         Assert.That(actual, Is.EqualTo(expected));
 
         // Test merging text ids
@@ -166,11 +166,11 @@ public class ParallelCorpusServiceTests
                 InferenceTextIds = ["MRK", "LUK"],
             }
         );
-        expected = new Dictionary<string, HashSet<int>>
+        expected = new Dictionary<string, HashSet<int>?>
         {
-            { "MAT", [] },
-            { "MRK", [] },
-            { "LUK", [] },
+            { "MAT", null },
+            { "MRK", null },
+            { "LUK", null },
         };
         Assert.That(actual, Is.EqualTo(expected));
 
@@ -182,7 +182,7 @@ public class ParallelCorpusServiceTests
                 InferenceChapters = new Dictionary<string, HashSet<int>> { { "MAT", [1] } },
             }
         );
-        expected = new Dictionary<string, HashSet<int>> { { "MAT", [] } };
+        expected = new Dictionary<string, HashSet<int>?> { { "MAT", null } };
         Assert.That(actual, Is.EqualTo(expected));
 
         // Test merging chapters and text ids
@@ -193,7 +193,7 @@ public class ParallelCorpusServiceTests
                 InferenceTextIds = ["MAT"],
             }
         );
-        expected = new Dictionary<string, HashSet<int>> { { "MAT", [] } };
+        expected = new Dictionary<string, HashSet<int>?> { { "MAT", null } };
         Assert.That(actual, Is.EqualTo(expected));
 
         // Test merging chapters without numbers specified
@@ -204,7 +204,7 @@ public class ParallelCorpusServiceTests
                 InferenceChapters = new Dictionary<string, HashSet<int>> { { "MAT", [] } },
             }
         );
-        expected = new Dictionary<string, HashSet<int>> { { "MAT", [] } };
+        expected = new Dictionary<string, HashSet<int>?> { { "MAT", null } };
         Assert.That(actual, Is.EqualTo(expected));
     }
 
