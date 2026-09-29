@@ -662,7 +662,14 @@ public class ParallelCorpusService : IParallelCorpusService
                     HashSet<int>? existingChapters = bookIdsAndChapters[textId];
                     if (existingChapters != null)
                     {
-                        bookIdsAndChapters[textId] = [.. existingChapters, .. chapters];
+                        if (chapters.Count > 0)
+                        {
+                            bookIdsAndChapters[textId] = [.. existingChapters, .. chapters];
+                        }
+                        else
+                        {
+                            bookIdsAndChapters[textId] = null;
+                        }
                     }
                 }
             }
