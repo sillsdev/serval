@@ -74,7 +74,7 @@ public class PreprocessBuildJobTests
                     "src_1",
                     "pt-source1",
                     "0000",
-                    "Original",
+                    ScrVers.Original,
                     [
                         new()
                         {
@@ -99,7 +99,7 @@ public class PreprocessBuildJobTests
                     "trg_1",
                     "pt-target1",
                     "1111",
-                    "English",
+                    ScrVers.Original,
                     [
                         new()
                         {
