@@ -1,3 +1,5 @@
+using SIL.Scripture;
+
 namespace Serval.Shared.Services;
 
 [TestFixture]
@@ -219,7 +221,7 @@ public class ParallelCorpusServiceTests
             string MonolingualCorpusId,
             string ProjectName,
             string ProjectGuid,
-            string VersificationName,
+            ScrVers Versification,
             IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
         )> analysis = env.Processor.AnalyzeUsfmVersification([parallelCorpus]);
 
