@@ -1,3 +1,5 @@
+using SIL.Scripture;
+
 namespace Serval.Machine.Shared.Services;
 
 public abstract class PreprocessBuildJob<TEngine>(
@@ -143,7 +145,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     )
     {
         List<DiagnosticContract> diagnostics = [];
-        Dictionary<string, string> projectVersifications = [];
+        Dictionary<string, ScrVers> projectVersifications = [];
 
         foreach (
             (
@@ -151,12 +153,12 @@ public abstract class PreprocessBuildJob<TEngine>(
                 string monolingualCorpusId,
                 string projectName,
                 string projectGuid,
-                string versificationName,
+                ScrVers versification,
                 IReadOnlyList<UsfmVersificationDiagnosticContract> usfmDiagnostics
             ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
         )
         {
-            projectVersifications[projectGuid] = versificationName;
+            projectVersifications[projectGuid] = versification;
             foreach (UsfmVersificationDiagnosticContract usfmDiagnostic in usfmDiagnostics)
             {
                 diagnostics.Add(
@@ -303,14 +305,19 @@ public abstract class PreprocessBuildJob<TEngine>(
             );
         }
 
-        if (projectVersifications.Values.Distinct().Count() > 1)
+        ScrVers? previousVersification = null;
+        foreach (ScrVers versification in projectVersifications.Values)
         {
-            diagnostics.Add(
-                BuildDiagnosticService.CreateDiagnostic(
-                    "CONFIG-0002",
-                    new Dictionary<string, object> { { "projectVersifications", projectVersifications } }
-                )
-            );
+            if (previousVersification != null && !versification.IsEquivalentTo(previousVersification))
+            {
+                diagnostics.Add(
+                    BuildDiagnosticService.CreateDiagnostic(
+                        "CONFIG-0002",
+                        new Dictionary<string, object> { { "projectVersifications", projectVersifications } }
+                    )
+                );
+            }
+            previousVersification = versification;
         }
 
         if (inferenceCount == 0 && isNonPersistedTranslationEngine)

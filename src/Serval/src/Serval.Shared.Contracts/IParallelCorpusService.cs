@@ -1,3 +1,5 @@
+using SIL.Scripture;
+
 namespace Serval.Shared.Contracts;
 
 public interface IParallelCorpusService
@@ -9,7 +11,7 @@ public interface IParallelCorpusService
         string MonolingualCorpusId,
         string ProjectName,
         string ProjectGuid,
-        string VersificationName,
+        ScrVers Versification,
         IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
     )> AnalyzeUsfmVersification(IEnumerable<ParallelCorpusContract> parallelCorpora);
 
