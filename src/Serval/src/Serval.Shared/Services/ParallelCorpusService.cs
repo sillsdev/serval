@@ -628,47 +628,48 @@ public class ParallelCorpusService : IParallelCorpusService
         return row;
     }
 
-    internal static Dictionary<string, HashSet<int>>? GetBookIdsAndChapters(MonolingualCorpusContract corpus)
+    internal static Dictionary<string, HashSet<int>?>? GetBookIdsAndChapters(MonolingualCorpusContract corpus)
     {
         if (!corpus.IsFiltered)
             return null;
 
-        Dictionary<string, HashSet<int>> bookIdsAndChapters = [];
+        Dictionary<string, HashSet<int>?> bookIdsAndChapters = [];
         if (corpus.TrainOnTextIds is not null)
         {
             foreach (string textId in corpus.TrainOnTextIds)
-                bookIdsAndChapters.TryAdd(textId, []);
+                bookIdsAndChapters.TryAdd(textId, null);
         }
         else if (corpus.TrainOnChapters != null)
         {
             foreach ((string textId, HashSet<int> chapters) in corpus.TrainOnChapters)
-                bookIdsAndChapters.TryAdd(textId, [.. chapters]);
+                bookIdsAndChapters.TryAdd(textId, chapters.Count > 0 ? [.. chapters] : null);
         }
 
         if (corpus.InferenceTextIds is not null)
         {
             foreach (string textId in corpus.InferenceTextIds)
             {
-                if (!bookIdsAndChapters.TryAdd(textId, []))
-                    bookIdsAndChapters[textId] = [];
+                if (!bookIdsAndChapters.TryAdd(textId, null))
+                    bookIdsAndChapters[textId] = null;
             }
         }
         else if (corpus.InferenceChapters != null)
         {
             foreach ((string textId, HashSet<int> chapters) in corpus.InferenceChapters)
             {
-                if (!bookIdsAndChapters.TryAdd(textId, [.. chapters]))
+                if (!bookIdsAndChapters.TryAdd(textId, chapters.Count > 0 ? [.. chapters] : null))
                 {
-                    if (chapters.Count == 0)
+                    HashSet<int>? existingChapters = bookIdsAndChapters[textId];
+                    if (existingChapters != null)
                     {
-                        // Clear all chapters, as we are to inference on all chapters
-                        bookIdsAndChapters[textId] = [];
-                    }
-                    else if (bookIdsAndChapters[textId].Count > 0)
-                    {
-                        // Only specify these chapters if chapters have already been specified
-                        foreach (int chapter in chapters)
-                            bookIdsAndChapters[textId].Add(chapter);
+                        if (chapters.Count > 0)
+                        {
+                            bookIdsAndChapters[textId] = [.. existingChapters, .. chapters];
+                        }
+                        else
+                        {
+                            bookIdsAndChapters[textId] = null;
+                        }
                     }
                 }
             }
