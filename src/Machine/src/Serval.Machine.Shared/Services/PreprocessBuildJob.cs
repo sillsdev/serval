@@ -313,7 +313,13 @@ public abstract class PreprocessBuildJob<TEngine>(
                 diagnostics.Add(
                     BuildDiagnosticService.CreateDiagnostic(
                         "CONFIG-0002",
-                        new Dictionary<string, object> { { "projectVersifications", projectVersifications } }
+                        new Dictionary<string, object>
+                        {
+                            {
+                                "projectVersifications",
+                                projectVersifications.ToDictionary(v => v.Key, v => v.Value.Name)
+                            },
+                        }
                     )
                 );
             }
