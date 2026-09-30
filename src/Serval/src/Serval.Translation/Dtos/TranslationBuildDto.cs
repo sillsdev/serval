@@ -10,9 +10,6 @@ public record TranslationBuildDto
     public IReadOnlyList<TrainingCorpusDto>? TrainOn { get; init; }
     public IReadOnlyList<PretranslateCorpusDto>? Pretranslate { get; init; }
     public required int Step { get; init; }
-
-    [Obsolete]
-    public double? PercentCompleted { get; init; }
     public double? Progress { get; init; }
     public string? Message { get; init; }
 

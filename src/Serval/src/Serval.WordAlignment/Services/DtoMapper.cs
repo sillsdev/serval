@@ -72,7 +72,6 @@ public class DtoMapper(IUrlService urlService)
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             WordAlignOn = source.WordAlignOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             Step = source.Step,
-            PercentCompleted = source.Progress,
             Progress = source.Progress,
             Message = source.Message,
             QueueDepth = source.QueueDepth,

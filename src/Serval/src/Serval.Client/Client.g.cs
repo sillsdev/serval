@@ -11473,10 +11473,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
         public int Step { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public double? PercentCompleted { get; set; } = default!;
-
         [Newtonsoft.Json.JsonProperty("progress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? Progress { get; set; } = default!;
 
@@ -12340,10 +12336,6 @@ namespace Serval.Client
 
         [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
         public int Step { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public double? PercentCompleted { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("progress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? Progress { get; set; } = default!;
