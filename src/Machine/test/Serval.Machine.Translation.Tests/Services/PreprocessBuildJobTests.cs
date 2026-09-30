@@ -99,7 +99,7 @@ public class PreprocessBuildJobTests
                     "trg_1",
                     "pt-target1",
                     "1111",
-                    ScrVers.Original,
+                    ScrVers.English,
                     [
                         new()
                         {
