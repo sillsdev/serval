@@ -23,6 +23,5 @@ public record Build : IOwnedEntity
     public DateTime? DateStarted { get; set; }
     public DateTime? DateCompleted { get; set; }
     public IReadOnlyList<Phase>? Phases { get; init; }
-    public IReadOnlyList<ParallelCorpusAnalysis>? Analysis { get; init; }
     public string? TargetQuoteConvention { get; init; }
 }

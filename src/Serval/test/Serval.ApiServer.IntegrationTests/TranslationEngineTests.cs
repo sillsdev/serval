@@ -2489,52 +2489,6 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public async Task MongoMigration_TargetQuoteConvention()
-    {
-        await _env.Builds.InsertAsync(
-            new Build()
-            {
-                Id = "111111111111111111111111",
-                EngineRef = NMT_ENGINE1_ID,
-                Owner = "client1",
-                Analysis =
-                [
-                    new Translation.Models.ParallelCorpusAnalysis()
-                    {
-                        ParallelCorpusRef = "111111111111111111111112",
-                        TargetQuoteConvention = "",
-                    },
-                    new Translation.Models.ParallelCorpusAnalysis()
-                    {
-                        ParallelCorpusRef = "111111111111111111111113",
-                        TargetQuoteConvention = "standard_english",
-                    },
-                ],
-            }
-        );
-
-        Build? unmigratedBuild = await _env.Builds.GetAsync(b => b.Id == "111111111111111111111111");
-        Assert.That(unmigratedBuild, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(unmigratedBuild.Analysis, Has.Count.EqualTo(2));
-            Assert.That(unmigratedBuild.TargetQuoteConvention, Is.Null);
-        });
-
-        await MongoMigrations.MigrateTargetQuoteConvention(
-            _env.MongoClient.GetDatabase("serval_test").GetCollection<Build>("translation.builds")
-        );
-
-        Build? migratedBuild = await _env.Builds.GetAsync(b => b.Id == "111111111111111111111111");
-        Assert.That(migratedBuild, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(migratedBuild.Analysis, Has.Count.EqualTo(2));
-            Assert.That(migratedBuild.TargetQuoteConvention, Is.EqualTo("standard_english"));
-        });
-    }
-
-    [Test]
     public async Task GetAllPretranslationConfidencesAsync_Exists()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();

@@ -11522,10 +11522,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("phases", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.IList<Phase>? Phases { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("analysis", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public System.Collections.Generic.IList<ParallelCorpusAnalysis>? Analysis { get; set; } = default!;
-
         [Newtonsoft.Json.JsonProperty("targetQuoteConvention", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? TargetQuoteConvention { get; set; } = default!;
 
@@ -11746,27 +11742,6 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Inference")]
         Inference = 1,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ParallelCorpusAnalysis
-    {
-
-        [Newtonsoft.Json.JsonProperty("parallelCorpusRef", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string ParallelCorpusRef { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("sourceQuoteConvention", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public string? SourceQuoteConvention { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("targetQuoteConvention", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TargetQuoteConvention { get; set; } = default!;
-
-        [Newtonsoft.Json.JsonProperty("canDenormalizeQuotes", Required = Newtonsoft.Json.Required.Always)]
-        public bool CanDenormalizeQuotes { get; set; } = default!;
 
     }
 

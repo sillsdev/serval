@@ -348,20 +348,9 @@ public class PlatformService(
         Engine? engine = await _engines.GetAsync(engineId, cancellationToken);
         if (engine is null)
             return;
-        var analysis = engine
-            .ParallelCorpora.Select(pc => new ParallelCorpusAnalysis
-            {
-                ParallelCorpusRef = pc.Id,
-                TargetQuoteConvention = quoteConvention,
-            })
-            .ToList();
         await _builds.UpdateAsync(
             b => b.Id == buildId && b.EngineRef == engineId,
-            u =>
-            {
-                u.Set(b => b.TargetQuoteConvention, quoteConvention);
-                u.Set(b => b.Analysis, analysis);
-            },
+            u => u.Set(b => b.TargetQuoteConvention, quoteConvention),
             cancellationToken: cancellationToken
         );
     }

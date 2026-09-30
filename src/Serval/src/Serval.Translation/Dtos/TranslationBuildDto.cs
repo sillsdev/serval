@@ -37,9 +37,6 @@ public record TranslationBuildDto
     public string? DeploymentVersion { get; init; }
     public required ExecutionDataDto ExecutionData { get; init; }
     public IReadOnlyList<PhaseDto>? Phases { get; init; }
-
-    [Obsolete]
-    public IReadOnlyList<ParallelCorpusAnalysisDto>? Analysis { get; init; }
     public string? TargetQuoteConvention { get; init; }
     public bool CanDenormalizeQuotes { get; init; }
 }
