@@ -11,6 +11,8 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
     private readonly Expression<Func<ChangeStreamDocument<T>, bool>> _changeEventFilter;
     private TimeSpan? _timeout;
     private BsonDocument? _resumeToken;
+    private readonly SubscriptionMode _mode;
+    private readonly Queue<EntityChange<T>> _changes;
     public EntityChange<T> Change { get; private set; }
 
     public MongoSubscription(
@@ -26,12 +28,14 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
         _entities = entities;
         _timestamp = timestamp;
         _filter = filter;
+        _mode = mode;
+        _changes = [];
         Change = new EntityChange<T>(
             initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update,
             initialEntity
         );
         Expression<Func<ChangeStreamDocument<T>, bool>> changeEventFilter;
-        if (mode == SubscriptionMode.Repository)
+        if (_mode == SubscriptionMode.Repository)
         {
             changeEventFilter = ce =>
                 new HashSet<ChangeStreamOperationType>
@@ -59,6 +63,12 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
 
     public async Task WaitForChangeAsync(TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
+        if (_mode == SubscriptionMode.Repository && _changes.TryDequeue(out EntityChange<T> change))
+        {
+            Change = change;
+            return;
+        }
+
         if (_cursor is null || !timeout.Equals(_timeout))
         {
             _cursor?.Dispose();
@@ -122,7 +132,12 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
                         _ => EntityChangeType.None,
                     };
 
-                    if (entityNotFound)
+                    if (_mode == SubscriptionMode.Repository)
+                    {
+                        if (ce.FullDocument is not null && _filter(ce.FullDocument))
+                            _changes.Enqueue(new EntityChange<T>(changeType, ce.FullDocument));
+                    }
+                    else if (entityNotFound)
                     {
                         if (ce.FullDocument is not null && _filter(ce.FullDocument))
                         {
@@ -135,6 +150,12 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
                         Change = new EntityChange<T>(changeType, ce.FullDocument);
                         changed = true;
                     }
+                }
+
+                if (_mode == SubscriptionMode.Repository && _changes.TryDequeue(out change))
+                {
+                    Change = change;
+                    return;
                 }
 
                 if (changed)
