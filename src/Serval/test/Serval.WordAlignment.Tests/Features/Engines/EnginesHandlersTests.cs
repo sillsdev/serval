@@ -1222,7 +1222,6 @@ public class EnginesHandlersTests
             CorpusRef = "corpus1",
             SourceRefs = ["ref1"],
             TargetRefs = ["ref1"],
-            Refs = ["ref1"],
             TextId = "textId1",
             SourceTokens = [],
             TargetTokens = [],
