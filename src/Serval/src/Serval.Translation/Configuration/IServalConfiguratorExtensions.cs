@@ -88,6 +88,12 @@ public static class IServalConfiguratorExtensions
                     c.Indexes.CreateOrUpdateAsync(
                         new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.DateFinished))
                     ),
+                // Remove the old parallel corpus analysis
+                c =>
+                    c.UpdateManyAsync(
+                        Builders<Build>.Filter.Exists("analysis"),
+                        Builders<Build>.Update.Unset("analysis")
+                    ),
             ]
         );
         configurator.DataAccess.AddRepository<Pretranslation>(

@@ -331,12 +331,7 @@ public class PlatformServiceTests
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(build?.TargetQuoteConvention, Is.EqualTo(expected));
-            Assert.That(build?.Analysis, Has.Count.EqualTo(1));
-        });
-        Assert.That(build?.Analysis?[0].TargetQuoteConvention, Is.EqualTo(expected));
+        Assert.That(build?.TargetQuoteConvention, Is.EqualTo(expected));
     }
 
     [Test]
@@ -356,11 +351,7 @@ public class PlatformServiceTests
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(build?.TargetQuoteConvention, Is.Null);
-            Assert.That(build?.Analysis, Is.Null);
-        });
+        Assert.That(build?.TargetQuoteConvention, Is.Null);
     }
 
     [Test]
@@ -391,11 +382,7 @@ public class PlatformServiceTests
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(build?.TargetQuoteConvention, Is.EqualTo(""));
-            Assert.That(build?.Analysis, Has.Count.EqualTo(0));
-        });
+        Assert.That(build?.TargetQuoteConvention, Is.Empty);
     }
 
     [Test]

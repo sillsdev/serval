@@ -57,7 +57,6 @@ public class DtoMapper(IUrlService urlService)
             DeploymentVersion = source.DeploymentVersion,
             ExecutionData = Map(source.ExecutionData),
             Phases = source.Phases?.Select(Map).ToList(),
-            Analysis = source.Analysis?.Select(a => Map(a, targetQuoteConvention)).ToList(),
             TargetQuoteConvention = targetQuoteConvention,
             CanDenormalizeQuotes = targetQuoteConvention != "",
         };
@@ -216,15 +215,6 @@ public class DtoMapper(IUrlService urlService)
             Step = source.Step,
             StepCount = source.StepCount,
             Started = source.Started,
-        };
-
-    private static ParallelCorpusAnalysisDto Map(ParallelCorpusAnalysis source, string targetQuoteConvention) =>
-        new()
-        {
-            ParallelCorpusRef = source.ParallelCorpusRef,
-            TargetQuoteConvention = targetQuoteConvention,
-            SourceQuoteConvention = "ignore",
-            CanDenormalizeQuotes = targetQuoteConvention != "",
         };
 
     private static ExecutionDataDto Map(ExecutionData source) =>
