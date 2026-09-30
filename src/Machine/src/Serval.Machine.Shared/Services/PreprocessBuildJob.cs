@@ -305,10 +305,10 @@ public abstract class PreprocessBuildJob<TEngine>(
             );
         }
 
-        ScrVers? previousVersification = null;
-        foreach (ScrVers versification in projectVersifications.Values)
+        if (projectVersifications.Values.Count > 1)
         {
-            if (previousVersification != null && !versification.IsEquivalentTo(previousVersification))
+            ScrVers firstVersification = projectVersifications.Values.First();
+            if (projectVersifications.Values.Skip(1).Any(v => !firstVersification.IsEquivalentTo(v)))
             {
                 diagnostics.Add(
                     BuildDiagnosticService.CreateDiagnostic(
@@ -323,7 +323,6 @@ public abstract class PreprocessBuildJob<TEngine>(
                     )
                 );
             }
-            previousVersification = versification;
         }
 
         if (inferenceCount == 0 && isNonPersistedTranslationEngine)
