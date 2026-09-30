@@ -364,6 +364,25 @@ public class MemoryRepositoryTests
         Assert.That(entity.Id, Is.EqualTo("1"));
     }
 
+    [Test]
+    public async Task SubscribeAsync_Repository()
+    {
+        MemoryRepository<TestEntity> repo = new();
+        using ISubscription<TestEntity> subscription = await repo.SubscribeAsync(
+            entity => entity.Value > 0,
+            mode: SubscriptionMode.Repository
+        );
+
+        await repo.InsertAsync(new TestEntity { Id = "1", Value = 1 });
+        await repo.InsertAsync(new TestEntity { Id = "2", Value = -1 });
+        await repo.InsertAsync(new TestEntity { Id = "3", Value = 2 });
+
+        await subscription.WaitForChangeAsync(TimeSpan.FromSeconds(1));
+        Assert.That(subscription.Change.Entity?.Id, Is.EqualTo("1"));
+        await subscription.WaitForChangeAsync(TimeSpan.FromSeconds(1));
+        Assert.That(subscription.Change.Entity?.Id, Is.EqualTo("3"));
+    }
+
     private record TestEntity : IEntity
     {
         public string Id { get; set; } = "";
