@@ -129,7 +129,6 @@ public class DtoMapper(IUrlService urlService)
             TextId = source.TextId,
             SourceRefs = source.SourceRefs ?? [],
             TargetRefs = source.TargetRefs ?? [],
-            Refs = source.Refs,
             Translation = source.Translation,
             Confidence = source.Confidence ?? -1.0,
         };

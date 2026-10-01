@@ -159,17 +159,17 @@ public class DtoMapper(IUrlService urlService)
             TextId = source.TextId,
             SourceRefs = source.SourceRefs,
             TargetRefs = source.TargetRefs,
-            Refs = source.Refs,
-            SourceTokens = source.SourceTokens.ToList(),
-            TargetTokens = source.TargetTokens.ToList(),
-            Alignment = source
-                .Alignment.Select(c => new AlignedWordPairDto()
+            SourceTokens = [.. source.SourceTokens],
+            TargetTokens = [.. source.TargetTokens],
+            Alignment =
+            [
+                .. source.Alignment.Select(c => new AlignedWordPairDto
                 {
                     SourceIndex = c.SourceIndex,
                     TargetIndex = c.TargetIndex,
                     Score = c.Score,
-                })
-                .ToList(),
+                }),
+            ],
         };
     }
 

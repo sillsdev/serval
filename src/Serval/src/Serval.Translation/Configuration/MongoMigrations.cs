@@ -1,6 +1,6 @@
 namespace Serval.Translation.Configuration;
 
-public class MongoMigrations
+public static class MongoMigrations
 {
     public static async Task MigrateTargetQuoteConvention(IMongoCollection<Build> c)
     {
@@ -53,6 +53,24 @@ public class MongoMigrations
                 )
             )
             .Merge(c, new MergeStageOptions<Build> { WhenMatched = MergeStageWhenMatched.Replace })
+            .ToListAsync();
+    }
+
+    public static async Task MigrateRefsToTargetRefs(IMongoCollection<Pretranslation> c)
+    {
+        await c.Aggregate()
+            .Match(Builders<Pretranslation>.Filter.Exists("refs"))
+            .AppendStage<BsonDocument>(
+                new BsonDocument(
+                    "$set",
+                    new BsonDocument(
+                        "targetRefs",
+                        new BsonDocument("$ifNull", new BsonArray { "$targetRefs", "$refs" })
+                    )
+                )
+            )
+            .AppendStage<BsonDocument>(new BsonDocument("$unset", "refs"))
+            .Merge(c, new MergeStageOptions<Pretranslation> { WhenMatched = MergeStageWhenMatched.Replace })
             .ToListAsync();
     }
 }

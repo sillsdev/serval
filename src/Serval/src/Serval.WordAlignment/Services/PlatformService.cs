@@ -322,19 +322,19 @@ public class PlatformService(
                     ModelRevision = nextModelRevision,
                     CorpusRef = item.CorpusId,
                     TextId = item.TextId,
-                    SourceRefs = item.SourceRefs.ToList(),
-                    TargetRefs = item.TargetRefs.ToList(),
-                    Refs = item.TargetRefs.ToList(),
-                    SourceTokens = item.SourceTokens.ToList(),
-                    TargetTokens = item.TargetTokens.ToList(),
-                    Alignment = item
-                        .Alignment.Select(a => new AlignedWordPair
+                    SourceRefs = [.. item.SourceRefs],
+                    TargetRefs = [.. item.TargetRefs],
+                    SourceTokens = [.. item.SourceTokens],
+                    TargetTokens = [.. item.TargetTokens],
+                    Alignment =
+                    [
+                        .. item.Alignment.Select(a => new AlignedWordPair
                         {
                             SourceIndex = a.SourceIndex,
                             TargetIndex = a.TargetIndex,
                             Score = a.Score,
-                        })
-                        .ToList(),
+                        }),
+                    ],
                 }
             );
             if (batch.Count == WordAlignmentInsertBatchSize)
