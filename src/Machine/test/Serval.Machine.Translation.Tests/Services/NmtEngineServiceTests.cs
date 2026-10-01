@@ -10,7 +10,7 @@ public class NmtEngineServiceTests
         env.PersistModel();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync("engine1", "build1", [], "{}");
         await env.WaitForBuildToFinishAsync();
         engine = env.Engines.Get("engine1");
         Assert.Multiple(() =>
@@ -29,7 +29,7 @@ public class NmtEngineServiceTests
         env.UseInfiniteTrainJob();
 
         TranslationEngine engine = env.Engines.Get("engine1");
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync("engine1", "build1", [], "{}");
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -45,13 +45,7 @@ public class NmtEngineServiceTests
         env.PersistModel();
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(
-            "engine1",
-            "build1",
-            Array.Empty<ParallelCorpusContract>(),
-            "{}",
-            Models.Models.NllbTesting
-        );
+        await env.Service.StartBuildAsync("engine1", "build1", [], "{}", Models.Models.NllbTesting);
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -72,7 +66,7 @@ public class NmtEngineServiceTests
         await env.Service.StartBuildAsync(
             "engine1",
             "build1",
-            Array.Empty<ParallelCorpusContract>(),
+            [],
             "{\"parent_model_name\": \"facebook/nllb-200-distilled-1.3B\"}"
         );
         await env.WaitForBuildToStartAsync();
@@ -95,7 +89,7 @@ public class NmtEngineServiceTests
         await env.Service.StartBuildAsync(
             "engine1",
             "build1",
-            Array.Empty<ParallelCorpusContract>(),
+            [],
             "{\"parent_model_name\": \"facebook/nllb-200-distilled-1.3B\"}",
             Models.Models.NllbTesting
         );
@@ -115,11 +109,11 @@ public class NmtEngineServiceTests
         env.PersistModel();
 
         // Invalid model
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await env.Service.StartBuildAsync(
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            env.Service.StartBuildAsync(
                 "engine1",
                 "build1",
-                Array.Empty<ParallelCorpusContract>(),
+                [],
                 "{\"parent_model_name\": \"facebook/nllb-200-distilled-1.3B\"}",
                 "NLLBMisspelled"
             )
@@ -133,13 +127,8 @@ public class NmtEngineServiceTests
         env.PersistModel();
 
         // Invalid model
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await env.Service.StartBuildAsync(
-                "engine1",
-                "build1",
-                Array.Empty<ParallelCorpusContract>(),
-                "{\"parent_model_name\": \"invalid-model\"}"
-            )
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            env.Service.StartBuildAsync("engine1", "build1", [], "{\"parent_model_name\": \"invalid-model\"}")
         );
     }
 
@@ -152,7 +141,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync("engine1", "build1", [], "{}");
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -180,7 +169,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync("engine1", "build1", [], "{}");
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);

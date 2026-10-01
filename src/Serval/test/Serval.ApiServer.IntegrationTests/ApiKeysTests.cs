@@ -51,17 +51,16 @@ public class ApiKeysTests
                 Assert.That(resultAfterCreate.Name, Is.EqualTo("key1"));
                 break;
             case 403:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.CreateAsync(
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.CreateAsync(
                         new ApiKeyConfig
                         {
                             ClientId = "client1",
                             Name = "key1",
                             Scopes = { Scopes.ReadFiles },
                         }
-                    );
-                });
+                    )
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -75,30 +74,28 @@ public class ApiKeysTests
     [TestCase(Scopes.CreateApiKeys)]
     [TestCase(Scopes.ReadApiKeys)]
     [TestCase(Scopes.DeleteApiKeys)]
-    public void CreateApiKeyAsync_InvalidScope(string apiKeyScope)
+    public async Task CreateApiKeyAsync_InvalidScope(string apiKeyScope)
     {
         ApiKeysClient client = _env.CreateClient(null);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.CreateAsync(
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.CreateAsync(
                 new ApiKeyConfig
                 {
                     ClientId = "client1",
                     Name = "key1",
                     Scopes = { apiKeyScope },
                 }
-            );
-        });
+            )
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(400));
     }
 
     [Test]
-    public void CreateApiKeyAsync_ExpirationInPast()
+    public async Task CreateApiKeyAsync_ExpirationInPast()
     {
         ApiKeysClient client = _env.CreateClient(null);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.CreateAsync(
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.CreateAsync(
                 new ApiKeyConfig
                 {
                     ClientId = "client1",
@@ -106,8 +103,8 @@ public class ApiKeysTests
                     Scopes = { Scopes.ReadFiles },
                     ExpiresAt = DateTimeOffset.UtcNow.AddDays(-1),
                 }
-            );
-        });
+            )
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(400));
     }
 
@@ -176,10 +173,9 @@ public class ApiKeysTests
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.DeleteAsync(DOES_NOT_EXIST_ID);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.DeleteAsync(DOES_NOT_EXIST_ID)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -221,10 +217,7 @@ public class ApiKeysTests
             );
 
         DataFilesClient client = _env.CreateDataFilesClientWithApiKey(apiKey.Key);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.DeleteAsync(FILE_ID);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.DeleteAsync(FILE_ID));
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -243,23 +236,17 @@ public class ApiKeysTests
 
         HttpClient httpClient = _env.CreateHttpClientWithApiKey(apiKey.Key);
         var apiKeysClient = new ApiKeysClient(httpClient);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await apiKeysClient.GetAllAsync();
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => apiKeysClient.GetAllAsync());
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
     [Test]
     [TestCase("garbage")]
     [TestCase("serval_000000000000000000000002_bm90LWEtcmVhbC1zZWNyZXQ")]
-    public void AuthenticateWithApiKey_InvalidKey(string key)
+    public async Task AuthenticateWithApiKey_InvalidKey(string key)
     {
         DataFilesClient client = _env.CreateDataFilesClientWithApiKey(key);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetAsync(FILE_ID);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAsync(FILE_ID));
         Assert.That(ex?.StatusCode, Is.EqualTo(401));
     }
 
@@ -279,10 +266,7 @@ public class ApiKeysTests
         string tamperedKey = apiKey.Key[..^1] + (lastChar == 'A' ? 'B' : 'A');
 
         DataFilesClient client = _env.CreateDataFilesClientWithApiKey(tamperedKey);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetAsync(FILE_ID);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAsync(FILE_ID));
         Assert.That(ex?.StatusCode, Is.EqualTo(401));
     }
 
@@ -301,10 +285,7 @@ public class ApiKeysTests
         await apiKeysClient.DeleteAsync(apiKey.Id);
 
         DataFilesClient client = _env.CreateDataFilesClientWithApiKey(apiKey.Key);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetAsync(FILE_ID);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAsync(FILE_ID));
         Assert.That(ex?.StatusCode, Is.EqualTo(401));
     }
 
@@ -327,10 +308,7 @@ public class ApiKeysTests
         );
 
         DataFilesClient client = _env.CreateDataFilesClientWithApiKey(apiKey.Key);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetAsync(FILE_ID);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAsync(FILE_ID));
         Assert.That(ex?.StatusCode, Is.EqualTo(401));
     }
 
@@ -348,10 +326,7 @@ public class ApiKeysTests
             );
 
         DataFilesClient client = _env.CreateDataFilesClientWithApiKey(apiKey.Key);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetAsync(FILE_ID);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAsync(FILE_ID));
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 

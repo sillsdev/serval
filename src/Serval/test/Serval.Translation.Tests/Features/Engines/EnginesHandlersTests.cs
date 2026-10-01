@@ -8,11 +8,11 @@ public class EnginesHandlersTests
     const string OWNER = "owner1";
 
     [Test]
-    public void Translate_EngineDoesNotExist()
+    public async Task Translate_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
         TranslateHandler handler = new(env.Engines, env.EngineServiceFactory);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new Translate(OWNER, "engine1", "esto es una prueba."))
         );
     }
@@ -32,11 +32,11 @@ public class EnginesHandlersTests
     }
 
     [Test]
-    public void GetWordGraph_EngineDoesNotExist()
+    public async Task GetWordGraph_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
         GetWordGraphHandler handler = new(env.Engines, env.EngineServiceFactory);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new GetWordGraph(OWNER, "engine1", "esto es una prueba."))
         );
     }
@@ -61,11 +61,11 @@ public class EnginesHandlersTests
     }
 
     [Test]
-    public void TrainSegment_EngineDoesNotExist()
+    public async Task TrainSegment_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
         TrainSegmentHandler handler = new(env.Engines, env.EngineServiceFactory);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(
                 new TrainSegment(
                     OWNER,
@@ -87,7 +87,7 @@ public class EnginesHandlersTests
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
         TrainSegmentHandler handler = new(env.Engines, env.EngineServiceFactory);
-        Assert.DoesNotThrowAsync(() =>
+        await Assert.DoesNotThrowAsync(() =>
             handler.HandleAsync(
                 new TrainSegment(
                     OWNER,
@@ -158,7 +158,9 @@ public class EnginesHandlersTests
             env.Pretranslations,
             env.EngineServiceFactory
         );
-        Assert.ThrowsAsync<EntityNotFoundException>(() => handler.HandleAsync(new DeleteEngine(OWNER, "engine3")));
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
+            handler.HandleAsync(new DeleteEngine(OWNER, "engine3"))
+        );
     }
 
     [Test]
@@ -677,7 +679,7 @@ public class EnginesHandlersTests
             new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
-        Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             handler.HandleAsync(
                 new StartBuild(
                     OWNER,
@@ -1575,7 +1577,7 @@ public class EnginesHandlersTests
             new ObjectIdGenerator(),
             Substitute.For<IConfiguration>()
         );
-        Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             handler.HandleAsync(
                 new StartBuild(
                     OWNER,
@@ -2024,11 +2026,11 @@ public class EnginesHandlersTests
     }
 
     [Test]
-    public void GetBuild_BuildDoesNotExist_Throws()
+    public async Task GetBuild_BuildDoesNotExist_Throws()
     {
         var env = new TestEnvironment();
         GetBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new GetBuild(OWNER, "engine1", "build1", 2))
         );
     }
@@ -2109,11 +2111,11 @@ public class EnginesHandlersTests
     }
 
     [Test]
-    public void GetCurrentBuild_BuildDoesNotExist_Throws()
+    public async Task GetCurrentBuild_BuildDoesNotExist_Throws()
     {
         var env = new TestEnvironment();
         GetCurrentBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new GetCurrentBuild(OWNER, "engine1", 2))
         );
     }

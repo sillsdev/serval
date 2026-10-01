@@ -368,7 +368,7 @@ public partial class UsfmGenerationServiceTests
     }
 
     [Test]
-    public void GetUsfmAsync_BadPretranslationVerseRef()
+    public async Task GetUsfmAsync_BadPretranslationVerseRef()
     {
         using TestEnvironment env = new();
 
@@ -414,9 +414,8 @@ public partial class UsfmGenerationServiceTests
         );
 
         // Should not crash when parsing "MAT 1:"
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            string usfm = await env.Service.GetUsfmAsync(
+        await Assert.DoesNotThrowAsync(() =>
+            env.Service.GetUsfmAsync(
                 engineId: "engine1",
                 modelRevision: 1,
                 corpusId: "corpus1",
@@ -427,16 +426,16 @@ public partial class UsfmGenerationServiceTests
                 embedBehavior: PretranslationUsfmMarkerBehavior.Preserve,
                 styleMarkerBehavior: PretranslationUsfmMarkerBehavior.Strip,
                 quoteNormalizationBehavior: PretranslationNormalizationBehavior.Normalized
-            );
-        });
+            )
+        );
     }
 
     [Test]
-    public void GetUsfmAsync_EngineDoesNotExist()
+    public async Task GetUsfmAsync_EngineDoesNotExist()
     {
         using TestEnvironment env = new();
-        Assert.ThrowsAsync<EntityNotFoundException>(async () =>
-            await env.Service.GetUsfmAsync(
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
+            env.Service.GetUsfmAsync(
                 engineId: "engine2",
                 modelRevision: 1,
                 corpusId: "corpus1",
