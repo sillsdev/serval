@@ -3,8 +3,8 @@
 public record TranslationEngineUpdateConfigDto
 {
     public string? SourceLanguage { get; init; }
-
     public string? TargetLanguage { get; init; }
+    public string? Type { get; init; }
 }
 
 public record UpdateEngine(string Owner, string EngineId, TranslationEngineUpdateConfigDto UpdateConfig) : IRequest;
@@ -12,6 +12,7 @@ public record UpdateEngine(string Owner, string EngineId, TranslationEngineUpdat
 public class UpdateEngineHandler(
     IDataAccessContext dataAccessContext,
     IRepository<Engine> engines,
+    IRepository<Build> builds,
     IRepository<Pretranslation> pretranslations,
     IEngineServiceFactory engineServiceFactory
 ) : IRequestHandler<UpdateEngine>
@@ -21,9 +22,35 @@ public class UpdateEngineHandler(
         return dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
-                await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
+                Engine? engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
-                Engine? engine = await engines.UpdateAsync(
+                if (
+                    request.UpdateConfig.Type is not null
+                    && !engineServiceFactory.EngineTypeExists(request.UpdateConfig.Type)
+                )
+                {
+                    throw new InvalidOperationException($"'{request.UpdateConfig.Type}' is an invalid engine type.");
+                }
+
+                bool engineTypeChanged =
+                    request.UpdateConfig.Type is not null
+                    && !engine
+                        .Type.ToPascalCase()
+                        .Equals(request.UpdateConfig.Type.ToPascalCase(), StringComparison.InvariantCultureIgnoreCase);
+
+                if (
+                    await builds.ExistsAsync(
+                        b =>
+                            b.EngineRef == request.EngineId
+                            && (b.State == JobState.Active || b.State == JobState.Pending),
+                        ct
+                    )
+                )
+                {
+                    throw new ConflictException();
+                }
+
+                engine = await engines.UpdateAsync(
                     request.EngineId,
                     u =>
                     {
@@ -31,6 +58,8 @@ public class UpdateEngineHandler(
                             u.Set(e => e.SourceLanguage, request.UpdateConfig.SourceLanguage);
                         if (request.UpdateConfig.TargetLanguage is not null)
                             u.Set(e => e.TargetLanguage, request.UpdateConfig.TargetLanguage);
+                        if (request.UpdateConfig.Type is not null)
+                            u.Set(e => e.Type, request.UpdateConfig.Type);
                     },
                     cancellationToken: ct
                 );
@@ -38,14 +67,28 @@ public class UpdateEngineHandler(
                     throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
                 await pretranslations.DeleteAllAsync(pt => pt.EngineRef == request.EngineId, ct);
 
-                await engineServiceFactory
-                    .GetEngineService(engine.Type)
-                    .UpdateAsync(
+                ITranslationEngineService engineService = engineServiceFactory.GetEngineService(engine.Type);
+                if (engineTypeChanged)
+                {
+                    await engineService.DeleteAsync(request.EngineId, ct);
+                    await engineService.CreateAsync(
+                        engine.Id,
+                        engine.SourceLanguage,
+                        engine.TargetLanguage,
+                        engine.Name,
+                        engine.IsModelPersisted,
+                        ct
+                    );
+                }
+                else
+                {
+                    await engineService.UpdateAsync(
                         request.EngineId,
                         request.UpdateConfig.SourceLanguage,
                         request.UpdateConfig.TargetLanguage,
                         ct
                     );
+                }
             },
             cancellationToken
         );
@@ -69,16 +112,20 @@ public partial class TranslationEnginesController
     /// <param name="id">The translation engine id</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">The engine language was successfully updated.</response>
+    /// <response code="400">Bad request. Is the engine type correct?</response>
     /// <response code="401">The client is not authenticated.</response>
     /// <response code="403">The authenticated client cannot perform the operation or does not own the translation engine.</response>
     /// <response code="404">The engine does not exist and therefore cannot be updated.</response>
+    /// <response code="409">The engine has an active/pending build or a build in the process of being canceled.</response>
     /// <response code="503">A necessary service is currently unavailable. Check `/health` for more details.</response>
     [Authorize(Scopes.UpdateTranslationEngines)]
     [HttpPatch("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> UpdateAsync(
         [FromRoute] string id,
@@ -89,10 +136,14 @@ public partial class TranslationEnginesController
     {
         if (
             request is null
-            || (string.IsNullOrWhiteSpace(request.SourceLanguage) && string.IsNullOrWhiteSpace(request.TargetLanguage))
+            || (
+                string.IsNullOrWhiteSpace(request.SourceLanguage)
+                && string.IsNullOrWhiteSpace(request.TargetLanguage)
+                && string.IsNullOrWhiteSpace(request.Type)
+            )
         )
         {
-            return BadRequest("sourceLanguage or targetLanguage is required.");
+            return BadRequest("Either sourceLanguage, targetLanguage, or type is required.");
         }
 
         await handler.HandleAsync(new(Owner, id, request), cancellationToken);
