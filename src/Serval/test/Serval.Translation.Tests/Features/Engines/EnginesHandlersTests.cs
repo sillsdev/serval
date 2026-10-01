@@ -2180,6 +2180,7 @@ public class EnginesHandlersTests
         UpdateEngineHandler handler = new(
             env.DataAccessContext,
             env.Engines,
+            env.Builds,
             env.Pretranslations,
             env.EngineServiceFactory
         );
@@ -2203,6 +2204,7 @@ public class EnginesHandlersTests
         UpdateEngineHandler handler = new(
             env.DataAccessContext,
             env.Engines,
+            env.Builds,
             env.Pretranslations,
             env.EngineServiceFactory
         );
@@ -2229,6 +2231,7 @@ public class EnginesHandlersTests
         UpdateEngineHandler handler = new(
             env.DataAccessContext,
             env.Engines,
+            env.Builds,
             env.Pretranslations,
             env.EngineServiceFactory
         );
@@ -2255,6 +2258,7 @@ public class EnginesHandlersTests
         UpdateEngineHandler handler = new(
             env.DataAccessContext,
             env.Engines,
+            env.Builds,
             env.Pretranslations,
             env.EngineServiceFactory
         );
