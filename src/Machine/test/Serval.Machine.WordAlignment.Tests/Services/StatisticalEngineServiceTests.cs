@@ -81,7 +81,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, [], "{}");
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -105,7 +105,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, [], "{}");
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);

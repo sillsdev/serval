@@ -36,11 +36,11 @@ public class CorporaHandlersTests
     }
 
     [Test]
-    public void GetCorpus_CorpusDoesNotExist()
+    public async Task GetCorpus_CorpusDoesNotExist()
     {
         var env = new TestEnvironment();
         GetCorpusHandler handler = new(env.Corpora, env.Mapper);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new(Owner, "c00000000000000000000001"), CancellationToken.None)
         );
     }
@@ -51,7 +51,7 @@ public class CorporaHandlersTests
         var env = new TestEnvironment();
         Corpus corpus = await env.CreateCorpusAsync();
         GetCorpusHandler handler = new(env.Corpora, env.Mapper);
-        Assert.ThrowsAsync<ForbiddenException>(() =>
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new("owner2", corpus.Id), CancellationToken.None)
         );
     }
@@ -85,21 +85,21 @@ public class CorporaHandlersTests
     }
 
     [Test]
-    public void CreateCorpus_EmptyLanguage()
+    public async Task CreateCorpus_EmptyLanguage()
     {
         var env = new TestEnvironment();
         CreateCorpusHandler handler = new(env.Corpora, env.DataFiles, env.IdGenerator, env.Mapper);
-        Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             handler.HandleAsync(new(Owner, new CorpusConfigDto { Language = "", Files = [] }), CancellationToken.None)
         );
     }
 
     [Test]
-    public void CreateCorpus_DataFileDoesNotExist()
+    public async Task CreateCorpus_DataFileDoesNotExist()
     {
         var env = new TestEnvironment();
         CreateCorpusHandler handler = new(env.Corpora, env.DataFiles, env.IdGenerator, env.Mapper);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(
                 new(
                     Owner,
@@ -135,7 +135,7 @@ public class CorporaHandlersTests
     }
 
     [Test]
-    public void UpdateCorpus_CorpusDoesNotExist()
+    public async Task UpdateCorpus_CorpusDoesNotExist()
     {
         var env = new TestEnvironment();
         UpdateCorpusHandler handler = new(
@@ -145,7 +145,7 @@ public class CorporaHandlersTests
             env.EventRouter,
             env.Mapper
         );
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new(Owner, "c00000000000000000000001", []), CancellationToken.None)
         );
     }
@@ -162,7 +162,7 @@ public class CorporaHandlersTests
             env.EventRouter,
             env.Mapper
         );
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(
                 new(Owner, corpus.Id, [new CorpusFileConfigDto { FileId = "df0000000000000000000099" }]),
                 CancellationToken.None
@@ -182,11 +182,11 @@ public class CorporaHandlersTests
     }
 
     [Test]
-    public void DeleteCorpus_CorpusDoesNotExist()
+    public async Task DeleteCorpus_CorpusDoesNotExist()
     {
         var env = new TestEnvironment();
         DeleteCorpusHandler handler = new(env.Corpora);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new(Owner, "c00000000000000000000001"), CancellationToken.None)
         );
     }
@@ -197,7 +197,7 @@ public class CorporaHandlersTests
         var env = new TestEnvironment();
         Corpus corpus = await env.CreateCorpusAsync();
         DeleteCorpusHandler handler = new(env.Corpora);
-        Assert.ThrowsAsync<ForbiddenException>(() =>
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new("owner2", corpus.Id), CancellationToken.None)
         );
     }
