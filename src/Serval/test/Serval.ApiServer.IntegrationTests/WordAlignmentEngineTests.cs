@@ -217,10 +217,7 @@ public class WordAlignmentEngineTests
                 Assert.That(results.All(eng => eng.SourceLanguage.Equals("en")));
                 break;
             case 403:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAllAsync();
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAllAsync());
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -246,10 +243,7 @@ public class WordAlignmentEngineTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAsync(engineId));
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -284,9 +278,8 @@ public class WordAlignmentEngineTests
                 break;
             case 400:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.CreateAsync(
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.CreateAsync(
                         new WordAlignmentEngineConfig
                         {
                             Name = "test",
@@ -294,16 +287,15 @@ public class WordAlignmentEngineTests
                             TargetLanguage = "es",
                             Type = engineType,
                         }
-                    );
-                });
+                    )
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.CreateAsync(
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.CreateAsync(
                         new WordAlignmentEngineConfig
                         {
                             Name = "test",
@@ -311,8 +303,8 @@ public class WordAlignmentEngineTests
                             TargetLanguage = "en",
                             Type = engineType,
                         }
-                    );
-                });
+                    )
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -339,10 +331,9 @@ public class WordAlignmentEngineTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.DeleteAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.DeleteAsync(engineId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -382,34 +373,32 @@ public class WordAlignmentEngineTests
                 break;
             case 409:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.AlignAsync(
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.AlignAsync(
                         engineId,
                         new WordAlignmentRequest
                         {
                             SourceSegment = "This is a test.",
                             TargetSegment = "This is a test.",
                         }
-                    );
-                });
+                    )
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.AlignAsync(
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.AlignAsync(
                         engineId,
                         new WordAlignmentRequest
                         {
                             SourceSegment = "This is a test.",
                             TargetSegment = "This is a test.",
                         }
-                    );
-                });
+                    )
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -422,9 +411,7 @@ public class WordAlignmentEngineTests
     [Test]
     public async Task AddParallelCorpusToEngineByIdAsync()
     {
-        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(
-            new[] { Scopes.UpdateWordAlignmentEngines }
-        );
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient([Scopes.UpdateWordAlignmentEngines]);
         WordAlignmentParallelCorpus result = await client.AddParallelCorpusAsync(
             ECHO_ENGINE1_ID,
             TestParallelCorpusConfig
@@ -447,28 +434,25 @@ public class WordAlignmentEngineTests
         });
     }
 
-    public void AddParallelCorpusToEngineById_NoSuchEngine()
+    [Test]
+    public async Task AddParallelCorpusToEngineById_NoSuchEngine()
     {
-        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(
-            new[] { Scopes.UpdateWordAlignmentEngines }
-        );
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient([Scopes.UpdateWordAlignmentEngines]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.AddParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, TestParallelCorpusConfig);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.AddParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, TestParallelCorpusConfig)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void AddParallelCorpusToEngineById_NotAuthorized()
+    public async Task AddParallelCorpusToEngineById_NotAuthorized()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(new[] { Scopes.ReadFiles });
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.AddParallelCorpusAsync(ECHO_ENGINE1_ID, TestParallelCorpusConfig);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.AddParallelCorpusAsync(ECHO_ENGINE1_ID, TestParallelCorpusConfig)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -501,52 +485,52 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void UpdateParallelCorpusByIdForEngineById_NoSuchCorpus()
+    public async Task UpdateParallelCorpusByIdForEngineById_NoSuchCorpus()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
         {
             var updateConfig = new WordAlignmentParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
                 TargetCorpusIds = [TARGET_CORPUS_ID],
             };
-            await client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
+            return client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
         });
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void UpdateParallelCorpusByIdForEngineById_NoSuchEngine()
+    public async Task UpdateParallelCorpusByIdForEngineById_NoSuchEngine()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
         {
             var updateConfig = new WordAlignmentParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
                 TargetCorpusIds = [TARGET_CORPUS_ID],
             };
-            await client.UpdateParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1, updateConfig);
+            return client.UpdateParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1, updateConfig);
         });
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void UpdateParallelCorpusByIdForEngineById_NotAuthorized()
+    public async Task UpdateParallelCorpusByIdForEngineById_NotAuthorized()
     {
-        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(new[] { Scopes.ReadFiles });
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient([Scopes.ReadFiles]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
         {
             var updateConfig = new WordAlignmentParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
                 TargetCorpusIds = [TARGET_CORPUS_ID],
             };
-            await client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
+            return client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
         });
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
@@ -569,28 +553,24 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void GetAllParallelCorporaForEngineById_NoSuchEngine()
+    public async Task GetAllParallelCorporaForEngineById_NoSuchEngine()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            WordAlignmentParallelCorpus result = (
-                await client.GetAllParallelCorporaAsync(DOES_NOT_EXIST_ENGINE_ID)
-            ).First();
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllParallelCorporaAsync(DOES_NOT_EXIST_ENGINE_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetAllParallelCorporaForEngineById_NotAuthorized()
+    public async Task GetAllParallelCorporaForEngineById_NotAuthorized()
     {
-        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(new[] { Scopes.ReadFiles });
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient([Scopes.ReadFiles]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            WordAlignmentParallelCorpus result = (await client.GetAllParallelCorporaAsync(ECHO_ENGINE1_ID)).First();
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllParallelCorporaAsync(ECHO_ENGINE1_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -613,32 +593,24 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void GetParallelCorpusByIdForEngineById_NoCorpora()
+    public async Task GetParallelCorpusByIdForEngineById_NoCorpora()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            WordAlignmentParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
-                ECHO_ENGINE1_ID,
-                DOES_NOT_EXIST_CORPUS_ID
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetParallelCorpusByIdForEngineById_NoSuchEngine()
+    public async Task GetParallelCorpusByIdForEngineById_NoSuchEngine()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            WordAlignmentParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
-                DOES_NOT_EXIST_ENGINE_ID,
-                SOURCE_CORPUS_ID_1
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
@@ -651,28 +623,20 @@ public class WordAlignmentEngineTests
             TestParallelCorpusConfig
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            WordAlignmentParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
-                ECHO_ENGINE1_ID,
-                DOES_NOT_EXIST_CORPUS_ID
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetParallelCorpusByIdForEngineById_NotAuthorized()
+    public async Task GetParallelCorpusByIdForEngineById_NotAuthorized()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(new[] { Scopes.ReadFiles });
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            WordAlignmentParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
-                ECHO_ENGINE1_ID,
-                DOES_NOT_EXIST_CORPUS_ID
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -693,38 +657,35 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void DeleteParallelCorpusByIdForEngineById_NoSuchCorpus()
+    public async Task DeleteParallelCorpusByIdForEngineById_NoSuchCorpus()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.DeleteParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.DeleteParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void DeleteParallelCorpusByIdForEngineById_NoSuchEngine()
+    public async Task DeleteParallelCorpusByIdForEngineById_NoSuchEngine()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.DeleteParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.DeleteParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void DeleteParallelCorpusByIdForEngineById_NotAuthorized()
+    public async Task DeleteParallelCorpusByIdForEngineById_NotAuthorized()
     {
-        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient(new[] { Scopes.ReadFiles });
+        WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient([Scopes.ReadFiles]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.DeleteParallelCorpusAsync(ECHO_ENGINE1_ID, SOURCE_CORPUS_ID_1);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.DeleteParallelCorpusAsync(ECHO_ENGINE1_ID, SOURCE_CORPUS_ID_1)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -761,22 +722,22 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void GetAllWordAlignmentsAsync_EngineDoesNotExist()
+    public async Task GetAllWordAlignmentsAsync_EngineDoesNotExist()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllWordAlignmentsAsync(DOES_NOT_EXIST_ENGINE_ID, "cccccccccccccccccccccccc")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetAllWordAlignmentsAsync_CorpusDoesNotExist()
+    public async Task GetAllWordAlignmentsAsync_CorpusDoesNotExist()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllWordAlignmentsAsync(ECHO_ENGINE1_ID, "cccccccccccccccccccccccc")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
@@ -791,7 +752,7 @@ public class WordAlignmentEngineTests
             TestParallelCorpusConfig
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllWordAlignmentsAsync(ECHO_ENGINE2_ID, addedCorpus.Id)
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(409));
@@ -894,10 +855,9 @@ public class WordAlignmentEngineTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAllBuildsAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetAllBuildsAsync(engineId)
+                );
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -943,20 +903,18 @@ public class WordAlignmentEngineTests
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetBuildAsync(engineId, "bbbbbbbbbbbbbbbbbbbbbbbb");
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetBuildAsync(engineId, "bbbbbbbbbbbbbbbbbbbbbbbb")
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 408:
             {
                 Assert.That(build, Is.Not.Null);
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetBuildAsync(engineId, build.Id, 3);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetBuildAsync(engineId, build.Id, 3)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -1026,11 +984,7 @@ public class WordAlignmentEngineTests
                         "some_string":"string"}
                         """,
                 };
-                WordAlignmentBuild resultAfterStart;
-                Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    resultAfterStart = await client.GetCurrentBuildAsync(engineId);
-                });
+                await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(engineId));
 
                 WordAlignmentBuild build = await client.StartBuildAsync(engineId, tbc);
                 Assert.That(build, Is.Not.Null);
@@ -1070,10 +1024,9 @@ public class WordAlignmentEngineTests
                     ],
                 };
                 tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc], TrainOn = [tcc] };
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.StartBuildAsync(engineId, tbc);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.StartBuildAsync(engineId, tbc)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -1083,16 +1036,12 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void AddParallelCorpusAsync_EmptyParallelCorpus()
+    public async Task AddParallelCorpusAsync_EmptyParallelCorpus()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            WordAlignmentParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
-                ECHO_ENGINE1_ID,
-                TestParallelCorpusConfigEmptySource
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.AddParallelCorpusAsync(ECHO_ENGINE1_ID, TestParallelCorpusConfigEmptySource)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1107,10 +1056,9 @@ public class WordAlignmentEngineTests
         );
         WordAlignmentCorpusConfig wacc = new() { ParallelCorpusId = addedCorpus.Id };
         WordAlignmentBuildConfig tbc = new() { WordAlignOn = [wacc] };
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(ECHO_ENGINE1_ID, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1125,10 +1073,9 @@ public class WordAlignmentEngineTests
         );
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedCorpus.Id };
         WordAlignmentBuildConfig tbc = new() { TrainOn = [tcc] };
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(ECHO_ENGINE1_ID, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1163,10 +1110,9 @@ public class WordAlignmentEngineTests
                 );
             }
         );
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(ECHO_ENGINE1_ID, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1197,11 +1143,7 @@ public class WordAlignmentEngineTests
             TrainOn = [tcc],
             Options = "unparsable json",
         };
-        WordAlignmentBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.GetCurrentBuildAsync(ECHO_ENGINE1_ID);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(ECHO_ENGINE1_ID));
 
         Assert.That(
             () => client.StartBuildAsync(ECHO_ENGINE1_ID, tbc),
@@ -1267,19 +1209,17 @@ public class WordAlignmentEngineTests
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetCurrentBuildAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetCurrentBuildAsync(engineId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 408:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetCurrentBuildAsync(engineId, minRevision: 3);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetCurrentBuildAsync(engineId, minRevision: 3)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -1321,10 +1261,9 @@ public class WordAlignmentEngineTests
             case 204:
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.CancelBuildAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.CancelBuildAsync(engineId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -1367,11 +1306,7 @@ public class WordAlignmentEngineTests
                 "some_string":"string"}
                 """,
         };
-        WordAlignmentBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.GetCurrentBuildAsync(STATISTICAL_ENGINE_ID);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(STATISTICAL_ENGINE_ID));
 
         WordAlignmentBuild build = await client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc);
         Assert.That(build, Is.Not.Null);
@@ -1402,7 +1337,7 @@ public class WordAlignmentEngineTests
             TargetFilters = [new() { CorpusId = TARGET_CORPUS_ID }],
         };
         ;
-        WordAlignmentBuildConfig tbc = new WordAlignmentBuildConfig
+        WordAlignmentBuildConfig tbc = new()
         {
             WordAlignOn = [wacc],
             TrainOn = [tcc],
@@ -1414,11 +1349,7 @@ public class WordAlignmentEngineTests
                 "some_string":"string"}
                 """,
         };
-        WordAlignmentBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.GetCurrentBuildAsync(STATISTICAL_ENGINE_ID);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(STATISTICAL_ENGINE_ID));
 
         WordAlignmentBuild build = await client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc);
         Assert.That(build, Is.Not.Null);
@@ -1446,11 +1377,7 @@ public class WordAlignmentEngineTests
         WordAlignmentCorpusConfig wacc = new() { };
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         WordAlignmentBuildConfig tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc], TrainOn = [tcc] };
-        WordAlignmentBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc));
     }
 
     [Test]
@@ -1472,10 +1399,7 @@ public class WordAlignmentEngineTests
         };
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         WordAlignmentBuildConfig tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc], TrainOn = [tcc] };
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc));
     }
 
     [Test]
@@ -1489,11 +1413,7 @@ public class WordAlignmentEngineTests
         WordAlignmentCorpusConfig wacc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         TrainingCorpusConfig tcc = new() { };
         WordAlignmentBuildConfig tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc], TrainOn = [tcc] };
-        WordAlignmentBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.StartBuildAsync(STATISTICAL_ENGINE_ID, tbc));
     }
 
     [Test]
@@ -1509,10 +1429,9 @@ public class WordAlignmentEngineTests
         WordAlignmentCorpusConfig wacc = new() { ParallelCorpusId = addedCorpus.Id };
         var tbc = new WordAlignmentBuildConfig { WordAlignOn = [wacc] };
         WordAlignmentBuild build = await client.StartBuildAsync(engineId, tbc);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            build = await client.StartBuildAsync(engineId, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(engineId, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
     }
@@ -1552,13 +1471,12 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void GetWordAlignmentsByTextId_EngineDoesNotExist()
+    public async Task GetWordAlignmentsByTextId_EngineDoesNotExist()
     {
         WordAlignmentEnginesClient client = _env.CreateWordAlignmentEnginesClient();
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetAllWordAlignmentsAsync(DOES_NOT_EXIST_ENGINE_ID, DOES_NOT_EXIST_CORPUS_ID, "MAT");
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllWordAlignmentsAsync(DOES_NOT_EXIST_ENGINE_ID, DOES_NOT_EXIST_CORPUS_ID, "MAT")
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
@@ -1615,13 +1533,10 @@ public class WordAlignmentEngineTests
     }
 
     [Test]
-    public void GetQueueAsync_NotAuthorized()
+    public async Task GetQueueAsync_NotAuthorized()
     {
         WordAlignmentEngineTypesClient client = _env.CreateWordAlignmentEngineTypesClient([Scopes.ReadFiles]);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            Queue queue = await client.GetQueueAsync("Echo");
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetQueueAsync("Echo"));
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(403));
     }

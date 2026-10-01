@@ -436,10 +436,9 @@ public class ServalApiTests
         _helperClient.TranslationBuildConfig.Options = null;
 
         // Validate that get word graph fails when the engine is not built
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await _helperClient.TranslationEnginesClient.GetWordGraphAsync(engineId, "verdad");
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            _helperClient.TranslationEnginesClient.GetWordGraphAsync(engineId, "verdad")
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(409));
 

@@ -24,6 +24,7 @@ public class StatisticalEngineServiceTests
         env.WordAlignmentModelFactory.Received().InitNew(engineDir);
     }
 
+    [Test]
     public async Task StartBuildAsync()
     {
         using var env = new TestEnvironment();
@@ -76,12 +77,13 @@ public class StatisticalEngineServiceTests
         env.WordAlignmentModel.Received().Dispose();
     }
 
+    [Test]
     public async Task CancelBuildAsync_Building()
     {
         using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, [], "{}");
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -105,7 +107,7 @@ public class StatisticalEngineServiceTests
         using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, [], "{}");
         await env.WaitForTrainingToStartAsync();
         WordAlignmentEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);

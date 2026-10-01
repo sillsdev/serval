@@ -259,10 +259,7 @@ public class TranslationEngineTests
                 Assert.That(results.All(eng => eng.SourceLanguage.Equals("en")));
                 break;
             case 403:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAllAsync();
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAllAsync());
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -288,10 +285,7 @@ public class TranslationEngineTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAsync(engineId));
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -326,9 +320,8 @@ public class TranslationEngineTests
                 break;
             case 400:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.CreateAsync(
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.CreateAsync(
                         new TranslationEngineConfig
                         {
                             Name = "test",
@@ -336,16 +329,15 @@ public class TranslationEngineTests
                             TargetLanguage = "es",
                             Type = engineType,
                         }
-                    );
-                });
+                    )
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.CreateAsync(
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.CreateAsync(
                         new TranslationEngineConfig
                         {
                             Name = "test",
@@ -353,8 +345,8 @@ public class TranslationEngineTests
                             TargetLanguage = "en",
                             Type = engineType,
                         }
-                    );
-                });
+                    )
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -381,10 +373,9 @@ public class TranslationEngineTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.DeleteAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.DeleteAsync(engineId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -426,20 +417,18 @@ public class TranslationEngineTests
                 break;
             case 409:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.TranslateAsync(engineId, "This is a test .");
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.TranslateAsync(engineId, "This is a test .")
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.TranslateAsync(engineId, "This is a test .");
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.TranslateAsync(engineId, "This is a test .")
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -487,20 +476,18 @@ public class TranslationEngineTests
                 break;
             case 409:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.TranslateNAsync(engineId, 1, "This is a test .");
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.TranslateNAsync(engineId, 1, "This is a test .")
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.TranslateNAsync(engineId, 1, "This is a test .");
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.TranslateNAsync(engineId, 1, "This is a test .")
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -543,20 +530,18 @@ public class TranslationEngineTests
                 break;
             case 409:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetWordGraphAsync(engineId, "This is a test .");
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetWordGraphAsync(engineId, "This is a test .")
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetWordGraphAsync(engineId, "This is a test .");
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetWordGraphAsync(engineId, "This is a test .")
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -600,20 +585,18 @@ public class TranslationEngineTests
                 break;
             case 409:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.TrainSegmentAsync(engineId, sp);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.TrainSegmentAsync(engineId, sp)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.TrainSegmentAsync(engineId, sp);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.TrainSegmentAsync(engineId, sp)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -652,10 +635,9 @@ public class TranslationEngineTests
             }
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.AddCorpusAsync(engineId, TestCorpusConfig);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.AddCorpusAsync(engineId, TestCorpusConfig)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -715,18 +697,18 @@ public class TranslationEngineTests
             case 400:
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
                 {
-                    TranslationCorpusFileConfig[] src = new[]
-                    {
+                    TranslationCorpusFileConfig[] src =
+                    [
                         new TranslationCorpusFileConfig { FileId = FILE2_TRG_ID, TextId = "all" },
-                    };
-                    TranslationCorpusFileConfig[] trg = new[]
-                    {
+                    ];
+                    TranslationCorpusFileConfig[] trg =
+                    [
                         new TranslationCorpusFileConfig { FileId = FILE1_SRC_ID, TextId = "all" },
-                    };
+                    ];
                     var updateConfig = new TranslationCorpusUpdateConfig { SourceFiles = src, TargetFiles = trg };
-                    await client.UpdateCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
+                    return client.UpdateCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
                 });
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -769,10 +751,9 @@ public class TranslationEngineTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    TranslationCorpus result = (await client.GetAllCorporaAsync(engineId)).First();
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetAllCorporaAsync(engineId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
 
@@ -815,10 +796,9 @@ public class TranslationEngineTests
             }
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    TranslationCorpus result_afterAdd = await client.GetCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
 
@@ -850,10 +830,9 @@ public class TranslationEngineTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.DeleteCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, deleteFiles: false);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.DeleteCorpusAsync(engineId, DOES_NOT_EXIST_CORPUS_ID, deleteFiles: false)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
 
@@ -887,28 +866,27 @@ public class TranslationEngineTests
         });
     }
 
-    public void AddParallelCorpusToEngineById_NoSuchEngine()
+    [Test]
+    public async Task AddParallelCorpusToEngineById_NoSuchEngine()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient(
             new[] { Scopes.UpdateTranslationEngines }
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.AddParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, TestParallelCorpusConfig);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.AddParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, TestParallelCorpusConfig)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void AddParallelCorpusToEngineById_NotAuthorized()
+    public async Task AddParallelCorpusToEngineById_NotAuthorized()
     {
-        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(new[] { Scopes.ReadFiles });
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient([Scopes.ReadFiles]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.AddParallelCorpusAsync(ECHO_ENGINE1_ID, TestParallelCorpusConfig);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.AddParallelCorpusAsync(ECHO_ENGINE1_ID, TestParallelCorpusConfig)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -937,52 +915,52 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void UpdateParallelCorpusByIdForEngineById_NoSuchCorpus()
+    public async Task UpdateParallelCorpusByIdForEngineById_NoSuchCorpus()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
         {
             var updateConfig = new TranslationParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
                 TargetCorpusIds = [TARGET_CORPUS_ID],
             };
-            await client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
+            return client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
         });
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void UpdateParallelCorpusByIdForEngineById_NoSuchEngine()
+    public async Task UpdateParallelCorpusByIdForEngineById_NoSuchEngine()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
         {
             var updateConfig = new TranslationParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
                 TargetCorpusIds = [TARGET_CORPUS_ID],
             };
-            await client.UpdateParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1, updateConfig);
+            return client.UpdateParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1, updateConfig);
         });
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void UpdateParallelCorpusByIdForEngineById_NotAuthorized()
+    public async Task UpdateParallelCorpusByIdForEngineById_NotAuthorized()
     {
-        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(new[] { Scopes.ReadFiles });
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient([Scopes.ReadFiles]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
         {
             var updateConfig = new TranslationParallelCorpusUpdateConfig
             {
                 SourceCorpusIds = [SOURCE_CORPUS_ID_1],
                 TargetCorpusIds = [TARGET_CORPUS_ID],
             };
-            await client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
+            return client.UpdateParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID, updateConfig);
         });
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
@@ -1005,28 +983,24 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void GetAllParallelCorporaForEngineById_NoSuchEngine()
+    public async Task GetAllParallelCorporaForEngineById_NoSuchEngine()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            TranslationParallelCorpus result = (
-                await client.GetAllParallelCorporaAsync(DOES_NOT_EXIST_ENGINE_ID)
-            ).First();
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllParallelCorporaAsync(DOES_NOT_EXIST_ENGINE_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetAllParallelCorporaForEngineById_NotAuthorized()
+    public async Task GetAllParallelCorporaForEngineById_NotAuthorized()
     {
-        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(new[] { Scopes.ReadFiles });
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient([Scopes.ReadFiles]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            TranslationParallelCorpus result = (await client.GetAllParallelCorporaAsync(ECHO_ENGINE1_ID)).First();
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetAllParallelCorporaAsync(ECHO_ENGINE1_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -1049,32 +1023,24 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void GetParallelCorpusByIdForEngineById_NoCorpora()
+    public async Task GetParallelCorpusByIdForEngineById_NoCorpora()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            TranslationParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
-                ECHO_ENGINE1_ID,
-                DOES_NOT_EXIST_CORPUS_ID
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetParallelCorpusByIdForEngineById_NoSuchEngine()
+    public async Task GetParallelCorpusByIdForEngineById_NoSuchEngine()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            TranslationParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
-                DOES_NOT_EXIST_ENGINE_ID,
-                SOURCE_CORPUS_ID_1
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
@@ -1087,28 +1053,20 @@ public class TranslationEngineTests
             TestParallelCorpusConfig
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            TranslationParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
-                ECHO_ENGINE1_ID,
-                DOES_NOT_EXIST_CORPUS_ID
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetParallelCorpusByIdForEngineById_NotAuthorized()
+    public async Task GetParallelCorpusByIdForEngineById_NotAuthorized()
     {
-        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(new[] { Scopes.ReadFiles });
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient([Scopes.ReadFiles]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            TranslationParallelCorpus result_afterAdd = await client.GetParallelCorpusAsync(
-                ECHO_ENGINE1_ID,
-                DOES_NOT_EXIST_CORPUS_ID
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -1129,38 +1087,35 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void DeleteParallelCorpusByIdForEngineById_NoSuchCorpus()
+    public async Task DeleteParallelCorpusByIdForEngineById_NoSuchCorpus()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.DeleteParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.DeleteParallelCorpusAsync(ECHO_ENGINE1_ID, DOES_NOT_EXIST_CORPUS_ID)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void DeleteParallelCorpusByIdForEngineById_NoSuchEngine()
+    public async Task DeleteParallelCorpusByIdForEngineById_NoSuchEngine()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.DeleteParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.DeleteParallelCorpusAsync(DOES_NOT_EXIST_ENGINE_ID, SOURCE_CORPUS_ID_1)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void DeleteParallelCorpusByIdForEngineById_NotAuthorized()
+    public async Task DeleteParallelCorpusByIdForEngineById_NotAuthorized()
     {
-        TranslationEnginesClient client = _env.CreateTranslationEnginesClient(new[] { Scopes.ReadFiles });
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient([Scopes.ReadFiles]);
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.DeleteParallelCorpusAsync(ECHO_ENGINE1_ID, SOURCE_CORPUS_ID_1);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.DeleteParallelCorpusAsync(ECHO_ENGINE1_ID, SOURCE_CORPUS_ID_1)
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(403));
     }
 
@@ -1217,22 +1172,22 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void GetAllPretranslationsAsync_EngineDoesNotExist()
+    public async Task GetAllPretranslationsAsync_EngineDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllPretranslationsAsync(DOES_NOT_EXIST_ENGINE_ID, "cccccccccccccccccccccccc")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetAllPretranslationsAsync_CorpusDoesNotExist()
+    public async Task GetAllPretranslationsAsync_CorpusDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllPretranslationsAsync(ECHO_ENGINE1_ID, "cccccccccccccccccccccccc")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
@@ -1247,7 +1202,7 @@ public class TranslationEngineTests
             TestParallelCorpusConfig
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllPretranslationsAsync(ECHO_ENGINE2_ID, addedCorpus.Id)
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(409));
@@ -1355,10 +1310,9 @@ public class TranslationEngineTests
                 }
                 break;
             case 403:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAllBuildsCreatedAfterAsync(DateTime.UtcNow);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetAllBuildsCreatedAfterAsync(DateTime.UtcNow)
+                );
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -1398,10 +1352,9 @@ public class TranslationEngineTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAllBuildsAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetAllBuildsAsync(engineId)
+                );
                 break;
             default:
                 Assert.Fail("Unanticipated expectedStatusCode. Check test case for typo.");
@@ -1447,20 +1400,18 @@ public class TranslationEngineTests
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetBuildAsync(engineId, "bbbbbbbbbbbbbbbbbbbbbbbb");
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetBuildAsync(engineId, "bbbbbbbbbbbbbbbbbbbbbbbb")
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 408:
             {
                 Assert.That(build, Is.Not.Null);
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetBuildAsync(engineId, build.Id, 3);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetBuildAsync(engineId, build.Id, 3)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -1514,10 +1465,9 @@ public class TranslationEngineTests
             case 403:
             case 408:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetNextFinishedBuildAsync(finishedAfter);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetNextFinishedBuildAsync(finishedAfter)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -1568,11 +1518,7 @@ public class TranslationEngineTests
                         "some_string":"string"}
                         """,
                 };
-                TranslationBuild resultAfterStart;
-                Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    resultAfterStart = await client.GetCurrentBuildAsync(engineId);
-                });
+                await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(engineId));
 
                 TranslationBuild build = await client.StartBuildAsync(engineId, tbc);
                 Assert.That(build, Is.Not.Null);
@@ -1588,10 +1534,9 @@ public class TranslationEngineTests
             case 404:
                 ptcc = new PretranslateCorpusConfig { CorpusId = "cccccccccccccccccccccccc", TextIds = ["all"] };
                 tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.StartBuildAsync(engineId, tbc);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.StartBuildAsync(engineId, tbc)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -1601,16 +1546,12 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void AddParallelCorpusAsync_EmptyCorpus()
+    public async Task AddParallelCorpusAsync_EmptyCorpus()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            TranslationParallelCorpus addedCorpus = await client.AddParallelCorpusAsync(
-                ECHO_ENGINE1_ID,
-                TestParallelCorpusConfigEmptySource
-            );
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.AddParallelCorpusAsync(ECHO_ENGINE1_ID, TestParallelCorpusConfigEmptySource)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1625,10 +1566,9 @@ public class TranslationEngineTests
         );
         PretranslateCorpusConfig pcc = new() { ParallelCorpusId = addedCorpus.Id };
         TranslationBuildConfig tbc = new() { Pretranslate = [pcc] };
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(ECHO_ENGINE1_ID, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1643,10 +1583,9 @@ public class TranslationEngineTests
         );
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedCorpus.Id };
         TranslationBuildConfig tbc = new() { TrainOn = [tcc] };
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(ECHO_ENGINE1_ID, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1681,10 +1620,9 @@ public class TranslationEngineTests
                 );
             }
         );
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(ECHO_ENGINE1_ID, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1713,10 +1651,9 @@ public class TranslationEngineTests
         }
         await DeleteFilesFromCorpora(FILE1_SRC_ID);
         await DeleteFilesFromCorpora(FILE2_TRG_ID);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(ECHO_ENGINE1_ID, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(ECHO_ENGINE1_ID, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1732,10 +1669,9 @@ public class TranslationEngineTests
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT");
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT")
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1772,10 +1708,9 @@ public class TranslationEngineTests
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT");
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT")
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1806,10 +1741,9 @@ public class TranslationEngineTests
 
         await _env.Engines.UpdateAsync(ECHO_ENGINE1_ID, u => u.Set(e => e.ModelRevision, 1));
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetCorpusPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT");
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetCorpusPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MAT")
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(400));
     }
@@ -1827,11 +1761,7 @@ public class TranslationEngineTests
             TrainOn = [tcc],
             Options = "unparsable json",
         };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.GetCurrentBuildAsync(ECHO_ENGINE1_ID);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(ECHO_ENGINE1_ID));
 
         Assert.That(
             () => client.StartBuildAsync(ECHO_ENGINE1_ID, tbc),
@@ -1851,7 +1781,7 @@ public class TranslationEngineTests
         {
             case 200:
             {
-                Client.ModelDownloadUrl result = await client.GetModelDownloadUrlAsync(engineId);
+                ModelDownloadUrl result = await client.GetModelDownloadUrlAsync(engineId);
                 Assert.Multiple(() =>
                 {
                     Assert.That(result.ExpiresAt, Is.GreaterThan((DateTimeOffset)DateTime.UtcNow));
@@ -1863,10 +1793,9 @@ public class TranslationEngineTests
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    Client.ModelDownloadUrl result = await client.GetModelDownloadUrlAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetModelDownloadUrlAsync(engineId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -1932,19 +1861,17 @@ public class TranslationEngineTests
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetCurrentBuildAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetCurrentBuildAsync(engineId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 408:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetCurrentBuildAsync(engineId, minRevision: 3);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.GetCurrentBuildAsync(engineId, minRevision: 3)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -1989,10 +1916,9 @@ public class TranslationEngineTests
             case 204:
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.CancelBuildAsync(engineId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.CancelBuildAsync(engineId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -2033,11 +1959,7 @@ public class TranslationEngineTests
                 "some_string":"string"}
                 """,
         };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(NMT_ENGINE1_ID));
 
         TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
         Assert.That(build, Is.Not.Null);
@@ -2075,11 +1997,7 @@ public class TranslationEngineTests
                 "some_string":"string"}
                 """,
         };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(NMT_ENGINE1_ID));
 
         TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
         Assert.That(build, Is.Not.Null);
@@ -2128,11 +2046,7 @@ public class TranslationEngineTests
                 "some_string":"string"}
                 """,
         };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(NMT_ENGINE1_ID));
 
         TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
         Assert.That(build, Is.Not.Null);
@@ -2161,11 +2075,7 @@ public class TranslationEngineTests
         PretranslateCorpusConfig ptcc = new() { CorpusId = addedCorpus.Id, ParallelCorpusId = addedParallelCorpus.Id };
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         TranslationBuildConfig tbc = new TranslationBuildConfig { Pretranslate = [ptcc], TrainOn = [tcc] };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.StartBuildAsync(NMT_ENGINE1_ID, tbc));
     }
 
     [Test]
@@ -2180,11 +2090,7 @@ public class TranslationEngineTests
         PretranslateCorpusConfig ptcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         TrainingCorpusConfig tcc = new() { CorpusId = addedCorpus.Id, ParallelCorpusId = addedParallelCorpus.Id };
         TranslationBuildConfig tbc = new TranslationBuildConfig { Pretranslate = [ptcc], TrainOn = [tcc] };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.StartBuildAsync(NMT_ENGINE1_ID, tbc));
     }
 
     [Test]
@@ -2198,11 +2104,7 @@ public class TranslationEngineTests
         PretranslateCorpusConfig ptcc = new() { };
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         TranslationBuildConfig tbc = new TranslationBuildConfig { Pretranslate = [ptcc], TrainOn = [tcc] };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.StartBuildAsync(NMT_ENGINE1_ID, tbc));
     }
 
     [Test]
@@ -2224,10 +2126,7 @@ public class TranslationEngineTests
         };
         TrainingCorpusConfig tcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         TranslationBuildConfig tbc = new TranslationBuildConfig { Pretranslate = [ptcc], TrainOn = [tcc] };
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.StartBuildAsync(NMT_ENGINE1_ID, tbc));
     }
 
     [Test]
@@ -2241,11 +2140,7 @@ public class TranslationEngineTests
         PretranslateCorpusConfig ptcc = new() { ParallelCorpusId = addedParallelCorpus.Id };
         TrainingCorpusConfig tcc = new() { };
         TranslationBuildConfig tbc = new TranslationBuildConfig { Pretranslate = [ptcc], TrainOn = [tcc] };
-        TranslationBuild resultAfterStart;
-        Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            resultAfterStart = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
-        });
+        await Assert.ThrowsAsync<ServalApiException>(() => client.StartBuildAsync(NMT_ENGINE1_ID, tbc));
     }
 
     [Test]
@@ -2258,10 +2153,9 @@ public class TranslationEngineTests
         var ptcc = new PretranslateCorpusConfig { CorpusId = addedCorpus.Id, TextIds = ["all"] };
         var tbc = new TranslationBuildConfig { Pretranslate = [ptcc] };
         TranslationBuild build = await client.StartBuildAsync(engineId, tbc);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            build = await client.StartBuildAsync(engineId, tbc);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.StartBuildAsync(engineId, tbc)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(expectedStatusCode));
     }
@@ -2348,13 +2242,12 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void GetPretranslationsByTextId_EngineDoesNotExist()
+    public async Task GetPretranslationsByTextId_EngineDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await client.GetPretranslationsByTextIdAsync(DOES_NOT_EXIST_ENGINE_ID, DOES_NOT_EXIST_CORPUS_ID, "MAT");
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetPretranslationsByTextIdAsync(DOES_NOT_EXIST_ENGINE_ID, DOES_NOT_EXIST_CORPUS_ID, "MAT")
+        );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
@@ -2379,7 +2272,7 @@ public class TranslationEngineTests
             }
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetPretranslatedUsfmAsync(ECHO_ENGINE1_ID, addedCorpus.Id, "MRK")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(204));
@@ -2396,13 +2289,10 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void GetQueueAsync_NotAuthorized()
+    public async Task GetQueueAsync_NotAuthorized()
     {
         TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient([Scopes.ReadFiles]);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            Queue queue = await client.GetQueueAsync("Echo");
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetQueueAsync("Echo"));
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(403));
     }
@@ -2425,7 +2315,7 @@ public class TranslationEngineTests
     [TestCase(new[] { Scopes.ReadTranslationEngines }, "Nmt", "invalid_language", StatusCodes.Status400BadRequest)]
     [TestCase(new[] { Scopes.ReadFiles }, "Nmt", "abc", StatusCodes.Status403Forbidden)]
     [TestCase(new[] { Scopes.ReadTranslationEngines }, "invalid_engine", "en", StatusCodes.Status404NotFound)]
-    public void GetLanguageInfo_Error(
+    public async Task GetLanguageInfo_Error(
         IEnumerable<string> scope,
         string engineType,
         string language,
@@ -2433,10 +2323,9 @@ public class TranslationEngineTests
     )
     {
         TranslationEngineTypesClient client = _env.CreateTranslationEngineTypesClient(scope);
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            _ = await client.GetLanguageInfoAsync(engineType, language);
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            client.GetLanguageInfoAsync(engineType, language)
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
     }
@@ -2520,22 +2409,22 @@ public class TranslationEngineTests
     }
 
     [Test]
-    public void GetAllPretranslationConfidencesAsync_EngineDoesNotExist()
+    public async Task GetAllPretranslationConfidencesAsync_EngineDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllPretranslationConfidencesAsync(DOES_NOT_EXIST_ENGINE_ID, "cccccccccccccccccccccccc")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
     }
 
     [Test]
-    public void GetAllPretranslationConfidencesAsync_CorpusDoesNotExist()
+    public async Task GetAllPretranslationConfidencesAsync_CorpusDoesNotExist()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllPretranslationConfidencesAsync(ECHO_ENGINE1_ID, "cccccccccccccccccccccccc")
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(404));
@@ -2550,7 +2439,7 @@ public class TranslationEngineTests
             TestParallelCorpusConfig
         );
 
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(() =>
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
             client.GetAllPretranslationConfidencesAsync(ECHO_ENGINE2_ID, addedCorpus.Id)
         );
         Assert.That(ex?.StatusCode, Is.EqualTo(409));

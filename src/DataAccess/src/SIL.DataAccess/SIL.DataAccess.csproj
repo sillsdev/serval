@@ -15,10 +15,10 @@
 	<Import Project="../../../AssemblyInfo.props" />
 
 	<ItemGroup>
-		<PackageReference Include="DotNext.Threading" Version="6.4.1" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.10" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.10" />
-		<PackageReference Include="MongoDB.Driver" Version="3.10.0" />
+		<PackageReference Include="DotNext.Threading" Version="6.8.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.12" />
+		<PackageReference Include="MongoDB.Driver" Version="3.12.0" />
 		<PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" Version="3.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SIL.Core" Version="17.0.0" />

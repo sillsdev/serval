@@ -31,10 +31,7 @@ public class StatusTests
 
             case 401:
             case 403:
-                ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetHealthAsync();
-                });
+                ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetHealthAsync());
                 Assert.That(ex, Is.Not.Null);
                 Assert.That(ex!.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;

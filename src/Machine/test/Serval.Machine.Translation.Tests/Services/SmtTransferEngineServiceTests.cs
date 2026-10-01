@@ -26,6 +26,7 @@ public class SmtTransferEngineServiceTests
         env.TransferEngineFactory.Received().InitNew(engineDir);
     }
 
+    [Test]
     public async Task StartBuildAsync()
     {
         using var env = new TestEnvironment();
@@ -84,12 +85,13 @@ public class SmtTransferEngineServiceTests
         _ = env.Truecaser.DidNotReceive().SaveAsync();
     }
 
+    [Test]
     public async Task CancelBuildAsync_Building()
     {
         using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, [], "{}");
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -114,7 +116,7 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, [], "{}");
         await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -136,12 +138,13 @@ public class SmtTransferEngineServiceTests
         Assert.That(engine.TargetLanguage, Is.EqualTo("en"));
     }
 
+    [Test]
     public async Task TrainSegmentPairAsync()
     {
         using var env = new TestEnvironment();
         env.UseInfiniteTrainJob();
 
-        await env.Service.StartBuildAsync(EngineId1, BuildId1, Array.Empty<ParallelCorpusContract>(), "{}");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, [], "{}");
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
