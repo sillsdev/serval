@@ -348,12 +348,10 @@ public class MemoryRepository<T> : IRepository<T>
     {
         foreach (KeyValuePair<MemorySubscription<T>, Func<T, bool>> kvp in _subscriptions)
         {
-            if (kvp.Key.Mode == SubscriptionMode.Repository)
-            {
-                if (kvp.Value(entity))
-                    allSubscriptions.Add(kvp.Key);
-            }
-            else if (kvp.Key.Change.Entity is null)
+            if (
+                kvp.Key.Change.Entity is null
+                || (kvp.Key.Mode == SubscriptionMode.Repository && kvp.Key.Change.Type != EntityChangeType.Delete)
+            )
             {
                 if (kvp.Value(entity))
                     allSubscriptions.Add(kvp.Key);

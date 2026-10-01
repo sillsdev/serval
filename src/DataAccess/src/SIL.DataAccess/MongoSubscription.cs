@@ -1,4 +1,6 @@
-﻿namespace SIL.DataAccess;
+﻿using System.Collections.Concurrent;
+
+namespace SIL.DataAccess;
 
 public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
     where T : IEntity
@@ -12,7 +14,7 @@ public class MongoSubscription<T> : ObjectModel.DisposableBase, ISubscription<T>
     private TimeSpan? _timeout;
     private BsonDocument? _resumeToken;
     private readonly SubscriptionMode _mode;
-    private readonly Queue<EntityChange<T>> _changes;
+    private readonly ConcurrentQueue<EntityChange<T>> _changes;
     public EntityChange<T> Change { get; private set; }
 
     public MongoSubscription(

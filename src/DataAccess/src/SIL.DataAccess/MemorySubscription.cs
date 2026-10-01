@@ -17,21 +17,25 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
 
     public async Task WaitForChangeAsync(TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
-        if (Mode == SubscriptionMode.Repository)
+        var start = DateTime.UtcNow;
+        while (true)
         {
-            await TaskTimeout(_changeEvent.WaitAsync, timeout ?? Timeout.InfiniteTimeSpan, cancellationToken)
+            TimeSpan remainingTimeout = (timeout ?? Timeout.InfiniteTimeSpan) - (DateTime.UtcNow - start);
+            if (remainingTimeout < TimeSpan.Zero)
+                return;
+
+            bool changed = await TaskTimeout(_changeEvent.WaitAsync, remainingTimeout, cancellationToken)
                 .ConfigureAwait(false);
+            if (!changed || Mode != SubscriptionMode.Repository)
+                return;
 
             if (_changes.TryDequeue(out EntityChange<T> change))
+            {
                 Change = change;
-
-            if (!_changes.IsEmpty)
-                _changeEvent.Set();
-        }
-        else
-        {
-            await TaskTimeout(_changeEvent.WaitAsync, timeout ?? Timeout.InfiniteTimeSpan, cancellationToken)
-                .ConfigureAwait(false);
+                if (!_changes.IsEmpty)
+                    _changeEvent.Set();
+                return;
+            }
         }
     }
 
@@ -53,7 +57,7 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
         _remove(this);
     }
 
-    private static async Task TaskTimeout(
+    private static async Task<bool> TaskTimeout(
         Func<CancellationToken, ValueTask> action,
         TimeSpan timeout,
         CancellationToken cancellationToken = default
@@ -62,6 +66,7 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
         if (timeout == Timeout.InfiniteTimeSpan)
         {
             await action(cancellationToken).ConfigureAwait(false);
+            return true;
         }
         else
         {
@@ -71,6 +76,7 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
             if (task != completedTask)
                 cts.Cancel();
             await completedTask.ConfigureAwait(false);
+            return task == completedTask;
         }
     }
 }
