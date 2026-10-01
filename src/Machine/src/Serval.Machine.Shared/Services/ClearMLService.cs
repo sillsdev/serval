@@ -216,7 +216,7 @@ public class ClearMLService(
         CancellationToken cancellationToken = default
     )
     {
-        string[] idArray = ids.ToArray();
+        string[] idArray = [.. ids];
         if (!idArray.Any())
             return Task.FromResult(Array.Empty<ClearMLTask>() as IReadOnlyList<ClearMLTask>);
         return GetTasksAsync(new JsonObject { ["id"] = JsonValue.Create(idArray) }, cancellationToken);
@@ -245,8 +245,7 @@ public class ClearMLService(
         );
         JsonObject? result = await CallAsync("tasks", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["tasks"];
-        return tasks?.Select(t => t.Deserialize<ClearMLTask>(JsonSerializerOptions)!).ToArray()
-            ?? Array.Empty<ClearMLTask>();
+        return tasks?.Select(t => t.Deserialize<ClearMLTask>(JsonSerializerOptions)!).ToArray() ?? [];
     }
 
     private async Task<JsonObject?> CallAsync(

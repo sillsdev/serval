@@ -100,10 +100,9 @@ public class CorporaTests
                 break;
             case 403:
             default:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await corporaClient.GetAllAsync();
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    corporaClient.GetAllAsync()
+                );
                 Assert.That(ex, Is.Not.Null);
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -128,10 +127,9 @@ public class CorporaTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await corporaClient.GetAsync(corpusId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    corporaClient.GetAsync(corpusId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -157,11 +155,9 @@ public class CorporaTests
                 break;
             case 403:
             default:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    var newCorpus = new CorpusConfig { Language = "es", Files = new List<CorpusFileConfig>() };
-                    await corporaClient.CreateAsync(newCorpus);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    corporaClient.CreateAsync(new CorpusConfig { Language = "es", Files = [] })
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
         }
@@ -188,10 +184,9 @@ public class CorporaTests
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await corporaClient.UpdateAsync(corpusId, new List<CorpusFileConfig>());
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    corporaClient.UpdateAsync(corpusId, [])
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -212,18 +207,16 @@ public class CorporaTests
         {
             case 200:
                 await corporaClient.DeleteAsync(corpusId);
-                ServalApiException? exCheck = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await corporaClient.GetAsync(corpusId);
-                });
+                ServalApiException? exCheck = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    corporaClient.GetAsync(corpusId)
+                );
                 Assert.That(exCheck?.StatusCode, Is.EqualTo(404));
                 break;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await corporaClient.DeleteAsync(corpusId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    corporaClient.DeleteAsync(corpusId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:

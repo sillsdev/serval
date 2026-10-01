@@ -37,11 +37,11 @@ public class DataFilesHandlersTests
     }
 
     [Test]
-    public void GetDataFile_FileDoesNotExist()
+    public async Task GetDataFile_FileDoesNotExist()
     {
         var env = new TestEnvironment();
         GetDataFileHandler handler = new(env.DataFiles, env.Mapper);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new(Owner, "df0000000000000000000001"), CancellationToken.None)
         );
     }
@@ -52,7 +52,7 @@ public class DataFilesHandlersTests
         var env = new TestEnvironment();
         DataFile file = await env.CreateDataFileAsync();
         GetDataFileHandler handler = new(env.DataFiles, env.Mapper);
-        Assert.ThrowsAsync<ForbiddenException>(() =>
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new("owner2", file.Id), CancellationToken.None)
         );
     }
@@ -84,7 +84,7 @@ public class DataFilesHandlersTests
         env.FileSystem.OpenWrite(Arg.Any<string>()).Returns(fileStream);
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes("This is a file."));
         CreateDataFileHandler handler = new(env.DataFiles, env.IdGenerator, env.Options, env.FileSystem, env.Mapper);
-        Assert.ThrowsAsync<DuplicateKeyException>(() =>
+        await Assert.ThrowsAsync<DuplicateKeyException>(() =>
             handler.HandleAsync(new(Owner, "file1", "file1.txt", FileFormat.Text, stream), CancellationToken.None)
         );
         env.FileSystem.Received().DeleteFile(Arg.Any<string>());
@@ -132,11 +132,11 @@ public class DataFilesHandlersTests
     }
 
     [Test]
-    public void DownloadDataFile_FileDoesNotExist()
+    public async Task DownloadDataFile_FileDoesNotExist()
     {
         var env = new TestEnvironment();
         DownloadDataFileHandler handler = new(env.DataFiles, env.Options, env.FileSystem);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new(Owner, "df0000000000000000000001"), CancellationToken.None)
         );
     }
@@ -191,7 +191,7 @@ public class DataFilesHandlersTests
             env.FileSystem,
             env.Mapper
         );
-        Assert.ThrowsAsync<OperationCanceledException>(() =>
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
             handler.HandleAsync(new(Owner, file.Id, stream), cts.Token)
         );
         DataFile? updated = await env.DataFiles.GetAsync(file.Id, CancellationToken.None);
@@ -219,7 +219,7 @@ public class DataFilesHandlersTests
             env.FileSystem,
             env.Mapper
         );
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new(Owner, "df0000000000000000000001", stream), CancellationToken.None)
         );
     }
@@ -237,11 +237,11 @@ public class DataFilesHandlersTests
     }
 
     [Test]
-    public void DeleteDataFile_FileDoesNotExist()
+    public async Task DeleteDataFile_FileDoesNotExist()
     {
         var env = new TestEnvironment();
         DeleteDataFileHandler handler = new(env.DataFiles, env.Deleter);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new(Owner, "df0000000000000000000001"), CancellationToken.None)
         );
     }
@@ -252,7 +252,7 @@ public class DataFilesHandlersTests
         var env = new TestEnvironment();
         DataFile file = await env.CreateDataFileAsync();
         DeleteDataFileHandler handler = new(env.DataFiles, env.Deleter);
-        Assert.ThrowsAsync<ForbiddenException>(() =>
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new("owner2", file.Id), CancellationToken.None)
         );
     }

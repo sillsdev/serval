@@ -66,10 +66,7 @@ public class DataFilesTests
                 expectedStatusCode = 403;
                 goto case 403;
             case 403:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAllAsync();
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAllAsync());
                 Assert.That(ex, Is.Not.Null);
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
@@ -100,10 +97,7 @@ public class DataFilesTests
                 goto case 403;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.GetAsync(fileId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.GetAsync(fileId));
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             default:
@@ -138,10 +132,9 @@ public class DataFilesTests
                 {
                     var fp = new FileParameter(fs);
                     fp = new FileParameter(fs);
-                    ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                    {
-                        await client.CreateAsync(fp, Client.FileFormat.Text);
-                    });
+                    ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                        client.CreateAsync(fp, Client.FileFormat.Text)
+                    );
                     Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 }
                 break;
@@ -149,10 +142,9 @@ public class DataFilesTests
                 using (var fs = new MemoryStream())
                 {
                     var fp = new FileParameter(fs);
-                    ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                    {
-                        await client.CreateAsync(fp, Client.FileFormat.Text);
-                    });
+                    ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                        client.CreateAsync(fp, Client.FileFormat.Text)
+                    );
                     Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 }
                 break;
@@ -203,20 +195,18 @@ public class DataFilesTests
                 break;
             case 400:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.DownloadAsync(fileId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.DownloadAsync(fileId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.DownloadAsync(fileId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.DownloadAsync(fileId)
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -240,29 +230,24 @@ public class DataFilesTests
             case 200:
                 DataFile result = await client.GetAsync(fileId);
                 Assert.That(result.Name, Is.EqualTo(NAME1));
-                Assert.DoesNotThrowAsync(async () =>
-                {
-                    await client.UpdateAsync(fileId, new FileParameter(new MemoryStream()));
-                });
+                await Assert.DoesNotThrowAsync(() => client.UpdateAsync(fileId, new FileParameter(new MemoryStream())));
                 DataFile resultAfterUpdate = await client.GetAsync(fileId);
                 Assert.That(resultAfterUpdate.Id, Is.EqualTo(ID1));
                 break;
             case 400:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.UpdateAsync(fileId, new FileParameter(new MemoryStream(new byte[2_000_000_000])));
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.UpdateAsync(fileId, new FileParameter(new MemoryStream(new byte[2_000_000_000])))
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
             case 403:
             case 404:
             {
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.UpdateAsync(fileId, new FileParameter(new MemoryStream()));
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+                    client.UpdateAsync(fileId, new FileParameter(new MemoryStream()))
+                );
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 break;
             }
@@ -295,10 +280,7 @@ public class DataFilesTests
                 goto case 403;
             case 403:
             case 404:
-                ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-                {
-                    await client.DeleteAsync(fileId);
-                });
+                ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() => client.DeleteAsync(fileId));
                 Assert.That(ex?.StatusCode, Is.EqualTo(expectedStatusCode));
                 ICollection<DataFile> resultsAfterDelete = await client.GetAllAsync();
                 Assert.That(resultsAfterDelete, Has.Count.EqualTo(2));

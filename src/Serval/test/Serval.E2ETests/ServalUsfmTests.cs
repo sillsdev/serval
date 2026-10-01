@@ -96,11 +96,11 @@ public class ServalUsfmTests
         }
         if (!File.Exists(Path.Combine(ParatextProjectPath, "Settings.xml")))
         {
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 foreach (string subdir in Directory.EnumerateFiles(ParatextProjectPath))
-                    Assert.DoesNotThrowAsync(async () => await GetUsfmAsync(subdir), $"Failed to parse {subdir}");
-            });
+                    await Assert.DoesNotThrowAsync(() => GetUsfmAsync(subdir), $"Failed to parse {subdir}");
+            }
         }
         else
         {

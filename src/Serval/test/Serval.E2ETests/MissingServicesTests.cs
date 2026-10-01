@@ -29,19 +29,16 @@ public class MissingServicesTests
 
     [Test]
     [Category("MongoWorking")]
-    public void UseMongoAndAuth0Async()
+    public async Task UseMongoAndAuth0Async()
     {
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            await _helperClient.DataFilesClient.GetAllAsync();
-        });
+        await Assert.DoesNotThrowAsync(() => _helperClient.DataFilesClient.GetAllAsync());
     }
 
     [Test]
     [Category("ClearMLNotWorking")]
-    public void UseMissingClearMLAsync()
+    public async Task UseMissingClearMLAsync()
     {
-        Assert.ThrowsAsync<ServalApiException>(async () =>
+        await Assert.ThrowsAsync<ServalApiException>(async () =>
         {
             string engineId = await _helperClient.CreateNewEngineAsync("Nmt", "es", "en", "NMT1");
             string[] books = ["MAT.txt", "1JN.txt", "2JN.txt"];
@@ -83,12 +80,11 @@ public class MissingServicesTests
 
     [Test]
     [Category("MongoNotWorking")]
-    public void UseMissingMongoAsync()
+    public async Task UseMissingMongoAsync()
     {
-        ServalApiException? ex = Assert.ThrowsAsync<ServalApiException>(async () =>
-        {
-            await _helperClient.DataFilesClient.GetAllAsync();
-        });
+        ServalApiException? ex = await Assert.ThrowsAsync<ServalApiException>(() =>
+            _helperClient.DataFilesClient.GetAllAsync()
+        );
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.StatusCode, Is.EqualTo(503));
     }
