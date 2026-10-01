@@ -54,4 +54,5 @@ public interface ITranslationEngineService
 
     Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
     Task<LanguageInfoContract> GetLanguageInfoAsync(string language, CancellationToken cancellationToken = default);
+    void ValidateConfiguration(string sourceLanguage, string targetLanguage);
 }
