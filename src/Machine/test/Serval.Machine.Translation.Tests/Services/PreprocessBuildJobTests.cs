@@ -74,7 +74,7 @@ public class PreprocessBuildJobTests
                     "src_1",
                     "pt-source1",
                     "0000",
-                    "Original",
+                    ScrVers.Original,
                     [
                         new()
                         {
@@ -99,7 +99,7 @@ public class PreprocessBuildJobTests
                     "trg_1",
                     "pt-target1",
                     "1111",
-                    "English",
+                    ScrVers.English,
                     [
                         new()
                         {
@@ -315,7 +315,28 @@ public class PreprocessBuildJobTests
         Assert.That(env.ExecutionData.Diagnostics[0].Code, Is.EqualTo("USFM-0004"));
 
         env.ParallelCorpusService.ClearSubstitute();
-        env.ParallelCorpusService.AnalyzeUsfmVersification(Arg.Any<IEnumerable<ParallelCorpusContract>>()).Returns([]);
+        ScrVers customVrs1;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "MAT 1:2 = MAT 1:1\nMAT 1:1 = MAT 1:2";
+            using var reader = new StringReader(src);
+            customVrs1 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom1");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+        ScrVers customVrs2;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "MAT 1:1 = MAT 1:2\nMAT 1:2 = MAT 1:1";
+            using var reader = new StringReader(src);
+            customVrs2 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom2");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        env.ParallelCorpusService.AnalyzeUsfmVersification(Arg.Any<IEnumerable<ParallelCorpusContract>>())
+            .Returns([
+                ("corpusId1", "src_1", "pt-source1", "0000", customVrs1, []),
+                ("corpusId1", "trg_1", "pt-target1", "1111", customVrs2, []),
+            ]);
         env.ParallelCorpusService.FindMissingParentProjects(Arg.Any<IEnumerable<ParallelCorpusContract>>()).Returns([]);
 
         env.ParallelCorpusService.PreprocessAsync(
