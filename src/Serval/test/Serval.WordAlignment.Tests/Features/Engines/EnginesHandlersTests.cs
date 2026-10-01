@@ -11,12 +11,12 @@ public class EnginesHandlersTests
     const string OWNER = "owner1";
 
     [Test]
-    public void GetWordAlignment_EngineDoesNotExist()
+    public async Task GetWordAlignment_EngineDoesNotExist()
     {
         var env = new TestEnvironment();
         var handler = new AlignHandler(env.Engines, env.EngineServiceFactory);
-        Assert.ThrowsAsync<EntityNotFoundException>(async () =>
-            await handler.HandleAsync(new Align(OWNER, "engine1", "esto es una prueba.", "this is a test."))
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
+            handler.HandleAsync(new Align(OWNER, "engine1", "esto es una prueba.", "this is a test."))
         );
     }
 
@@ -93,7 +93,7 @@ public class EnginesHandlersTests
     {
         var env = new TestEnvironment();
         await env.CreateEngineWithTextFilesAsync();
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             new DeleteEngineHandler(
                 env.DataAccessContext,
                 env.Engines,
@@ -616,8 +616,8 @@ public class EnginesHandlersTests
     {
         var env = new TestEnvironment();
         string engineId = (await env.CreateEngineWithTextFilesAsync()).Id;
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await new StartBuildHandler(
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new StartBuildHandler(
                 env.DataAccessContext,
                 env.Engines,
                 env.Builds,
@@ -1323,11 +1323,11 @@ public class EnginesHandlersTests
     }
 
     [Test]
-    public void GetBuild_BuildDoesNotExist_Throws()
+    public async Task GetBuild_BuildDoesNotExist_Throws()
     {
         var env = new TestEnvironment();
         GetBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new GetBuild(OWNER, "engine1", "build1", 2))
         );
     }
@@ -1405,11 +1405,11 @@ public class EnginesHandlersTests
     }
 
     [Test]
-    public void GetCurrentBuild_BuildDoesNotExist_Throws()
+    public async Task GetCurrentBuild_BuildDoesNotExist_Throws()
     {
         var env = new TestEnvironment();
         GetCurrentBuildHandler handler = new(env.Engines, env.Builds, env.DtoMapper, env.ApiOptions);
-        Assert.ThrowsAsync<EntityNotFoundException>(() =>
+        await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.HandleAsync(new GetCurrentBuild(OWNER, "engine1", 2))
         );
     }
