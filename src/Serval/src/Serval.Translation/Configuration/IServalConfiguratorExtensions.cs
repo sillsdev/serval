@@ -136,6 +136,7 @@ public static class IServalConfiguratorExtensions
                                 .Ascending(pt => pt.TextId)
                         )
                     ),
+                MongoMigrations.MigrateRefsToTargetRefs,
             ]
         );
 

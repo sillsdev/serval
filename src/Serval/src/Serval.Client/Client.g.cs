@@ -11473,10 +11473,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
         public int Step { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public double? PercentCompleted { get; set; } = default!;
-
         [Newtonsoft.Json.JsonProperty("progress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? Progress { get; set; } = default!;
 
@@ -11846,10 +11842,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("targetRefs", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
         public System.Collections.Generic.IList<string> TargetRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
-
-        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public System.Collections.Generic.IList<string>? Refs { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("translation", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -12341,10 +12333,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("step", Required = Newtonsoft.Json.Required.Always)]
         public int Step { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("percentCompleted", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public double? PercentCompleted { get; set; } = default!;
-
         [Newtonsoft.Json.JsonProperty("progress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? Progress { get; set; } = default!;
 
@@ -12543,10 +12531,6 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("targetRefs", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
         public System.Collections.Generic.IList<string> TargetRefs { get; set; } = new System.Collections.ObjectModel.Collection<string>();
-
-        [Newtonsoft.Json.JsonProperty("refs", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.Obsolete]
-        public System.Collections.Generic.IList<string>? Refs { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("sourceTokens", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]

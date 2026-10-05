@@ -43,7 +43,6 @@ public class DtoMapper(IUrlService urlService)
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             Pretranslate = source.Pretranslate?.Select(s => Map(source.EngineRef, s)).ToList(),
             Step = source.Step,
-            PercentCompleted = source.Progress,
             Progress = source.Progress,
             Message = source.Message,
             QueueDepth = source.QueueDepth,
@@ -129,7 +128,6 @@ public class DtoMapper(IUrlService urlService)
             TextId = source.TextId,
             SourceRefs = source.SourceRefs ?? [],
             TargetRefs = source.TargetRefs ?? [],
-            Refs = source.Refs,
             Translation = source.Translation,
             Confidence = source.Confidence ?? -1.0,
         };

@@ -72,7 +72,6 @@ public class DtoMapper(IUrlService urlService)
             TrainOn = source.TrainOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             WordAlignOn = source.WordAlignOn?.Select(s => Map(source.EngineRef, s)).ToList(),
             Step = source.Step,
-            PercentCompleted = source.Progress,
             Progress = source.Progress,
             Message = source.Message,
             QueueDepth = source.QueueDepth,
@@ -159,17 +158,17 @@ public class DtoMapper(IUrlService urlService)
             TextId = source.TextId,
             SourceRefs = source.SourceRefs,
             TargetRefs = source.TargetRefs,
-            Refs = source.Refs,
-            SourceTokens = source.SourceTokens.ToList(),
-            TargetTokens = source.TargetTokens.ToList(),
-            Alignment = source
-                .Alignment.Select(c => new AlignedWordPairDto()
+            SourceTokens = [.. source.SourceTokens],
+            TargetTokens = [.. source.TargetTokens],
+            Alignment =
+            [
+                .. source.Alignment.Select(c => new AlignedWordPairDto
                 {
                     SourceIndex = c.SourceIndex,
                     TargetIndex = c.TargetIndex,
                     Score = c.Score,
-                })
-                .ToList(),
+                }),
+            ],
         };
     }
 
