@@ -9,3 +9,4 @@ global using Serval.Shared.Utils;
 global using Serval.WordAlignment.Contracts;
 global using Serval.WordAlignment.Models;
 global using SIL.DataAccess;
+global using SIL.Machine.Scripture;

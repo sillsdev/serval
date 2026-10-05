@@ -1,4 +1,5 @@
 using SIL.Machine.PunctuationAnalysis;
+using SIL.Machine.Scripture;
 using SIL.Scripture;
 
 namespace Serval.Shared.Services;
