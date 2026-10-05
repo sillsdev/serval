@@ -135,7 +135,7 @@ public class MemoryRepository<T> : IRepository<T>
                 throw new DuplicateKeyException();
 
             serializedEntity = Add(entity);
-            GetSubscriptions(entity, allSubscriptions);
+            GetSubscriptions(entity, allSubscriptions, EntityChangeType.Insert);
         }
         SendToSubscribers(allSubscriptions, EntityChangeType.Insert, entity.Id, serializedEntity);
     }
@@ -159,7 +159,7 @@ public class MemoryRepository<T> : IRepository<T>
 
                 string serializedEntity = Add(entity);
                 var allSubscriptions = new List<MemorySubscription<T>>();
-                GetSubscriptions(entity, allSubscriptions);
+                GetSubscriptions(entity, allSubscriptions, EntityChangeType.Insert);
                 serializedEntities.Add((entity.Id, serializedEntity, allSubscriptions));
             }
         }
@@ -224,7 +224,7 @@ public class MemoryRepository<T> : IRepository<T>
                     throw new DuplicateKeyException();
 
                 serializedEntity = Replace(entity);
-                GetSubscriptions(entity, allSubscriptions);
+                GetSubscriptions(entity, allSubscriptions, EntityChangeType.Update);
             }
         }
         if (entity != null && serializedEntity != null)
@@ -273,7 +273,7 @@ public class MemoryRepository<T> : IRepository<T>
             {
                 serializedEntity = _entities[entity.Id];
                 Remove(entity);
-                GetSubscriptions(entity, allSubscriptions);
+                GetSubscriptions(entity, allSubscriptions, EntityChangeType.Delete);
             }
         }
         if (entity != null && serializedEntity != null)
@@ -326,7 +326,11 @@ public class MemoryRepository<T> : IRepository<T>
                 query = orderedQuery;
             }
             T? initialEntity = query.FirstOrDefault();
-            var subscription = new MemorySubscription<T>(initialEntity, async o => await RemoveSubscriptionAsync(o));
+            var subscription = new MemorySubscription<T>(
+                initialEntity,
+                async o => await RemoveSubscriptionAsync(o),
+                mode
+            );
             _subscriptions[subscription] = filter.Compile();
             return subscription;
         }
@@ -340,11 +344,14 @@ public class MemoryRepository<T> : IRepository<T>
         }
     }
 
-    private void GetSubscriptions(T entity, List<MemorySubscription<T>> allSubscriptions)
+    private void GetSubscriptions(T entity, List<MemorySubscription<T>> allSubscriptions, EntityChangeType changeType)
     {
         foreach (KeyValuePair<MemorySubscription<T>, Func<T, bool>> kvp in _subscriptions)
         {
-            if (kvp.Key.Change.Entity is null)
+            if (kvp.Key.Mode == SubscriptionMode.Repository && changeType == EntityChangeType.Delete)
+                continue;
+
+            if (kvp.Key.Change.Entity is null || kvp.Key.Mode == SubscriptionMode.Repository)
             {
                 if (kvp.Value(entity))
                     allSubscriptions.Add(kvp.Key);
