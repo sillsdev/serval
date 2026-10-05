@@ -20,9 +20,13 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
         var start = DateTime.UtcNow;
         while (true)
         {
-            TimeSpan remainingTimeout = (timeout ?? Timeout.InfiniteTimeSpan) - (DateTime.UtcNow - start);
-            if (remainingTimeout < TimeSpan.Zero)
-                return;
+            TimeSpan remainingTimeout = Timeout.InfiniteTimeSpan;
+            if (timeout != null)
+            {
+                remainingTimeout = (TimeSpan)timeout - (DateTime.UtcNow - start);
+                if (remainingTimeout < TimeSpan.Zero)
+                    return;
+            }
 
             bool changed = await TaskTimeout(_changeEvent.WaitAsync, remainingTimeout, cancellationToken)
                 .ConfigureAwait(false);
