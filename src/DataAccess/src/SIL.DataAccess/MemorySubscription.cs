@@ -21,7 +21,7 @@ public class MemorySubscription<T>(T? initialEntity, Action<MemorySubscription<T
         while (true)
         {
             TimeSpan remainingTimeout = Timeout.InfiniteTimeSpan;
-            if (timeout != null)
+            if (timeout != null && timeout != Timeout.InfiniteTimeSpan)
             {
                 remainingTimeout = (TimeSpan)timeout - (DateTime.UtcNow - start);
                 if (remainingTimeout < TimeSpan.Zero)
