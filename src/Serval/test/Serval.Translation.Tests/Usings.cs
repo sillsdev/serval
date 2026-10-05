@@ -17,4 +17,5 @@ global using Serval.Translation.Handlers;
 global using Serval.Translation.Models;
 global using Serval.Translation.Services;
 global using SIL.DataAccess;
+global using SIL.Machine.Scripture;
 global using SIL.Machine.Utils;

@@ -1,3 +1,5 @@
+using SIL.Scripture;
+
 namespace Serval.Machine.Shared.Services;
 
 public abstract class PreprocessBuildJob<TEngine>(
@@ -143,7 +145,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     )
     {
         List<DiagnosticContract> diagnostics = [];
-        Dictionary<string, string> projectVersifications = [];
+        Dictionary<string, ScrVers> projectVersifications = [];
 
         foreach (
             (
@@ -151,12 +153,12 @@ public abstract class PreprocessBuildJob<TEngine>(
                 string monolingualCorpusId,
                 string projectName,
                 string projectGuid,
-                string versificationName,
+                ScrVers versification,
                 IReadOnlyList<UsfmVersificationDiagnosticContract> usfmDiagnostics
             ) in ParallelCorpusService.AnalyzeUsfmVersification(parallelCorpora)
         )
         {
-            projectVersifications[projectGuid] = versificationName;
+            projectVersifications[projectGuid] = versification;
             foreach (UsfmVersificationDiagnosticContract usfmDiagnostic in usfmDiagnostics)
             {
                 diagnostics.Add(
@@ -303,14 +305,24 @@ public abstract class PreprocessBuildJob<TEngine>(
             );
         }
 
-        if (projectVersifications.Values.Distinct().Count() > 1)
+        if (projectVersifications.Values.Count > 1)
         {
-            diagnostics.Add(
-                BuildDiagnosticService.CreateDiagnostic(
-                    "CONFIG-0002",
-                    new Dictionary<string, object> { { "projectVersifications", projectVersifications } }
-                )
-            );
+            ScrVers firstVersification = projectVersifications.Values.First();
+            if (projectVersifications.Values.Skip(1).Any(v => !firstVersification.IsEquivalentTo(v)))
+            {
+                diagnostics.Add(
+                    BuildDiagnosticService.CreateDiagnostic(
+                        "CONFIG-0002",
+                        new Dictionary<string, object>
+                        {
+                            {
+                                "projectVersifications",
+                                projectVersifications.ToDictionary(v => v.Key, v => v.Value.Name)
+                            },
+                        }
+                    )
+                );
+            }
         }
 
         if (inferenceCount == 0 && isNonPersistedTranslationEngine)

@@ -1,4 +1,5 @@
 using SIL.Machine.PunctuationAnalysis;
+using SIL.Machine.Scripture;
 using SIL.Scripture;
 
 namespace Serval.Shared.Services;
@@ -12,7 +13,7 @@ public class ParallelCorpusService : IParallelCorpusService
         string MonolingualCorpusId,
         string ProjectName,
         string ProjectGuid,
-        string VersificationName,
+        ScrVers Versification,
         IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
     )> AnalyzeUsfmVersification(IEnumerable<ParallelCorpusContract> parallelCorpora)
     {
@@ -22,7 +23,7 @@ public class ParallelCorpusService : IParallelCorpusService
             string MonolingualCorpusId,
             string ProjectName,
             string ProjectGuid,
-            string VersificationName,
+            ScrVers Versification,
             IReadOnlyList<UsfmVersificationDiagnosticContract> Diagnostics
         )> diagnosticsPerCorpus = [];
         foreach (
@@ -47,7 +48,7 @@ public class ParallelCorpusService : IParallelCorpusService
                         monolingualCorpus.Id,
                         analysis.ProjectSettings.Name,
                         analysis.ProjectSettings.Guid,
-                        analysis.ProjectSettings.Versification.Name,
+                        analysis.ProjectSettings.Versification,
                         [
                             .. analysis.Diagnostics.Select(d => new UsfmVersificationDiagnosticContract
                             {
