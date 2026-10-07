@@ -58,12 +58,13 @@ public class EchoTranslationEngineServiceTests
         Assert.That(await env.Service.CancelBuildAsync(EngineId1), Is.Null);
     }
 
+    [Test]
     public async Task DeleteAsync_WhileBuilding()
     {
         using var env = new TestEnvironment();
 
         await env.Service.StartBuildAsync(EngineId1, BuildId1, [], "{}");
-        await env.WaitForTrainingToStartAsync();
+        await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild!.JobState, Is.EqualTo(BuildJobState.Active));
@@ -187,11 +188,6 @@ public class EchoTranslationEngineServiceTests
 
         public Task WaitForBuildToStartAsync() =>
             WaitForBuildState(e => e.CurrentBuild!.JobState is BuildJobState.Active);
-
-        public Task WaitForTrainingToStartAsync() =>
-            WaitForBuildState(e =>
-                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage is BuildStage.Train
-            );
 
         private async Task WaitForBuildState(Func<TranslationEngine, bool> predicate)
         {
