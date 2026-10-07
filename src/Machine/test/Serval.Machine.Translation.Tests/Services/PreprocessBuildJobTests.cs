@@ -6,15 +6,12 @@ namespace Serval.Machine.Translation.Services;
 public class PreprocessBuildJobTests
 {
     [Test]
-    public void RunAsync_NothingToInference()
+    public async Task RunAsync_NothingToInference()
     {
         TestEnvironment env = new();
         ParallelCorpusContract corpus1 = TestEnvironment.TextFileCorpus(trainOnTextIds: null, inferenceTextIds: []);
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await env.RunBuildJobAsync(corpus1);
-        });
+        await Assert.ThrowsAsync<InvalidOperationException>(() => env.RunBuildJobAsync(corpus1));
     }
 
     [Test]
@@ -351,10 +348,7 @@ public class PreprocessBuildJobTests
         env.BuildJobOptions.ClearSubstitute();
         env.BuildJobOptions.CurrentValue.Returns(new BuildJobOptions() { MaxWarnings = 1_000, MaxDiagnostics = 1_000 });
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await env.RunBuildJobAsync(corpus1, engineId: "engine1");
-        });
+        await Assert.ThrowsAsync<InvalidOperationException>(() => env.RunBuildJobAsync(corpus1, engineId: "engine1"));
 
         Assert.That(env.ExecutionData.DiagnosticsTruncated, Is.False);
         Assert.That(env.ExecutionData.Diagnostics, Has.Count.EqualTo(4));
@@ -395,7 +389,7 @@ public class PreprocessBuildJobTests
     }
 
     [Test]
-    public void RunAsync_UnknownLanguageTagsNoData()
+    public async Task RunAsync_UnknownLanguageTagsNoData()
     {
         TestEnvironment env = new();
         env.LanguageTagService.ConvertToFlores200Code("xxx", out Arg.Any<string>())
@@ -403,10 +397,7 @@ public class PreprocessBuildJobTests
         env.LanguageTagService.ConvertToFlores200Code("zzz", out Arg.Any<string>()).Returns(Flores200Support.None);
         ParallelCorpusContract corpus1 = TestEnvironment.TextFileCorpus(sourceLanguage: "xxx", targetLanguage: "zzz");
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await env.RunBuildJobAsync(corpus1, engineId: "engine2");
-        });
+        await Assert.ThrowsAsync<InvalidOperationException>(() => env.RunBuildJobAsync(corpus1, engineId: "engine2"));
     }
 
     [Test]

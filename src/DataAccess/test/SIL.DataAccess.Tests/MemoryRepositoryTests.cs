@@ -24,12 +24,14 @@ public class MemoryRepositoryTests
     }
 
     [Test]
-    public void InsertAsync_Exists()
+    public async Task InsertAsync_Exists()
     {
         MemoryRepository<TestEntity> repo = new();
         repo.Add(new TestEntity() { Id = "1", Value = 1 });
 
-        Assert.ThrowsAsync<DuplicateKeyException>(() => repo.InsertAsync(new TestEntity() { Id = "1", Value = 1 }));
+        await Assert.ThrowsAsync<DuplicateKeyException>(() =>
+            repo.InsertAsync(new TestEntity() { Id = "1", Value = 1 })
+        );
     }
 
     [Test]
