@@ -115,7 +115,7 @@ public class EnginesHandlersTests
                 {
                     SourceLanguage = "es",
                     TargetLanguage = "en",
-                    Type = "Smt",
+                    Type = "Nmt",
                 }
             )
         );
@@ -2182,6 +2182,7 @@ public class EnginesHandlersTests
         UpdateEngineHandler handler = new(
             env.DataAccessContext,
             env.Engines,
+            env.Builds,
             env.Pretranslations,
             env.EngineServiceFactory
         );
@@ -2197,6 +2198,68 @@ public class EnginesHandlersTests
     }
 
     [Test]
+    public async Task UpdateEngine_ShouldUpdateType_WhenRequestIsValid()
+    {
+        var env = new TestEnvironment();
+        var engine = await env.CreateEngineWithParatextProjectAsync();
+
+        var request = new TranslationEngineUpdateConfigDto { Type = "Echo" };
+
+        UpdateEngineHandler handler = new(
+            env.DataAccessContext,
+            env.Engines,
+            env.Builds,
+            env.Pretranslations,
+            env.EngineServiceFactory
+        );
+        await handler.HandleAsync(new UpdateEngine(OWNER, engine.Id, request), CancellationToken.None);
+
+        engine = await env.Engines.GetAsync(engine.Id);
+
+        Assert.That(engine, Is.Not.Null);
+        Assert.That(engine.Type, Is.EqualTo("Echo"));
+    }
+
+    [Test]
+    public async Task UpdateEngine_ShouldNotUpdateType_WhenBuildIsRunning()
+    {
+        var env = new TestEnvironment();
+        Engine engine = await env.CreateEngineWithParatextProjectAsync();
+        await env.CreateActiveBuild();
+
+        var request = new TranslationEngineUpdateConfigDto { Type = "Echo" };
+        UpdateEngineHandler handler = new(
+            env.DataAccessContext,
+            env.Engines,
+            env.Builds,
+            env.Pretranslations,
+            env.EngineServiceFactory
+        );
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            handler.HandleAsync(new UpdateEngine(OWNER, engine.Id, request), CancellationToken.None)
+        );
+    }
+
+    [Test]
+    public async Task UpdateEngine_ShouldNotUpdateType_WhenTypeIsUnsupported()
+    {
+        var env = new TestEnvironment();
+        Engine engine = await env.CreateEngineWithParatextProjectAsync();
+
+        var request = new TranslationEngineUpdateConfigDto { Type = "unsupported_engine" };
+        UpdateEngineHandler handler = new(
+            env.DataAccessContext,
+            env.Engines,
+            env.Builds,
+            env.Pretranslations,
+            env.EngineServiceFactory
+        );
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            handler.HandleAsync(new UpdateEngine(OWNER, engine.Id, request), CancellationToken.None)
+        );
+    }
+
+    [Test]
     public async Task UpdateEngine_ShouldNotUpdateSourceLanguage_WhenSourceLanguageNotProvided()
     {
         var env = new TestEnvironment();
@@ -2205,6 +2268,7 @@ public class EnginesHandlersTests
         UpdateEngineHandler handler = new(
             env.DataAccessContext,
             env.Engines,
+            env.Builds,
             env.Pretranslations,
             env.EngineServiceFactory
         );
@@ -2231,6 +2295,7 @@ public class EnginesHandlersTests
         UpdateEngineHandler handler = new(
             env.DataAccessContext,
             env.Engines,
+            env.Builds,
             env.Pretranslations,
             env.EngineServiceFactory
         );
@@ -2257,6 +2322,7 @@ public class EnginesHandlersTests
         UpdateEngineHandler handler = new(
             env.DataAccessContext,
             env.Engines,
+            env.Builds,
             env.Pretranslations,
             env.EngineServiceFactory
         );
@@ -2817,15 +2883,15 @@ public class EnginesHandlersTests
             var parallelCorpusService = Substitute.For<IParallelCorpusService>();
             parallelCorpusService
                 .GetChapters(Arg.Any<IReadOnlyList<ParallelCorpusContract>>(), Arg.Any<string>(), Arg.Any<string>())
-                .Returns(callInfo =>
-                {
-                    return ScriptureRangeParser.GetChapters(callInfo.ArgAt<string>(2));
-                });
+                .Returns(callInfo => ScriptureRangeParser.GetChapters(callInfo.ArgAt<string>(2)));
             ContractMapper = new ContractMapper(dataFileOptions, parallelCorpusService);
             DataAccessContext = new MemoryDataAccessContext();
             EngineServiceFactory = Substitute.For<IEngineServiceFactory>();
             EngineServiceFactory
-                .TryGetEngineService("Smt", out Arg.Any<ITranslationEngineService?>())
+                .TryGetEngineService(
+                    Arg.Is<string>(t => t == "Nmt" || t == "Echo"),
+                    out Arg.Any<ITranslationEngineService?>()
+                )
                 .Returns(callInfo =>
                 {
                     callInfo[1] = TranslationEngineService;
@@ -2844,6 +2910,18 @@ public class EnginesHandlersTests
         public IDataAccessContext DataAccessContext { get; }
         public DtoMapper DtoMapper { get; }
 
+        public async Task<Build> CreateActiveBuild()
+        {
+            var build = new Build
+            {
+                EngineRef = "engine1",
+                Owner = OWNER,
+                State = JobState.Active,
+            };
+            await Builds.InsertAsync(build);
+            return build;
+        }
+
         public async Task<Engine> CreateEngineWithTextFilesAsync()
         {
             var engine = new Engine
@@ -2852,7 +2930,7 @@ public class EnginesHandlersTests
                 Owner = OWNER,
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                Type = "Smt",
+                Type = "Nmt",
                 Corpora =
                 [
                     new()
@@ -2896,7 +2974,7 @@ public class EnginesHandlersTests
                 Owner = OWNER,
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                Type = "Smt",
+                Type = "Nmt",
                 Corpora =
                 [
                     new()
@@ -2965,7 +3043,7 @@ public class EnginesHandlersTests
                 Owner = OWNER,
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                Type = "Smt",
+                Type = "Nmt",
                 Corpora =
                 [
                     new()
@@ -3008,7 +3086,7 @@ public class EnginesHandlersTests
                 Owner = OWNER,
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                Type = "Smt",
+                Type = "Nmt",
                 ParallelCorpora =
                 [
                     new()
@@ -3099,7 +3177,7 @@ public class EnginesHandlersTests
                 Owner = OWNER,
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                Type = "Smt",
+                Type = "Nmt",
                 ParallelCorpora =
                 [
                     new()
@@ -3200,7 +3278,7 @@ public class EnginesHandlersTests
                 Owner = OWNER,
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                Type = "Smt",
+                Type = "Nmt",
                 ParallelCorpora =
                 [
                     new()

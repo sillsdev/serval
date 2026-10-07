@@ -251,6 +251,8 @@ public class SmtTransferEngineService(
         throw new NotSupportedException();
     }
 
+    public void ValidateConfiguration(string sourceLanguage, string targetLanguage) { }
+
     private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
     {
         TranslationEngine? engine = await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken);

@@ -15,8 +15,7 @@ public class EchoTranslationEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        if (sourceLanguage != targetLanguage)
-            throw new InvalidOperationException("Source and target languages must be the same");
+        ValidateConfiguration(sourceLanguage, targetLanguage);
         try
         {
             var translationEngine = new TranslationEngine
@@ -192,6 +191,12 @@ public class EchoTranslationEngineService(
         string language,
         CancellationToken cancellationToken = default
     ) => Task.FromResult(new LanguageInfoContract { InternalCode = language + "_echo", IsNative = true });
+
+    public void ValidateConfiguration(string sourceLanguage, string targetLanguage)
+    {
+        if (sourceLanguage != targetLanguage)
+            throw new InvalidOperationException("Source and target languages must be the same");
+    }
 
     private async Task<string?> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
