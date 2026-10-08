@@ -71,6 +71,6 @@ public static class MongoMigrations
             )
             .AppendStage<BsonDocument>(new BsonDocument("$unset", "refs"))
             .Merge(c, new MergeStageOptions<Pretranslation> { WhenMatched = MergeStageWhenMatched.Replace })
-            .ToListAsync();
+            .ForEachAsync(_ => { });
     }
 }
