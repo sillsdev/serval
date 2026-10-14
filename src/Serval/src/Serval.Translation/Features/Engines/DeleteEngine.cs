@@ -22,12 +22,14 @@ public class DeleteEngineHandler(
                     throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
 
                 await builds.DeleteAllAsync(b => b.EngineRef == request.EngineId, ct);
-                await pretranslations.DeleteAllAsync(pt => pt.EngineRef == request.EngineId, ct);
 
                 await engineServiceFactory.GetEngineService(engine.Type).DeleteAsync(request.EngineId, ct);
             },
             cancellationToken
         );
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await pretranslations.DeleteAllAsync(pt => pt.EngineRef == request.EngineId, cancellationToken);
     }
 }
 
