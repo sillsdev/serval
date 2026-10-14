@@ -230,6 +230,8 @@ public class NmtEngineService(
         return Task.FromResult(new LanguageInfoContract { IsNative = isNative, InternalCode = internalCode });
     }
 
+    public void ValidateConfiguration(string sourceLanguage, string targetLanguage) { }
+
     private bool IsLanguageNativeToModel(string language, out string internalCode)
     {
         return _languageTagService.ConvertToFlores200Code(language, out internalCode)
