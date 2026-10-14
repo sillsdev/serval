@@ -35,12 +35,12 @@ public class UpdateParallelCorpusHandler(
     DtoMapper mapper
 ) : IRequestHandler<UpdateParallelCorpus, UpdateParallelCorpusResponse>
 {
-    public Task<UpdateParallelCorpusResponse> HandleAsync(
+    public async Task<UpdateParallelCorpusResponse> HandleAsync(
         UpdateParallelCorpus request,
         CancellationToken cancellationToken = default
     )
     {
-        return dataAccessContext.WithTransactionAsync(
+        UpdateParallelCorpusResponse response = await dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
@@ -70,10 +70,6 @@ public class UpdateParallelCorpusHandler(
                 if (updatedEngine is null)
                     throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
 
-                await pretranslations.DeleteAllAsync(
-                    pt => pt.CorpusRef == request.ParallelCorpusId,
-                    cancellationToken: ct
-                );
                 ParallelCorpus? parallelCorpus = updatedEngine.ParallelCorpora.FirstOrDefault(c =>
                     c.Id == request.ParallelCorpusId
                 );
@@ -87,6 +83,10 @@ public class UpdateParallelCorpusHandler(
             },
             cancellationToken
         );
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == request.ParallelCorpusId, cancellationToken);
+        return response;
     }
 
     private async Task<List<MonolingualCorpus>> MapCorporaAsync(

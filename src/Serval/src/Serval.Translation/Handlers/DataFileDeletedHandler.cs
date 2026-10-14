@@ -8,10 +8,12 @@ public class DataFileDeletedHandler(
 {
     public async Task HandleAsync(DataFileDeleted evt, CancellationToken cancellationToken)
     {
+        HashSet<string> parallelCorpusIds = [];
+        HashSet<string> corpusIds = [];
         await dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
-                HashSet<string> parallelCorpusIds =
+                parallelCorpusIds =
                 [
                     .. (
                         await engines.GetAllAsync(
@@ -20,12 +22,12 @@ public class DataFileDeletedHandler(
                                     c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == evt.DataFileId))
                                     || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == evt.DataFileId))
                                 ),
-                            ct
+                            cancellationToken: ct
                         )
                     ).SelectMany(e => e.ParallelCorpora.Select(c => c.Id)),
                 ];
 
-                HashSet<string> corpusIds =
+                corpusIds =
                 [
                     .. (
                         await engines.GetAllAsync(
@@ -34,7 +36,7 @@ public class DataFileDeletedHandler(
                                     c.SourceFiles.Any(f => f.Id == evt.DataFileId)
                                     || c.TargetFiles.Any(f => f.Id == evt.DataFileId)
                                 ),
-                            ct
+                            cancellationToken: ct
                         )
                     ).SelectMany(e => e.Corpora.Select(c => c.Id)),
                 ];
@@ -64,12 +66,13 @@ public class DataFileDeletedHandler(
                     },
                     cancellationToken: ct
                 );
-
-                await pretranslations.DeleteAllAsync(
-                    pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
-                    ct
-                );
             },
+            cancellationToken
+        );
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await pretranslations.DeleteAllAsync(
+            pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
             cancellationToken
         );
     }
