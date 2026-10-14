@@ -6,10 +6,10 @@ public class CorpusUpdatedHandler(
     IRepository<Pretranslation> pretranslations
 ) : IEventHandler<CorpusUpdated>
 {
-    public Task HandleAsync(CorpusUpdated evt, CancellationToken cancellationToken)
+    public async Task HandleAsync(CorpusUpdated evt, CancellationToken cancellationToken)
     {
         IReadOnlyList<CorpusFile> files = [.. evt.Files.Select(Map)];
-        return dataAccessContext.WithTransactionAsync(
+        await dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 await engines.UpdateAllAsync(
@@ -35,10 +35,12 @@ public class CorpusUpdatedHandler(
                     },
                     cancellationToken: ct
                 );
-                await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == evt.CorpusId, ct);
             },
             cancellationToken
         );
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == evt.CorpusId, cancellationToken);
     }
 
     private static CorpusFile Map(CorpusDataFileContract corpusFile)
