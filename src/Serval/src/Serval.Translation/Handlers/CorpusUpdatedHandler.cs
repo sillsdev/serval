@@ -42,6 +42,7 @@ public class CorpusUpdatedHandler(
         cancellationToken.ThrowIfCancellationRequested();
         await pretranslations.DeleteAllAsync(
             pt => pt.CorpusRef == evt.CorpusId,
+            batchSize: 1000,
             cancellationToken: cancellationToken
         );
     }
