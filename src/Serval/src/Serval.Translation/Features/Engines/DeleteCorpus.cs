@@ -30,7 +30,6 @@ public class DeleteCorpusHandler(
                         $"Could not find the Corpus '{request.CorpusId}' in Engine '{request.EngineId}'."
                     );
                 }
-                await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == request.CorpusId, ct);
 
                 if (request.DeleteFiles)
                 {
@@ -45,6 +44,13 @@ public class DeleteCorpusHandler(
                 }
             },
             cancellationToken
+        );
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await pretranslations.DeleteAllAsync(
+            pt => pt.CorpusRef == request.CorpusId,
+            batchSize: 1000,
+            cancellationToken: cancellationToken
         );
     }
 }

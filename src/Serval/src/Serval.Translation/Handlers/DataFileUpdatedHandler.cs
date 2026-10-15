@@ -6,10 +6,12 @@ public class DataFileUpdatedHandler(
     IRepository<Pretranslation> pretranslations
 ) : IEventHandler<DataFileUpdated>
 {
-    public Task HandleAsync(DataFileUpdated evt, CancellationToken cancellationToken)
+    public async Task HandleAsync(DataFileUpdated evt, CancellationToken cancellationToken)
     {
-        return dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+        HashSet<string> parallelCorpusIds = [];
+        HashSet<string> corpusIds = [];
+        await dataAccessContext.WithTransactionAsync(
+            async ct =>
             {
                 await engines.UpdateAllAsync(
                     e =>
@@ -48,10 +50,10 @@ public class DataFileUpdatedHandler(
                             f => f.Id == evt.DataFileId
                         );
                     },
-                    cancellationToken: cancellationToken
+                    cancellationToken: ct
                 );
 
-                HashSet<string> parallelCorpusIds =
+                parallelCorpusIds =
                 [
                     .. (
                         await engines.GetAllAsync(
@@ -60,12 +62,18 @@ public class DataFileUpdatedHandler(
                                     c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == evt.DataFileId))
                                     || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == evt.DataFileId))
                                 ),
-                            cancellationToken: cancellationToken
+                            cancellationToken: ct
                         )
-                    ).SelectMany(e => e.ParallelCorpora.Select(c => c.Id)),
+                    ).SelectMany(e =>
+                        e.ParallelCorpora.Where(c =>
+                                c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == evt.DataFileId))
+                                || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == evt.DataFileId))
+                            )
+                            .Select(c => c.Id)
+                    ),
                 ];
 
-                HashSet<string> corpusIds =
+                corpusIds =
                 [
                     .. (
                         await engines.GetAllAsync(
@@ -74,16 +82,24 @@ public class DataFileUpdatedHandler(
                                     c.SourceFiles.Any(f => f.Id == evt.DataFileId)
                                     || c.TargetFiles.Any(f => f.Id == evt.DataFileId)
                                 ),
-                            cancellationToken
+                            cancellationToken: ct
                         )
-                    ).SelectMany(e => e.Corpora.Select(c => c.Id)),
+                    ).SelectMany(e =>
+                        e.Corpora.Where(c =>
+                                c.SourceFiles.Any(f => f.Id == evt.DataFileId)
+                                || c.TargetFiles.Any(f => f.Id == evt.DataFileId)
+                            )
+                            .Select(c => c.Id)
+                    ),
                 ];
-
-                await pretranslations.DeleteAllAsync(
-                    pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
-                    cancellationToken: cancellationToken
-                );
             },
+            cancellationToken: cancellationToken
+        );
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await pretranslations.DeleteAllAsync(
+            pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
+            batchSize: 1000,
             cancellationToken: cancellationToken
         );
     }
