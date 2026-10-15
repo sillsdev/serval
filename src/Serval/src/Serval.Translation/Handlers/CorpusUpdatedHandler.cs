@@ -40,7 +40,10 @@ public class CorpusUpdatedHandler(
         );
 
         cancellationToken.ThrowIfCancellationRequested();
-        await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == evt.CorpusId, cancellationToken);
+        await pretranslations.DeleteAllAsync(
+            pt => pt.CorpusRef == evt.CorpusId,
+            cancellationToken: cancellationToken
+        );
     }
 
     private static CorpusFile Map(CorpusDataFileContract corpusFile)
