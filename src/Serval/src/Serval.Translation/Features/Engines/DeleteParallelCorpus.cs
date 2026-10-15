@@ -35,7 +35,10 @@ public class DeleteParallelCorpusHandler(
         );
 
         cancellationToken.ThrowIfCancellationRequested();
-        await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == request.ParallelCorpusId, cancellationToken);
+        await pretranslations.DeleteAllAsync(
+            pt => pt.CorpusRef == request.ParallelCorpusId,
+            cancellationToken: cancellationToken
+        );
     }
 }
 

@@ -66,7 +66,7 @@ public class DeletedFileCleaner : BackgroundService
             _fileSystem.DeleteFile(path);
             deletedFileIds.Add(deletedFile.Id);
         }
-        await deletedFiles.DeleteAllAsync(f => deletedFileIds.Contains(f.Id), cancellationToken);
+        await deletedFiles.DeleteAllAsync(f => deletedFileIds.Contains(f.Id), cancellationToken: cancellationToken);
         _logger.LogInformation("Cleaned {count} files.", deletedFileIds.Count);
     }
 
