@@ -211,30 +211,85 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
 
     public async Task<int> DeleteAllAsync(
         Expression<Func<T, bool>> filter,
+        int batchSize = 0,
         CancellationToken cancellationToken = default
     )
     {
-        DeleteResult result;
         try
         {
-            if (_context.Session is not null)
+            // Delete all documents at once if the batch size is zero or lower
+            if (batchSize <= 0)
             {
-                result = await _collection
-                    .DeleteManyAsync(_context.Session, filter, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+                DeleteResult result;
+                if (_context.Session is not null)
+                {
+                    result = await _collection
+                        .DeleteManyAsync(_context.Session, filter, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await _collection
+                        .DeleteManyAsync(filter, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                return (int)result.DeletedCount;
             }
-            else
+
+            long totalDeleted = 0;
+            ProjectionDefinition<T, BsonDocument> projection = Builders<T>.Projection.Include("_id");
+            while (true)
             {
-                result = await _collection
-                    .DeleteManyAsync(filter, cancellationToken: cancellationToken)
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // Project only the _id field into BsonDocument to minimize memory usage
+                IFindFluent<T, BsonDocument> findQuery = _collection.Find(filter).Project(projection).Limit(batchSize);
+
+                using IAsyncCursor<BsonDocument> cursor = await findQuery
+                    .ToCursorAsync(cancellationToken)
                     .ConfigureAwait(false);
+                List<BsonDocument> batchDocs = await cursor.ToListAsync(cancellationToken).ConfigureAwait(false);
+
+                if (batchDocs.Count == 0)
+                    break;
+
+                // Extract the raw _id BsonValues
+                var idsToDelete = new List<BsonValue>(batchDocs.Count);
+                idsToDelete.AddRange(batchDocs.Select(doc => doc["_id"]));
+
+                FilterDefinition<T> idFilter = Builders<T>.Filter.In("_id", idsToDelete);
+
+                DeleteResult result;
+                if (_context.Session is not null)
+                {
+                    result = await _collection
+                        .DeleteManyAsync(_context.Session, idFilter, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await _collection
+                        .DeleteManyAsync(idFilter, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                totalDeleted += result.DeletedCount;
+
+                // If fewer records were deleted than requested, we've reached the end
+                if (result.DeletedCount < batchSize)
+                    break;
+
+                // Give WiredTiger time to catch up
+                await Task.Delay(100, cancellationToken);
             }
+
+            return (int)totalDeleted;
         }
         catch (FormatException)
         {
             return 0;
         }
-        return (int)result.DeletedCount;
     }
 
     public async Task<ISubscription<T>> SubscribeAsync(

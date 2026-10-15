@@ -283,6 +283,7 @@ public class MemoryRepository<T> : IRepository<T>
 
     public async Task<int> DeleteAllAsync(
         Expression<Func<T, bool>> filter,
+        int batchSize = 0,
         CancellationToken cancellationToken = default
     )
     {

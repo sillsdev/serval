@@ -24,7 +24,11 @@ public interface IRepository<T>
     );
 
     Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
-    Task<int> DeleteAllAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
+    Task<int> DeleteAllAsync(
+        Expression<Func<T, bool>> filter,
+        int batchSize = 0,
+        CancellationToken cancellationToken = default
+    );
     Task<ISubscription<T>> SubscribeAsync(
         Expression<Func<T, bool>> filter,
         IEnumerable<(Expression<Func<T, object?>> Field, SortOrder SortOrder)>? sort = null,

@@ -84,7 +84,7 @@ public class PlatformService(
                 // delete pretranslations created by the previous build
                 await _pretranslations.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision < engine.ModelRevision,
-                    ct
+                    cancellationToken: ct
                 );
 
                 await _eventRouter.PublishAsync(
@@ -132,7 +132,7 @@ public class PlatformService(
                 // delete pretranslations that might have been created during the build
                 await _pretranslations.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    ct
+                    cancellationToken: ct
                 );
 
                 await _eventRouter.PublishAsync(
@@ -180,7 +180,7 @@ public class PlatformService(
                 // delete pretranslations that might have been created during the build
                 await _pretranslations.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    ct
+                    cancellationToken: ct
                 );
 
                 await _eventRouter.PublishAsync(
@@ -225,7 +225,7 @@ public class PlatformService(
                 // delete pretranslations that might have been created during the build
                 await _pretranslations.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    ct
+                    cancellationToken: ct
                 );
             },
             cancellationToken: cancellationToken
