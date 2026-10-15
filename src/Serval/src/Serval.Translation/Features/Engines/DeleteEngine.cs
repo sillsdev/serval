@@ -1,4 +1,4 @@
-namespace Serval.Translation.Features.Engines;
+﻿namespace Serval.Translation.Features.Engines;
 
 public record DeleteEngine(string Owner, string EngineId) : IRequest;
 
@@ -31,6 +31,7 @@ public class DeleteEngineHandler(
         cancellationToken.ThrowIfCancellationRequested();
         await pretranslations.DeleteAllAsync(
             pt => pt.EngineRef == request.EngineId,
+            batchSize: 1000,
             cancellationToken: cancellationToken
         );
     }

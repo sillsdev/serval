@@ -80,6 +80,7 @@ public class UpdateCorpusHandler(
         cancellationToken.ThrowIfCancellationRequested();
         await pretranslations.DeleteAllAsync(
             pt => pt.CorpusRef == request.CorpusId,
+            batchSize: 1000,
             cancellationToken: cancellationToken
         );
         return response;
