@@ -74,6 +74,7 @@ public class DataFileDeletedHandler(
         await pretranslations.DeleteAllAsync(
             pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
             cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 }

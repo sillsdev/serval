@@ -82,7 +82,7 @@ public class PlatformService(
                 // delete alignments created by the previous build
                 await _wordAlignments.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision < engine.ModelRevision,
-                    ct
+                    cancellationToken: ct
                 );
 
                 await _eventRouter.PublishAsync(
@@ -128,7 +128,7 @@ public class PlatformService(
                 // delete word alignments that might have been created during the build
                 await _wordAlignments.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    ct
+                    cancellationToken: ct
                 );
 
                 await _eventRouter.PublishAsync(
@@ -174,7 +174,7 @@ public class PlatformService(
                 // delete word alignments that might have been created during the build
                 await _wordAlignments.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    ct
+                    cancellationToken: ct
                 );
 
                 await _eventRouter.PublishAsync(
@@ -217,7 +217,7 @@ public class PlatformService(
                 // delete word alignments that might have been created during the build
                 await _wordAlignments.DeleteAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
-                    ct
+                    cancellationToken: ct
                 );
             },
             cancellationToken: cancellationToken

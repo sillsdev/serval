@@ -1,4 +1,4 @@
-﻿namespace Serval.Translation.Features.Engines;
+namespace Serval.Translation.Features.Engines;
 
 public record DeleteEngine(string Owner, string EngineId) : IRequest;
 
@@ -21,7 +21,7 @@ public class DeleteEngineHandler(
                 if (engine is null)
                     throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
 
-                await builds.DeleteAllAsync(b => b.EngineRef == request.EngineId, ct);
+                await builds.DeleteAllAsync(b => b.EngineRef == request.EngineId, cancellationToken: ct);
 
                 await engineServiceFactory.GetEngineService(engine.Type).DeleteAsync(request.EngineId, ct);
             },
@@ -29,7 +29,10 @@ public class DeleteEngineHandler(
         );
 
         cancellationToken.ThrowIfCancellationRequested();
-        await pretranslations.DeleteAllAsync(pt => pt.EngineRef == request.EngineId, cancellationToken);
+        await pretranslations.DeleteAllAsync(
+            pt => pt.EngineRef == request.EngineId,
+            cancellationToken: cancellationToken
+        );
     }
 }
 

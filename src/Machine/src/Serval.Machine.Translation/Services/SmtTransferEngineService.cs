@@ -53,7 +53,10 @@ public class SmtTransferEngineService(
 
         await CancelBuildJobAsync(engineId, cancellationToken);
         await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
-        await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+        await _trainSegmentPairs.DeleteAllAsync(
+            p => p.TranslationEngineRef == engineId,
+            cancellationToken: cancellationToken
+        );
         await _buildJobService.DeleteEngineAsync(engineId, cancellationToken);
 
         // after this point, we cannot cancel
