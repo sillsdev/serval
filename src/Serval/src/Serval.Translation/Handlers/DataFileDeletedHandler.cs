@@ -24,7 +24,13 @@ public class DataFileDeletedHandler(
                                 ),
                             cancellationToken: ct
                         )
-                    ).SelectMany(e => e.ParallelCorpora.Select(c => c.Id)),
+                    ).SelectMany(e =>
+                        e.ParallelCorpora.Where(c =>
+                                c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == evt.DataFileId))
+                                || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == evt.DataFileId))
+                            )
+                            .Select(c => c.Id)
+                    ),
                 ];
 
                 corpusIds =
@@ -38,7 +44,13 @@ public class DataFileDeletedHandler(
                                 ),
                             cancellationToken: ct
                         )
-                    ).SelectMany(e => e.Corpora.Select(c => c.Id)),
+                    ).SelectMany(e =>
+                        e.Corpora.Where(c =>
+                                c.SourceFiles.Any(f => f.Id == evt.DataFileId)
+                                || c.TargetFiles.Any(f => f.Id == evt.DataFileId)
+                            )
+                            .Select(c => c.Id)
+                    ),
                 ];
 
                 await engines.UpdateAllAsync(
