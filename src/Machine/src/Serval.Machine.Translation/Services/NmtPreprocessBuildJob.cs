@@ -154,7 +154,7 @@ public class NmtPreprocessBuildJob(
         List<DiagnosticContract> diagnostics = [];
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere
-        if (trainCount < 600 && trainCount != 0)
+        if (trainCount < BuildJobOptions.MinimumTrainCount && trainCount != 0)
         {
             diagnostics.Add(
                 BuildDiagnosticService.CreateDiagnostic(
