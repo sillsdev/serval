@@ -281,7 +281,10 @@ public class PreprocessBuildJobTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(data["trainCount"] is int trainCount && trainCount == 1);
-            Assert.That(data["minimumTrainCount"] is int minimumTrainCount && minimumTrainCount == 600);
+            Assert.That(
+                data["minimumTrainCount"] is int minimumTrainCount
+                    && minimumTrainCount == new BuildJobOptions().MinimumTrainCount
+            );
         }
 
         Assert.That(env.ExecutionData.Diagnostics[9].Code, Is.EqualTo("MODEL-0001"));
