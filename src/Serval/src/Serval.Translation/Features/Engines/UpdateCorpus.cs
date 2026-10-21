@@ -37,13 +37,10 @@ public class UpdateCorpusHandler(
     DtoMapper mapper
 ) : IRequestHandler<UpdateCorpus, UpdateCorpusResponse>
 {
-    public async Task<UpdateCorpusResponse> HandleAsync(
-        UpdateCorpus request,
-        CancellationToken cancellationToken = default
-    )
+    public Task<UpdateCorpusResponse> HandleAsync(UpdateCorpus request, CancellationToken cancellationToken = default)
     {
-        UpdateCorpusResponse response = await dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+        return dataAccessContext.WithTransactionAsync(
+            async ct =>
             {
                 await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
@@ -71,18 +68,17 @@ public class UpdateCorpusHandler(
                         $"Could not find the Corpus '{request.CorpusId}' in Engine '{request.EngineId}'."
                     );
                 }
+
+                await pretranslations.UpdateAllAsync(
+                    pt => pt.CorpusRef == request.CorpusId,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
                 Corpus corpus = updatedEngine.Corpora.First(c => c.Id == request.CorpusId);
                 return new UpdateCorpusResponse(mapper.Map(request.EngineId, corpus));
             },
             cancellationToken
         );
-
-        await pretranslations.DeleteAllAsync(
-            pt => pt.CorpusRef == request.CorpusId,
-            batchSize: 1000,
-            cancellationToken: CancellationToken.None
-        );
-        return response;
     }
 
     private async Task<List<CorpusFile>> MapFilesAsync(
