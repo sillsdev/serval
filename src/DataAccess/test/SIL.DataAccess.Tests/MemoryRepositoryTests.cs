@@ -17,7 +17,7 @@ public class MemoryRepositoryTests
             }
         );
 
-        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Count(), Is.EqualTo(1));
         TestEntity entity = repo.Get("1");
         Assert.That(entity.Value, Is.EqualTo(1));
         Assert.That(entity.List, Is.EqualTo(new int[] { 1 }));
@@ -41,7 +41,7 @@ public class MemoryRepositoryTests
 
         await repo.InsertAsync(new TestEntity() { Id = "1", List = [1] });
 
-        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Count(), Is.EqualTo(1));
         TestEntity entity = repo.Get("1");
         Assert.That(entity.List, Is.EqualTo(new int[] { 1 }));
     }
@@ -65,7 +65,7 @@ public class MemoryRepositoryTests
 
         Assert.That(entity, Is.Not.Null);
         Assert.That(entity.Value, Is.EqualTo(2));
-        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Count(), Is.EqualTo(1));
         Assert.That(repo.Get("1").Value, Is.EqualTo(2));
     }
 
@@ -78,14 +78,14 @@ public class MemoryRepositoryTests
 
         Assert.That(entity, Is.Not.Null);
         Assert.That(entity.Value, Is.EqualTo(2));
-        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Count(), Is.EqualTo(1));
         Assert.That(repo.Get("1").Value, Is.EqualTo(2));
 
         entity = await repo.UpdateAsync("1", u => u.SetOnInsert(e => e.Value, 3), upsert: true);
 
         Assert.That(entity, Is.Not.Null);
         Assert.That(entity.Value, Is.EqualTo(2));
-        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Count(), Is.EqualTo(1));
         Assert.That(repo.Get("1").Value, Is.EqualTo(2));
     }
 
@@ -334,13 +334,13 @@ public class MemoryRepositoryTests
     {
         MemoryRepository<TestEntity> repo = new();
         repo.Add(new TestEntity() { Id = "1", Value = 1 });
-        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Count(), Is.EqualTo(1));
 
         TestEntity? entity = await repo.DeleteAsync("1");
 
         Assert.That(entity, Is.Not.Null);
         Assert.That(entity.Id, Is.EqualTo("1"));
-        Assert.That(repo.Count, Is.EqualTo(0));
+        Assert.That(repo.Count(), Is.Zero);
     }
 
     [Test]
@@ -358,7 +358,7 @@ public class MemoryRepositoryTests
     {
         MemoryRepository<TestEntity> repo = new();
         repo.Add(new TestEntity() { Id = "1", Value = 1 });
-        Assert.That(repo.Count, Is.EqualTo(1));
+        Assert.That(repo.Count(), Is.EqualTo(1));
 
         TestEntity? entity = await repo.GetAsync("1");
 
