@@ -8,10 +8,10 @@ public class DeleteParallelCorpusHandler(
     IRepository<Pretranslation> pretranslations
 ) : IRequestHandler<DeleteParallelCorpus>
 {
-    public async Task HandleAsync(DeleteParallelCorpus request, CancellationToken cancellationToken = default)
+    public Task HandleAsync(DeleteParallelCorpus request, CancellationToken cancellationToken = default)
     {
-        await dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+        return dataAccessContext.WithTransactionAsync(
+            async ct =>
             {
                 await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
@@ -30,14 +30,14 @@ public class DeleteParallelCorpusHandler(
                         $"Could not find the Corpus '{request.ParallelCorpusId}' in Engine '{request.EngineId}'."
                     );
                 }
+
+                await pretranslations.UpdateAllAsync(
+                    pt => pt.CorpusRef == request.ParallelCorpusId,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
             },
             cancellationToken
-        );
-
-        await pretranslations.DeleteAllAsync(
-            pt => pt.CorpusRef == request.ParallelCorpusId,
-            batchSize: 1000,
-            cancellationToken: CancellationToken.None
         );
     }
 }

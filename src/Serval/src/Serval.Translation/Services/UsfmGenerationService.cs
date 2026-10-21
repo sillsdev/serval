@@ -133,7 +133,8 @@ public class UsfmGenerationService(
                 pt.EngineRef == engineId
                 && pt.ModelRevision == modelRevision
                 && pt.CorpusRef == corpusId
-                && (textId == null || pt.TextId == textId),
+                && (textId == null || pt.TextId == textId)
+                && pt.DeletedAt == null,
             cancellationToken
         );
 
