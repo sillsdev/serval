@@ -84,11 +84,10 @@ public class UpdateParallelCorpusHandler(
             cancellationToken
         );
 
-        cancellationToken.ThrowIfCancellationRequested();
         await pretranslations.DeleteAllAsync(
             pt => pt.CorpusRef == request.ParallelCorpusId,
             batchSize: 1000,
-            cancellationToken: cancellationToken
+            cancellationToken: CancellationToken.None
         );
         return response;
     }
