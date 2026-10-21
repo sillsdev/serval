@@ -10,10 +10,10 @@ public class DeleteEngineHandler(
     IEngineServiceFactory engineServiceFactory
 ) : IRequestHandler<DeleteEngine>
 {
-    public async Task HandleAsync(DeleteEngine request, CancellationToken cancellationToken = default)
+    public Task HandleAsync(DeleteEngine request, CancellationToken cancellationToken = default)
     {
-        await dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+        return dataAccessContext.WithTransactionAsync(
+            async ct =>
             {
                 await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
@@ -22,16 +22,15 @@ public class DeleteEngineHandler(
                     throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
 
                 await builds.DeleteAllAsync(b => b.EngineRef == request.EngineId, cancellationToken: ct);
+                await pretranslations.UpdateAllAsync(
+                    pt => pt.EngineRef == request.EngineId,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
 
                 await engineServiceFactory.GetEngineService(engine.Type).DeleteAsync(request.EngineId, ct);
             },
             cancellationToken
-        );
-
-        await pretranslations.DeleteAllAsync(
-            pt => pt.EngineRef == request.EngineId,
-            batchSize: 1000,
-            cancellationToken: CancellationToken.None
         );
     }
 }

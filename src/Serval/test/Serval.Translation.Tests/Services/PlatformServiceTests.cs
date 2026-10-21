@@ -38,25 +38,25 @@ public class PlatformServiceTests
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Pending));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
+        Assert.That(env.Pretranslations.Count(p => p.DeletedAt == null), Is.Zero);
         await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
-        Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
+        Assert.That(env.Pretranslations.Count(p => p.DeletedAt == null), Is.EqualTo(1));
 
         await env.PlatformService.BuildFaultedAsync("b0", "");
-        Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
+        Assert.That(env.Pretranslations.Count(p => p.DeletedAt == null), Is.Zero);
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Faulted));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         await env.PlatformService.BuildRestartingAsync("b0");
         await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
-        Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
+        Assert.That(env.Pretranslations.Count(p => p.DeletedAt == null), Is.EqualTo(1));
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
-        Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
+        Assert.That(env.Pretranslations.Count(p => p.DeletedAt == null), Is.EqualTo(1));
 
         await env.PlatformService.BuildStartedAsync("b0");
         await env.PlatformService.InsertPretranslationsAsync("e0", "b0", GetTestPretranslations());
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
-        Assert.That(env.Pretranslations.Count, Is.EqualTo(1));
+        Assert.That(env.Pretranslations.Count(p => p.DeletedAt == null), Is.EqualTo(1));
         ExecutionData? executionData = (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData;
         Assert.That(executionData?.AveragePretranslationConfidence, Is.Null);
         Assert.That(executionData?.AverageAlignmentScore, Is.Null);
@@ -68,7 +68,7 @@ public class PlatformServiceTests
             AsyncEnumerable.Empty<PretranslationContract>()
         );
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
-        Assert.That(env.Pretranslations.Count, Is.EqualTo(0));
+        Assert.That(env.Pretranslations.Count(p => p.DeletedAt == null), Is.Zero);
         executionData = (await env.Builds.GetAsync(b => b.Id == "b0"))?.ExecutionData;
         Assert.That(executionData?.AveragePretranslationConfidence, Is.Null);
         Assert.That(executionData?.AverageAlignmentScore, Is.Null);

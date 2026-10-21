@@ -15,6 +15,7 @@
 	<ItemGroup>
 		<PackageReference Include="Asp.Versioning.Abstractions" Version="10.2.1" />
 		<PackageReference Include="CaseExtensions" Version="1.1.0" />
+		<PackageReference Include="Cronos" Version="0.13.0" />
 		<PackageReference Include="NSwag.Annotations" Version="14.7.1" />
 	</ItemGroup>
 

@@ -2635,7 +2635,8 @@ public class EnginesHandlersTests
             ),
             CancellationToken.None
         );
-        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
+        pretranslation = await env.Pretranslations.GetAsync(pretranslation.Id);
+        Assert.That(pretranslation.DeletedAt, Is.Not.Null);
     }
 
     [Test]
@@ -2673,7 +2674,8 @@ public class EnginesHandlersTests
             ),
             CancellationToken.None
         );
-        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
+        pretranslation = await env.Pretranslations.GetAsync(pretranslation.Id);
+        Assert.That(pretranslation.DeletedAt, Is.Not.Null);
     }
 
     [Test]
@@ -2695,7 +2697,8 @@ public class EnginesHandlersTests
         Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Not.Null);
         var handler = new DataFileDeletedHandler(env.DataAccessContext, env.Engines, env.Pretranslations);
         await handler.HandleAsync(new DataFileDeleted("file1"), CancellationToken.None);
-        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
+        pretranslation = await env.Pretranslations.GetAsync(pretranslation.Id);
+        Assert.That(pretranslation.DeletedAt, Is.Not.Null);
     }
 
     [Test]
@@ -2723,7 +2726,8 @@ public class EnginesHandlersTests
             ),
             CancellationToken.None
         );
-        Assert.That(await env.Pretranslations.GetAsync(pretranslation.Id), Is.Null);
+        pretranslation = await env.Pretranslations.GetAsync(pretranslation.Id);
+        Assert.That(pretranslation.DeletedAt, Is.Not.Null);
     }
 
     private class TestEnvironment

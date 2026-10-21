@@ -89,7 +89,8 @@ public class MemoryRepository<T> : IRepository<T>
 
     public IEnumerable<T> Entities => _entities.Select(kvp => DeserializeEntity(kvp.Key, kvp.Value));
 
-    public int Count => _entities.Count;
+    public int Count(Expression<Func<T, bool>>? filter = null) =>
+        filter is null ? _entities.Count : Entities.AsQueryable().Count(filter);
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
